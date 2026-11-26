@@ -109496,17 +109496,15 @@ void cps_801ae524(void)
 
     /* Address: 0x801AE524, Size: 36 bytes, Blocks: 1 */
 
-block_801AE524:
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v1 = cpu->read_word(a0 + 6);
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x4) */
+    v1 = cpu->read_word(a0 + 6);           /* delta word */
     v0 = v0 << 2;
-    v0 = v0 + a1;
-    v0 = cpu->read_word(v0);
-    a0 = cpu->read_word(gp + 76);
+    v0 = v0 + a1;                          /* src ptr */
+    v0 = cpu->read_word(v0);               /* src word */
+    a0 = cpu->read_word(gp + 76);          /* global state ptr */
     v0 = v0 - v1;
     uint32_t _jt_801AE540 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(a0 + 20, v0);
+    cpu->write_word(a0 + 20, v0);          /* delay slot: store diff to state+20 */
     psx_check_interrupts_at(cpu, _jt_801AE540);
     cpu->pc = _jt_801AE540; return;  /* CPS: jr $ra */
 }
@@ -109520,16 +109518,13 @@ void cps_801ae548(void)
 
     /* Address: 0x801AE548, Size: 32 bytes, Blocks: 1 */
 
-block_801AE548:
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v1 = cpu->read_byte(a0 + 4);
-    a1 = a1 + v0;
-    v0 = cpu->read_byte(a1);
-    /* nop */  /* 0x801AE558: 0x00000000 */
-    v0 = v0 & v1;  /* 0x801AE55C: 0x00431024 */
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* dst offset */
+    v1 = cpu->read_byte(a0 + 4);           /* mask byte */
+    a1 = a1 + v0;                          /* dst ptr */
+    v0 = cpu->read_byte(a1);               /* current byte */
+    v0 = v0 & v1;
     uint32_t _jt_801AE560 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_byte(a1, (uint8_t)v0);
+    cpu->write_byte(a1, (uint8_t)v0);      /* delay slot: store masked */
     psx_check_interrupts_at(cpu, _jt_801AE560);
     cpu->pc = _jt_801AE560; return;  /* CPS: jr $ra */
 }
@@ -109543,17 +109538,14 @@ void cps_801ae568(void)
 
     /* Address: 0x801AE568, Size: 36 bytes, Blocks: 1 */
 
-block_801AE568:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    a0 = cpu->read_half(a0 + 4);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x2) */
+    a0 = cpu->read_half(a0 + 4);           /* mask halfword */
     v1 = v1 << 1;
-    v1 = v1 + a1;
-    v0 = cpu->read_half(v1);
-    /* nop */  /* 0x801AE57C: 0x00000000 */
-    v0 = v0 & a0;  /* 0x801AE580: 0x00441024 */
+    v1 = v1 + a1;                          /* dst ptr */
+    v0 = cpu->read_half(v1);               /* current halfword */
+    v0 = v0 & a0;
     uint32_t _jt_801AE584 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_half(v1, (uint16_t)v0);
+    cpu->write_half(v1, (uint16_t)v0);     /* delay slot: store masked */
     psx_check_interrupts_at(cpu, _jt_801AE584);
     cpu->pc = _jt_801AE584; return;  /* CPS: jr $ra */
 }
@@ -109567,17 +109559,14 @@ void cps_801ae58c(void)
 
     /* Address: 0x801AE58C, Size: 36 bytes, Blocks: 1 */
 
-block_801AE58C:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    a0 = cpu->read_word(a0 + 6);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x4) */
+    a0 = cpu->read_word(a0 + 6);           /* mask word */
     v1 = v1 << 2;
-    v1 = v1 + a1;
-    v0 = cpu->read_word(v1);
-    /* nop */  /* 0x801AE5A0: 0x00000000 */
-    v0 = v0 & a0;  /* 0x801AE5A4: 0x00441024 */
+    v1 = v1 + a1;                          /* dst ptr */
+    v0 = cpu->read_word(v1);               /* current word */
+    v0 = v0 & a0;
     uint32_t _jt_801AE5A8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(v1, v0);
+    cpu->write_word(v1, v0);               /* delay slot: store masked */
     psx_check_interrupts_at(cpu, _jt_801AE5A8);
     cpu->pc = _jt_801AE5A8; return;  /* CPS: jr $ra */
 }
@@ -109591,16 +109580,13 @@ void cps_801ae5b0(void)
 
     /* Address: 0x801AE5B0, Size: 32 bytes, Blocks: 1 */
 
-block_801AE5B0:
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v1 = cpu->read_byte(a0 + 4);
-    a1 = a1 + v0;
-    v0 = cpu->read_byte(a1);
-    /* nop */  /* 0x801AE5C0: 0x00000000 */
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* dst offset */
+    v1 = cpu->read_byte(a0 + 4);           /* mask byte */
+    a1 = a1 + v0;                          /* dst ptr */
+    v0 = cpu->read_byte(a1);               /* current byte */
     v0 = v0 | v1;
     uint32_t _jt_801AE5C8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_byte(a1, (uint8_t)v0);
+    cpu->write_byte(a1, (uint8_t)v0);      /* delay slot: store OR'd */
     psx_check_interrupts_at(cpu, _jt_801AE5C8);
     cpu->pc = _jt_801AE5C8; return;  /* CPS: jr $ra */
 }
@@ -109614,17 +109600,14 @@ void cps_801ae5d0(void)
 
     /* Address: 0x801AE5D0, Size: 36 bytes, Blocks: 1 */
 
-block_801AE5D0:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    a0 = cpu->read_half(a0 + 4);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x2) */
+    a0 = cpu->read_half(a0 + 4);           /* mask halfword */
     v1 = v1 << 1;
-    v1 = v1 + a1;
-    v0 = cpu->read_half(v1);
-    /* nop */  /* 0x801AE5E4: 0x00000000 */
+    v1 = v1 + a1;                          /* dst ptr */
+    v0 = cpu->read_half(v1);               /* current halfword */
     v0 = v0 | a0;
     uint32_t _jt_801AE5EC = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_half(v1, (uint16_t)v0);
+    cpu->write_half(v1, (uint16_t)v0);     /* delay slot: store OR'd */
     psx_check_interrupts_at(cpu, _jt_801AE5EC);
     cpu->pc = _jt_801AE5EC; return;  /* CPS: jr $ra */
 }
@@ -109638,17 +109621,14 @@ void cps_801ae5f4(void)
 
     /* Address: 0x801AE5F4, Size: 36 bytes, Blocks: 1 */
 
-block_801AE5F4:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    a0 = cpu->read_word(a0 + 6);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x4) */
+    a0 = cpu->read_word(a0 + 6);           /* mask word */
     v1 = v1 << 2;
-    v1 = v1 + a1;
-    v0 = cpu->read_word(v1);
-    /* nop */  /* 0x801AE608: 0x00000000 */
+    v1 = v1 + a1;                          /* dst ptr */
+    v0 = cpu->read_word(v1);               /* current word */
     v0 = v0 | a0;
     uint32_t _jt_801AE610 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(v1, v0);
+    cpu->write_word(v1, v0);               /* delay slot: store OR'd */
     psx_check_interrupts_at(cpu, _jt_801AE610);
     cpu->pc = _jt_801AE610; return;  /* CPS: jr $ra */
 }
@@ -109671,38 +109651,34 @@ void cps_801ae618(void)
     /* Address: 0x801AE618, Size: 68 bytes, Blocks: 3 */
 
 block_801AE618:
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    /* nop */  /* 0x801AE61C: 0x00000000 */
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);  /* element count */
+    v1 = zero;                            /* loop index */
     int _bc_801AE620 = ((int32_t)v0 <= 0);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    v1 = zero;
     if (_bc_801AE620) {
         psx_check_interrupts_at(cpu, 0x801AE654u);
-        goto block_801AE654;  /* taken */
+        goto block_801AE654;  /* count <= 0: done */
     } else {
         psx_check_interrupts_at(cpu, 0x801AE628u);
-        goto block_801AE628;  /* not taken */
+        goto block_801AE628;  /* enter loop */
     }
 
 block_801AE628:
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    /* nop */  /* 0x801AE62C: 0x00000000 */
-    v0 = v0 + v1;
+    /* zero-fill loop: store word at a1 + (idx + off) * 4 */
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* element offset */
+    v0 = v0 + v1;                          /* idx + off */
     v0 = v0 << 2;
     v0 = v0 + a1;
     cpu->write_word(v0, zero);
-    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
+    v0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);  /* count */
     v1 = v1 + 1;
     v0 = ((int32_t)v1 < (int32_t)v0) ? 1 : 0;  /* 0x801AE648: 0x0062102A */
     int _bc_801AE64C = (v0 != zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801AE650: 0x00000000 */
     if (_bc_801AE64C) {
         psx_check_interrupts_at(cpu, 0x801AE628u);
-        goto block_801AE628;  /* taken */
+        goto block_801AE628;  /* more elements */
     } else {
         psx_check_interrupts_at(cpu, 0x801AE654u);
-        goto block_801AE654;  /* not taken */
+        goto block_801AE654;  /* done */
     }
 
 block_801AE654:
@@ -109722,14 +109698,11 @@ void cps_801ae674(void)
 
     /* Address: 0x801AE674, Size: 24 bytes, Blocks: 1 */
 
-block_801AE674:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v0 = cpu->read_word(gp + 80);
-    /* nop */  /* 0x801AE67C: 0x00000000 */
-    v0 = v0 + v1;
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* dst offset */
+    v0 = cpu->read_word(gp + 80);          /* global base ptr */
+    v0 = v0 + v1;                          /* resolved ptr */
     uint32_t _jt_801AE684 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(a1, v0);
+    cpu->write_word(a1, v0);               /* delay slot: store ptr */
     psx_check_interrupts_at(cpu, _jt_801AE684);
     cpu->pc = _jt_801AE684; return;  /* CPS: jr $ra */
 }
@@ -109743,18 +109716,15 @@ void cps_801ae6a8(void)
 
     /* Address: 0x801AE6A8, Size: 40 bytes, Blocks: 1 */
 
-block_801AE6A8:
-    v0 = cpu->read_word(gp + 76);
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    v0 = cpu->read_word(v0 + 24);
-    /* nop */  /* 0x801AE6B4: 0x00000000 */
-    v0 = v0 + v1;
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v0 = cpu->read_byte(v0);
-    a1 = a1 + v1;
+    v0 = cpu->read_word(gp + 76);          /* global state ptr */
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 4);  /* src offset */
+    v0 = cpu->read_word(v0 + 24);          /* state table */
+    v0 = v0 + v1;                          /* src ptr */
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* dst offset */
+    v0 = cpu->read_byte(v0);               /* src byte */
+    a1 = a1 + v1;                          /* dst ptr */
     uint32_t _jt_801AE6C8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_byte(a1, (uint8_t)v0);
+    cpu->write_byte(a1, (uint8_t)v0);      /* delay slot: copy byte */
     psx_check_interrupts_at(cpu, _jt_801AE6C8);
     cpu->pc = _jt_801AE6C8; return;  /* CPS: jr $ra */
 }
@@ -109768,18 +109738,16 @@ void cps_801ae6d0(void)
 
     /* Address: 0x801AE6D0, Size: 40 bytes, Blocks: 1 */
 
-block_801AE6D0:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v0 = cpu->read_word(gp + 76);
-    a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    v0 = cpu->read_word(v0 + 24);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x2) */
+    v0 = cpu->read_word(gp + 76);          /* global state ptr */
+    a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);  /* src offset */
+    v0 = cpu->read_word(v0 + 24);          /* state table */
     v1 = v1 << 1;
-    v0 = v0 + a0;
-    v0 = cpu->read_half(v0);
-    v1 = v1 + a1;
+    v0 = v0 + a0;                          /* src ptr */
+    v0 = cpu->read_half(v0);               /* src halfword */
+    v1 = v1 + a1;                          /* dst ptr */
     uint32_t _jt_801AE6F0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_half(v1, (uint16_t)v0);
+    cpu->write_half(v1, (uint16_t)v0);     /* delay slot: copy halfword */
     psx_check_interrupts_at(cpu, _jt_801AE6F0);
     cpu->pc = _jt_801AE6F0; return;  /* CPS: jr $ra */
 }
@@ -109793,18 +109761,16 @@ void cps_801ae6f8(void)
 
     /* Address: 0x801AE6F8, Size: 40 bytes, Blocks: 1 */
 
-block_801AE6F8:
-    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
-    v0 = cpu->read_word(gp + 76);
-    a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);
-    v0 = cpu->read_word(v0 + 24);
+    v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);  /* offset (x4) */
+    v0 = cpu->read_word(gp + 76);          /* global state ptr */
+    a0 = (int32_t)(int16_t)cpu->read_half(a0 + 4);  /* src offset */
+    v0 = cpu->read_word(v0 + 24);          /* state table */
     v1 = v1 << 2;
-    v0 = v0 + a0;
-    v0 = cpu->read_word(v0);
-    v1 = v1 + a1;
+    v0 = v0 + a0;                          /* src ptr */
+    v0 = cpu->read_word(v0);               /* src word */
+    v1 = v1 + a1;                          /* dst ptr */
     uint32_t _jt_801AE718 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(v1, v0);
+    cpu->write_word(v1, v0);               /* delay slot: copy word */
     psx_check_interrupts_at(cpu, _jt_801AE718);
     cpu->pc = _jt_801AE718; return;  /* CPS: jr $ra */
 }
