@@ -498,36 +498,36 @@ extern char *s_time_out_in_decoding___80120e90;
 void unlock_progress_scene_entry(void)
 
 {
-  uint uVar1;
+  uint char_idx;
   
-  uVar1 = 0xffffffff;
+  char_idx = 0xffffffff;
   if ((_DAT_1f8000b4 & 0xf00) == 0xa00) {
-    uVar1 = (uint)DAT_1f8000eb;
+    char_idx = (uint)DAT_1f8000eb;
   }
   if ((_DAT_1f8000b6 & 0xf00) == 0xa00) {
-    uVar1 = (uint)DAT_1f8001f3;
+    char_idx = (uint)DAT_1f8001f3;
   }
   switch(DAT_1f80009c) {
   case 0:
-    card_fade_sm(uVar1);
+    card_fade_sm(char_idx);
     *(uint *)(_g_system_config_ptr + 0x60) =
-         *(uint *)(_g_system_config_ptr + 0x60) | 1 << (uVar1 + 0x10 & 0x1f);
+         *(uint *)(_g_system_config_ptr + 0x60) | 1 << (char_idx + 0x10 & 0x1f);
     *(uint *)(_g_system_config_ptr + 0x50) =
-         *(uint *)(_g_system_config_ptr + 0x50) | 1 << (uVar1 & 0x1f);
+         *(uint *)(_g_system_config_ptr + 0x50) | 1 << (char_idx & 0x1f);
     if ((int8_t)_DAT_1f8000a4 == -2) {
       *(uint *)(_g_system_config_ptr + 0x4c) = *(uint *)(_g_system_config_ptr + 0x4c) | 0x200;
-      uVar1 = *(uint *)(_g_system_config_ptr + 0x4c) | 0x400;
+      char_idx = *(uint *)(_g_system_config_ptr + 0x4c) | 0x400;
     }
     else {
-      uVar1 = *(uint *)(_g_system_config_ptr + 0x4c) | 0x200;
+      char_idx = *(uint *)(_g_system_config_ptr + 0x4c) | 0x200;
     }
-    *(uint *)(_g_system_config_ptr + 0x4c) = uVar1;
+    *(uint *)(_g_system_config_ptr + 0x4c) = char_idx;
     break;
   default:
     goto switchD_801678c4_caseD_1;
   case 4:
     *(uint *)(_g_system_config_ptr + 0x60) =
-         *(uint *)(_g_system_config_ptr + 0x60) | 1 << (uVar1 & 0x1f);
+         *(uint *)(_g_system_config_ptr + 0x60) | 1 << (char_idx & 0x1f);
     if (((*(uint *)(_g_system_config_ptr + 0x60) & 0x7ff) == 0x7ff) &&
        ((*(uint *)(_g_system_config_ptr + 0x44) >> 0xe & 1) == 0)) {
       *(uint *)(_g_system_config_ptr + 0x44) = *(uint *)(_g_system_config_ptr + 0x44) | 0x4000;
@@ -536,13 +536,13 @@ void unlock_progress_scene_entry(void)
   }
   if ((int8_t)_DAT_1f8000a4 == -2) {
     scene_entry(0x80010000,2,*(uint *)(_g_system_config_ptr + 0x28) >> 2 & 1);
-    uVar1 = *(uint *)(_g_system_config_ptr + 0x28) | 4;
+    char_idx = *(uint *)(_g_system_config_ptr + 0x28) | 4;
   }
   else {
     scene_entry(0x80010000,3,*(uint *)(_g_system_config_ptr + 0x28) >> 3 & 1);
-    uVar1 = *(uint *)(_g_system_config_ptr + 0x28) | 8;
+    char_idx = *(uint *)(_g_system_config_ptr + 0x28) | 8;
   }
-  *(uint *)(_g_system_config_ptr + 0x28) = uVar1;
+  *(uint *)(_g_system_config_ptr + 0x28) = char_idx;
   _DAT_801c15f0 = 1;
 switchD_801678c4_caseD_1:
   return;
@@ -556,12 +556,12 @@ void battle_flow_state_machine(intptr_t param_1)
 
 {
   int iVar1;
-  bool bVar2;
+  bool battle_ran;
   undefined4 uVar3;
   int iVar4;
   int iVar5;
   
-  bVar2 = false;
+  battle_ran = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
       decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0);
@@ -617,7 +617,7 @@ joined_r0x8016fd30:
       DAT_1f800001 = '\0';
       confirm_bookkeeping(0x1f800000);
       select_phase_update(0x1f800000);
-      bVar2 = false;
+      battle_ran = false;
       switch(DAT_1f80009c) {
       case 0:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
@@ -633,7 +633,7 @@ joined_r0x8016fd30:
           if (iVar4 < 0) {
             DAT_1f800001 = -1;
           }
-          bVar2 = true;
+          battle_ran = true;
         }
         else {
           iVar4 = select_screen_tick(0);
@@ -708,8 +708,8 @@ switchD_8016fd64_caseD_2:
 switchD_8016fd64_caseD_3:
         iVar4 = frame_divisor_get();
         if (iVar4 == 0) {
-          if (bVar2) {
-            bVar2 = false;
+          if (battle_ran) {
+            battle_ran = false;
           }
           else {
             battle_init(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0);
@@ -986,9 +986,9 @@ LAB_80170714:
 undefined4 system_config_menu_a(void)
 
 {
-  short *psVar1;
-  intptr_t iVar2;
-  undefined4 uVar3;
+  short *pad_buf;
+  intptr_t tmp;
+  undefined4 ret;
   /* Guest stepper descriptor: one contiguous 0x30-byte block at
    * sp+0x10..0x3f passed to menu_stepper_state_advance / menu_stepper_sm
    * (a0 = sp+0x10); the +0xc callback is a u32 GUEST code address
@@ -1027,8 +1027,8 @@ undefined4 system_config_menu_a(void)
 #define local_34 (*(uint16_t *)&step_desc_a[0x2c])
 #define local_32 (*(uint16_t *)&step_desc_a[0x2e])
   
-  psVar1 = _g_pad_buffer;
-  uVar3 = 0;
+  pad_buf = _g_pad_buffer;
+  ret = 0;
   _DAT_1f80008c = 0;
 joined_r0x8015c784:
   /* Bail-unwind exit must preserve the DAT1 exit invariant: the 0xff exit
@@ -1037,26 +1037,26 @@ joined_r0x8015c784:
    * as battle_flow_state_machine). */
   { extern int br2_bail_pending(void);
     extern void br2_guest_frame_abandon(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar3; } }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
       br2_guest_frame_free();
-      return uVar3;
+      return ret;
     }
     if (DAT_1f800001 == 1) {
 LAB_8015c900:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
         DAT_1f800001 = 0xf0;
-        uVar3 = 1;
+        ret = 1;
       }
       if (local_58 == local_5a) {
-        if ((*psVar1 == 0) || ((_DAT_1f800080 & 0xf) != 0xf)) {
+        if ((*pad_buf == 0) || ((_DAT_1f800080 & 0xf) != 0xf)) {
           if ((_DAT_1f80007c & 0xe0) != 0) {
             deferred_cmd_post(0x400,0xc,0);
             DAT_1f800001 = 0xf0;
-            uVar3 = 1;
+            ret = 1;
           }
         }
         else {
@@ -1072,9 +1072,9 @@ LAB_8015c900:
           *(undefined1 *)(_g_system_config_ptr + 7) = (undefined1)local_48;
           *(undefined1 *)(_g_system_config_ptr + 8) = (undefined1)local_46;
           *(undefined1 *)(_g_system_config_ptr + 9) = (undefined1)local_44;
-          iVar2 = (intptr_t)_g_system_config_ptr;
+          tmp = (intptr_t)_g_system_config_ptr;
           *(undefined1 *)(_g_system_config_ptr + 6) = (undefined1)local_42;
-          *(undefined1 *)(iVar2 + 5) = (undefined1)local_42;
+          *(undefined1 *)(tmp + 5) = (undefined1)local_42;
           *(undefined1 *)(_g_system_config_ptr + 0x11) = (undefined1)local_40;
           *(undefined1 *)(_g_system_config_ptr + 0x25) = (undefined1)local_3e;
           *(undefined1 *)(_g_system_config_ptr + 0x24) = (undefined1)local_36;
@@ -1085,10 +1085,10 @@ LAB_8015c900:
         DAT_1f800001 = 0xff;
         goto joined_r0x8015c784;
       }
-      if ((DAT_1f800001 == 0) && (iVar2 = frame_divisor_get(), iVar2 == 0)) {
+      if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
         print_mode_dispatch_b(2,0,0);
-        iVar2 = intro_movie_state(0);
-        if (iVar2 != 0) {
+        tmp = intro_movie_state(0);
+        if (tmp != 0) {
           deferred_cmd_post(0x203,0,0);
           /* desc+0xc is read by menu_stepper_state_advance as a u32 GUEST
            * code address (fn_lookup -> call_guest fallback). Guest stores
@@ -1164,12 +1164,12 @@ LAB_8015ca68:
 undefined4 system_config_menu_b(void)
 
 {
-  intptr_t iVar1;
-  int iVar2;
-  uint uVar3;
-  byte *pbVar4;
-  uint uVar5;
-  undefined4 uVar6;
+  intptr_t cfg_base;
+  int tmp;
+  uint cfg_flags;
+  byte *cfg_ptr;
+  uint step_arg;
+  undefined4 ret;
   /* Guest stepper descriptor: one contiguous 0x28-byte block at
    * sp+0x10..0x37 passed to menu_stepper_button_wait (a0 = sp+0x10).
    * The +0xc callback is a u32 GUEST code address like every other
@@ -1206,82 +1206,82 @@ undefined4 system_config_menu_b(void)
 #define local_44 (*(uint16_t *)&step_desc_b[0x24])
 #define local_42 (*(uint16_t *)&step_desc_b[0x26])
   
-  iVar1 = (intptr_t)_g_system_config_ptr;
-  uVar6 = 0;
-  uVar5 = 0;
+  cfg_base = (intptr_t)_g_system_config_ptr;
+  ret = 0;
+  step_arg = 0;
   _DAT_1f80008c = 0;
-  pbVar4 = (byte *)(_g_system_config_ptr + 0x38);
+  cfg_ptr = (byte *)(_g_system_config_ptr + 0x38);
 joined_r0x8015b9e0:
   /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
    * writes DAT_1f800001 = 0); see system_config_menu_a. */
   { extern int br2_bail_pending(void);
     extern void br2_guest_frame_abandon(void);
-    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return uVar6; } }
+    if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
       DAT_1f800001 = 0;
       br2_guest_frame_free();
-      return uVar6;
+      return ret;
     }
     if (DAT_1f800001 == 1) {
 LAB_8015bbd8:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
         DAT_1f800001 = 0xf0;
-        uVar6 = 1;
+        ret = 1;
       }
       if ((local_60 == local_62) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
         DAT_1f800001 = 0xf0;
-        uVar6 = 1;
+        ret = 1;
       }
-      menu_stepper_button_wait(&local_68,uVar5);
+      menu_stepper_button_wait(&local_68,step_arg);
       hud_gauge_render(0x1f800000,_DAT_1f800008,1);
     }
     else {
       if (1 < DAT_1f800001) {
         if (DAT_1f800001 == 0xf0) {
-          *pbVar4 = (byte)local_54;
-          *(undefined1 *)(iVar1 + 0x39) = (undefined1)local_52;
-          *(undefined1 *)(iVar1 + 0x3a) = (undefined1)local_50;
+          *cfg_ptr = (byte)local_54;
+          *(undefined1 *)(cfg_base + 0x39) = (undefined1)local_52;
+          *(undefined1 *)(cfg_base + 0x3a) = (undefined1)local_50;
           if (local_4e == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xffffdfff;
+            cfg_flags = *(uint *)(cfg_base + 0x40) & 0xffffdfff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x2000;
+            cfg_flags = *(uint *)(cfg_base + 0x40) | 0x2000;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
-          *(undefined1 *)(iVar1 + 0x3b) = (undefined1)local_4c;
-          *(undefined1 *)(iVar1 + 0x3c) = (undefined1)local_4a;
+          *(uint *)(cfg_base + 0x40) = cfg_flags;
+          *(undefined1 *)(cfg_base + 0x3b) = (undefined1)local_4c;
+          *(undefined1 *)(cfg_base + 0x3c) = (undefined1)local_4a;
           if (local_48 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x40;
+            cfg_flags = *(uint *)(cfg_base + 0x40) | 0x40;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xffffffbf;
+            cfg_flags = *(uint *)(cfg_base + 0x40) & 0xffffffbf;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg_base + 0x40) = cfg_flags;
           if (local_46 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xfffff7ff;
+            cfg_flags = *(uint *)(cfg_base + 0x40) & 0xfffff7ff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x800;
+            cfg_flags = *(uint *)(cfg_base + 0x40) | 0x800;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg_base + 0x40) = cfg_flags;
           if (local_44 == 0) {
-            uVar3 = *(uint *)(iVar1 + 0x40) & 0xfffffbff;
+            cfg_flags = *(uint *)(cfg_base + 0x40) & 0xfffffbff;
           }
           else {
-            uVar3 = *(uint *)(iVar1 + 0x40) | 0x400;
+            cfg_flags = *(uint *)(cfg_base + 0x40) | 0x400;
           }
-          *(uint *)(iVar1 + 0x40) = uVar3;
+          *(uint *)(cfg_base + 0x40) = cfg_flags;
           deferred_cmd_post(0x203,0,0);
         }
         else if (DAT_1f800001 != 0xf1) goto LAB_8015bd78;
         DAT_1f800001 = 0xff;
         goto joined_r0x8015b9e0;
       }
-      if (((DAT_1f800001 == 0) && (iVar2 = frame_divisor_get(), iVar2 == 0)) &&
-         (iVar2 = intro_movie_state(0), iVar2 != 0)) {
+      if (((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) &&
+         (tmp = intro_movie_state(0), tmp != 0)) {
         deferred_cmd_post(0x203,0,0);
         local_5c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
         local_62 = 0xb;
@@ -1294,18 +1294,18 @@ LAB_8015bbd8:
         local_60 = 1;
         local_56 = 0xffff;
         local_42 = 0;
-        local_54 = (ushort)*pbVar4;
-        local_52 = (ushort)*(byte *)(iVar1 + 0x39);
-        local_50 = (ushort)*(byte *)(iVar1 + 0x3a);
-        local_4e = (ushort)(*(uint *)(iVar1 + 0x40) >> 0xd) & 1;
-        local_4c = (ushort)*(byte *)(iVar1 + 0x3b);
-        local_4a = (ushort)*(byte *)(iVar1 + 0x3c);
-        local_48 = ((ushort)(*(uint *)(iVar1 + 0x40) >> 6) ^ 1) & 1;
-        local_46 = (ushort)(*(uint *)(iVar1 + 0x40) >> 0xb) & 1;
-        local_44 = (ushort)(*(uint *)(iVar1 + 0x40) >> 10) & 1;
-        uVar5 = *(uint *)(iVar1 + 0x44);
-        uVar5 = (uVar5 & 1) << 2 | 0xc03 | uVar5 >> 0xd & 8 | uVar5 >> 9 & 0x10 | uVar5 >> 9 & 0x20
-                | uVar5 >> 9 & 0x40 | (uVar5 & 0x40) << 1 | uVar5 >> 3 & 0x100 | uVar5 >> 1 & 0x200;
+        local_54 = (ushort)*cfg_ptr;
+        local_52 = (ushort)*(byte *)(cfg_base + 0x39);
+        local_50 = (ushort)*(byte *)(cfg_base + 0x3a);
+        local_4e = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xd) & 1;
+        local_4c = (ushort)*(byte *)(cfg_base + 0x3b);
+        local_4a = (ushort)*(byte *)(cfg_base + 0x3c);
+        local_48 = ((ushort)(*(uint *)(cfg_base + 0x40) >> 6) ^ 1) & 1;
+        local_46 = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xb) & 1;
+        local_44 = (ushort)(*(uint *)(cfg_base + 0x40) >> 10) & 1;
+        step_arg = *(uint *)(cfg_base + 0x44);
+        step_arg = (step_arg & 1) << 2 | 0xc03 | step_arg >> 0xd & 8 | step_arg >> 9 & 0x10 | step_arg >> 9 & 0x20
+                | step_arg >> 9 & 0x40 | (step_arg & 0x40) << 1 | step_arg >> 3 & 0x100 | step_arg >> 1 & 0x200;
         sprite_desc_table_init();
         print_mode_dispatch_b(2,0,0);
         _DAT_801e8508 = 0;
