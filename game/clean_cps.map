@@ -4597,9 +4597,6 @@
 801268b8 cps_801268b8
 
 # scriptop_chk_state_bits (game/w2_e08.c) — scriptop_chk cond cases 2-9
-# (state-word bit tests at ctrl+0x58) + shared mask/xor tails and the
-# shared `jr $ra` epilogue. Entries 0x80183D0C-0x80183DA8 plus CPS
-# resume PCs 0x80183D50/0x80183DB0/0x80183DBC/0x80183FE4/0x80184358.
 80183d0c scriptop_chk_state_bits
 80183d24 scriptop_chk_state_bits
 80183d3c scriptop_chk_state_bits
@@ -4613,9 +4610,6 @@
 80183dbc scriptop_chk_state_bits
 80183fe4 scriptop_chk_state_bits
 80184358 scriptop_chk_state_bits
-# fighter_script_fsm_cps (game/w2_e01.c) — CPS piece-entries inside the
-# fighter_script_fsm (0x80181F20) continuation surface. All eight addrs
-# share the one clean CPS body (215-block pc-switch transliteration).
 80181ff8 fighter_script_fsm_cps
 80182090 fighter_script_fsm_cps
 801822d0 fighter_script_fsm_cps
@@ -4625,18 +4619,8 @@
 8018287c fighter_script_fsm_cps
 80182960 fighter_script_fsm_cps
 
-# w2_e06 — continuation pieces of guest fn 0x801835D0 (script-operand
-# compare/select family). The clean CPS body cps_801835d0 (game/cps_clean.c)
-# already contains block_80183630 and block_80183648 verbatim.
 80183630 cps_801835d0
 80183648 cps_801835d0
-
-
-# --- w2_e04: ScriptVM bra/bsr opcode CPS piece-entries ---
-# scriptop_bra_cps (game/w2_e04.c) — faithful CPS body of generated
-# br2eu_func_80182F48 covering piece-entry 0x801831E0 and every
-# continuation/resume block of the bra opcode handler. Sibling piece
-# entries (0x80182FF0-0x8018310C) stay generated / owned by other ports.
 80182f80 scriptop_bra_cps
 80182f9c scriptop_bra_cps
 80182fb8 scriptop_bra_cps
@@ -4667,10 +4651,6 @@
 80183224 scriptop_bra_cps
 80183228 scriptop_bra_cps
 8018322c scriptop_bra_cps
-# scriptop_bsr_cps (game/w2_e04.c) — faithful CPS body of generated
-# br2eu_func_80183248 covering piece-entries 0x801832F0-0x80183418 and
-# every continuation/resume block of the bsr opcode handler. Sibling
-# piece entries 0x80183430/0x8018344C/0x80183514 stay generated.
 80183280 scriptop_bsr_cps
 8018329c scriptop_bsr_cps
 801832b8 scriptop_bsr_cps
@@ -4707,19 +4687,46 @@
 80183524 scriptop_bsr_cps
 80183530 scriptop_bsr_cps
 8018353c scriptop_bsr_cps
-
-
-# scriptop_wait (guest 0x80183664) alias piece-entries — six mid-function
-# CPS re-entry addrs inside the shared wait-op body (game/w2_e07.c).
 80183964 scriptop_wait_cps_80183964
 8018397c scriptop_wait_cps_8018397c
 80183988 scriptop_wait_cps_80183988
 80183a48 scriptop_wait_cps_80183a48
 80183a74 scriptop_wait_cps_80183a74
 80183aa4 scriptop_wait_cps_80183aa4
-
-# scriptop_chk (guest 0x80183C30) continuation PCs — two mid-function
-# CPS re-entry addrs inside the shared chk-op body (game/w2_e07.c).
 80183ce4 scriptop_chk_cps_80183ce4
 80183cf0 scriptop_chk_cps_80183cf0
-
+801800a4 hitbox_xform_node_commit
+801800d4 hitbox_xform_node_commit
+80180134 hitbox_xform_node_commit
+80180140 hitbox_xform_node_commit
+80180184 hitbox_xform_node_commit
+80180190 hitbox_xform_node_commit
+801802cc hitbox_xform_flag_pair
+801802e0 hitbox_xform_flag_pair
+80180364 hitbox_xform_flag_pair
+80180370 hitbox_xform_flag_pair
+801803b4 hitbox_xform_flag_pair
+801803c0 hitbox_xform_flag_pair
+80180504 hitbox_xform_flag_pair
+80180564 hitbox_xform_flag_pair
+801805dc hitbox_xform_flag_pair
+801805e8 hitbox_xform_flag_pair
+8018062c hitbox_xform_flag_pair
+80180638 hitbox_xform_flag_pair
+8018077c hitbox_xform_flag_pair
+801807f0 hitbox_xform_flag_pair
+801807f8 hitbox_xform_flag_pair
+80180804 hitbox_xform_flag_pair
+80180848 hitbox_xform_flag_pair
+80180854 hitbox_xform_flag_pair
+8018098c hitbox_xform_epilogue
+80180998 hitbox_xform_epilogue
+80181000 pair_update_attach_tail
+80181008 pair_update_attach_tail
+80181018 pair_update_attach_tail
+80181034 pair_update_attach_tail
+8018103c pair_update_attach_tail
+80181ee8 ani_cat_tail_zero
+80181ef0 ani_cat_tail_v2
+80181f10 ani_cat_tail_nine
+80181f18 ani_cat_tail_ret
