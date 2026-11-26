@@ -25795,3 +25795,164 @@ block_8018D2E0:
     cpu->pc = 0x8018d2ecu; return;  /* fallthrough to split piece */
     cpu->pc = 0x8018d2ecu; return;/* fallthrough to next function */
 }
+void cpst_801a1e58(void);
+void cpst_801a9ed0(void);
+void cpst_8019ff2c(void);
+
+/* cpst_801a1e58 — clean CPS transliteration of br2eu_func_801A1E4C (guest 0x801a1e58)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a1e58(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801A1E4C, Size: 12 bytes, Blocks: 1 */
+
+block_801A1E58:
+    if (psx_slice_block(cpu, 0x801A1E58u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A1E4Cu);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801A1E54 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    if (_bc_801A1E54) {
+        psx_check_interrupts_at(cpu, 0x801A1E70u);
+        cpu->pc = 0x801A1E70u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A1E5Cu);
+        cpu->pc = 0x801A1E5Cu; return;  /* CPS not taken: split */
+    }
+    cpu->pc = 0x801a1e58u; return;/* fallthrough to next function */
+}
+
+/* cpst_801a9ed0 — clean CPS transliteration of br2eu_func_801A9ED0 (guest 0x801a9ed0)
+ * from SLES_017.22_full_52.c. */
+void cpst_801a9ed0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801A9ED0, Size: 4 bytes, Blocks: 1 */
+
+block_801A9ED0:
+    if (psx_slice_block(cpu, 0x801A9ED0u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A9ED0u);
+    psx_cyc_step(cpu, 0x1001u);
+    t4 = 3;
+    cpu->pc = 0x801a9ed4u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9ed4u; return;/* fallthrough to next function */
+}
+
+/* cpst_8019ff2c — clean CPS transliteration of br2eu_func_8019FF2C (guest 0x8019ff2c)
+ * from SLES_017.22_full_48.c. */
+void cpst_8019ff2c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x8019FF2C, Size: 4 bytes, Blocks: 1 */
+
+block_8019FF2C:
+    if (psx_slice_block(cpu, 0x8019FF2Cu, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x8019FF2Cu);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = zero;
+    cpu->pc = 0x8019ff30u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x8019ff30u; return;/* fallthrough to next function */
+}
+void cpst_801a1edc(void);
+void cpst_801a9e38(void);
+void cpst_801aa5c8(void);
+void cpst_801a1dd4(void);
+void cpst_801aedb8(void);
+
+/* cpst_801a1edc — clean CPS transliteration of br2eu_func_801A1EDC (guest 0x801a1edc)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a1edc(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801A1EDC, Size: 4 bytes, Blocks: 1 */
+
+block_801A1EDC:
+    if (psx_slice_block(cpu, 0x801A1EDCu, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A1EDCu);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 3;
+    cpu->pc = 0x801a1ee0u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1ee0u; return;/* fallthrough to next function */
+}
+
+/* cpst_801a9e38 — clean CPS transliteration of br2eu_func_801A9E38 (guest 0x801a9e38)
+ * from SLES_017.22_full_52.c. */
+void cpst_801a9e38(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801A9E38, Size: 4 bytes, Blocks: 1 */
+
+block_801A9E38:
+    if (psx_slice_block(cpu, 0x801A9E38u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A9E38u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 2;
+    cpu->pc = 0x801a9e3cu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a9e3cu; return;/* fallthrough to next function */
+}
+
+/* cpst_801aa5c8 — clean CPS transliteration of br2eu_func_801AA5C8 (guest 0x801aa5c8)
+ * from SLES_017.22_full_52.c. */
+void cpst_801aa5c8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801AA5C8, Size: 4 bytes, Blocks: 1 */
+
+block_801AA5C8:
+    if (psx_slice_block(cpu, 0x801AA5C8u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AA5C8u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = -2;
+    cpu->pc = 0x801aa5ccu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aa5ccu; return;/* fallthrough to next function */
+}
+
+/* cpst_801a1dd4 — clean CPS transliteration of br2eu_func_801A1DD4 (guest 0x801a1dd4)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a1dd4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801A1DD4, Size: 4 bytes, Blocks: 1 */
+
+block_801A1DD4:
+    if (psx_slice_block(cpu, 0x801A1DD4u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A1DD4u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = zero;
+    cpu->pc = 0x801a1dd8u; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801a1dd8u; return;/* fallthrough to next function */
+}
+
+/* cpst_801aedb8 — clean CPS transliteration of br2eu_func_801AEDB8 (guest 0x801aedb8)
+ * from SLES_017.22_full_53.c. */
+void cpst_801aedb8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    /* Address: 0x801AEDB8, Size: 4 bytes, Blocks: 1 */
+
+block_801AEDB8:
+    if (psx_slice_block(cpu, 0x801AEDB8u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AEDB8u);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    cpu->pc = 0x801aedbcu; return;  /* fallthrough to split piece */
+    cpu->pc = 0x801aedbcu; return;/* fallthrough to next function */
+}

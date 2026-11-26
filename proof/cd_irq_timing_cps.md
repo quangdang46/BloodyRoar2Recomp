@@ -474,3 +474,24 @@ wrappers, now retargeted to cpst_). 5 skips unchanged (legit set).
 Verified: clean build EU + USA; headless :4931 frames 42689 -> 47620+
 attract CD streaming, no wedge. clean_stats: 0 hits in window
 (infrequent leaves — faithful-by-construction).
+
+## Batch 16 (orch/w5/e05) — transformer fix: exact-entry match + 8 leaves
+
+Transformer fix in gen_cps_clean.py find_body(): it kept the LARGEST
+body covering an addr, so addrs that are BOTH a standalone generated
+piece (br2eu_func_<addr>) AND an instruction anchor inside a larger
+parent resolved to the parent — then _truncate_embedded_entry refused
+(non-first-block) and emitted nothing. 5 of 8 candidates failed this
+way (801a1edc/801a9e38/801aa5c8/801a1dd4/801aedb8 — all 4-byte embedded
+pieces). Fix: exact function-name match (name endswith _<addr>) now
+wins immediately; largest-body fallback retained for true continuations.
+Verified: cpst_801a1edc now emits the correct standalone 4-byte piece
+(v0=3; pc=1EE0) matching untimed cps_ semantics, timed.
+
+8 bodies -> cpst_, 8 map rows: 801a1e58, 801a9ed0, 8019ff2c,
+801a1edc, 801a9e38, 801aa5c8, 801a1dd4, 801aedb8. Fallthrough pieces
+stay generated.
+
+clean_table: 8750 wrappers, 5 skips (unchanged legit set).
+Verified: clean build EU + USA; headless :4937 frames 43061 -> 52410+
+attract CD streaming, no wedge.
