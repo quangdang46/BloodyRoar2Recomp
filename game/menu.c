@@ -4870,15 +4870,15 @@ void battle_struct_init(uint32_t baddr, uint32_t sub)
  * Disasm 0x801358e8-0x80135a10. */
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern void record_table_select(int32_t,int32_t);
-int32_t per_side_setup(int32_t param_1, int32_t param_2)
+int32_t per_side_setup(int32_t side, int32_t player)
 {
   const uint32_t s0 = 0x801f04a8u;
-  const uint32_t s2 = ((uint32_t)param_1 << 4) + 0x8011fda0u;
+  const uint32_t s2 = ((uint32_t)side << 4) + 0x8011fda0u;
   uint16_t *D = (uint16_t *)guest_at(s0 + 0x34);
   const uint16_t *S = (const uint16_t *)guest_at(s2);
   uint32_t c0, fn, t;
   int32_t i, lhs, rhs;
-  record_table_select(param_1,param_2);
+  record_table_select(side,player);
   *(uint16_t *)guest_at(s0 + 0x1e) = 0;
   c0  = MB32(0x1f8000c0);
   lhs = (int32_t)(int8_t)MB8(0x1f800099) + 1;
@@ -4891,7 +4891,7 @@ int32_t per_side_setup(int32_t param_1, int32_t param_2)
     D[8 + i]  = 0;
     D[12 + i] = 0;
   }
-  if (param_2 == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
+  if (player == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
   t = 0x801b1774u +
       (uint32_t)((int32_t)((uint32_t)MB8(0x1f800098) << 24) >> 22);
   fn = MB32(t);
@@ -4916,11 +4916,11 @@ extern void battle_subrecord_reset(uint32_t);
 extern void battle_subrecord_set1(uint32_t);
 extern void s16_dec_with_floor(uint32_t);
 extern void post_battle_side_commit(uint8_t *,uint8_t *,uint32_t);
-void battle_sides_commit(uint8_t *param_1, uint8_t *param_2, uint32_t param_3)
+void battle_sides_commit(uint8_t *ab_a, uint8_t *ab_b, uint32_t baddr)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(param_3);
-  uint8_t *s2 = param_1;
-  uint8_t *s3 = param_2;
+  uint8_t *s1 = (uint8_t *)guest_at(baddr);
+  uint8_t *s2 = ab_a;
+  uint8_t *s3 = ab_b;
   uint32_t s0 = 0;
   int32_t t;
   uint8_t b92;
@@ -4931,21 +4931,21 @@ void battle_sides_commit(uint8_t *param_1, uint8_t *param_2, uint32_t param_3)
   }
   s1[0x9d] = 1;
 L_eval:
-  s0 |= (uint32_t)battle_config_eval(s2,param_3,0);
-  s0 |= (uint32_t)battle_config_eval(s3,param_3,0);
+  s0 |= (uint32_t)battle_config_eval(s2,baddr,0);
+  s0 |= (uint32_t)battle_config_eval(s3,baddr,0);
   if (s1[0x92] == 4)
-    battle_input_dispatch(param_3,s0 & 0xffff);
-  if ((int16_t)MB16((param_3) + 0x82) != 0) return;
+    battle_input_dispatch(baddr,s0 & 0xffff);
+  if ((int16_t)MB16((baddr) + 0x82) != 0) return;
   b92 = s1[0x92];
   if (b92 >= 5) return;
   switch (b92) {
   case 0: {
-    uint32_t bc = MB32(param_3 + 0xbc);
+    uint32_t bc = MB32(baddr + 0xbc);
     *(uint16_t *)guest_at(bc + 0x82) = (uint16_t)-1;
     battle_field_set(bc,3);
     clear_f0300_records();
     *(uint16_t *)(s1 + 0x8c) = 0;
-    battle_subrecord_reset(param_3);
+    battle_subrecord_reset(baddr);
     *(uint16_t *)(s1 + 0x92) =
       (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 1);
     break;
@@ -4961,13 +4961,13 @@ L_eval:
   case 3:
     *(uint32_t *)(s2 + 0x60) = 0;
     *(uint32_t *)(s3 + 0x60) = 0;
-    battle_subrecord_set1(param_3);
+    battle_subrecord_set1(baddr);
     *(uint16_t *)(s1 + 0x92) =
       (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 4);
     /* fallthrough */
   case 4:
-    s16_dec_with_floor(param_3);
-    post_battle_side_commit(s2,s3,param_3);
+    s16_dec_with_floor(baddr);
+    post_battle_side_commit(s2,s3,baddr);
     if (s0 & 0x100) {
       s1[0x9a] = 2;
       s1[1]    = 6;
@@ -5187,13 +5187,13 @@ static void blk_copy(uint32_t dst, uint32_t src, uint32_t len)
  * packed controller/option byte at +0x2358 (self-ptr slot also
  * receives the +0x16d0 host-visible cursor). Returns bit7 of the
  * second side's +0x264 flag word (v0 left live at jr $ra). */
-int32_t results_record_build(int32_t param_1, int32_t param_2)
+int32_t results_record_build(int32_t idx, int32_t val)
 {
   const uint32_t a0 = 0x1f800000u;
-  uint32_t a3 = 0x801c47c0u + ((uint32_t)param_1 * 0x235cu);
+  uint32_t a3 = 0x801c47c0u + ((uint32_t)idx * 0x235cu);
   uint32_t pa, pb, f, bit;
 
-  MW16(a3 + 0, (uint16_t)param_2);          /* sh $a2,($a3) */
+  MW16(a3 + 0, (uint16_t)val);          /* sh $a2,($a3) */
   MW16(a3 + 2, MB16(a0 + 0x94));            /* sh lhu 0x94(a0),2 */
 
   blk_copy(a3 + 0x16cc, 0x1f8000e8, 0x210);
@@ -5234,9 +5234,9 @@ int32_t results_record_build(int32_t param_1, int32_t param_2)
  * v1[0]=2, v1[2..0xe even u16s = 0; memcpy v1+0x18 <- 0x801e1b3c
  * (0x21c0), v1+0x21d8 <- 0x801e0f6c (0xbd0); then
  * results_record_build(a0, 3, lh v1+6). a0 = guest battle base. */
-void battle_subrecord_reset(uint32_t param_1)
+void battle_subrecord_reset(uint32_t baddr)
 {
-  uint32_t v1 = MB32(param_1 + 0xcc);
+  uint32_t v1 = MB32(baddr + 0xcc);
   uint8_t *p = (uint8_t *)guest_at(v1);
   MW16(v1 + 0,    2);
   MW16(v1 + 2,    0);
@@ -5252,9 +5252,9 @@ void battle_subrecord_reset(uint32_t param_1)
 }
 
 /* battle_subrecord_set1 — *(u16*)(*(u32*)(a0+0xcc)) = 1. */
-void battle_subrecord_set1(uint32_t param_1)
+void battle_subrecord_set1(uint32_t baddr)
 {
-  MW16(MB32(param_1 + 0xcc), 1);
+  MW16(MB32(baddr + 0xcc), 1);
 }
 
 /* menu_stepper_masked_sweep — masked menu-stepper sweep: cb(+0xc)(p,0x100); for
@@ -5263,9 +5263,9 @@ void battle_subrecord_set1(uint32_t param_1)
  * cb(p,(s0+0x100)&0xffff); finally cb(p,0x1ff). p+0xc = u32 guest cb. */
 extern void menu_row_paint(void *);
 extern void menu_row_paint_b(void *);
-void menu_stepper_masked_sweep(void *param_1, uint32_t param_2)
+void menu_stepper_masked_sweep(void *desc, uint32_t mask)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   /* p+0xc is a u32 GUEST code address (guest lw/jalr) — resolve via
    * fn_lookup like menu_stepper_redraw, not a host pointer. */
   uint32_t cb_g = *(uint32_t *)(p + 0xc);
@@ -5273,16 +5273,16 @@ void menu_stepper_masked_sweep(void *param_1, uint32_t param_2)
       (void (*)(void *,uint32_t))fn_lookup(cb_g);
   uint32_t s0;
 #define CB_CALL(code_) do { \
-    if (cb != NULL) cb(param_1,(code_)); \
-    else            call_guest(cb_g,guest_of(param_1),(code_)); \
+    if (cb != NULL) cb(desc,(code_)); \
+    else            call_guest(cb_g,guest_of(desc),(code_)); \
   } while (0)
   CB_CALL(0x100);
   if (*(uint16_t *)(p + 6) == 0) goto L_tail;
   s0 = 1;
   for (;;) {
-    if (((param_2 >> (s0 & 31)) & 1) != 0) {
-      if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(param_1);
-      else                            menu_row_paint(param_1);
+    if (((mask >> (s0 & 31)) & 1) != 0) {
+      if (s0 != *(uint16_t *)(p + 8)) menu_row_paint_b(desc);
+      else                            menu_row_paint(desc);
       CB_CALL((s0 + 0x100) & 0xffff);
     }
     s0++;
@@ -5297,24 +5297,24 @@ L_tail:
  * sfx: on 0x2000 frame ++ (wrap to 0 when a1 < new), on 0x8000 frame
  * -- (reload a1 on underflow); a2 != 0 triggers deferred_cmd_post(0x400,
  * 0xb,0). Returns whether the s16 value changed. */
-int u16_counter_step_pad_a(uint32_t param_1, int32_t param_2, int32_t param_3)
+int u16_counter_step_pad_a(uint32_t baddr, int32_t clamp, int32_t flag)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(param_1);
+  uint8_t *s0 = (uint8_t *)guest_at(baddr);
   int16_t  s4 = *(int16_t *)s0;
-  uint32_t s5 = (uint32_t)param_2;
+  uint32_t s5 = (uint32_t)clamp;
   uint32_t pad = MB16(0x1f80007e);
 
   if (pad == 0x2000) {
     uint16_t v1;
-    if (param_3 != 0) deferred_cmd_post(0x400,0xb,0);
+    if (flag != 0) deferred_cmd_post(0x400,0xb,0);
     v1 = (uint16_t)(*(uint16_t *)s0 + 1);
     *(uint16_t *)s0 = v1;
-    if ((int32_t)((uint32_t)param_2 << 16) < (int32_t)(v1 << 16))
+    if ((int32_t)((uint32_t)clamp << 16) < (int32_t)(v1 << 16))
       *(uint16_t *)s0 = 0;
   }
   if (MB16(0x1f80007e) == 0x8000) {
     uint16_t v0;
-    if (param_3 != 0) deferred_cmd_post(0x400,0xb,0);
+    if (flag != 0) deferred_cmd_post(0x400,0xb,0);
     v0 = (uint16_t)(*(uint16_t *)s0 - 1);
     *(uint16_t *)s0 = v0;
     /* sh $s5,(s0) sits in the bgez delay slot and both branch
