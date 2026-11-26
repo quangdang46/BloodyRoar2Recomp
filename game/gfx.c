@@ -514,11 +514,12 @@ uint32_t gpu_graph_reset(uint32_t arg)
   uint32_t v;
   
   v = arg & 7;
-  if (v == 3) {
-LAB_80190e4c:
-    printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
-                 (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
-LAB_80190e68:
+  if (v == 0 || v == 3 || v == 5) {
+    /* v==0/3 print the banner; v==5 enters at the memset (no print). */
+    if (v != 5) {
+      printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
+                   (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
+    }
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
@@ -531,10 +532,6 @@ LAB_80190e68:
     v = (uint32_t)gpu_mode;
   }
   else {
-    if (v < 4) {
-      if (v == 0) goto LAB_80190e4c;
-    }
-    else if (v == 5) goto LAB_80190e68;
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
@@ -564,6 +561,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   int std_idx;
   uint32_t tc;
   uint32_t tot;
+  int clamp_tot;
   uint16_t *env;
   uint16_t *timing_tbl;
   uint8_t  *timing_b;
@@ -618,9 +616,8 @@ uint32_t draw_env_timing(uint32_t env_g)
     gpu_call(0x10,tc,0,0,0);
     *(uint8_t *)(env + 9) = 8;
   }
-  if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
-     ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
-   goto LAB_80191e74;
+  if (!(((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
+       ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
   tc = (int)(short)env[5] + 0x13;
@@ -668,9 +665,9 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     tc = td + 2;
     narrow = (int)tot < 0x103;
-    if ((int)tc <= (int)tot) {
+    clamp_tot = ((int)tc <= (int)tot);
+    if (clamp_tot) {
       tc = 0x102;
-      goto LAB_80191e0c;
     }
   }
   else {
@@ -693,17 +690,17 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     narrow = (int)tot < 0x132;
     tc = td + 2;
-    if ((int)(td + 2) <= (int)tot) {
+    clamp_tot = ((int)(td + 2) <= (int)tot);
+    if (clamp_tot) {
       tc = 0x131;
-LAB_80191e0c:
-      if (narrow) {
-        tc = tot;
-      }
     }
+  }
+  if (clamp_tot && narrow) {
+    tc = tot;
   }
   gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
-LAB_80191e74:
+  }
   guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
   return env_g;
 }
@@ -1318,9 +1315,6 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
   uint8_t *st = (uint8_t *)guest_at(st_g);
   attr = *(uint32_t *)(st + 0xc);
   switch (variant & 0xf) {
-  default:
-    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
-    goto LAB_8012c4f8;
   case 1:
     col_d = 0; col_c = 0x1000; col_a = 0x3000; col_b = 0x3000;
     v = 1;
@@ -1351,15 +1345,29 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
     break;
   case 8:
     col_d = 0; col_c = 0x80; col_a = 0x800000; col_b = 0x200000;
-    goto LAB_8012c4f8;
+    v = 0;
+    break;
   case 9:
     col_d = 0x800000; col_c = 0; col_a = 0x80; col_b = 0x20;
-LAB_8012c4f8:
+    v = 0;
+    break;
+  default:
+    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
     v = 0;
   }
   variant = variant & 0xf0;
-  if (variant == 0x20) {
-LAB_8012c64c:
+  if (variant == 0x20 || variant == 0x00) {
+    if (variant == 0x00) {
+      cell = head_g + 4;
+      hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
+                   (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+      hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
+                   (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
+      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+    }
     cell = head_g + 4;
     spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
@@ -1373,43 +1381,28 @@ LAB_8012c64c:
     sprite_node_emit_b(cell,((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff,0xfefe001f,
                  ((uint32_t)(v << 6) | 0x7c16U) << 0x10,0x80,1);
-LAB_8012cb64:
     x = *(int16_t *)(st + 0x20);
     v = (int32_t)*(int16_t *)(st + 0x22);
     cell = 0;
-  } else {
-    if (variant < 0x21) {
-      if (variant == 0) {
-        cell = head_g + 4;
-        hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
-                     (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
-        hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
-                     (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-        goto LAB_8012c64c;
-      }
-      if (variant != 0x10) return;
+  } else if (variant == 0x30) {
+    cell = head_g + 4;
+    spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
+    spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
+    spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
+    spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
+    spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
+                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
+                 ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+    sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
+                 col_a,0,col_a,0,2);
+    x = *(int16_t *)(st + 0x20);
+    v = (int32_t)*(int16_t *)(st + 0x22);
+    cell = 0;
+  } else if (variant == 0x10 || variant == 0x40) {
+    if (variant == 0x10) {
       hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
       spr_slot_pkt_submit((uint32_t *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-    } else {
-      if (variant == 0x30) {
-        cell = head_g + 4;
-        spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
-        spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
-        spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
-        spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
-                     ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
-                     ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
-        sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
-                     col_a,0,col_a,0,2);
-        goto LAB_8012cb64;
-      }
-      if (variant != 0x40) return;
     }
     v = head_g + 4;
     hud_text_d(v,attr,guest_at(0x8011f10c),0xc0,
@@ -1430,6 +1423,8 @@ LAB_8012cb64:
     v = *(int16_t *)(st + 0x22) - cell;
     col_c = col_a;
     col_b = col_a;
+  } else {
+    return;
   }
   sprite_node_emit_a(head_g + 4,0,cell,(int32_t)x,v,(int32_t)col_c,(int32_t)col_b,0,(int32_t)col_d,0);
 }
