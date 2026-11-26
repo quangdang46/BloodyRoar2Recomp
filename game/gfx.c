@@ -1544,7 +1544,8 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         apn = ap;
         switch (*fmt) {
         case 0:
-          goto spec_flush;                      /* dangling '%' -> flush+ret */
+          console_pct();                        /* dangling '%' -> flush+ret */
+          return (uint32_t)count;
         case 0x20:
           fp = fmt;
           if (sign == 0) sign = 0x20;
@@ -1771,8 +1772,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
     }
     fmt = fmt + 1;                                /* LAB_8018ebec_d */
   }
-spec_flush:                                        /* 0x8018EBC0 */
-  console_pct();
+  console_pct();                                /* 0x8018EBC0 */
   return (uint32_t)count;
 }
 
@@ -4522,6 +4522,7 @@ void scene_node_walk(uint32_t a0)
   SCN_ST32(SCN_GPR(28) + 0x4c, SCN_GPR(4));          /* gp cache: ctx */
   SCN_ST32(SCN_GPR(28) + 0x50, SCN_GPR(5));          /* gp cache: a0[1] */
 
+  int entry_ok = 1;
   {
     int ne = (SCN_GPR(2) != SCN_GPR(3));
     SCN_GPR(2) = SCN_GPR(5);                          /* bne delay: v0=a1 */
@@ -4530,15 +4531,19 @@ void scene_node_walk(uint32_t a0)
     } else {
       /* flag == 1: resolve the first node through a1's header (801B0DF4). */
       SCN_GPR(6) = SCN_LD32(SCN_GPR(2) + 0x14);       /* a2 = *(a1+0x14) */
-      if (SCN_GPR(6) == 0) goto L_exit;               /* beqz a2 -> 801B1124 */
-      SCN_GPR(2) = SCN_LD32(SCN_GPR(2));              /* v0 = *a1 */
-      SCN_GPR(3) = SCN_LD32(SCN_GPR(4) + 0xc);        /* v1 = a0[3] */
-      SCN_GPR(2) = SCN_GPR(5) + SCN_GPR(2);           /* v0 = a1 + *a1 */
-      SCN_GPR(18) = SCN_GPR(5) + SCN_GPR(6);          /* delay: s2 = a1+a2 */
-      if (SCN_GPR(3) == SCN_GPR(2)) goto L_exit;      /* beq v1,v0 */
+      if (SCN_GPR(6) == 0) {                          /* beqz a2 -> 801B1124 */
+        entry_ok = 0;
+      } else {
+        SCN_GPR(2) = SCN_LD32(SCN_GPR(2));            /* v0 = *a1 */
+        SCN_GPR(3) = SCN_LD32(SCN_GPR(4) + 0xc);      /* v1 = a0[3] */
+        SCN_GPR(2) = SCN_GPR(5) + SCN_GPR(2);         /* v0 = a1 + *a1 */
+        SCN_GPR(18) = SCN_GPR(5) + SCN_GPR(6);        /* delay: s2 = a1+a2 */
+        if (SCN_GPR(3) == SCN_GPR(2)) entry_ok = 0;   /* beq v1,v0 */
+      }
     }
   }
 
+  if (entry_ok) {
   for (;;) {                                          /* L_loop 801B0E24 */
     SCN_GPR(5)  = SCN_LD32(SCN_GPR(18));              /* a1 = *s2 node word */
     SCN_GPR(4)  = SCN_GPR(18) + 2;                    /* a0 = s2+2 (lh base) */
@@ -4700,8 +4705,9 @@ void scene_node_walk(uint32_t a0)
     }
     if (done) break;                                  /* -> L_exit */
   }
+  }                                                  /* end entry_ok */
 
-L_exit:                                               /* 801B1124 epilogue */
+  /* 801B1124 epilogue */
   SCN_GPR(31) = SCN_LD32(sp + 0x28);
   SCN_GPR(19) = SCN_LD32(sp + 0x24);
   SCN_GPR(18) = SCN_LD32(sp + 0x20);
@@ -7767,7 +7773,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   g[2] = br2_ld16(g[20]);                /* lhu */
   g[18] |= 0x38Cu;                       /* delay slot: s2 += 0x38C */
   g[2] &= 0x4000u;
-  if (g[2] != 0) goto L_8018691C;        /* flag set -> epilogue */
+  if (g[2] == 0) {                           /* flag clear -> emit pass */
 
   /* ---- axis delta pass 1: x (mult by lh(g20+4)) ---- */
   g[3] = (int32_t)(int16_t)br2_ld16(g[21] + 8);   /* lh */
@@ -8063,8 +8069,9 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       (uint16_t *)guest_at(g[5]),
       (uint32_t *)guest_at(g[6])));
 
+  }                                          /* end flag-clear emit pass */
+
   /* ================= epilogue ================= */
-L_8018691C:
   g[31] = br2_ld32(fr + 108);
   g[30] = br2_ld32(fr + 104);
   g[23] = br2_ld32(fr + 100);
