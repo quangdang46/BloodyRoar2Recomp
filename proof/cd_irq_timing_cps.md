@@ -453,3 +453,24 @@ clean_table: 8741 wrappers, 5 skipped (unchanged legit set).
 Verified: clean build EU + USA; headless :4927 frames 7834 -> 14198+
 boot/attract, no wedge. clean_stats: new entries 0 hits in window
 (infrequent paths — faithful-by-construction).
+
+## Batch 15 (orch/w5/e05) — 8 smallest unrouted CD leaves -> cpst_
+
+Enumerated the remaining pool: 533 unrouted cps_ bodies >=0x8018 in
+cps_clean.c (the unconverted parent piece-groups). Took the 8 smallest
+(single-block, ~240-440B each):
+
+cpst_8018bb48, cpst_8018e024, cpst_8018da28, cpst_8018de68,
+cpst_8018d474, cpst_80191e14, cpst_8018d668 (has jalr _jt_),
+cpst_8018d2e0 — 8 clean_cps.map rows (entry-only; no _cont cases).
+
+Notable: cpst_80191e14 tail-dispatches to 0x80191E18 which now routes
+to batch-14's cpst_80191e18 — first timed->timed piece chain.
+All other fallthrough targets (8018BB4C/E028/DA2C/DE6C/D47C/D2EC)
+stay generated — faithful boundary, status quo.
+
+clean_table: 8742 wrappers (+1 new addr; 7 addrs already had fnmap
+wrappers, now retargeted to cpst_). 5 skips unchanged (legit set).
+Verified: clean build EU + USA; headless :4931 frames 42689 -> 47620+
+attract CD streaming, no wedge. clean_stats: 0 hits in window
+(infrequent leaves — faithful-by-construction).
