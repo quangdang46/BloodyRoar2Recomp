@@ -114,11 +114,11 @@ accept:
 /* ================================================================== */
 
 extern void *guest_at(uint32_t addr);
-extern int prim_task_run(int a0, uint32_t a1, uint32_t a2, int a3);
-extern uint32_t *gte_xform3_t_ip(uint32_t *a0, uint16_t *a1);
-extern int fx_group_alloc(uint32_t a0, uint32_t a1, int a2, int a3);
-extern uint32_t noop_c(int a0);
-extern void deferred_cmd_post(uint32_t a0, int a1, int16_t a2);
+extern int prim_task_run(int rec, uint32_t a1, uint32_t a2, int mode);
+extern uint32_t *gte_xform3_t_ip(uint32_t *rt, uint16_t *in);
+extern int fx_group_alloc(uint32_t pool, uint32_t kind, int ix, int iy);
+extern uint32_t noop_c(int u0);
+extern void deferred_cmd_post(uint32_t cmd, int arg, int16_t aux);
 
 /* Absolute guest-address cell access (guest addr -> host mirror). */
 #define GA8(a)   (*(const int8_t  *)guest_at(a))

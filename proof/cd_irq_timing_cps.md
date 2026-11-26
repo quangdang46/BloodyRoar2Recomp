@@ -331,3 +331,201 @@ sites introduced; conclusions unchanged.
 
 Verified: clean build EU+USA; headless :4889 frames 32698 -> 61246+
 attract CD streaming, no wedge.
+
+## Batch 11b (orch/w5/e05) — CD leaf-function sweep (8 bodies, 238 rows)
+
+Next tranche of 1-piece CD leaf parents + one medium body, all via
+--timing:
+| entry | fnmap name | blocks |
+|---|---|---|
+| 0x80195B4C | cd_bios_cmd20 | 1 |
+| 0x80195BF0 | cd_mode_byte_read | 1 |
+| 0x801962F0 | cd_stamp_to_sector | 1 |
+| 0x80197220 | cd_cmd_bytes | 1 |
+| 0x80199420 | cd_read_param_block | 1 |
+| 0x8019A7FC | cd_u16_swap_store | 1 |
+| 0x8019DAD0 | cd_chan_attr_push | 112 |
+| 0x801A1148 | cd_queue_a_read | 1 |
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4897 frames 29328 -> 57498 attract CD streaming, no wedge.
+clean_stats: new entries 0 hits in attract (init/query leaves —
+faithful-by-construction); cd_cmd_issue remains hot.
+
+Audit follow-up sweep (batch 11 continuation): cpu->pc literal writes
+(842 sites) are all CPS tail-dispatch contract inside cpst_/peer CPS
+bodies — they feed the outer dispatch loop, not bypasses. br2_irq_poll
+sites are framework IRQ delivery. No new generated-dispatch bypasses
+found; proof/generated_zero_audit.md conclusions stand.
+
+## Batch 11c (orch/w5/e05) — 10 more CD 1-block leaves (20 rows)
+
+cd_xchg_bc850(0x80195CA8), cd_status_bcc90(0x80199FFC), cd_xchg_bde20
+(0x8019B1D0), cd_mmio_strobe_22(0x8019BE50), cd_xchg_fec24(0x8019FA6C),
+cd_job_slots_reset(0x801A0A00), cd_xchg_fefb4(0x801A11E4),
+cd_xchg_fefb8(0x801A11F8), cd_state_clear(0x801A1A2C),
+cd_ctx_set_28_34(0x801A24C0) — all 1-block timed cpst_ bodies.
+
+clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
+headless :4901 frames 30684 -> 45772+ attract CD streaming, no wedge.
+
+## Batch 12 (orch/w5/e05) — dead cps_ body sweep + cps_clean.c slim
+
+Residual sweep result: ZERO untimed cps_ map rows >= 0x80180000; the only
+cps_ defs left in clean_cps.map are 0x8012-0x8017 game-logic (deliberately
+untimed). cps_clean.c carried 543 dead cps_ bodies in 0x8018-0x801B with
+no clean_cps.map rows — leftovers from earlier coverage passes where a
+body was emitted then its map rows were reassigned to cpst_/peer ports.
+
+Regeneration was REJECTED: ~19 addrs in 0x801261xx-0x801267xx (game-logic
+band) have hand-written/readability-pass bodies in cps_clean.c that the
+mechanical transformer cannot reproduce (e.g. embedded entries in later
+blocks of split pieces — _truncate_embedded_entry only handles first-block
+entries). A full regen would have lost those hand edits.
+
+Instead: surgical removal of the 543 dead defs (prototype + body) via
+script, verified symbol-exact: remaining defs = exactly the 740 syms that
+have clean_cps.map rows; no live def lost, no extra defs added.
+File: 115528 -> 67056 lines.
+
+Verified: clean build EU + USA targets; headless :4907 frames
+24143 -> 30733+ attract CD streaming, no wedge.
+
+Frontier status: every clean_cps.map row in 0x8018-0x801B resolves to a
+timed cpst_ body or a peer hand-port. Remaining generated execution is
+unconverted parent piece-groups (~1300) — mechanical --timing candidates.
+
+## Batch 13 (orch/w5/e05) — post-merge untimed-cps_ regression sweep
+
+After fast-forwarding to master 1c35503 (w5e01 cps-final-111 + w5e02
+cps-8018-gte merges), re-ran the untimed-cps_ sweep: master's map regen
+had re-introduced 6 rows pointing at UNTIMED cps_ bodies in the CD
+region — all were _cont resume addrs whose coverage batches 3/7 had
+already converted:
+
+- 8018f628/8018f6b4/8018f6e8 -> cps_8018ef6c  (sprintf/GPU-packet
+  interpreter continuations; timed body cpst_8018ef6c has all 3 as
+  _cont cases — verified case-insensitive, untimed body uses UPPERCASE
+  hex labels)
+- 80196718/80196798/80196818 -> cps_80196370  (cd_response_process
+  continuations; cpst_80196370 has all 3 block/case labels)
+
+Repointed all 6 rows to the cpst_ symbols. Post-fix: ZERO untimed cps_
+map rows >= 0x80180000 again.
+
+Direct-call audit on merged tree: only peer hand-ports remain
+(printf_cps_*/scriptop_*_cps_* named variants in gfx_emit_p05/w2_e07,
+plus fnmap slots 0x80120000/0x80125698 -> cps_801a8ee0/cps_80195cf0
+which are 0x8012-band game-logic, deliberately untimed).
+
+clean_table regen: 8733 wrappers, 5 skipped — all legit framework
+skips: cps_80175964 no-def (known peer map-row gap) + 4 peer
+self-delegate fragments (text_format_*/draw_env_* in gfx_gpu_d0*).
+
+Verified: clean build EU + USA; headless :4923 frames 22753 -> 27514+
+attract CD streaming, no wedge.
+
+## Batch 14 (orch/w5/e05) — first uncovered piece-ENTRY conversions
+
+Targeted the worklist's remaining 2-block CD-region defs that have NO
+clean_cps.map rows and NO fnmap rows — generated-reachable piece entries:
+
+- cpst_80191e18 (blocks 80191E18/80191E48)
+- cpst_80199ab0 (blocks 80199AB0/80199AD0; fallthrough -> 80199AEC
+  stays generated — mid-cluster piece, status quo)
+- cpst_801a1c90 (blocks 801A1C90/801A1C98)
+- cpst_801a3510 (blocks 801A3510/801A3524; fallthrough -> 801A3568
+  stays generated)
+
+8 clean_cps.map rows (entry + _cont/block addrs each). Entries now run
+timed CPS; intra-piece psx_cyc_*/psx_slice_block charges apply; IRQ
+preemption resumes via _cont cases. Continuation pieces reached only by
+cpu->pc tail-dispatch still run generated — faithful (same boundary the
+untimed cps_ bodies used), strictly better than before (entries were
+generated too).
+
+Cluster caveat (worklist): these are pieces of larger state-machine
+clusters — e.g. cpst_801a3510's sibling piece 801A3570 tail-dispatches
+to 6+ addrs (80199B10/801A36C0/801A4210/801A23FC/801A35B8/801A35B0 +
+jalr). Full-cluster timed conversion is future work sized per-cluster.
+
+clean_table: 8741 wrappers, 5 skipped (unchanged legit set).
+Verified: clean build EU + USA; headless :4927 frames 7834 -> 14198+
+boot/attract, no wedge. clean_stats: new entries 0 hits in window
+(infrequent paths — faithful-by-construction).
+
+## Batch 15 (orch/w5/e05) — 8 smallest unrouted CD leaves -> cpst_
+
+Enumerated the remaining pool: 533 unrouted cps_ bodies >=0x8018 in
+cps_clean.c (the unconverted parent piece-groups). Took the 8 smallest
+(single-block, ~240-440B each):
+
+cpst_8018bb48, cpst_8018e024, cpst_8018da28, cpst_8018de68,
+cpst_8018d474, cpst_80191e14, cpst_8018d668 (has jalr _jt_),
+cpst_8018d2e0 — 8 clean_cps.map rows (entry-only; no _cont cases).
+
+Notable: cpst_80191e14 tail-dispatches to 0x80191E18 which now routes
+to batch-14's cpst_80191e18 — first timed->timed piece chain.
+All other fallthrough targets (8018BB4C/E028/DA2C/DE6C/D47C/D2EC)
+stay generated — faithful boundary, status quo.
+
+clean_table: 8742 wrappers (+1 new addr; 7 addrs already had fnmap
+wrappers, now retargeted to cpst_). 5 skips unchanged (legit set).
+Verified: clean build EU + USA; headless :4931 frames 42689 -> 47620+
+attract CD streaming, no wedge. clean_stats: 0 hits in window
+(infrequent leaves — faithful-by-construction).
+
+## Batch 16 (orch/w5/e05) — transformer fix: exact-entry match + 8 leaves
+
+Transformer fix in gen_cps_clean.py find_body(): it kept the LARGEST
+body covering an addr, so addrs that are BOTH a standalone generated
+piece (br2eu_func_<addr>) AND an instruction anchor inside a larger
+parent resolved to the parent — then _truncate_embedded_entry refused
+(non-first-block) and emitted nothing. 5 of 8 candidates failed this
+way (801a1edc/801a9e38/801aa5c8/801a1dd4/801aedb8 — all 4-byte embedded
+pieces). Fix: exact function-name match (name endswith _<addr>) now
+wins immediately; largest-body fallback retained for true continuations.
+Verified: cpst_801a1edc now emits the correct standalone 4-byte piece
+(v0=3; pc=1EE0) matching untimed cps_ semantics, timed.
+
+8 bodies -> cpst_, 8 map rows: 801a1e58, 801a9ed0, 8019ff2c,
+801a1edc, 801a9e38, 801aa5c8, 801a1dd4, 801aedb8. Fallthrough pieces
+stay generated.
+
+clean_table: 8750 wrappers, 5 skips (unchanged legit set).
+Verified: clean build EU + USA; headless :4937 frames 43061 -> 52410+
+attract CD streaming, no wedge.
+
+## Batch 17 (orch/w5/e05) — 12 more unrouted CD leaves -> cpst_
+
+Exact-entry fix from batch 16 cleared all embedded-piece failures —
+12/12 candidates emitted cleanly, zero transformer errors:
+
+cpst_801a9b1c, cpst_801a9ebc, cpst_8019fe78, cpst_801a9d30,
+cpst_801af938, cpst_801af97c, cpst_801af9c0, cpst_801af9f8,
+cpst_801afb24, cpst_801a1d50, cpst_801aa558, cpst_801a4fc0 —
+all single-block leaves, 12 map rows (entry-only).
+
+Chain note: cpst_801aa558 tail-dispatches to 801AA55C — the parent of
+batch-16's embedded entry cpst_801aa5c8; and the 0x801AF9xx run
+(af938/af97c/af9c0/af9f8/afb24) are sibling leaves of one cluster,
+all now timed at their entries.
+
+clean_table: 8762 wrappers, 5 skips (unchanged legit set).
+Remaining pool ~423 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4941 frames 23834 -> 27954+
+attract CD streaming, no wedge.
+
+## Batch 18 (orch/w5/e05) — 12 more unrouted CD leaves -> cpst_
+
+cpst_801a3568 (batch-14 fallthrough target, now timed),
+cpst_801a9d10, cpst_80195c40, cpst_8019fe74, cpst_80195c84,
+cpst_801a35b0, cpst_8019494c, cpst_80195adc, cpst_8018b88c,
+cpst_80199c50, cpst_801a4fb8, cpst_801ad208 — all single-block
+leaves, 12 map rows (entry-only). 12/12 emitted, zero transformer
+errors.
+
+clean_table: 8773 wrappers, 5 skips (unchanged legit set).
+Remaining pool ~411 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4947 frames 19445 -> 23733+
+attract CD streaming, no wedge.

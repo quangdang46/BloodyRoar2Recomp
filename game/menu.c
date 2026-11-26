@@ -122,7 +122,8 @@ extern int fighter_anim_table_init();
 extern int action_enter_fwd();
 extern void fighter_frame(byte *,uint8_t *);
 #define FUN_801787dc fighter_frame
-extern int FUN_8018b100();
+extern int prim_xform3_task_run();
+#define FUN_8018b100 prim_xform3_task_run
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
 extern int spr_slot_pkt_submit();
@@ -524,7 +525,7 @@ void unlock_progress_scene_entry(void)
     *(uint *)(_g_system_config_ptr + 0x4c) = char_idx;
     break;
   default:
-    goto switchD_801678c4_caseD_1;
+    goto L_done;
   case 4:
     *(uint *)(_g_system_config_ptr + 0x60) =
          *(uint *)(_g_system_config_ptr + 0x60) | 1 << (char_idx & 0x1f);
@@ -544,7 +545,7 @@ void unlock_progress_scene_entry(void)
   }
   *(uint *)(_g_system_config_ptr + 0x28) = char_idx;
   _DAT_801c15f0 = 1;
-switchD_801678c4_caseD_1:
+L_done:
   return;
 }
 
@@ -693,7 +694,7 @@ joined_r0x8016fd30:
       if (DAT_1f800001 == '\0') {
 LAB_8016ffd8:
         DAT_1f800001 = '\x02';
-switchD_8016fd64_caseD_2:
+L_dat1_2:
         deferred_cmd_post(0x204,0,0);
         hud_sprite_desc_init();
         rgb_triple_store(0,0,0);
@@ -705,7 +706,7 @@ switchD_8016fd64_caseD_2:
         DAT_1f800001 = '\x03';
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
-switchD_8016fd64_caseD_3:
+L_dat1_3:
         tmp = frame_divisor_get();
         if (tmp == 0) {
           if (battle_ran) {
@@ -729,9 +730,9 @@ switchD_8016fd64_caseD_3:
     }
     break;
   case '\x02':
-    goto switchD_8016fd64_caseD_2;
+    goto L_dat1_2;
   case '\x03':
-    goto switchD_8016fd64_caseD_3;
+    goto L_dat1_3;
   case '\x04':
     { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
       decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
@@ -749,10 +750,10 @@ switchD_8016fd64_caseD_3:
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
+    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto L_dat1_5;
     break;
   case '\x05':
-switchD_8016fd64_caseD_5:
+L_dat1_5:
     se_value_select((int)(char)DAT_1f800098);
     confirm_code_select(0x1f800000);
     battle_struct_init(_DAT_1f8000bc,0x1f800000);
@@ -783,11 +784,11 @@ switchD_8016fd64_caseD_5:
     clear_f0300_records();
     frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
-switchD_8016fd64_caseD_7:
+L_dat1_7:
     tmp2 = frame_divisor_get();
     if (tmp2 == 0) {
       DAT_1f800001 = '\b';
-switchD_8016fd64_caseD_8:
+L_dat1_8:
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
         decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
       if (DAT_1f80009b == '\x04') {
@@ -943,9 +944,9 @@ LAB_80170714:
     }
     break;
   case '\a':
-    goto switchD_8016fd64_caseD_7;
+    goto L_dat1_7;
   case '\b':
-    goto switchD_8016fd64_caseD_8;
+    goto L_dat1_8;
   case '\t':
     frame_present(0x1f800000);
     hud_sprite_desc_init();
@@ -1371,33 +1372,33 @@ void results_scoreboard(int mode)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t rsb_frm = br2_guest_frame(0x88);
-  undefined1 *auStack_70 = (undefined1 *)guest_at(rsb_frm + 0x20);
-  int rv [6];
-  int tm;
-  int al;
-  int oy0;
-  int oy1;
-  int rk;
-  undefined1 *ttl;
-  undefined1 *ntbl;
+  undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
+  int local_60 [6];
+  int local_48;
+  int local_44;
+  int local_40;
+  int local_3c;
+  int local_38;
+  undefined1 *local_34;
+  undefined1 *local_30;
   
   if (mode == 1) {
-    ntbl = (undefined1 *)guest_at(0x801c13a4);
+    local_30 = (undefined1 *)guest_at(0x801c13a4);
     goto LAB_80164714;
   }
   if (mode < 2) {
     if (mode != 0) goto LAB_80164714;
-    ttl = &DAT_801c1264;
+    local_34 = &DAT_801c1264;
   }
   else {
     if (mode == 2) {
-      ntbl = &DAT_801c1304;
+      local_30 = &DAT_801c1304;
       goto LAB_80164714;
     }
     if (mode != 3) goto LAB_80164714;
-    ttl = (undefined1 *)guest_at(0x801c13a4);
+    local_34 = (undefined1 *)guest_at(0x801c13a4);
   }
-  ntbl = &DAT_801c1304;
+  local_30 = &DAT_801c1304;
 LAB_80164714:
   tmp = memcard_err_sentinel();
   if (tmp < 0) {
@@ -1413,25 +1414,25 @@ joined_r0x80164744:
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
-        tm = tm + -1;
-        if (tm == 0) {
+        local_48 = local_48 + -1;
+        if (local_48 == 0) {
           DAT_1f800001 = 0xf0;
         }
-        if ((((-1 < mode) && (mode < 2)) && (tm < 0x1f5)) && (oy1 != 0)) {
-          oy0 = oy0 + -4;
-          oy1 = oy1 + -4;
+        if ((((-1 < mode) && (mode < 2)) && (local_48 < 0x1f5)) && (local_3c != 0)) {
+          local_40 = local_40 + -4;
+          local_3c = local_3c + -4;
         }
-        if (-1 < rk) {
-          if (rk < 5) {
-            rv[rk] = 0;
-            rk = rk + 1;
+        if (-1 < local_38) {
+          if (local_38 < 5) {
+            local_60[local_38] = 0;
+            local_38 = local_38 + 1;
           }
-          else if (rk == 5) {
-            if (al < 0xff) {
-              al = al + 4;
+          else if (local_38 == 5) {
+            if (local_44 < 0xff) {
+              local_44 = local_44 + 4;
             }
-            if (0xff < al) {
-              al = 0xff;
+            if (0xff < local_44) {
+              local_44 = 0xff;
             }
           }
         }
@@ -1451,7 +1452,7 @@ LAB_80164830:
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (tmp / 2 + oy0) * 0x10000 >> 0x10,attr,1);
+                       (tmp / 2 + local_40) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
@@ -1462,7 +1463,7 @@ LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
         tmp = rec_off;
-        name_ptr = ttl;
+        name_ptr = local_34;
         do {
           if (DAT_1f800015 == '\0') {
             tmp2 = row_off + 0x30;
@@ -1470,13 +1471,13 @@ LAB_80164a2c:
           else {
             tmp2 = (row_off + 0x30) * 2;
           }
-          if (-1 < *(int *)((char *)rv + rec_off)) {
-            sprintf_core((char *)auStack_70,&DAT_80121fe0,tmp + 1);
-            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                         (oy0 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
+          if (-1 < *(int *)((char *)local_60 + rec_off)) {
+            sprintf_core((char *)num_buf,&DAT_80121fe0,tmp + 1);
+            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
+                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (oy0 + 0x48) * 0x10000 >> 0x10,(int)(short)tmp2,4);
+                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)tmp2,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1485,12 +1486,12 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,oy0 + 0x70,tmp2,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,tmp2,name_ptr,draw_mode);
             }
 LAB_80164b68:
-            tmp2 = *(int *)((char *)rv + rec_off);
+            tmp2 = *(int *)((char *)local_60 + rec_off);
             if (tmp2 < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)rv + rec_off) = tmp2 + 0x10;
+              *(int *)((char *)local_60 + rec_off) = tmp2 + 0x10;
             }
           }
           rec_off = rec_off + 4;
@@ -1507,7 +1508,7 @@ LAB_80164b68:
           tmp = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (tmp / 2 + oy1) * 0x10000 >> 0x10,attr,1);
+                       (tmp / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
@@ -1517,7 +1518,7 @@ LAB_80164c38:
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
         tmp = 0;
-        name_ptr = ntbl;
+        name_ptr = local_30;
         do {
           if (DAT_1f800015 == '\0') {
             row_off = tmp + 0x30;
@@ -1525,15 +1526,15 @@ LAB_80164c38:
           else {
             row_off = (tmp + 0x30) * 2;
           }
-          sprintf_core((char *)auStack_70,&DAT_80121fe0,rec_off + 1);
-          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                       (oy1 + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
+          sprintf_core((char *)num_buf,&DAT_80121fe0,rec_off + 1);
+          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
+                       (local_3c + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),
-                       (oy1 + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
+                       (local_3c + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
           if (mode == 1) {
             draw_mode = 5;
 LAB_80164d80:
-            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,oy1 + 0x70,row_off,name_ptr,draw_mode);
+            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_3c + 0x70,row_off,name_ptr,draw_mode);
           }
           else if (mode < 2) {
             if (mode == 0) {
@@ -1548,7 +1549,7 @@ LAB_80164d68:
           rec_off = rec_off + 1;
           tmp = tmp + 0x20;
         } while (rec_off < 5);
-        if (al != 0) {
+        if (local_44 != 0) {
           fighter_reinit_tail(0x1f800000);
         }
         *(short *)guest_at(_DAT_1f8000bc + 0x32) = *(short *)guest_at(_DAT_1f8000bc + 0x32) + 1;
@@ -1573,18 +1574,18 @@ LAB_80164d68:
             mc_confirm_dispatch(draw_mode,1);
           }
           fighter_respawn_init(0x1f800000);
-          rk = 0;
-          al = 0;
-          oy0 = 0;
-          oy1 = 0x200;
+          local_38 = 0;
+          local_44 = 0;
+          local_40 = 0;
+          local_3c = 0x200;
           battle_field_set(_DAT_1f8000bc,0x1e);
-          rv[4] = 0xffffffff;
-          rv[3] = 0xffffffff;
-          rv[2] = 0xffffffff;
-          rv[1] = 0xffffffff;
-          rv[0] = -1;
+          local_60[4] = 0xffffffff;
+          local_60[3] = 0xffffffff;
+          local_60[2] = 0xffffffff;
+          local_60[1] = 0xffffffff;
+          local_60[0] = -1;
           battle_session_arm(0x1f800000,0);
-          tm = 1000;
+          local_48 = 1000;
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_80164830;
         }
@@ -1619,8 +1620,8 @@ void player_name_entry(void)
   int disp_i;
   int char_x;
   int char_sel;
-  uint32_t *ppuVar8;
-  undefined1 *rp;
+  uint32_t *name_tbl;
+  undefined1 *rec_ptr;
   int name_len;
   /* Guest string slots at sp+0x18/0x20/0x28/0x30 (8-byte stride, offsets
    * verified against the generated body's sp accesses): slot0 @sp+0x18 is
@@ -1639,7 +1640,7 @@ void player_name_entry(void)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t pne_frm = br2_guest_frame(0x90);
-  undefined1 *auStack_58 = (undefined1 *)guest_at(pne_frm + 0x38);
+  undefined1 *num_buf = (undefined1 *)guest_at(pne_frm + 0x38);
   uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
 #define local_78   (*(uint32_t *)pne_slots)
 #define local_70   pne_slots[8]
@@ -1649,8 +1650,8 @@ void player_name_entry(void)
 #define local_67   pne_slots[17]
 #define local_60   (pne_slots + 24)
   int wait_timer;
-  undefined1 *bank0;
-  undefined1 *bank1;
+  undefined1 *local_4c;
+  undefined1 *local_48;
   undefined1 *active_bank;
   int rec_idx;
   uint slot_idx;
@@ -1659,8 +1660,8 @@ void player_name_entry(void)
   undefined4 *name_ptr;
   
   char_sel = 0;
-  bank0 = &DAT_1f8000e8;
-  bank1 = &DAT_1f8001f0;
+  local_4c = &DAT_1f8000e8;
+  local_48 = &DAT_1f8001f0;
   active_bank = &DAT_1f8000e8;
   slot_idx = 0;
   local_78 = DAT_80121f30;
@@ -1684,7 +1685,7 @@ void player_name_entry(void)
   _DAT_1f80008c = 0;
   if (DAT_1f800001 != 0xff) {
     name_ptr = &local_78;
-    fmt_buf = auStack_58;
+    fmt_buf = num_buf;
     do {
       if (DAT_1f800001 == 3) {
 LAB_801652bc:
@@ -1743,19 +1744,19 @@ LAB_801652bc:
 LAB_801654c0:
         scroll_offset_set(0x20,0x30);
         tmp_i = 0;
-        ppuVar8 = &PTR_DAT_801b4254;
-        rp = records;
+        name_tbl = &PTR_DAT_801b4254;
+        rec_ptr = records;
         do {
           sprintf_core((char *)fmt_buf,&DAT_80121fe0,tmp_i + 1);
           if (rec_idx == tmp_i) {
             scroll_offset_accumulate(0,0xfffffffc);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
-            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
+            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
             aux_mode = 0x13;
             if (DAT_1f80009c == 3) {
               aux_mode = 0x15;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rp,aux_mode);
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rec_ptr,aux_mode);
             char_x = 0x108;
             if (DAT_1f800001 == 3) {
               disp_i = 0;
@@ -1786,18 +1787,18 @@ LAB_801654c0:
           }
           else {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
-            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
+            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
             aux_mode = 0x12;
             if (DAT_1f80009c == 3) {
               aux_mode = 0x14;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rp,aux_mode);
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,rec_ptr,aux_mode);
             aux_mode = 0x10;
           }
-          rp = rp + 0x10;
+          rec_ptr = rec_ptr + 0x10;
           scroll_offset_accumulate(0,aux_mode);
           tmp_i = tmp_i + 1;
-          ppuVar8 = ppuVar8 + 1;
+          name_tbl = name_tbl + 1;
         } while (tmp_i < 10);
         scroll_offset_set(0x20,0x18);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NAME_ENTRY_80122080,0x1000,0x1000,0);
@@ -1828,10 +1829,10 @@ LAB_80165090:
             goto LAB_80165090;
           }
           if ((_DAT_1f8000b4 & 0xf00) == 0xa00) {
-            active_bank = bank0;
+            active_bank = local_4c;
           }
           if ((_DAT_1f8000b6 & 0xf00) == 0xa00) {
-            active_bank = bank1;
+            active_bank = local_48;
           }
           slot_idx = (uint)(byte)active_bank[2];
           switch(DAT_1f80009c) {
@@ -2397,9 +2398,9 @@ void tile_stream_pump(void)
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t tsp_frm = br2_guest_frame(0x28);
-    uint32_t gaddr = tsp_frm + 0x18;
-    memcpy(guest_at(gaddr), rect, 8);
-    gpu_load_image_cmd(gaddr,*(undefined4 *)guest_at((uint32_t)(buf_sel * 4 + -0x7fe0b8f4)));
+    uint32_t rect_g = tsp_frm + 0x18;
+    memcpy(guest_at(rect_g), rect, 8);
+    gpu_load_image_cmd(rect_g,*(undefined4 *)guest_at((uint32_t)(buf_sel * 4 + -0x7fe0b8f4)));
     br2_guest_frame_free(); }
   return;
 }
@@ -2443,9 +2444,9 @@ void cd_stream_mode_init(undefined4 cfg_g)
   extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
   extern int  cd_stamp_to_sector(const void *);
   extern uint32_t g_cdfn_log[24];
-  uint32_t _st = *(uint32_t *)guest_at(cfg_g);
+  uint32_t cfg_w0 = *(uint32_t *)guest_at(cfg_g);
   g_cdfn_log[14]++;   /* CDFN_STREAM_MODE_INIT */
-  cd_seek_note(4, _st, (uint32_t)cd_stamp_to_sector(guest_at(cfg_g)));
+  cd_seek_note(4, cfg_w0, (uint32_t)cd_stamp_to_sector(guest_at(cfg_g)));
 
   arg_buf[0] = 0x80;
   do {
@@ -2479,12 +2480,12 @@ undefined4 stream_block_decode(undefined4 dst,int *tbl,int idx)
        * (_DAT_801e3cfc / _DAT_801c47b8) -> wrong CD dest -> DMA into .text.
        * guest_of() recovers the guest address faithfully. */
       uint32_t srcg = guest_of(tbl) + (uint32_t)tbl[idx + 1] + (uint32_t)(*tbl + 1) * 4u;
-      { uint32_t r = mode3_dispatch(dst,srcg);
+      { uint32_t len = mode3_dispatch(dst,srcg);
         /* tag 11: record the RETURN length so cursor advances are fully
          * attributed (decode dst->dst+len). dst=heap cursor arg. */
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(11,dst,srcg,0,r); }
-        return r; }
+          decomp_trace_record(11,dst,srcg,0,len); }
+        return len; }
     }
   }
   return 0;
@@ -2511,10 +2512,10 @@ int32_t gauge_leaf_update(uint32_t a0g)
   case 2:
     goto set_ff;
   case 3: {
-    int32_t p = (int32_t)*(int16_t *)(rec + 0xa2) * 12;
-    *(int16_t *)(rec + 0xa0) = (int16_t)p;
-    if (p < 0x100)
-      return p;
+    int32_t gauge_v = (int32_t)*(int16_t *)(rec + 0xa2) * 12;
+    *(int16_t *)(rec + 0xa0) = (int16_t)gauge_v;
+    if (gauge_v < 0x100)
+      return gauge_v;
     v0 = 0xff;
     goto store_ff;
   }
@@ -2958,7 +2959,8 @@ uint pad_state_refresh(intptr_t pad)
 {
   char cnt;
   uint btns;
-  intptr_t tmp;
+  intptr_t btns_b;
+  intptr_t cur_w;
   uint pressed;
   intptr_t rec;
   int i;
@@ -2967,34 +2969,34 @@ uint pad_state_refresh(intptr_t pad)
   if ((DAT_801befa8 != '\0') || (btns = attr_word_decode(&DAT_801befa8), (int)btns < 0)) {
     btns = 0;
   }
-  if ((DAT_801befca != '\0') || (tmp = attr_word_decode(&DAT_801befca), tmp < 0)) {
-    tmp = 0;
+  if ((DAT_801befca != '\0') || (btns_b = attr_word_decode(&DAT_801befca), btns_b < 0)) {
+    btns_b = 0;
   }
   i = 0;
-  btns = tmp << 0x10 | btns;
+  btns = btns_b << 0x10 | btns;
   btns_old = *(uint *)(pad + 0x6c);
   *(uint *)(pad + 0x6c) = btns;
   pressed = (btns ^ btns_old) & btns;
   *(uint *)(pad + 0x70) = btns_old;
   *(uint *)(pad + 0x68) = pressed;
   *(uint *)(pad + 0x74) = pressed;
-  tmp = pad;
+  cur_w = pad;
   rec = pad;
   do {
-    if ((*(short *)(tmp + 0x6c) == 0) || (*(short *)(tmp + 0x6c) != *(short *)(tmp + 0x70))) {
+    if ((*(short *)(cur_w + 0x6c) == 0) || (*(short *)(cur_w + 0x6c) != *(short *)(cur_w + 0x70))) {
       *(undefined1 *)(rec + 0x78) = 0x10;
     }
     else {
       cnt = *(char *)(rec + 0x78) + -1;
       *(char *)(rec + 0x78) = cnt;
       if (cnt == '\0') {
-        *(undefined2 *)(tmp + 0x74) = *(undefined2 *)(tmp + 0x6c);
+        *(undefined2 *)(cur_w + 0x74) = *(undefined2 *)(cur_w + 0x6c);
         *(undefined1 *)(rec + 0x78) = 2;
       }
     }
     rec = rec + 1;
     i = i + 1;
-    tmp = tmp + 2;
+    cur_w = cur_w + 2;
   } while (i < 2);
   *(ushort *)(pad + 0x80) = *(ushort *)(pad + 0x6c) | *(ushort *)(pad + 0x6e);
   *(ushort *)(pad + 0x7c) = *(ushort *)(pad + 0x68) | *(ushort *)(pad + 0x6a);
@@ -3187,8 +3189,8 @@ extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
   uint8_t next_state;
-  int32_t t3, t2, t1, draw_slot, aux_val;
-  uint32_t t4, t0, pidx_b;
+  int32_t iVar2, iVar3, iVar4, draw_slot, aux_val;
+  uint32_t uVar5, uVar8, pidx_b;
   uint8_t *rec;
   uint32_t *spr_tab;
   uint32_t attr_idx;
@@ -3208,18 +3210,18 @@ int32_t select_screen_tick(int32_t entry_mode)
   uint32_t sst_frm = br2_guest_frame(0xf8);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address. */
-  uint8_t *auStack_e0 = (uint8_t *)guest_at(sst_frm + 0x20);
-  /* auStack_b8 = two 0x30-byte player records at sp+0x40 (s7);
+  uint8_t *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
+  /* player_recs = two 0x30-byte player records at sp+0x40 (s7);
    * local_a8/local_94 are Ghidra aliases into that same guest record
    * array (+0x10 / +0x24), not separate host storage. */
-  uint8_t *auStack_b8 = (uint8_t *)guest_at(sst_frm + 0x48);
+  uint8_t *player_recs = (uint8_t *)guest_at(sst_frm + 0x48);
   int32_t *local_a8 = (int32_t *)guest_at(sst_frm + 0x58);
   int32_t *local_94 = (int32_t *)guest_at(sst_frm + 0x6c);
   int32_t local_38 = 0;
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *local_3c = (uint8_t *)guest_at(0x1f8001f0);
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_e0);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   local_a8[3] = 0;
   local_94[10] = 0;
   hud_sprite_desc_init();
@@ -3229,82 +3231,82 @@ int32_t select_screen_tick(int32_t entry_mode)
   DAT_1f800001 = 0;
   do {
     if (DAT_1f800001 == 6) {
-      fighter_spawn_setup(0x1f800000,local_40,local_3c,auStack_e0,1);
+      fighter_spawn_setup(0x1f800000,local_40,local_3c,arg_blk,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
-        t0 = 0;
-        rec = auStack_b8;
+        uVar8 = 0;
+        rec = player_recs;
         do {
-          t1 = *(int32_t *)(rec + 0x24);
-          if (t1 == 1) {
+          iVar4 = *(int32_t *)(rec + 0x24);
+          if (iVar4 == 1) {
             if (*(int32_t *)(rec + 0x10) == 0) {
               if (*(int32_t *)(rec + 0x2c) == 0) {
-                if (local_a8[(t0 ^ 1) * 0xc] == 0) {
-                  t1 = local_94[(t0 ^ 1) * 0xc];
-                  goto code_r0x8014f6c0;
+                if (local_a8[(uVar8 ^ 1) * 0xc] == 0) {
+                  iVar4 = local_94[(uVar8 ^ 1) * 0xc];
+                  goto L_promote_chk;
                 }
-                if (local_a8[(t0 ^ 1) * 0xc] == 1) {
+                if (local_a8[(uVar8 ^ 1) * 0xc] == 1) {
                   *(uint32_t *)(rec + 0x24) = 2;
                 }
               }
             }
             else if (*(int32_t *)(rec + 0x10) == 1) {
-              t1 = local_94[(t0 ^ 1) * 0xc];
-code_r0x8014f6c0:
-              if (0 < t1) *(uint32_t *)(rec + 0x24) = 2;
+              iVar4 = local_94[(uVar8 ^ 1) * 0xc];
+L_promote_chk:
+              if (0 < iVar4) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
-          else if (t1 < 2) {
-            if (t1 == 0 && local_2c != 0) {
-              t1 = *(int32_t *)(rec + 0x1c);
+          else if (iVar4 < 2) {
+            if (iVar4 == 0 && local_2c != 0) {
+              iVar4 = *(int32_t *)(rec + 0x1c);
               if ((*(uint32_t *)(rec + 8) & 0x1000) != 0) {
-                t4 = (uint32_t)select_cursor_step(t1,0);
-                *(uint32_t *)(rec + 0x1c) = t4;
+                uVar5 = (uint32_t)select_cursor_step(iVar4,0);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
               if ((*(uint32_t *)(rec + 8) & 0x2000) != 0) {
-                t4 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
-                *(uint32_t *)(rec + 0x1c) = t4;
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
               if ((*(uint32_t *)(rec + 8) & 0x4000) != 0) {
-                t4 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
-                *(uint32_t *)(rec + 0x1c) = t4;
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
               if ((*(uint32_t *)(rec + 8) & 0x8000) != 0) {
-                t4 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
-                *(uint32_t *)(rec + 0x1c) = t4;
+                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
+                *(uint32_t *)(rec + 0x1c) = uVar5;
               }
-              t2 = *(int32_t *)(rec + 0x1c);
-              if (t2 < 0) { *(uint32_t *)(rec + 0x1c) = 0; t2 = 0; }
-              if (10 < t2) *(uint32_t *)(rec + 0x1c) = 10;
-              if (*(int32_t *)(rec + 0x1c) != t1) deferred_cmd_post(0x400,0x40,0);
+              iVar3 = *(int32_t *)(rec + 0x1c);
+              if (iVar3 < 0) { *(uint32_t *)(rec + 0x1c) = 0; iVar3 = 0; }
+              if (10 < iVar3) *(uint32_t *)(rec + 0x1c) = 10;
+              if (*(int32_t *)(rec + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
               if (((*(uint32_t *)(rec + 8) & 0xe0) != 0) ||
                   (((*(uint32_t *)(rec + 8) & 0x800) != 0 &&
                     ((*(uint32_t *)(_g_system_config_ptr + 0x50) >>
                       (*(uint32_t *)(rec + 0x1c) & 0x1f) & 1) != 0)))) {
-                select_confirm_handler(0x1f800000,t0,rec,*(uint32_t *)(rec + 8),1);
+                select_confirm_handler(0x1f800000,uVar8,rec,*(uint32_t *)(rec + 8),1);
                 *(uint32_t *)(rec + 0x24) = 1;
                 deferred_cmd_post(0x400,0x41,0);
                 *(uint32_t *)(rec + 0x2c) = 8;
               }
             }
           }
-          else if (t1 == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
+          else if (iVar4 == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
             DAT_1f800001 = 0xf0;
           }
           rec += 0x30;
-          t0++;
-        } while ((int32_t)t0 < 2);
+          uVar8++;
+        } while ((int32_t)uVar8 < 2);
         if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
-          t1 = 0;
-          rec = auStack_b8;
+          iVar4 = 0;
+          rec = player_recs;
           do {
             if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
             if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
             if (9 < local_c8) local_c8 = 0;
             if (local_c8 < 0) local_c8 = 9;
-            t1++;
+            iVar4++;
             rec += 0x30;
-          } while (t1 < 2);
+          } while (iVar4 < 2);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120688),0xd8,0x88,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120690),0xd0,0x98,4);
           {
@@ -3316,8 +3318,8 @@ code_r0x8014f6c0:
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120698),200,200,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x8012069c),0x110,200,4);
         }
-        t2 = local_94[10];
-        t1 = local_a8[3];
+        iVar3 = local_94[10];
+        iVar4 = local_a8[3];
         if (local_a8[0] == 0) local_34 = 1;
         else if ((DAT_1f80009b == 0 || DAT_1f80009c == 4) ||
                  ((local_94[7] != 0 || local_94[0xc] < 1) &&
@@ -3342,35 +3344,35 @@ code_r0x8014f6c0:
             aux_val = 0x7adc;
             if (local_94[0] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
-                         ((uint32_t)(t46[t1 * 2] + 0x1f) << 16) |
-                         ((uint32_t)(t44[t1 * 2] + 0x1c) & 0xffff),0x3e37000e,
+                         ((uint32_t)(t46[iVar4 * 2] + 0x1f) << 16) |
+                         ((uint32_t)(t44[iVar4 * 2] + 0x1c) & 0xffff),0x3e37000e,
                          ((uint32_t)aux_val << 16) | 0xc040);
           }
           if (local_30 != 0) {
             aux_val = 0xe9;
             if (local_30 == 1) aux_val = 0xd1;
             sprite_9slice_build(_DAT_1f800008,
-                         ((uint32_t)(t46[t2 * 2] + 0x31) << 16) |
-                         ((uint32_t)(t44[t2 * 2] + 0x12) & 0xffff),0x151d000e,
+                         ((uint32_t)(t46[iVar3 * 2] + 0x31) << 16) |
+                         ((uint32_t)(t44[iVar3 * 2] + 0x12) & 0xffff),0x151d000e,
                          (uint32_t)((aux_val << 8) | 0x7adc00b1));
             aux_val = 0x7adc;
             if (local_94[0xc] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
-                         ((uint32_t)(t46[t2 * 2] + 0x1f) << 16) |
-                         ((uint32_t)(t44[t2 * 2] + 0x1c) & 0xffff),0x3e37000e,
+                         ((uint32_t)(t46[iVar3 * 2] + 0x1f) << 16) |
+                         ((uint32_t)(t44[iVar3 * 2] + 0x1c) & 0xffff),0x3e37000e,
                          ((uint32_t)aux_val << 16) | 0xc078);
           }
           attr_idx = 0;
           spr_tab = (uint32_t *)guest_at(0x801b3244);
-          t0 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
+          uVar8 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
           do {
-            if ((t0 & 1) != 0) {
+            if ((uVar8 & 1) != 0) {
               spr_slot_pkt_submit((uint *)(uintptr_t)(_DAT_1f800008 + 4),*spr_tab,0x3e37009d,
                            ((attr_idx + 0x1e0 & 0x1ff) << 0x16) |
                            ((((int32_t)attr_idx >> 2) * 0x40 + 1U & 0xff) << 8) |
                            ((attr_idx & 3) << 6));
             }
-            t0 = (int32_t)t0 >> 1;
+            uVar8 = (int32_t)uVar8 >> 1;
             attr_idx++;
             spr_tab++;
           } while ((int32_t)attr_idx < 0xb);
@@ -3400,97 +3402,97 @@ code_r0x8014f6c0:
           uint32_t *p47ec = (uint32_t *)guest_at(0x801b47ec);
           uint32_t *p47f0 = (uint32_t *)guest_at(0x801b47f0);
           if (entry_mode < 4 && 1 < entry_mode) {
-            t0 = (uint32_t)local_94[10];
-            if (local_a8[0] == 0) t0 = (uint32_t)local_a8[3];
+            uVar8 = (uint32_t)local_94[10];
+            if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
             pidx_b = (uint32_t)(local_a8[0] != 0);
             if (entry_mode == 2) {
-              t2 = (((int16_t)_DAT_1f800020) -
+              iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
-              t1 = ((int16_t)_DAT_1f800022 * 3) / 5;
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[t0 * 2]),
-                           (int32_t)(((t2 - t300[t0]) + -0x44) * 0x10000) >> 16,
-                           (t1 + -0x48) * 0x10000 >> 16,5);
+              iVar4 = ((int16_t)_DAT_1f800022 * 3) / 5;
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
+                           (int32_t)(((iVar3 - t300[uVar8]) + -0x44) * 0x10000) >> 16,
+                           (iVar4 + -0x48) * 0x10000 >> 16,5);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206c4),
                            0x1000,0x1000,5);
               {
                 uint32_t *pb = (uint32_t *)guest_at(0x801b32c8);
-                announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(pb[t0]),
-                             t2 - t2f4[t0],t1 + -0x30,0);
+                announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(pb[uVar8]),
+                             iVar3 - t2f4[uVar8],iVar4 + -0x30,0);
               }
-              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> (t0 & 0x1f) & 1) != 0) {
-                t1 = (int16_t)_DAT_1f800020 * 3;
-                if (t1 < 0) t1 += 3;
-                t2 = (int32_t)(int16_t)_DAT_1f800022;
-                if (t2 < 0) t2 += 7;
+              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> (uVar8 & 0x1f) & 1) != 0) {
+                iVar4 = (int16_t)_DAT_1f800020 * 3;
+                if (iVar4 < 0) iVar4 += 3;
+                iVar3 = (int32_t)(int16_t)_DAT_1f800022;
+                if (iVar3 < 0) iVar3 += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
-                             (t1 << 0xe) >> 16,t2 >> 3,3);
+                             (iVar4 << 0xe) >> 16,iVar3 >> 3,3);
               }
             } else {
-              t1 = 0;
-              if (pidx_b != 0) t1 = 0x140;
-              t2 = ((int16_t)_DAT_1f800022 * 3) / 5;
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[t0 * 2]),
-                           (int32_t)(((uint32_t)(t270[t0 * 2] + t1)) * 0x10000) >> 16,
-                           (t2 + -0x34) * 0x10000 >> 16,5);
+              iVar4 = 0;
+              if (pidx_b != 0) iVar4 = 0x140;
+              iVar3 = ((int16_t)_DAT_1f800022 * 3) / 5;
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
+                           (int32_t)(((uint32_t)(t270[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
+                           (iVar3 + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),
-                           (t1 + 0x48) * 0x10000 >> 16,(t2 + -0x24) * 0x10000 >> 16,0);
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[t0 * 2]),
-                           (int32_t)(((uint32_t)(t271[t0 * 2] + t1)) * 0x10000) >> 16,
-                           (t2 + -0x1b) * 0x10000 >> 16,5);
+                           (iVar4 + 0x48) * 0x10000 >> 16,(iVar3 + -0x24) * 0x10000 >> 16,0);
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[uVar8 * 2]),
+                           (int32_t)(((uint32_t)(t271[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
+                           (iVar3 + -0x1b) * 0x10000 >> 16,5);
             }
-            t3 = ((int16_t)_DAT_1f800022 * 3) / 5;
-            t2 = t3 + -8;
+            iVar2 = ((int16_t)_DAT_1f800022 * 3) / 5;
+            iVar3 = iVar2 + -8;
             {
               uint8_t *hh = (uint8_t *)guest_at(0x801b3288);
-              aux_val = 0x140 - hh[t0];
+              aux_val = 0x140 - hh[uVar8];
             }
-            if (local_94[pidx_b * 0xc + 2] == 0) t1 = 0x7996;
-            else { local_94[pidx_b * 0xc + 2]--; t1 = 0x7b56; }
-            draw_slot = (int32_t)(t0 + 0xb);
-            if (t0 == 8) draw_slot = 0x16;
+            if (local_94[pidx_b * 0xc + 2] == 0) iVar4 = 0x7996;
+            else { local_94[pidx_b * 0xc + 2]--; iVar4 = 0x7b56; }
+            draw_slot = (int32_t)(uVar8 + 0xb);
+            if (uVar8 == 8) draw_slot = 0x16;
             spr_draw_off(draw_slot * 0x8014 + -0x7fff0000,0x280,0,1);
-            t1 <<= 16;
+            iVar4 <<= 16;
             attr_idx = 200;
-            spr_attr_alloc_b(_DAT_1f800008 + 4,(uint32_t)((t3 + -0x107) * 0x10000 | 0x13f),
-                         0xfebe000a,(uint32_t)t1,0x80,t2);
-            spr_draw_off(t0 * 0x8014 + -0x7fff0000,0x200,0,1);
-            t3 = -200;
-            if (t0 == 8) { attr_idx = 0xff; t3 = -0xff; }
-            t0 = (uint32_t)((t2 + t3) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
+            spr_attr_alloc_b(_DAT_1f800008 + 4,(uint32_t)((iVar2 + -0x107) * 0x10000 | 0x13f),
+                         0xfebe000a,(uint32_t)iVar4,0x80,iVar3);
+            spr_draw_off(uVar8 * 0x8014 + -0x7fff0000,0x200,0,1);
+            iVar2 = -200;
+            if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
+            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
-              uint32_t aw = 0xfefe0008;
-              int32_t pd = _DAT_1f800008 + 4;
+              uint32_t attr_code = 0xfefe0008;
+              int32_t ot_ptr = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)pd,t0,aw,(uint32_t)t1,aux_val,t2);
+              spr_attr_alloc_b((uint32_t)ot_ptr,uVar8,attr_code,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
             aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
             if (local_34 != 0) {
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[t1 * 2]),
-                           (int32_t)((uint32_t)t270[t1 * 2] + 0), /* (&DAT_801b3270)[t1*2] u32? */
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar4 * 2]),
+                           (int32_t)((uint32_t)t270[iVar4 * 2] + 0), /* (&DAT_801b3270)[iVar4*2] u32? */
                            (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
                            (aux_val + -0x24) * 0x10000 >> 16,0);
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[t1 * 2]),
-                           (int32_t)((uint32_t)t271[t1 * 2] + 0),
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar4 * 2]),
+                           (int32_t)((uint32_t)t271[iVar4 * 2] + 0),
                            (aux_val + -0x1b) * 0x10000 >> 16,5);
-              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((t1 + 0x10U) & 0x1f) & 1) != 0) {
-                t3 = (int32_t)(int16_t)_DAT_1f800022;
-                if (t3 < 0) t3 += 7;
+              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar4 + 0x10U) & 0x1f) & 1) != 0) {
+                iVar2 = (int32_t)(int16_t)_DAT_1f800022;
+                if (iVar2 < 0) iVar2 += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),8,
-                             t3 >> 3,3);
+                             iVar2 >> 3,3);
               }
             }
             if (local_30 != 0) {
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[t2 * 2]),
-                           (int32_t)((uint32_t)t270[t2 * 2] + 0x140),
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar3 * 2]),
+                           (int32_t)((uint32_t)t270[iVar3 * 2] + 0x140),
                            (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
                            (aux_val + -0x24) * 0x10000 >> 16,0);
-              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[t2 * 2]),
-                           (int32_t)((uint32_t)t271[t2 * 2] + 0x140),
+              announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar3 * 2]),
+                           (int32_t)((uint32_t)t271[iVar3 * 2] + 0x140),
                            (aux_val + -0x1b) * 0x10000 >> 16,5);
-              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((t2 + 0x10U) & 0x1f) & 1) != 0) {
+              if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar3 + 0x10U) & 0x1f) & 1) != 0) {
                 aux_val = (int32_t)(int16_t)_DAT_1f800022;
                 if (aux_val < 0) aux_val += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
@@ -3500,37 +3502,37 @@ LAB_80150558:
             if (local_34 != 0) {
               if (local_94[2] == 0) aux_val = 0x7996;
               else { aux_val = 0x7b56; local_94[2]--; }
-              spr_draw_off(t1 * 0x8014 + -0x7fff0000,0x200,0,1);
-              if (t1 == 8) t0 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
-              else t0 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
-              spr_attr_alloc_b(_DAT_1f800008 + 4,t0,0xfefe0008,(uint32_t)(aux_val << 16),0,
+              spr_draw_off(iVar4 * 0x8014 + -0x7fff0000,0x200,0,1);
+              if (iVar4 == 8) uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
+              else uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
+              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(aux_val << 16),0,
                            (int16_t)_DAT_1f800022 + -200);
             }
             if (local_30 != 0) {
-              if (local_94[0xe] == 0) t1 = 0x7996;
-              else { t1 = 0x7b56; local_94[0xe]--; }
-              spr_draw_off(t2 * 0x8014 + -0x7fff0000,0x240,0,1);
-              if (t2 == 8) {
-                t4 = 0xfefe0009; t1 <<= 16; t3 = _DAT_1f800008 + 4;
+              if (local_94[0xe] == 0) iVar4 = 0x7996;
+              else { iVar4 = 0x7b56; local_94[0xe]--; }
+              spr_draw_off(iVar3 * 0x8014 + -0x7fff0000,0x240,0,1);
+              if (iVar3 == 8) {
+                uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
                 aux_val = (int32_t)(int16_t)_DAT_1f800020;
-                t0 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((aux_val - 0xffU) & 0xffff);
-                t2 = (int16_t)_DAT_1f800022 + -200;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((aux_val - 0xffU) & 0xffff);
+                iVar3 = (int16_t)_DAT_1f800022 + -200;
               } else {
-                t4 = 0xfefe0009; t1 <<= 16; t3 = _DAT_1f800008 + 4;
+                uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
                 aux_val = (int32_t)(int16_t)_DAT_1f800020;
-                t0 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((aux_val - 200U) & 0xffff);
-                t2 = (int16_t)_DAT_1f800022 + -200;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((aux_val - 200U) & 0xffff);
+                iVar3 = (int16_t)_DAT_1f800022 + -200;
               }
-              spr_attr_alloc_b((uint32_t)t3,t0,t4,(uint32_t)t1,aux_val,t2);
+              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,aux_val,iVar3);
             }
           }
         }
         if ((*(uint32_t *)g__DAT_1f8000dc & 3) == 0 && (local_38 = local_38 + 1, 5 < local_38))
           local_38 = 0;
-        if (entry_mode == 2) t4 = 0x19;
-        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || entry_mode == 1) t4 = 0x18;
-        else t4 = 0x48;
-        hud_gauge_render(0x1f800000,_DAT_1f800008,t4);
+        if (entry_mode == 2) uVar5 = 0x19;
+        else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || entry_mode == 1) uVar5 = 0x18;
+        else uVar5 = 0x48;
+        hud_gauge_render(0x1f800000,_DAT_1f800008,uVar5);
         local_2c++;
         goto LAB_80150610;
       }
@@ -3539,24 +3541,24 @@ LAB_80150558:
       DAT_1f800001 = 0xf0;
     } else {
       if (DAT_1f800001 < 7) {
-        if (DAT_1f800001 == 0 && (t1 = frame_divisor_get(), t1 == 0)) {
+        if (DAT_1f800001 == 0 && (iVar4 = frame_divisor_get(), iVar4 == 0)) {
           if (-1 < entry_mode) {
             if (entry_mode < 2) attr_idx = 1;
             else if (entry_mode < 4) attr_idx = 2;
           }
-          t1 = intro_movie_state((int32_t)attr_idx);
-          if (t1 != 0) {
+          iVar4 = intro_movie_state((int32_t)attr_idx);
+          if (iVar4 != 0) {
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
             battle_config_eval(local_40,0x1f800000,1);
             battle_config_eval(local_3c,0x1f800000,1);
-            post_confirm_config_build(0x1f800000,auStack_e0,1);
+            post_confirm_config_build(0x1f800000,arg_blk,1);
             *(uint32_t *)g__DAT_801e8508 = 0;
             *(uint32_t *)g__DAT_801e8518 = 0x28;
             if (*(int32_t *)(_g_system_config_ptr + 0x40) < 0) local_c8 = 9;
-            t4 = 1;
-            if (*(char *)(_g_system_config_ptr + 0xd) == 0) t4 = 0x1f;
-            mc_confirm_dispatch(t4,1);
+            uVar5 = 1;
+            if (*(char *)(_g_system_config_ptr + 0xd) == 0) uVar5 = 0x1f;
+            mc_confirm_dispatch(uVar5,1);
             next_state = 6;
             local_2c = 0;
             goto LAB_8015060c;
@@ -3579,8 +3581,8 @@ LAB_80150610:
     if (DAT_1f800001 == 0xff) {
       if (local_c8 == 9) {
         *(uint32_t *)(_g_system_config_ptr + 0x40) |= 0x80000000;
-        t1 = table_byte_next_a();
-        DAT_1f800098 = (uint8_t)((uint32_t)(t1 * 9) >> 8);
+        iVar4 = table_byte_next_a();
+        DAT_1f800098 = (uint8_t)((uint32_t)(iVar4 * 9) >> 8);
       } else {
         *(uint32_t *)(_g_system_config_ptr + 0x40) &= 0x7fffffff;
         DAT_1f800098 = (uint8_t)local_c8;
@@ -3806,9 +3808,9 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
             }
           }
         } else if (v0 == (uint32_t)a2) {
-          uint32_t a1v = *(uint32_t *)(a0 + 0x28);
+          uint32_t fl_old = *(uint32_t *)(a0 + 0x28);
           uint32_t foe_bit;
-          *(uint32_t *)(a0 + 0x28) = a1v | 0x40;
+          *(uint32_t *)(a0 + 0x28) = fl_old | 0x40;
           foe_bit = ((*(uint32_t *)(s4 + (s1 ^ 1) * 0x30 + 0x28) >> 1) & 1);
           if (foe_bit != (uint32_t)a2) {
             /* 493c4: cr-based char select */
@@ -3817,7 +3819,7 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
           } else {
             /* 49380: +0x28 = old|0x58, char via battle+0xa8 table */
             int16_t off;
-            *(uint32_t *)(a0 + 0x28) = a1v | 0x58;
+            *(uint32_t *)(a0 + 0x28) = fl_old | 0x58;
             off = *(int16_t *)(s3 + 0xa2);
             if (s5) *(uint32_t *)(a0 + 0x44) =
               *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off);
@@ -4376,8 +4378,8 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
   uint8_t *s1 = (uint8_t *)guest_at(battle_g);
   uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc8));
   int32_t s2, s0;
-  uint32_t a1v;
-  int32_t q, r, t0, v1;
+  uint32_t frame_cnt;
+  int32_t secs, r, sec_rem, mins;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; the
    * string is re-read by hud_text_blk through nested frames, so the
    * write->draw span below runs inside a reserved guest frame
@@ -4388,34 +4390,34 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
   if (*(int16_t *)guest_at(*(uint32_t *)(s1 + 0xcc) + (0xa)) != 0) return;
   s2 = (*(uint8_t *)guest_at(*(uint32_t *)(s1 + 0xc0) + (0x21)) != 0) ? 6 : 5;
   s0 = flag ? ((int32_t)*(int16_t *)(s1 + 0x20) - 0x50) : 0x50;
-  a1v = *(uint32_t *)(side + 0xf0);
-  /* frames/50 -> seconds (0x51eb851f magic, hi>>4), remainder*2 =
+  frame_cnt = *(uint32_t *)(side + 0xf0);
+  /* frames/50 -> seconds (0x51eb851f magic, mulhi>>4), remainder*2 =
    * sub-frame count; seconds/60 -> min:sec (0x88888889 magic). */
   {
-    int64_t m = (int64_t)(int32_t)a1v * 0x51eb851f;
-    int32_t hi = (int32_t)(m >> 32);
-    q = (hi >> 4) - ((int32_t)a1v >> 31);
+    int64_t m = (int64_t)(int32_t)frame_cnt * 0x51eb851f;
+    int32_t mulhi = (int32_t)(m >> 32);
+    secs = (mulhi >> 4) - ((int32_t)frame_cnt >> 31);
   }
-  r = (int32_t)(a1v - (uint32_t)q * 50);
+  r = (int32_t)(frame_cnt - (uint32_t)secs * 50);
   r = r * 2;                            /* a3: sub-frame arg */
   {
-    int64_t m = (int64_t)q * 0x88888889;
-    int32_t hi = (int32_t)(m >> 32);
-    v1 = ((hi + q) >> 5) - (q >> 31);   /* q/60 = minutes */
+    int64_t m = (int64_t)secs * 0x88888889;
+    int32_t mulhi = (int32_t)(m >> 32);
+    mins = ((mulhi + secs) >> 5) - (secs >> 31);   /* secs/60 = minutes */
   }
-  t0 = q - v1 * 60;                     /* seconds */
+  sec_rem = secs - mins * 60;                     /* seconds */
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t fta_frm = br2_guest_frame(0x38);
     buf = (uint8_t *)guest_at(fta_frm + 0x20);
-    if (v1 == 0) {
+    if (mins == 0) {
       s0 += 0x20;
-      sprintf_core((char *)buf,(const char *)guest_at(0x80120928),t0,r);
+      sprintf_core((char *)buf,(const char *)guest_at(0x80120928),sec_rem,r);
     } else {
-      if (v1 >= 0x64) { v1 = 0x63; t0 = 0x3b; r = 0x63; }
+      if (mins >= 0x64) { mins = 0x63; sec_rem = 0x3b; r = 0x63; }
       s0 += 8;
-      sprintf_core((char *)buf,(const char *)guest_at(0x80120934),v1,t0,r);
+      sprintf_core((char *)buf,(const char *)guest_at(0x80120934),mins,sec_rem,r);
     }
     hud_text_blk(*(uint32_t *)(s1 + 8),*(uint32_t *)(s1 + 0xc),fta_frm + 0x20,s0,0x20,s2);
     br2_guest_frame_free();
@@ -4552,23 +4554,23 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
 extern void please_wait_announce(uint32_t,uint32_t);
 void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
 {
-  uint8_t *t0 = (uint8_t *)guest_at(battle_g);
-  int32_t a3, v0;
+  uint8_t *B = (uint8_t *)guest_at(battle_g);
+  int32_t text_x, attr;
   uint32_t text = 0;
-  a3 = player ? ((int32_t)*(int16_t *)(t0 + 0x20) - 0x50) : 0x50;
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(t0 + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
+  text_x = player ? ((int32_t)*(int16_t *)(B + 0x20) - 0x50) : 0x50;
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(B + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   if (((*(uint32_t *)guest_at(0x1f8000dc) >> 4) & 3) == 0) return;
-  /* JT1 on t0[0x92] < 0x11 */
+  /* JT1 on B[0x92] < 0x11 */
   {
     static const uint8_t jt1_kind[17] = {
       0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,0,1 };   /* 0->636d0 1->524b0 2->a4-gate */
-    uint32_t s92 = t0[0x92];
+    uint32_t jt1_idx = B[0x92];
     int do524b0 = 0, cont = 1;
-    if (s92 < 0x11) {
-      switch (jt1_kind[s92]) {
+    if (jt1_idx < 0x11) {
+      switch (jt1_kind[jt1_idx]) {
       case 1: do524b0 = 1; cont = 0; break;
       case 2:
-        if (*(int16_t *)(t0 + 0xa4) < 0) { do524b0 = 1; cont = 0; }
+        if (*(int16_t *)(B + 0xa4) < 0) { do524b0 = 1; cont = 0; }
         break;
       }
     }
@@ -4576,23 +4578,23 @@ void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
     if (!cont) return;
   }
   /* 636d0: mode==0 extra gate */
-  if (t0[0x9c] == 0 &&
-      (int32_t)*(int16_t *)(t0 + 0xa4) >=
-      (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(t0 + 0xc0) + (0x10))) {
+  if (B[0x9c] == 0 &&
+      (int32_t)*(int16_t *)(B + 0xa4) >=
+      (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(B + 0xc0) + (0x10))) {
     please_wait_announce(battle_g,player); return;
   }
-  v0 = 4;
-  if (force == 0 && t0[0x9c] < 6) {
+  attr = 4;
+  if (force == 0 && B[0x9c] < 6) {
     static const uint32_t jt2[6] = {
       0x801637d8,0x80163744,0x80163758,0x8016376c,0x801637c4,0x80163780 };
-    uint32_t tgt = jt2[t0[0x9c]];
-    if (tgt == 0x80163744) { text = 0x80121e54; a3 -= 0x1b; }
-    else if (tgt == 0x80163758) { text = 0x80121e60; a3 -= 0x1e; }
-    else if (tgt == 0x8016376c) { text = 0x80121e6c; a3 -= 0x27; }
-    else if (tgt == 0x801637c4) { text = 0x80121e98; a3 -= 0x1e; }
+    uint32_t tgt = jt2[B[0x9c]];
+    if (tgt == 0x80163744) { text = 0x80121e54; text_x -= 0x1b; }
+    else if (tgt == 0x80163758) { text = 0x80121e60; text_x -= 0x1e; }
+    else if (tgt == 0x8016376c) { text = 0x80121e6c; text_x -= 0x27; }
+    else if (tgt == 0x801637c4) { text = 0x80121e98; text_x -= 0x1e; }
     else if (tgt == 0x80163780) {
-      if (t0[0x9b] == 4) { text = 0x80121e7c; a3 -= 0x27; }
-      else               { text = 0x80121e8c; a3 -= 0x21; }
+      if (B[0x9b] == 4) { text = 0x80121e7c; text_x -= 0x27; }
+      else               { text = 0x80121e8c; text_x -= 0x21; }
     } else tgt = 0x801637d8;
     if (text) goto emit;
   }
@@ -4600,16 +4602,16 @@ void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force)
   if ((*(uint32_t *)guest_at(0x1f8000dc) & 0x40) != 0) {
     if (force != 0) return;
     text = 0x80121ea4;  /* AWAITING CHALLENGER */
-    v0 = 1; a3 -= 0x39;
+    attr = 1; text_x -= 0x39;
   } else {
     text = 0x80121eb8;  /* PRESS START */
-    a3 -= 0x21; v0 = 4;  /* guest leaves $v0=4 (delay-slot li at 0x801637EC);
+    text_x -= 0x21; attr = 4;  /* guest leaves $v0=4 (delay-slot li at 0x801637EC);
                          * only the AWAITING CHALLENGER path sets $v0=1 */
   }
 emit:
-  a3 = (int32_t)(int16_t)a3;
-  hud_text_blk_alt(*(uint32_t *)(t0 + 8),*(uint32_t *)(t0 + 0xc),
-               (const void *)guest_at(text),a3,0x20,v0);
+  text_x = (int32_t)(int16_t)text_x;
+  hud_text_blk_alt(*(uint32_t *)(B + 8),*(uint32_t *)(B + 0xc),
+               (const void *)guest_at(text),text_x,0x20,attr);
 }
 
 /* continue_countdown — continue/countdown ticker on battle+0xb2 (14-bit
@@ -5602,7 +5604,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   uint32_t sst_frm = br2_guest_frame(0x168);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address aliasing the same bytes. */
-  uint8_t  *auStack_18 = (uint8_t *)guest_at(sst_frm + 0x20);
+  uint8_t  *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
   uint32_t cnt   = 0;                   /* sp+0x130 */
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
@@ -5610,7 +5612,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   int32_t  s6    = 0;
   uint8_t *p1 = side_a, *p2 = side_b;
 
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
@@ -5620,7 +5622,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
       /* ---------- state 0 ---------- */
       int32_t r, r1, r2;
       r = battle_bringup_a(battle,(uint32_t)p1[3],(uint32_t)p2[3],
-                       auStack_18 + 0x100);
+                       arg_blk + 0x100);
       if (r == 0) goto L_tail;
       rgb_triple_store(0,0,0);
       task_pool_init(1,2,0x6400,0x801d01ec);
@@ -5663,35 +5665,35 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
         do {
           uint32_t t0 = t1;
           uint32_t o1 = 0xa0, o2 = 0xa50, o3 = 0xaf0;
-          int32_t  i2 = 0;
+          int32_t  k = 0;
           do {
-            uint32_t b;
-            b = MB32(t0) + o1;
-            MW16(b + 0xa,  (uint16_t)(MB16(b + 0xa)  - 0x18));
-            MW16(b + 0x12, (uint16_t)(MB16(b + 0x12) - 0x18));
-            MW16(b + 0x1a, (uint16_t)(MB16(b + 0x1a) - 0x18));
-            MW16(b + 0x22, (uint16_t)(MB16(b + 0x22) - 0x18));
+            uint32_t tbl_b;
+            tbl_b = MB32(t0) + o1;
+            MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
+            MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
+            MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
+            MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
             o1 += 0x28;
-            b = MB32(t0) + o2;
-            MW16(b + 0xa,  (uint16_t)(MB16(b + 0xa)  - 0x18));
-            MW16(b + 0x12, (uint16_t)(MB16(b + 0x12) - 0x18));
-            MW16(b + 0x1a, (uint16_t)(MB16(b + 0x1a) - 0x18));
-            MW16(b + 0x22, (uint16_t)(MB16(b + 0x22) - 0x18));
+            tbl_b = MB32(t0) + o2;
+            MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
+            MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
+            MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
+            MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
             o2 += 0x28;
-            b = MB32(t0) + o3;
-            MW16(b + 0xa,  (uint16_t)(MB16(b + 0xa)  - 0x18));
-            MW16(b + 0x12, (uint16_t)(MB16(b + 0x12) - 0x18));
-            MW16(b + 0x1a, (uint16_t)(MB16(b + 0x1a) - 0x18));
-            MW16(b + 0x22, (uint16_t)(MB16(b + 0x22) - 0x18));
+            tbl_b = MB32(t0) + o3;
+            MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
+            MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
+            MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
+            MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
             o3 += 0x28;
-            i2++;
-          } while (i2 < 2);
+            k++;
+          } while (k < 2);
           {
-            uint32_t b = MB32(t1) + 0xf0;
-            MW16(b + 0xa,  (uint16_t)(MB16(b + 0xa)  - 0x18));
-            MW16(b + 0x12, (uint16_t)(MB16(b + 0x12) - 0x18));
-            MW16(b + 0x1a, (uint16_t)(MB16(b + 0x1a) - 0x18));
-            MW16(b + 0x22, (uint16_t)(MB16(b + 0x22) - 0x18));
+            uint32_t tbl_b = MB32(t1) + 0xf0;
+            MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
+            MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
+            MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
+            MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
           }
           t1 += 4; i1++;
         } while (i1 < 2);
@@ -5800,32 +5802,32 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
       }
 
       if (MB8(battle + 0x9c) == 3) {
-        int32_t v1 = MBS16(battle + 0xa2);
-        int32_t s0v, s2v;
-        if (v1 < 9) { s0v = 0;     s2v = v1; }
-        else        { s0v = v1-8; s2v = 8; }
-        if (s2v > 0) {
-          int32_t  i2 = 0;
-          uint32_t s4v = 0x180000, s3v = 0x10;
+        int32_t remain = MBS16(battle + 0xa2);
+        int32_t pos, batch;
+        if (remain < 9) { pos = 0;     batch = remain; }
+        else        { pos = remain-8; batch = 8; }
+        if (batch > 0) {
+          int32_t  k = 0;
+          uint32_t attr_a = 0x180000, attr_b = 0x10;
           do {
-            /* s0v % 11 via 0x2e8ba2e9 magic (mult hi) */
-            int64_t  pr = (int64_t)s0v * (int64_t)(int32_t)0x2e8ba2e9;
-            int32_t  q  = (int32_t)((int32_t)(pr >> 32) >> 1) - (s0v >> 31);
-            int32_t  rem = s0v - q * 11;
-            uint32_t b   = MB8(MB32(battle + 0xa8) + (uint32_t)rem);
-            uint32_t a0g = MB32(battle + 8) + 4;
-            uint32_t a3v = ((b + 0x1e0) & 0x1ff) << 22;
-            a3v |= ((((b >> 2) << 6) + 1) & 0xff) << 8;
-            a3v |= (b & 3) << 6;
-            spr_slot_pkt_submit((uint *)guest_at(a0g),
-                         0x180000u | (s3v & 0xffff),0x3e379d,a3v);
-            if (i2 < s2v) {
+            /* pos % 11 via 0x2e8ba2e9 magic (mult hi) */
+            int64_t  prod = (int64_t)pos * (int64_t)(int32_t)0x2e8ba2e9;
+            int32_t  quo  = (int32_t)((int32_t)(prod >> 32) >> 1) - (pos >> 31);
+            int32_t  rem = pos - quo * 11;
+            uint32_t pal_b   = MB8(MB32(battle + 0xa8) + (uint32_t)rem);
+            uint32_t ot_ptr = MB32(battle + 8) + 4;
+            uint32_t attr_c = ((pal_b + 0x1e0) & 0x1ff) << 22;
+            attr_c |= ((((pal_b >> 2) << 6) + 1) & 0xff) << 8;
+            attr_c |= (pal_b & 3) << 6;
+            spr_slot_pkt_submit((uint *)guest_at(ot_ptr),
+                         0x180000u | (attr_b & 0xffff),0x3e379d,attr_c);
+            if (k < batch) {
               announce_param_block_init(MB32(battle + 8),MB32(battle + 0xc),
                            (const void *)guest_at(0x80126e8),
-                           (uint32_t)((int32_t)s4v >> 16),0x198,0);
+                           (uint32_t)((int32_t)attr_a >> 16),0x198,0);
             }
-            s4v += 0x3a; s3v += 0x3a; i2++; s0v++;
-          } while (i2 < s2v);
+            attr_a += 0x3a; attr_b += 0x3a; k++; pos++;
+          } while (k < batch);
         }
       }
 L_e7c:
@@ -5909,7 +5911,7 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
                      void *unused)
 {
   uint32_t s5 = battle, s4 = sel_a, s2 = sel_b;
-  uint32_t s3, s0, s1, a0v;
+  uint32_t s3, s0, s1, res_id;
   int32_t  v1;
   (void)unused;
 
@@ -5937,17 +5939,17 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
     s0 = 0x10;                            /* jal delay slot */
     page_table_ptr_set(0x11,2,(undefined *)0);
     cd_timer_read(0);
-    a0v = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
     goto L_bchk;
   case 0x10:
-    a0v = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
   L_bchk:
-    if (cd_file_load_sm(a0v, s3) == 0) goto L_store;
+    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
     goto L_mid;
   case 0x20:
-    a0v = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
-    a0v += 0xc7;
-    if (cd_file_load_sm(a0v, s3) == 0) goto L_store;
+    res_id = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
+    res_id += 0xc7;
+    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
     scratch_013_set(0);
     spr_draw_pair(s3,0,0x1f6,1,0x260,0,1);
     cd_timer_read(0);
@@ -6147,9 +6149,9 @@ void ko_count_announce(uint32_t battle,uint32_t text_list)
 
   /* shared tail math: t = trunc2(lh20 + K), w = trunc16(lh22) */
   {
-    int32_t vv = (int32_t)MBS16(s0 + 0x20) + K;
-    int32_t uu = vv + (int32_t)((uint32_t)vv >> 31);
-    t = (uu << 15) >> 16;
+    int32_t v_raw = (int32_t)MBS16(s0 + 0x20) + K;
+    int32_t v_adj = v_raw + (int32_t)((uint32_t)v_raw >> 31);
+    t = (v_adj << 15) >> 16;
     a1x = (int32_t)MBS16(s0 + 0x22);
     if (a1x < 0) a1x += 0xf;
     w = a1x >> 4;
@@ -6207,8 +6209,8 @@ int32_t pad_handler_a(uint32_t battle,uint32_t mask)
            (int32_t)(int16_t)(s5 + s2),(uint32_t)(lb2 ^ 2) < 1);
   {
     uint32_t c0 = MB32(s3 + 0xc0);
-    uint32_t a2v = MB32(0x801b4008 + (uint32_t)MB8(c0 + 0xb) * 4);
-    BR2_E078(s3,a2v,(int32_t)(int16_t)s0,
+    uint32_t dw_ent = MB32(0x801b4008 + (uint32_t)MB8(c0 + 0xb) * 4);
+    BR2_E078(s3,dw_ent,(int32_t)(int16_t)s0,
              (int32_t)(int16_t)(s5 + s4 * 4),(uint32_t)(lb2 ^ 3) < 1);
   }
   lb2 = MBS8(MB32(s3 + 0x84) + 2);
@@ -6246,10 +6248,10 @@ L_dispatch:
     int32_t lh12;
     if (MBS16(p84 + 0x14) == 0) goto L_2194;
     if (fp & 0xa000) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xa,0);
-      q = MB32(s3 + 0x84);
-      MW16(q + 0x12,(uint16_t)(MB16(q + 0x12) ^ 1));
+      sub84 = MB32(s3 + 0x84);
+      MW16(sub84 + 0x12,(uint16_t)(MB16(sub84 + 0x12) ^ 1));
     }
     {
       int32_t x = (int32_t)MBS16(s3 + 0x20) - 0x40;
@@ -6268,10 +6270,10 @@ L_dispatch:
              (uint32_t)lh12 != 0);
     BR2_CC6C(s3,s6 - 4,s5 - (s4 >> 1),0x48,s4 * 3,0x201010,0);
     if (fp & 0x10) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xd,0);
-      q = MB32(s3 + 0x84); MW16(q + 0x14,0);
-      q = MB32(s3 + 0x84); MW16(q + 0x12,0);
+      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
+      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
     }
     if (fp & 0xe0) {
       lh12 = MBS16(MB32(s3 + 0x84) + 0x12);
@@ -6279,10 +6281,10 @@ L_dispatch:
         deferred_cmd_post(0x400,0xc,0);
         MB8(s3 + 1) = 9;                  /* j delay slot */
       } else {
-        uint32_t q;
+        uint32_t sub84;
         deferred_cmd_post(0x400,0xd,0);
-        q = MB32(s3 + 0x84); MW16(q + 0x14,0);
-        q = MB32(s3 + 0x84); MW16(q + 0x12,0);
+        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
+        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
       }
     }
     return 0;
@@ -6311,10 +6313,10 @@ L_dispatch:
 L_2194:                                        /* case2, lh14 == 0 */
   if ((fp & 0xe0) == 0) return 0;
   {
-    uint32_t q;
+    uint32_t sub84;
     deferred_cmd_post(0x400,0xc,0);
-    q = MB32(s3 + 0x84); MW16(q + 0x14,1);
-    q = MB32(s3 + 0x84); MW16(q + 0x12,1);
+    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,1);
+    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,1);
   }
   return 0;
 }
@@ -6404,10 +6406,10 @@ L_dispatch:
     /* ---- state 2 ---- */
     if (MBS16(p84 + 0x14) == 0) goto L_27d4;
     if (s7 & 0xa000) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xa,0);
-      q = MB32(s3 + 0x84);
-      MW16(q + 0x12,(uint16_t)(MB16(q + 0x12) ^ 1));
+      sub84 = MB32(s3 + 0x84);
+      MW16(sub84 + 0x12,(uint16_t)(MB16(sub84 + 0x12) ^ 1));
     }
     {
       int32_t x = (int32_t)MBS16(s3 + 0x20) - 0x40;
@@ -6426,10 +6428,10 @@ L_dispatch:
              (uint32_t)lh12 != 0);
     BR2_CC6C(s3,s6 - 4,s5 - (s4 >> 1),0x48,s4 * 3,0x201010,0);
     if (s7 & 0x10) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xd,0);
-      q = MB32(s3 + 0x84); MW16(q + 0x14,0);
-      q = MB32(s3 + 0x84); MW16(q + 0x12,0);
+      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
+      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
     }
     if (s7 & 0xe0) {
       lh12 = MBS16(MB32(s3 + 0x84) + 0x12);
@@ -6437,10 +6439,10 @@ L_dispatch:
         deferred_cmd_post(0x400,0xc,0);
         MB8(s3 + 1) = 9;
       } else {
-        uint32_t q;
+        uint32_t sub84;
         deferred_cmd_post(0x400,0xd,0);
-        q = MB32(s3 + 0x84); MW16(q + 0x14,0);
-        q = MB32(s3 + 0x84); MW16(q + 0x12,0);
+        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
+        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
       }
     }
     return 0;
@@ -6450,10 +6452,10 @@ L_dispatch:
 L_27d4:                                        /* state2, lh14 == 0 */
   if ((s7 & 0xe0) == 0) return 0;
   {
-    uint32_t q;
+    uint32_t sub84;
     deferred_cmd_post(0x400,0xc,0);
-    q = MB32(s3 + 0x84); MW16(q + 0x14,1);
-    q = MB32(s3 + 0x84); MW16(q + 0x12,1);
+    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,1);
+    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,1);
   }
   return 0;
 }
@@ -6475,7 +6477,7 @@ int32_t pad_handler_c(uint32_t battle,uint32_t mask)
   uint32_t fp = mask;                 /* pad mask */
   uint32_t a0 = 1;
   uint32_t s5, s4, s3, s6, s7 = 0, s1, s0;
-  uint32_t p84, a2v;
+  uint32_t p84, dw_ent;
   int32_t  lb2, lh12;
 
   /* first-use init: obj+0x84->6 == 0 -> seed flag halfwords from +0xd4 */
@@ -6522,32 +6524,32 @@ int32_t pad_handler_c(uint32_t battle,uint32_t mask)
   if (lb2 == 1) { s1 = 1; s7 = s4 + (s3 << 1); }
   BR2_E078(s2,0x80121ddc,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 2),s1);
-  a2v = MB32(0x801b41e8 + (uint32_t)MBS16(p84 + 8) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b41e8 + (uint32_t)MBS16(p84 + 8) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 2),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 2) { s1 = 1; s7 = s4 + s3 * 3; }
   BR2_E078(s2,0x80121de8,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 3),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xa) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xa) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 3),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 3) { s1 = 1; s7 = s4 + s3 * 4; }
   BR2_E078(s2,0x80121df4,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 4),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xc) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xc) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 4),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
   if (lb2 == 4) { s1 = 1; s7 = s4 + s3 * 5; }
   BR2_E078(s2,0x80121e0c,(int32_t)(int16_t)(s5 + 8),
            (int32_t)(int16_t)(s4 + s3 * 5),s1);
-  a2v = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xe) * 4);
-  BR2_E078(s2,a2v,(int32_t)(int16_t)(s5 + 0x98),
+  dw_ent = MB32(0x801b3f70 + (uint32_t)MBS16(p84 + 0xe) * 4);
+  BR2_E078(s2,dw_ent,(int32_t)(int16_t)(s5 + 0x98),
            (int32_t)(int16_t)(s4 + s3 * 5),s1);
   lb2 = MBS8(MB32(s2 + 0x84) + 2);
   s1 = 0;
@@ -6602,10 +6604,10 @@ L_dispatch:
     /* ---- held-dpad redraw ---- */
     if (MBS16(p84 + 0x14) == 0) goto L_30f0;
     if (fp & 0xa000) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xa,0);
-      q = MB32(s2 + 0x84);
-      MW16(q + 0x12,(uint16_t)(MB16(q + 0x12) ^ 1));
+      sub84 = MB32(s2 + 0x84);
+      MW16(sub84 + 0x12,(uint16_t)(MB16(sub84 + 0x12) ^ 1));
     }
     {
       int32_t x = (int32_t)MBS16(s2 + 0x20) - 0x40;
@@ -6624,10 +6626,10 @@ L_dispatch:
              (uint32_t)lh12 != 0);
     BR2_CC6C(s2,s5 - 4,s4 - (s3 >> 1),0x48,s3 * 3,0x201010,0);
     if (fp & 0x10) {
-      uint32_t q;
+      uint32_t sub84;
       deferred_cmd_post(0x400,0xd,0);
-      q = MB32(s2 + 0x84); MW16(q + 0x14,0);
-      q = MB32(s2 + 0x84); MW16(q + 0x12,0);
+      sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x14,0);
+      sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x12,0);
     }
     if (fp & 0xe0) {
       lh12 = MBS16(MB32(s2 + 0x84) + 0x12);
@@ -6635,10 +6637,10 @@ L_dispatch:
         deferred_cmd_post(0x400,0xc,0);
         MB8(s2 + 1) = 9;
       } else {
-        uint32_t q;
+        uint32_t sub84;
         deferred_cmd_post(0x400,0xd,0);
-        q = MB32(s2 + 0x84); MW16(q + 0x14,0);
-        q = MB32(s2 + 0x84); MW16(q + 0x12,0);
+        sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x14,0);
+        sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x12,0);
       }
     }
     return 0;
@@ -6648,25 +6650,25 @@ L_dispatch:
 L_30f0:                                        /* case6, lh14 == 0 */
   if ((fp & 0xe0) == 0) return 0;
   {
-    uint32_t q;
+    uint32_t sub84;
     deferred_cmd_post(0x400,0xc,0);
-    q = MB32(s2 + 0x84); MW16(q + 0x14,1);
-    q = MB32(s2 + 0x84); MW16(q + 0x12,1);
+    sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x14,1);
+    sub84 = MB32(s2 + 0x84); MW16(sub84 + 0x12,1);
   }
   return 0;
 
 L_d8c:                                         /* d4 nibble -> flags */
   {
-    uint32_t a1v = MB32(s2 + 0x84);
-    uint32_t a0v = MB16(a1v + 8) & 7;
-    uint32_t dv;
-    if (MBS16(a1v + 0xa) != 0) a0v |= 8;
-    if (MBS16(a1v + 0xc) != 0) a0v |= 0x10;
-    if (MBS16(a1v + 0xe) != 0) a0v |= 0x20;
-    dv = MB8(s2 + 0xd4);
-    if (dv != a0v) {
+    uint32_t rec84 = MB32(s2 + 0x84);
+    uint32_t new_mask = MB16(rec84 + 8) & 7;
+    uint32_t prev_mask;
+    if (MBS16(rec84 + 0xa) != 0) new_mask |= 8;
+    if (MBS16(rec84 + 0xc) != 0) new_mask |= 0x10;
+    if (MBS16(rec84 + 0xe) != 0) new_mask |= 0x20;
+    prev_mask = MB8(s2 + 0xd4);
+    if (prev_mask != new_mask) {
       MW8(s2 + 0x9a,2);
-      MW8(s2 + 0xd4,(uint8_t)a0v);
+      MW8(s2 + 0xd4,(uint8_t)new_mask);
       MW8(s2 + 1,6);
     }
   }
@@ -6690,11 +6692,11 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 {
   uint32_t ctr = ctr_addr;
   int32_t  fl = floor;
-  uint32_t s2 = mask & 0xffff;
+  uint32_t mask_lo = mask & 0xffff;
   int32_t  old = MBS8(ctr);
-  uint32_t v1  = s2;
+  uint32_t btn_code  = mask_lo;
 
-  if (v1 == 0x2000) {
+  if (btn_code == 0x2000) {
     deferred_cmd_post(0x400,0xb,0);
     {
       int32_t nv = (int32_t)(int16_t)(fl << 16 >> 16);   /* fl sll/sra 16 */
@@ -6704,7 +6706,7 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
       if (nv < cb) MW8(ctr,0);
     }
   }
-  if (v1 == 0x8000) {
+  if (btn_code == 0x8000) {
     deferred_cmd_post(0x400,0xb,0);
     {
       int32_t cb = (int8_t)(MB8(ctr) - 1);               /* lbu-1, sll24 test */
@@ -6722,15 +6724,14 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 void string_pair_emit(uint32_t unused_a,uint32_t unused_b,uint32_t unused_c,
                   uint32_t rec)
 {
-  uint32_t s0 = rec;
-  uint32_t v0 = MB8(s0 + 0x17);
+  uint32_t str_idx = MB8(rec + 0x17);
   const void *s;
-  if (v0 == 0) s = guest_at(0x801c15d0);
-  else         s = guest_at(0x801b3f68 + (v0 << 4));
+  if (str_idx == 0) s = guest_at(0x801c15d0);
+  else         s = guest_at(0x801b3f68 + (str_idx << 4));
   u16_tbl_copy(0,s);
-  v0 = MB8(s0 + 0x18);
-  if (v0 == 0) s = guest_at(0x801c15e0);
-  else         s = guest_at(0x801b3f68 + (v0 << 4));
+  str_idx = MB8(rec + 0x18);
+  if (str_idx == 0) s = guest_at(0x801c15e0);
+  else         s = guest_at(0x801b3f68 + (str_idx << 4));
   u16_tbl_copy(1,s);
 }
 
@@ -6855,12 +6856,12 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     /* ---- block @eng+0x1ce: 4 iters, constant tables ---- */
     t2 = 0x801b25c0; t1 = 0x801b25bc; s1 = 0x801b25c4;
     {
-      uint32_t a0r = eng + 0x1ce; s6 = 0;
+      uint32_t eng_cur = eng + 0x1ce; s6 = 0;
       do {
-        BR2_XROW(a0r,MB8(s1),MB8(s1+1),MB8(s1+2),MB8(s1+3));
-        MW16(a0r - 8,BR2_PKA(t1));
-        MW16(a0r,BR2_PKB(t2));
-        s6++; a0r += 0x28;
+        BR2_XROW(eng_cur,MB8(s1),MB8(s1+1),MB8(s1+2),MB8(s1+3));
+        MW16(eng_cur - 8,BR2_PKA(t1));
+        MW16(eng_cur,BR2_PKB(t2));
+        s6++; eng_cur += 0x28;
       } while (s6 < 4);
     }
 
@@ -6898,12 +6899,12 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     /* ---- block @eng+0x2be: 18 iters, no E70, +0x40/+7 consts ---- */
     t1 = 0x801b23d4; s1 = 0x801b23d8; t2 = 0x801b23fc;
     {
-      uint32_t a0r = eng + 0x2be; s6 = 0;
+      uint32_t eng_cur = eng + 0x2be; s6 = 0;
       do {
-        BR2_ZROW(a0r,MB8(s1),MB8(s1+1),0x40,7);
-        MW16(a0r - 8,MB16(t1));
-        MW16(a0r,BR2_PKB(t2));
-        s6++; s1 += 2; a0r += 0x28;
+        BR2_ZROW(eng_cur,MB8(s1),MB8(s1+1),0x40,7);
+        MW16(eng_cur - 8,MB16(t1));
+        MW16(eng_cur,BR2_PKB(t2));
+        s6++; s1 += 2; eng_cur += 0x28;
       } while (s6 < 0x12);
     }
 
@@ -6951,22 +6952,22 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     /* ---- block @eng+0xab6: 2 iters, no E70, const tables ---- */
     t2 = 0x801b2678; t1 = 0x801b2680; s1 = 0x801b267c;
     {
-      uint32_t a0r = eng + 0xab6; s6 = 0;
+      uint32_t eng_cur = eng + 0xab6; s6 = 0;
       do {
-        BR2_ZROW(a0r,MB8(s1),MB8(s1+1),0x38,0x3f);
-        MW16(a0r - 8,BR2_PKA(t1));
-        MW16(a0r,BR2_PKB(t2));
-        s6++; s1 += 2; a0r += 0x28;
+        BR2_ZROW(eng_cur,MB8(s1),MB8(s1+1),0x38,0x3f);
+        MW16(eng_cur - 8,BR2_PKA(t1));
+        MW16(eng_cur,BR2_PKB(t2));
+        s6++; s1 += 2; eng_cur += 0x28;
       } while (s6 < 2);
     }
 
     /* ---- block @eng+0xba6: 2 iters, packed only ---- */
     {
-      uint32_t a0r = eng + 0xba6; s6 = 0;
+      uint32_t eng_cur = eng + 0xba6; s6 = 0;
       do {
-        MW16(a0r - 8,BR2_PKA(0x801b2680));
-        MW16(a0r,BR2_PKB(0x801b2678));
-        s6++; a0r += 0x28;
+        MW16(eng_cur - 8,BR2_PKA(0x801b2680));
+        MW16(eng_cur,BR2_PKB(0x801b2678));
+        s6++; eng_cur += 0x28;
       } while (s6 < 2);
     }
   }
@@ -7392,7 +7393,7 @@ L_ewin:
     return 0;
 
   case 15: {
-    int32_t a0v, hi, q, rem;
+    int32_t src_val, mulhi, quot, rem;
     MW8(s1 + 0xb1,1);                    /* jal delay slot: always */
     if (MBS16(s1 + 0x8c) == 0) task_table_init(1);
     slot_triple_set(1,-1,-1,-1);
@@ -7424,11 +7425,11 @@ L_ewin:
     }
     if (MBS16(s1 + 0x8c) == 1)
       mc_confirm_dispatch(MB8(MB32(s1 + 0xc0) + 0xd) != 0 ? 5 : 0x2a,0);
-    /* signed a0 % 80 via mult 0x66666667/hi>>5 */
-    a0v = (int16_t)(MB16(s1 + 0xb2) & 0x3fff);
-    hi  = (int32_t)(((int64_t)a0v * (int64_t)0x66666667) >> 32);
-    q   = (hi >> 5) - (a0v >> 31);
-    rem = (int16_t)(a0v - q * 80);
+    /* signed a0 % 80 via mult 0x66666667/mulhi>>5 */
+    src_val = (int16_t)(MB16(s1 + 0xb2) & 0x3fff);
+    mulhi  = (int32_t)(((int64_t)src_val * (int64_t)0x66666667) >> 32);
+    quot   = (mulhi >> 5) - (src_val >> 31);
+    rem = (int16_t)(src_val - quot * 80);
     if (rem == 4) deferred_cmd_post(0x400,0x11,0);
     {
       uint32_t c8  = MB16(s1 + 0x8c) + 1;
@@ -7449,7 +7450,7 @@ L_ewin:
   }
 
   case 16: {
-    int32_t s4v = -1, s5v = 1;
+    int32_t spr_idx = -1, aux_b5 = 1;
     uint32_t nv, byted;
     int32_t v1;
     MW8(s1 + 0xb1,0xff);                 /* jal delay slot: before call */
@@ -7460,13 +7461,13 @@ L_ewin:
       if (MB16(s1 + 0x7c) & 0x800) MW16(s1 + 0x8e,0x1356);
       if (MB16(s1 + 0x7c) & 0xe8)  MW16(s1 + 0x8e,0x1356);
     }
-    if (MB8(g2 + 1) == 0) { s5v = MB8(g2 + 5); s4v = MB8(g2 + 3); }
-    if (MB8(g3 + 1) == 0) { s5v = MB8(g3 + 5); s4v = MB8(g3 + 3); }
+    if (MB8(g2 + 1) == 0) { aux_b5 = MB8(g2 + 5); spr_idx = MB8(g2 + 3); }
+    if (MB8(g3 + 1) == 0) { aux_b5 = MB8(g3 + 5); spr_idx = MB8(g3 + 3); }
     nv = MB16(s1 + 0x90) + 1;
     MW16(s1 + 0x90,nv);
     if ((int16_t)nv < 4) return 0;
-    if (s5v == 0) {
-      uint32_t sv = MB8(0x801b49f8 + (uint32_t)s4v);
+    if (aux_b5 == 0) {
+      uint32_t sv = MB8(0x801b49f8 + (uint32_t)spr_idx);
       if (menu_sprite_load_sm(s1,sv + 0xc5,0x13,2,1) == 0) return 0;
     }
     if (MBS16(s1 + 0x8e) == 0) {
@@ -7476,7 +7477,7 @@ L_ewin:
         battle_field_set(MB32(s1 + 0xbc),v0);
       mc_confirm_dispatch(MB8(MB32(s1 + 0xc0) + 0xd) != 0 ? 6 : 0x27,0);
       se_value_select((uint32_t)MBS8(s1 + 0x98));
-      if (s5v == 0) deferred_cmd_post(0x400,0x80,0x1e);
+      if (aux_b5 == 0) deferred_cmd_post(0x400,0x80,0x1e);
     }
     nv = MB16(s1 + 0x8e) + 1;
     MW16(s1 + 0x8e,nv);
@@ -7619,12 +7620,12 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
     v1 = (uint32_t)(int32_t)(int16_t)(v0 << 16 >> 16);
     MW16(s1 + 0x76,(uint16_t)v0);
     {
-      int32_t a1v = (int32_t)v1;
-      if (a1v < 0) a1v += 3;
-      a1v = a1v >> 2;                          /* sra */
-      a1v = (int32_t)v1 - (a1v << 2);
-      a1v = (int32_t)(int16_t)(a1v << 16 >> 16);
-      battle_field_set(s1,a1v);
+      int32_t field_val = (int32_t)v1;
+      if (field_val < 0) field_val += 3;
+      field_val = field_val >> 2;                          /* sra */
+      field_val = (int32_t)v1 - (field_val << 2);
+      field_val = (int32_t)(int16_t)(field_val << 16 >> 16);
+      battle_field_set(s1,field_val);
     }
   }
   if (s0 & 8) {
@@ -7915,7 +7916,7 @@ void vs_confirm_c(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
   uint8_t *s2 = blk_a;
   uint8_t *s1 = blk_b;
   uint32_t s0 = battle;
-  uint32_t v1, a1v;
+  uint32_t v1, step;
   (void)unused;
 
   if (MBS16(s0 + 0x8c) == 0) {
@@ -7925,15 +7926,15 @@ void vs_confirm_c(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
       v1 = MB16(s0 + 0x92) & 0xf00;
       if (v1 == 0x200 || v1 == 0x100) {
         if (MBS16(s0 + 0x94) == 0) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         } else if (s2[0] == 0x81) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         } else if (*(int16_t *)(s2 + 0xac) == 0) {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 15u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 15u;
         } else {
-          a1v = (s2[1] != 0) ? (uint32_t)-10 : 10u;
+          step = (s2[1] != 0) ? (uint32_t)-10 : 10u;
         }
-        ctr_clamp(s0,(int32_t)a1v);
+        ctr_clamp(s0,(int32_t)step);
       }
     }
   }
@@ -8188,13 +8189,13 @@ L_main:                                         /* 0x801547d4 */
 
 L_868:                                          /* 0x80154868 */
   if (MBS16(s0 + 0x8c) == 2) {
-    uint32_t a0p = *(uint32_t *)(s1 + 0x38);    /* guest ptr value */
+    uint32_t ent_ptr = *(uint32_t *)(s1 + 0x38);    /* guest ptr value */
     uint32_t d;
-    d = (uint32_t)*(uint16_t *)(s1 + 0x88) - (uint32_t)MB16(a0p + 0xca);
-    MW16(a0p + 0xc2,(uint16_t)(MB16(a0p + 0xc2) + d));
-    a0p = *(uint32_t *)(s1 + 0x38);
-    MW16(a0p + 0xc8,*(uint16_t *)(s1 + 0x88));
-    MW16(a0p + 0xca,*(uint16_t *)(s1 + 0x88));
+    d = (uint32_t)*(uint16_t *)(s1 + 0x88) - (uint32_t)MB16(ent_ptr + 0xca);
+    MW16(ent_ptr + 0xc2,(uint16_t)(MB16(ent_ptr + 0xc2) + d));
+    ent_ptr = *(uint32_t *)(s1 + 0x38);
+    MW16(ent_ptr + 0xc8,*(uint16_t *)(s1 + 0x88));
+    MW16(ent_ptr + 0xca,*(uint16_t *)(s1 + 0x88));
     MW16(*(uint32_t *)(s2 + 0x38) + 0x80,0x2c);
   }
   *(uint32_t *)(s2 + 0x60) |= 0x40a10005u;
@@ -8748,8 +8749,8 @@ L_tail:                                       /* 0x8014df6c */
       {
         int32_t v0 = (int32_t)B36_32(0x2c);
         int64_t prod = (int64_t)v0 * (int64_t)(int32_t)0x51eb851f;
-        int32_t hi = (int32_t)(prod >> 32);
-        a1 = (hi >> 4) - (v0 >> 31);
+        int32_t mulhi = (int32_t)(prod >> 32);
+        a1 = (mulhi >> 4) - (v0 >> 31);
       }
       width3_num_format((uint8_t *)b36_sp + 0x138,a1,1);
       B36_32(0x10) = (MB8(0x1f800015) != 0) ? 0xf0u : 0x78u;
@@ -8933,18 +8934,18 @@ L_f20_ot:
           /* s0 = (12*B36_32(0x2c) mod 272) + 0x50 via mult 0x78787879 */
           int32_t a0 = (int32_t)B36_32(0x2c) * 12;
           int64_t prod = (int64_t)a0 * (int64_t)(int32_t)0x78787879;
-          int32_t hi = (int32_t)(prod >> 32);
-          int32_t q = (hi >> 7) - (a0 >> 31);
+          int32_t mulhi = (int32_t)(prod >> 32);
+          int32_t q = (mulhi >> 7) - (a0 >> 31);
           int32_t s0 = a0 - q * 272 + 0x50;
           int j;
           uint32_t base = (i == 0) ? 0x2a8 : 0x410;
-          int32_t a1v = (i == 0) ? 0 : 0x100;
-          int32_t a3v = (i == 0) ? 0x100 : 0x102;
+          int32_t attr1 = (i == 0) ? 0 : 0x100;
+          int32_t attr3 = (i == 0) ? 0x100 : 0x102;
           for (j = 0; j < 8; j++) {
             if (s0 >= 0x161) s0 -= 0x110;
             B36_32(0x150) = t0;
             sprite_rect_set_c(B36_ENG() + base + (uint32_t)j * 0x28,
-                         a1v,s0,a3v,0x22);
+                         attr1,s0,attr3,0x22);
             ot_push(B36_ENG() + (uint32_t)j * 0x28 + base,
                         B36_16S(0xa6));
             s0 += 0x22;
@@ -9017,10 +9018,10 @@ L_aeec:                                       /* 0x8014f164 */
 void battle_side_flag_prop(uint32_t battle,uint8_t *side)
 {
   uint8_t *s = side;
-  uint32_t v1 = *(uint32_t *)(side + 0x5c);
+  uint32_t fl5c = *(uint32_t *)(side + 0x5c);
   uint32_t rec;
-  if ((v1 & 8u) == 0) return;
-  if ((v1 & 0x40u) != 0 &&
+  if ((fl5c & 8u) == 0) return;
+  if ((fl5c & 0x40u) != 0 &&
       (*(uint32_t *)(side + 0x6c) & 0x02000000u) == 0 &&
       MBS8(*(uint32_t *)(side + 0x38) + 0x7e) < 0) {
     rec = MB32(battle + 0xcc);
@@ -9190,10 +9191,10 @@ void width3_num_format(void *out,int32_t val,int32_t mode)
   int32_t v = val;
   int32_t q, i;
 
-  /* val %= 1000 via mult 0x10624dd3, hi>>6 - sign */
+  /* val %= 1000 via mult 0x10624dd3, mulhi>>6 - sign */
   {
-    int32_t hi = (int32_t)(((int64_t)v * 0x10624dd3LL) >> 32);
-    int32_t d = (hi >> 6) - (v >> 31);
+    int32_t mulhi = (int32_t)(((int64_t)v * 0x10624dd3LL) >> 32);
+    int32_t d = (mulhi >> 6) - (v >> 31);
     v -= d * 1000;
   }
 
@@ -9214,8 +9215,8 @@ L_mode0:                                      /* 0x80148d1c */
   {
     uint8_t *p = buf + 5;
     do {
-      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
-      q = (hi >> 2) - (v >> 31);              /* v / 10 */
+      int32_t mulhi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (mulhi >> 2) - (v >> 31);              /* v / 10 */
       *--p = (uint8_t)(v - q * 10 + 0x30);
       v = q;
     } while (v != 0);
@@ -9228,8 +9229,8 @@ L_mode1:                                      /* 0x80148d80 */
   } else {
     for (i = 2; i >= 0; i--) {
       if (v != 0) {
-        int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
-        q = (hi >> 2) - (v >> 31);
+        int32_t mulhi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+        q = (mulhi >> 2) - (v >> 31);
         buf[i] = (uint8_t)(v - q * 10 + 0x30);
         v = q;
       } else {
@@ -9244,8 +9245,8 @@ L_mode2:                                      /* 0x80148e00 */
   buf[0] = '0'; buf[1] = '0'; buf[2] = '0';
   for (i = 2; i >= 0; i--) {
     if (v != 0) {
-      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
-      q = (hi >> 2) - (v >> 31);
+      int32_t mulhi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (mulhi >> 2) - (v >> 31);
       buf[i] = (uint8_t)(v - q * 10 + 0x30);
       v = q;
     }
@@ -9278,8 +9279,8 @@ void width3_num_space_pad(int32_t unused_a,int32_t val,int32_t unused_b,
   }
   for (i = 2; i >= 0; i--) {
     if (v != 0) {
-      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
-      q = (hi >> 2) - (v >> 31);                /* v / 10 */
+      int32_t mulhi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (mulhi >> 2) - (v >> 31);                /* v / 10 */
       buf[i] = (uint8_t)(v - q * 10 + 0x30);
       v = q;
     } else {
@@ -9306,8 +9307,8 @@ void width3_num_zero_pad(int32_t unused_a,int32_t val,int32_t unused_b,
   buf[0] = '0'; buf[1] = '0'; buf[2] = '0';
   for (i = 2; i >= 0; i--) {
     if (v != 0) {
-      int32_t hi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
-      q = (hi >> 2) - (v >> 31);                /* v / 10 */
+      int32_t mulhi = (int32_t)(((int64_t)v * 0x66666667LL) >> 32);
+      q = (mulhi >> 2) - (v >> 31);                /* v / 10 */
       buf[i] = (uint8_t)(v - q * 10 + 0x30);
       v = q;
     }
@@ -9320,9 +9321,9 @@ void width3_num_zero_pad(int32_t unused_a,int32_t val,int32_t unused_b,
  * slot so it always runs, then (a0 & 0x400) rewrites it |4. */
 void packed_field_store(uint32_t val)
 {
-  uint32_t v0 = (val & 0x3ffu) << 3;
-  MW32(0x801f10b8,v0);
-  if (val & 0x400u) MW32(0x801f10b8,v0 | 4u);
+  uint32_t ctl_w = (val & 0x3ffu) << 3;
+  MW32(0x801f10b8,ctl_w);
+  if (val & 0x400u) MW32(0x801f10b8,ctl_w | 4u);
 }
 
 /* side_flag_merge — per-side flag merge @0x8014a5bc (58 insns).
@@ -9382,17 +9383,17 @@ void engine_record_pair_update(uint32_t battle,void *ctxp)
   uint8_t *ctx = (uint8_t *)ctxp;
   int i;
   for (i = 0; i < 2; i++) {
-    uint32_t eng = MB32(0x801f10c0 + (uint32_t)i * 4u);
-    uint32_t a2v;
-    palette_attr_record_write(battle,eng + 0xa50,0,
+    uint32_t eng_ent = MB32(0x801f10c0 + (uint32_t)i * 4u);
+    uint32_t pk_arg;
+    palette_attr_record_write(battle,eng_ent + 0xa50,0,
                  *(uint32_t *)(ctx + 0x44));
-    palette_attr_record_write(battle,eng + 0xa78,1,
+    palette_attr_record_write(battle,eng_ent + 0xa78,1,
                  *(uint32_t *)(ctx + 0x74));
-    a2v = *(uint32_t *)(ctx + (uint32_t)i * 0x30 + 0x44);
+    pk_arg = *(uint32_t *)(ctx + (uint32_t)i * 0x30 + 0x44);
     packed_u16_expand(MB32(0x801f10c0) + (uint32_t)i * 0x28,
-                 MB32(0x801f10c4) + (uint32_t)i * 0x28,a2v);
+                 MB32(0x801f10c4) + (uint32_t)i * 0x28,pk_arg);
     packed_u16_expand(MB32(0x801f10c0) + 0x50 + (uint32_t)i * 0x28,
-                 MB32(0x801f10c4) + 0x50 + (uint32_t)i * 0x28,a2v);
+                 MB32(0x801f10c4) + 0x50 + (uint32_t)i * 0x28,pk_arg);
   }
 }
 
@@ -9418,12 +9419,12 @@ void gpu_side_packet_emit(uint32_t rec,int32_t side,int32_t mode)
 L_mode0:                                      /* 0x8014a97c */
   if ((MB32(rec + 4) & 8u) == 0) return;
   {
-    uint32_t v1s = rec + 0x14;
+    uint32_t rec14 = rec + 0x14;
     rec += MB32(rec + 8) + 0x14;
     if (side == 0)
-      cmd_queue_push(0,0x1f5,0x100,1,v1s);
+      cmd_queue_push(0,0x1f5,0x100,1,rec14);
     else
-      cmd_queue_push(0,0x1f6,0x100,1,v1s);
+      cmd_queue_push(0,0x1f6,0x100,1,rec14);
     cmd_queue_push(side == 0 ? 0x200 : 0x260,0,0x60,0x100,rec);
   }
   return;
@@ -9583,12 +9584,12 @@ L_reca:                                     /* 0x80153d74 */
  * side+0xac = lhu(side+0xac) - q, clamped to 0 when bit15 set. */
 static void side_scale_ac(uint8_t *side,uint32_t s1)
 {
-  int32_t p = (int32_t)((int32_t)*(int16_t *)(side + 0xb0) *
+  int32_t prod = (int32_t)((int32_t)*(int16_t *)(side + 0xb0) *
                         (int32_t)MBS16(s1 + 0x94));
-  int32_t hi = (int32_t)(((int64_t)p * 0x57619f1LL) >> 32);
-  int32_t q = (hi >> 7) - (p >> 31);
-  int32_t nv = (int32_t)*(uint16_t *)(side + 0xac) - q;
-  *(int16_t *)(side + 0xac) = (int16_t)nv;
+  int32_t mulhi = (int32_t)(((int64_t)prod * 0x57619f1LL) >> 32);
+  int32_t quot = (mulhi >> 7) - (prod >> 31);
+  int32_t new_val = (int32_t)*(uint16_t *)(side + 0xac) - quot;
+  *(int16_t *)(side + 0xac) = (int16_t)new_val;
   if (*(int16_t *)(side + 0xac) < 0) *(int16_t *)(side + 0xac) = 0;
 }
 
@@ -9815,7 +9816,7 @@ void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
- * insns). Inlines leaf FUN_8012a4dc @0x8012a4dc (9 insns):
+ * insns). Inlines leaf cmd_queue_slot_next @0x8012a4dc (9 insns):
  * nxt = MBS16(0x1f8000d0) + 1; slot = nxt < 9 (signed) ? nxt : 0.
  * slot 0 -> return. Else entry = 0x801c4530 + slot*8 receives the
  * four args as u16s, 0x1f8000d0 = slot, and the 5th (stack) arg
@@ -9900,14 +9901,14 @@ int32_t victory_record_restore(uint32_t battle,int32_t idx)
  * at lh(s0+2); N = s2+1 iterations of {a1--; if (a1<0) a1=2}; a
  * final unchecked decrement in the bnez delay slot is cancelled by
  * the trailing a1++ — net effect is exactly N wrapped decrements. */
-static int32_t dec_wrap(int32_t a1,int32_t n)
+static int32_t dec_wrap(int32_t idx,int32_t steps)
 {
   int32_t i;
-  for (i = 0; i < n; i++) {
-    a1--;
-    if (a1 < 0) a1 = 2;
+  for (i = 0; i < steps; i++) {
+    idx--;
+    if (idx < 0) idx = 2;
   }
-  return a1;
+  return idx;
 }
 
 /* shared record-index walk: from rec = 0x801c47c0 + a1*0x235c walk
@@ -9915,24 +9916,24 @@ static int32_t dec_wrap(int32_t a1,int32_t n)
  * -0x235c, the same record stride (generated 0x80128D18-D54 computes
  * idx*9052 = idx*0x235c both ways). Exits
  * with a1 possibly 0. */
-static int32_t dec_walk(int32_t a1)
+static int32_t dec_walk(int32_t idx)
 {
-  uint32_t r = 0x801c47c0u + (uint32_t)a1 * 0x235cu;
-  while (MBS16(r) < 0) {
-    a1--;
-    r -= 0x235cu;
-    if (a1 <= 0) break;
+  uint32_t rec = 0x801c47c0u + (uint32_t)idx * 0x235cu;
+  while (MBS16(rec) < 0) {
+    idx--;
+    rec -= 0x235cu;
+    if (idx <= 0) break;
   }
-  return a1;
+  return idx;
 }
 
 /* shared epilogue: ret = victory_record_restore(battle, idx) - 1 stored to
  * s0+6; if the s16 result is negative store 0x257 instead. */
-static void dec_finish(uint32_t battle,uint32_t s0,int32_t a1)
+static void dec_finish(uint32_t battle,uint32_t rec,int32_t idx)
 {
-  int32_t ret = victory_record_restore(battle, a1) - 1;
-  MW16(s0 + 6, (uint16_t)ret);
-  if ((int16_t)ret < 0) MW16(s0 + 6, 0x257);
+  int32_t ret = victory_record_restore(battle, idx) - 1;
+  MW16(rec + 6, (uint16_t)ret);
+  if ((int16_t)ret < 0) MW16(rec + 6, 0x257);
 }
 
 /* versus_stage_commit — versus-record stage commit @0x80128c18 (95 insns,
@@ -10381,29 +10382,29 @@ void descblk_variant_d(uint32_t ctx,uint32_t ctx2,uint32_t str,
  * writes through a1/a2 — host locals stand in. */
 uint32_t job_wait_pump(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
-  uint32_t s0 = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t prev_st = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_submit5(cd_a, cd_b, cd_c) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 == 0) break;
-    if (s0 == sp14) break;
-    s0 = sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status == 0) break;
+    if (prev_st == status) break;
+    prev_st = status;
   }
-  return sp14;
+  return status;
 }
 
 /* job_wait_pump_b — same pump on cd_submit6 @0x801687ac (34 insns). */
 void job_wait_pump_b(uint32_t cd_a,uint32_t cd_b,uint32_t cd_c)
 {
-  uint32_t s0 = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t prev_st = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_submit6(cd_a, cd_b, cd_c) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 == 0) break;
-    if (s0 == sp14) break;
-    s0 = sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status == 0) break;
+    if (prev_st == status) break;
+    prev_st = status;
   }
 }
 
@@ -10625,12 +10626,12 @@ void gte_quad_attr_emit(uint32_t obj,uint32_t mode,uint32_t idx,
  * slot_height_proj(obj+8 + 0x207c, obj+0xbc, obj+0xc, s0); return 0. */
 int32_t fighter_frame_triple_emit(uint32_t obj)
 {
-  uint32_t sub28 = obj + 0x28;
+  uint32_t trail_ent = obj + 0x28;
   if (MBS8(0x801e3d00u) < 0) return -1;
   MW8(obj + 0x9d, 0);
   battle_camera_step(MB32(obj + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)obj);
   fighter_tint_fade(MB32(obj + 8), MB32(obj + 0xc), obj, MBS8(obj + 0x98));
-  fighter_trail_emit((undefined4 *)guest_at(sub28), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
+  fighter_trail_emit((undefined4 *)guest_at(trail_ent), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
   slot_height_proj(MB32(obj + 8) + 0x207cu, MB32(obj + 0xbc), MB32(obj + 0xc),
                obj);
   return 0;
@@ -10643,17 +10644,17 @@ int32_t fighter_frame_triple_emit(uint32_t obj)
 int32_t job_pump_filter(uint32_t job)
 {
   uint32_t prev = 0;
-  uint32_t sp10 = 0, sp14 = 0;
+  uint32_t out_aux = 0, status = 0;
   for (;;) {
     while (cd_job_start_e(job) == 0) { }
-    while (cd_job_result(0, &sp10, &sp14) == 0) { }
-    if (sp14 < 3u) {
-      if (sp14 == 0) return (int32_t)sp14;
+    while (cd_job_result(0, &out_aux, &status) == 0) { }
+    if (status < 3u) {
+      if (status == 0) return (int32_t)status;
     } else {
-      if (sp14 == 3) return (int32_t)sp14;
+      if (status == 3) return (int32_t)status;
     }
-    if (prev == sp14) return (int32_t)sp14;
-    prev = sp14;
+    if (prev == status) return (int32_t)status;
+    prev = status;
   }
 }
 
@@ -11045,8 +11046,10 @@ extern int pending_hit_a_clear();
 extern int pending_hit_b_clear();
 extern int options_menu_alloc();
 extern int atan2_lut(int32_t,int32_t);
-extern int FUN_80195370(uint32_t *,uint32_t *);
-extern int FUN_801948c0(uint32_t);
+extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);
+extern int fixed_recip_lut(uint32_t);
+#define FUN_80195370 gte_sqr_vec3_b
+#define FUN_801948c0 fixed_recip_lut
 extern undefined2 *vec2_rot(uint32_t,uint32_t,undefined2 *);
 extern uint *angle_gte_vec(uint32_t,uint32_t,uint *);
 extern int state_pair_init();
@@ -11079,9 +11082,9 @@ static void redraw_4recs(uint32_t start0,uint32_t str0a,
  * hit_chain_clear/42da0/42dd8(s0); return s2+2. */
 uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 {
-  int32_t fl = (int32_t)(int8_t)(MB16(desc) >> 8);
-  if ((fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
-  if ((fl & 1) == 0) cond_triple_spawn(1, obj);
+  int32_t tag_fl = (int32_t)(int8_t)(MB16(desc) >> 8);
+  if ((tag_fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
+  if ((tag_fl & 1) == 0) cond_triple_spawn(1, obj);
   MW32(obj + 0x6c, MB32(obj + 0x6c) & 0xffff7fffu);
   MW16(obj + 0xd6, 0);
   MW16(obj + 0xd8, 0);
@@ -11097,8 +11100,8 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 /* dual_axis_coord_xform — dual-axis coord transform @0x8012eaa8 (50
  * insns): o = MB32(a3+0x20); sp = {MB32(o+0x174),
  * MB32(o+0x178)+0xa00, MB32(o+0x17c)}; s1 = atan2_lut(sp[2],
- * sp[0]); FUN_80195370(&sp[0],&sp[0]) (ret discarded); r =
- * atan2_lut(-sp[1], FUN_801948c0(sp[0]+sp[2]));
+ * sp[0]); gte_sqr_vec3_b(&sp[0],&sp[0]) (ret discarded); r =
+ * atan2_lut(-sp[1], fixed_recip_lut(sp[0]+sp[2]));
  * s0=(s16)r, s1=(s16)s1; vec2_rot(s0,s1,a2+6);
  * angle_gte_vec(s0,s1,a2+0x20).
  * Generated reads the object through $a3 (gpr[7]) and the output base
@@ -11996,8 +11999,8 @@ uint32_t record_table_expand_a(uint32_t dst,uint32_t src,uint32_t tblA,
  * gpu_load_image_cmd(rect=copy of +0x2c..0x33, MB32(0x801f470c+s0*4)). */
 void hp_bar_tick(void)
 {
-  uint32_t a0 = 0x801f4700u;
-  uint32_t a1 = a0;
+  uint32_t rec_a = 0x801f4700u;
+  uint32_t rec_b = rec_a;
   uint32_t s0, v1, a2, v0, idx, flag, sum, prod, cnt, adj;
   /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; it is filled
    * near the top and re-read by gpu_load_image_cmd at the bottom across
@@ -12014,51 +12017,51 @@ void hp_bar_tick(void)
       MW32(0x801fc68cu, 0);
     }
   }
-  memcpy(guest_at(hpb_rect), guest_at(a0 + 0x2c), 8);
-  s0 = MB32(a0 + 0x14);
-  MW32(a0 + 0x14, s0 < 1u ? 1u : 0u);
+  memcpy(guest_at(hpb_rect), guest_at(rec_a + 0x2c), 8);
+  s0 = MB32(rec_a + 0x14);
+  MW32(rec_a + 0x14, s0 < 1u ? 1u : 0u);
   if (MB32(0x801f473cu) != 0) {
     int32_t rem;
-    idx = MB32(a0 + 0x28) * 8u + a0;
+    idx = MB32(rec_a + 0x28) * 8u + rec_a;
     /* guest div @0x801598F8 + mfhi: HI = lh(+0x1c) % lh(+0x30);
      * divisor 0 -> HI = dividend (no trap). */
     {
-      int32_t _dn = MBS16(a0 + 0x30);
-      int32_t _nm = MBS16(idx + 0x1c);
-      rem = _dn == 0 ? _nm : _nm % _dn;
+      int32_t divisor = MBS16(rec_a + 0x30);
+      int32_t dividend = MBS16(idx + 0x1c);
+      rem = divisor == 0 ? dividend : dividend % divisor;
     }
     if (rem != 0) {
       MW32(0x801f473cu, 0);
-      MW16(a0 + 0x2c, MB16(a0 + 0x2c) + (uint16_t)rem);
+      MW16(rec_a + 0x2c, MB16(rec_a + 0x2c) + (uint16_t)rem);
     } else {
       MW16(0x801f472cu, MB16(0x801f472cu) + MB16(0x801f4730u));
     }
   } else {
     MW16(0x801f472cu, MB16(0x801f472cu) + MB16(0x801f4730u));
   }
-  a2 = MB32(a1 + 0x28);
-  idx = a2 * 8u + a1;
+  a2 = MB32(rec_b + 0x28);
+  idx = a2 * 8u + rec_b;
   sum = (uint32_t)(int32_t)(MBS16(idx + 0x18) + MBS16(idx + 0x1c));
-  if ((int32_t)MB16(a1 + 0x2c) < (int32_t)sum) {
-    cnt = (uint32_t)MBS16(a1 + 0x32);
-    v1 = (uint32_t)MBS16(a1 + 0x30) << 4;
+  if ((int32_t)MB16(rec_b + 0x2c) < (int32_t)sum) {
+    cnt = (uint32_t)MBS16(rec_b + 0x32);
+    v1 = (uint32_t)MBS16(rec_b + 0x30) << 4;
     adj = cnt - 1;
     if ((int32_t)adj < 0) adj = cnt + 0xe;
     prod = (uint32_t)((int32_t)(v1 * ((adj >> 4) + 1)));
     /* cd_fileop_forward forwards only a0/a1 to mdec_pump_b; cnt/prod
      * (a2/a3) are dead registers in the guest thunk. */
-    cd_fileop_forward(MB32(a1 + (MB32(a1 + 0x14) * 4u) + 0xc),
+    cd_fileop_forward(MB32(rec_b + (MB32(rec_b + 0x14) * 4u) + 0xc),
                  prod >> 1);
   } else {
     /* a0 still = lh(entry+0x1c): unsigned idx<a0 flag, +0x34 and
      * the 0x801f473c gate store that sx16 value. */
     uint32_t lim = (uint32_t)(int32_t)MBS16(idx + 0x1c);
     flag = a2 < lim ? 1u : 0u;
-    MW32(a1 + 0x28, flag);
-    idx = a1 + flag * 8u;
-    MW32(a1 + 0x34, lim);
-    MW16(a1 + 0x2c, MB16(idx + 0x18));
-    MW16(a1 + 0x2e, MB16(idx + 0x1a));
+    MW32(rec_b + 0x28, flag);
+    idx = rec_b + flag * 8u;
+    MW32(rec_b + 0x34, lim);
+    MW16(rec_b + 0x2c, MB16(idx + 0x18));
+    MW16(rec_b + 0x2e, MB16(idx + 0x1a));
     MW32(0x801f473cu, lim);
   }
   idx = 0x801f4700u + s0 * 4u;
@@ -12979,8 +12982,8 @@ void system_tick_frame(void)
       idx = MB32(io + 0xc);
       slot = 0x801f0660u + idx * 104u;
       if (MBS16(slot + 0xe) > 0 && MB8(io + 0x9e) == 0) {
-        uint32_t v1 = 0x801e40a0u + idx * 8528u;
-        MW16(slot + 0xa, MB16(v1 + 2));
+        uint32_t src_rec = 0x801e40a0u + idx * 8528u;
+        MW16(slot + 0xa, MB16(src_rec + 2));
         gpu_clear_image_cmd(slot + 8, MB8(slot + 4), MB8(slot + 5), MB8(slot + 6));
       }
       gpu_draw_otag(env + 0x20ecu);
@@ -12989,8 +12992,8 @@ void system_tick_frame(void)
       idx = MB32(io + 0xc) ^ 1u;
       slot = 0x801f0660u + idx * 104u;
       if (MBS16(slot + 0xe) > 0 && MB8(io + 0x9e) == 0) {
-        uint32_t v1 = 0x801e40a0u + idx * 8528u;
-        MW16(slot + 0xa, MB16(v1 + 2));
+        uint32_t src_rec = 0x801e40a0u + idx * 8528u;
+        MW16(slot + 0xa, MB16(src_rec + 2));
         gpu_clear_image_cmd(slot + 8, MB8(slot + 4), MB8(slot + 5), MB8(slot + 6));
       }
       gpu_draw_otag(env == 0x801e40a0u ? 0x801e82dcu : 0x801e618cu);
@@ -13140,25 +13143,25 @@ uint32_t desc_cmd_interp(uint32_t unused1, uint32_t unused2,
   (void)unused1; (void)unused2; (void)unused3; (void)unused4;
 
 block_8017DB88:
-{ uint32_t _pgx1 = cpu->gpr[6]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[19] = cpu->gpr[6];
+{ cpu->gpr[19] = cpu->gpr[6];
 }
-{ uint32_t _pgxa = cpu->gpr[19]; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19]);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19]);
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 16;
+{ cpu->gpr[2] = cpu->gpr[2] << 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 24;
+{ cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 24;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 16;
+{ cpu->gpr[2] = cpu->gpr[2] << 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[3] = (int32_t)cpu->gpr[2] >> 16;
+{ cpu->gpr[3] = (int32_t)cpu->gpr[2] >> 16;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
+{ cpu->gpr[2] = (int32_t)cpu->gpr[2] >> 20;
 }
 cpu->gpr[6] = cpu->gpr[2] & 0x0003;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
+{ cpu->gpr[2] = 1;
 }
 int _bc_8017DBC8 = (cpu->gpr[6] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[5]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[7] = cpu->gpr[5];
+{ cpu->gpr[7] = cpu->gpr[5];
 }
 if (_bc_8017DBC8) {
 goto block_8017DBF0;
@@ -13175,7 +13178,7 @@ goto block_8017DC24;
 goto block_8017DBDC;
 }
 block_8017DBDC:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 2;
+{ cpu->gpr[2] = 2;
 }
 int _bc_8017DBE0 = (cpu->gpr[6] == cpu->gpr[2]);
 cpu->gpr[2] = cpu->gpr[3] & 0x0040;
@@ -13187,11 +13190,11 @@ goto block_8017DBE8;
 block_8017DBE8:
 goto block_8017DC24;
 block_8017DBF0:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DBFC = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DBFC) {
 goto block_8017DC20;
@@ -13201,11 +13204,11 @@ goto block_8017DC04;
 block_8017DC04:
 goto block_8017E11C;
 block_8017DC0C:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DC18 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DC18) {
 goto block_8017E11C;
@@ -13222,18 +13225,18 @@ goto block_8017DC3C;
 goto block_8017DC2C;
 }
 block_8017DC2C:
-{ uint32_t _pgxa = cpu->gpr[4] + 2; cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[4] + 2);
+{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[4] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[4] + 3; cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[4] + 3);
+{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[4] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 goto block_8017DC50;
 block_8017DC3C:
-{ uint32_t _pgxa = cpu->gpr[4] + 44; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 2; cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[2] + 2);
+{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[2] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 3; cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[2] + 3);
+{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[2] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 block_8017DC50:
@@ -13246,22 +13249,22 @@ goto block_8017E118;
 goto block_8017DC5C;
 }
 block_8017DC5C:
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10756;
+{ cpu->gpr[2] = cpu->gpr[2] + 10756;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] << 2;
+{ cpu->gpr[3] = cpu->gpr[3] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DC78:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DC84 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DC84) {
 goto block_8017E10C;
@@ -13270,7 +13273,7 @@ goto block_8017DC8C;
 }
 block_8017DC8C:
 int _bc_8017DC8C = (cpu->gpr[18] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 64;
+{ cpu->gpr[5] = cpu->gpr[5] + 64;
 }
 if (_bc_8017DC8C) {
 goto block_8017E10C;
@@ -13278,15 +13281,15 @@ goto block_8017E10C;
 goto block_8017DC94;
 }
 block_8017DC94:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 goto block_8017E110;
 block_8017DCA0:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[3] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[3] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 64;
+{ cpu->gpr[6] = 64;
 }
 int _bc_8017DCA8 = (cpu->gpr[3] == cpu->gpr[6]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 65) ? 1 : 0;
@@ -13297,7 +13300,7 @@ goto block_8017DCB0;
 }
 block_8017DCB0:
 int _bc_8017DCB0 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = -1;
+{ cpu->gpr[2] = -1;
 }
 if (_bc_8017DCB0) {
 goto block_8017DD98;
@@ -13306,7 +13309,7 @@ goto block_8017DCB8;
 }
 block_8017DCB8:
 int _bc_8017DCB8 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DCB8) {
 goto block_8017E11C;
@@ -13323,10 +13326,10 @@ goto block_8017DCC8;
 block_8017DCC8:
 goto block_8017DD98;
 block_8017DCD0:
-{ uint32_t _pgxa = cpu->gpr[4] + 104; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
 }
 cpu->gpr[3] = cpu->gpr[2] & 0x0340;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 256;
+{ cpu->gpr[2] = 256;
 }
 int _bc_8017DCE0 = (cpu->gpr[3] == cpu->gpr[2]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
@@ -13337,7 +13340,7 @@ goto block_8017DCE8;
 }
 block_8017DCE8:
 int _bc_8017DCE8 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 512;
+{ cpu->gpr[2] = 512;
 }
 if (_bc_8017DCE8) {
 goto block_8017DD00;
@@ -13346,7 +13349,7 @@ goto block_8017DCF0;
 }
 block_8017DCF0:
 int _bc_8017DCF0 = (cpu->gpr[3] == cpu->gpr[6]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DCF0) {
 goto block_8017DD10;
@@ -13357,7 +13360,7 @@ block_8017DCF8:
 goto block_8017E11C;
 block_8017DD00:
 int _bc_8017DD00 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD00) {
 goto block_8017DD28;
@@ -13367,28 +13370,28 @@ goto block_8017DD08;
 block_8017DD08:
 goto block_8017E11C;
 block_8017DD10:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 64;
+{ cpu->gpr[5] = 64;
 }
 goto block_8017E10C;
 block_8017DD1C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 65;
+{ cpu->gpr[5] = 65;
 }
 goto block_8017E10C;
 block_8017DD28:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 66;
+{ cpu->gpr[5] = 66;
 }
 goto block_8017E10C;
 block_8017DD34:
-{ uint32_t _pgxa = cpu->gpr[4] + 104; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 104);
 }
 cpu->gpr[3] = cpu->gpr[2] & 0x0340;
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 256;
+{ cpu->gpr[2] = 256;
 }
 int _bc_8017DD44 = (cpu->gpr[3] == cpu->gpr[2]);
 cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
@@ -13399,7 +13402,7 @@ goto block_8017DD4C;
 }
 block_8017DD4C:
 int _bc_8017DD4C = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 512;
+{ cpu->gpr[2] = 512;
 }
 if (_bc_8017DD4C) {
 goto block_8017DD64;
@@ -13408,7 +13411,7 @@ goto block_8017DD54;
 }
 block_8017DD54:
 int _bc_8017DD54 = (cpu->gpr[3] == cpu->gpr[6]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD54) {
 goto block_8017DD74;
@@ -13419,7 +13422,7 @@ block_8017DD5C:
 goto block_8017E11C;
 block_8017DD64:
 int _bc_8017DD64 = (cpu->gpr[3] == cpu->gpr[2]);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DD64) {
 goto block_8017DD8C;
@@ -13429,29 +13432,29 @@ goto block_8017DD6C;
 block_8017DD6C:
 goto block_8017E11C;
 block_8017DD74:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[5] = cpu->gpr[0];
+{ cpu->gpr[5] = cpu->gpr[0];
 }
 goto block_8017E10C;
 block_8017DD80:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 1;
+{ cpu->gpr[5] = 1;
 }
 goto block_8017E10C;
 block_8017DD8C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 2;
+{ cpu->gpr[5] = 2;
 }
 goto block_8017E10C;
 block_8017DD98:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DDA4 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DDA4) {
 goto block_8017E10C;
@@ -13460,7 +13463,7 @@ goto block_8017DDAC;
 }
 block_8017DDAC:
 int _bc_8017DDAC = (cpu->gpr[18] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[5] + 64;
+{ cpu->gpr[5] = cpu->gpr[5] + 64;
 }
 if (_bc_8017DDAC) {
 goto block_8017E10C;
@@ -13468,45 +13471,45 @@ goto block_8017E10C;
 goto block_8017DDB4;
 }
 block_8017DDB4:
-{ uint32_t _pgxa = cpu->gpr[7] + 274; cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 goto block_8017E110;
 block_8017DDC0:
-{ uint32_t _pgxa = cpu->gpr[4] + 44; cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
 }
-{ uint32_t _pgxa = cpu->gpr[2] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[2] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[2] + 56);
 }
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 274; br2_st16(cpu->gpr[3] + 274, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 274, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDD8:
-{ uint32_t _pgxa = cpu->gpr[4] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 276; br2_st16(cpu->gpr[3] + 276, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 276, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDE8:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
-{ uint32_t _pgxa = cpu->gpr[4] + 56; cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
+{ cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] << 4;
+{ cpu->gpr[2] = cpu->gpr[2] << 4;
 }
-{ uint32_t _pgxa = cpu->gpr[3] + 278; br2_st16(cpu->gpr[3] + 278, (uint16_t)((uint16_t)cpu->gpr[2]));
+{ br2_st16(cpu->gpr[3] + 278, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDFC:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DE08 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 87;
+{ cpu->gpr[16] = 87;
 }
 if (_bc_8017DE08) {
 goto block_8017DE50;
@@ -13516,7 +13519,7 @@ goto block_8017DE10;
 block_8017DE10:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
 int _bc_8017DE14 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = -1;
+{ cpu->gpr[16] = -1;
 }
 if (_bc_8017DE14) {
 goto block_8017DE50;
@@ -13525,30 +13528,30 @@ goto block_8017DE1C;
 }
 block_8017DE1C:
 cpu->gpr[2] = 0x8012 << 16;
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10796;
+{ cpu->gpr[2] = cpu->gpr[2] + 10796;
 }
-{ uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[3] = cpu->gpr[6] << 2;
+{ cpu->gpr[3] = cpu->gpr[6] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DE3C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 201;
+{ cpu->gpr[16] = 201;
 }
 goto block_8017DE50;
 block_8017DE44:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 200;
+{ cpu->gpr[16] = 200;
 }
 goto block_8017DE50;
 block_8017DE4C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 199;
+{ cpu->gpr[16] = 199;
 }
 block_8017DE50:
 int _bc_8017DE50 = ((int32_t)cpu->gpr[16] < 0);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DE50) {
 goto block_8017E11C;
@@ -13560,21 +13563,21 @@ cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DE60;
 block_8017DE60:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017DE88 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13595,24 +13598,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DEA0;
 block_8017DEA0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E110;
 block_8017DED0:
@@ -13620,32 +13623,32 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DED8;
 block_8017DED8:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 goto block_8017E110;
 block_8017DF0C:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017DF14 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017DF14) {
 goto block_8017DF24;
@@ -13653,19 +13656,19 @@ goto block_8017DF24;
 goto block_8017DF1C;
 }
 block_8017DF1C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 128;
+{ cpu->gpr[5] = 128;
 }
 goto block_8017E10C;
 block_8017DF24:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 129;
+{ cpu->gpr[5] = 129;
 }
 goto block_8017E10C;
 block_8017DF2C:
-{ uint32_t _pgxa = cpu->gpr[4] + 5; cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DF38 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 87;
+{ cpu->gpr[16] = 87;
 }
 if (_bc_8017DF38) {
 goto block_8017DF80;
@@ -13675,7 +13678,7 @@ goto block_8017DF40;
 block_8017DF40:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
 int _bc_8017DF44 = (cpu->gpr[2] == cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = -1;
+{ cpu->gpr[16] = -1;
 }
 if (_bc_8017DF44) {
 goto block_8017DF80;
@@ -13684,30 +13687,30 @@ goto block_8017DF4C;
 }
 block_8017DF4C:
 cpu->gpr[2] = 0x8012 << 16;
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[2] + 10844;
+{ cpu->gpr[2] = cpu->gpr[2] + 10844;
 }
-{ uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[3] = cpu->gpr[6] << 2;
+{ cpu->gpr[3] = cpu->gpr[6] << 2;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[2];
 }
-{ uint32_t _pgxa = cpu->gpr[3]; cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
+{ cpu->gpr[2] = br2_ld32(cpu->gpr[3]);
 }
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DF6C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 201;
+{ cpu->gpr[16] = 201;
 }
 goto block_8017DF80;
 block_8017DF74:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 200;
+{ cpu->gpr[16] = 200;
 }
 goto block_8017DF80;
 block_8017DF7C:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[16] = 199;
+{ cpu->gpr[16] = 199;
 }
 block_8017DF80:
 int _bc_8017DF80 = ((int32_t)cpu->gpr[16] < 0);
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 if (_bc_8017DF80) {
 goto block_8017E11C;
@@ -13719,21 +13722,21 @@ cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DF90;
 block_8017DF90:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017DFB8 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13754,24 +13757,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017DFD0;
 block_8017DFD0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E038;
 block_8017E000:
@@ -13779,49 +13782,49 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E008;
 block_8017E008:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 block_8017E038:
 cpu->gpr[17] = 0x5555 << 16;
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
 goto block_8017E040;
 block_8017E040:
-{ uint32_t _pgx1 = cpu->gpr[17]; cpu->gpr[17] = cpu->gpr[17] | 0x5556;
+{ cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E048;
 block_8017E048:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
+{ cpu->gpr[4] = cpu->gpr[8] - cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[4] << 1;
+{ cpu->gpr[3] = cpu->gpr[4] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[4]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[4];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 192) ? 1 : 0;
 int _bc_8017E06C = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13842,24 +13845,24 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E084;
 block_8017E084:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 4;
+{ cpu->gpr[6] = 4;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[2] = cpu->gpr[16] + cpu->gpr[2];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[2] + 64;
+{ cpu->gpr[5] = cpu->gpr[2] + 64;
 }
 goto block_8017E110;
 block_8017E0B4:
@@ -13867,32 +13870,32 @@ cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
 goto block_8017E0BC;
 block_8017E0BC:
 cpu->gpr[3] = 0x5555 << 16;
-{ uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x5556;
+{ cpu->gpr[3] = cpu->gpr[3] | 0x5556;
 }
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[3]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[6] = 4;
+{ cpu->gpr[6] = 4;
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
+{ cpu->gpr[5] = (int32_t)cpu->gpr[2] >> 31;
 }
 cpu->gpr[8] = cpu->hi;
-{ uint32_t _pgx1 = cpu->gpr[8]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
+{ cpu->gpr[5] = cpu->gpr[8] - cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[5] << 1;
+{ cpu->gpr[3] = cpu->gpr[5] << 1;
 }
-{ uint32_t _pgx1 = cpu->gpr[3]; uint32_t _pgx2 = cpu->gpr[5]; cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
+{ cpu->gpr[3] = cpu->gpr[3] + cpu->gpr[5];
 }
-{ uint32_t _pgx1 = cpu->gpr[2]; uint32_t _pgx2 = cpu->gpr[3]; cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
+{ cpu->gpr[2] = cpu->gpr[2] - cpu->gpr[3];
 }
-{ uint32_t _pgx1 = cpu->gpr[16]; uint32_t _pgx2 = cpu->gpr[2]; cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
+{ cpu->gpr[5] = cpu->gpr[16] + cpu->gpr[2];
 }
 goto block_8017E110;
 block_8017E0F0:
-{ uint32_t _pgxa = cpu->gpr[19] + 2; cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017E0F8 = (cpu->gpr[2] != cpu->gpr[0]);
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[4] = 1024;
+{ cpu->gpr[4] = 1024;
 }
 if (_bc_8017E0F8) {
 goto block_8017E108;
@@ -13900,20 +13903,20 @@ goto block_8017E108;
 goto block_8017E100;
 }
 block_8017E100:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 72;
+{ cpu->gpr[5] = 72;
 }
 goto block_8017E10C;
 block_8017E108:
-{ uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[5] = 73;
+{ cpu->gpr[5] = 73;
 }
 block_8017E10C:
-{ uint32_t _pgx1 = cpu->gpr[0]; uint32_t _pgx2 = cpu->gpr[0]; cpu->gpr[6] = cpu->gpr[0];
+{ cpu->gpr[6] = cpu->gpr[0];
 }
 block_8017E110:
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
 goto block_8017E118;
 block_8017E118:
-{ uint32_t _pgx1 = cpu->gpr[19]; cpu->gpr[2] = cpu->gpr[19] + 4;
+{ cpu->gpr[2] = cpu->gpr[19] + 4;
 }
 block_8017E11C:
 /* epilogue: guest reloaded s0-s3/ra from its sp-40 frame and jr $ra.
@@ -15054,27 +15057,27 @@ void heap_ptr_fixup(uint32_t blk)
    * pass for (+4==0, +8==0) blocks the guest still processes and ran it
    * for (+4!=0, +8 small) blocks the guest skips. */
   if (MB32(blk + 4u) == 0) {
-    uint32_t toff = MB32(blk + 8u);
-    cur = blk + toff * 4u;
+    uint32_t tbl_off = MB32(blk + 8u);
+    cur = blk + tbl_off * 4u;
     MW32(blk + 8u, cur);
     n = (int32_t)MB32(cur);
     cur += 4u;
     if (n > 0) {
       do {
-        int32_t a1 = (int32_t)MB32(cur);
+        int32_t inner_n = (int32_t)MB32(cur);
         cur += 4u;
-        if (a1 > 0) {
+        if (inner_n > 0) {
           do {
             /* generated stores back to the SAME slot it loaded
              * (cur advances in the delay slot AFTER the sw), and the
              * only test is bit31 — a 0x80000000 entry stores blk+0.
              * The prior port wrote one word too far (post-increment)
              * and added a spurious low-bits!=0 guard. */
-            uint32_t v1 = MB32(cur);
-            if ((v1 & 0x80000000u) != 0)
-              MW32(cur, blk + (v1 & 0x7fffffffu) * 4u);
+            uint32_t ent = MB32(cur);
+            if ((ent & 0x80000000u) != 0)
+              MW32(cur, blk + (ent & 0x7fffffffu) * 4u);
             cur += 4u;
-          } while (--a1 > 0);
+          } while (--inner_n > 0);
         }
       } while (--n > 0);
     }
@@ -15084,19 +15087,19 @@ void heap_ptr_fixup(uint32_t blk)
   cur = blk + 0x10u;
   if (n > 0) {
     do {
-      uint32_t v0 = MB32(cur);
-      if (v0 != 0) {
-        uint32_t a1;
-        MW32(cur, blk + v0 * 4u);
-        a1 = blk + v0 * 4u;
-        while ((int32_t)MB32(a1 + 8u) < 0) {   /* & 0x80000000 */
-          uint32_t v;
-          v = MB32(a1);
-          if (v != 0xffffffffu) MW32(a1, blk + v * 4u);
-          MW32(a1 + 4u, blk + MB32(a1 + 4u) * 4u);
-          MW32(a1 + 8u, MB32(a1 + 8u) & 0x7fffffffu);
-          a1 = MB32(a1);
-          if ((int32_t)a1 == -1) break;
+      uint32_t off = MB32(cur);
+      if (off != 0) {
+        uint32_t cur_ent;
+        MW32(cur, blk + off * 4u);
+        cur_ent = blk + off * 4u;
+        while ((int32_t)MB32(cur_ent + 8u) < 0) {   /* & 0x80000000 */
+          uint32_t next;
+          next = MB32(cur_ent);
+          if (next != 0xffffffffu) MW32(cur_ent, blk + next * 4u);
+          MW32(cur_ent + 4u, blk + MB32(cur_ent + 4u) * 4u);
+          MW32(cur_ent + 8u, MB32(cur_ent + 8u) & 0x7fffffffu);
+          cur_ent = MB32(cur_ent);
+          if ((int32_t)cur_ent == -1) break;
         }
       }
       n--;
@@ -15224,9 +15227,9 @@ int32_t options_menu_alloc(void)
   /* loop2: two banks of 100 records */
   {
     int32_t bi;
-    uint32_t boff = 0;
-    for (bi = 0; bi < 2; bi++, boff += 0xfa0u) {
-      uint32_t b1 = obj + boff;
+    uint32_t bank_off = 0;
+    for (bi = 0; bi < 2; bi++, bank_off += 0xfa0u) {
+      uint32_t b1 = obj + bank_off;
       int32_t  j;
       for (j = 0; j < 100; j++, b1 += 0x28u) {
         uint32_t e = b1 + 0xeu;
@@ -15358,7 +15361,7 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
 {
   const uint32_t T = 0x1f80037cu;
   int32_t shade, code1, code2;
-  uint32_t t0, base, x, y;
+  uint32_t pkt_ptr, base, x, y;
   int drawA;
   if (MB32(T + 0xcu) != sector) {
     MW32(T + 0xcu, sector);
@@ -15366,7 +15369,7 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
   }
   if ((int16_t)MB16(T + 4u) >= 0x190) return 0;
   base = sector * 16000u;
-  t0 = 0x801f8528u + base +
+  pkt_ptr = 0x801f8528u + base +
        (uint32_t)((int32_t)(int16_t)MB16(T + 4u) * 40);
   if ((int16_t)cx < 0x1000) MW16(T + 0u, (uint16_t)cx);
   if ((int16_t)cy < 0x1000) MW16(T + 2u, (uint16_t)cy);
@@ -15385,23 +15388,23 @@ int32_t slot_attr_packet_build(uint32_t head,uint32_t sector,uint32_t attr,
     uint32_t tab = (flags & 1) ? 0x801b1324u : 0x801b1300u;
     uint32_t p = tab + (uint32_t)code1 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
-    MW16(t0 + 0xeu, 0x799eu);
-    MW16(t0 + 0x16u, 0x2eu);
-    MW8(t0 + 0xcu, b0);  MW8(t0 + 0xdu, b1);
-    MW8(t0 + 0x14u, (uint8_t)(b0 + shade)); MW8(t0 + 0x15u, b1);
-    MW8(t0 + 0x1cu, b0); MW8(t0 + 0x1du, (uint8_t)(b1 + shade));
-    MW8(t0 + 0x24u, (uint8_t)(b0 + shade)); MW8(t0 + 0x25u, (uint8_t)(b1 + shade));
+    MW16(pkt_ptr + 0xeu, 0x799eu);
+    MW16(pkt_ptr + 0x16u, 0x2eu);
+    MW8(pkt_ptr + 0xcu, b0);  MW8(pkt_ptr + 0xdu, b1);
+    MW8(pkt_ptr + 0x14u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x15u, b1);
+    MW8(pkt_ptr + 0x1cu, b0); MW8(pkt_ptr + 0x1du, (uint8_t)(b1 + shade));
+    MW8(pkt_ptr + 0x24u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x25u, (uint8_t)(b1 + shade));
     x = MB16(T + 0u); y = MB16(T + 2u);
-    MW16(t0 + 0x08u, (uint16_t)x);
-    MW16(t0 + 0x0au, (uint16_t)y);
-    MW16(t0 + 0x10u, (uint16_t)(x + shade));
-    MW16(t0 + 0x12u, (uint16_t)y);
-    MW16(t0 + 0x18u, (uint16_t)x);
-    MW16(t0 + 0x1au, (uint16_t)(y + shade));
-    MW16(t0 + 0x20u, (uint16_t)(x + shade));
-    MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
-    MW32(head, t0 & 0xffffffu);
+    MW16(pkt_ptr + 0x08u, (uint16_t)x);
+    MW16(pkt_ptr + 0x0au, (uint16_t)y);
+    MW16(pkt_ptr + 0x10u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x12u, (uint16_t)y);
+    MW16(pkt_ptr + 0x18u, (uint16_t)x);
+    MW16(pkt_ptr + 0x1au, (uint16_t)(y + shade));
+    MW16(pkt_ptr + 0x20u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x22u, (uint16_t)(y + shade));
+    MW32(pkt_ptr + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, pkt_ptr & 0xffffffu);
     {
       uint32_t c2 = (uint16_t)(MB16(T + 4u) + 1u);
       MW16(T + 4u, (uint16_t)c2);
@@ -15428,23 +15431,23 @@ blockB:
     uint32_t tab = (flags & 1) ? 0x801b1338u : 0x801b1314u;
     uint32_t p = tab + (uint32_t)code2 * 2u;
     uint8_t b0 = MB8(p), b1 = MB8(p + 1u);
-    MW16(t0 + 0xeu, 0x799eu);
-    MW16(t0 + 0x16u, 0x2eu);
-    MW8(t0 + 0xcu, b0);  MW8(t0 + 0xdu, b1);
-    MW8(t0 + 0x14u, (uint8_t)(b0 + shade)); MW8(t0 + 0x15u, b1);
-    MW8(t0 + 0x1cu, b0); MW8(t0 + 0x1du, (uint8_t)(b1 + shade));
-    MW8(t0 + 0x24u, (uint8_t)(b0 + shade)); MW8(t0 + 0x25u, (uint8_t)(b1 + shade));
+    MW16(pkt_ptr + 0xeu, 0x799eu);
+    MW16(pkt_ptr + 0x16u, 0x2eu);
+    MW8(pkt_ptr + 0xcu, b0);  MW8(pkt_ptr + 0xdu, b1);
+    MW8(pkt_ptr + 0x14u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x15u, b1);
+    MW8(pkt_ptr + 0x1cu, b0); MW8(pkt_ptr + 0x1du, (uint8_t)(b1 + shade));
+    MW8(pkt_ptr + 0x24u, (uint8_t)(b0 + shade)); MW8(pkt_ptr + 0x25u, (uint8_t)(b1 + shade));
     x = MB16(T + 0u); y = MB16(T + 2u);
-    MW16(t0 + 0x08u, (uint16_t)x);
-    MW16(t0 + 0x0au, (uint16_t)y);
-    MW16(t0 + 0x10u, (uint16_t)(x + shade));
-    MW16(t0 + 0x12u, (uint16_t)y);
-    MW16(t0 + 0x18u, (uint16_t)x);
-    MW16(t0 + 0x1au, (uint16_t)(y + shade));
-    MW16(t0 + 0x20u, (uint16_t)(x + shade));
-    MW16(t0 + 0x22u, (uint16_t)(y + shade));
-    MW32(t0 + 0x00u, MB32(head) | 0x90000000u);
-    MW32(head, t0 & 0xffffffu);
+    MW16(pkt_ptr + 0x08u, (uint16_t)x);
+    MW16(pkt_ptr + 0x0au, (uint16_t)y);
+    MW16(pkt_ptr + 0x10u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x12u, (uint16_t)y);
+    MW16(pkt_ptr + 0x18u, (uint16_t)x);
+    MW16(pkt_ptr + 0x1au, (uint16_t)(y + shade));
+    MW16(pkt_ptr + 0x20u, (uint16_t)(x + shade));
+    MW16(pkt_ptr + 0x22u, (uint16_t)(y + shade));
+    MW32(pkt_ptr + 0x00u, MB32(head) | 0x90000000u);
+    MW32(head, pkt_ptr & 0xffffffu);
     MW16(T + 4u, (uint16_t)(MB16(T + 4u) + 1u));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + shade));
     MW16(T + 0u, (uint16_t)(MB16(T + 0u) + 8));
@@ -16009,7 +16012,7 @@ int32_t heap_serialize(uint32_t blk,uint32_t cur,uint32_t dst,
                                   * corrupt its own locals instead) */
   uint32_t s3 = 0;
   uint32_t i;
-  uint32_t _eb = blk;   /* entry blk for trace */
+  uint32_t entry_blk = blk;   /* entry blk for trace */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(22,blk,cur,dst,0); }  /* tag22 hser_in */
 
@@ -16221,7 +16224,7 @@ next_block:
   }
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     /* tag15 hser: dst=entry blk, src=ret cur, len=emit count s3 */
-    decomp_trace_record(15,_eb,(uint32_t)cur,0,s3); }
+    decomp_trace_record(15,entry_blk,(uint32_t)cur,0,s3); }
   return (int32_t)cur;
 
 #undef B7C0_EMIT
@@ -16271,47 +16274,47 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
 uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1,uint32_t unused6,
+                     uint32_t a3,uint32_t count,uint32_t unused6,
                      uint32_t unused7)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
   (void)unused6; (void)unused7;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 16; a1 += 10;
   do {
     MW8(a0 + 23, 4);  MW8(a0 + 27, 32);
     MW8(a0 + 43, 4);  MW8(a0 + 47, 32);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 12;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 12;
     v0 = (uint32_t)MBS16(a1 - 6) << 3;
     v0 += a3;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;
-    v1 -= 1;
+    count -= 1;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(cur + 0, plo);  MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;
-    t0 += 76;
+    cur += 76;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;
     a1 += 12;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
     a0 += 76;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0a @0x801697f4 (74 insns, 5 args): dst stride
@@ -16320,47 +16323,47 @@ uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
  * Returns cur + count*0x64. */
 uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 16; a1 += 18;
   do {
     MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
     MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 14));
     MW32(a0 + 16, MB32(a1 - 10));
-    t1 += 20;
+    src_cur += 20;
     v0 = (uint32_t)MBS16(a1 - 6) << 3;
     v0 += a3;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;
-    v1 -= 1;
+    count -= 1;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(cur + 0, plo);  MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;
-    t0 += 100;
+    cur += 100;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;
     a1 += 20;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
     a0 += 100;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0c @0x80168c20 (92 insns, 5 args): dst stride
@@ -16370,45 +16373,45 @@ uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
  * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
  * Returns cur + count*0x6c. */
 uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 16; a1 += 14;
   do {
     MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
     MW8(a0 + 67, 6);  MW8(a0 + 71, 48);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 16;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 16;
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
-    t0 += 108;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
+    cur += 108;
     a0 += 108;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_10 @0x80168ae0 (80 insns, 5 args): dst stride
@@ -16417,41 +16420,41 @@ uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
  * Returns cur + count*0x5c. */
 uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 24; a1 += 12;
   do {
     MW8(a0 + 23, 5);  MW8(a0 + 27, 40);
     MW8(a0 + 47, 5);  MW8(a0 + 51, 40);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 16;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 16;
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 92; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 92; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 92;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_14 @0x80168d90 (116 insns, 5 args): dst stride
@@ -16461,50 +16464,50 @@ uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
  * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
  * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
 uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 24; a1 += 18;
   do {
     MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
     MW8(a0 + 83, 8);  MW8(a0 + 87, 56);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 20;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 20;
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 140; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 140; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 20; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 140;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_12 @0x80169aa4 (89 insns, 5 args): dst stride
@@ -16513,44 +16516,44 @@ uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
  * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
  * (a0 = cur+0x18). Returns cur + count*0x80. */
 uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 24; a1 += 24;
   do {
     MW8(a0 + 35, 8);  MW8(a0 + 39, 56);
     MW8(a0 + 71, 8);  MW8(a0 + 75, 56);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 20));
     MW32(a0 + 16, MB32(a1 - 16));
     MW32(a0 + 20, MB32(a1 - 12));
-    t1 += 28;
+    src_cur += 28;
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 128; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 128; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 128;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_16 @0x80169c08 (125 insns, 5 args): dst stride
@@ -16560,53 +16563,53 @@ uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
  * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
  * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
 uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 24; a1 += 30;
   do {
     MW8(a0 + 59, 8);  MW8(a0 + 63, 56);
     MW8(a0 + 95, 8);  MW8(a0 + 99, 56);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 26));
     MW32(a0 + 16, MB32(a1 - 22));
     MW32(a0 + 20, MB32(a1 - 18));
-    t1 += 32;
+    src_cur += 32;
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 32, t4); MW32(a0 + 36, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 32, plo); MW32(a0 + 36, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 40, t4); MW32(a0 + 44, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 152; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 48, t4); MW32(a0 + 52, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 40, plo); MW32(a0 + 44, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 152; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 48, plo); MW32(a0 + 52, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 32; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 152;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0e @0x8016991c (98 insns, 5 args): dst stride
@@ -16616,46 +16619,46 @@ uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
  * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
  * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
 uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (count == 0) return cur;
   a0 += 16; a1 += 22;
   do {
     MW8(a0 + 47, 6);  MW8(a0 + 51, 48);
     MW8(a0 + 75, 6);  MW8(a0 + 79, 48);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 18));
     MW32(a0 + 16, MB32(a1 - 14));
-    t1 += 24;
+    src_cur += 24;
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 116; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3;  count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 116; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 24; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 116;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40048 @0x80169dfc (57 insns, 5 args): dst
@@ -16666,36 +16669,36 @@ uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
  * Returns cur + count*0x40. */
 uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1)
+                     uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (count == 0) return cur;
   a0 += 16; a1 += 8;
   do {
     MW8(a0 + 11, 4);  MW8(a0 + 15, 32);
     MW8(a0 + 31, 4);  MW8(a0 + 35, 32);
-    v0 = MB32(t0); t0 += 12;
+    v0 = MB32(src_cur); src_cur += 12;
     MW32(a0 + 32, v0); MW32(a0 + 12, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    a3 += 64;
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    cur += 64;
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 64;
-  } while (v1 != 0);
-  return a3;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_4004c @0x80169ee0 (65 insns, 5 args): dst
@@ -16706,38 +16709,38 @@ uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
  * Returns cur + count*0x50. */
 uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1)
+                     uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (count == 0) return cur;
   a0 += 16; a1 += 16;
   do {
     MW8(a0 + 11, 6);  MW8(a0 + 15, 48);
     MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
-    v0 = MB32(t0); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
+    v0 = MB32(src_cur); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
     v0 = MB32(a1 - 12); MW32(a0 + 48, v0); MW32(a0 + 20, v0);
-    v0 = MB32(a1 - 8);  t0 += 20;
+    v0 = MB32(a1 - 8);  src_cur += 20;
     MW32(a0 + 56, v0); MW32(a0 + 28, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    a3 += 80;
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    cur += 80;
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 80;
-  } while (v1 != 0);
-  return a3;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40050 @0x80169fe4 (69 insns, 5 args): dst
@@ -16747,38 +16750,38 @@ uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
  * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
  * (a0 = cur+0x18). Returns cur + count*0x50. */
 uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1)
+                     uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (count == 0) return cur;
   a0 += 24; a1 += 10;
   do {
     MW8(a0 + 11, 5);  MW8(a0 + 15, 40);
     MW8(a0 + 35, 5);  MW8(a0 + 39, 40);
-    v0 = MB32(t0); t0 += 12;
+    v0 = MB32(src_cur); src_cur += 12;
     MW32(a0 + 36, v0); MW32(a0 + 12, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 80; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 80; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 80;
-  } while (v1 != 0);
-  return a3;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40054 @0x8016a0f8 (81 insns, 5 args): dst
@@ -16789,41 +16792,41 @@ uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
  * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
  * (a0 = cur+0x18). Returns cur + count*0x68. */
 uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1)
+                     uint32_t unused4,uint32_t count)
 {
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (count == 0) return cur;
   a0 += 24; a1 += 22;
   do {
     MW8(a0 + 11, 8);  MW8(a0 + 15, 56);
     MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
-    v0 = MB32(t0);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
+    v0 = MB32(src_cur);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
     v0 = MB32(a1 - 18); MW32(a0 + 56, v0); MW32(a0 + 20, v0);
     v0 = MB32(a1 - 14); MW32(a0 + 64, v0); MW32(a0 + 28, v0);
-    v0 = MB32(a1 - 10); t0 += 24;
+    v0 = MB32(a1 - 10); src_cur += 24;
     MW32(a0 + 72, v0); MW32(a0 + 36, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 104; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 104;
-  } while (v1 != 0);
-  return a3;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40049 @0x8016a23c (82 insns, 7 args): dst
@@ -16836,47 +16839,47 @@ uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
  * Returns cur + count*0x58. */
 uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t unused4,uint32_t count,uint32_t t5,
                      uint32_t t4)
 {
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 70; a1 += 18;
   do {
     MW8(a0 - 43, 7);  MW8(a0 - 39, 36);
     MW8(a0 - 11, 7);  MW8(a0 - 7, 36);
-    v0 = MB32(t1); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 6, v0);
-    v0 = MB16(a1 - 6);  t1 += 20;
+    v0 = MB16(a1 - 6);  src_cur += 20;
     MW32(a0 - 18, v0); MW32(a0 + 14, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 88; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 88; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 54, t6); MW32(a0 - 50, t7);
-    v0 = MB16(a0 - 24); v2 = MB16(a0 - 32);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 54, plo); MW32(a0 - 50, phi);
+    v0 = MB16(a0 - 24); cv = MB16(a0 - 32);
     v0 += t5; MW16(a0 - 24, v0);
-    v0 = MB16(a0 + 8);  v2 += t4; MW16(a0 - 32, v2);
-    v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 8, v0);  MW16(a0 + 0, v2);
+    v0 = MB16(a0 + 8);  cv += t4; MW16(a0 - 32, cv);
+    cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 8, v0);  MW16(a0 + 0, cv);
     a0 += 88;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_4004d @0x8016a50c (90 insns, 7 args): dst
@@ -16888,49 +16891,49 @@ uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
  * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
 uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t unused4,uint32_t count,uint32_t t5,
                      uint32_t t4)
 {
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 78; a1 += 26;
   do {
     MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
     MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
-    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 22); MW32(a0 - 38, v0); MW32(a0 + 2, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 10, v0);
-    v0 = MB16(a1 - 6);  t1 += 28;
+    v0 = MB16(a1 - 6);  src_cur += 28;
     MW32(a0 - 18, v0); MW32(a0 + 22, v0);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 104; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 28; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
-    v0 = MB16(a0 - 28); v2 = MB16(a0 - 40);
-    v0 += t5; v2 += t4;
-    MW16(a0 - 28, v0); MW16(a0 - 40, v2);
-    v0 = MB16(a0 + 12); v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
+    v0 = MB16(a0 - 28); cv = MB16(a0 - 40);
+    v0 += t5; cv += t4;
+    MW16(a0 - 28, v0); MW16(a0 - 40, cv);
+    v0 = MB16(a0 + 12); cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
     a0 += 104;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40051 @0x8016a384 (98 insns, 7 args): dst
@@ -16942,51 +16945,51 @@ uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
  * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
 uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t unused4,uint32_t count,uint32_t t5,
                      uint32_t t4)
 {
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 86; a1 += 22;
   do {
     MW8(a0 - 51, 9);  MW8(a0 - 47, 44);
     MW8(a0 - 11, 9);  MW8(a0 - 7, 44);
-    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 + 6, v0);
     v0 = MB16(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
-    v0 = MB16(a1 - 6);  t1 += 24;
+    v0 = MB16(a1 - 6);  src_cur += 24;
     MW32(a0 - 18, v0); MW32(a0 + 22, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 78, t6); MW32(a0 - 74, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 112; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 78, plo); MW32(a0 - 74, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 112; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
-    v0 = MB16(a0 - 32); v2 = MB16(a0 - 40);
-    v0 += t5; v2 += t4;
-    MW16(a0 - 32, v0); MW16(a0 - 40, v2);
-    v0 = MB16(a0 + 8);  v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 8, v0);   MW16(a0 + 0, v2);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
+    v0 = MB16(a0 - 32); cv = MB16(a0 - 40);
+    v0 += t5; cv += t4;
+    MW16(a0 - 32, v0); MW16(a0 - 40, cv);
+    v0 = MB16(a0 + 8);  cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 8, v0);   MW16(a0 + 0, cv);
     a0 += 112;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_40055 @0x8016a674 (110 insns, 7 args): dst
@@ -16999,54 +17002,54 @@ uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
  * Returns cur + count*0x88. */
 uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t unused4,uint32_t v1,uint32_t t5,
+                     uint32_t unused4,uint32_t count,uint32_t t5,
                      uint32_t t4)
 {
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 98; a1 += 34;
   do {
     MW8(a0 - 63, 12);  MW8(a0 - 59, 60);
     MW8(a0 - 11, 12);  MW8(a0 - 7, 60);
-    v0 = MB32(t1);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 30); MW32(a0 - 50, v0); MW32(a0 + 2, v0);
     v0 = MB32(a1 - 26); MW32(a0 - 38, v0); MW32(a0 + 14, v0);
     v0 = MB32(a1 - 22); MW32(a0 - 26, v0); MW32(a0 + 26, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 54, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 + 10, v0);
     v0 = MB16(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 22, v0);
-    v0 = MB16(a1 - 6);  t1 += 36;
+    v0 = MB16(a1 - 6);  src_cur += 36;
     MW32(a0 - 18, v0); MW32(a0 + 34, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 90, t6); MW32(a0 - 86, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 136; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 82, t6); MW32(a0 - 78, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 4) << 3; count -= 1; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 90, plo); MW32(a0 - 86, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 136; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 82, plo); MW32(a0 - 78, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 36; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 74, t6); MW32(a0 - 70, t7);
-    v0 = MB16(a0 - 40); v2 = MB16(a0 - 52);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 74, plo); MW32(a0 - 70, phi);
+    v0 = MB16(a0 - 40); cv = MB16(a0 - 52);
     v0 += t5; MW16(a0 - 40, v0);
-    v0 = MB16(a0 + 12); v2 += t4; MW16(a0 - 52, v2);
-    v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    v0 = MB16(a0 + 12); cv += t4; MW16(a0 - 52, cv);
+    cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
     a0 += 136;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000008 @0x8016a8ec (48 insns, 5 args): dst
@@ -17056,34 +17059,34 @@ uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
  * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
  * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
 uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 8; a1 += 10;
   do {
     MW8(a0 + 15, 4);  MW8(a0 + 19, 32);
     MW8(a0 + 35, 4);  MW8(a0 + 39, 32);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 12; v0 += a2;
-    v1 -= 1;
+    MW32(cur + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 12; v0 += a2;
+    count -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 60; a1 += 12; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 60; a1 += 12; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 60;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0100000c @0x8016a9ac (62 insns, 5 args): dst
@@ -17093,38 +17096,38 @@ uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
  * (a0 = cur+0x3f). Returns cur + count*0x54. */
 uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 63; a1 += 14;
   do {
-    MW32(a0 - 51, MB32(t1));
+    MW32(a0 - 51, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 - 47, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
     MW32(a0 - 43, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 59, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 16; v0 += a3;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 16; v0 += a3;
+    count -= 1;
     MW32(a0 - 39, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 84; a1 += 16; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 84; a1 += 16; v0 += a2;
     MW32(a0 - 55, MB32(v0));
     MW8(a0 - 32, 6);  MW8(a0 - 28, 48);
     MW8(a0 - 4, 6);   MW8(a0 + 0, 48);
     a0 += 84;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0100000a @0x8016ad04 (54 insns, 5 args): dst
@@ -17134,36 +17137,36 @@ uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
  * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
  * (a0 = cur+8). Returns cur + count*0x54. */
 uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 8; a1 += 18;
   do {
     MW8(a0 + 23, 6);  MW8(a0 + 27, 48);
     MW8(a0 + 51, 6);  MW8(a0 + 55, 48);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 14));
     MW32(a0 + 12, MB32(a1 - 10));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 20; v0 += a2;
-    v1 -= 1;
+    MW32(cur + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 20; v0 += a2;
+    count -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 84; a1 += 20; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 84; a1 += 20; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 84;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0100000e @0x8016addc (68 insns, 5 args): dst
@@ -17173,40 +17176,40 @@ uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
  * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
  * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
 uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 8; a1 += 22;
   do {
     MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
     MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 18));
     MW32(a0 + 12, MB32(a1 - 14));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 24; v0 += a3;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 24; v0 += a3;
+    count -= 1;
     MW32(a0 + 24, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 92; a1 += 24; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 92; a1 += 24; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 92;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000010 @0x8016aeec (55 insns, 5 args): dst
@@ -17216,36 +17219,36 @@ uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
  * Returns cur + count*0x48. */
 uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 12; a1 += 12;
   do {
     MW8(a0 + 15, 5);  MW8(a0 + 19, 40);
     MW8(a0 + 39, 5);  MW8(a0 + 43, 40);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 16; v0 += a2;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 16; v0 += a2;
+    count -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 72; a1 += 16; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 72; a1 += 16; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 72;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000014 @0x8016afc8 (76 insns, 5 args): dst
@@ -17255,26 +17258,26 @@ uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
  * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
 uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 12; a1 += 18;
   do {
     MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
     MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 12, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
@@ -17283,14 +17286,14 @@ uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 20; v0 += a3;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 20; v0 += a3;
+    count -= 1;
     MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 108; a1 += 20; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 108; a1 += 20; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 108;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000012 @0x8016b3c4 (64 insns, 5 args): dst
@@ -17300,39 +17303,39 @@ uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
  * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
 uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 12; a1 += 24;
   do {
     MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
     MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 20));
     MW32(a0 + 12, MB32(a1 - 16));
     MW32(a0 + 16, MB32(a1 - 12));
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 28; v0 += a2;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 28; v0 += a2;
+    count -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 108; a1 += 28; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 108; a1 += 28; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 108;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000016 @0x8016b4c4 (85 insns, 5 args): dst
@@ -17342,29 +17345,29 @@ uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
  * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
  * (a0 = cur+0xc). Returns cur + count*0x78. */
 uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1)
+                     uint32_t a3,uint32_t count)
 {
 
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (count == 0) return cur;
   a0 += 12; a1 += 30;
   do {
     MW8(a0 + 39, 8);  MW8(a0 + 43, 56);
     MW8(a0 + 75, 8);  MW8(a0 + 79, 56);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 26));
     MW32(a0 + 12, MB32(a1 - 22));
     MW32(a0 + 16, MB32(a1 - 18));
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 24, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
@@ -17373,14 +17376,14 @@ uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
     MW32(a0 + 28, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 32; v0 += a3;
-    v1 -= 1;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 32; v0 += a3;
+    count -= 1;
     MW32(a0 + 32, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 120; a1 += 32; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 120; a1 += 32; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 120;
-  } while (v1 != 0);
-  return t0;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_01000009 @0x8016aaa4 (68 insns, 7 args): dst
@@ -17391,49 +17394,49 @@ uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
  * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
  * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
 uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
-                     uint32_t a3,uint32_t v1,uint32_t t7,
+                     uint32_t a3,uint32_t count,uint32_t t7,
                      uint32_t t6)
 {
 
 
 
 
-  uint32_t t2 = a0;
-  uint32_t t3 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = a0 + 62;
+  uint32_t cur2 = a0 + 62;
   uint32_t v0;
-  if (v1 == 0) return t2;
+  if (count == 0) return cur;
   a1 += 18;
   do {
-    MW8(t0 - 43, 7);  MW8(t0 - 39, 36);
-    MW8(t0 - 11, 7);  MW8(t0 - 7, 36);
-    v0 = MB32(t3); MW32(t0 - 34, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 6, v0);
-    v0 = MB32(a1 - 10); t3 += 20;
-    MW32(t0 - 18, v0); MW32(t0 + 14, v0);
+    MW8(cur2 - 43, 7);  MW8(cur2 - 39, 36);
+    MW8(cur2 - 11, 7);  MW8(cur2 - 7, 36);
+    v0 = MB32(src_cur); MW32(cur2 - 34, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(a1 - 10); src_cur += 20;
+    MW32(cur2 - 18, v0); MW32(cur2 + 14, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
-    MW32(t0 - 50, MB32(v0));
+    MW32(cur2 - 50, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t2 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    v1 -= 1;
-    t2 += 80;
-    MW32(t0 - 58, MB32(v0));
+    count -= 1;
+    cur += 80;
+    MW32(cur2 - 58, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
     a0 = MB32(v0);
-    MW32(t0 - 54, a0);
-    { uint32_t c0 = MB16(t0 - 32), c1 = MB16(t0 - 24);
-      c0 += t6; MW16(t0 - 32, c0);
-      c1 += t7; MW16(t0 - 24, c1);
-      c0 = MB16(t0 + 0);  c1 = MB16(t0 + 8);
+    MW32(cur2 - 54, a0);
+    { uint32_t c0 = MB16(cur2 - 32), c1 = MB16(cur2 - 24);
+      c0 += t6; MW16(cur2 - 32, c0);
+      c1 += t7; MW16(cur2 - 24, c1);
+      c0 = MB16(cur2 + 0);  c1 = MB16(cur2 + 8);
       c0 += t6; c1 += t7;
-      MW16(t0 + 0, c0);   MW16(t0 + 8, c1); }
-    t0 += 80;
-  } while (v1 != 0);
-  return t2;
+      MW16(cur2 + 0, c0);   MW16(cur2 + 8, c1); }
+    cur2 += 80;
+  } while (count != 0);
+  return cur;
 }
 
 /* heap_serialize_tag_0100000d @0x8016abb4 (84 insns, 7 args): dst
@@ -17452,19 +17455,19 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t1 = a0;
-  uint32_t t2 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
 
 
   uint32_t v0, v1;
-  if (t0 == 0) return t1;
+  if (t0 == 0) return cur;
   a0 += 78; a1 += 8;
   do {
     v0 = (uint32_t)MBS16(a1 + 4) << 3;  v0 += a3;
     MW32(a0 - 66, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 6) << 3;  v0 += a2;
-    MW32(t1 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 8) << 3;  v0 += a3;
     MW32(a0 - 62, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 10) << 3; v0 += a2;
@@ -17474,7 +17477,7 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
     v0 = (uint32_t)MBS16(a1 + 14) << 3; v0 += a2;
     t0 -= 1;
     MW32(a0 - 70, MB32(v0));
-    v0 = MB32(t2); t1 += 104; t2 += 24;
+    v0 = MB32(src_cur); cur += 104; src_cur += 24;
     MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 4); v1 = MB16(a0 - 40);
     MW32(a0 - 30, v0); MW32(a0 + 10, v0);
@@ -17489,7 +17492,7 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
     MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
     a0 += 104;
   } while (t0 != 0);
-  return t1;
+  return cur;
 }
 
 /* heap_serialize_tag_01000011 @0x8016b0f8 (79 insns, 7 args): dst
@@ -17500,7 +17503,7 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
  * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
  * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
  * (t0 = cur+0x4a). Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_01000011(uint32_t cur,uint32_t a1,uint32_t a2,
                      uint32_t a3,uint32_t t1,uint32_t t7,
                      uint32_t t6)
 {
@@ -17508,44 +17511,44 @@ uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t3 = a1;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = t2 + 74;
+  uint32_t cur2 = cur + 74;
   uint32_t v0;
-  if (t1 == 0) return t2;
+  if (t1 == 0) return cur;
   a1 += 22;
   do {
-    MW8(t0 - 51, 9);  MW8(t0 - 47, 44);
-    MW8(t0 - 11, 9);  MW8(t0 - 7, 44);
-    v0 = MB32(t3); MW32(t0 - 42, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 18); MW32(t0 - 34, v0); MW32(t0 + 6, v0);
-    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 14, v0);
-    v0 = MB32(a1 - 10); t3 += 24;
-    MW32(t0 - 18, v0); MW32(t0 + 22, v0);
+    MW8(cur2 - 51, 9);  MW8(cur2 - 47, 44);
+    MW8(cur2 - 11, 9);  MW8(cur2 - 7, 44);
+    v0 = MB32(src_cur); MW32(cur2 - 42, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 18); MW32(cur2 - 34, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 14, v0);
+    v0 = MB32(a1 - 10); src_cur += 24;
+    MW32(cur2 - 18, v0); MW32(cur2 + 22, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
-    MW32(t0 - 58, MB32(v0));
+    MW32(cur2 - 58, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(t2 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     t1 -= 1;
-    MW32(t0 - 70, MB32(v0));
+    MW32(cur2 - 70, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    t2 += 100;
-    MW32(t0 - 66, MB32(v0));
+    cur += 100;
+    MW32(cur2 - 66, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
     { uint32_t r = MB32(v0);
-      { uint32_t c0 = MB16(t0 - 40), c1 = MB16(t0 - 32);
-        c1 += t7; MW16(t0 - 32, c1);
-        MW32(t0 - 62, r);
-        c0 += t6; MW16(t0 - 40, c0);
-        c0 = MB16(t0 + 8);  c1 = MB16(t0 + 0);
+      { uint32_t c0 = MB16(cur2 - 40), c1 = MB16(cur2 - 32);
+        c1 += t7; MW16(cur2 - 32, c1);
+        MW32(cur2 - 62, r);
+        c0 += t6; MW16(cur2 - 40, c0);
+        c0 = MB16(cur2 + 8);  c1 = MB16(cur2 + 0);
         c0 += t7; c1 += t6;
-        MW16(t0 + 8, c0);   MW16(t0 + 0, c1); } }
-    t0 += 100;
+        MW16(cur2 + 8, c0);   MW16(cur2 + 0, c1); } }
+    cur2 += 100;
   } while (t1 != 0);
-  return t2;
+  return cur;
 }
 
 /* heap_serialize_tag_01000015 @0x8016b234 (100 insns, 7 args): dst
@@ -17556,7 +17559,7 @@ uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
  * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
  * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
  * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_01000015(uint32_t t2,uint32_t a1,uint32_t a2,
+uint32_t heap_serialize_tag_01000015(uint32_t cur,uint32_t a1,uint32_t a2,
                      uint32_t a3,uint32_t t1,uint32_t t7,
                      uint32_t t6)
 {
@@ -17564,50 +17567,50 @@ uint32_t heap_serialize_tag_01000015(uint32_t t2,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t3 = a1;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = t2 + 98;
+  uint32_t cur2 = cur + 98;
   uint32_t v0;
-  if (t1 == 0) return t2;
+  if (t1 == 0) return cur;
   a1 += 26;
   do {
-    MW8(t0 - 63, 12);  MW8(t0 - 59, 60);
-    MW8(t0 - 11, 12);  MW8(t0 - 7, 60);
-    v0 = MB32(t3);      MW32(t0 - 54, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 22); MW32(t0 - 42, v0); MW32(t0 + 10, v0);
-    v0 = MB32(a1 - 18); MW32(t0 - 30, v0); MW32(t0 + 22, v0);
-    v0 = MB32(a1 - 14); t3 += 28;
-    MW32(t0 - 18, v0); MW32(t0 + 34, v0);
+    MW8(cur2 - 63, 12);  MW8(cur2 - 59, 60);
+    MW8(cur2 - 11, 12);  MW8(cur2 - 7, 60);
+    v0 = MB32(src_cur);      MW32(cur2 - 54, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 22); MW32(cur2 - 42, v0); MW32(cur2 + 10, v0);
+    v0 = MB32(a1 - 18); MW32(cur2 - 30, v0); MW32(cur2 + 22, v0);
+    v0 = MB32(a1 - 14); src_cur += 28;
+    MW32(cur2 - 18, v0); MW32(cur2 + 34, v0);
     v0 = (uint32_t)MBS16(a1 - 16) << 3; v0 += a3;
-    MW32(t0 - 82, MB32(v0));
+    MW32(cur2 - 82, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(t2 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(t0 - 78, MB32(v0));
+    MW32(cur2 - 78, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 - 94, MB32(v0));
+    MW32(cur2 - 94, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(t0 - 74, MB32(v0));
+    MW32(cur2 - 74, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     t1 -= 1;
-    MW32(t0 - 90, MB32(v0));
+    MW32(cur2 - 90, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
-    t2 += 136;
-    MW32(t0 - 70, MB32(v0));
+    cur += 136;
+    MW32(cur2 - 70, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
     { uint32_t r = MB32(v0);
-      { uint32_t cy = MB16(t0 - 52), cx = MB16(t0 - 40);
-        cy += t6; MW16(t0 - 52, cy);
-        MW32(t0 - 86, r);
-        cx += t7; MW16(t0 - 40, cx);
-        cy = MB16(t0 + 0); cx = MB16(t0 + 12);
+      { uint32_t cy = MB16(cur2 - 52), cx = MB16(cur2 - 40);
+        cy += t6; MW16(cur2 - 52, cy);
+        MW32(cur2 - 86, r);
+        cx += t7; MW16(cur2 - 40, cx);
+        cy = MB16(cur2 + 0); cx = MB16(cur2 + 12);
         cx += t7; cy += t6;
-        MW16(t0 + 12, cx); MW16(t0 + 0, cy); } }
-    t0 += 136;
+        MW16(cur2 + 12, cx); MW16(cur2 + 0, cy); } }
+    cur2 += 136;
   } while (t1 != 0);
-  return t2;
+  return cur;
 }
 
 

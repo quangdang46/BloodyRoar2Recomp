@@ -1516,12 +1516,22 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   if (fmt == 0) return 0;
   const char *digits = s_0123456789abcdef_80124fe8;
   count = 0;
-LAB_8018e5e0:
-  v = (uint32_t)*fmt;
-  if (v != 0) {
+  /* Outer format loop (0x8018E5E0): plain chars go straight to
+   * console_emit; '%' enters the flag/width/precision scan. Every path
+   * reconverges at fmt++ (0x8018EBEC). End-of-string and a dangling '%'
+   * both flush the line buffer via console_pct and return. */
+  for (;;) {
+    v = (uint32_t)*fmt;
+    if (v == 0) break;
     flags = 0;
     pfx = 0; alt = 0; sht = 0; lng = 0;
-    if (v == 0x25) {
+    if (v != 0x25) {
+      console_emit(v);                          /* plain char (0x8018EBE4) */
+    } else {
+      /* spec init (0x8018E5F8) + flag-scan loop (0x8018E60C).
+       * emit_kind: -1 = still scanning, 0 = advance only ('n'/literal),
+       * 1 = string emit ('c'/'s'), 2 = numeric (digit-gen then emit). */
+      int emit_kind = -1;
       prec_raw = -1;
       sign = 0;
       prec = 0;
@@ -1529,243 +1539,241 @@ LAB_8018e5e0:
       width = 0;
       ap = (uint32_t *)args;
       fp = fmt;
-LAB_8018e60c:
-      fmt = fp + 1;
-      apn = ap;
-      switch (*fmt) {
-      case 0:
-        goto switchD_8018e634_caseD_0;
-      default:
-        v = (uint32_t)(char)*fmt;
-        count = count + 1;
-        args = (const uint32_t *)ap;
-        break;
-      case 0x20:
-        fp = fmt;
-        if (sign == 0) sign = 0x20;
-        goto LAB_8018e60c;
-      case 0x23:
-        alt = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2a:
-        apn = ap + 1;
-        width = (intptr_t)*ap;
-        ap = apn;
-        fp = fmt;
-        if (-1 < (int)width) goto LAB_8018e60c;
-        width = -width;
-        /* fallthrough */
-      case 0x2d:
-        flags |= 0x10;
-        ap = apn;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2b:
-        sign = 0x2b;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2e:
-        fp = fp + 2;
-        c1 = *fp;
-        if (c1 == 0x2a) {
-          prec_raw = (intptr_t)*ap;
-          ap = ap + 1;
-        } else {
-          prec_raw = 0;
-          while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
-            fp = fp + 1;
-            c1 = *fp;
-            prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
-          }
-          fp = fp - 1;
-        }
-        if ((int)prec_raw < 0) prec_raw = -1;
-        goto LAB_8018e60c;
-      case 0x30:
-        flags |= 0x20;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x31: case 0x32: case 0x33: case 0x34:
-      case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
-        width = 0;
-        do {
+      for (;;) {
+        fmt = fp + 1;
+        apn = ap;
+        switch (*fmt) {
+        case 0:
+          console_pct();                        /* dangling '%' -> flush+ret */
+          return (uint32_t)count;
+        case 0x20:
           fp = fmt;
-          fmt = fp + 1;
-          width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
-          if (0x7f < *fmt) break;
-        } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
-        goto LAB_8018e60c;
-      case 0x44:
-        lng = 1;
-        /* fallthrough */
-      case 100:
-      case 0x69:
-        if (lng || !sht) v = *ap;
-        else v = (uint32_t)(int16_t)*ap;
-        base = 10;
-        if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
-        goto LAB_8018e95c_d;
-      case 0x4c:
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x4f:
-        lng = 1;
-        /* fallthrough */
-      case 0x6f:
-        if (lng || (base = 8, !sht)) {
-          v = *ap;
-          base = 8;
-          goto LAB_8018e958_d;
-        }
-        v = (uint32_t)(int16_t)*ap;
-        sign = 0;
-        goto LAB_8018e95c_d;
-      case 0x55:
-        lng = 1;
-        /* fallthrough */
-      case 0x75:
-        if (lng || (base = 10, !sht)) {
-          v = *ap;
+          if (sign == 0) sign = 0x20;
+          break;
+        case 0x23:
+          alt = 1;
+          fp = fmt;
+          break;
+        case 0x2a:
+          apn = ap + 1;
+          width = (intptr_t)*ap;
+          ap = apn;
+          fp = fmt;
+          if (-1 < (int)width) break;
+          width = -width;
+          /* fallthrough */
+        case 0x2d:
+          flags |= 0x10;
+          ap = apn;
+          fp = fmt;
+          break;
+        case 0x2b:
+          sign = 0x2b;
+          fp = fmt;
+          break;
+        case 0x2e:
+          fp = fp + 2;
+          c1 = *fp;
+          if (c1 == 0x2a) {
+            prec_raw = (intptr_t)*ap;
+            ap = ap + 1;
+          } else {
+            prec_raw = 0;
+            while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
+              fp = fp + 1;
+              c1 = *fp;
+              prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
+            }
+            fp = fp - 1;
+          }
+          if ((int)prec_raw < 0) prec_raw = -1;
+          break;
+        case 0x30:
+          flags |= 0x20;
+          fp = fmt;
+          break;
+        case 0x31: case 0x32: case 0x33: case 0x34:
+        case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
+          width = 0;
+          do {
+            fp = fmt;
+            fmt = fp + 1;
+            width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
+            if (0x7f < *fmt) break;
+          } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
+          break;
+        case 0x44:
+          lng = 1;
+          /* fallthrough */
+        case 100:
+        case 0x69:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
           base = 10;
-          goto LAB_8018e958_d;
-        }
-        v = (uint32_t)(int16_t)*ap;
-        sign = 0;
-        goto LAB_8018e95c_d;
-      case 0x58:
-        digits = s_0123456789ABCDEF_80125004;
-        /* fallthrough */
-      case 0x78:
-        if (lng || !sht) v = *ap;
-        else v = (uint32_t)(int16_t)*ap;
-        base = 0x10;
-        sign = 0;
-        if (alt && v != 0) { pfx = 1; goto LAB_8018e958_d; }
-        goto LAB_8018e95c_d;
-      case 99:
-        txt = (char *)dbuf;
-        left = (uint32_t *)1;
-        sign = 0;
-        dbuf[0] = (char)*ap;
-        goto LAB_8018e9fc_d;
-      case 0x68:
-        sht = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x6c:
-        lng = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x6e:
-        if (lng || !sht) {
+          if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
+          emit_kind = 2;
+          break;
+        case 0x4c:
+          fp = fmt;
+          break;
+        case 0x4f:
+          lng = 1;
+          /* fallthrough */
+        case 0x6f:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 8;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x55:
+          lng = 1;
+          /* fallthrough */
+        case 0x75:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 10;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x58:
+          digits = s_0123456789ABCDEF_80125004;
+          /* fallthrough */
+        case 0x78:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 0x10;
+          sign = 0;
+          if (alt && v != 0) pfx = 1;
+          emit_kind = 2;
+          break;
+        case 99:
+          txt = (char *)dbuf;
+          left = (uint32_t *)1;
+          sign = 0;
+          dbuf[0] = (char)*ap;
+          emit_kind = 1;
+          break;
+        case 0x68:
+          sht = 1;
+          fp = fmt;
+          break;
+        case 0x6c:
+          lng = 1;
+          fp = fmt;
+          break;
+        case 0x6e:
           args = (const uint32_t *)(ap + 1);
-          *(uint32_t *)guest_at(*ap) = (uint32_t)count;
-        } else {
-          args = (const uint32_t *)(ap + 1);
-          *(uint16_t *)guest_at(*ap) = (uint16_t)count;
-        }
-        goto LAB_8018ebec_d;
-      case 0x70:
-        v = *ap;
-        base = 0x10;
-        goto LAB_8018e958_d;
-      case 0x73:
-        txt = *ap == 0 ? (char *)s__null__80124ffc
+          if (lng || !sht) *(uint32_t *)guest_at(*ap) = (uint32_t)count;
+          else *(uint16_t *)guest_at(*ap) = (uint16_t)count;
+          emit_kind = 0;
+          break;
+        case 0x70:
+          v = *ap;
+          base = 0x10;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x73:
+          txt = *ap == 0 ? (char *)s__null__80124ffc
                                 : (char *)guest_at(*ap);
-        if ((int)prec_raw < 0) {
-          prec_raw = str_len(txt);
-        } else {
-          char *hit = strchr_bounded(txt,0,(int)prec_raw);
-          if (hit != 0 &&
-              (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
-               hit - txt <= (intptr_t)prec_raw))
-            goto LAB_8018e9fc_d;
+          if ((int)prec_raw < 0) {
+            prec_raw = str_len(txt);
+          } else {
+            char *hit = strchr_bounded(txt,0,(int)prec_raw);
+            if (hit != 0 &&
+                (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
+                 hit - txt <= (intptr_t)prec_raw)) {
+              emit_kind = 1;
+              break;
+            }
+          }
+          sign = 0;
+          left = (uint32_t *)prec_raw;
+          emit_kind = 1;
+          break;
+        default:
+          v = (uint32_t)(char)*fmt;
+          count = count + 1;
+          args = (const uint32_t *)ap;
+          console_emit(v);
+          emit_kind = 0;
+          break;
         }
-        sign = 0;
-        left = (uint32_t *)prec_raw;
-        goto LAB_8018e9fc_d;
+        if (emit_kind >= 0) break;
       }
-      console_emit(v);
-      goto LAB_8018ebec_d;
+      if (emit_kind == 2) {
+        /* numeric: precision setup + digit generation (0x8018E95C/984) */
+        prec = (intptr_t)prec_raw;
+        if (-1 < (int)prec_raw) flags &= ~0x20;
+        /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
+         * s2 starts one past the top and walks down storing digits. The
+         * emitted string starts at the final cursor; its length is
+         * top - cursor. */
+        dcur = dbuf + sizeof(dbuf);
+        if (v != 0 || prec_raw != 0) {
+          do {
+            quo = v / base;
+            if (base == 0) { /* guest break 7 — div-by-zero */ }
+            dig = digits[v % base];
+            dcur = dcur - 1;
+            *dcur = dig;
+            v = quo;
+          } while (quo != 0);
+          digits = s_0123456789abcdef_80124fe8;
+          if (alt && base == 8 && dig != '0') {
+            dcur = dcur - 1;
+            *dcur = '0';
+          }
+          txt = dcur;
+          left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
+        } else {
+          txt = dcur;
+          left = (uint32_t *)0;
+        }
+        emit_kind = 1;
+      }
+      if (emit_kind == 1) {
+        /* shared string emit + padding (0x8018E9FC) */
+        args = (const uint32_t *)((const uint32_t *)ap + 1);
+        need = (uint32_t *)((intptr_t)left + zpad);
+        if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
+        if (pfx) need = (uint32_t *)((intptr_t)need + 2);
+        fldw = (uint32_t *)prec;
+        if (prec < (intptr_t)need) fldw = need;
+        if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x20); pad++; } while (pad < width);
+        }
+        if (sign != 0) console_emit((uint32_t)sign);
+        if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
+        if (flags == 0x20 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x30); pad++; } while (pad < width);
+        }
+        if ((intptr_t)need < prec) {
+          do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
+          while ((intptr_t)need < prec);
+        }
+        while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
+          dig = *txt;
+          txt = (char *)((intptr_t)txt + 1);
+          console_emit((uint32_t)dig);
+        }
+        while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
+        if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x20); pad++; } while (pad < width);
+        }
+        need = (uint32_t *)width;
+        if (width < (intptr_t)fldw) need = fldw;
+        count = count + (intptr_t)need;
+      }
     }
-switchD_8018e634_caseD_0:
-    console_pct();
+    fmt = fmt + 1;                                /* guest 0x8018EBEC */
   }
+  console_pct();                                /* 0x8018EBC0 */
   return (uint32_t)count;
-LAB_8018e958_d:
-  sign = 0;
-LAB_8018e95c_d:
-  prec = (intptr_t)prec_raw;
-  if (-1 < (int)prec_raw) flags &= ~0x20;
-  {
-    /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
-     * s2 starts one past the top (sp+0x38, adjacent to the count char
-     * counter) and walks down storing digits. The emitted string starts
-     * at the final cursor and its length is top - cursor. Ghidra split
-     * the scratch into &count/dbuf scalars and emitted pointer
-     * arithmetic that wrote digits below the dcur variable itself and
-     * never assigned txt — rebuild it as one real buffer. */
-    dcur = dbuf + sizeof(dbuf);
-    if (v != 0 || prec_raw != 0)
-      goto LAB_8018e984_d;
-    txt = dcur;
-    left = (uint32_t *)0;
-    goto LAB_8018e9fc_d;
-  }
-LAB_8018e984_d:
-  do {
-    quo = v / base;
-    if (base == 0) { /* guest break 7 — div-by-zero */ }
-    dig = digits[v % base];
-    dcur = dcur - 1;
-    *dcur = dig;
-    v = quo;
-  } while (quo != 0);
-  digits = s_0123456789abcdef_80124fe8;
-  if (alt && base == 8 && dig != '0') {
-    dcur = dcur - 1;
-    *dcur = '0';
-  }
-  txt = dcur;
-  left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
-LAB_8018e9fc_d:
-  args = (const uint32_t *)((const uint32_t *)ap + 1);
-  need = (uint32_t *)((intptr_t)left + zpad);
-  if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
-  if (pfx) need = (uint32_t *)((intptr_t)need + 2);
-  fldw = (uint32_t *)prec;
-  if (prec < (intptr_t)need) fldw = need;
-  if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x20); pad++; } while (pad < width);
-  }
-  if (sign != 0) console_emit((uint32_t)sign);
-  if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
-  if (flags == 0x20 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x30); pad++; } while (pad < width);
-  }
-  if ((intptr_t)need < prec) {
-    do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
-    while ((intptr_t)need < prec);
-  }
-  while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
-    dig = *txt;
-    txt = (char *)((intptr_t)txt + 1);
-    console_emit((uint32_t)dig);
-  }
-  while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
-  if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x20); pad++; } while (pad < width);
-  }
-  need = (uint32_t *)width;
-  if (width < (intptr_t)fldw) need = fldw;
-  count = count + (intptr_t)need;
-LAB_8018ebec_d:
-  fmt = fmt + 1;
-  goto LAB_8018e5e0;
 }
 
 /* ======== debug console emit layer ========
@@ -4514,38 +4522,45 @@ void scene_node_walk(uint32_t a0)
   SCN_ST32(SCN_GPR(28) + 0x4c, SCN_GPR(4));          /* gp cache: ctx */
   SCN_ST32(SCN_GPR(28) + 0x50, SCN_GPR(5));          /* gp cache: a0[1] */
 
+  int entry_ok = 1;
   {
     int ne = (SCN_GPR(2) != SCN_GPR(3));
     SCN_GPR(2) = SCN_GPR(5);                          /* bne delay: v0=a1 */
     if (ne) {                                         /* 801B0E20 */
       SCN_GPR(18) = SCN_LD32(SCN_GPR(4) + 0xc);       /* s2 = a0[3] */
-      goto L_loop;
+    } else {
+      /* flag == 1: resolve the first node through a1's header (801B0DF4). */
+      SCN_GPR(6) = SCN_LD32(SCN_GPR(2) + 0x14);       /* a2 = *(a1+0x14) */
+      if (SCN_GPR(6) == 0) {                          /* beqz a2 -> 801B1124 */
+        entry_ok = 0;
+      } else {
+        SCN_GPR(2) = SCN_LD32(SCN_GPR(2));            /* v0 = *a1 */
+        SCN_GPR(3) = SCN_LD32(SCN_GPR(4) + 0xc);      /* v1 = a0[3] */
+        SCN_GPR(2) = SCN_GPR(5) + SCN_GPR(2);         /* v0 = a1 + *a1 */
+        SCN_GPR(18) = SCN_GPR(5) + SCN_GPR(6);        /* delay: s2 = a1+a2 */
+        if (SCN_GPR(3) == SCN_GPR(2)) entry_ok = 0;   /* beq v1,v0 */
+      }
     }
   }
-  /* flag == 1: resolve the first node through a1's header (801B0DF4). */
-  SCN_GPR(6) = SCN_LD32(SCN_GPR(2) + 0x14);           /* a2 = *(a1+0x14) */
-  if (SCN_GPR(6) == 0) goto L_exit;                   /* beqz a2 -> 801B1124 */
-  SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                  /* v0 = *a1 */
-  SCN_GPR(3) = SCN_LD32(SCN_GPR(4) + 0xc);            /* v1 = a0[3] */
-  SCN_GPR(2) = SCN_GPR(5) + SCN_GPR(2);               /* v0 = a1 + *a1 */
-  SCN_GPR(18) = SCN_GPR(5) + SCN_GPR(6);              /* delay: s2 = a1+a2 */
-  if (SCN_GPR(3) == SCN_GPR(2)) goto L_exit;          /* beq v1,v0 */
-  goto L_loop;                                        /* j 801B0E24 */
 
-L_loop:                                               /* 801B0E24 */
-  SCN_GPR(5)  = SCN_LD32(SCN_GPR(18));                /* a1 = *s2 node word */
-  SCN_GPR(4)  = SCN_GPR(18) + 2;                      /* a0 = s2+2 (lh base) */
-  SCN_GPR(3)  = SCN_GPR(5) & 0x00ff;                  /* opcode */
-  SCN_GPR(2)  = (SCN_GPR(3) < 17u) ? 1u : 0u;         /* sltiu v0,17 */
-  SCN_GPR(16) = SCN_GPR(5) >> 8;                      /* delay: s0 = word>>8 */
-  if (SCN_GPR(2) == 0) {                              /* beqz -> self-loop */
-    for (;;) br2_irq_poll();                          /* guest spins w/ IRQs */
-  }
-  switch (SCN_GPR(3)) {
+  if (entry_ok) {
+  for (;;) {                                          /* L_loop 801B0E24 */
+    SCN_GPR(5)  = SCN_LD32(SCN_GPR(18));              /* a1 = *s2 node word */
+    SCN_GPR(4)  = SCN_GPR(18) + 2;                    /* a0 = s2+2 (lh base) */
+    SCN_GPR(3)  = SCN_GPR(5) & 0x00ff;                /* opcode */
+    SCN_GPR(2)  = (SCN_GPR(3) < 17u) ? 1u : 0u;       /* sltiu v0,17 */
+    SCN_GPR(16) = SCN_GPR(5) >> 8;                    /* delay: s0 = word>>8 */
+    if (SCN_GPR(2) == 0) {                            /* beqz -> self-loop */
+      for (;;) br2_irq_poll();                        /* guest spins w/ IRQs */
+    }
+    int tbl_call = 0;                                 /* case -> L_table_call */
+    int done = 0;                                     /* case -> L_exit */
+    switch (SCN_GPR(3)) {
   case 0x00:                                          /* 801B0E60 */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801be8ccu;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x01:                                          /* 801B0E74 */
     SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
@@ -4558,17 +4573,19 @@ L_loop:                                               /* 801B0E24 */
     SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                /* fn */
     SCN_GPR(18) += SCN_GPR(3);                        /* jalr delay: s2 += d */
     SCN_CALL(SCN_GPR(2));
-    goto L_loop;
+    continue;
   case 0x02:                                          /* 801B0EBC */
     SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
     SCN_GPR(3) = 0x801beaf4u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x03:                                          /* 801B0ED4 */
     SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
     SCN_GPR(3) = 0x801bece4u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x04:                                          /* 801B0EEC */
     SCN_GPR(3) = ((SCN_GPR(16) & 0xffu) << 3) + 0x801bedb4u;
     SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
@@ -4578,44 +4595,52 @@ L_loop:                                               /* 801B0E24 */
     SCN_GPR(6) = SCN_GPR(19) + SCN_LD16S(SCN_GPR(4) + 2);
     SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                /* fn */
     SCN_CALL(SCN_GPR(2));                             /* delay: a2 = s3+lh */
-    goto L_loop;
+    continue;
   case 0x05:                                          /* 801B0F30 */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801bee3cu;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x06:                                          /* 801B0F44 */
     SCN_GPR(2) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(5) = SCN_LD32(SCN_GPR(2));
     SCN_GPR(3) = 0x801bebecu;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x07:                                          /* 801B0F5C */
     SCN_GPR(3) = SCN_GPR(16) & 0xffu;
-    if (SCN_GPR(3) == 11u) goto L_exit;               /* sub 0xB: done */
+    if (SCN_GPR(3) == 11u) { done = 1; break; }       /* sub 0xB: done */
     lt12 = ((int32_t)SCN_GPR(3) < 12) ? 1u : 0u;      /* slti (delay) */
     SCN_GPR(2) = 4;                                   /* delay: v0=4 */
-    if (lt12 == 0) goto L_f84;
-    if (SCN_GPR(3) == 4u) goto L_f98;
-    SCN_GPR(2) = 0x801be89cu;                         /* j FC4 table */
-    goto L_fc_call;
-L_f84:
-    if (SCN_GPR(3) == 12u) {                          /* sub 0xC: jal helper */
-      SCN_CALL(0x801a482cu);
-      goto L_exit;
+    if (lt12 != 0 && SCN_GPR(3) == 4u) {              /* sub 4: commit s2 */
+      SCN_GPR(2) = SCN_SRA16(SCN_GPR(5));
+      SCN_GPR(3) = SCN_LD32(SCN_GPR(28) + 0x50);
+      SCN_GPR(4) = SCN_LD32(SCN_GPR(28) + 0x4c);
+      SCN_GPR(18) = SCN_GPR(3) + SCN_GPR(2);
+      SCN_ST32(SCN_GPR(4) + 0xc, SCN_GPR(18));
+      done = 1;
+      break;
     }
+    if (lt12 == 0 && SCN_GPR(3) == 12u) {             /* sub 0xC: jal helper */
+      SCN_CALL(0x801a482cu);
+      done = 1;
+      break;
+    }
+    /* FC table call (L_fc_call 801B0FC4): entry = 0x801BE89C + sub*4 */
     SCN_GPR(2) = 0x801be89cu;
-    SCN_GPR(3) = SCN_GPR(16) & 0xffu;                 /* FC0 refresh */
-    goto L_fc_call;
-L_f98:                                                /* sub 4: commit s2 */
-    SCN_GPR(2) = SCN_SRA16(SCN_GPR(5));
-    SCN_GPR(3) = SCN_LD32(SCN_GPR(28) + 0x50);
-    SCN_GPR(4) = SCN_LD32(SCN_GPR(28) + 0x4c);
-    SCN_GPR(18) = SCN_GPR(3) + SCN_GPR(2);
-    SCN_ST32(SCN_GPR(4) + 0xc, SCN_GPR(18));
-    goto L_exit;
+    if (lt12 == 0) SCN_GPR(3) = SCN_GPR(16) & 0xffu; /* FC0 refresh */
+    SCN_GPR(3) = (SCN_GPR(3) << 2) + SCN_GPR(2);     /* base + sub*4 */
+    SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                /* fn */
+    SCN_GPR(5) = sp + 0x10;                           /* a1 = &stack_out */
+    SCN_ST32(sp + 0x10, SCN_GPR(18));                 /* jalr delay: *out=s2 */
+    SCN_CALL(SCN_GPR(2));
+    SCN_GPR(18) = SCN_LD32(sp + 0x10);                /* s2 = *out */
+    continue;                                         /* -> L_loop */
   case 0x08:                                          /* 801B0FE8 */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801bebd4u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x09:                                          /* 801B0FFC */
     SCN_GPR(2) = 0x801bec24u;
     SCN_GPR(3) = ((SCN_GPR(16) & 0xffu) << 3) + SCN_GPR(2);
@@ -4625,14 +4650,16 @@ L_f98:                                                /* sub 4: commit s2 */
     SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                /* fn */
     SCN_GPR(5) = SCN_GPR(19) + SCN_GPR(5);           /* delay: a1=s3+lh */
     SCN_CALL(SCN_GPR(2));
-    goto L_loop;
+    continue;
   case 0x0a:                                          /* 801B1034 */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801bec44u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x0b:                                          /* 801B1048 */
     SCN_GPR(3) = 0x801bec7cu;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x0c:                                          /* 801B1054 */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(6) = SCN_GPR(4) + 2;                      /* a2 = s2+4 */
@@ -4647,42 +4674,40 @@ L_f98:                                                /* sub 4: commit s2 */
     SCN_ST32(SCN_GPR(28) + 0x4c, SCN_GPR(17));
     SCN_ST32(SCN_GPR(28) + 0x50, SCN_GPR(3));
     SCN_GPR(18) += SCN_GPR(2);                        /* j delay: s2 += d */
-    goto L_loop;
+    continue;
   case 0x0d:                                          /* 801B109C */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801becccu;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x0e:                                          /* 801B10B0 */
     SCN_GPR(3) = 0x801bee34u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x0f:                                          /* 801B10BC */
     SCN_GPR(5) = SCN_GPR(19) + SCN_SRA16(SCN_GPR(5));
     SCN_GPR(3) = 0x801beeb4u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   case 0x10:                                          /* 801B10F4 */
     SCN_GPR(3) = 0x801becb4u;
-    goto L_table_call;
+    tbl_call = 1;
+    break;
   }
+    if (tbl_call) {                                   /* L_table_call 801B10CC/10FC */
+      SCN_GPR(2) = (SCN_GPR(16) & 0xffu) << 3;
+      SCN_GPR(2) += SCN_GPR(3);                       /* entry = base + sub*8 */
+      SCN_GPR(3) = SCN_LD32(SCN_GPR(2) + 4);          /* delta */
+      SCN_GPR(2) = SCN_LD32(SCN_GPR(2));              /* fn */
+      SCN_GPR(18) += SCN_GPR(3);                      /* jalr delay: s2 += d */
+      SCN_CALL(SCN_GPR(2));
+      continue;
+    }
+    if (done) break;                                  /* -> L_exit */
+  }
+  }                                                  /* end entry_ok */
 
-L_table_call:                                         /* 801B10CC/10FC */
-  SCN_GPR(2) = (SCN_GPR(16) & 0xffu) << 3;
-  SCN_GPR(2) += SCN_GPR(3);                           /* entry = base + sub*8 */
-  SCN_GPR(3) = SCN_LD32(SCN_GPR(2) + 4);              /* delta */
-  SCN_GPR(2) = SCN_LD32(SCN_GPR(2));                  /* fn */
-  SCN_GPR(18) += SCN_GPR(3);                          /* jalr delay: s2 += d */
-  SCN_CALL(SCN_GPR(2));
-  goto L_loop;
-
-L_fc_call:                                            /* 801B0FC4 */
-  SCN_GPR(3) = (SCN_GPR(3) << 2) + SCN_GPR(2);        /* base + sub*4 */
-  SCN_GPR(2) = SCN_LD32(SCN_GPR(3));                  /* fn */
-  SCN_GPR(5) = sp + 0x10;                             /* a1 = &stack_out */
-  SCN_ST32(sp + 0x10, SCN_GPR(18));                   /* jalr delay: *out=s2 */
-  SCN_CALL(SCN_GPR(2));
-  SCN_GPR(18) = SCN_LD32(sp + 0x10);                  /* s2 = *out */
-  goto L_loop;
-
-L_exit:                                               /* 801B1124 epilogue */
+  /* 801B1124 epilogue */
   SCN_GPR(31) = SCN_LD32(sp + 0x28);
   SCN_GPR(19) = SCN_LD32(sp + 0x24);
   SCN_GPR(18) = SCN_LD32(sp + 0x20);
@@ -4753,7 +4778,7 @@ void scene_emit_xform(void)
   XF_G(2) = XF_G(5) - 17u;                        /* addiu v0,a1,-17  */
   XF_G(2) = (XF_G(2) < 2063u) ? 1u : 0u;          /* sltiu v0,v0,2063 */
   br2_st32(sp + 16, XF_G(5));                     /* delay: sw a1,16  */
-  if (XF_G(2) == 0) goto L_emit_ret;              /* beqz -> 801B03D0 */
+  if (XF_G(2) != 0) {
 
   /* 0x801B02C4: signed divide (lh(a3+0x50)<<9) / (a1<<2). The div-by-zero
    * and break(7168)/break(6144) trap paths are no-ops that all converge on
@@ -4812,8 +4837,9 @@ void scene_emit_xform(void)
   XF_G(2) = XF_G(6) << 8;                         /* sll v0,a2,8      */
   XF_G(2) = XF_G(2) >> 8;                         /* srl v0,v0,8      */
   br2_st32(XF_G(3), XF_G(2));                     /* sw v0,(v1)       */
+  }
 
-L_emit_ret:                                       /* 0x801B03D0 */
+  /* L_emit_ret 0x801B03D0 */
   br2_guest_frame_free();                         /* addiu sp,+24;jr  */
 #undef XF_G
 #undef XF_LD16S
@@ -7743,11 +7769,11 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       (uint32_t *)guest_at(g[5]),
       (int *)guest_at(g[6])));
 
-L_80186568:
+  /* L_80186568 */
   g[2] = br2_ld16(g[20]);                /* lhu */
   g[18] |= 0x38Cu;                       /* delay slot: s2 += 0x38C */
   g[2] &= 0x4000u;
-  if (g[2] != 0) goto L_8018691C;        /* flag set -> epilogue */
+  if (g[2] == 0) {                           /* flag clear -> emit pass */
 
   /* ---- axis delta pass 1: x (mult by lh(g20+4)) ---- */
   g[3] = (int32_t)(int16_t)br2_ld16(g[21] + 8);   /* lh */
@@ -7780,9 +7806,7 @@ L_80186568:
   g[2] = g[2] << 3;
   g[2] = g[2] + g[19];
   g[4] = (int32_t)g[3] >> 8;             /* delay slot sra */
-  if ((int32_t)g[2] >= 0) goto L_801865F8;
-  g[2] += 0xFFu;
-L_801865F8:
+  if ((int32_t)g[2] < 0) g[2] += 0xFFu;  /* L_801865F8: skip round-up */
   g[3] = (int32_t)g[2] >> 8;
   g[3] = g[4] + g[3];
   g[2] = br2_ld16(g[16] + 56);           /* lhu */
@@ -7880,14 +7904,14 @@ L_801865F8:
                       (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
-L_8018673C:
+  /* L_8018673C */
   g[4] = fr + 16;
   g[16] = g[18] + 8;                      /* s2 + 8 */
   /* jal 0x80186744 -> prim_attr_repack(sp+16, s2+8) */
   g[5] = g[16];                           /* delay slot */
   g[2] = prim_attr_repack(g[4], g[5]);
 
-L_8018674C:
+  /* L_8018674C */
   g[4] = g[16];                           /* s2 + 8 */
   g[5] = fr + 48;
   /* jal 0x80186754 -> gte_rtps_xform1(s2+8, sp+48, s2) */
@@ -7902,102 +7926,95 @@ L_8018674C:
   /* 0x80186760: nop */
   g[2] = ((int32_t)g[3] < 6) ? 1u : 0u;
   g[2] = 6;                               /* delay slot */
-  if (((int32_t)g[3] < 6)) goto L_801868D8;
-  /* beq g3,6 : delay slot g2 = 9 always executes */
-  g[2] = 9;
-  if (g[3] == 6) goto L_801867F8;
-  if (g[3] != 9) goto L_80186870;          /* _bc_80186778 */
-
-  /* ================= mode == 9 ================= */
-  /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
-  g[4] = br2_ld16(g[18] + 2);             /* lhu */
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
-  g[4] = g[4] << 16;
-  /* jal atan2_lut, delay: g4 = (s32)g4 >> 16 */
-  g[4] = (int32_t)g[4] >> 16;
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_80186794:
-  g[17] = g[2];
-  /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
-  g[4] = br2_ld16(g[18] + 2);
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_801867AC:
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 16);  /* lh */
-  g[19] = g[2];
-  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
-  if (g[2] != 0) goto L_801867D4;          /* _bc_801867B8 taken */
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
-  /* 0x801867c4: nop */
-  g[2] = ((int32_t)g[17] < (int32_t)g[3]) ? 1u : 0u;
-  if (g[2] == 0) goto L_801867D8;          /* _bc_801867CC taken */
-L_801867D4:
-  g[17] = g[3];
-L_801867D8:
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 20);  /* lh */
-  /* 0x801867dc: nop */
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
-  if (g[2] != 0) goto L_8018686C;          /* _bc_801867E4 taken */
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 18);  /* lh */
-  /* 0x801867f0: j 0x80186864 ; delay slot slti */
-  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
-  goto L_80186864;
-
-  /* ================= mode == 6 ================= */
-L_801867F8:
-  g[4] = br2_ld16(g[18] + 2);             /* lhu */
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_8018680C:
-  g[17] = g[2];
-  g[4] = br2_ld16(g[18] + 2);
-  g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
-  g[4] = g[4] << 16;
-  g[4] = (int32_t)g[4] >> 16;             /* delay slot */
-  g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_80186824:
-  g[19] = g[2];
-  g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
-  g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
-  g[4] = g[0] - g[3];                     /* delay slot: g4 = -g3 */
-  if (g[2] == 0) goto L_80186840;         /* _bc_80186830 taken */
-  /* 0x80186838: */
-  g[17] = g[3];
-  goto L_80186850;                        /* j */
-L_80186840:
-  g[2] = ((int32_t)g[17] < (int32_t)g[4]) ? 1u : 0u;
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;  /* delay slot */
-  if (((int32_t)g[17] < (int32_t)g[4]) == 0) goto L_80186854;
-  /* 0x8018684c: */
-  g[17] = g[4];
-L_80186850:
-  g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
-L_80186854:
-  if (g[2] != 0) goto L_8018686C;         /* _bc_80186854 taken */
-  /* 0x8018685c: */
-  g[3] = g[0] - g[3];                     /* g3 = -g3 */
-  g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
-L_80186864:
-  if (g[2] == 0) goto L_80186870;         /* _bc_80186864 taken */
-  /* fallthrough */
-L_8018686C:
-  g[19] = g[3];
+  if ((int32_t)g[3] >= 6) {
+    /* beq g3,6 : delay slot g2 = 9 always executes */
+    g[2] = 9;
+    if (g[3] == 6) {
+      /* ================= mode == 6 ================= */
+      /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
+      g[4] = br2_ld16(g[18] + 2);           /* lhu */
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18]);     /* lh */
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_8018680C */
+      g[17] = g[2];
+      /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
+      g[4] = br2_ld16(g[18] + 2);
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_80186824 */
+      g[19] = g[2];
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+      g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+      g[4] = g[0] - g[3];                   /* delay slot: g4 = -g3 */
+      if (g[2] != 0) {
+        g[17] = g[3];
+      } else {
+        /* L_80186840: g17 < -g3 ? g17 = -g3 (dead slti kept for fidelity) */
+        g[2] = ((int32_t)g[17] < (int32_t)g[4]) ? 1u : 0u;
+        if ((int32_t)g[17] < (int32_t)g[4]) g[17] = g[4];
+      }
+      /* L_80186850/54: converge on g2 = (g3 < g19) */
+      g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[19] = g[3];                       /* L_8018686C */
+      } else {
+        g[3] = g[0] - g[3];                 /* g3 = -g3 */
+        g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[19] = g[3];        /* L_80186864 -> L_8018686C */
+      }
+    } else if (g[3] == 9) {
+      /* ================= mode == 9 ================= */
+      /* atan2 pair #1: (s16)lhu(s2+2), lh(s2+0) */
+      g[4] = br2_ld16(g[18] + 2);           /* lhu */
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18]);     /* lh */
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_80186794 */
+      g[17] = g[2];
+      /* atan2 pair #2: (s16)lhu(s2+2), lh(s2+4) */
+      g[4] = br2_ld16(g[18] + 2);
+      g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);
+      g[4] = g[4] << 16;
+      g[4] = (int32_t)g[4] >> 16;           /* delay slot */
+      g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+      /* L_801867AC */
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 16);  /* lh */
+      g[19] = g[2];
+      g[2] = ((int32_t)g[3] < (int32_t)g[17]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[17] = g[3];                       /* L_801867D4 */
+      } else {
+        g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 14);  /* lh */
+        g[2] = ((int32_t)g[17] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[17] = g[3];        /* L_801867D4 fallthrough */
+      }
+      /* L_801867D8 */
+      g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 20);  /* lh */
+      g[2] = ((int32_t)g[3] < (int32_t)g[19]) ? 1u : 0u;
+      if (g[2] != 0) {
+        g[19] = g[3];                       /* L_8018686C */
+      } else {
+        g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 18);  /* lh */
+        g[2] = ((int32_t)g[19] < (int32_t)g[3]) ? 1u : 0u;
+        if (g[2] != 0) g[19] = g[3];        /* L_80186864 -> L_8018686C */
+      }
+    }
+    /* other modes >= 6: g17/g19 keep prior values (guest-faithful) */
 
   /* ================= shared angle fold tail ================= */
-L_80186870:
+  /* L_80186870 (mode >= 6 only) */
   /* jal -> lut_cos_q12(g17) */
   g[4] = g[17];                           /* delay slot */
   g[2] = (uint32_t)lut_cos_q12((int)g[4]);
-L_80186878:
   g[4] = g[19];
   g[16] = g[2];                           /* delay slot: save cos(g17) */
   /* jal -> lut_cos_q12(g19) */
   g[2] = (uint32_t)lut_cos_q12((int)g[4]);
-L_80186884:
   g[4] = g[17];
   g[16] = g[16] + g[2];
   g[2] = (uint32_t)g[16] >> 31;
@@ -8006,27 +8023,25 @@ L_80186884:
   br2_st16(g[18] + 2, (uint16_t)g[16]);   /* delay slot of jal */
   /* jal -> lut_sin_q12(g17) */
   g[2] = (uint32_t)lut_sin_q12(g[4]);
-L_801868A0:
   g[4] = g[19];
   br2_st16(g[18], (uint16_t)g[2]);        /* delay slot: sh s2+0 */
   /* jal -> lut_sin_q12(g19) */
   g[2] = (uint32_t)lut_sin_q12(g[4]);
-L_801868AC:
   g[5] = (int32_t)(int16_t)br2_ld16(g[18]);       /* lh */
   g[4] = br2_ld16(g[18] + 2);             /* lhu */
   br2_st16(g[18] + 4, (uint16_t)g[2]);    /* sh s2+4 = sin(g19) */
   g[4] = g[4] << 16;
   g[4] = (int32_t)g[4] >> 16;             /* delay slot */
   g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
-L_801868C4:
   g[4] = br2_ld16(g[18] + 2);             /* lhu */
   g[5] = (int32_t)(int16_t)br2_ld16(g[18] + 4);   /* lh */
   g[4] = g[4] << 16;
   g[4] = (int32_t)g[4] >> 16;             /* delay slot */
   g[2] = (uint32_t)atan2_lut((int)g[4], (int)g[5]);
+  }
 
   /* ================= mode < 6 / tail ================= */
-L_801868D8:
+  /* L_801868D8 */
   g[16] = g[22] + 4;
   g[4] = g[16];
   g[2] = br2_ld16(g[18]);                 /* lhu */
@@ -8043,7 +8058,7 @@ L_801868D8:
                       (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
-L_80186908:
+  /* L_80186908 */
   g[5] = g[16];                           /* a1 + 4 */
   g[8] = br2_ld32(fr + 68);               /* reload saved ptr */
   g[6] = g[22] + 32;
@@ -8054,8 +8069,9 @@ L_80186908:
       (uint16_t *)guest_at(g[5]),
       (uint32_t *)guest_at(g[6])));
 
+  }                                          /* end flag-clear emit pass */
+
   /* ================= epilogue ================= */
-L_8018691C:
   g[31] = br2_ld32(fr + 108);
   g[30] = br2_ld32(fr + 104);
   g[23] = br2_ld32(fr + 100);
@@ -8096,7 +8112,7 @@ L_8018691C:
  * prim_ot_link_indexed and gte_data[22] is stored at out+28.
  *
  * Faithful CPS transliteration: one clean body, cpu->gpr[] live mirrors,
- * block_* labels + goto for the two taken branches and the loop back-edge.
+ * blez guard -> early return, beq+bgtz branches -> structured if/do-while.
  * The generated pc-switch mid-entries (0x80188518/20/24/70/65C) are CPS
  * suspend continuations only — this port has no suspend points, so the
  * function-entry dispatch is the sole live entry (verified: no external
@@ -8228,8 +8244,8 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * emits a single transformed vertex, not a quad).
  *
  * Faithful CPS transliteration in the same style as the 0x6c/0x88
- * siblings: cpu->gpr[] live mirrors, block_* labels + goto for the two
- * taken branches and the loop back-edge. lwc2 sites use the generated
+ * siblings: cpu->gpr[] live mirrors, blez guard -> early return,
+ * beq+bgtz branches -> structured if/do-while. lwc2 sites use the generated
  * psx_cyc_lwc2_read (charge + raw read); the gte[6] mtc2 keeps the
  * generated direct gte_data[] write (gte_write_data would mask to
  * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.

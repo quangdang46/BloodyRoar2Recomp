@@ -1226,13 +1226,13 @@ ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream)
   motion = (uint8_t *)guest_at((uint32_t)motion_g);
   subop = op_word >> 0x14 & 3;
   if (subop == 1) {
-    if ((GU8(ctrl, 5) & 1) == 0) goto LAB_8017aebc;
-    goto LAB_8017ae9c;
+    if ((GU8(ctrl, 5) & 1) == 0) goto L_8017aebc;
+    goto L_8017ae9c;
   }
   if (((1 < subop) && (subop == 2)) && ((GU8(ctrl, 5) & 1) == 0)) {
     return stream + 2;
   }
-LAB_8017aebc:
+L_8017aebc:
   next = (ushort *)0x0;
   switch(opcode & 0xf) {
   case 0:
@@ -1247,7 +1247,7 @@ LAB_8017aebc:
     off = idx * 4;
     if (idx < *(short *)(foe + 0xa4)) {
       if (*(uint *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off) < 0x80000001) {
-        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto LAB_8017b034;
+        if (*(int *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off) == 0) goto L_8017b034;
         *(undefined2 *)(foe + 0xbe) = *(undefined2 *)(foe + 0xbc);
         *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xa8)) + off);
       }
@@ -1256,7 +1256,7 @@ LAB_8017aebc:
         *(undefined4 *)(foe + 0xb0) = *(undefined4 *)((uint8_t *)guest_at(GU32(foe, 0xac)) + off);
       }
       *(short *)(foe + 0xa2) = (short)idx;
-LAB_8017b090:
+L_8017b090:
       fighter_anim_advance(ctrl_g,foe_g);
       return stream + 2;
     }
@@ -1268,7 +1268,7 @@ LAB_8017b090:
     *(ushort *)(motion + 0x80) = operand;
     act_idx = *(short *)(motion + 0x80);
     *(ushort *)(motion + 0x82) = operand;
-    goto LAB_8017b044;
+    goto L_8017b044;
   case 2:
     *(ushort *)(foe + 0x98) = operand;
     break;
@@ -1287,13 +1287,13 @@ LAB_8017b090:
         pend_g = *(undefined4 *)((uint8_t *)guest_at(GU32(foe_motion, 0xac)) + idx * 4);
         *(ushort *)(foe + 0xa2) = operand;
         *(undefined4 *)(foe + 0xb0) = pend_g;
-        goto LAB_8017b090;
+        goto L_8017b090;
       }
-LAB_8017b034:
+L_8017b034:
       *(undefined2 *)(motion + 0x80) = 1;
       act_idx = *(short *)(motion + 0x80);
       *(undefined2 *)(motion + 0x82) = 1;
-LAB_8017b044:
+L_8017b044:
       action_switch_guest(target_g,(int *)motion,(int)act_idx);
       {
         uint32_t ns = GU32(foe, 0x84);
@@ -1308,11 +1308,11 @@ LAB_8017b044:
     next = stream + 2;
     *(ushort *)(foe + (*(byte *)(foe + 0x7d) - 1) * 2 + 0x3c) = operand;
   default:
-    goto switchD_8017aedc_default;
+    goto L_8017aedc_default;
   }
-LAB_8017ae9c:
+L_8017ae9c:
   next = stream + 2;
-switchD_8017aedc_default:
+L_8017aedc_default:
   return next;
 
 }
@@ -1652,6 +1652,17 @@ static uint32_t br2_jal(uint32_t fn, uint32_t link)
     }
 }
 
+/* ev24_cluster — event-type-24 (FX/spawn) stream handler, guest
+ * 0x801421C4-0x80142B38. Faithful CPS transliteration of the generated
+ * body: prologue saves s0-s6/ra, reads the stream record at a2
+ * (type/op bytes, param bytes at +2/+4), then walks a class/op
+ * decision tree — bit tests on record bytes select one of ~19
+ * sub-handlers (0x8013xxxx effect/spawn family, 0x801AD2xx GPU/prim
+ * emit family) — and merges at the shared epilogue 0x80142B00/0x80142B0C
+ * which restores regs and returns the next stream pointer.
+ * Early-out at 0x80142238 skips the record (stream+6) when the
+ * 0x1F800000+0xB1 flag byte is set. Entry points are the 9 CPS
+ * continuation addresses in the switch below. */
 static uint32_t ev24_cluster(uint32_t entry)
 {
   CPUState *cpu = clean_cpu_state();
@@ -1668,6 +1679,7 @@ static uint32_t ev24_cluster(uint32_t entry)
   default: return cpu->gpr[2];
   }
 block_801421C4:
+    /* entry: frame prologue — sp-=88, save s0-s6/ra, s2=a0(ctrl); read stream record words/halfwords at a2 */
     { uint32_t _pgx1 = cpu->gpr[29]; cpu->gpr[29] = cpu->gpr[29] + -88;
     }  /* 0x801421C4: 0x27BDFFA8 */
     { uint32_t _pgxa = cpu->gpr[29] + 56; br2_st32(cpu->gpr[29] + 56, cpu->gpr[18]);
@@ -1725,10 +1737,12 @@ block_801421C4:
         goto block_80142238;  /* not taken */
     }
 block_80142238:
+    /* early-out: flag byte @0x1F8000B1 set -> next = stream+6, jump to epilogue */
     { uint32_t _pgx1 = cpu->gpr[6]; cpu->gpr[2] = cpu->gpr[6] + 6;
     }  /* 0x8014223C: 0x24C20006 */
     goto block_80142B0C;
 block_80142240:
+    /* decision: ctrl+0x38 -> +0x100 flag byte & a0 bit7 -> class/op tree */
     { uint32_t _pgxa = cpu->gpr[18] + 56; cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 56);
     }  /* 0x80142240: 0x8E420038 */
     { uint32_t _pgxa = cpu->gpr[2] + 256; cpu->gpr[2] = br2_ld8(cpu->gpr[2] + 256);
@@ -2666,6 +2680,7 @@ block_801428B8:
         return call_guest4(jr_target, cpu->gpr[4], cpu->gpr[5], cpu->gpr[6], cpu->gpr[7]);
     }
 block_801428D4:
+    /* continuation entry (FX variant) */
     cpu->gpr[2] = 0x801F << 16;  /* 0x801F0000 */
     { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
     }  /* 0x801428D8: 0x92430002 */
@@ -2745,6 +2760,7 @@ block_8014294C:
     }  /* 0x80142950: 0xAC800014 */
     goto block_80142B00;
 block_80142954:
+    /* continuation entry (FX variant) */
     cpu->gpr[3] = cpu->gpr[17] & 0x00FF;  /* 0x80142954: 0x322300FF */
     int cond_v1_eq_zero_2 = (cpu->gpr[3] == cpu->gpr[0]);  /* save branch cond before delay slot */
     { uint32_t _pgx1 = cpu->gpr[0]; cpu->gpr[2] = 1;
@@ -2839,6 +2855,7 @@ block_801429C4:
 block_801429EC:
     goto block_80142B00;
 block_801429F4:
+    /* continuation entry (FX variant) */
     cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x801429F4: 0x322200FF */
     int cond_v0_ne_zero_4 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
@@ -2880,7 +2897,9 @@ block_80142A00:
 block_80142A3C:
     goto block_80142B00;
 block_80142A40:
+    /* continuation entry: tail of decision tree */
 block_80142A44:
+    /* continuation entry: tail of decision tree */
     cpu->gpr[17] = cpu->gpr[17] & 0x00FF;  /* 0x80142A44: 0x323100FF */
     cpu->gpr[2] = ((int32_t)cpu->gpr[17] < 2) ? 1 : 0;  /* 0x80142A48: 0x2A220002 */
     int cond_v0_eq_zero_14 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
@@ -2966,6 +2985,7 @@ block_80142AB4:
 block_80142ABC:
     goto block_80142B00;  /* j */
 block_80142AC4:
+    /* tail: v0 = s1 & 0xFF gate -> epilogue or 0x80142AD0 param-pack */
     cpu->gpr[2] = cpu->gpr[17] & 0x00FF;  /* 0x80142AC4: 0x322200FF */
     int cond_v0_ne_zero_5 = (cpu->gpr[2] != cpu->gpr[0]);  /* save branch cond before delay slot */
     cpu->gpr[3] = 0x1F80 << 16;  /* 0x1F800000 */
@@ -2975,6 +2995,7 @@ block_80142AC4:
         goto block_80142AD0;  /* not taken */
     }
 block_80142AD0:
+    /* param pack: stream byte -> x*32+x scaled pairs -> jal 0x8013F7A0 */
     { uint32_t _pgxa = cpu->gpr[18] + 2; cpu->gpr[2] = br2_ld8(cpu->gpr[18] + 2);
     }  /* 0x80142AD0: 0x92420002 */
     { uint32_t _pgx1 = cpu->gpr[3]; cpu->gpr[3] = cpu->gpr[3] | 0x00E8;
@@ -3000,11 +3021,13 @@ block_80142AD0:
     if (br2_bail_pending()) return cpu->gpr[2];
     goto block_80142B00;
 block_80142B00:
+    /* shared epilogue: reload saved s0-s6/ra, sp+=88, jr ra */
     { uint32_t _pgxa = cpu->gpr[29] + 96; cpu->gpr[10] = br2_ld32(cpu->gpr[29] + 96);
     }  /* 0x80142B00: 0x8FAA0060 */
     { uint32_t _pgx1 = cpu->gpr[10]; cpu->gpr[2] = cpu->gpr[10] + 6;
     }  /* 0x80142B08: 0x25420006 */
 block_80142B0C:
+    /* shared epilogue entry (early-out lands here) */
     { uint32_t _pgxa = cpu->gpr[29] + 84; cpu->gpr[31] = br2_ld32(cpu->gpr[29] + 84);
     }  /* 0x80142B0C: 0x8FBF0054 */
     { uint32_t _pgxa = cpu->gpr[29] + 80; cpu->gpr[30] = br2_ld32(cpu->gpr[29] + 80);
