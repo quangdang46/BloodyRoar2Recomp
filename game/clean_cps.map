@@ -4595,3 +4595,24 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w3-e06: confirm-code + memcard dialog alias-entry families ---
+# confirm_code_entry_cps (game/w3_e06.c) — overlapping-alias body
+# br2eu_psx_alias_body_8015787C (host confirm_code_select 0x8015787c).
+# Entries are the confirm-dialog code-select thunks; they set a1 and join
+# the shared block_80157964 tail.
+80157948 confirm_code_entry_cps
+80157950 confirm_code_entry_cps
+80157958 confirm_code_entry_cps
+80157960 confirm_code_entry_cps
+
+# memcard_dialog_cps (game/w3_e06.c) — overlapping-alias body
+# br2eu_psx_alias_body_80157A00 (host memcard_tick 0x80157a00).
+# Entries are memcard dialog/state handlers sharing the merged block graph.
+80158000 memcard_dialog_cps
+80158058 memcard_dialog_cps
+80158070 memcard_dialog_cps
+80158170 memcard_dialog_cps
+80158188 memcard_dialog_cps
+80158228 memcard_dialog_cps
+80158230 memcard_dialog_cps
