@@ -238,6 +238,7 @@ extern void cd_channel_init_seq(void);
 extern void cd_channel_main_init(void);
 extern void cd_channel_poll(void);
 extern void cd_channel_table_init(void);
+extern void cd_cmd_bytes(void);
 extern void cd_cmd_data_byte(void);
 extern void cd_cmd_dispatch3(void);
 extern void cd_cmd_flush_a(void);
@@ -659,6 +660,7 @@ extern void euler_rotmat_core(void);
 extern void euler_rotmat_neg(void);
 extern void euler_rotmat_unpack(void);
 extern void ev20_timer_dispatch(void);
+extern void ev24_fx_spawn(void);
 extern void ev24_fx_spawn_alias(void);
 extern void ev2_hitstun_gate_dispatch(void);
 extern void ev4_branch_dispatch(void);
@@ -1236,6 +1238,7 @@ extern void part_flag100_set(void);
 extern void part_link_tail(void);
 extern void part_link_unlink(void);
 extern void part_matrix_compute(void);
+extern void part_record_reset(void);
 extern void part_skin_emit(void);
 extern void particle_burst_spawn(void);
 extern void particle_burst_update(void);
@@ -2000,6 +2003,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80141d34, (void *)desc_opcode_dispatch },
   { 0x80142084, (void *)ev_cmd_dispatch_alias },
   { 0x80142108, (void *)group_fx_spawn },
+  { 0x801421c4, (void *)ev24_fx_spawn },
   { 0x80142954, (void *)ev24_fx_spawn_alias },
   { 0x80142b3c, (void *)angle_from_xy },
   { 0x80142c5c, (void *)reset_combat_record },
@@ -2440,6 +2444,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801796ec, (void *)motion_turn_update },
   { 0x80179964, (void *)part_link_unlink },
   { 0x80179a0c, (void *)part_link_tail },
+  { 0x80179a6c, (void *)part_record_reset },
   { 0x80179ae0, (void *)skeleton_init },
   { 0x8017a05c, (void *)apply_guest },
   { 0x8017a6a8, (void *)part_desc_clear_gate },
@@ -3039,6 +3044,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801968cc, (void *)cd_result_wait_a },
   { 0x80196b4c, (void *)cd_result_wait_b },
   { 0x80196e14, (void *)cd_cmd_issue },
+  { 0x80197220, (void *)cd_cmd_bytes },
   { 0x801972a8, (void *)cd_cmd_state_reset },
   { 0x8019737c, (void *)cd_reg_init_seq },
   { 0x8019746c, (void *)cd_chan_reset_b },
