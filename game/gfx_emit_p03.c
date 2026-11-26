@@ -25,11 +25,6 @@ typedef int8_t   byte;
 typedef uint16_t ushort;
 typedef uint32_t uint;
 typedef int      int32_t_ghidra;
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);

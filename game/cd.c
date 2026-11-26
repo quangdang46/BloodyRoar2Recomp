@@ -8,19 +8,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "cpu_state.h"
 
 typedef uint8_t  uint8_t;
-typedef uint8_t  uint8_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
-typedef int8_t   int8_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
 #ifndef bool
 #define bool int
-#define true 1
-#define false 0
 #endif
 
 extern void *guest_at(uint32_t addr);
