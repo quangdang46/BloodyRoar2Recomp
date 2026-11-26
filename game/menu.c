@@ -14007,15 +14007,15 @@ extern void task_node_free(uint32_t);
 
 /* rec16_fill — 16-byte record fill @0x80137578 (6 insns):
  * a0 = guest ptr; {a1,0,a2,0} u32s + a3 u16 at +0x10 (delay slot). */
-void rec16_fill(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void rec16_fill(uint32_t dst,uint32_t f0,
+                  uint32_t f8,uint32_t f10)
 {
-  uint8_t *p = (uint8_t *)guest_at(param_1);
-  *(uint32_t *)(p + 0)  = param_2;
+  uint8_t *p = (uint8_t *)guest_at(dst);
+  *(uint32_t *)(p + 0)  = f0;
   *(uint32_t *)(p + 4)  = 0;
-  *(uint32_t *)(p + 8)  = param_3;
+  *(uint32_t *)(p + 8)  = f8;
   *(uint32_t *)(p + 12) = 0;
-  *(uint16_t *)(p + 16) = (uint16_t)param_4;
+  *(uint16_t *)(p + 16) = (uint16_t)f10;
 }
 
 /* anim_workblock_init — anim work-block init @0x801401d0 (207 insns,
@@ -14032,96 +14032,94 @@ void rec16_fill(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * 7/39/e + 3 src bytes + fixed palette nibbles. Then 3 ptr
  * quads at s0+0x694.. stride 0x10 offsets 0x6c4/0x754/0x7e4.
  * Header: +0x936=4,+0x938=8,+0x934=0,+0x93a=0xc. */
-void anim_workblock_init(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t v0in)
+void anim_workblock_init(uint32_t ent,uint32_t aidx,uint32_t v3,
+                  uint32_t v7,uint32_t pk,uint32_t gate)
 {
-  uint32_t s5 = param_1, s1 = param_2, s6 = param_3, s7 = param_4;
-  uint32_t s3 = param_5;
-  uint32_t blk, s0, s4, v1, a1, a2;
-  int32_t i, j, a0i;
-  uint32_t R, s2;
-  if (v0in != 0) return;
+  uint32_t blk, rec, wp, t, cnt, ai;
+  int32_t i, j, ci;
+  uint32_t rp, pat;
+  if (gate != 0) return;
   blk = task_node_alloc(1, 2, 0xc, 0x8013f828u, 0, 0x978u);
   if (blk == 0) { task_node_free(0); return; }
-  s0 = MB32(blk + 0x10);
-  a1 = s3 >> 16;
-  s3 &= 0xffffu;
-  if (a1 < 2) a1 = 0xc;
-  s4 = s0 + 4;
-  MW16(s0 + 0x974, 0x1000);
-  MW16(s0 + 0x96a, (uint16_t)(s6 + 3));
-  MW16(s0 + 0x972, (uint16_t)a1);
-  MW16(s0 + 0x976, (uint16_t)(0x1000 / (int32_t)a1));
-  MW16(s0 + 0x96c, (uint16_t)s7);
-  v1 = MB32(s5 + 0x20) + s1 * 80u + 0x20u;
-  MW32(s0 + 0x93c, v1);
-  MW16(s0 + 0x96e, MB16(s5 + 2));
-  if (s1 == 7 || s1 == 0xa) s1 = 0x801b1ef4u;
-  else s1 = (uint32_t)MB8(s5 + 3) * 48u + 0x801b1f24u;
-  if ((s3 << 16) != 0) {
+  rec = MB32(blk + 0x10);
+  cnt = pk >> 16;
+  pk &= 0xffffu;
+  if (cnt < 2) cnt = 0xc;
+  wp = rec + 4;
+  MW16(rec + 0x974, 0x1000);
+  MW16(rec + 0x96a, (uint16_t)(v3 + 3));
+  MW16(rec + 0x972, (uint16_t)cnt);
+  MW16(rec + 0x976, (uint16_t)(0x1000 / (int32_t)cnt));
+  MW16(rec + 0x96c, (uint16_t)v7);
+  t = MB32(ent + 0x20) + aidx * 80u + 0x20u;
+  MW32(rec + 0x93c, t);
+  MW16(rec + 0x96e, MB16(ent + 2));
+  if (aidx == 7 || aidx == 0xa) aidx = 0x801b1ef4u;
+  else aidx = (uint32_t)MB8(ent + 3) * 48u + 0x801b1f24u;
+  if ((pk << 16) != 0) {
     uint32_t div;
-    MW16(s0 + 0x970, (uint16_t)s3);
-    rec16_fill(s0 + 0x948, 0x1000, s3, 0x1000);
-    div = 0x100u / s3;
-    v1 = s1;
+    MW16(rec + 0x970, (uint16_t)pk);
+    rec16_fill(rec + 0x948, 0x1000, pk, 0x1000);
+    div = 0x100u / pk;
+    t = aidx;
     for (i = 0; i < 6; i++) {
-      uint32_t o = s0 + 0x904 + (uint32_t)i * 8u;
-      MW16(o, MB16(v1));
-      MW16(o + 4, MB16(v1 + 4));
+      uint32_t o = rec + 0x904 + (uint32_t)i * 8u;
+      MW16(o, MB16(t));
+      MW16(o + 4, MB16(t + 4));
       if (i & 1)
-        MW16(o + 2, (uint16_t)((int32_t)((int64_t)MBS16(v1 + 2) * (int64_t)div) >> 12));
+        MW16(o + 2, (uint16_t)((int32_t)((int64_t)MBS16(t + 2) * (int64_t)div) >> 12));
       else
-        MW16(o + 2, MB16(v1 + 2));
-      v1 += 8;
+        MW16(o + 2, MB16(t + 2));
+      t += 8;
     }
-    MW32(s0 + 0x940, s0 + 0x904);
+    MW32(rec + 0x940, rec + 0x904);
   } else {
-    MW32(s0 + 0x940, s1);
+    MW32(rec + 0x940, aidx);
   }
   {
-    uint16_t t2 = MB8(s5 + 2) != 0 ? 0x7bc7 : 0x7bc6;
-    MW16(s0 + 0x968, 0);
-    MW32(s0 + 0x944, MB8(s5 + 3) == 0xa ? 0x801b216cu : 0x801b2134u);
+    uint16_t t2 = MB8(ent + 2) != 0 ? 0x7bc7 : 0x7bc6;
+    MW16(rec + 0x968, 0);
+    MW32(rec + 0x944, MB8(ent + 3) == 0xa ? 0x801b216cu : 0x801b2134u);
     for (j = 0; j < 2; j++) {
-      a2 = 0;
-      a0i = 0;
-      s2 = 0;
+      ai = 0;
+      ci = 0;
+      pat = 0;
       for (i = 0; i < 0x15; i++) {
-        if (a0i == 7) a0i = 0;
-        if (a0i == 0) s2 = MB32(s0 + 0x944);
-        R = s4;
-        MW32(R, 0x90000000u);
-        s4 += 0x28;
-        MW8(R + 7, 0x2e);
-        MW16(R + 0x16, 0x39);
-        MW16(R + 0xe, t2);
-        MW8(R + 4, MB8(s2));
-        MW8(R + 5, MB8(s2 + 2));
-        MW8(R + 6, MB8(s2 + 4));
-        MW8(R + 0xc, 0xa0);
-        MW8(R + 0xd, 0xa0);
-        MW8(R + 0x14, 0xbf);
-        MW8(R + 0x15, 0xa0);
-        MW8(R + 0x1c, 0xa0);
-        MW8(R + 0x1d, 0xaf);
-        MW8(R + 0x24, 0xbf);
-        MW8(R + 0x25, 0xaf);
-        a2++;
-        a0i++;
+        if (ci == 7) ci = 0;
+        if (ci == 0) pat = MB32(rec + 0x944);
+        rp = wp;
+        MW32(rp, 0x90000000u);
+        wp += 0x28;
+        MW8(rp + 7, 0x2e);
+        MW16(rp + 0x16, 0x39);
+        MW16(rp + 0xe, t2);
+        MW8(rp + 4, MB8(pat));
+        MW8(rp + 5, MB8(pat + 2));
+        MW8(rp + 6, MB8(pat + 4));
+        MW8(rp + 0xc, 0xa0);
+        MW8(rp + 0xd, 0xa0);
+        MW8(rp + 0x14, 0xbf);
+        MW8(rp + 0x15, 0xa0);
+        MW8(rp + 0x1c, 0xa0);
+        MW8(rp + 0x1d, 0xaf);
+        MW8(rp + 0x24, 0xbf);
+        MW8(rp + 0x25, 0xaf);
+        ai++;
+        ci++;
       }
     }
     for (j = 0; j < 3; j++) {
-      uint32_t base = s0 + 0x6c4u + (uint32_t)j * 0x90u;
-      uint32_t o = s0 + (uint32_t)j * 0x10u;
+      uint32_t base = rec + 0x6c4u + (uint32_t)j * 0x90u;
+      uint32_t o = rec + (uint32_t)j * 0x10u;
       MW32(o + 0x698, base + 0x20);
       MW32(o + 0x694, base);
       MW32(o + 0x69c, base + 0x40);
       MW32(o + 0x6a0, base + 0x60);
     }
-    MW16(s0 + 0x936, 4);
-    MW16(s0 + 0x938, 8);
-    MW16(s0 + 0x934, 0);
-    MW16(s0 + 0x93a, 0xc);
+    MW16(rec + 0x936, 4);
+    MW16(rec + 0x938, 8);
+    MW16(rec + 0x934, 0);
+    MW16(rec + 0x93a, 0xc);
   }
 }
 
@@ -14131,10 +14129,10 @@ extern int32_t task_node_alloc_init(int32_t,int32_t,int32_t);
 
 /* anim_wb_init_gate — trampoline @0x801401c8 (2 insns + fallthrough):
  * v0 = MB8(0x1f8000b1) then tail-enters anim_workblock_init. */
-void anim_wb_init_gate(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5)
+void anim_wb_init_gate(uint32_t ent,uint32_t aidx,uint32_t v3,
+                  uint32_t v7,uint32_t pk)
 {
-  anim_workblock_init(param_1,param_2,param_3,param_4,param_5,
+  anim_workblock_init(ent,aidx,v3,v7,pk,
                MB8(0x1f8000b1u));
 }
 
@@ -14151,10 +14149,10 @@ void anim_wb_init_gate(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * anim_wb_init_gate(s0,K,q2,q1,q3). Tail: if MB32(s0+0x64)&0x20000 &&
  * MBS16(s2+0x80)!=0x11f: s1 in {2,7,10,13,16} ->
  * task_node_alloc_init(s0,s1,0); s1!=0 -> deferred_cmd_post(0x400,0x5a,0). */
-uint32_t desc_slot_alloc(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
+                      uint32_t v3)
 {
-  uint32_t s0 = param_1, s2 = param_2, s3 = param_3;
+  uint32_t s0 = ent, s2 = aidx, s3 = v3;
   uint32_t v0 = MB16(s3);
   int32_t s1 = (int32_t)(int8_t)(v0 >> 8);
   int32_t mode = s1 >> 4;
