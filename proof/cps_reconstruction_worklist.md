@@ -50,7 +50,27 @@ or an external `jal`. To port:
    clean fn that manages its OWN `cpu->pc` continuation switch; that is the
    established pattern for coroutine-capable ports).
 
-## Candidate tiers (smallest/cleanest first)
+## ⚠ CORRECTION — "atomic" defs are pieces, not functions (verified)
+
+A follow-up cluster trace disproved the naive candidate filter. The
+"single-block, no-yield, no-ext-jal" defs (e.g. `cps_80126548`→`8012654c`→
+`80126550`) are **pieces of larger call-sequence functions**, not
+standalone leaf functions — `cps_80126550` continues into four `jal`s
+(`0x801560F8`, `0x8012708C`, `0x8012AEEC`, `0x8012748C`) each behind a
+`psx_check_interrupts_at` yield. Cluster-following (`cps_Y()` + internal
+`cpu->pc` edges to `jr ra`) found **~zero pure-leaf clusters**: every
+function either yields mid-body or calls out.
+
+**Consequence:** there is NO trivial/safe mechanical subset. Every
+reconstruction is a per-function CFG decompilation that must (a) trace the
+full piece cluster to `jr ra`, (b) preserve or prove-unnecessary each
+`psx_check_interrupts_at` yield + `cpu->pc` resume switch, and (c) route
+external `jal`s through `call_guest`/`br2_call_clean` with correct
+ra/arg marshaling. The candidate list below is still useful as an
+*entry-point* index (smallest functions first), but each entry expands to
+a multi-piece cluster — size the work by the cluster, not the entry def.
+
+## Candidate tiers (smallest/cleanest first — ENTRY POINTS ONLY)
 
 Filter used: multi-block def, ≤1 external `jal`, ≤4 yields, <4KB, no
 `cps_Y()` chain-out (self-contained). ~426 defs pass the loose filter;
