@@ -2500,13 +2500,13 @@ undefined4 stream_block_decode(undefined4 dst,int *tbl,int idx)
 int32_t gauge_leaf_update(uint32_t a0g)
 {
   uint8_t *rec = (uint8_t *)guest_at(a0g);
-  uint8_t *a1 = (uint8_t *)guest_at(*(uint32_t *)(rec + 0xc0));
+  uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(rec + 0xc0));
   uint8_t *tb = (uint8_t *)guest_at(0x801b3f88);
-  int32_t bound, v0, v1;
+  int32_t bound, v0, lim;
   uint32_t hv;
   bound = (int32_t)tb[(uint32_t)*(int16_t *)(rec + 0xa2) +
-                     (uint32_t)a1[7] * 16] * 16;
-  if (a1[0x21] != 0)
+                     (uint32_t)cr[7] * 16] * 16;
+  if (cr[0x21] != 0)
     goto set_ff;
   switch (rec[0x9c]) {
   case 2:
@@ -2526,18 +2526,18 @@ int32_t gauge_leaf_update(uint32_t a0g)
   v0 = hv & 0xff;
   if ((hv & 0x100) != 0 || rec[0x99] != 0) {
     *(int16_t *)(rec + 0xa0) = (int16_t)v0;
-    v1 = bound - 0x32;
-    if (v0 < v1)
-      *(int16_t *)(rec + 0xa0) = (int16_t)v1;
+    lim = bound - 0x32;
+    if (v0 < lim)
+      *(int16_t *)(rec + 0xa0) = (int16_t)lim;
   } else {
     int32_t s = (int16_t)hv;
     if (s < bound)
       *(int16_t *)(rec + 0xa0) = (int16_t)bound;
   }
   v0 = *(int16_t *)(rec + 0xa0);
-  v1 = bound + 0x1f;
-  if (v1 < v0)
-    *(int16_t *)(rec + 0xa0) = (int16_t)v1;
+  lim = bound + 0x1f;
+  if (lim < v0)
+    *(int16_t *)(rec + 0xa0) = (int16_t)lim;
   v0 = *(int16_t *)(rec + 0xa0);
   if (v0 < 0)
     *(int16_t *)(rec + 0xa0) = 0;
@@ -4265,29 +4265,29 @@ L_ret:                                       /* 0x80153960/64 epilogue */
  * {5-11,16}->0, {12-14}->(+0xa4>=0). JT 0x80120948 — disasm verified. */
 int32_t battle_state_gate(uint32_t battle_g,uint32_t unused)
 {
-  uint8_t *a0 = (uint8_t *)guest_at(battle_g);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
   uint32_t mode, b9b, s92;
   static const uint8_t jt_kind[17] = {
     1,1,1,1,1,0,0,0,0,0,0,0,2,2,2,1,0 };   /* 1->ret1 0->ret0 2->a4>=0 */
   (void)unused;
-  if (*(int16_t *)(a0 + 0x82) != 0) return 0;
-  mode = a0[0x9c];
+  if (*(int16_t *)(b + 0x82) != 0) return 0;
+  mode = b[0x9c];
   if (mode != 0 && mode < 6) return 0;
-  b9b = a0[0x9b];
+  b9b = b[0x9b];
   if (b9b == 0) {
-    if (*(int16_t *)(a0 + 0xa4) <
-        (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0) + 0x10))
+    if (*(int16_t *)(b + 0xa4) <
+        (int32_t)*(uint8_t *)guest_at(*(uint32_t *)(b + 0xc0) + 0x10))
       goto do_jt;
     return 0;
   }
   if (b9b < 4) return 0;
 do_jt:
-  s92 = a0[0x92];
+  s92 = b[0x92];
   if (s92 >= 0x11) return 1;
   switch (jt_kind[s92]) {
   case 1: return 1;
   case 0: return 0;
-  default: return *(int16_t *)(a0 + 0xa4) >= 0 ? 1 : 0;
+  default: return *(int16_t *)(b + 0xa4) >= 0 ? 1 : 0;
   }
 }
 
@@ -4346,26 +4346,26 @@ void bcfg_step_c(uint32_t battle_g,uint32_t player)
 extern void ctr_clamp(uint32_t,int32_t);
 void bcfg_step_d(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s2 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s0 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
-  uint8_t *v1, *cr;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  uint8_t *st_rec = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
+  uint8_t *obj, *cr;
   deferred_cmd_post(0x400,0xc,0);
-  *(uint16_t *)(s2 + player * 2 + 0xb4) = 0x100;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x2c));
-  if (v1[1] == 0) {
-    uint32_t a1 = *(uint32_t *)(v1 + 0xf0);
-    uint32_t a0 = *(uint32_t *)(v1 + 0xf4);
-    if (a1 >= a0) *(uint32_t *)(v1 + 0xf0) = a1 - a0;
+  *(uint16_t *)(b + player * 2 + 0xb4) = 0x100;
+  obj = (uint8_t *)guest_at(*(uint32_t *)(st_rec + 0x2c));
+  if (obj[1] == 0) {
+    uint32_t cnt_cur = *(uint32_t *)(obj + 0xf0);
+    uint32_t cnt_per = *(uint32_t *)(obj + 0xf4);
+    if (cnt_cur >= cnt_per) *(uint32_t *)(obj + 0xf0) = cnt_cur - cnt_per;
   }
-  cr = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0)) + player;
+  cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
   cr[0x19] = cr[0x19] & 3;
-  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)(s0 + 0xf0),1);
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x2c));
-  if (v1[1] != 0) {
+  chan_blocks_reset(0x1f8000e8 + player * 0x108,*(uint32_t *)(st_rec + 0xf0),1);
+  obj = (uint8_t *)guest_at(*(uint32_t *)(st_rec + 0x2c));
+  if (obj[1] != 0) {
     ctr_clamp(battle_g,-0x14);
-    *(uint16_t *)(s2 + 0xa0) |= 0x100;
+    *(uint16_t *)(b + 0xa0) |= 0x100;
   }
-  ret_stub_b(s0,1);
+  ret_stub_b(st_rec,1);
 }
 
 /* fight_timer_announce — fight-timer announce: gates on char-record flag
@@ -4695,22 +4695,22 @@ int32_t continue_countdown(uint32_t battle_g,uint32_t player)
  * confirm_bookkeeping. Disasm 0x80151328-0x801513c4. */
 void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
-  uint16_t v;
-  *(uint8_t *)(s0 + 0x9d) = 0;
-  *(uint8_t *)(s0 + 0x9e) = 0;
-  *(uint16_t *)(s0 + 0x8c) = 0;
-  *(uint8_t *)(s0 + 0xb0) = 1;
-  *(uint8_t *)(s0 + 0xb1) = 0;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+  uint16_t phw;
+  *(uint8_t *)(b + 0x9d) = 0;
+  *(uint8_t *)(b + 0x9e) = 0;
+  *(uint16_t *)(b + 0x8c) = 0;
+  *(uint8_t *)(b + 0xb0) = 1;
+  *(uint8_t *)(b + 0xb1) = 0;
   *(uint16_t *)guest_at(*(uint32_t *)(p0 + 0x38) + 0x80) = 0x28;
   *(uint16_t *)guest_at(*(uint32_t *)(p1 + 0x38) + 0x80) = 0x28;
   if (select_phase_gate(battle_g,0) == 0) {
-    v = *(uint16_t *)(s0 + 0xb4);
-    *(uint16_t *)(s0 + 0xb4) = (uint16_t)((v & 0xf000) | 0x300);
+    phw = *(uint16_t *)(b + 0xb4);
+    *(uint16_t *)(b + 0xb4) = (uint16_t)((phw & 0xf000) | 0x300);
   }
   if (select_phase_gate(battle_g,1) == 0) {
-    v = *(uint16_t *)(s0 + 0xb6);
-    *(uint16_t *)(s0 + 0xb6) = (uint16_t)((v & 0xf000) | 0x300);
+    phw = *(uint16_t *)(b + 0xb6);
+    *(uint16_t *)(b + 0xb6) = (uint16_t)((phw & 0xf000) | 0x300);
   }
   confirm_bookkeeping(battle_g);
 }
