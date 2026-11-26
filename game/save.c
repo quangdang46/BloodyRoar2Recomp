@@ -283,7 +283,7 @@ extern uint8_t *_g_system_config_ptr;
 #define _DAT_801f35f4  (*(uint32_t *)g_DAT_801f35f4)
 
 /* ---- callee externs ---- */
-extern void brightness_packet_send();
+extern void brightness_packet_send(int32_t);
 extern void mc_state_init();
 extern int cd_cmd_issue_async();
 extern int cd_sync_wait_a();
@@ -293,7 +293,7 @@ extern int cd_stamp_to_sector();
 extern int cd_dir_read_wrap();
 extern void slot_status_fill();
 extern void cd_reg_window_update();
-extern void cd_reg_window_u16();
+extern void cd_reg_window_u16(int32_t,uint32_t);
 extern int mc_action_dispatch_b();
 extern int mc_action_dispatch();
 extern int ret_one();
@@ -315,7 +315,7 @@ extern int dialog_sel_dispatch(intptr_t,uint32_t);
 extern void menu_stepper_state_advance();
 extern void hud_gauge_render();
 extern void empty_ret();
-extern int frame_divisor_get();
+extern int frame_divisor_get(void);
 extern void scroll_offset_set();
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
@@ -1651,10 +1651,7 @@ uint32_t attr_word_decode(uint8_t *a0)
 #define SB16(a)  (*(uint16_t *)guest_at(a))
 #define SB32(a)  (*(uint32_t *)guest_at(a))
 extern uint8_t *_g_pad_buffer;
-extern int frame_divisor_get(void);
 extern int slot_display_pos(uint8_t *,uint32_t);
-extern void deferred_cmd_post(int,int,int);
-extern void mc_state_init(void);
 extern void chan_sweep_flag100(void);
 extern void chan_sweep_flag200(void);
 extern void datetime_confirm_a(int,uint32_t);
@@ -2433,8 +2430,6 @@ void fighter_rec_fetch_apply(uint32_t a0,uint32_t a1,uint32_t a2)
 /* mc_state_init — memcard state init @0x801bef60: brightness_packet_send(0),
  * poll cd_cmd_issue_sync(9,0,0) till 0, then +0xd=0, +0xf=0xff,
  * +0x20 = +0x24. Disasm 0x801573ec-0x8015743c. */
-extern void brightness_packet_send(int32_t);
-extern int32_t cd_cmd_issue_sync(int32_t,int32_t,int32_t);
 void mc_state_init(void)
 {
   extern int br2_bail_pending(void);
@@ -2467,7 +2462,6 @@ uint32_t mc_mode_nibble_rw(int32_t a0)
 /* se_value_select — gauge/se value select: gauge_scale_fixed(0,a0),
  * deferred_cmd_post(0x405,0,4), a1 = table[a0<8] {0,4fff,0,0,4fff,3fff,
  * 5fff,3fff}, blk_1f26c0_init_c(2,a1). Disasm 0x80155edc-0x80155f5c. */
-extern void deferred_cmd_post(int32_t,int32_t,int32_t);
 extern void blk_1f26c0_init_c(int32_t,uint32_t);
 void se_value_select(uint32_t a0)
 {
@@ -2563,7 +2557,6 @@ extern void flow_cfg_init(uint8_t);
 extern void rec_timer_pair_clear(intptr_t);
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint8_t *g_DAT_1f8000e8,*g_DAT_1f8001f0;
-extern uint32_t guest_of(const void *);
 extern void record_copy_1a(int);
 void fighter_spawn_tail(uint8_t *rec,uint32_t flag)
 {
@@ -2580,7 +2573,6 @@ void fighter_spawn_tail(uint8_t *rec,uint32_t flag)
  * 9d410(a0,a2), poll 9d500(0) till nonzero; returns a2.
  * Disasm 0x801565ec-0x80156648. */
 extern void br2_irq_poll(void);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 /* cd_file_read_seq — delegate the whole body to the generated MIPS
  * (0x801565ec). Its seek-completion wait loop (0x80156628->0x80156630)
  * crosses a basic-block boundary every iteration, so psx_check_interrupts_at
@@ -2824,7 +2816,6 @@ void rec_slot_scan(void)
  * cd_chan_attr_push(@0x801f2650). Disasm 0x80156344-0x80156400. */
 extern void FUN_8018e300(void);
 extern void FUN_8018e310(void);
-extern void cd_reg_window_u16(int32_t,uint32_t);
 extern void cd_chan_attr_push(uint32_t);
 void rec_clear_irq(uint32_t a0,uint32_t a1)
 {
@@ -2992,7 +2983,6 @@ extern void battle_struct_init(uint32_t,uint32_t);
 extern void perm_table_apply(uint32_t);
 extern int reset_sprite_ot_block(uint32_t);
 extern void task_table_init(uint32_t);
-extern void record_copy_1a(int);
 extern void per_side_setup(int32_t,int32_t);
 extern void rec_copy_init(int32_t,uint32_t,uint32_t);
 extern int clear_f4ee8_u16s(uint32_t);
@@ -4935,7 +4925,6 @@ void sprite_anim_chain_build(uint32_t a0)
    Debug/status text display. a0 = guest char/state ptr,
    a1 = selector 0..15 (jump table 0x80122590). */
 extern void print_dispatch(const char *,...);
-extern void scroll_offset_set(int32_t,int32_t);
 extern void hud_slot_blitter(uint32_t,uint32_t);
 extern void flag_table_dump(uint32_t,uint32_t);
 extern void record_struct_dump(uint32_t);
@@ -5132,7 +5121,6 @@ sel:
    s5 = scratchpad 0x1f800000; fp = display state. */
 extern int display_page_commit_b(uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
-extern uint32_t spr_slot_pkt_submit();
 
 static int32_t to_s16(uint32_t v){ return (int16_t)v; }
 static int32_t sdiv60(int32_t a0)
@@ -5628,7 +5616,6 @@ poll:
    dialog_sel_dispatch: same init, wider selector dispatch. */
 extern int u16_counter_step_pad_b();
 extern void round_announce_block();
-extern void mc_slot_action(uint8_t *,int);
 
 int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 {
@@ -8044,7 +8031,6 @@ extern int op_node_alloc_init();
 extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
 extern int op_ctx_node_attach();
 extern void op_job_submit_init();
-extern int32_t dev_byte_xfer(uint8_t *,int32_t);
 extern uint32_t cd_svc_50(uint32_t,uint32_t);
 extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
 extern int fx_group_alloc(uint32_t,uint32_t,int,int);
@@ -8057,10 +8043,7 @@ extern int angle_from_xy(int,int);
 extern uint32_t noop_c(int);
 extern void node_tree_free(int);
 extern void bios_tramp_c003(uint32_t,uint32_t);
-extern void FUN_8018e300(void);
-extern void FUN_8018e310(void);
 extern void task_slot_step();
-extern uint32_t guest_of(const void *);
 
 /* 0x801a0620 — cd_svc_50(a0,a1); cd_svc_4e(a0,0x3f,0). */
 void cd_svc_dual(uint32_t a0,uint32_t a1)
@@ -8494,7 +8477,6 @@ extern void text_win_printf();
 extern int *task_node_alloc(int,uint32_t,uint32_t,int,int,int);
 extern void tween_apply(int16_t *,int,int);
 extern void gp_20_store_default(void);
-extern int prim_group_build();
 
 /* 0x801a1834 — ctx flag gate + indirect callback; returns 1/0.
  * Faithful port of generated 0x801A1834-0x801A1898:
@@ -8509,8 +8491,6 @@ extern int prim_group_build();
  * values through so the callee sees the caller's regs; $a2/$a3 pass
  * through untouched exactly like the guest jalr. No IRQ wait, no loop —
  * clean C is faithful here (ctx flags are plain MMIO reads). */
-extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
 int op_flag_fn_check(void)
 {
   /* ctx resolves to the SIO status reg 0x1F801070 — MMIO, so the ctx+4/ctx
@@ -8617,7 +8597,6 @@ void op_ctx8_lazy_fill(int16_t *a0)
   return;
 }
 
-extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
 
 /* 0x801acf34 — four text_win_printf dumps of a0 fields. */
 void op_dbg_dump4(uint32_t *a0)
@@ -8726,7 +8705,6 @@ void op_pair_store(int16_t *a0,uint32_t *a1)
 extern void setCopReg(int,int,uint32_t);
 extern int  getCopReg(int,int);
 extern void copFunction(int,uint32_t);
-extern CPUState *clean_cpu_state(void);
 
 /* lwc2 gte[reg], off(gaddr) — guest word load into a GTE data register.
  * Same routing as gfx.c's gte_lwc2: setCopReg -> gte_write_data, exactly
@@ -9034,7 +9012,6 @@ int guard_callee_d1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 
 /* Live guest $a3 — the v1==0 jal path passes the caller's $a3 through
  * untouched (guard_dispatch never writes $a3 before the call). */
-extern CPUState *clean_cpu_state(void);
 static uint32_t br2_guard_passthru_a3(void)
 {
   CPUState *c = clean_cpu_state();
@@ -10930,7 +10907,6 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
  * result-producing insn in the delay slot.
  * ====================================================================== */
 
-extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 /* 0x80163840 — bare `jr ra; nop`: v0 passes through untouched. */
 void FUN_80163840(void) { }
