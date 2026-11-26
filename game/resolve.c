@@ -2541,41 +2541,41 @@ LAB_8018604c:
 
 }
 
-void deferred_cmd_post(uint param_1,int param_2,short param_3)
+void deferred_cmd_post(uint cmd,int arg,short aux)
 {
-  int iVar1;
+  int i;
   ushort *puVar2;
   short *psVar3;
-  if (((param_1 & 0xff) != 0) || (-1 < param_2)) {
-    if (param_1 == 0) {
+  if (((cmd & 0xff) != 0) || (-1 < arg)) {
+    if (cmd == 0) {
       deferred_cmd_reset();
     }
-    else if ((param_1 & 0x1000) == 0) {
-      iVar1 = 0;
+    else if ((cmd & 0x1000) == 0) {
+      i = 0;
       if (_DAT_801f35f4 < 0x20) {
         psVar3 = (short *)&DAT_801f3600;
         do {
-          iVar1 = iVar1 + 1;
+          i = i + 1;
           if (*psVar3 == 0) break;
           psVar3 = psVar3 + 3;
-        } while (iVar1 < 0x20);
-        *psVar3 = (short)param_1;
-        psVar3[1] = (short)param_2;
-        psVar3[2] = param_3;
+        } while (i < 0x20);
+        *psVar3 = (short)cmd;
+        psVar3[1] = (short)arg;
+        psVar3[2] = aux;
         _DAT_801f35f4 = _DAT_801f35f4 + 1;
       }
     }
     else {
       puVar2 = (ushort *)&DAT_801f3600;
-      iVar1 = 0;
+      i = 0;
       do {
-        if (((*puVar2 & 0xfff) == (param_1 & 0xfff)) && ((short)puVar2[1] == param_2)) {
+        if (((*puVar2 & 0xfff) == (cmd & 0xfff)) && ((short)puVar2[1] == arg)) {
           *puVar2 = 0;
           _DAT_801f35f4 = _DAT_801f35f4 + -1;
         }
-        iVar1 = iVar1 + 1;
+        i = i + 1;
         puVar2 = puVar2 + 3;
-      } while (iVar1 < 0x20);
+      } while (i < 0x20);
     }
   }
   return;
@@ -2824,33 +2824,33 @@ void keyframe_blend_apply(byte *param_1,byte *param_2)
 
 }
 
-void keyframe_advance(byte *param_1,byte *param_2)
+void keyframe_advance(byte *mo,byte *anim)
 {
   short sVar1;
   undefined4 uVar2;
   undefined2 local_8;
   undefined2 uStack_6;
   
-  uVar2 = *(undefined4 *)((char *)guest_at(*(uint32_t *)(param_2 + 0xb4)) + *(short *)(param_2 + 0xc6) * 4);
-  sVar1 = *(short *)(param_2 + 0xcc);
-  *(short *)(param_2 + 200) = sVar1;
+  uVar2 = *(undefined4 *)((char *)guest_at(*(uint32_t *)(anim + 0xb4)) + *(short *)(anim + 0xc6) * 4);
+  sVar1 = *(short *)(anim + 0xcc);
+  *(short *)(anim + 200) = sVar1;
   if (sVar1 == 0) {
-    *(undefined2 *)(param_2 + 0xce) = 0;
-    *(undefined2 *)(param_2 + 0xca) = 0;
+    *(undefined2 *)(anim + 0xce) = 0;
+    *(undefined2 *)(anim + 0xca) = 0;
   }
   else {
-    *(short *)(param_2 + 0xca) = *(short *)(param_2 + 0xca) + sVar1;
-    *(undefined2 *)(param_2 + 0xce) = *(undefined2 *)(param_1 + 0x88);
+    *(short *)(anim + 0xca) = *(short *)(anim + 0xca) + sVar1;
+    *(undefined2 *)(anim + 0xce) = *(undefined2 *)(mo + 0x88);
     local_8 = (short)uVar2;
-    *(int *)(param_2 + 0xb8) = (int)local_8 + *(int *)(param_2 + 0xb0);
+    *(int *)(anim + 0xb8) = (int)local_8 + *(int *)(anim + 0xb0);
     uStack_6 = (short)((uint)uVar2 >> 0x10);
-    *(short *)(param_2 + 0xcc) = uStack_6 << 4;
+    *(short *)(anim + 0xcc) = uStack_6 << 4;
   }
   return;
 
 }
 
-void skeleton_pose_step(byte *param_1,undefined2 *param_2,byte *param_3,int param_4)
+void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 {
   ushort uVar1;
   ushort *puVar2;
@@ -2858,28 +2858,28 @@ void skeleton_pose_step(byte *param_1,undefined2 *param_2,byte *param_3,int para
   int iVar4;
   
   iVar4 = 0;
-  if (0 < param_4 + -2) {
-    puVar2 = param_2 + 3;
-    pbVar3 = param_1 + 4;
+  if (0 < count + -2) {
+    puVar2 = pose + 3;
+    pbVar3 = joints + 4;
     do {
       puVar2[4] = *(ushort *)(pbVar3 + 0x30);
       puVar2[5] = *(ushort *)(pbVar3 + 0x34);
       puVar2[6] = *(ushort *)(pbVar3 + 0x38);
-      _DAT_1f80038c = *param_2;
+      _DAT_1f80038c = *pose;
       iVar4 = iVar4 + 1;
       _DAT_1f80038e = puVar2[-2];
       _DAT_1f800390 = puVar2[-1];
       uVar1 = *puVar2;
       puVar2 = puVar2 + 0xe;
-      part_matrix_compute((undefined4 *)pbVar3,param_3,&DAT_1f80038c,(int)((uint)uVar1 << 0x10) >> 0x11);
-      param_1 = param_1 + 0x50;
-      param_2 = param_2 + 0xe;
-      param_3 = param_3 + 0x20;
+      part_matrix_compute((undefined4 *)pbVar3,parts,&DAT_1f80038c,(int)((uint)uVar1 << 0x10) >> 0x11);
+      joints = joints + 0x50;
+      pose = pose + 0xe;
+      parts = parts + 0x20;
       pbVar3 = pbVar3 + 0x50;
-    } while (iVar4 < param_4 + -2);
+    } while (iVar4 < count + -2);
   }
-  rotmat_rtps_build(-(int)(short)param_2[3] >> 1,(uint *)(param_1 + 4));
-  rotmat_rtps_build(-(int)(short)param_2[0x11] >> 1,(uint *)(param_1 + 0x54));
+  rotmat_rtps_build(-(int)(short)pose[3] >> 1,(uint *)(joints + 4));
+  rotmat_rtps_build(-(int)(short)pose[0x11] >> 1,(uint *)(joints + 0x54));
   return;
 
 }
@@ -2887,105 +2887,105 @@ void skeleton_pose_step(byte *param_1,undefined2 *param_2,byte *param_3,int para
 void deferred_cmd_reset(void)
 {
   undefined2 *puVar1;
-  int iVar2;
+  int i;
   
   _DAT_801f35f4 = 0;
-  iVar2 = 0x1f;
+  i = 0x1f;
   puVar1 = (undefined2 *)&DAT_801f36ba;
   do {
     *puVar1 = 0;
-    iVar2 = iVar2 + -1;
+    i = i + -1;
     puVar1 = puVar1 + -3;
-  } while (-1 < iVar2);
+  } while (-1 < i);
   return;
 
 }
-void anim_lerp_scalar(short *param_1,short param_2,int param_3,int param_4)
+void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 {
-  int iVar1;
+  int d;
   
-  iVar1 = (int)param_2;
-  if (param_3 != 0) {
-    iVar1 = -iVar1;
+  d = (int)src;
+  if (flip != 0) {
+    d = -d;
   }
-  param_4 = (iVar1 - *param_1) * param_4;
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
+  alpha = (d - *dst) * alpha;
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
   }
-  *param_1 = *param_1 + (short)(param_4 >> 0xc);
+  *dst = *dst + (short)(alpha >> 0xc);
   return;
 
 }
 
-void anim_lerp_vec3(short *param_1,short *param_2,int param_3,int param_4,short param_5)
-{
-  short sVar1;
-  int iVar2;
-  int iVar3;
-  
-  if (param_3 == 0) {
-    iVar2 = (int)*param_2;
-  }
-  else {
-    iVar2 = -(int)*param_2;
-  }
-  iVar3 = (int)param_2[1];
-  if (0 < iVar3) {
-    iVar3 = iVar3 * param_5 >> 7;
-  }
-  iVar2 = (iVar2 - *param_1) * param_4;
-  sVar1 = param_2[2];
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0xfff;
-  }
-  iVar3 = (iVar3 - param_1[1]) * param_4;
-  *param_1 = *param_1 + (short)(iVar2 >> 0xc);
-  if (iVar3 < 0) {
-    iVar3 = iVar3 + 0xfff;
-  }
-  param_4 = ((int)sVar1 - (int)param_1[2]) * param_4;
-  param_1[1] = param_1[1] + (short)(iVar3 >> 0xc);
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
-  }
-  param_1[2] = param_1[2] + (short)(param_4 >> 0xc);
-  return;
-
-}
-
-void anim_lerp_vec3_raw(short *param_1,short *param_2,int param_3,int param_4)
+void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 {
   short sVar1;
-  int iVar2;
-  int iVar3;
+  int dx;
+  int dy;
   
-  if (param_3 == 0) {
-    iVar3 = (int)param_2[1];
+  if (flip == 0) {
+    dx = (int)*src;
   }
   else {
-    iVar3 = -(int)param_2[1];
+    dx = -(int)*src;
   }
-  iVar2 = ((int)*param_2 - (int)*param_1) * param_4;
-  sVar1 = param_2[2];
-  if (iVar2 < 0) {
-    iVar2 = iVar2 + 0xfff;
+  dy = (int)src[1];
+  if (0 < dy) {
+    dy = dy * yscale >> 7;
   }
-  iVar3 = (iVar3 - param_1[1]) * param_4;
-  *param_1 = *param_1 + (short)(iVar2 >> 0xc);
-  if (iVar3 < 0) {
-    iVar3 = iVar3 + 0xfff;
+  dx = (dx - *dst) * alpha;
+  sVar1 = src[2];
+  if (dx < 0) {
+    dx = dx + 0xfff;
   }
-  param_4 = ((int)sVar1 - (int)param_1[2]) * param_4;
-  param_1[1] = param_1[1] + (short)(iVar3 >> 0xc);
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
+  dy = (dy - dst[1]) * alpha;
+  *dst = *dst + (short)(dx >> 0xc);
+  if (dy < 0) {
+    dy = dy + 0xfff;
   }
-  param_1[2] = param_1[2] + (short)(param_4 >> 0xc);
+  alpha = ((int)sVar1 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(dy >> 0xc);
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
+  }
+  dst[2] = dst[2] + (short)(alpha >> 0xc);
   return;
 
 }
 
-void anim_lerp_packed4(short *param_1,ushort *param_2,int param_3,int param_4)
+void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
+{
+  short sVar1;
+  int dx;
+  int dy;
+  
+  if (flip == 0) {
+    dy = (int)src[1];
+  }
+  else {
+    dy = -(int)src[1];
+  }
+  dx = ((int)*src - (int)*dst) * alpha;
+  sVar1 = src[2];
+  if (dx < 0) {
+    dx = dx + 0xfff;
+  }
+  dy = (dy - dst[1]) * alpha;
+  *dst = *dst + (short)(dx >> 0xc);
+  if (dy < 0) {
+    dy = dy + 0xfff;
+  }
+  alpha = ((int)sVar1 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(dy >> 0xc);
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
+  }
+  dst[2] = dst[2] + (short)(alpha >> 0xc);
+  return;
+
+}
+
+void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 {
   uint uVar1;
   int iVar2;
@@ -2994,116 +2994,116 @@ void anim_lerp_packed4(short *param_1,ushort *param_2,int param_3,int param_4)
   int iVar5;
   {
     extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(param_1);
+    uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
-      decomp_trace_record(53, _gd, (uint32_t)guest_of(param_2), 4, 0);
+      decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 4, 0);
   }
   
-  uVar1 = (uint)*param_2;
-  iVar5 = uVar1 + (uint)param_2[1] * 0x10000;
-  if (param_3 == 0) {
-    iVar2 = (int)(short)param_2[2];
+  uVar1 = (uint)*src;
+  iVar5 = uVar1 + (uint)src[1] * 0x10000;
+  if (flip == 0) {
+    iVar2 = (int)(short)src[2];
     iVar3 = (int)(uVar1 << 0x16) >> 0x11;
   }
   else {
     iVar3 = -((int)(uVar1 << 0x16) >> 0x11);
-    iVar2 = -(int)(short)param_2[2];
+    iVar2 = -(int)(short)src[2];
   }
-  iVar3 = (iVar3 - *param_1) * param_4;
+  iVar3 = (iVar3 - *dst) * alpha;
   if (iVar3 < 0) {
     iVar3 = iVar3 + 0xfff;
   }
-  iVar4 = ((iVar5 * 0x1000 >> 0x16) * 0x20 - (int)param_1[1]) * param_4;
-  *param_1 = *param_1 + (short)(iVar3 >> 0xc);
+  iVar4 = ((iVar5 * 0x1000 >> 0x16) * 0x20 - (int)dst[1]) * alpha;
+  *dst = *dst + (short)(iVar3 >> 0xc);
   if (iVar4 < 0) {
     iVar4 = iVar4 + 0xfff;
   }
-  iVar5 = ((iVar5 * 4 >> 0x16) * 0x20 - (int)param_1[2]) * param_4;
-  param_1[1] = param_1[1] + (short)(iVar4 >> 0xc);
+  iVar5 = ((iVar5 * 4 >> 0x16) * 0x20 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(iVar4 >> 0xc);
   if (iVar5 < 0) {
     iVar5 = iVar5 + 0xfff;
   }
-  param_4 = (iVar2 * 2 - (int)param_1[3]) * param_4;
-  param_1[2] = param_1[2] + (short)(iVar5 >> 0xc);
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
+  alpha = (iVar2 * 2 - (int)dst[3]) * alpha;
+  dst[2] = dst[2] + (short)(iVar5 >> 0xc);
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
   }
-  param_1[3] = param_1[3] + (short)(param_4 >> 0xc);
+  dst[3] = dst[3] + (short)(alpha >> 0xc);
   return;
 
 }
 
-void anim_lerp_aux(byte *param_1,int param_2,int param_3,int param_4)
+void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 {
-  int iVar1;
+  int d;
   
-  iVar1 = (param_2 << 0x10) >> 0xf;
-  if (param_3 != 0) {
-    iVar1 = -iVar1;
+  d = (src << 0x10) >> 0xf;
+  if (flip != 0) {
+    d = -d;
   }
-  param_4 = (iVar1 - *(short *)(param_1 + 6)) * param_4;
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
+  alpha = (d - *(short *)(dst + 6)) * alpha;
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
   }
-  *(short *)(param_1 + 6) = *(short *)(param_1 + 6) + (short)(param_4 >> 0xc);
+  *(short *)(dst + 6) = *(short *)(dst + 6) + (short)(alpha >> 0xc);
   return;
 
 }
 
-void anim_lerp_packed3(short *param_1,ushort *param_2,int param_3,int param_4)
+void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 {
   ushort uVar1;
   int iVar2;
   int iVar3;
   {
     extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    uint32_t _gd = (uint32_t)guest_of(param_1);
+    uint32_t _gd = (uint32_t)guest_of(dst);
     if (_gd >= 0x801d0000u && _gd < 0x80200000u)
-      decomp_trace_record(53, _gd, (uint32_t)guest_of(param_2), 3, 0);
+      decomp_trace_record(53, _gd, (uint32_t)guest_of(src), 3, 0);
   }
   
-  iVar2 = (int)((uint)*param_2 << 0x10) >> 0x18;
+  iVar2 = (int)((uint)*src << 0x10) >> 0x18;
   iVar3 = iVar2 * 0x10;
-  uVar1 = param_2[1];
-  if (param_3 != 0) {
+  uVar1 = src[1];
+  if (flip != 0) {
     iVar3 = iVar2 * -0x10;
   }
-  iVar3 = (iVar3 - *param_1) * param_4;
+  iVar3 = (iVar3 - *dst) * alpha;
   if (iVar3 < 0) {
     iVar3 = iVar3 + 0xfff;
   }
-  iVar2 = (((int)((uint)uVar1 << 0x18) >> 0x14) - (int)param_1[1]) * param_4;
-  *param_1 = *param_1 + (short)(iVar3 >> 0xc);
+  iVar2 = (((int)((uint)uVar1 << 0x18) >> 0x14) - (int)dst[1]) * alpha;
+  *dst = *dst + (short)(iVar3 >> 0xc);
   if (iVar2 < 0) {
     iVar2 = iVar2 + 0xfff;
   }
-  param_4 = (((int)((uint)uVar1 << 0x10) >> 0x18) * 0x10 - (int)param_1[2]) * param_4;
-  param_1[1] = param_1[1] + (short)(iVar2 >> 0xc);
-  if (param_4 < 0) {
-    param_4 = param_4 + 0xfff;
+  alpha = (((int)((uint)uVar1 << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;
+  dst[1] = dst[1] + (short)(iVar2 >> 0xc);
+  if (alpha < 0) {
+    alpha = alpha + 0xfff;
   }
-  param_1[2] = param_1[2] + (short)(param_4 >> 0xc);
+  dst[2] = dst[2] + (short)(alpha >> 0xc);
   return;
 
 }
 
 
-undefined8 vec2_rot_lut(undefined4 param_1,int param_2)
+undefined8 vec2_rot_lut(undefined4 angle,int mag)
 {
-  int iVar1;
-  int iVar2;
+  int s;
+  int c;
   
-  iVar1 = lut_sin_q12(param_1);
-  iVar1 = param_2 * iVar1;
-  iVar2 = lut_cos_q12(param_1);
-  return CONCAT44((iVar1 + 0x800) >> 0xc,(param_2 * -iVar2 + 0x800) >> 0xc);
+  s = lut_sin_q12(angle);
+  s = mag * s;
+  c = lut_cos_q12(angle);
+  return CONCAT44((s + 0x800) >> 0xc,(mag * -c + 0x800) >> 0xc);
 
 }
 
 /* ---- event-stream runner + GTE helpers (batch21) ---- */
 /* ev_stream_dispatch — event-stream dispatcher (guest-verbatim; a2-pc
  * residual modelled explicitly: handlers get pc = motion+0x84). */
-void ev_stream_dispatch(byte *param_1,byte *param_2)
+void ev_stream_dispatch(byte *ctrl,byte *mo)
 {
   byte *pbVar1;
   extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -3118,14 +3118,14 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
    * resume/fallback reads a stale pc. Keep pc in a local guest
    * address for the a2-residual AND mirror it into +0x84 like the
    * guest does. */
-  uint32_t pc_g = *(uint32_t *)(param_2 + 0x84);
+  uint32_t pc_g = *(uint32_t *)(mo + 0x84);
   uint32_t _dbsp_n = 0;
-  if (*(short *)(param_2 + 0x90) < 1) {
+  if (*(short *)(mo + 0x90) < 1) {
     for (;;) {
       uint8_t op = *(uint8_t *)guest_at(pc_g);
       uint32_t npc_g = 0;
       if (op < 24) {
-        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)param_1,(uint8_t *)param_2, pc_g);
+        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)ctrl,(uint8_t *)mo, pc_g);
         npc_g = pbVar1 ? guest_of(pbVar1) : 0;
       } else {
         /* Opcodes >=24 dispatch through the guest handler table; try the
@@ -3133,13 +3133,13 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
          * the same generated fallback br2_call_generated used. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
         extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-        npc_g = call_guest4(h, br2_gaddr(param_1), br2_gaddr(param_2), pc_g, 0);
+        npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(mo), pc_g, 0);
         pbVar1 = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-        decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(param_2), op, npc_g); }
+        decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(mo), op, npc_g); }
       if (npc_g == 0) break;
-      *(uint32_t *)(param_2 + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
+      *(uint32_t *)(mo + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
       pc_g = npc_g;
       /* The generated body reaches debug_server_poll via
        * psx_check_interrupts_at at every block boundary (~16k checks);
@@ -3154,7 +3154,7 @@ void ev_stream_dispatch(byte *param_1,byte *param_2)
     }
   }
   else {
-    *(short *)(param_2 + 0x90) = *(short *)(param_2 + 0x90) - *(short *)(param_2 + 0xce);
+    *(short *)(mo + 0x90) = *(short *)(mo + 0x90) - *(short *)(mo + 0xce);
   }
   return;
 }
@@ -3286,20 +3286,20 @@ uint * matrix_vec3_apply(undefined4 *param_1,uint *param_2)
  * quotients in $v1/$t4 packed into the u64 port's hi/lo halves).
  * 8d444: only when a1!=0, ACCUMULATES into out pair (a3).
  * 8d468: unconditional OVERWRITE of out pair. */
-void dir_rotate_acc(int param_1,int param_2,byte *param_3,byte *param_4)
+void dir_rotate_acc(int angle,int mag,byte *vec,byte *acc)
 {
-  if (param_2 != 0) {
-    short sVar1 = *(short *)param_4;
-    short sVar2 = *(short *)(param_4 + 4);
-    unsigned long long r = dir_rotate_wrap(param_1,param_2,(short *)param_3);
-    *(short *)param_4 = (short)(sVar1 + (short)(r >> 32));
-    *(short *)(param_4 + 4) = (short)(sVar2 + (short)((uint32_t)r >> 16));
+  if (mag != 0) {
+    short sVar1 = *(short *)acc;
+    short sVar2 = *(short *)(acc + 4);
+    unsigned long long r = dir_rotate_wrap(angle,mag,(short *)vec);
+    *(short *)acc = (short)(sVar1 + (short)(r >> 32));
+    *(short *)(acc + 4) = (short)(sVar2 + (short)((uint32_t)r >> 16));
   }
 }
 
-void dir_rotate_set(int param_1,int param_2,byte *param_3,byte *param_4)
+void dir_rotate_set(int angle,int mag,byte *vec,byte *out)
 {
-  unsigned long long r = dir_rotate_wrap(param_1,param_2,(short *)param_3);
-  *(short *)param_4 = (short)(r >> 32);
-  *(short *)(param_4 + 4) = (short)((uint32_t)r >> 16);
+  unsigned long long r = dir_rotate_wrap(angle,mag,(short *)vec);
+  *(short *)out = (short)(r >> 32);
+  *(short *)(out + 4) = (short)((uint32_t)r >> 16);
 }
