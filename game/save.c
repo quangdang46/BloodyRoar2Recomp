@@ -6462,27 +6462,27 @@ void record_struct_dump(uint32_t a0)
    Save-channel init/commit. a0 = guest state ptr (h@0x8e = phase),
    a1 unused, s2/s3 = host save-slot buffers. Uses heap A @0x801c47b8
    (tag table via tag_table_get) and heap B @0x801e3cfc. */
-int save_channel_init_commit(uint32_t a0,int32_t a1,uint8_t *s2,uint8_t *s3)
+int save_channel_init_commit(uint32_t a0,int32_t a1,uint8_t *buf_a,uint8_t *buf_b)
 {
-  uint8_t *s5 = (uint8_t *)guest_at(a0);
-  int32_t s0 = (int32_t)*(int16_t *)(s5 + 0x8e);
-  int32_t s4;
+  uint8_t *st = (uint8_t *)guest_at(a0);
+  int32_t phase = (int32_t)*(int16_t *)(st + 0x8e);
+  int32_t mark;
   int32_t i, sz;
   uint32_t head, np;
   int *tbl;
   (void)a1;
 
-  if (s0 == 0) goto st0;
-  if (s0 == 0x10) goto st10;
-  *(int16_t *)(s5 + 0x8e) = (int16_t)s0;
+  if (phase == 0) goto st0;
+  if (phase == 0x10) goto st10;
+  *(int16_t *)(st + 0x8e) = (int16_t)phase;
   return 0;
 
 st0:
   if (cd_file_load_sm(0x13, guest_of(tag_table_get())) == 0) {
-    *(int16_t *)(s5 + 0x8e) = (int16_t)s0;
+    *(int16_t *)(st + 0x8e) = (int16_t)phase;
     return 0;
   }
-  s4 = (int32_t)g8(0x1f800013);
+  mark = (int32_t)g8(0x1f800013);
   scratch_013_set(0);
   tbl = (int *)tag_table_get();
   for (i = 0; i < 0x64; i++) {
@@ -6524,22 +6524,22 @@ st0:
     BR2_W32(0x801e3cfc, g32(0x801e3cfc) + (uint32_t)sz);
   }
   cd_timer_read(0);
-  scratch_013_set((uint32_t)s4);
-  *(int16_t *)(s5 + 0x8e) = 0x10;
+  scratch_013_set((uint32_t)mark);
+  *(int16_t *)(st + 0x8e) = 0x10;
   return 0;
 
 st10:
   if (cd_file_load_sm(0x10, g32(0x801c47b8)) == 0) {
-    *(int16_t *)(s5 + 0x8e) = (int16_t)s0;
+    *(int16_t *)(st + 0x8e) = (int16_t)phase;
     return 0;
   }
   head = g32(0x801c47b8);
   np = head + 8;
-  /* s2/s3 are host save-slot structs; +0x38 holds a GUEST pointer whose
+  /* buf_a/buf_b are host save-slot structs; +0x38 holds a GUEST pointer whose
      +0xa8 slot caches the new heap head — resolve via guest_at before the
      store or the raw guest address faults as a host pointer. */
-  *(uint32_t *)guest_at(*(uint32_t *)(s2 + 0x38) + 0xa8) = np;
-  *(uint32_t *)guest_at(*(uint32_t *)(s3 + 0x38) + 0xa8) = np;
+  *(uint32_t *)guest_at(*(uint32_t *)(buf_a + 0x38) + 0xa8) = np;
+  *(uint32_t *)guest_at(*(uint32_t *)(buf_b + 0x38) + 0xa8) = np;
   BR2_W32(0x801c47b8, head + *(uint32_t *)guest_at(head));
   return 1;
 }
@@ -6551,17 +6551,17 @@ st10:
    All cases draw via descblk_variant_e/descblk_variant_f/hud_text_a with
    coords derived from lhu/lh @+0x20/+0x22. */
 
-static int32_t hud_x2(uint8_t *s0)
+static int32_t hud_x2(uint8_t *st)
 { /* (sxt16 lhu@0x20) / 2 trunc */
-  return ((int16_t)*(uint16_t *)(s0 + 0x20)) / 2;
+  return ((int16_t)*(uint16_t *)(st + 0x20)) / 2;
 }
-static int32_t hud_y2(uint8_t *s0)
+static int32_t hud_y2(uint8_t *st)
 { /* (sxt16 lhu@0x22) / 2 trunc */
-  return ((int16_t)*(uint16_t *)(s0 + 0x22)) / 2;
+  return ((int16_t)*(uint16_t *)(st + 0x22)) / 2;
 }
-static int32_t hud_y3(uint8_t *s0)
+static int32_t hud_y3(uint8_t *st)
 { /* (lh@0x22 * 3) / 8 trunc */
-  return (*(int16_t *)(s0 + 0x22) * 3) / 8;
+  return (*(int16_t *)(st + 0x22) * 3) / 8;
 }
 static int32_t hud_div4(int32_t v)
 { /* (v<0 ? v+3 : v) >> 2 == v/4 trunc */
@@ -6570,35 +6570,35 @@ static int32_t hud_div4(int32_t v)
 
 void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(a0);
+  uint8_t *st = (uint8_t *)guest_at(a0);
   uint32_t sel = a1;
-  uint32_t r8, rc;
+  uint32_t desc_a, desc_b;
   int32_t x2, y2, y3;
   char *buf;
   (void)a2;
 
-  r8 = g32(a0 + 0xc8);
-  if ((((uint32_t)g16(r8 + 2)) >> 0xa & 1) == 0) return;
+  desc_a = g32(a0 + 0xc8);
+  if ((((uint32_t)g16(desc_a + 2)) >> 0xa & 1) == 0) return;
   if (sel >= 0x17) return;
 
-  r8 = *(uint32_t *)(s0 + 8);
-  rc = *(uint32_t *)(s0 + 0xc);
-  x2 = hud_x2(s0);
-  y2 = hud_y2(s0);
-  y3 = hud_y3(s0);
+  desc_a = *(uint32_t *)(st + 8);
+  desc_b = *(uint32_t *)(st + 0xc);
+  x2 = hud_x2(st);
+  y2 = hud_y2(st);
+  y3 = hud_y3(st);
 
   switch (sel) {
   case 0:
     /* "Here Comes A Challenger !!!" via 7-arg descblk_variant_f */
-    descblk_variant_f(r8, rc, (const void *)guest_at(0x80120768),
+    descblk_variant_f(desc_a, desc_b, (const void *)guest_at(0x80120768),
                  x2 - 0xe7, y2 - 0xc, 8, -4);
     return;
   case 1:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120784),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120784),
                  (int16_t)(x2 - 0x84), y3, 8);
     return;
   case 2:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120794),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120794),
                  (int16_t)(x2 - 0x79), y3, 0xe);
     return;
   case 3: {
@@ -6608,77 +6608,77 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
      * a host stack buffer yields 0. Back it with a guest frame. */
     buf = (char *)guest_at(br2_guest_frame(0x20) + 0x10);
     bp = buf;
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207a0),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207a0),
                  (int16_t)(x2 - 0x4d), y3, 0xe);
     sprintf_core(bp, (char *)guest_at(0x801207a8),
-                 (int32_t)*(int8_t *)(s0 + 0x99) + 1);
-    v = (*(int16_t *)(s0 + 0x22) * 3);
+                 (int32_t)*(int8_t *)(st + 0x99) + 1);
+    v = (*(int16_t *)(st + 0x22) * 3);
     if (v < 0) v += 7;
     v >>= 3;
-    descblk_variant_e(r8, rc, bp, 0x1000, v, 0xe);
+    descblk_variant_e(desc_a, desc_b, bp, 0x1000, v, 0xe);
     br2_guest_frame_free();
     return;
   }
   case 4:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207ac),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207ac),
                  (int16_t)(x2 - 0x6e), y3, 0xe);
     return;
   case 5:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207b8),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207b8),
                  (int16_t)(x2 - 0x42), y3, 8);
     return;
   case 6:
   case 10:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207c0),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207c0),
                  (int16_t)(x2 - 0x63), (int16_t)(y2 - 0x10), 0xe);
     return;
   case 7:
   case 11:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207cc),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207cc),
                  (int16_t)(x2 - 0x79), (int16_t)(y2 - 0x10), 8);
     return;
   case 8:
   case 12:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207d8),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207d8),
                  (int16_t)(x2 - 0x58), (int16_t)(y2 - 0x10), 8);
     return;
   case 9:
   case 13:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207e4),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207e4),
                  (int16_t)(x2 - 0x2c), (int16_t)(y2 - 0x10), 8);
     return;
   case 14:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207ec),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207ec),
                  (int16_t)(x2 - 0x4d), (int16_t)(y2 - 0x10), 8);
     return;
   case 15:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x801207f8),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x801207f8),
                  (int16_t)(x2 - 0x2c), (int16_t)(y2 - 0x10), 8);
     return;
   case 16: {
-    int32_t v1 = (int32_t)*(int16_t *)(s0 + 0x20);
-    int32_t a1v = (int32_t)*(int16_t *)(s0 + 0x22);
-    if (v1 < 0) v1 += 3;
-    if (a1v < 0) a1v += 3;
-    hud_text_a(r8 + 4, rc, (const void *)guest_at(0x80120800),
-                 (v1 >> 2) - 0x2a, a1v >> 2, 1);
+    int32_t pos_x = (int32_t)*(int16_t *)(st + 0x20);
+    int32_t pos_y = (int32_t)*(int16_t *)(st + 0x22);
+    if (pos_x < 0) pos_x += 3;
+    if (pos_y < 0) pos_y += 3;
+    hud_text_a(desc_a + 4, desc_b, (const void *)guest_at(0x80120800),
+                 (pos_x >> 2) - 0x2a, pos_y >> 2, 1);
     return;
   }
   case 17:
   case 18:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120808),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120808),
                  (int16_t)(x2 - 0x42), (int16_t)(y2 - 0x10), 8);
     return;
   case 19:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120810),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120810),
                  (int16_t)(x2 - 0x4d), (int16_t)(y2 - 0x10), 8);
     return;
   case 20:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120818),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120818),
                  (int16_t)(x2 - 0x58), (int16_t)(y2 - 0x10), 0xa);
     return;
   case 21: {
-    int64_t m = (int64_t)(*(uint16_t *)(s0 + 0xb2) & 0x3fff) * 0x66666667LL;
+    int64_t m = (int64_t)(*(uint16_t *)(st + 0xb2) & 0x3fff) * 0x66666667LL;
     int32_t hi = (int32_t)(m >> 32);
     int32_t num = 9 - (int32_t)(((int32_t)(hi << 11)) >> 16);
     int32_t v;
@@ -6686,15 +6686,15 @@ void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
      * a host stack buffer yields 0. Back it with a guest frame. */
     buf = (char *)guest_at(br2_guest_frame(0x20) + 0x10);
     sprintf_core(buf, (char *)guest_at(0x80120824), num);
-    v = (*(int16_t *)(s0 + 0x22) * 3);
+    v = (*(int16_t *)(st + 0x22) * 3);
     if (v < 0) v += 3;
     v = hud_div4(v) - 0x30;
-    descblk_variant_e(r8, rc, buf, 0, (int16_t)v, 8);
+    descblk_variant_e(desc_a, desc_b, buf, 0, (int16_t)v, 8);
     br2_guest_frame_free();
     return;
   }
   case 22:
-    descblk_variant_e(r8, rc, (const void *)guest_at(0x80120834),
+    descblk_variant_e(desc_a, desc_b, (const void *)guest_at(0x80120834),
                  (int16_t)(x2 - 0x63), (int16_t)(y2 - 0x10), 0xa);
     return;
   default:
