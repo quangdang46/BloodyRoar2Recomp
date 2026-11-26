@@ -1971,3 +1971,11 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+801800a4 hitbox_xform_node_commit
+801802cc hitbox_xform_flag_pair
+8018098c hitbox_xform_epilogue
+80181000 pair_update_attach_tail
+80181ee8 ani_cat_tail_zero
+80181ef0 ani_cat_tail_v2
+80181f10 ani_cat_tail_nine
+80181f18 ani_cat_tail_ret

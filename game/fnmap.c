@@ -73,6 +73,10 @@ extern void angle_from_xy(void);
 extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
 extern void angle_vec_build(void);
+extern void ani_cat_tail_nine(void);
+extern void ani_cat_tail_ret(void);
+extern void ani_cat_tail_v2(void);
+extern void ani_cat_tail_zero(void);
 extern void ani_fixup_guest(void);
 extern void anim_angle_approach(void);
 extern void anim_lerp_aux(void);
@@ -833,6 +837,9 @@ extern void hit_spark_spawn(void);
 extern void hitbox_corners_xform(void);
 extern void hitbox_pair_test(void);
 extern void hitbox_wall_collide(void);
+extern void hitbox_xform_epilogue(void);
+extern void hitbox_xform_flag_pair(void);
+extern void hitbox_xform_node_commit(void);
 extern void hitrec_table_clear(void);
 extern void hp_bar_tick(void);
 extern void hud_announce(void);
@@ -1105,6 +1112,7 @@ extern void pad_slot_state_walk(void);
 extern void pad_state_refresh(void);
 extern void page_table_ptr_set(void);
 extern void pair_depth_set(void);
+extern void pair_update_attach_tail(void);
 extern void paired_task_cb(void);
 extern void palette_attr_record_write(void);
 extern void part_desc_clear(void);
@@ -2250,10 +2258,18 @@ const Br2FnEnt fn_table[] = {
   { 0x8017f7c4, (void *)fighter_atk_dir },
   { 0x8017fb34, (void *)fighter_state_tick },
   { 0x8017fe60, (void *)hitbox_corners_xform },
+  { 0x801800a4, (void *)hitbox_xform_node_commit },
+  { 0x801802cc, (void *)hitbox_xform_flag_pair },
+  { 0x8018098c, (void *)hitbox_xform_epilogue },
   { 0x801809c8, (void *)fighter_pair_update },
+  { 0x80181000, (void *)pair_update_attach_tail },
   { 0x8018106c, (void *)record_struct_dump },
   { 0x8018123c, (void *)slot_action_dump },
   { 0x80181db8, (void *)ani_fixup_guest },
+  { 0x80181ee8, (void *)ani_cat_tail_zero },
+  { 0x80181ef0, (void *)ani_cat_tail_v2 },
+  { 0x80181f10, (void *)ani_cat_tail_nine },
+  { 0x80181f18, (void *)ani_cat_tail_ret },
   { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182f3c, (void *)scriptop_end },
   { 0x80182f48, (void *)scriptop_bra },

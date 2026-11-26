@@ -4595,3 +4595,46 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- w2_e00 piece-entries (game/w2_e00.c) ---
+# hitbox_xform_node_commit / hitbox_xform_flag_pair / hitbox_xform_epilogue:
+# CPS piece-group of hitbox_corners_xform (0x8017FE60). Entries + jal-return
+# continuations + the shared `j 0x8018098C` epilogue piece.
+801800a4 hitbox_xform_node_commit
+801800d4 hitbox_xform_node_commit
+80180134 hitbox_xform_node_commit
+80180140 hitbox_xform_node_commit
+80180184 hitbox_xform_node_commit
+80180190 hitbox_xform_node_commit
+801802cc hitbox_xform_flag_pair
+801802e0 hitbox_xform_flag_pair
+80180364 hitbox_xform_flag_pair
+80180370 hitbox_xform_flag_pair
+801803b4 hitbox_xform_flag_pair
+801803c0 hitbox_xform_flag_pair
+80180504 hitbox_xform_flag_pair
+80180564 hitbox_xform_flag_pair
+801805dc hitbox_xform_flag_pair
+801805e8 hitbox_xform_flag_pair
+8018062c hitbox_xform_flag_pair
+80180638 hitbox_xform_flag_pair
+8018077c hitbox_xform_flag_pair
+801807f0 hitbox_xform_flag_pair
+801807f8 hitbox_xform_flag_pair
+80180804 hitbox_xform_flag_pair
+80180848 hitbox_xform_flag_pair
+80180854 hitbox_xform_flag_pair
+8018098c hitbox_xform_epilogue
+80180998 hitbox_xform_epilogue
+# pair_update_attach_tail: CPS tail piece-group of fighter_pair_update
+# (0x801809C8) — entry + jal-return continuations.
+80181000 pair_update_attach_tail
+80181008 pair_update_attach_tail
+80181018 pair_update_attach_tail
+80181034 pair_update_attach_tail
+8018103c pair_update_attach_tail
+# ani_cat_tail_*: split tails of ani_fixup_guest (0x80181DB8).
+80181ee8 ani_cat_tail_zero
+80181ef0 ani_cat_tail_v2
+80181f10 ani_cat_tail_nine
+80181f18 ani_cat_tail_ret
