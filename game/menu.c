@@ -1935,16 +1935,16 @@ LAB_801651e8:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void transition_screen_flow(int param_1)
+void transition_screen_flow(int mode)
 
 {
   int iVar1;
   int iVar2;
-  uint uVar3;
-  undefined4 uVar4;
+  uint shade;
+  undefined4 color;
   int unaff_s1;
   
-  if ((param_1 != 0) || (_DAT_801c4578 == 1)) {
+  if ((mode != 0) || (_DAT_801c4578 == 1)) {
     iVar1 = memcard_err_sentinel();
     if (iVar1 < 0) {
       _DAT_1f80008c = 0;
@@ -1961,24 +1961,24 @@ LAB_80165dd8:
             }
             else {
               if (unaff_s1 < 0x32) {
-                uVar3 = 0xff - (unaff_s1 * 0xff) / 0x32;
+                shade = 0xff - (unaff_s1 * 0xff) / 0x32;
 LAB_80165ed0:
                 spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,
-                             uVar3 | uVar3 << 8 | uVar3 << 0x10,3);
+                             shade | shade << 8 | shade << 0x10,3);
               }
               else if ((0x95 < unaff_s1) && (unaff_s1 < 200)) {
-                uVar3 = iVar1 / 0x32;
+                shade = iVar1 / 0x32;
                 goto LAB_80165ed0;
               }
-              if (param_1 == 3) {
+              if (mode == 3) {
                 rgb_triple_store(0xff,0xff,0xff);
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                              ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
-                uVar4 = 0xeffe008a;
+                color = 0xeffe008a;
               }
               else {
-                if (param_1 != 0xf) {
+                if (mode != 0xf) {
                   spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,(int)(short)_DAT_1f800020,
                                (int)_DAT_1f800022);
                   goto LAB_80166058;
@@ -1986,22 +1986,22 @@ LAB_80165ed0:
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe000c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                              ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
-                uVar4 = 0xeffe000d;
+                color = 0xeffe000d;
               }
               iVar2 = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
               spr_attr_alloc_b(_DAT_1f800008,
-                           (iVar2 - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,uVar4,
+                           (iVar2 - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,color,
                            0x7d000000,iVar2,(int)_DAT_1f800022);
             }
 LAB_80166058:
             frame_tick(0x1f800000);
-            if ((param_1 == 0) && (DAT_1f800001 == 1)) {
+            if ((mode == 0) && (DAT_1f800001 == 1)) {
               save_slot_state_fixup(0x1f800000,2);
             }
           }
           else {
             if (DAT_1f800001 < 2) {
-              if (((DAT_1f800001 == 0) && (iVar2 = card_sprite_load_sm(0x1f800000,param_1), iVar2 != 0)) &&
+              if (((DAT_1f800001 == 0) && (iVar2 = card_sprite_load_sm(0x1f800000,mode), iVar2 != 0)) &&
                  (iVar2 = frame_divisor_get(), iVar2 == 0)) {
                 iVar1 = 0x31ce;
                 spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,0,0);
