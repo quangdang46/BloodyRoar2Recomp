@@ -77,6 +77,14 @@ _UNAL_RE = re.compile(
 # is a synchronous call to the next CPS split piece of the same logical fn.
 _FT_RE = re.compile(
     r'\b(?:br2eu_func_|br2eu_psx_alias_body_)([0-9a-fA-F]{8})\s*\(\s*cpu\s*\)')
+# --timing mode: psx_lwl/lwr/swl/swr are static inline in the generated
+# SLES decls header (invisible to game/*.c). Route them to file-local
+# cpst_* helpers that keep the generated cycle semantics verbatim
+# (psx_cyc_load_word interlock for loads, psx_store_cycle_barrier for
+# stores). Arg list is captured whole — args are simple exprs, at most
+# one paren nesting level.
+_UNAL_T_RE = re.compile(
+    r'\bpsx_(lwl|lwr|swl|swr)\s*\(\s*((?:[^()]|\([^()]*\))*)\)')
 # 2-arg alias dispatch: br2eu_psx_alias_body_<base>(cpu, 0x<entry>u) tail-enters
 # the shared host body at guest entry <entry> — equivalent to dispatching
 # cpu->pc = <entry> through clean_try_dispatch.
@@ -154,6 +162,8 @@ def _sub_loads(s):
         s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
         s = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', s)
         s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
+    else:
+        s = _UNAL_T_RE.sub(lambda m: f'cpst_{m.group(1)}({m.group(2).strip()})', s)
     s = _FT_RE.sub(lambda m: f'cps_{m.group(1).lower()}()', s)
     s = _ALIAS_CALL_RE.sub(lambda m: f'cpu->pc = 0x{m.group(1)}u; return;', s)
     return s
@@ -295,6 +305,53 @@ static inline void br2_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
     cpu->write_word(aligned, word);
 }
 static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = rt_value; break;
+        case 1: word = (word & 0x000000FFu) | (rt_value << 8); break;
+        case 2: word = (word & 0x0000FFFFu) | (rt_value << 16); break;
+        default: word = (word & 0x00FFFFFFu) | (rt_value << 24); break;
+    }
+    cpu->write_word(aligned, word);
+}
+
+/* --timing unaligned word ops: verbatim ports of the generated
+ * SLES_017.22_decls.h psx_lwl/lwr/swl/swr (static inline there, so
+ * invisible to game/*.c). Loads keep the full psx_cyc_load_word
+ * interlock; stores keep psx_store_cycle_barrier + read-modify-write. */
+static inline uint32_t cpst_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value, uint32_t rt, uint32_t reg_mask) {
+    uint32_t word = psx_cyc_load_word(cpu, addr & ~3u, rt, reg_mask);
+    switch (addr & 3u) {
+        case 0: return (rt_value & 0x00FFFFFFu) | (word << 24);
+        case 1: return (rt_value & 0x0000FFFFu) | (word << 16);
+        case 2: return (rt_value & 0x000000FFu) | (word << 8);
+        default: return word;
+    }
+}
+static inline uint32_t cpst_lwr(CPUState *cpu, uint32_t addr, uint32_t rt_value, uint32_t rt, uint32_t reg_mask) {
+    uint32_t word = psx_cyc_load_word(cpu, addr & ~3u, rt, reg_mask);
+    switch (addr & 3u) {
+        case 0: return word;
+        case 1: return (rt_value & 0xFF000000u) | (word >> 8);
+        case 2: return (rt_value & 0xFFFF0000u) | (word >> 16);
+        default: return (rt_value & 0xFFFFFF00u) | (word >> 24);
+    }
+}
+static inline void cpst_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    psx_store_cycle_barrier();
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = (word & 0xFFFFFF00u) | (rt_value >> 24); break;
+        case 1: word = (word & 0xFFFF0000u) | (rt_value >> 16); break;
+        case 2: word = (word & 0xFF000000u) | (rt_value >> 8); break;
+        default: word = rt_value; break;
+    }
+    cpu->write_word(aligned, word);
+}
+static inline void cpst_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    psx_store_cycle_barrier();
     uint32_t aligned = addr & ~3u;
     uint32_t word = cpu->read_word(aligned);
     switch (addr & 3u) {

@@ -25923,16 +25923,16 @@ extern void scriptop_ret_cond_0x801835d0(void);
     scriptop_ret_cond_0x801835d0();
 }
 static void wrap_80183630(CPUState *cpu) {
-extern void cps_801835d0(void);
-    cps_801835d0();
+extern void cpst_801835d0(void);
+    cpst_801835d0();
 }
 static void wrap_80183640(CPUState *cpu) {
 extern void scriptop_ret_cond_0x801835d0(void);
     scriptop_ret_cond_0x801835d0();
 }
 static void wrap_80183648(CPUState *cpu) {
-extern void cps_801835d0(void);
-    cps_801835d0();
+extern void cpst_801835d0(void);
+    cpst_801835d0();
 }
 static void wrap_80183658(CPUState *cpu) {
 extern void scriptop_ret_cond_0x801835d0(void);
@@ -27617,24 +27617,24 @@ extern void gpu_pkt_cmd_f4fc(void);
     gpu_pkt_cmd_f4fc();
 }
 static void wrap_8018f504(CPUState *cpu) {
-extern void cps_8018ef6c(void);
-    cps_8018ef6c();
+extern void cpst_8018ef6c(void);
+    cpst_8018ef6c();
 }
 static void wrap_8018f608(CPUState *cpu) {
 extern void gpu_pkt_cmd_f608(void);
     gpu_pkt_cmd_f608();
 }
 static void wrap_8018f628(CPUState *cpu) {
-extern void cps_8018ef6c(void);
-    cps_8018ef6c();
+extern void cpst_8018ef6c(void);
+    cpst_8018ef6c();
 }
 static void wrap_8018f6b4(CPUState *cpu) {
-extern void cps_8018ef6c(void);
-    cps_8018ef6c();
+extern void cpst_8018ef6c(void);
+    cpst_8018ef6c();
 }
 static void wrap_8018f6e8(CPUState *cpu) {
-extern void cps_8018ef6c(void);
-    cps_8018ef6c();
+extern void cpst_8018ef6c(void);
+    cpst_8018ef6c();
 }
 static void wrap_8018f7e0(CPUState *cpu) {
 extern undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3);
@@ -27935,72 +27935,72 @@ extern uint32_t cd_cmd_queue_load(uint32_t param_1,uint32_t param_2);
     cpu->gpr[2] = (uint32_t)(cd_cmd_queue_load(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80192714(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019273c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_80192760(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_80192768(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019276c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019277c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801927a0(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801927a8(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801927ac(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801927c0(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801927d4(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019287c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019288c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801928a0(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_801928ac(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_8019291c(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_80192928(CPUState *cpu) {
-extern void cps_80192714(void);
-    cps_80192714();
+extern void cpst_80192714(void);
+    cpst_80192714();
 }
 static void wrap_80192944(CPUState *cpu) {
 extern uint32_t gpu_draw_env_dma(uint32_t envg, uint32_t listg);
@@ -28464,16 +28464,16 @@ extern uint32_t cd_stamp_to_sector(const void *param_1);
     cpu->gpr[2] = (uint32_t)(cd_stamp_to_sector(((const void *)guest_at(cpu->gpr[4]))));
 }
 static void wrap_80196718(CPUState *cpu) {
-extern void cps_80196370(void);
-    cps_80196370();
+extern void cpst_80196370(void);
+    cpst_80196370();
 }
 static void wrap_80196798(CPUState *cpu) {
-extern void cps_80196370(void);
-    cps_80196370();
+extern void cpst_80196370(void);
+    cpst_80196370();
 }
 static void wrap_80196818(CPUState *cpu) {
-extern void cps_80196370(void);
-    cps_80196370();
+extern void cpst_80196370(void);
+    cpst_80196370();
 }
 static void wrap_80197220(CPUState *cpu) {
 extern void cd_cmd_bytes(uintptr_t param_1);
@@ -28580,124 +28580,124 @@ extern uint32_t cd_file_rec_find(uint32_t param_1,uint32_t param_2);
     cpu->gpr[2] = (uint32_t)(cd_file_rec_find(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80198190(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801981c4(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801981f8(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198204(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198218(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198224(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_8019822c(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198244(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198250(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198254(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198260(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198274(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198284(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801982a4(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801982c8(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801982d0(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801982d8(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801982e8(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198304(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198310(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198320(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198338(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_8019837c(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_8019839c(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801983b0(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801983c4(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801983d8(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_801983f0(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198400(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_80198404(CPUState *cpu) {
-extern void cps_80198190(void);
-    cps_80198190();
+extern void cpst_80198190(void);
+    cpst_80198190();
 }
 static void wrap_8019842c(CPUState *cpu) {
 extern uint32_t cd_file_load_sync(uint32_t param_1,uint32_t param_2,uint32_t param_3);
