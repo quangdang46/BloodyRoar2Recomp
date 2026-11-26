@@ -91,11 +91,11 @@ extern char *s_SetDispMask__d_____801254a0;
 extern char *s_DrawSync__d_____801254b4;
 extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
-#define DAT_801b55dc   (*(int32_t *)g_DAT_801b55dc)
-#define DAT_801b55e0   (*(int32_t *)g_DAT_801b55e0)
-#define DAT_801b55e4   (*(int32_t *)g_DAT_801b55e4)
-#define DAT_801f642c   (*(uint32_t *)g_DAT_801f642c)
-#define DAT_801f68b4   (*(uint32_t *)g_DAT_801f68b4)
+#define spr_pool_b_next   (*(int32_t *)g_DAT_801b55dc)
+#define spr_slot_next   (*(int32_t *)g_DAT_801b55e0)
+#define spr_pool_a_next   (*(int32_t *)g_DAT_801b55e4)
+#define spr_desc_tbl_a   (*(uint32_t *)g_DAT_801f642c)
+#define spr_desc_tbl_b   (*(uint32_t *)g_DAT_801f68b4)
 #define frame_tag  (*(uint32_t *)g__DAT_1f8000dc)
 #define DAT_801e40b6   (*(uint8_t *)g_DAT_801e40b6)
 #define DAT_801e40b7   (*(uint8_t *)g_DAT_801e40b7)
@@ -276,9 +276,9 @@ void spr_desc_tbl_a_init(void)
   int i;
   uint8_t *rec;
   
-  if (DAT_801b55dc < 0) {
+  if (spr_pool_b_next < 0) {
     i = 0x1f;
-    rec = (uint8_t *)&DAT_801f642c;
+    rec = (uint8_t *)&spr_desc_tbl_a;
     do {
       i = i + -1;
       *(uint32_t *)rec = (uint32_t)(frame_tag - 2);
@@ -289,7 +289,7 @@ void spr_desc_tbl_a_init(void)
       rec[10] = 0x80;
       rec = rec + -0x2c;
     } while (-1 < i);
-    DAT_801b55dc = 0;
+    spr_pool_b_next = 0;
   }
   return;
 }
@@ -302,9 +302,9 @@ void spr_desc_tbl_b_init(void)
   int i;
   uint8_t *rec;
   
-  if (DAT_801b55e0 < 0) {
+  if (spr_slot_next < 0) {
     i = 0x1f;
-    rec = (uint8_t *)&DAT_801f68b4;
+    rec = (uint8_t *)&spr_desc_tbl_b;
     do {
       i = i + -1;
       *(uint32_t *)rec = (uint32_t)(frame_tag - 2);
@@ -315,7 +315,7 @@ void spr_desc_tbl_b_init(void)
       rec[10] = 0x80;
       rec = rec + -0x24;
     } while (-1 < i);
-    DAT_801b55e0 = 0;
+    spr_slot_next = 0;
   }
   return;
 }
@@ -332,15 +332,15 @@ void *spr_desc_slot_alloc(void)
   uint32_t *slot;
   int32_t next;
   
-  off = (uint32_t)DAT_801b55e0 * 0x24;
+  off = (uint32_t)spr_slot_next * 0x24;
   slot = (uint32_t *)guest_at(0x801f6458 + off);
   owner = (int32_t)*slot;
   if ((owner != (int32_t)frame_tag) &&
-      (next = DAT_801b55e0 + 1, owner != (int32_t)(frame_tag - 1))) {
+      (next = spr_slot_next + 1, owner != (int32_t)(frame_tag - 1))) {
     if (0x1f < next) {
       next = 0;
     }
-    DAT_801b55e0 = next;
+    spr_slot_next = next;
     *slot = frame_tag;
     return guest_at(0x801f645c + off);
   }
@@ -1445,7 +1445,7 @@ LAB_8012cb64:
 /* ======== 0x8018cbfc ======== */
 
 /* Sprite-attr pool A allocator: 0x18 slots x 0x28 stride at
- * 0x801f5978, round-robin counter DAT_801b55e4, sentinel
+ * 0x801f5978, round-robin counter spr_pool_a_next, sentinel
  * frame_tag. Slot word0 == sentinel or sentinel-1 -> NULL;
  * else mark sentinel, bump counter (wrap at 0x18), return slot+4. */
 void *spr_pool_a_alloc(void)
@@ -1453,7 +1453,7 @@ void *spr_pool_a_alloc(void)
   int32_t owner;
   uint32_t *slot;
   int32_t next;
-  int32_t v1 = DAT_801b55e4;
+  int32_t v1 = spr_pool_a_next;
   uint32_t sent = frame_tag;
   if (v1 < 0) {
     slot = (uint32_t *)guest_at(0x801f5978);
@@ -1466,7 +1466,7 @@ void *spr_pool_a_alloc(void)
     return (void *)0;
   next = v1 + 1;
   if (0x17 < next) next = 0;
-  DAT_801b55e4 = next;
+  spr_pool_a_next = next;
   *slot = sent;
   return guest_at(0x801f5978 + (uint32_t)v1 * 0x28 + 4);
 }
@@ -1474,13 +1474,13 @@ void *spr_pool_a_alloc(void)
 /* ======== 0x8018c0a8 ======== */
 
 /* Sprite-attr pool B allocator: 0x20 slots x 0x2c stride at
- * 0x801f5ed8, counter DAT_801b55dc. Same sentinel protocol. */
+ * 0x801f5ed8, counter spr_pool_b_next. Same sentinel protocol. */
 void *spr_pool_b_alloc(void)
 {
   int32_t owner;
   uint32_t *slot;
   int32_t next;
-  int32_t v1 = DAT_801b55dc;
+  int32_t v1 = spr_pool_b_next;
   uint32_t sent = frame_tag;
   slot = (uint32_t *)guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c);
   owner = (int32_t)*slot;
@@ -1488,7 +1488,7 @@ void *spr_pool_b_alloc(void)
     return (void *)0;
   next = v1 + 1;
   if (0x1f < next) next = 0;
-  DAT_801b55dc = next;
+  spr_pool_b_next = next;
   *slot = sent;
   return guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c + 4);
 }
