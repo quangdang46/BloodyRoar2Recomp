@@ -349,8 +349,13 @@ extern void cd_job_sm6(void);
 extern void cd_job_start_e(void);
 extern void cd_job_submit5(void);
 extern void cd_job_submit6(void);
+extern void cd_kobj_b56_commit(void);
+extern void cd_kobj_b57_commit(void);
 extern void cd_kobj_init_a(void);
 extern void cd_kobj_init_b(void);
+extern void cd_kobj_mcall_58(void);
+extern void cd_kobj_mcall_5c(void);
+extern void cd_kobj_param_copy(void);
 extern void cd_mc_op_wait(void);
 extern void cd_mc_sm_wrap(void);
 extern void cd_mc_state_machine(void);
@@ -3044,6 +3049,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8019a320, (void *)bios_tramp_b015 },
   { 0x8019a330, (void *)bios_tramp_c002 },
   { 0x8019a340, (void *)bios_tramp_c003 },
+  { 0x8019a350, (void *)cd_kobj_mcall_58 },
+  { 0x8019a364, (void *)cd_kobj_mcall_5c },
   { 0x8019a378, (void *)cd_kobj_init_b },
   { 0x8019a3f0, (void *)cd_kobj_init_a },
   { 0x8019a460, (void *)cd_timer_read },
@@ -3140,6 +3147,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8019e400, (void *)cd_mode_apply },
   { 0x8019e410, (void *)cd_mode_apply_wrap },
   { 0x8019e420, (void *)bios_tramp_b04c },
+  { 0x8019e4c8, (void *)cd_kobj_b56_commit },
+  { 0x8019e55c, (void *)cd_kobj_b57_commit },
+  { 0x8019e5cc, (void *)cd_kobj_param_copy },
   { 0x8019e680, (void *)cd_chan_block_boot },
   { 0x8019e6f0, (void *)cd_block7_init },
   { 0x8019e730, (void *)cd_job_start_e },
