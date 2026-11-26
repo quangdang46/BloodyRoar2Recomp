@@ -1971,3 +1971,8 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+8018f884 mdec_parambuf_restore
+8018f910 mdec_parambuf_commit
+8018f9a8 gpu_pkt_field2_get
+8018fee0 vram_span_set
+8018ff00 vram_span_set_max

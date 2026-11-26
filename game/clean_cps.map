@@ -4595,3 +4595,30 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# --- orch/emit/p09: 0x8018F6xx-0x8018FFxx emit family ---
+# mdec_parambuf_commit (guest 0x8018F910) — CPS coroutine: entry + all 6
+# continuation/branch-target blocks (loop heads + both jal returns +
+# epilogue) so a yield inside mdec_decode_issue resumes in clean C.
+8018f910 mdec_parambuf_commit
+8018f930 mdec_parambuf_commit
+8018f948 mdec_parambuf_commit
+8018f95c mdec_parambuf_commit
+8018f974 mdec_parambuf_commit
+8018f984 mdec_parambuf_commit
+8018f994 mdec_parambuf_commit
+
+# vram_span_set (guest 0x8018FEE0) — CPS split pair with vram_span_set_max:
+# entry + the not-taken continuation; the taken arm CPS-splits to
+# 0x8018FF00 (its own fnmap entry, non-CPS leaf).
+8018fee0 vram_span_set
+8018fef4 vram_span_set
+
+# 0x8018F628/0x8018F6B4/0x8018F6E8 — internal CPS piece-entries of the
+# 0x8018EF6C text-engine body (generated br2eu_psx_alias_body_8018EF6C
+# entry-switch cases, never called from outside). Route resume-dispatch
+# into the existing clean transliteration cps_8018ef6c: cpu->pc == the
+# piece addr selects the same block the generated `entry` switch picks.
+8018f628 cps_8018ef6c
+8018f6b4 cps_8018ef6c
+8018f6e8 cps_8018ef6c
