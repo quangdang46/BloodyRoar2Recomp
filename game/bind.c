@@ -911,15 +911,15 @@ int  getCopControlWord(int fmt,int reg){ (void)fmt; CPUState*c=clean_cpu_state()
 
 /* ---- second-pass bindings (arrays / scalars / fn-ptr tables) ---- */
 uint8_t  FUN_801b0db8[0x400];            /* guest data table @0x801b0db8 */
-uint8_t  LAB_8013ce68[0x100];
-uint8_t  LAB_801aae08[0x100];
+uint8_t  LAB_8013ce68[0x100];            /* guest RAM buffer @0x8013ce68 (battle.c extern, currently unused) */
+uint8_t  LAB_801aae08[0x100];            /* guest RAM buffer @0x801aae08 (battle.c extern, currently unused) */
 uint8_t  s_0123456789ABCDEF_80125208[17];
 uint8_t  s_0123456789abcdef_8012521c[17];
 uint8_t  s__1___02d__1x_0_80123264[64];
-uint32_t PTR_DAT_801b5574[64];
-uint32_t PTR_entry_0x80182f3c_801b5528[64];
-void    *PTR_FUN_801b1734[64];
-void    *PTR_LAB_801200b8[64];
+uint32_t PTR_DAT_801b5574[64];           /* guest ptr table @0x801b5574 */
+uint32_t PTR_entry_0x80182f3c_801b5528[64]; /* guest opcode-handler jump table @0x801b5528 (handlers @0x80182f3c+) */
+void    *PTR_FUN_801b1734[64];           /* guest code-ptr table @0x801b1734 (channel_script_emit_* handlers) */
+void    *PTR_LAB_801200b8[64];           /* guest code-ptr table @0x801200b8 */
 void    *g_PTR_FUN_801b55c0[64];
 
 uint8_t *g__DAT_1f8003c4, *g__DAT_1f8003c8;
