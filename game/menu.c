@@ -9947,26 +9947,26 @@ static void dec_finish(uint32_t battle,uint32_t rec,int32_t idx)
  * resulting record's lh is negative. */
 void versus_stage_commit(uint32_t baddr,uint32_t stage)
 {
-  uint32_t s1 = baddr;
-  int32_t s2 = (int32_t)stage;
-  uint32_t s0 = MB32(s1 + 0xcc);
-  int32_t a1;
+  uint32_t baddr = baddr;
+  int32_t stg = (int32_t)stage;
+  uint32_t rec = MB32(baddr + 0xcc);
+  int32_t idx;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(47,baddr,stage,s0,MB32(s1+0xcc)); }
+    decomp_trace_record(47,baddr,stage,rec,MB32(baddr+0xcc)); }
 
-  MW16(s0 + 0, 3);
-  results_record_build(4, (int32_t)MBS16(s0 + 6));
-  blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);
-  blk_copy(0x801e0f6c, s0 + 0x21d8, 0xbd0);
+  MW16(rec + 0, 3);
+  results_record_build(4, (int32_t)MBS16(rec + 6));
+  blk_copy(0x801e1b3c, rec + 0x18,   0x21c0);
+  blk_copy(0x801e0f6c, rec + 0x21d8, 0xbd0);
 
-  if (s2 < 0) {
-    a1 = 3;
+  if (stg < 0) {
+    idx = 3;
   } else {
-    a1 = (int32_t)MBS16(s0 + 2);
-    if (s2 + 1 > 0) a1 = dec_wrap(a1, s2 + 1);
-    if (a1 > 0) a1 = dec_walk(a1);
+    idx = (int32_t)MBS16(rec + 2);
+    if (stg + 1 > 0) idx = dec_wrap(idx, stg + 1);
+    if (idx > 0) idx = dec_walk(idx);
   }
-  dec_finish(s1, s0, a1);
+  dec_finish(baddr, rec, idx);
 }
 
 /* versus_stage_commit_b — same stage commit minus the 27c60 rebuild @
@@ -9975,24 +9975,24 @@ void versus_stage_commit(uint32_t baddr,uint32_t stage)
  * resolution; t0 < 0 -> idx 3. */
 void versus_stage_commit_b(uint32_t baddr,int32_t stage)
 {
-  int32_t t0 = stage;
-  uint32_t s0 = MB32(baddr + 0xcc);
-  int32_t a1;
+  int32_t stg = stage;
+  uint32_t rec = MB32(baddr + 0xcc);
+  int32_t idx;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(48,baddr,stage,s0,MB32(baddr+0xcc)); }
+    decomp_trace_record(48,baddr,stage,rec,MB32(baddr+0xcc)); }
 
-  MW16(s0 + 0, 3);
-  blk_copy(0x801e1b3c, s0 + 0x18,   0x21c0);
-  blk_copy(0x801e0f6c, s0 + 0x21d8, 0xbd0);
+  MW16(rec + 0, 3);
+  blk_copy(0x801e1b3c, rec + 0x18,   0x21c0);
+  blk_copy(0x801e0f6c, rec + 0x21d8, 0xbd0);
 
-  if (t0 < 0) {
-    a1 = 3;
+  if (stg < 0) {
+    idx = 3;
   } else {
-    a1 = (int32_t)MBS16(s0 + 2);
-    if (t0 + 1 > 0) a1 = dec_wrap(a1, t0 + 1);
-    if (a1 > 0) a1 = dec_walk(a1);
+    idx = (int32_t)MBS16(rec + 2);
+    if (stg + 1 > 0) idx = dec_wrap(idx, stg + 1);
+    if (idx > 0) idx = dec_walk(idx);
   }
-  dec_finish(baddr, s0, a1);
+  dec_finish(baddr, rec, idx);
 }
 
 /* ======== batch39 ======== */
@@ -11013,30 +11013,30 @@ void bcd_time_frame_print(uint32_t out)
  * magic-div(MB8(a0+0xf)<<3)); brightness_commit(MB8(a0+0xc)^1). */
 void versus_state_init(uint32_t state)
 {
-  uint32_t s0 = state;
-  uint32_t v0 = 0x801b1280u;
-  uint32_t v1 = s0;
+
+  uint32_t src = 0x801b1280u;
+  uint32_t dst = state;
   int i;
   for (i = 0; i < 6; i++) {
-    MW32(v1 + 0x0,  MB32(v0 + 0x0));
-    MW32(v1 + 0x4,  MB32(v0 + 0x4));
-    MW32(v1 + 0x8,  MB32(v0 + 0x8));
-    MW32(v1 + 0xc,  MB32(v0 + 0xc));
-    v0 += 0x10;
-    v1 += 0x10;
+    MW32(dst + 0x0,  MB32(src + 0x0));
+    MW32(dst + 0x4,  MB32(src + 0x4));
+    MW32(dst + 0x8,  MB32(src + 0x8));
+    MW32(dst + 0xc,  MB32(src + 0xc));
+    src += 0x10;
+    dst += 0x10;
   }
-  MW32(v1, MB32(v0));
+  MW32(dst, MB32(src));
   save_defaults_fill();
   save_block_init();
   save_tables_commit();
-  dbg_marker_mode_set(MB8(s0 + 0x24));
+  dbg_marker_mode_set(MB8(state + 0x24));
   {
-    uint32_t x = MB8(s0 + 0xf) << 3;
-    int32_t a1 = (int32_t)(((uint64_t)x * 0x66666667u) >> 32) >> 2;
-    a1 -= (int32_t)x >> 31;
-    gauge_scale_fixed((short)MB8(s0 + 0xe), (short)a1);
+    uint32_t x = MB8(state + 0xf) << 3;
+    int32_t gscale = (int32_t)(((uint64_t)x * 0x66666667u) >> 32) >> 2;
+    gscale -= (int32_t)x >> 31;
+    gauge_scale_fixed((short)MB8(state + 0xe), (short)gscale);
   }
-  brightness_commit((undefined2)(MB8(s0 + 0xc) ^ 1u));
+  brightness_commit((undefined2)(MB8(state + 0xc) ^ 1u));
 }
 
 /* ======== batch42 ======== */
