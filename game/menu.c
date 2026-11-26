@@ -16270,19 +16270,19 @@ uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
  * src+4/+6/+8/+10 stride 0xc, src aux ptr src+10 stride 0xc.
  * Tag bytes 4/0x20 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x10).
  * Returns cur + count*0x4c. */
-uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_08(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
-  (void)param_6; (void)param_7;
+  (void)xoff; (void)yoff;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 10;
   do {
@@ -16319,16 +16319,16 @@ uint32_t heap_serialize_tag_08(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8, u16 index quads at src+12/+14/+16/+18 stride 0x14,
  * aux src+18 stride 0x14. Tag bytes 6/0x30 at dst+0x2f/0x33/0x4b/0x4f.
  * Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0a(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 18;
@@ -16369,16 +16369,16 @@ uint32_t heap_serialize_tag_0a(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Six 8-byte table lookups alternating arg4/arg3 tables
  * (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at dst+0x37/0x3b/0x5b/0x5f.
  * Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 14;
@@ -16416,16 +16416,16 @@ uint32_t heap_serialize_tag_0c(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+6/+8/+10 stride 0x10, aux src+12 stride 0x10.
  * Tag bytes 5/0x28 at dst+0x27/0x2b/0x3b/0x3f (a0 = cur+0x18).
  * Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_10(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 12;
@@ -16460,16 +16460,16 @@ uint32_t heap_serialize_tag_10(uint32_t param_1,uint32_t param_2,uint32_t param_
  * Eight 8-byte lookups alternating arg4/arg3 tables
  * (-14,-12,-10,-8,-6,-4,-2,0). Tag bytes 8/0x38 at
  * dst+0x3f/0x43/0x6b/0x6f (a0 = cur+0x18). Returns cur + count*0x8c. */
-uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_14(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 18;
@@ -16512,16 +16512,16 @@ uint32_t heap_serialize_tag_14(uint32_t param_1,uint32_t param_2,uint32_t param_
  * src+4/+8/+12, u16 index quad at src+16/+18/+20/+22 stride 0x1c,
  * aux src+24 stride 0x1c. Tag bytes 8/0x38 at dst+0x33/0x37/0x57/0x5b
  * (a0 = cur+0x18). Returns cur + count*0x80. */
-uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_12(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 24;
@@ -16559,16 +16559,16 @@ uint32_t heap_serialize_tag_12(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+30 stride 0x20. Eight 8-byte lookups alternating
  * arg4/arg3 tables (-14..0 step 2). Tag bytes 8/0x38 at
  * dst+0x3b/0x3f/0x5f/0x63 (a0 = cur+0x18). Returns cur + count*0x98. */
-uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_16(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 24; a1 += 30;
@@ -16615,16 +16615,16 @@ uint32_t heap_serialize_tag_16(uint32_t param_1,uint32_t param_2,uint32_t param_
  * aux src+22 stride 0x18. Six 8-byte lookups alternating
  * arg4/arg3 tables (-10..0 step 2). Tag bytes 6/0x30 at
  * dst+0x2f/0x33/0x4b/0x4f (a0 = cur+0x10). Returns cur + count*0x74. */
-uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0e(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t1 = src;
   uint32_t v0, t4, t5;
   if (v1 == 0) return t0;
   a0 += 16; a1 += 22;
@@ -16665,17 +16665,17 @@ uint32_t heap_serialize_tag_0e(uint32_t param_1,uint32_t param_2,uint32_t param_
  * first lands at the a3 cursor pair, a3 += 0x40 per record.
  * Tag bytes 4/0x20 at dst+0xb/0xf/0x1f/0x23 (a0 = cur+0x10).
  * Returns cur + count*0x40. */
-uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40048(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = dst;
+  uint32_t t0 = src;
+  uint32_t v1 = count;
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 8;
   do {
@@ -16705,17 +16705,17 @@ uint32_t heap_serialize_tag_40048(uint32_t param_1,uint32_t param_2,uint32_t par
  * (-4,-2,0); first at a3 pair, a3 += 0x50.
  * Tag bytes 6/0x30 at dst+0xb/0xf/0x27/0x2b (a0 = cur+0x10).
  * Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_4004c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = dst;
+  uint32_t t0 = src;
+  uint32_t v1 = count;
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return a3;
   a0 += 16; a1 += 16;
   do {
@@ -16746,17 +16746,17 @@ uint32_t heap_serialize_tag_4004c(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x50. Tag bytes 5/0x28 at dst+0xb/0xf/0x23/0x27
  * (a0 = cur+0x18). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40050(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = dst;
+  uint32_t t0 = src;
+  uint32_t v1 = count;
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 10;
   do {
@@ -16788,17 +16788,17 @@ uint32_t heap_serialize_tag_40050(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four 8-byte lookups via arg3 table (-6,-4,-2,0); first at a3
  * pair, a3 += 0x68. Tag bytes 8/0x38 at dst+0xb/0xf/0x2f/0x33
  * (a0 = cur+0x18). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_40054(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_1;
-  uint32_t t0 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = dst;
+  uint32_t t0 = src;
+  uint32_t v1 = count;
   uint32_t v0, t3, t4;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return a3;
   a0 += 24; a1 += 22;
   do {
@@ -16835,20 +16835,20 @@ uint32_t heap_serialize_tag_40054(uint32_t param_1,uint32_t param_2,uint32_t par
  * arg7 to the two y u16s (a0-0x18/+8 x, a0-0x20/+0 y).
  * Tag bytes 7/0x24 at dst+0x1b/0x1f/0x3b/0x3f (a0 = cur+0x46).
  * Returns cur + count*0x58. */
-uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40049(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t5 = xoff;
+  uint32_t t4 = yoff;
+  uint32_t t1 = src;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return t0;
   a0 += 70; a1 += 18;
   do {
@@ -16887,20 +16887,20 @@ uint32_t heap_serialize_tag_40049(uint32_t param_1,uint32_t param_2,uint32_t par
  * cursor pair, t0 += 0x68. Tail adds arg6/arg7 to the coord u16s
  * (a0-0x1c/+0xc x, a0-0x28/+0 y). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_4004d(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t5 = xoff;
+  uint32_t t4 = yoff;
+  uint32_t t1 = src;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return t0;
   a0 += 78; a1 += 26;
   do {
@@ -16941,20 +16941,20 @@ uint32_t heap_serialize_tag_4004d(uint32_t param_1,uint32_t param_2,uint32_t par
  * t0 cursor pair, t0 += 0x70. Tail adds arg6/arg7 to coord u16s
  * (a0-0x20/+8 x, a0-0x28/+0 y). Tag bytes 9/0x2c at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x56). Returns cur + count*0x70. */
-uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40051(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t5 = xoff;
+  uint32_t t4 = yoff;
+  uint32_t t1 = src;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return t0;
   a0 += 86; a1 += 22;
   do {
@@ -16998,20 +16998,20 @@ uint32_t heap_serialize_tag_40051(uint32_t param_1,uint32_t param_2,uint32_t par
  * (a0-0x28/+0xc) and arg7 to the two y u16s (a0-0x34/+0).
  * Tag bytes 12/0x3c at dst+0x1b/0x1f/0x57/0x5b (a0 = cur+0x62).
  * Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_40055(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t t0 = param_1;
-  uint32_t v1 = param_5;
-  uint32_t t5 = param_6;
-  uint32_t t4 = param_7;
-  uint32_t t1 = param_2;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t t0 = dst;
+  uint32_t v1 = count;
+  uint32_t t5 = xoff;
+  uint32_t t4 = yoff;
+  uint32_t t1 = src;
   uint32_t v0, v2, t6, t7;
-  (void)param_4;
+  (void)unused;
   if (v1 == 0) return t0;
   a0 += 98; a1 += 34;
   do {
@@ -17055,16 +17055,16 @@ uint32_t heap_serialize_tag_40055(uint32_t param_1,uint32_t param_2,uint32_t par
  * Four single-word lookups: lh idx<<3 +table -> lw -> sw
  * (arg4 table for -6, arg3 table for -4/-2/0). Tag bytes 4/0x20 at
  * dst+0xf/0x13/0x23/0x27 (a0 = cur+8). Returns cur + count*0x3c. */
-uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000008(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 10;
@@ -17092,16 +17092,16 @@ uint32_t heap_serialize_tag_01000008(uint32_t param_1,uint32_t param_2,uint32_t 
  * lookups alternating arg4/arg3 tables (-10,-8,-6,-4,-2,0).
  * Tag bytes 6/0x30 stamped at loop tail at dst+0x1f/0x23/0x3b/0x3f
  * (a0 = cur+0x3f). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000c(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 63; a1 += 14;
@@ -17133,16 +17133,16 @@ uint32_t heap_serialize_tag_0100000c(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+18. Four single-word lookups (arg4 for -6, arg3 for
  * -4/-2/0). Tag bytes 6/0x30 at dst+0x1f/0x23/0x37/0x3b
  * (a0 = cur+8). Returns cur + count*0x54. */
-uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000a(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 18;
@@ -17172,16 +17172,16 @@ uint32_t heap_serialize_tag_0100000a(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+22. Six single-word lookups alternating arg4/arg3
  * tables (-10,-8,-6,-4,-2,0). Tag bytes 6/0x30 at
  * dst+0x1f/0x23/0x3b/0x3f (a0 = cur+8). Returns cur + count*0x5c. */
-uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_0100000e(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 8; a1 += 22;
@@ -17215,16 +17215,16 @@ uint32_t heap_serialize_tag_0100000e(uint32_t param_1,uint32_t param_2,uint32_t 
  * Five single-word lookups (arg4 for -8, arg3 for -6/-4/-2/0).
  * Tag bytes 5/0x28 at dst+0xf/0x13/0x27/0x2b (a0 = cur+0xc).
  * Returns cur + count*0x48. */
-uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000010(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 12;
@@ -17254,16 +17254,16 @@ uint32_t heap_serialize_tag_01000010(uint32_t param_1,uint32_t param_2,uint32_t 
  * Eight single-word lookups alternating arg4/arg3 tables
  * (-14..0 step 2). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000014(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 18;
@@ -17299,16 +17299,16 @@ uint32_t heap_serialize_tag_01000014(uint32_t param_1,uint32_t param_2,uint32_t 
  * 0x1c, aux src+24. Five single-word lookups (arg4 for -8, arg3
  * for -6/-4/-2/0). Tag bytes 8/0x38 at dst+0x1b/0x1f/0x3f/0x43
  * (a0 = cur+0xc). Returns cur + count*0x6c. */
-uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000012(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 24;
@@ -17341,16 +17341,16 @@ uint32_t heap_serialize_tag_01000012(uint32_t param_1,uint32_t param_2,uint32_t 
  * aux src+30. Eight single-word lookups alternating arg4/arg3
  * tables (-14..0 step 2). Tag bytes 8/0x38 at dst+0x27/0x2b/0x4b/0x4f
  * (a0 = cur+0xc). Returns cur + count*0x78. */
-uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5)
+uint32_t heap_serialize_tag_01000016(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t ptab2,uint32_t count)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t0 = param_1;
-  uint32_t t1 = param_2;
-  uint32_t v1 = param_5;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = ptab2;
+  uint32_t t0 = dst;
+  uint32_t t1 = src;
+  uint32_t v1 = count;
   uint32_t v0;
   if (v1 == 0) return t0;
   a0 += 12; a1 += 30;
@@ -17390,20 +17390,20 @@ uint32_t heap_serialize_tag_01000016(uint32_t param_1,uint32_t param_2,uint32_t 
  * arg3 for -4/-2/0). Tail adds param_6 to x u16s (t0-0x18/+8) and
  * param_7 to y u16s (t0-0x20/+0). Tag bytes 7/0x24 at
  * dst+0x13/0x17/0x33/0x37 (t0 = cur+0x3e). Returns cur + count*0x50. */
-uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000009(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t v1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 62;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = unused;
+  uint32_t t2 = dst;
+  uint32_t t3 = src;
+  uint32_t v1 = count;
+  uint32_t t7 = xoff;
+  uint32_t t6 = yoff;
+  uint32_t t0 = dst + 62;
   uint32_t v0;
   if (v1 == 0) return t2;
   a1 += 18;
@@ -17444,19 +17444,19 @@ uint32_t heap_serialize_tag_01000009(uint32_t param_1,uint32_t param_2,uint32_t 
  * (+4,+6,+8,+10,+12,+14). Tail adds param_6 to x u16s (a0-0x1c/+0xc)
  * and param_7 to y u16s (a0-0x28/+0). Tag bytes 9/0x34 at
  * dst+0x1b/0x1f/0x43/0x47 (a0 = cur+0x4e). Returns cur + count*0x68. */
-uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_0100000d(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a0 = param_1;
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t1 = param_1;
-  uint32_t t2 = param_2;
-  uint32_t t0 = param_5;
-  uint32_t t6 = param_6;
-  uint32_t t5 = param_7;
+  uint32_t a0 = dst;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = unused;
+  uint32_t t1 = dst;
+  uint32_t t2 = src;
+  uint32_t t0 = count;
+  uint32_t t6 = xoff;
+  uint32_t t5 = yoff;
   uint32_t v0, v1;
   if (t0 == 0) return t1;
   a0 += 78; a1 += 8;
@@ -17500,19 +17500,19 @@ uint32_t heap_serialize_tag_0100000d(uint32_t param_1,uint32_t param_2,uint32_t 
  * Tail adds param_6 to x u16s (t0-0x20/+8) and param_7 to y u16s
  * (t0-0x28/+0). Tag bytes 9/0x2c at dst+0x1b/0x1f/0x43/0x47
  * (t0 = cur+0x4a). Returns cur + count*0x64. */
-uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000011(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 74;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = unused;
+  uint32_t t2 = dst;
+  uint32_t t3 = src;
+  uint32_t t1 = count;
+  uint32_t t7 = xoff;
+  uint32_t t6 = yoff;
+  uint32_t t0 = dst + 74;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 22;
@@ -17556,19 +17556,19 @@ uint32_t heap_serialize_tag_01000011(uint32_t param_1,uint32_t param_2,uint32_t 
  * (-16..0 step 2). Tail adds param_6 to x u16s (t0-0x28/+0xc) and
  * param_7 to y u16s (t0-0x34/+0). Tag bytes 12/0x3c at
  * dst+0x1b/0x1f/0x57/0x5b (t0 = cur+0x62). Returns cur + count*0x88. */
-uint32_t heap_serialize_tag_01000015(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+uint32_t heap_serialize_tag_01000015(uint32_t dst,uint32_t src,uint32_t ptab,
+                     uint32_t unused,uint32_t count,uint32_t xoff,
+                     uint32_t yoff)
 {
-  uint32_t a1 = param_2;
-  uint32_t a2 = param_3;
-  uint32_t a3 = param_4;
-  uint32_t t2 = param_1;
-  uint32_t t3 = param_2;
-  uint32_t t1 = param_5;
-  uint32_t t7 = param_6;
-  uint32_t t6 = param_7;
-  uint32_t t0 = param_1 + 98;
+  uint32_t a1 = src;
+  uint32_t a2 = ptab;
+  uint32_t a3 = unused;
+  uint32_t t2 = dst;
+  uint32_t t3 = src;
+  uint32_t t1 = count;
+  uint32_t t7 = xoff;
+  uint32_t t6 = yoff;
+  uint32_t t0 = dst + 98;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 26;
