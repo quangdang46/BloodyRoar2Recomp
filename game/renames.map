@@ -44,6 +44,7 @@
 8012e73c hud_text_c
 8012e7cc hud_text_d
 8018cdf8 sprite_node_alloc
+8018ce50 sprite_node_alloc_commit
 8018ce70 sprite_node_emit_a
 8018c92c sprite_node_emit_b
 80196e14 cd_cmd_issue
@@ -246,6 +247,7 @@
 8018c71c spr_attr_alloc_b
 8012c374 hud_gauge_render
 8018cbfc spr_pool_a_alloc
+8018cc4c spr_pool_a_alloc_commit
 8018c0a8 spr_pool_b_alloc
 8018e590 printf_core
 8018ecf0 console_emit
@@ -638,6 +640,7 @@
 8018c034 spr_desc_tbl_a_init
 8018c118 spr_desc_tbl_b_init
 8018c18c spr_desc_slot_alloc
+8018c1d4 spr_desc_slot_alloc_commit
 8018c824 spr_slot_pkt_submit
 80191428 gpu_load_image_cmd
 80191300 gpu_clear_image_cmd
@@ -1195,6 +1198,7 @@
 
 8018b208 prim_list_persp_step
 
+8018d2e0 gte_light_set_q4
 8018d2ec gte_light_set
 
 8018d568 gte_xform_add_off
@@ -1208,6 +1212,9 @@
 80184f28 script_op_dispatch
 
 8018d244 trig_sin_lookup
+8018d27c lut_tail_neg
+8018d284 lut_sat_sign
+8018d290 lut_tail_pos
 
 8018e028 angle_vec_build
 
@@ -1294,6 +1301,7 @@
 8018d298 lut_cos_q12
 
 8018d29c lut_sin_q12
+8018d2d8 lut_q12_tail_pos
 
 801561f0 deferred_cmd_reset
 
@@ -1785,6 +1793,7 @@
 8018ec30 ctype_adj_m32
 8018ec64 ctype_adj_p32
 8018cfb4 file_rec_size_get
+8018cfd4 file_rec_size_get_zero
 8018d5fc gte_lwc2_r0_r1
 8018bb38 flag_801b55d0_set
 8018bd24 rec_hibyte_pair_swap
