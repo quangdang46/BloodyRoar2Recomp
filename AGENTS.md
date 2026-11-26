@@ -915,3 +915,31 @@ load-bearing ONLY for ~87 `br2_call_generated` sub-calls inside clean
 fn bodies — deliberate §4 delegations (BIOS svc, MMIO sequences,
 coroutine ops needing live guest state). Those need per-function §4
 hand-analysis, not transformation.
+
+### Session update 17 (ZERO br2_call_generated call sites — all clean-first)
+
+Converted the entire `br2_call_generated` call surface in `game/*.c`:
+
+- **`call_guest4` bail-parity fix** (`1a93b83`): it had NO `g_psx_call_bail`
+  handling — would restore pc/ra/sp after a callee began a wild-flow unwind,
+  clobbering the resume target (same wedge class `br2_call_generated`
+  prevents). Added pre-dispatch drop + post-dispatch skip-restore; unified
+  the two identical reg-restore blocks. Latent bug for existing jalr users.
+- **35 literal sites → `call_guest4`** (`9e4efec`): cd/battle/bind/game/save.
+- **New `br2_call_clean`** (`cb0c8d1`): clean-first variant of
+  `br2_call_generated` with the IDENTICAL register/bail contract — saves/
+  restores ra/sp/pc/s0-s3, leaves a0-a3 callee-clobbered (faithful jalr
+  chaining for `c->gpr[5..7]` forwards), honors bail, sets `t0=fn` per
+  `jalr $ra,$t0`. `call_guest4` was REJECTED for these: its arg-reg restore
+  breaks the chaining contract.
+- **37 dynamic jalr sites → `br2_call_clean`** (`cb0c8d1`): battle/bind/
+  game/menu/save. These manually set `gpr[31]`=link PC and forward live
+  arg regs — needed the preserved contract, not call_guest4.
+
+**Result: `game/*.c` has ZERO `br2_call_generated` call sites.** Every
+guest call now routes clean-first (`br2_call_clean`/`call_guest`/`call_guest4`/
+`gpu_invoke`/`svc_call`) with generated only as identical fallback.
+`generated/` load is now purely the clean_try_dispatch miss path — reached
+only for genuinely-uncovered targets, which dispatch coverage says is none
+at piece-entry level. Verified: clean build, 44k+ frames, 4.1M dispatches,
+zero errors.
