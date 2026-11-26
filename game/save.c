@@ -5298,10 +5298,10 @@ draw678: {
       if (sp54 < 6) {
         static const uint8_t jt_d4[6] = {0,1,1,3,4,4};
         switch (jt_d4[sp54]) {
-        case 0: goto d818;
-        case 1: goto d7ac;
-        case 2: goto d754;
-        case 3: goto d6c0;
+        case 0: goto bb_d818;
+        case 1: goto bb_d7ac;
+        case 2: goto bb_d754;
+        case 3: goto bb_d6c0;
         }
       }
       goto after678;
@@ -5309,7 +5309,7 @@ draw678: {
     if (bar < 0) goto negpath;
     goto after678;
 
-d6c0: /* sp54 4,5 : fade bar, cc6c stk18=2 */
+bb_d6c0: /* sp54 4,5 : fade bar, cc6c stk18=2 */
     {
       int32_t a0x = cnt * 255;
       int32_t vv;
@@ -5324,7 +5324,7 @@ d6c0: /* sp54 4,5 : fade bar, cc6c stk18=2 */
                    (int16_t)to_s16(*w22), (uint32_t)va, 2);
       goto after678;
     }
-d754: /* sp54 3 : 8c71c growing bar */
+bb_d754: /* sp54 3 : 8c71c growing bar */
     {
       int32_t a2x = cnt - 1;
       int32_t y  = to_s16(*w20);
@@ -5337,7 +5337,7 @@ d754: /* sp54 3 : 8c71c growing bar */
                    tmpv, to_s16(*w22));
       goto after678;
     }
-d7ac: /* sp54 1,2 : fade bar, cc6c stk18=3 */
+bb_d7ac: /* sp54 1,2 : fade bar, cc6c stk18=3 */
     {
       int32_t a0x = cnt * 255;
       int32_t vv;
@@ -5352,7 +5352,7 @@ d7ac: /* sp54 1,2 : fade bar, cc6c stk18=3 */
                    (int16_t)to_s16(*w22), (uint32_t)va, 3);
       goto after678;
     }
-d818: /* sp54 0 : sub-state sp50 table */
+bb_d818: /* sp54 0 : sub-state sp50 table */
     if (sp50 < 6) {
       static const uint8_t jt_ec[6] = {0,1,1,2,3,3};
       switch (jt_ec[sp50]) {
@@ -5360,14 +5360,14 @@ d818: /* sp54 0 : sub-state sp50 table */
         spr_attr_alloc_b(ctx8 + 4, 0, 0xeffe0088, 0x7fc00000,
                      to_s16(*w20), to_s16(*w22));
         goto after678;
-      case 1: case 2: goto e91c;
-      case 3: goto e8a8;
-      case 4: case 5: goto e848;
+      case 1: case 2: goto bb_e91c;
+      case 3: goto bb_e8a8;
+      case 4: case 5: goto bb_e848;
       }
     }
     goto after678;
 
-e91c: /* sp50 1,2 : shrinking bar, cc6c stk18=3 */
+bb_e91c: /* sp50 1,2 : shrinking bar, cc6c stk18=3 */
     {
       int32_t v1x = cnt * 255;
       tmpv = (sp50 == 1) ? shr4_trunc(v1x) : sdiv60(v1x);
@@ -5379,7 +5379,7 @@ e91c: /* sp50 1,2 : shrinking bar, cc6c stk18=3 */
                    (int16_t)to_s16(*w22), (uint32_t)va, 3);
       goto after678;
     }
-e8a8: /* sp50 3 : growing bar, 8c71c */
+bb_e8a8: /* sp50 3 : growing bar, 8c71c */
     {
       int32_t y = to_s16(*w20);
       tmpv = shr4_trunc(cnt * y);
@@ -5389,7 +5389,7 @@ e8a8: /* sp50 3 : growing bar, 8c71c */
                    (uint32_t)(tmpv + y), to_s16(*w22));
       goto after678;
     }
-e848: /* sp50 4,5 : shrinking bar, cc6c stk18=2 */
+bb_e848: /* sp50 4,5 : shrinking bar, cc6c stk18=2 */
     {
       int32_t v1x = cnt * 255;
       tmpv = (sp50 == 4) ? shr4_trunc(v1x) : sdiv60(v1x);
