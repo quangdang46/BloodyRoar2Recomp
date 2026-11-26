@@ -5160,6 +5160,7 @@ block_80127B4C:
  * split piece of cps_8012844c */
 void cps_80128428(void)
 {
+/* results fragment: continues at 0x8012844c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5186,6 +5187,7 @@ void cps_80128428(void)
  * split piece of cps_80128428 */
 void cps_8012844c(void)
 {
+/* results fragment: continues at 0x80128458 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   int more;
@@ -5217,6 +5219,7 @@ done:
  * split piece of cps_8012844c */
 void cps_80128458(void)
 {
+/* results fragment: continues at 0x801284ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5279,6 +5282,7 @@ block_80128490:
  * split piece of cps_80128458 */
 void cps_801284ac(void)
 {
+/* results fragment: continues at 0x801284b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5295,6 +5299,7 @@ block_801284AC:
  * split piece of cps_801284ac */
 void cps_801284b4(void)
 {
+/* results fragment: continues at 0x80128504 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5357,6 +5362,7 @@ block_801284D8:
  * split piece of cps_801284b4 */
 void cps_80128504(void)
 {
+/* results fragment: continues at 0x80128520 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5381,6 +5387,7 @@ block_80128504:
  * split piece of cps_80128504 */
 void cps_80128520(void)
 {
+/* results fragment: continues at 0x80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5422,6 +5429,7 @@ block_80128550:
  * split piece of cps_801284b4 */
 void cps_80128558(void)
 {
+/* results fragment: continues at 0x80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5470,6 +5478,7 @@ done:
  * split piece of cps_80128520 */
 void cps_80128588(void)
 {
+/* results fragment: continues at 0x80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5536,6 +5545,7 @@ block_801285EC:
  * split piece of cps_80128588 */
 void cps_801285f4(void)
 {
+/* results fragment: continues at 0x80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5584,6 +5594,7 @@ done:
  * split piece of cps_80128588 */
 void cps_80128624(void)
 {
+/* results fragment: continues at 0x80128660 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1;
@@ -5613,6 +5624,7 @@ void cps_80128624(void)
  * split piece of cps_80128624 */
 void cps_80128660(void)
 {
+/* results fragment: continues at 0x801286cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5675,6 +5687,7 @@ tail:
  * split piece of cps_80128660 */
 void cps_801286cc(void)
 {
+/* results fragment: continues at 0x80128738 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5739,6 +5752,7 @@ tail:
  * split piece of cps_801286cc */
 void cps_80128738(void)
 {
+/* results fragment: continues at 0x801287a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5807,6 +5821,7 @@ tail:
  * split piece of cps_80128738 */
 void cps_801287a4(void)
 {
+/* results fragment: continues at 0x80128814 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3, flags;
@@ -5874,6 +5889,7 @@ tail:
  * split piece of cps_801287a4 */
 void cps_80128814(void)
 {
+/* results fragment: continues at 0x80128880 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t flags;
@@ -5914,6 +5930,7 @@ void cps_80128814(void)
  * split piece of cps_80128814 */
 void cps_80128880(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5939,6 +5956,7 @@ block_80128880:
  * results_record_build_wrap: results_record_build caller A. */
 void cps_801288f0(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6033,6 +6051,7 @@ block_80128958:
  * results_record_build_wrap_b: results_record_build caller B. */
 void cps_80128960(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6100,6 +6119,7 @@ block_801289A0:
  * single word read from v1 */
 void cps_801289d0(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6139,6 +6159,7 @@ block_801289F0:
  * split piece of cps_80128ac0 — record_half_step_b: s16 read/write leaf step. */
 void cps_801289f8(void)
 {
+/* results fragment: continues at 0x80128a44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6195,6 +6216,7 @@ block_80128A10:
  * split piece of cps_801289f8 */
 void cps_80128a44(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6216,6 +6238,7 @@ block_80128A44:
  * record_half_step_a: s16 read/write leaf step. */
 void cps_80128a54(void)
 {
+/* results fragment: continues at 0x80128AB4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6291,6 +6314,7 @@ block_80128AAC:
  * split piece of cps_80128a54 — record_half_step_a: s16 read/write leaf step. */
 void cps_80128ab4(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6311,6 +6335,7 @@ block_80128AB4:
  * record_half_step_b: s16 read/write leaf step. */
 void cps_80128ac0(void)
 {
+/* results fragment: continues at 0x801289F8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6393,6 +6418,7 @@ block_80128B20:
  * results_record_build_wrap_c: results_record_build caller C. */
 void cps_80128b9c(void)
 {
+/* results thunk -> results_record_build */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6459,6 +6485,7 @@ block_80128BDC:
  * CPS fallthrough stub — continues at 0x80128C10 */
 void cps_80128c0c(void)
 {
+/* results fragment: continues at 0x80128c10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6474,6 +6501,7 @@ block_80128C0C:
  * split piece of cps_80128c0c */
 void cps_80128c10(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6493,6 +6521,7 @@ block_80128C10:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128c68(void)
 {
+/* results fragment: continues at 0x80128c88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6518,6 +6547,7 @@ block_80128C68:
  * record_half_read_leaf: s16 field read step. */
 void cps_80128c88(void)
 {
+/* results fragment: continues at 0x80128cf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6620,6 +6650,7 @@ block_80128CF0:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128cf8(void)
 {
+/* results fragment: continues at 0x80128cfc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6645,6 +6676,7 @@ block_80128CF8:
  * split piece of cps_80128cf8 */
 void cps_80128cfc(void)
 {
+/* results fragment: continues at 0x80128d00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6661,6 +6693,7 @@ block_80128CFC:
  * split piece of cps_80128cf8 */
 void cps_80128d00(void)
 {
+/* results fragment: continues at 0x80128d04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6677,6 +6710,7 @@ block_80128D00:
  * split piece of cps_80128cf8 */
 void cps_80128d04(void)
 {
+/* results fragment: continues at 0x80128d18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6715,6 +6749,7 @@ block_80128D14:
  * record_half_step_c: s16 read/write leaf step. */
 void cps_80128d18(void)
 {
+/* results fragment: continues at 0x80128d5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6792,6 +6827,7 @@ block_80128D58:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128d5c(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6834,6 +6870,7 @@ block_80128D64:
  * CPS fallthrough stub — continues at 0x80128D78 */
 void cps_80128d74(void)
 {
+/* results fragment: continues at 0x80128d78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6849,6 +6886,7 @@ block_80128D74:
  * split piece of cps_80128d5c */
 void cps_80128d78(void)
 {
+/* results fragment: continues at 0x80128d7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6864,6 +6902,7 @@ block_80128D78:
  * split piece of cps_80128d5c */
 void cps_80128d7c(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6889,6 +6928,7 @@ block_80128D7C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128dcc(void)
 {
+/* results fragment: continues at 0x80128dec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6914,6 +6954,7 @@ block_80128DCC:
  * record_half_step_d: s16 read/write leaf step. */
 void cps_80128dec(void)
 {
+/* results fragment: continues at 0x80128e54 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7010,6 +7051,7 @@ block_80128E4C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128e54(void)
 {
+/* results fragment: continues at 0x80128e64 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7050,6 +7092,7 @@ block_80128E60:
  * split piece of cps_80128e54 */
 void cps_80128e64(void)
 {
+/* results fragment: continues at 0x80128e74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7087,6 +7130,7 @@ block_80128E70:
  * record_half_step_e: s16 read/write leaf step. */
 void cps_80128e74(void)
 {
+/* results fragment: continues at 0x80128EB4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7159,6 +7203,7 @@ block_80128EA8:
  * victory_restore_wrap_b: victory_record_restore caller. */
 void cps_80128eb4(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7212,6 +7257,7 @@ block_80128ED4:
  * split piece of cps_80128eb4 — victory_restore_wrap_b: victory_record_restore caller. */
 void cps_80128edc(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7231,6 +7277,7 @@ block_80128EDC:
  * single half store to v0 */
 void cps_80128ee4(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7251,6 +7298,7 @@ block_80128EE4:
  * split piece of cps_80128f58 */
 void cps_80128f50(void)
 {
+/* results fragment: continues at 0x80128f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7267,6 +7315,7 @@ block_80128F50:
  * split piece of cps_80128f50 */
 void cps_80128f58(void)
 {
+/* results thunk -> victory_record_restore */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7325,6 +7374,7 @@ block_80128F84:
  * CPS fallthrough stub — continues at 0x80128FA0 */
 void cps_80128f9c(void)
 {
+/* results fragment: continues at 0x80128fa0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7350,6 +7400,7 @@ block_80128F9C:
  * split piece of cps_80128f9c */
 void cps_80128fa0(void)
 {
+/* results fragment: continues at 0x80128fa4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7366,6 +7417,7 @@ block_80128FA0:
  * split piece of cps_80128f9c */
 void cps_80128fa4(void)
 {
+/* results fragment: continues at 0x80128fa8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7381,6 +7433,7 @@ block_80128FA4:
  * split piece of cps_80128fa4 */
 void cps_80128fa8(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7400,6 +7453,7 @@ block_80128FA8:
  * CPS fallthrough stub — continues at 0x80128FB0 */
 void cps_80128fac(void)
 {
+/* results fragment: continues at 0x80128fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7416,6 +7470,7 @@ block_80128FAC:
  * split piece of cps_80128f9c */
 void cps_80128fb0(void)
 {
+/* results leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7435,6 +7490,7 @@ block_80128FB0:
  * CPS fallthrough stub — continues at 0x80128FD4 */
 void cps_80128fb8(void)
 {
+/* results fragment: continues at 0x80128fd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7468,6 +7524,7 @@ block_80128FB8:
  * ui_leaf_step_g: leaf state step, no calls. */
 void cps_80128fd4(void)
 {
+/* results fragment: continues at 0x80128ff8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7529,6 +7586,7 @@ block_80128FF4:
  * record_half_step_f: s16 read/write leaf step. */
 void cps_80128ff8(void)
 {
+/* results fragment: continues at 0x80129050 (menu band). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10666,6 +10724,7 @@ block_80129FA8:
  * single byte store to v1 */
 void cps_8012a00c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10711,6 +10770,7 @@ block_8012A028:
  * print_dispatch_wrap_b: print_dispatch_guest caller. */
 void cps_8012a0a8(void)
 {
+/* UI/print thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10780,6 +10840,7 @@ block_8012A0E0:
  * param block init — writes halfwords a0+10..20 */
 void cps_8012a144(void)
 {
+/* UI/print fragment: continues at 0x8012a1e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10839,6 +10900,7 @@ block_8012A144:
  * spr_prim_tag_wrap: spr_prim_tag_b caller. */
 void cps_8012a1e4(void)
 {
+/* UI/print thunk -> spr_prim_tag_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10924,6 +10986,7 @@ block_8012A20C:
  * split piece of cps_8012a1e4 — spr_prim_tag_wrap: spr_prim_tag_b caller. */
 void cps_8012a284(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10978,6 +11041,7 @@ block_8012A284:
  * coord/vec helper — reads a0, a1+8, a2+8/28/30; writes a1+12/20 and v1-16/-32 */
 void cps_8012a328(void)
 {
+/* UI/print fragment: continues at 0x8012a3c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11037,6 +11101,7 @@ block_8012A328:
  * split piece of cps_8012a328 */
 void cps_8012a3c8(void)
 {
+/* UI/print fragment: continues at 0x8012a470 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11096,6 +11161,7 @@ block_8012A3C8:
  * split piece of cps_8012a3c8 */
 void cps_8012a470(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11132,6 +11198,7 @@ block_8012A470:
  * gpu_texclut_emit: queue_slot_peek + gpu_texclut_pkt — texture-clut packet emit. */
 void cps_8012a514(void)
 {
+/* UI/print thunk -> queue_slot_peek -> gpu_texclut_pkt */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11232,6 +11299,7 @@ block_8012A590:
  * cmd_queue_next_wrap: cmd_queue_slot_next caller. */
 void cps_8012a5bc(void)
 {
+/* UI/print thunk -> cmd_queue_slot_next */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11320,6 +11388,7 @@ block_8012A634:
  * CPS fallthrough stub — continues at 0x8012A668 */
 void cps_8012a664(void)
 {
+/* UI/print fragment: continues at 0x8012a668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11335,6 +11404,7 @@ block_8012A664:
  * ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a668(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11433,6 +11503,7 @@ block_8012A69C:
  * CPS fallthrough stub — continues at 0x8012A6BC */
 void cps_8012a6a4(void)
 {
+/* UI/print fragment: continues at 0x8012a6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11458,6 +11529,7 @@ block_8012A6A4:
  * byte_leaf_step: byte-read leaf step. */
 void cps_8012a6bc(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11546,6 +11618,7 @@ block_8012A708:
  * split piece of cps_8012a6bc — byte_leaf_step: byte-read leaf step. */
 void cps_8012a710(void)
 {
+/* UI/print fragment: continues at 0x8012A724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11584,6 +11657,7 @@ block_8012A718:
  * split piece of cps_8012a668 — ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a720(void)
 {
+/* UI/print fragment: continues at 0x8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11599,6 +11673,7 @@ block_8012A720:
  * split piece of cps_8012a668 — ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a724(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11618,6 +11693,7 @@ block_8012A724:
  * pad_slot_state_wrap: pad_slot_state_walk caller. */
 void cps_8012a7bc(void)
 {
+/* UI/print thunk -> pad_slot_state_walk */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11744,6 +11820,7 @@ block_8012A834:
  * split piece of cps_8012a7bc — pad_slot_state_wrap: pad_slot_state_walk caller. */
 void cps_8012a868(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11769,6 +11846,7 @@ block_8012A868:
  * CPS leaf — 2 stores, 2 loads */
 void cps_8012a918(void)
 {
+/* UI/print fragment: continues at 0x8012a92c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11791,6 +11869,7 @@ block_8012A918:
  * split piece of cps_8012a918 */
 void cps_8012a92c(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11826,6 +11905,7 @@ block_8012A93C:
  * CPS leaf — 1 jal(s), 0 stores, 0 loads */
 void cps_8012a944(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11845,6 +11925,7 @@ block_8012A944:
  * dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012a94c(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11984,6 +12065,7 @@ block_8012A9AC:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012a9cc(void)
 {
+/* UI/print thunk -> dialog_mode_mirror */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12037,6 +12119,7 @@ block_8012A9E8:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa00(void)
 {
+/* UI/print thunk -> spr_attr_alloc_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12077,6 +12160,7 @@ block_8012AA20:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa28(void)
 {
+/* UI/print thunk -> dialog_mode_mirror -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12119,6 +12203,7 @@ block_8012AA3C:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa44(void)
 {
+/* UI/print fragment: continues at 0x8012aa4c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12138,6 +12223,7 @@ block_8012AA44:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa4c(void)
 {
+/* UI/print thunk -> frame_counter_bump */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12168,6 +12254,7 @@ block_8012AA54:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa58(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12191,6 +12278,7 @@ block_8012AA58:
  * CPS leaf — 2 stores, 0 loads */
 void cps_8012aa7c(void)
 {
+/* UI/print fragment: continues at 0x8012AA8C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12229,6 +12317,7 @@ block_8012AA84:
  * split piece of cps_8012aa7c */
 void cps_8012aa8c(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12257,6 +12346,7 @@ block_8012AA8C:
  * single byte store to v1+16 */
 void cps_8012aac0(void)
 {
+/* UI/print fragment: continues at 0x8012AAD4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12296,6 +12386,7 @@ block_8012AACC:
  * split piece of cps_8012aac0 */
 void cps_8012aad4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12315,6 +12406,7 @@ block_8012AAD4:
  * leaf reg-op / return-value helper */
 void cps_8012aadc(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12336,6 +12428,7 @@ block_8012AADC:
  * full GPU environment reset/teardown sequence. */
 void cps_8012ab30(void)
 {
+/* UI/print thunk -> gpu_pkt_unlink_n -> gpu_stat_sign -> cd_timer_read -> gpu_graph_reset -> draw_env_timing -> gpu_draw_env_put */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12489,6 +12582,7 @@ block_8012ABB4:
  * split piece of cps_8012ab30 — gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset + */
 void cps_8012abbc(void)
 {
+/* UI/print fragment: continues at 0x8012abc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12504,6 +12598,7 @@ block_8012ABBC:
  * split piece of cps_8012ab30 — gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset + */
 void cps_8012abc0(void)
 {
+/* UI/print thunk -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12546,6 +12641,7 @@ block_8012ABDC:
  * mask set + image DMA command issue. */
 void cps_8012abe8(void)
 {
+/* UI/print thunk -> gpu_load_image_cmd -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12702,6 +12798,7 @@ block_8012AC9C:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012aca0(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12757,6 +12854,7 @@ block_8012ACAC:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012acec(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12792,6 +12890,7 @@ block_8012ACF4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012ad04(void)
 {
+/* UI/print fragment: continues at 0x8012ad58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12858,6 +12957,7 @@ block_8012AD48:
  * split piece of cps_8012ad04 */
 void cps_8012ad58(void)
 {
+/* UI/print thunk -> gpu_clear_image_cmd */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12901,6 +13001,7 @@ block_8012AD88:
  * gpu_draw_otag_wrap: gpu_draw_otag caller. */
 void cps_8012ad8c(void)
 {
+/* UI/print thunk -> gpu_draw_otag */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12958,6 +13059,7 @@ block_8012ADA4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012adc0(void)
 {
+/* UI/print fragment: continues at 0x8012add8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12996,6 +13098,7 @@ block_8012ADD4:
  * split piece of cps_8012acec */
 void cps_8012add8(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13022,6 +13125,7 @@ block_8012ADD8:
  * frame epilogue — restores ra, frees 24B stack */
 void cps_8012ae14(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13071,6 +13175,7 @@ block_8012AE2C:
  * frame epilogue — restores ra, frees 32B stack */
 void cps_8012aed4(void)
 {
+/* UI/print leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13095,6 +13200,7 @@ block_8012AED4:
  * CPS fallthrough stub — continues at 0x8012AF94 */
 void cps_8012af90(void)
 {
+/* UI/print fragment: continues at 0x8012af94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13110,6 +13216,7 @@ block_8012AF90:
  * split piece of cps_8012af90 */
 void cps_8012af94(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13153,6 +13260,7 @@ block_8012AFA8:
  * gpu_graph_reset_wait: gpu_graph_reset + cd_timer_read — reset + timer wait. */
 void cps_8012afb0(void)
 {
+/* UI/print thunk -> cd_timer_read -> cd_timer_read -> gpu_graph_reset */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13204,6 +13312,7 @@ block_8012AFD0:
  * draw_env_timing + gpu_stat_sign — draw-env commit variant A. */
 void cps_8012afd4(void)
 {
+/* UI/print thunk -> gpu_stat_sign -> draw_env_timing -> gpu_draw_env_put -> gpu_disp_mask_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24618,6 +24727,7 @@ block_80132D40:
  * walk updating depth pairs (dual_target_track family). */
 void cps_8013309c(void)
 {
+/* math thunk -> table_byte_next_a -> pair_depth_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   const uint32_t angle_table = 0x8011FD78u;
@@ -24715,6 +24825,7 @@ block_80133140:
  * fixed_rsqrt_q12 + vec3_s32_normalize; normalized direction track. */
 void cps_80133164(void)
 {
+/* math thunk -> vec3_s32_normalize -> fixed_rsqrt_q12 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24972,6 +25083,7 @@ block_801332E8:
  * split piece of cps_80133164 — dual_track_step_b: same family — pair_depth_set + u16_step_toward + */
 void cps_801332f0(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25004,6 +25116,7 @@ block_801332F0:
  * fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_80133428(void)
 {
+/* math fragment: continues at 0x80133450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25039,6 +25152,7 @@ block_80133428:
  * split piece of cps_80133428 */
 void cps_80133450(void)
 {
+/* math fragment: continues at 0x8013345c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25060,6 +25174,7 @@ block_80133450:
  * split piece of cps_80133450 */
 void cps_8013345c(void)
 {
+/* math fragment: continues at 0x80133488 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25093,6 +25208,7 @@ block_8013345C:
  * fixed_approach_s16. */
 void cps_80133488(void)
 {
+/* math thunk -> fixed_rsqrt_q12 -> atan2_lut */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   const uint32_t table_base = 0x8011FD98u;
@@ -25225,6 +25341,7 @@ block_80133548:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133550(void)
 {
+/* math fragment: continues at 0x80133554 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25241,6 +25358,7 @@ block_80133550:
  * fixed_approach_s16/u16_step_toward. */
 void cps_80133554(void)
 {
+/* math thunk -> fixed_approach_s16 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25292,6 +25410,7 @@ block_80133574:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133578(void)
 {
+/* math fragment: continues at 0x80133588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25329,6 +25448,7 @@ block_80133580:
  * split piece of cps_80133578 */
 void cps_80133588(void)
 {
+/* math fragment: continues at 0x8013358c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25345,6 +25465,7 @@ block_80133588:
  * fixed_approach_s16 — third dual-target tracking variant. */
 void cps_8013358c(void)
 {
+/* math thunk -> atan2_lut -> fixed_approach_s16 -> pair_depth_set -> u16_step_toward */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25677,6 +25798,7 @@ block_801336D8:
  * vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133768(void)
 {
+/* math fragment: continues at 0x80133794 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25754,6 +25876,7 @@ block_80133788:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133794(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25773,6 +25896,7 @@ block_80133794:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_8013379c(void)
 {
+/* math fragment: continues at 0x801337ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25801,6 +25925,7 @@ block_8013379C:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337ac(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25820,6 +25945,7 @@ block_801337AC:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337b4(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25839,6 +25965,7 @@ block_801337B4:
  * vec_step_leaf: 11-block leaf vector step near vec3_step_toward family. */
 void cps_801337bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25967,6 +26094,7 @@ block_80133820:
  * CPS fallthrough stub — continues at 0x801338B4 */
 void cps_801338ac(void)
 {
+/* math fragment: continues at 0x801338b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25987,6 +26115,7 @@ block_801338AC:
  * split piece of cps_801338ac */
 void cps_801338b4(void)
 {
+/* math fragment: continues at 0x801338b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26002,6 +26131,7 @@ block_801338B4:
  * split piece of cps_801338ac */
 void cps_801338b8(void)
 {
+/* math fragment: continues at 0x801338bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26017,6 +26147,7 @@ block_801338B8:
  * split piece of cps_801338b8 */
 void cps_801338bc(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26036,6 +26167,7 @@ block_801338BC:
  * CPS fallthrough stub — continues at 0x80133900 */
 void cps_801338fc(void)
 {
+/* math fragment: continues at 0x80133900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26052,6 +26184,7 @@ block_801338FC:
  * split piece of cps_801338fc */
 void cps_80133900(void)
 {
+/* math fragment: continues at 0x8013390c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26073,6 +26206,7 @@ block_80133900:
  * split piece of cps_80133900 */
 void cps_8013390c(void)
 {
+/* math fragment: continues at 0x8013392C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26114,6 +26248,7 @@ block_8013391C:
  * split piece of cps_8013390c */
 void cps_80133928(void)
 {
+/* math fragment: continues at 0x8013392c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26129,6 +26264,7 @@ block_80133928:
  * split piece of cps_80133900 */
 void cps_8013392c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26150,6 +26286,7 @@ block_8013392C:
  * leaf reg-op / return-value helper */
 void cps_8013393c(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26169,6 +26306,7 @@ block_8013393C:
  * muldiv_half_step: muldiv + s16 read/write — fixed-point leaf step. */
 void cps_80133c9c(void)
 {
+/* math fragment: continues at 0x80133ce8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26237,6 +26375,7 @@ block_80133CE0:
  * record_half_step_h: s16 read/write leaf step. */
 void cps_80133ce8(void)
 {
+/* math fragment: continues at 0x80133D74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26344,6 +26483,7 @@ block_80133D28:
  * CPS leaf — 3 stores, 0 loads */
 void cps_80133d68(void)
 {
+/* math fragment: continues at 0x80133d74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26364,6 +26504,7 @@ block_80133D68:
  * split piece of cps_80133ce8 — record_half_step_h: s16 read/write leaf step. */
 void cps_80133d74(void)
 {
+/* math leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26395,6 +26536,7 @@ block_80133D74:
  * fixed-point muldiv step — 1 RMW pairs on s1+4 */
 void cps_80133ebc(void)
 {
+/* math fragment: continues at 0x80133ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26427,6 +26569,7 @@ block_80133EBC:
  * split piece of cps_80133ebc */
 void cps_80133ef0(void)
 {
+/* math fragment: continues at 0x801340c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30242,6 +30385,7 @@ block_80135FF0:
  * split piece of cps_80135bd0 */
 void cps_8013602c(void)
 {
+/* vec/GTE fragment: continues at 0x80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30286,6 +30430,7 @@ block_8013602C:
  * split piece of cps_8013602c */
 void cps_80136074(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30312,6 +30457,7 @@ block_80136074:
  * single word store to v0+1184 */
 void cps_8013610c(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30331,6 +30477,7 @@ block_8013610C:
  * CPS fallthrough stub — continues at 0x801361A8 */
 void cps_801361a4(void)
 {
+/* vec/GTE fragment: continues at 0x801361a8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30347,6 +30494,7 @@ block_801361A4:
  * split piece of cps_801361a4 */
 void cps_801361a8(void)
 {
+/* vec/GTE fragment: continues at 0x801361bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30372,6 +30520,7 @@ block_801361A8:
  * as 36294 — sibling table walk. */
 void cps_801361bc(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30548,6 +30697,7 @@ block_8013628C:
  * walks a byte table building RTPS rotation matrices per entry. */
 void cps_80136294(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30735,6 +30885,7 @@ block_80136384:
  * table_byte_walk: table_byte_next_a-driven byte table iteration. */
 void cps_8013638c(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30916,6 +31067,7 @@ block_80136480:
  * sibling of the RTPS table walks. */
 void cps_80136488(void)
 {
+/* vec/GTE thunk -> table_byte_next_a -> rotmat_rtps_build -> table_byte_next_a -> table_byte_next_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31092,6 +31244,7 @@ block_8013654C:
  * split piece of cps_801361bc — table_walk_rtps_b: same table_byte_next_a + rotmat_rtps_build pattern */
 void cps_80136578(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31122,6 +31275,7 @@ block_80136578:
  * vector-emit effect then post deferred cmd. */
 void cps_80136680(void)
 {
+/* vec/GTE thunk -> vec_emit_spawn -> deferred_cmd_post -> deferred_cmd_post -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31586,6 +31740,7 @@ block_80136940:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136944(void)
 {
+/* vec/GTE fragment: continues at 0x80136950 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31613,6 +31768,7 @@ block_80136944:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136950(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31662,6 +31818,7 @@ block_80136964:
  * CPS fallthrough stub — continues at 0x80136974 */
 void cps_80136970(void)
 {
+/* vec/GTE fragment: continues at 0x80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31678,6 +31835,7 @@ block_80136970:
  * split piece of cps_80136950 */
 void cps_80136974(void)
 {
+/* vec/GTE fragment: continues at 0x80136978 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31693,6 +31851,7 @@ block_80136974:
  * split piece of cps_80136944 */
 void cps_80136978(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31745,6 +31904,7 @@ block_80136984:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_801369d4(void)
 {
+/* vec/GTE thunk -> deferred_cmd_post */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31812,6 +31972,7 @@ block_80136A10:
  * split piece of cps_801369d4 */
 void cps_80136a34(void)
 {
+/* vec/GTE fragment: continues at 0x80136a7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31849,6 +32010,7 @@ block_80136A34:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136a7c(void)
 {
+/* vec/GTE thunk -> angle_pair_rotmat */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31883,6 +32045,7 @@ block_80136A8C:
  * RTPS transform variant. */
 void cps_80136a90(void)
 {
+/* vec/GTE thunk -> gte_rtps_xform3_t -> prim_task_run */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31979,6 +32142,7 @@ block_80136B14:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136b18(void)
 {
+/* vec/GTE fragment: continues at 0x80136b2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32001,6 +32165,7 @@ block_80136B18:
  * split piece of cps_80136b18 */
 void cps_80136b2c(void)
 {
+/* vec/GTE fragment: continues at 0x80136b34 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32027,6 +32192,7 @@ block_80136B2C:
  * split piece of cps_80136b2c */
 void cps_80136b34(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32057,6 +32223,7 @@ block_80136B34:
  * CPS fallthrough stub — continues at 0x80136B78 */
 void cps_80136b70(void)
 {
+/* vec/GTE fragment: continues at 0x80136b78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32073,6 +32240,7 @@ block_80136B70:
  * split piece of cps_80136b70 */
 void cps_80136b78(void)
 {
+/* vec/GTE fragment: continues at 0x80136b80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32089,6 +32257,7 @@ block_80136B78:
  * gte_muldiv_emit: GTE + muldiv + ptr ops — transform/emit leaf near slot_height_proj. */
 void cps_80136b80(void)
 {
+/* vec/GTE thunk -> lut_sin_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32196,6 +32365,7 @@ block_80136C1C:
  * near slot_height_proj. */
 void cps_80136c28(void)
 {
+/* vec/GTE thunk -> lut_cos_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32360,6 +32530,7 @@ block_80136D04:
  * bitfield_or_write_wrap: single-call bitfield_or_write wrapper. */
 void cps_80136e98(void)
 {
+/* vec/GTE thunk -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write -> bitfield_or_write */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32496,6 +32667,7 @@ block_80136F3C:
  * leaf reg-op / return-value helper */
 void cps_80136f88(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32515,6 +32687,7 @@ block_80136F88:
  * leaf reg-op / return-value helper */
 void cps_80136f90(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32534,6 +32707,7 @@ block_80136F90:
  * leaf reg-op / return-value helper */
 void cps_80136f98(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32553,6 +32727,7 @@ block_80136F98:
  * leaf reg-op / return-value helper */
 void cps_80136fa0(void)
 {
+/* vec/GTE leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32572,6 +32747,7 @@ block_80136FA0:
  * leaf reg-op / return-value helper */
 void cps_80136fa8(void)
 {
+/* vec/GTE thunk -> noop_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
