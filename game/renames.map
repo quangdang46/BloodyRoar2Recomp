@@ -1719,7 +1719,15 @@
 801787dc fighter_frame
 80182f3c scriptop_end
 80182f48 scriptop_bra
+801831e0 scriptop_bra_cps
 80183248 scriptop_bsr
+801832f0 scriptop_bsr_cps
+80183338 scriptop_bsr_cps
+801833b8 scriptop_bsr_cps
+801833d0 scriptop_bsr_cps
+801833e8 scriptop_bsr_cps
+80183400 scriptop_bsr_cps
+80183418 scriptop_bsr_cps
 80183558 scriptop_ret
 80183664 scriptop_wait
 8018371c scriptop_wait_fragment_8018371c
