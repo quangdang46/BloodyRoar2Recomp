@@ -15710,112 +15710,112 @@ void pose_chain_build(int node)
 undefined2 * euler_rotmat(uint node,uint a1,uint a2,undefined2 *a3)
 
 {
-  short sVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  short sVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  uint uVar12;
+  short g0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
+  int t4;
+  int t5;
+  short g0n;
+  int t7;
+  int t8;
+  int t9;
+  uint an;
   
-  iVar2 = (a1 & 0x3ff) * 2;
-  iVar4 = (a1 & 0x3ff) * -2 + 0x800;
-  iVar3 = iVar2;
+  t0 = (a1 & 0x3ff) * 2;
+  t2 = (a1 & 0x3ff) * -2 + 0x800;
+  t1 = t0;
   if ((a1 & 0x400) != 0) {
-    iVar3 = iVar4;
-    iVar4 = iVar2;
+    t1 = t2;
+    t2 = t0;
   }
-  iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
-  uVar12 = node + a2;
+  t2 = (int)*(short *)(&DAT_801247a8 + t2);
+  an = node + a2;
   if ((a1 + 0x400 & 0x800) != 0) {
-    iVar4 = -iVar4;
+    t2 = -t2;
   }
-  sVar1 = *(short *)(&DAT_801247a8 + iVar3);
-  iVar3 = (int)sVar1;
-  iVar5 = (node & 0x3ff) * 2;
-  iVar6 = (node & 0x3ff) * -2 + 0x800;
-  iVar2 = iVar5;
+  g0 = *(short *)(&DAT_801247a8 + t1);
+  t1 = (int)g0;
+  t3 = (node & 0x3ff) * 2;
+  t4 = (node & 0x3ff) * -2 + 0x800;
+  t0 = t3;
   if ((node & 0x400) != 0) {
-    iVar2 = iVar6;
-    iVar6 = iVar5;
+    t0 = t4;
+    t4 = t3;
   }
-  iVar6 = (int)*(short *)(&DAT_801247a8 + iVar6);
+  t4 = (int)*(short *)(&DAT_801247a8 + t4);
   if ((node + 0x400 & 0x800) != 0) {
-    iVar6 = -iVar6;
+    t4 = -t4;
   }
-  iVar2 = (int)*(short *)(&DAT_801247a8 + iVar2);
-  iVar7 = (a2 & 0x3ff) * 2;
-  iVar9 = (a2 & 0x3ff) * -2 + 0x800;
-  iVar5 = iVar7;
+  t0 = (int)*(short *)(&DAT_801247a8 + t0);
+  t5 = (a2 & 0x3ff) * 2;
+  t7 = (a2 & 0x3ff) * -2 + 0x800;
+  t3 = t5;
   if ((a2 & 0x400) != 0) {
-    iVar5 = iVar9;
-    iVar9 = iVar7;
+    t3 = t7;
+    t7 = t5;
   }
-  iVar9 = (int)*(short *)(&DAT_801247a8 + iVar9);
+  t7 = (int)*(short *)(&DAT_801247a8 + t7);
   if ((a2 + 0x400 & 0x800) != 0) {
-    iVar9 = -iVar9;
+    t7 = -t7;
   }
-  iVar5 = (int)*(short *)(&DAT_801247a8 + iVar5);
-  iVar10 = (uVar12 & 0x3ff) * 2;
-  iVar11 = (uVar12 & 0x3ff) * -2 + 0x800;
-  iVar7 = iVar10;
-  if ((uVar12 & 0x400) != 0) {
-    iVar7 = iVar11;
-    iVar11 = iVar10;
+  t3 = (int)*(short *)(&DAT_801247a8 + t3);
+  t8 = (an & 0x3ff) * 2;
+  t9 = (an & 0x3ff) * -2 + 0x800;
+  t5 = t8;
+  if ((an & 0x400) != 0) {
+    t5 = t9;
+    t9 = t8;
   }
-  iVar11 = (int)*(short *)(&DAT_801247a8 + iVar11);
+  t9 = (int)*(short *)(&DAT_801247a8 + t9);
   if ((node & 0x800) != 0) {
-    iVar2 = -iVar2;
+    t0 = -t0;
   }
-  iVar7 = (int)*(short *)(&DAT_801247a8 + iVar7);
-  if ((uVar12 + 0x400 & 0x800) != 0) {
-    iVar11 = -iVar11;
+  t5 = (int)*(short *)(&DAT_801247a8 + t5);
+  if ((an + 0x400 & 0x800) != 0) {
+    t9 = -t9;
   }
   if ((a2 & 0x800) != 0) {
-    iVar5 = -iVar5;
+    t3 = -t3;
   }
-  *a3 = (short)(iVar9 * iVar4 >> 0xc);
-  a3[7] = (short)(iVar2 * iVar4 >> 0xc);
-  sVar8 = -sVar1;
+  *a3 = (short)(t7 * t2 >> 0xc);
+  a3[7] = (short)(t0 * t2 >> 0xc);
+  g0n = -g0;
   if ((a1 & 0x800) != 0) {
-    iVar3 = -iVar3;
-    sVar8 = sVar1;
+    t1 = -t1;
+    g0n = g0;
   }
-  a3[6] = sVar8;
-  if ((uVar12 & 0x800) != 0) {
-    iVar7 = -iVar7;
+  a3[6] = g0n;
+  if ((an & 0x800) != 0) {
+    t5 = -t5;
   }
-  iVar11 = iVar11 * (iVar3 + -0x1000);
-  a3[8] = (short)(iVar6 * iVar4 >> 0xc);
+  t9 = t9 * (t1 + -0x1000);
+  a3[8] = (short)(t4 * t2 >> 0xc);
   node = node - a2;
-  a3[3] = (short)(iVar5 * iVar4 >> 0xc);
-  iVar6 = (node & 0x3ff) * 2;
-  iVar7 = iVar7 * (iVar3 + -0x1000);
-  iVar2 = (node & 0x3ff) * -2 + 0x800;
-  iVar4 = iVar6;
+  a3[3] = (short)(t3 * t2 >> 0xc);
+  t4 = (node & 0x3ff) * 2;
+  t5 = t5 * (t1 + -0x1000);
+  t0 = (node & 0x3ff) * -2 + 0x800;
+  t2 = t4;
   if ((node & 0x400) != 0) {
-    iVar4 = iVar2;
-    iVar2 = iVar6;
+    t2 = t0;
+    t0 = t4;
   }
-  iVar2 = (int)*(short *)(&DAT_801247a8 + iVar2);
+  t0 = (int)*(short *)(&DAT_801247a8 + t0);
   if ((node + 0x400 & 0x800) != 0) {
-    iVar2 = -iVar2;
+    t0 = -t0;
   }
-  iVar2 = iVar2 * (iVar3 + 0x1000);
-  iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
+  t0 = t0 * (t1 + 0x1000);
+  t2 = (int)*(short *)(&DAT_801247a8 + t2);
   if ((node & 0x800) != 0) {
-    iVar4 = -iVar4;
+    t2 = -t2;
   }
-  iVar4 = iVar4 * (iVar3 + 0x1000);
-  a3[2] = (short)((iVar11 + iVar2) >> 0xd);
-  a3[4] = (short)((iVar2 - iVar11) >> 0xd);
-  a3[1] = (short)((iVar7 + iVar4) >> 0xd);
-  a3[5] = (short)((iVar7 - iVar4) >> 0xd);
+  t2 = t2 * (t1 + 0x1000);
+  a3[2] = (short)((t9 + t0) >> 0xd);
+  a3[4] = (short)((t0 - t9) >> 0xd);
+  a3[1] = (short)((t5 + t2) >> 0xd);
+  a3[5] = (short)((t5 - t2) >> 0xd);
   return a3;
 }
 
