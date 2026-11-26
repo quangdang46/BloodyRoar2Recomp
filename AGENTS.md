@@ -1063,6 +1063,27 @@ just `br2_call_generated` — the 27 CD/IRQ §4 delegates forwarding via
 wedges; yields alone (full map) wedges; BOTH together boot. The proper
 long-term fix is real per-instruction cycle charging inside `cps_` bodies so
 the CD/IRQ region can be transliterated safely; until then the region split
-is the correct conservative boundary. **Versus/arcade gameplay should be
-re-verified** — boot→title is proven; CD-heavy paths (streaming/FMV) now run
-generated.
+is the correct conservative boundary. **Versus/arcade/attract gameplay
+RE-VERIFIED on the fixed build** (session 21 below) — CD-heavy paths now run
+generated and hold up under real combat + streaming.
+
+### Session update 21 (gameplay re-verified + mode (1,4) RESOLVED — no wedges remain)
+
+Post-`2b57002` runtime sweep on current master (`proof/arcade_combat_verified.md`,
+`proof/mode_1_4_resolved_2p.md`):
+
+- **VERSUS** `(2,1)`: sustained `gs=8` combat 125s+, live fighter ctrl-block
+  mutation — real fighting.
+- **ARCADE**: `gs=9` fight phases cycling (`0904→0901→0900`).
+- **ATTRACT**: demo active — `P1ani`/`P2ani` changing, heap churning = CD
+  asset streaming through the generated CD path works.
+- **MODE (1,4)** `(1,4)`: **RESOLVED — was never a wedge.** It is a **2P
+  versus mode**; single-pad confirm leaves side1 `+0xb6` unarmed → parks at
+  results tally `dat1=0b` = *faithful* wait-for-P2. `tools/row3_twopad.py`
+  (both pads confirm) → continuous match loop ~100 matches/111s, `e4`
+  climbing `00/00→03/02` each match. Match-end phase `p92=0x0e` fires
+  correctly. Earlier "open question" answered: versus-attract loops forever
+  by design. Match/mode-flow is clean-ported `menu.c`/`save.c`, unaffected
+  by the cps_ change.
+
+**No known mode wedges remain.** All selectable modes boot and run.
