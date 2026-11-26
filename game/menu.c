@@ -3459,10 +3459,10 @@ L_promote_chk:
             if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
             uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
-              uint32_t uVar5l = 0xfefe0008;
-              int32_t iVar2l = _DAT_1f800008 + 4;
+              uint32_t attr_code = 0xfefe0008;
+              int32_t ot_ptr = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,aux_val,iVar3);
+              spr_attr_alloc_b((uint32_t)ot_ptr,uVar8,attr_code,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
             aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
@@ -9816,7 +9816,7 @@ void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
- * insns). Inlines leaf FUN_8012a4dc @0x8012a4dc (9 insns):
+ * insns). Inlines leaf cmd_queue_slot_next @0x8012a4dc (9 insns):
  * nxt = MBS16(0x1f8000d0) + 1; slot = nxt < 9 (signed) ? nxt : 0.
  * slot 0 -> return. Else entry = 0x801c4530 + slot*8 receives the
  * four args as u16s, 0x1f8000d0 = slot, and the 5th (stack) arg
@@ -11100,8 +11100,8 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 /* dual_axis_coord_xform — dual-axis coord transform @0x8012eaa8 (50
  * insns): o = MB32(a3+0x20); sp = {MB32(o+0x174),
  * MB32(o+0x178)+0xa00, MB32(o+0x17c)}; s1 = atan2_lut(sp[2],
- * sp[0]); FUN_80195370(&sp[0],&sp[0]) (ret discarded); r =
- * atan2_lut(-sp[1], FUN_801948c0(sp[0]+sp[2]));
+ * sp[0]); gte_sqr_vec3_b(&sp[0],&sp[0]) (ret discarded); r =
+ * atan2_lut(-sp[1], fixed_recip_lut(sp[0]+sp[2]));
  * s0=(s16)r, s1=(s16)s1; vec2_rot(s0,s1,a2+6);
  * angle_gte_vec(s0,s1,a2+0x20).
  * Generated reads the object through $a3 (gpr[7]) and the output base
