@@ -1457,7 +1457,7 @@ extern void action_switch_guest(int param_1,int *param_2,int param_3);
 extern void slot_apply_guest(int param_1,int param_2);
 extern void part_record_reset(undefined2 *param_1);
 extern ushort * ev5_action_select(int param_1,int param_2,ushort *param_3);
-void part_matrix_compute(undefined4 *param_1,byte *param_2,short *param_3,undefined4 param_4);
+void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
 #define DAT_1f8003a0 (*g_DAT_1f8003a0)
