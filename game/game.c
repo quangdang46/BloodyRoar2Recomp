@@ -2073,11 +2073,11 @@ void print_dispatch_selfdesc(void *desc,const char *fmt,...)
 
 /* print_dispatch @0x8012cc6c — guest reads a0-a3 + 5 caller stack words
  * (args 5-9); param_8 covers stack word 3, arg9 (+0x20) recovered. */
-void print_dispatch_guest(const char *param_1,uint32_t param_2,uint32_t param_3,
+void print_dispatch_guest(const char *fmt,uint32_t param_2,uint32_t param_3,
                           uint32_t param_4,uint32_t param_5,uint32_t param_6,
                           uint32_t param_7,uint32_t param_8)
 {
-  print_dispatch(param_1,(uintptr_t)param_2,(uintptr_t)param_3,
+  print_dispatch(fmt,(uintptr_t)param_2,(uintptr_t)param_3,
                  (uintptr_t)param_4,(uintptr_t)param_5,(uintptr_t)param_6,
                  (uintptr_t)param_7,(uintptr_t)param_8,
                  (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)));
@@ -2085,12 +2085,12 @@ void print_dispatch_guest(const char *param_1,uint32_t param_2,uint32_t param_3,
 
 /* print_dispatch_selfdesc @0x8012cf64 — a0=self, a1=fmt, a2-a3 + 6 caller
  * stack words are the 8 varargs; stack words 4-5 (+0x20/+0x24) recovered. */
-void print_dispatch_selfdesc_guest(void *param_1,const char *param_2,
+void print_dispatch_selfdesc_guest(void *desc,const char *fmt,
                                    uint32_t param_3,uint32_t param_4,
                                    uint32_t param_5,uint32_t param_6,
                                    uint32_t param_7,uint32_t param_8)
 {
-  print_dispatch_selfdesc(param_1,param_2,(uintptr_t)param_3,
+  print_dispatch_selfdesc(desc,fmt,(uintptr_t)param_3,
                           (uintptr_t)param_4,(uintptr_t)param_5,
                           (uintptr_t)param_6,(uintptr_t)param_7,
                           (uintptr_t)param_8,
@@ -2115,7 +2115,7 @@ void print_mode_dispatch_guest(uint32_t param_1,uint32_t param_2,
  * arg array and calls printf_core(1, fmt, args); the guest body tail-
  * propagates printf_core's v0, so the entry returns it. 8th vararg
  * (+0x20) recovered. */
-uint32_t printf_forward_guest(const char *param_1,uint32_t param_2,
+uint32_t printf_forward_guest(const char *fmt,uint32_t param_2,
                               uint32_t param_3,uint32_t param_4,
                               uint32_t param_5,uint32_t param_6,
                               uint32_t param_7,uint32_t param_8)
@@ -2125,17 +2125,17 @@ uint32_t printf_forward_guest(const char *param_1,uint32_t param_2,
   args[3] = param_5; args[4] = param_6; args[5] = param_7;
   args[6] = param_8;
   args[7] = BR2B32((uint32_t)(guest_sp() + 0x20));
-  return printf_core(1,(const uint8_t *)param_1,args);
+  return printf_core(1,(const uint8_t *)fmt,args);
 }
 
 /* sprintf_core @0x8018ef60 — a0=dst, a1=fmt host pointers; a2-a3 + caller
  * stack words are the varargs; stack words 4-5 (+0x20/+0x24) recovered.
  * Returns the formatted length in v0 like the guest. */
-int sprintf_core_guest(char *param_1,char *param_2,uint32_t param_3,
+int sprintf_core_guest(char *dst,char *fmt,uint32_t param_3,
                        uint32_t param_4,uint32_t param_5,uint32_t param_6,
                        uint32_t param_7,uint32_t param_8)
 {
-  return sprintf_core(param_1,param_2,(uintptr_t)param_3,(uintptr_t)param_4,
+  return sprintf_core(dst,fmt,(uintptr_t)param_3,(uintptr_t)param_4,
                       (uintptr_t)param_5,(uintptr_t)param_6,(uintptr_t)param_7,
                       (uintptr_t)param_8,
                       (uintptr_t)BR2B32((uint32_t)(guest_sp() + 0x20)),
@@ -2159,25 +2159,25 @@ int32_t text_win_printf_guest(int32_t param_1,uint32_t param_2,
 
 /* menu_row_paint / menu_row_paint_b — menu cursor row painters: emit "  > "
  * or "    " through print_dispatch_selfdesc when stepper byte+4 is clear. */
-void menu_row_paint(void *param_1)
+void menu_row_paint(void *desc)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   if (p[4] == 0)
-    print_dispatch_selfdesc(param_1,(const char *)guest_at(0x8011ec20));
+    print_dispatch_selfdesc(desc,(const char *)guest_at(0x8011ec20));
 }
-void menu_row_paint_b(void *param_1)
+void menu_row_paint_b(void *desc)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   if (p[4] == 0)
-    print_dispatch_selfdesc(param_1,(const char *)guest_at(0x8011ec28));
+    print_dispatch_selfdesc(desc,(const char *)guest_at(0x8011ec28));
 }
 
 /* menu_stepper_redraw — menu stepper redraw: cb(+0xc) with 0x100, then for
  * i = 1..h(+6) paint row i (menu_row_paint when i == sel(+8) else
  * menu_row_paint_b) and cb with 0x100+i, finally cb with 0x1ff. */
-void menu_stepper_redraw(void *param_1)
+void menu_stepper_redraw(void *desc)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   void (*cb)(void *,uint32_t);
   uint32_t i;
   /* p+0xc is a u32 GUEST code address (same field menu_stepper_state_advance
@@ -2186,29 +2186,29 @@ void menu_stepper_redraw(void *param_1)
    * unported targets fall back to call_guest so the generated body runs. */
   uint32_t cb_g = *(uint32_t *)(p + 0xc);
   cb = (void (*)(void *,uint32_t))fn_lookup(cb_g);
-  if (cb != NULL) cb(param_1,0x100);
-  else            call_guest(cb_g,guest_of(param_1),0x100);
+  if (cb != NULL) cb(desc,0x100);
+  else            call_guest(cb_g,guest_of(desc),0x100);
   i = 1;
   for (;;) {
     uint32_t code;
-    if (i == *(uint16_t *)(p + 8)) menu_row_paint(param_1);
-    else                            menu_row_paint_b(param_1);
+    if (i == *(uint16_t *)(p + 8)) menu_row_paint(desc);
+    else                            menu_row_paint_b(desc);
     code = (i + 0x100) & 0xffff;
-    if (cb != NULL) cb(param_1,code);
-    else            call_guest(cb_g,guest_of(param_1),code);
+    if (cb != NULL) cb(desc,code);
+    else            call_guest(cb_g,guest_of(desc),code);
     i++;
     if (*(uint16_t *)(p + 6) < i) break;
   }
-  if (cb != NULL) cb(param_1,0x1ff);
-  else            call_guest(cb_g,guest_of(param_1),0x1ff);
+  if (cb != NULL) cb(desc,0x1ff);
+  else            call_guest(cb_g,guest_of(desc),0x1ff);
 }
 
 /* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; byte+5
  * selects button pair (0: 0x4000/0x1000 sfx 0xa, else 0x2000/0x8000
  * sfx 0xb). Up wraps cur(+8) to 1 past max(+6); down wraps 1 -> max. */
-void menu_stepper_input(void *param_1)
+void menu_stepper_input(void *desc)
 {
-  uint8_t *p = (uint8_t *)param_1;
+  uint8_t *p = (uint8_t *)desc;
   uint16_t cur,max;
   if (p[5] == 0) {
     if (BR2B16(0x1f80007e) & 0x4000) {
@@ -2236,71 +2236,71 @@ void menu_stepper_input(void *param_1)
 }
 
 /* hud_text_a — HUD text variant A (block +0x16 attr +0x1f). */
-void hud_text_a(undefined4 param_1,undefined2 param_2,const void *param_3,
-                  undefined2 param_4,undefined2 param_5,short param_6)
+void hud_text_a(undefined4 ot,undefined2 flags,const void *text,
+                  undefined2 metric3,undefined2 metric4,short tile_idx)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
-  BR2B32(0x1f8003a8) = guest_of(param_3);
-  b[3] = (uint16_t)param_4;
+  BR2B32(0x1f8003a8) = guest_of(text);
+  b[3] = (uint16_t)metric3;
   b[5] = 8; b[7] = 0xffff;
   b[0] = 0; b[1] = 0; b[2] = 0;
   b[6] = 0x10; b[8] = 0x10; b[9] = 0; b[10] = 1; b[12] = 1;
-  b[4] = (uint16_t)param_5;
-  b[11] = (uint16_t)((((uint32_t)param_6 + 0x1e0) & 0x1ff) * 0x40 + 0x1f);
-  text_render_full((uint *)guest_at(param_1),(uint)param_2 & 0xffff,
+  b[4] = (uint16_t)metric4;
+  b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x1f);
+  text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
                (int)guest_of(b));
 }
 
 /* hud_text_b — HUD text variant B (uniform 0xf metrics, +0x16). */
-void hud_text_b(undefined4 param_1,undefined4 param_2,const void *param_3,
-                  undefined4 param_4,undefined2 param_5,short param_6)
+void hud_text_b(undefined4 ot,undefined4 flags,const void *text,
+                  undefined4 metric3,undefined2 metric4,short tile_idx)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
-  BR2B32(0x1f8003a8) = guest_of(param_3);
+  BR2B32(0x1f8003a8) = guest_of(text);
   b[5] = 0xf; b[6] = 0xf; b[7] = 0xf; b[8] = 0xf;
   b[9] = 1; b[10] = 1;
   b[0] = 0; b[1] = 0; b[2] = 0;
-  b[3] = (uint16_t)param_4;
+  b[3] = (uint16_t)metric3;
   b[12] = 4;
-  b[4] = (uint16_t)param_5;
-  b[11] = (uint16_t)((((uint32_t)param_6 + 0x1e0) & 0x1ff) * 0x40 + 0x16);
-  text_render_full((uint *)guest_at(param_1),(uint)param_2 & 0xffff,
+  b[4] = (uint16_t)metric4;
+  b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
+  text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
                (int)guest_of(b));
 }
 
 /* hud_text_c — HUD text variant C (0x1e line gap, +0x16). */
-void hud_text_c(undefined4 param_1,undefined4 param_2,const void *param_3,
-                  undefined4 param_4,undefined2 param_5,undefined4 param_6)
+void hud_text_c(undefined4 ot,undefined4 flags,const void *text,
+                  undefined4 metric3,undefined2 metric4,undefined4 tile_idx)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
-  BR2B32(0x1f8003a8) = guest_of(param_3);
-  b[3] = (uint16_t)param_4;
+  BR2B32(0x1f8003a8) = guest_of(text);
+  b[3] = (uint16_t)metric3;
   b[6] = 0x1e;
   b[9] = 1; b[10] = 1;
   b[0] = 0; b[1] = 0; b[2] = 0;
   b[5] = 0xf; b[7] = 0xf; b[8] = 0xf;
   b[12] = 4;
-  b[4] = (uint16_t)param_5;
-  b[11] = (uint16_t)((((uint32_t)param_6 + 0x1e0) & 0x1ff) * 0x40 + 0x16);
-  text_render_full((uint *)guest_at(param_1),(uint)param_2 & 0xffff,
+  b[4] = (uint16_t)metric4;
+  b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
+  text_render_full((uint *)guest_at(ot),(uint)flags & 0xffff,
                (int)guest_of(b));
 }
 
 /* hud_text_d — HUD text variant D (metric 8, flag 5, +0x16). */
-void hud_text_d(uint32_t param_1,uint32_t param_2,const void *param_3,
-                  int32_t param_4,int32_t param_5,int32_t param_6)
+void hud_text_d(uint32_t ot,uint32_t flags,const void *text,
+                  int32_t metric3,int32_t metric4,int32_t tile_idx)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
-  BR2B32(0x1f8003a8) = guest_of(param_3);
-  b[3] = (uint16_t)param_4;
+  BR2B32(0x1f8003a8) = guest_of(text);
+  b[3] = (uint16_t)metric3;
   b[7] = 0xffff;
   b[9] = 1; b[10] = 1;
   b[0] = 0; b[1] = 0; b[2] = 0;
   b[5] = 8; b[6] = 8; b[8] = 8;
   b[12] = 5;
-  b[4] = (uint16_t)param_5;
-  b[11] = (uint16_t)((((uint32_t)param_6 + 0x1e0) & 0x1ff) * 0x40 + 0x16);
-  text_render_full((uint *)guest_at(param_1),param_2 & 0xffff,
+  b[4] = (uint16_t)metric4;
+  b[11] = (uint16_t)((((uint32_t)tile_idx + 0x1e0) & 0x1ff) * 0x40 + 0x16);
+  text_render_full((uint *)guest_at(ot),flags & 0xffff,
                (int)guest_of(b));
 }
 
@@ -2326,12 +2326,12 @@ void *sprite_node_alloc(void)
 /* sprite_node_emit_a — sprite-list node emit (pool sprite_node_alloc, tag
  * 0x08000000, packet tail +0x24). 10 args; param_10 selects GPU
  * command variant 0x3a/0x38000000 and stride. */
-int sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
+int sprite_node_emit_a(uint32_t head_gaddr,int32_t param_2,int32_t param_3,
                  int32_t param_4,int32_t param_5,uint32_t param_6,
                  uint32_t param_7,uint32_t param_8,uint32_t param_9,
-                 int32_t param_10)
+                 int32_t variant)
 {
-  uint32_t *head = (uint32_t *)guest_at(param_1);
+  uint32_t *head = (uint32_t *)guest_at(head_gaddr);
   uint8_t *node = (uint8_t *)sprite_node_alloc();
   uint32_t guest;
   int32_t tag;
@@ -2348,9 +2348,9 @@ int sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
   *(uint32_t *)(node + 0x1c) = param_9;
   *(uint16_t *)(node + 0x20) = (uint16_t)(param_2 + param_4);
   *(uint16_t *)(node + 0x22) = (uint16_t)(param_3 + param_5);
-  if (param_10 != 0) {
+  if (variant != 0) {
     *(uint32_t *)(node + 4) = param_6 | 0x3a000000;
-    tag = (param_10 - 1) << 5;
+    tag = (variant - 1) << 5;
   } else {
     *(uint32_t *)(node + 4) = param_6 | 0x38000000;
     tag = 0;
@@ -2368,10 +2368,10 @@ int sprite_node_emit_a(uint32_t param_1,int32_t param_2,int32_t param_3,
  * 0x04000000, packet tail +0x14). param_2 packs x|y<<16,
  * param_3 packs w|h<<16; param_5 low byte = colour, param_6 picks
  * GPU variant 0x66/0x64000000 + stride. */
-int sprite_node_emit_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                 uint32_t param_4,int32_t param_5,int32_t param_6)
+int sprite_node_emit_b(uint32_t head_gaddr,uint32_t param_2,uint32_t param_3,
+                 uint32_t param_4,int32_t param_5,int32_t variant)
 {
-  uint32_t *head = (uint32_t *)guest_at(param_1);
+  uint32_t *head = (uint32_t *)guest_at(head_gaddr);
   uint8_t *node = (uint8_t *)spr_desc_slot_alloc();
   uint32_t guest;
   int32_t tag;
@@ -2383,10 +2383,10 @@ int sprite_node_emit_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   *(uint16_t *)(node + 0x08) = (uint16_t)param_2;
   *(uint16_t *)(node + 0x0a) = (uint16_t)(param_2 >> 16);
   node[7] |= 1;
-  if (param_6 != 0) {
+  if (variant != 0) {
     uint32_t c = param_5 & 0xff;
     *(uint32_t *)(node + 4) = (c | (c << 8) | (c << 16)) | 0x66000000;
-    tag = (param_6 - 1) << 5;
+    tag = (variant - 1) << 5;
   } else {
     uint32_t c = param_5 & 0xff;
     *(uint32_t *)(node + 4) = (c | (c << 8) | (c << 16)) | 0x64000000;
