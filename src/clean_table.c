@@ -15148,8 +15148,8 @@ extern void ko_count_announce(uint32_t param_1,uint32_t param_2);
     ko_count_announce(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80150f30(CPUState *cpu) {
-extern void ko_count_announce_cps(void);
-    ko_count_announce_cps();
+extern void ko_count_announce_cps_e03(void);
+    ko_count_announce_cps_e03();
 }
 static void wrap_80150f5c(CPUState *cpu) {
 extern void ko_count_announce_cps(void);

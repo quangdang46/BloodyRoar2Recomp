@@ -117,7 +117,7 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
  * entry 0x80150F04 keeps its own readable port (ko_count_announce) and
  * is intentionally NOT a case here. Faithful op-by-op transliteration of
  * generated br2eu_func_80150F04 / br2eu_psx_alias_body_80150F04. */
-void ko_count_announce_cps(void)
+void ko_count_announce_cps_e03(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
