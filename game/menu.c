@@ -12528,22 +12528,22 @@ uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,
 {
   int32_t idx = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t t;
-  uint32_t v0, v1;
+  uint32_t val, dlt;
   if ((uint32_t)idx >= 8u) return desc + 4;
   switch (idx) {
   case 0:
     t = MBS16(desc + 2);
     if (t < 2) {
-      v1 = MB16(src + 0x88) - MB16(dst + 0xca);
-      MW16(dst + 0xc2, MB16(dst + 0xc2) + v1);
+      dlt = MB16(src + 0x88) - MB16(dst + 0xca);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + dlt);
       MW16(dst + 0xc8, MB16(src + 0x88));
       MW16(dst + 0xca, MB16(src + 0x88));
     } else {
       t <<= 4;
-      v1 = MB16(dst + 0xca);
+      dlt = MB16(dst + 0xca);
       MW16(dst + 0xc8, (uint16_t)t);
       MW16(dst + 0xca, (uint16_t)t);
-      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - v1));
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - dlt));
     }
     break;
   case 1: {
@@ -12552,14 +12552,14 @@ uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,
     MW16(dst + 0xc6, (uint16_t)c6);
     t = MBS16(e + 2);
     if (t < 2) {
-      v1 = MB16(src + 0x88) - MB16(dst + 0xcc);
-      MW16(dst + 0xc2, MB16(dst + 0xc2) + v1);
+      dlt = MB16(src + 0x88) - MB16(dst + 0xcc);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + dlt);
       MW16(dst + 0xcc, MB16(src + 0x88));
     } else {
       t <<= 4;
-      v1 = MB16(dst + 0xcc);
+      dlt = MB16(dst + 0xcc);
       MW16(dst + 0xcc, (uint16_t)t);
-      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - v1));
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - dlt));
     }
     MW16(dst + 0xc6, MB16(dst + 0xc6) + 1);
     keyframe_advance((byte *)guest_at(src),(byte *)guest_at(dst));
@@ -12567,14 +12567,14 @@ uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,
   }
   case 2:
     t = MBS16(src + 0xbe);
-    v0 = t < 2 ? MB16(src + 0x88) : (uint32_t)(t << 4);
-    MW16(dst + 0xc8, (uint16_t)v0);
-    MW16(dst + 0xca, (uint16_t)v0);
+    val = t < 2 ? MB16(src + 0x88) : (uint32_t)(t << 4);
+    MW16(dst + 0xc8, (uint16_t)val);
+    MW16(dst + 0xca, (uint16_t)val);
     break;
   case 3:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
-    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
-    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)v0);
+    val = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)val);
+    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)val);
     break;
   case 4: {
     int32_t b = MBS16(src + 0xb2);
@@ -12585,25 +12585,25 @@ uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,
       MW16(dst + 0xc8, MB16(src + 0x88));
       MW16(dst + 0xca, MB16(src + 0x88));
     } else {
-      v0 = (uint32_t)(t * 16);
-      MW16(dst + 0xc8, (uint16_t)v0);
-      MW16(dst + 0xca, (uint16_t)v0);
+      val = (uint32_t)(t * 16);
+      MW16(dst + 0xc8, (uint16_t)val);
+      MW16(dst + 0xca, (uint16_t)val);
     }
     break;
   }
   case 5:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xc2) * 16);
-    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
+    val = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xc2) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)val);
     break;
   case 6:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xbe) * 16);
-    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
+    val = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xbe) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)val);
     break;
   case 7:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
-    MW16(dst + 0xca, MB16(dst + 0xca) + (uint16_t)v0);
-    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)v0);
-    MW16(dst + 0xc8, MB16(dst + 0xc8) + (uint16_t)v0);
+    val = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
+    MW16(dst + 0xca, MB16(dst + 0xca) + (uint16_t)val);
+    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)val);
+    MW16(dst + 0xc8, MB16(dst + 0xc8) + (uint16_t)val);
     break;
   }
   return desc + 4;
@@ -14553,7 +14553,7 @@ uint32_t desc_transform_dispatch(uint32_t ent,uint32_t st,
 {
   int32_t op = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t mode = op >> 4, sub = op & 0xf;
-  int32_t dx, dy, flag;
+  int32_t dx, dy;
   if (mode == 1) { if (MB8(ent + 5) & 1) return desc + 6; }
   else if (mode == 2) { if (!(MB8(ent + 5) & 1)) return desc + 6; }
   dx = MBS16(desc + 2); dy = MBS16(desc + 4);
@@ -14587,20 +14587,20 @@ uint32_t desc_transform_dispatch(uint32_t ent,uint32_t st,
   }
   case 3: {
     uint32_t rec = MB32(st + 0x10) + (uint32_t)(MB8(ent + 5) & 1) * 28u;
-    uint32_t a0 = MB32(rec + 8) + MB32(ent + 0x30);
+    uint32_t aptr = MB32(rec + 8) + MB32(ent + 0x30);
     uint32_t p20 = MB32(ent + 0x20);
     int32_t e;
-    /* guest stores d4/d6/d8 first, then computes a0; ent+0x40 and
-     * MB32(a0) are RELOADED before every use, matching the guest's
+    /* guest stores d4/d6/d8 first, then computes aptr; ent+0x40 and
+     * MB32(aptr) are RELOADED before every use, matching the guest's
      * repeated lw's */
     MW16(st + 0xd4, MB16(p20 + 0x174));
     MW16(st + 0xd6, (uint16_t)(MB16(p20 + 0x178) - (uint16_t)dy));
     MW16(st + 0xd8, MB16(p20 + 0x17c));
-    e = (int32_t)(((int32_t)(MB32(a0) << 22)) >> 18);
+    e = (int32_t)(((int32_t)(MB32(aptr) << 22)) >> 18);
     MW16(MB32(ent + 0x40) + 0x24, (uint16_t)(0u - (uint32_t)e));
-    e = (int32_t)((((int32_t)(MB32(a0) << 12)) >> 22) + dy);
+    e = (int32_t)((((int32_t)(MB32(aptr) << 12)) >> 22) + dy);
     MW16(MB32(ent + 0x40) + 0x26, (uint16_t)(0u - (uint32_t)(e << 4)));
-    e = (int32_t)(((int32_t)(MB32(a0) << 2)) >> 22);
+    e = (int32_t)(((int32_t)(MB32(aptr) << 2)) >> 22);
     MW16(MB32(ent + 0x40) + 0x28, (uint16_t)(0u - (uint32_t)(e << 4)));
     MW16(MB32(ent + 0x40) + 0x78, 0);
     MW16(MB32(ent + 0x40) + 0x7a, 0);
@@ -14615,12 +14615,12 @@ uint32_t desc_transform_dispatch(uint32_t ent,uint32_t st,
     MW16(st + 0xd6, (uint16_t)(MB16(ent + 0x94) + (uint16_t)dx));
     break;
   case 6: {
-    uint32_t t = 0x801b158cu + (uint32_t)(int32_t)(int8_t)MB8(0x1f800098u) * 8u;
-    uint32_t f = MB32(ent + 0x6c);
-    if (f & 1) MW16(st + 0xd4, (uint16_t)(MB16(t + 4) - (uint16_t)dx));
-    if (f & 2) MW16(st + 0xd4, (uint16_t)((uint16_t)dx - MB16(t + 4)));
-    if (f & 4) MW16(st + 0xd8, (uint16_t)(MB16(t + 6) - (uint16_t)dx));
-    if (f & 8) MW16(st + 0xd8, (uint16_t)((uint16_t)dx - MB16(t + 6)));
+    uint32_t row = 0x801b158cu + (uint32_t)(int32_t)(int8_t)MB8(0x1f800098u) * 8u;
+    uint32_t fl = MB32(ent + 0x6c);
+    if (fl & 1) MW16(st + 0xd4, (uint16_t)(MB16(row + 4) - (uint16_t)dx));
+    if (fl & 2) MW16(st + 0xd4, (uint16_t)((uint16_t)dx - MB16(row + 4)));
+    if (fl & 4) MW16(st + 0xd8, (uint16_t)(MB16(row + 6) - (uint16_t)dx));
+    if (fl & 8) MW16(st + 0xd8, (uint16_t)((uint16_t)dx - MB16(row + 6)));
     break;
   }
   case 7:
@@ -14629,15 +14629,15 @@ uint32_t desc_transform_dispatch(uint32_t ent,uint32_t st,
     break;
   case 8: {
     int32_t ang = dx + MBS16(ent + 0x4e);
-    int32_t p, v;
-    p = (int32_t)((int64_t)lut_cos_q12((uint32_t)ang) * dy) ;
-    if (p < 0) p += 0xfff;
-    v = p >> 12;
-    MW16(st + 0xd4, (uint16_t)(MB16(st + 0xd4) + (uint16_t)v));
-    p = (int32_t)((int64_t)lut_sin_q12((uint32_t)ang) * dy);
-    if (p < 0) p += 0xfff;
-    v = p >> 12;
-    MW16(st + 0xd8, (uint16_t)(MB16(st + 0xd8) + (uint16_t)v));
+    int32_t prod, dv;
+    prod = (int32_t)((int64_t)lut_cos_q12((uint32_t)ang) * dy) ;
+    if (prod < 0) prod += 0xfff;
+    dv = prod >> 12;
+    MW16(st + 0xd4, (uint16_t)(MB16(st + 0xd4) + (uint16_t)dv));
+    prod = (int32_t)((int64_t)lut_sin_q12((uint32_t)ang) * dy);
+    if (prod < 0) prod += 0xfff;
+    dv = prod >> 12;
+    MW16(st + 0xd8, (uint16_t)(MB16(st + 0xd8) + (uint16_t)dv));
     break;
   }
   }
