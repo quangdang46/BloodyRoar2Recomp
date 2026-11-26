@@ -7489,34 +7489,34 @@ int task_alloc_wrap_a(undefined4 v0,undefined4 v1,int v2,undefined4 v3)
 
 }
 
-int task_alloc_wrap_b(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, int arg5)
+int task_alloc_wrap_b(undefined4 v0,undefined4 v1,undefined4 v2,undefined4 v3, int v4)
 {
-  int iVar1;
-  undefined4 *puVar2;
+  int node;
+  undefined4 *rec;
   { extern uint32_t g_wb_last_p1,g_wb_last_p2,g_wb_last_p3,g_wb_last_p4,g_wb_last_p5;
     extern uint32_t g_wb_bad_count,g_wb_bad_node,g_wrap_src;
     g_wrap_src=1;
-    g_wb_last_p1=(uint32_t)a0; g_wb_last_p2=(uint32_t)a1;
-    g_wb_last_p3=(uint32_t)a2; g_wb_last_p4=(uint32_t)a3;
-    g_wb_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wb_bad_count++; g_wb_bad_node=(uint32_t)a3;
+    g_wb_last_p1=(uint32_t)v0; g_wb_last_p2=(uint32_t)v1;
+    g_wb_last_p3=(uint32_t)v2; g_wb_last_p4=(uint32_t)v3;
+    g_wb_last_p5=(uint32_t)v4;
+    if (((uint32_t)v0 < 0x80100000u || (uint32_t)v1 < 0x80100000u) &&
+        (uint32_t)v0 != 0u && (uint32_t)v1 != 0u) {
+      g_wb_bad_count++; g_wb_bad_node=(uint32_t)v3;
     }
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = arg5;
-    puVar2[5] = arg5 + -4;
-    *(undefined2 *)(puVar2 + 6) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1a) = 0;
+  node = (int)(intptr_t)task_node_alloc(0,3,0,0x80137824,0,0x1c);
+  if (node != 0) {
+    rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *rec = v0;
+    rec[1] = v1;
+    rec[2] = v2;
+    rec[3] = v3;
+    rec[4] = v4;
+    rec[5] = v4 + -4;
+    *(undefined2 *)(rec + 6) = 0;
+    *(undefined2 *)((intptr_t)rec + 0x1a) = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
@@ -9074,24 +9074,24 @@ int task_alloc_wrap_e(int sz,int v0,int v1)
 
 }
 
-int task_alloc_wrap_f(undefined4 a0,undefined4 a1,undefined4 a2,int a3)
+int task_alloc_wrap_f(undefined4 v0,undefined4 v1,undefined4 v2,int v3)
 {
-  short sVar1;
-  int iVar2;
-  undefined4 *puVar3;
-  iVar2 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
-  if (iVar2 != 0) {
-    puVar3 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-    *puVar3 = a0;
-    puVar3[1] = a1;
-    puVar3[2] = a2;
-    puVar3[3] = a3;
-    puVar3[4] = a3;
-    sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((a3 + 2)));
-    *(undefined2 *)((intptr_t)puVar3 + 0x16) = 0;
-    *(short *)(puVar3 + 5) = sVar1 + 1;
+  short cnt;
+  int node;
+  undefined4 *rec;
+  node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137cd0,0,0x18);
+  if (node != 0) {
+    rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *rec = v0;
+    rec[1] = v1;
+    rec[2] = v2;
+    rec[3] = v3;
+    rec[4] = v3;
+    cnt = *(short *)guest_at((uint32_t)(uintptr_t)((v3 + 2)));
+    *(undefined2 *)((intptr_t)rec + 0x16) = 0;
+    *(short *)(rec + 5) = cnt + 1;
   }
-  return iVar2;
+  return node;
 
 }
 
@@ -10666,30 +10666,30 @@ void prim_packet_init_tex(int pkt,int sh,int tx,uint fl,byte *uv)
 }
 
 
-void gte_xform_accum(short *a0,uint *a1,int a2,undefined4 a3)
+void gte_xform_accum(short *acc,uint *v,int n,undefined4 fl)
 {
-  undefined4 uVar1;
-  uint *puVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  puVar2 = a1 + a2 * 2;
-  setCopReg(2,0x4000,a3);
+  undefined4 w;
+  uint *end;
+  undefined4 x;
+  undefined4 y;
+  undefined4 z;
+  end = v + n * 2;
+  setCopReg(2,0x4000,fl);
   do {
-    setCopReg(2,0x4800,*a1 & 0xffff);
-    setCopReg(2,0x5000,(int)*a1 >> 0x10);
-    setCopReg(2,0x5800,(int)(short)a1[1]);
+    setCopReg(2,0x4800,*v & 0xffff);
+    setCopReg(2,0x5000,(int)*v >> 0x10);
+    setCopReg(2,0x5800,(int)(short)v[1]);
     copFunction(2,0x198003d);
-    uVar1 = *(undefined4 *)a0;
-    a1 = a1 + 2;
-    uVar3 = getCopReg(2,0x4800);
-    uVar4 = getCopReg(2,0x5000);
-    uVar5 = getCopReg(2,0x5800);
-    *a0 = (short)uVar1 + (short)uVar3;
-    a0[1] = (short)((uint)uVar1 >> 0x10) + (short)uVar4;
-    a0[2] = a0[2] + (short)uVar5;
-    a0 = a0 + 4;
-  } while (a1 != puVar2);
+    w = *(undefined4 *)acc;
+    v = v + 2;
+    x = getCopReg(2,0x4800);
+    y = getCopReg(2,0x5000);
+    z = getCopReg(2,0x5800);
+    *acc = (short)w + (short)x;
+    acc[1] = (short)((uint)w >> 0x10) + (short)y;
+    acc[2] = acc[2] + (short)z;
+    acc = acc + 4;
+  } while (v != end);
   return;
 
 }
@@ -13568,39 +13568,39 @@ int prim_task_run(int a0,undefined4 a1,undefined4 a2,int mode)
 
 undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 {
-  undefined2 uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  iVar2 = lut_sin_q12();
-  iVar2 = -iVar2;
-  uVar1 = lut_cos_q12();
-  dst[1] = uVar1;
-  iVar3 = lut_sin_q12(ang1);
-  iVar3 = iVar2 * iVar3;
-  iVar4 = lut_cos_q12();
-  *dst = (short)(iVar3 >> 0xc);
-  dst[2] = (short)(iVar2 * iVar4 >> 0xc);
+  undefined2 c;
+  int sn;
+  int p;
+  int cs;
+  sn = lut_sin_q12();
+  sn = -sn;
+  c = lut_cos_q12();
+  dst[1] = c;
+  p = lut_sin_q12(ang1);
+  p = sn * p;
+  cs = lut_cos_q12();
+  *dst = (short)(p >> 0xc);
+  dst[2] = (short)(sn * cs >> 0xc);
   return dst;
 
 }
 
 uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  uVar4 = 0x1000;
-  iVar1 = trig_sin_lookup(x);
-  iVar2 = lut_sin_q12(y);
-  iVar2 = iVar1 * iVar2;
-  iVar3 = lut_cos_q12(y);
-  *out = uVar4 | (iVar2 >> 0xc) << 0x10;
+  int sy;
+  int p;
+  int cz;
+  uint one;
+  one = 0x1000;
+  sy = trig_sin_lookup(x);
+  p = lut_sin_q12(y);
+  p = sy * p;
+  cz = lut_cos_q12(y);
+  *out = one | (p >> 0xc) << 0x10;
   out[1] = 0;
   out[2] = 0;
-  *(short *)(out + 4) = (short)uVar4;
-  out[3] = (iVar1 * iVar3 >> 0xc) << 0x10;
+  *(short *)(out + 4) = (short)one;
+  out[3] = (sy * cz >> 0xc) << 0x10;
   return out;
 
 }
@@ -13922,24 +13922,24 @@ void iris_wipe_update(int *rec)
 
 }
 
-undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int ctx,undefined4 a3)
 {
-  byte bVar1;
-  short sVar2;
-  int iVar3;
-  int iVar4;
-  iVar4 = 0;
+  byte op;
+  short rc;
+  int n;
+  int i;
+  i = 0;
   do {
-    bVar1 = *(byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x24))));
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x6e) ))!= 0) {
-      if ((*(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))+ -0x7c) - a2 < 0xbc) {
-        /* guest: a0 = *(u32*)(s0+0x78) guest cursor addr; a2 = guest
-         * string-table entry @0x801b5574[bVar1] (guest addr -> host). */
-        iVar3 = sprintf_core((char *)guest_at((uint32_t)*(int *)guest_at(a2 + 0x78)),
+    op = *(byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((ctx + 0x24))));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((ctx + 0x6e) ))!= 0) {
+      if ((*(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))+ -0x7c) - ctx < 0xbc) {
+        /* guest: a0 = *(u32*)(s0+0x78) guest cursor addr; ctx = guest
+         * string-table entry @0x801b5574[op] (guest addr -> host). */
+        n = sprintf_core((char *)guest_at((uint32_t)*(int *)guest_at(ctx + 0x78)),
                              &DAT_801237e0,
-                             (char *)guest_at(*(uint32_t *)guest_at(0x801b5574 + (uint32_t)bVar1 * 4)),
+                             (char *)guest_at(*(uint32_t *)guest_at(0x801b5574 + (uint32_t)op * 4)),
                              a3);
-        *(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))= *(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))+ iVar3;
+        *(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))= *(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))+ n;
       }
     }
     /* PTR_entry_0x80182f3c_801b5528 is the guest opcode-handler jump table
@@ -13947,11 +13947,11 @@ undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
      * populated with host pointers, so indexing it called address 0. Dispatch
      * through the real guest table via br2_call_generated — the same jalr the
      * original performs — returning the handler's $v0 as the s16 result. */
-    sVar2 = (short)br2_call_clean(
-        *(uint32_t *)guest_at(0x801b5528u + (uint32_t)bVar1 * 4u),
-        a0, a1, (uint32_t)a2, a3);
-    iVar4 = iVar4 + 1;
-  } while ((sVar2 != 0) && (iVar4 * 0x10000 >> 0x10 < 0x32));
+    rc = (short)br2_call_clean(
+        *(uint32_t *)guest_at(0x801b5528u + (uint32_t)op * 4u),
+        a0, a1, (uint32_t)ctx, a3);
+    i = i + 1;
+  } while ((rc != 0) && (i * 0x10000 >> 0x10 < 0x32));
   return 0;
 
 }
@@ -14552,32 +14552,32 @@ undefined4 cop2_clz(undefined4 v)
 
 }
 
-void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a3, undefined2 *arg5,int arg6)
+void gte_points_xform(undefined4 *src,undefined4 *ox,undefined2 *oy,undefined2 *oz, undefined2 *oc,int n)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  uint uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
+  uint cw;
+  undefined4 r0;
+  undefined4 r1;
   do {
-    setCopReg(2,in_zero,*a0);
-    setCopReg(2,in_at,a0[1]);
+    setCopReg(2,in_zero,*src);
+    setCopReg(2,in_at,src[1]);
     copFunction(2,0x180001);
-    a0 = a0 + 2;
-    arg6 = arg6 + -1;
-    uVar2 = getCopReg(2,0xe);
-    *a1 = uVar2;
-    uVar2 = getCopReg(2,0x9800);
-    uVar3 = getCopReg(2,0x4000);
-    uVar1 = getCopControlWord(2,0xf800);
-    *a2 = (short)uVar2;
-    *a3 = (short)uVar3;
-    *arg5 = (short)(uVar1 >> 0xc);
-    a1 = a1 + 1;
-    a2 = a2 + 1;
-    a3 = a3 + 1;
-    arg5 = arg5 + 1;
-  } while (0 < arg6);
+    src = src + 2;
+    n = n + -1;
+    r0 = getCopReg(2,0xe);
+    *ox = r0;
+    r0 = getCopReg(2,0x9800);
+    r1 = getCopReg(2,0x4000);
+    cw = getCopControlWord(2,0xf800);
+    *oy = (short)r0;
+    *oz = (short)r1;
+    *oc = (short)(cw >> 0xc);
+    ox = ox + 1;
+    oy = oy + 1;
+    oz = oz + 1;
+    oc = oc + 1;
+  } while (0 < n);
   return;
 
 }
