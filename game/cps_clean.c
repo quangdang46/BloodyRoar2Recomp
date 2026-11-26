@@ -26794,6 +26794,11 @@ void cps_80134c30(void)
     }
     /* Address: 0x80134C30, Size: 452 bytes, Blocks: 26 */
 
+    /* limb/part setup: 4x jal 0x8018A4F8 with ptrs a0+8264/+8308
+       and word[s1]/word[s1+8]+200/240/160 offsets, a3=1; then
+       half[s1+40]+=20 and &0x0700 field selects param pairs
+       (768/484, 512/272, 1024/485) for further emit. CPS-blocked. */
+
 block_80134C30:
     sp = sp + -48;
     cpu->write_word(sp + 24, s0);
@@ -32740,6 +32745,13 @@ void cps_80138174(void)
     }
     /* Address: 0x80138174, Size: 212 bytes, Blocks: 14 */
 
+    /* aim/angle solve: (v0² + v1<<12) -> jal 0x801943D4 (atan2-ish);
+       s2=v0>>12; if (half[sp+40]+50)&0xFFFF >=613 or half[sp+42]
+       outside [-50,563): fallback s1=0; else s1 = index from
+       half[sp+42] range -> jal 0x80142B3C(s0-a0, s0-v1); then
+       lut_cos/lut_sin_q12(s0-1024) * s1>>3 -> half[sp+64];
+       -> 0x80138248. CPS-blocked. */
+
 block_80138174:
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)v0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
@@ -35213,6 +35225,16 @@ void cps_80139a0c(void)
     }
     /* Address: 0x80139A0C, Size: 908 bytes, Blocks: 17 */
 
+    /* billboard/quad emit: GPU packet word tagged 0x09000000 at
+       s1+40*s4[3]-indexed slot + cursor word; GTE RTPS (cmd 0x0180001)
+       on s1+88 -> SZ readback to s5 (-4 bound 2059); if half[s4+130]
+       clear: fade RGB bytes of indexed 40B record (s4[3]*40+s1+4..6)
+       by -24, bump s1+84 cursor; fade = half[s4+36]*cursor / (4*
+       word[s5]) / byte[s4+21], halved when byte[s4+21]==0 -> s5;
+       then 8 halfword corner writes at rec+8/10/16/32/34: base half[s3]/[s3+2]
+       +/- (lut_cos/lut_sin(angle=half[s2]) * s0/s5 >>12), angle+1024
+       variant. CPS-blocked. */
+
 block_80139A0C:
     v0 = cpu->read_word(s4 + 12);
     a0 = cpu->read_word(s4 + 8);
@@ -37225,6 +37247,12 @@ void cps_8013ae1c(void)
     }
     /* Address: 0x8013AE1C, Size: 620 bytes, Blocks: 26 */
 
+    /* sprite/command dispatcher: gate word[s1+20]&0x80; index
+       (word&0x7F)<32 -> jr table 0x80120000+344; cases build GPU
+       packets (tag 0x40000000 | half[t0+4], half[t0+2], word[s1+16]
+       +0x40000000) -> jal 0x8018E4D0; coord fixups half[s1]-128.
+       CPS-blocked. */
+
 block_8013AE1C:
     sp = sp + -48;
     cpu->write_word(sp + 36, s1);
@@ -39225,6 +39253,12 @@ void cps_8013bdc4(void)
     }
     /* Address: 0x8013BDC4, Size: 348 bytes, Blocks: 13 */
 
+    /* fixed-point 2D rotation apply: basis (4096-t1)²,
+       (4096-t1)*t1, t1² with round-to-nearest shifts (>>13 />>12)
+       -> sp+16/20/24; then each basis * half[sp+40/48/56] vector
+       components accumulated into sp+.. output; loops over s4+8
+       records (a3 += 8). CPS-blocked. */
+
 block_8013BDC4:
     v0 = 4096;
     v0 = v0 - t1;
@@ -40441,6 +40475,12 @@ void cps_8013c5e0(void)
         }
     }
     /* Address: 0x8013C5E0, Size: 368 bytes, Blocks: 17 */
+
+    /* aim-angle solve toward target: dist/angle via
+       0x80142B3C(target - pos) -> s0; then repeated
+       lut_cos_q12(s0) with atan2-style ((dy)<<12 / cos)
+       divisions -> s2 and further angle slots on stack;
+       iterates a fixed unrolled count. CPS-blocked. */
 
 block_8013C5E0:
     v0 = cpu->read_word(s4 + 5768);
@@ -42872,6 +42912,14 @@ void cps_8013dbd8(void)
         }
     }
     /* Address: 0x8013DBD8, Size: 1304 bytes, Blocks: 25 */
+
+    /* sprite anim/palette effect: frame save; unaligned LUT load
+       0x80120000+472 via lwl/lwr; per-frame half[s3+194]--, lerp
+       halves s3+176/180 += t0/t1 steps, ratio half[194]<<12 /
+       half[192] -> a3; jal 0x801A482C + 0x80194840; writes RGB
+       triples from sp+80 into record word[s3+12]*80+s3 (+4..6 and
+       +44..46 — dual palette slots); then loop jal 0x801954D0 over
+       s3+160 records. CPS-blocked. */
 
 block_8013DBD8:
     sp = sp + -160;
