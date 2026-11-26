@@ -7512,8 +7512,8 @@ void slot_action_dump(uint32_t a0)
   uint8_t *rectab  = (uint8_t *)guest_at(0x801f5848);
   int16_t f82 = *(int16_t *)guest_at(0x1f800082);
   int32_t acc = 0;                            /* sp18: running total */
-  int32_t s3 = 0;                             /* scaled-path streak */
-  int32_t i, s0, s1;
+  int32_t streak = 0;                             /* scaled-path streak */
+  int32_t i, val5, val3;
   int16_t *rec;
 
   /* ---- prologue counters ---- */
@@ -7560,14 +7560,14 @@ void slot_action_dump(uint32_t a0)
 
       {
         int32_t ba = *(int16_t *)(st + 0xba);
-        int32_t b8v, d, s0v, s1v;
+        int32_t b8v, d, w5, w3;
         if (ba < 0) ba += 0xf;
-        s0v = ba >> 4;
-        r[0] = (int16_t)s0v;
+        w5 = ba >> 4;
+        r[0] = (int16_t)w5;
         b8v = *(int16_t *)(st + 0xb8);
         if (b8v < 0) b8v += 0xf;
-        d = (b8v >> 4) - s0v;
-        s1v = (int16_t)d;                    /* sll16/sra16 sign extend */
+        d = (b8v >> 4) - w5;
+        w3 = (int16_t)d;                    /* sll16/sra16 sign extend */
         r[1] = (int16_t)d;
 
         if (*stateA == 2) {
@@ -7575,33 +7575,33 @@ void slot_action_dump(uint32_t a0)
           int32_t c2 = *(int16_t *)(q + 0xc2);
           int32_t c4, val;
           int16_t *prev;
-          uint32_t t;
+          uint32_t adj;
           if (c2 < 0) c2 += 0xf;
           c2 >>= 4;
           c4 = *(int16_t *)(q + 0xc4);
           if (c4 < 0) c4 += 0xf;
           c4 >>= 4;
-          val = c2 - c4 - s0v - s1v;
+          val = c2 - c4 - w5 - w3;
           r[2] = (int16_t)val;
           r[4] = (int16_t)val;
           prev = r - 6;                      /* record n-1 */
-          t = (uint16_t)r[2] + (uint32_t)s0v + (uint32_t)s1v;
-          prev[2] = (int16_t)((uint16_t)prev[2] - (uint16_t)t);
-          prev[4] = (int16_t)((uint16_t)prev[4] - (uint16_t)t);
+          adj = (uint16_t)r[2] + (uint32_t)w5 + (uint32_t)w3;
+          prev[2] = (int16_t)((uint16_t)prev[2] - (uint16_t)adj);
+          prev[4] = (int16_t)((uint16_t)prev[4] - (uint16_t)adj);
         } else {
           uint8_t *q = (uint8_t *)guest_at(*(uint32_t *)(st + 0x38));
           int32_t c2 = *(int16_t *)(q + 0xc2);
           int32_t val;
           if (c2 < 0) c2 += 0xf;
           c2 >>= 4;
-          val = c2 - s0v - s1v;
+          val = c2 - w5 - w3;
           r[2] = (int16_t)val;
           r[4] = (int16_t)val;
           if (n != 0) {
             int16_t *prev = r - 6;
-            uint32_t bhi = *(uint16_t *)((uint8_t *)cntB + 2);
-            uint32_t t = bhi - (uint16_t)prev[0] - (uint16_t)prev[1];
-            prev[4] = (int16_t)t;
+            uint32_t cnt_hi = *(uint16_t *)((uint8_t *)cntB + 2);
+            uint32_t adj = cnt_hi - (uint16_t)prev[0] - (uint16_t)prev[1];
+            prev[4] = (int16_t)adj;
           }
         }
       }
@@ -7633,8 +7633,8 @@ void slot_action_dump(uint32_t a0)
           else
             print_dispatch((const char *)guest_at(0x8012315c),
                          cr[0], cr[1], cr[2], r5, r3);
-          s0 = r5;
-          s1 = r3;
+          val5 = r5;
+          val3 = r3;
         } else {
           print_dispatch((const char *)guest_at(0x80123180),
                        cr[0], cr[1], cr[4]);
@@ -7644,60 +7644,60 @@ void slot_action_dump(uint32_t a0)
             int32_t scaled = 0;
             if (sum < 0 ||
                 ((prev[1] >= 2) && ((prev[4] + cr[0]) < 0))) {
-              /* consecutive-anomaly path: scale r3/r5 by streak s3 */
-              int32_t t3, t5, s1v, s0v;
-              s3++;
-              t3 = (int16_t)(uint16_t)cr[3];
-              if (t3 == 0) {
-                s0v = 0;
-                s1v = 0;
+              /* consecutive-anomaly path: scale r3/r5 by streak */
+              int32_t raw3, raw5, w3, w5;
+              streak++;
+              raw3 = (int16_t)(uint16_t)cr[3];
+              if (raw3 == 0) {
+                w5 = 0;
+                w3 = 0;
               } else {
-                s1v = (s3 < 9) ? (t3 * (10 - s3)) / 10 : t3 / 10;
-                if (s1v == 0) s1v = 1;
-                t5 = (int16_t)(uint16_t)cr[5];
-                s0v = (s3 < 9) ? (t5 * (10 - s3)) / 10 : t5 / 10;
-                if (s0v == 0) s0v = 1;
+                w3 = (streak < 9) ? (raw3 * (10 - streak)) / 10 : raw3 / 10;
+                if (w3 == 0) w3 = 1;
+                raw5 = (int16_t)(uint16_t)cr[5];
+                w5 = (streak < 9) ? (raw5 * (10 - streak)) / 10 : raw5 / 10;
+                if (w5 == 0) w5 = 1;
               }
               scaled = 1;
-              s0 = s0v;
-              s1 = s1v;
+              val5 = w5;
+              val3 = w3;
               if (sum < 0) {
-                if (s1v == s0v)
-                  print_dispatch((const char *)guest_at(0x80123198), s1v);
+                if (w3 == w5)
+                  print_dispatch((const char *)guest_at(0x80123198), w3);
                 else
-                  print_dispatch((const char *)guest_at(0x801231a4), s0v, s1v);
+                  print_dispatch((const char *)guest_at(0x801231a4), w5, w3);
               } else {
-                if (s1v == s0v)
-                  print_dispatch((const char *)guest_at(0x801231b4), s1v);
+                if (w3 == w5)
+                  print_dispatch((const char *)guest_at(0x801231b4), w3);
                 else
-                  print_dispatch((const char *)guest_at(0x801231c0), s0v, s1v);
+                  print_dispatch((const char *)guest_at(0x801231c0), w5, w3);
               }
             }
             if (!scaled) {
               /* plain compare path */
-              s3 = 0;
-              s1 = cr[3];
-              s0 = cr[5];
-              if (s1 == s0)
-                print_dispatch((const char *)guest_at(0x801231d0), s1);
+              streak = 0;
+              val3 = cr[3];
+              val5 = cr[5];
+              if (val3 == val5)
+                print_dispatch((const char *)guest_at(0x801231d0), val3);
               else
-                print_dispatch((const char *)guest_at(0x801231dc), s0, s1);
+                print_dispatch((const char *)guest_at(0x801231dc), val5, val3);
             }
           } else {
             /* i == 0: plain compare */
-            s3 = 0;
-            s1 = cr[3];
-            s0 = cr[5];
-            if (s1 == s0)
-              print_dispatch((const char *)guest_at(0x801231d0), s1);
+            streak = 0;
+            val3 = cr[3];
+            val5 = cr[5];
+            if (val3 == val5)
+              print_dispatch((const char *)guest_at(0x801231d0), val3);
             else
-              print_dispatch((const char *)guest_at(0x801231dc), s0, s1);
+              print_dispatch((const char *)guest_at(0x801231dc), val5, val3);
           }
         }
         rec = (int16_t *)rb;
 
         /* ---- common tail: accumulate + date + flag letters ---- */
-        acc += s0;
+        acc += val5;
         {
           int32_t r3s = (int16_t)(uint16_t)rec[3];
           int32_t day = r3s / 2 + 5;
@@ -7711,11 +7711,11 @@ void slot_action_dump(uint32_t a0)
           print_dispatch((const char *)guest_at(0x801231ec), day, mon);
 
           if ((*(uint16_t *)cnt5950 & 1) == 0)   /* re-read: calls may write */
-            s1 = rec[3];
-          s0n = s1 + 6;
+            val3 = rec[3];
+          s0n = val3 + 6;
           if (s0n < 16) s0n = 16;
           print_dispatch((const char *)guest_at(0x801231f8), s0n);
-          s0n = s1 * 153 / 128 + 6;
+          s0n = val3 * 153 / 128 + 6;
           if (s0n < 16) s0n = 16;
           print_dispatch((const char *)guest_at(0x801231f8), s0n);
           print_dispatch((const char *)guest_at(0x80123200));
