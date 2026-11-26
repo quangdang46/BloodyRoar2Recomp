@@ -5859,3 +5859,80 @@
 801983d8 cps_80198190
 801983f0 cps_80198190
 80198404 cps_80198190
+
+# --- w5-e01: five unnamed jal-target fns (game/w5_e01.c) ---
+# gpu_state_patch_submit_3w (guest 0x8019E600) — 7 CPS addrs
+8019e600 gpu_state_patch_submit_3w
+8019e610 gpu_state_patch_submit_3w
+8019e620 gpu_state_patch_submit_3w
+8019e634 gpu_state_patch_submit_3w
+8019e64c gpu_state_patch_submit_3w
+8019e654 gpu_state_patch_submit_3w
+8019e65c gpu_state_patch_submit_3w
+
+# cd_hw_chan_release_all (guest 0x801A0DDC) — 12 CPS addrs
+801a0ddc cd_hw_chan_release_all
+801a0dec cd_hw_chan_release_all
+801a0dfc cd_hw_chan_release_all
+801a0e0c cd_hw_chan_release_all
+801a0e1c cd_hw_chan_release_all
+801a0e2c cd_hw_chan_release_all
+801a0e3c cd_hw_chan_release_all
+801a0e4c cd_hw_chan_release_all
+801a0e5c cd_hw_chan_release_all
+801a0e6c cd_hw_chan_release_all
+801a0e78 cd_hw_chan_release_all
+801a0e80 cd_hw_chan_release_all
+
+# cd_cmd_rx_state_default (guest 0x801A2560) — 33 CPS continuation addrs.
+# Entry 0x801A2560 deliberately NOT registered: clean cd_cmd_state_rx calls
+# it via call_guest(), a single-shot dispatch that cannot drive CPS pieces;
+# the generated entry chains into these clean pieces via cpu->pc.
+801a2580 cd_cmd_rx_state_default
+801a2588 cd_cmd_rx_state_default
+801a2590 cd_cmd_rx_state_default
+801a2598 cd_cmd_rx_state_default
+801a25a4 cd_cmd_rx_state_default
+801a25ac cd_cmd_rx_state_default
+801a25c4 cd_cmd_rx_state_default
+801a25d8 cd_cmd_rx_state_default
+801a25ec cd_cmd_rx_state_default
+801a2600 cd_cmd_rx_state_default
+801a2614 cd_cmd_rx_state_default
+801a261c cd_cmd_rx_state_default
+801a2620 cd_cmd_rx_state_default
+801a2664 cd_cmd_rx_state_default
+801a266c cd_cmd_rx_state_default
+801a2684 cd_cmd_rx_state_default
+801a2694 cd_cmd_rx_state_default
+801a26b4 cd_cmd_rx_state_default
+801a26b8 cd_cmd_rx_state_default
+801a26c0 cd_cmd_rx_state_default
+801a26d4 cd_cmd_rx_state_default
+801a26ec cd_cmd_rx_state_default
+801a26fc cd_cmd_rx_state_default
+801a2734 cd_cmd_rx_state_default
+801a273c cd_cmd_rx_state_default
+801a2748 cd_cmd_rx_state_default
+801a275c cd_cmd_rx_state_default
+801a2770 cd_cmd_rx_state_default
+801a2784 cd_cmd_rx_state_default
+801a2794 cd_cmd_rx_state_default
+801a27b0 cd_cmd_rx_state_default
+801a27bc cd_cmd_rx_state_default
+801a27c0 cd_cmd_rx_state_default
+
+# cd_cmd_rec_arm_extent (guest 0x801A2808) — 7 CPS addrs
+801a2808 cd_cmd_rec_arm_extent
+801a2824 cd_cmd_rec_arm_extent
+801a2834 cd_cmd_rec_arm_extent
+801a2848 cd_cmd_rec_arm_extent
+801a2850 cd_cmd_rec_arm_extent
+801a2858 cd_cmd_rec_arm_extent
+801a28c8 cd_cmd_rec_arm_extent
+
+# cd_cmd_rec_arm_op (guest 0x801A2EC8) — 4 CPS addrs
+801a2ec8 cd_cmd_rec_arm_op
+801a2efc cd_cmd_rec_arm_op
+801a2f04 cd_cmd_rec_arm_op
+801a2f44 cd_cmd_rec_arm_op

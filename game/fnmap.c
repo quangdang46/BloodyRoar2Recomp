@@ -250,6 +250,8 @@ extern void cd_cmd_issue_sync(void);
 extern void cd_cmd_queue_drain(void);
 extern void cd_cmd_queue_load(void);
 extern void cd_cmd_queue_service(void);
+extern void cd_cmd_rec_arm_extent(void);
+extern void cd_cmd_rec_arm_op(void);
 extern void cd_cmd_rec_clear(void);
 extern void cd_cmd_rec_init(void);
 extern void cd_cmd_rec_scan(void);
@@ -329,6 +331,7 @@ extern void cd_handler_triple_install(void);
 extern void cd_hdr_clear(void);
 extern void cd_hdr_clear_fixed(void);
 extern void cd_hw_chan_init(void);
+extern void cd_hw_chan_release_all(void);
 extern void cd_ind_dispatch_10(void);
 extern void cd_ind_dispatch_14(void);
 extern void cd_ind_dispatch_18(void);
@@ -760,6 +763,7 @@ extern void gpu_sprite_rect_emit(void);
 extern void gpu_sprite_rect_emit_mode(void);
 extern void gpu_stat_sign(void);
 extern void gpu_state_patch_defer(void);
+extern void gpu_state_patch_submit_3w(void);
 extern void gpu_status_cmd(void);
 extern void gpu_tag_cmd_store(void);
 extern void gpu_texclut_pkt(void);
@@ -2962,6 +2966,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019e400, (void *)cd_mode_apply },
   { 0x8019e410, (void *)cd_mode_apply_wrap },
   { 0x8019e420, (void *)bios_tramp_b04c },
+  { 0x8019e600, (void *)gpu_state_patch_submit_3w },
   { 0x8019e680, (void *)cd_chan_block_boot },
   { 0x8019e6f0, (void *)cd_block7_init },
   { 0x8019e730, (void *)cd_job_start_e },
@@ -3010,6 +3015,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a0bb0, (void *)cd_reset_trio },
   { 0x801a0be0, (void *)cd_hw_chan_init },
   { 0x801a0dbc, (void *)cd_tail_call_a },
+  { 0x801a0ddc, (void *)cd_hw_chan_release_all },
   { 0x801a0e90, (void *)cd_pending_args_pump },
   { 0x801a0e98, (void *)op_globals_reset_shift },
   { 0x801a0f98, (void *)cd_queue_a_status },
@@ -3042,9 +3048,11 @@ const Br2FnEnt fn_table[] = {
   { 0x801a24c0, (void *)cd_ctx_set_28_34 },
   { 0x801a24dc, (void *)op_tag_dispatch },
   { 0x801a27d0, (void *)cd_extent_len },
+  { 0x801a2808, (void *)cd_cmd_rec_arm_extent },
   { 0x801a2d7c, (void *)cd_ctx_cmd_submit },
   { 0x801a2de4, (void *)cd_ctx_cb_4d },
   { 0x801a2e00, (void *)cd_ctx_cb_scan },
+  { 0x801a2ec8, (void *)cd_cmd_rec_arm_op },
   { 0x801a2fb4, (void *)op_state_dispatch },
   { 0x801a3014, (void *)cd_cmd_rec_init },
   { 0x801a3034, (void *)op_tag_E_set },

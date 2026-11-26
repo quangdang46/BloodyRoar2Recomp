@@ -2084,3 +2084,7 @@
 80168494 mc_op_result_poll_alt
 80168624 mc_file_cmd_stable_poll_alt
 80170050 battle_flow_state_machine_alt
+8019e600 gpu_state_patch_submit_3w
+801a0ddc cd_hw_chan_release_all
+801a2808 cd_cmd_rec_arm_extent
+801a2ec8 cd_cmd_rec_arm_op
