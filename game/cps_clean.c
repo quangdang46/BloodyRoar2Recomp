@@ -95298,7 +95298,9 @@ block_801A04F8:
 }
 
 /* cps_801a0660 — clean CPS transliteration of br2eu_func_801A0660 (guest 0x801a0660)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_chan_cmd_pump (259 lines): channel command pump — dispatches through
+ * cd_svc_4e/4f/50/5c (0x801A0600/9E0/610/9F0), cd_bzero, printf diag. */
 void cps_801a0660(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -95717,7 +95719,10 @@ block_801A0B9C:
 }
 
 /* cps_801a0be0 — clean CPS transliteration of br2eu_func_801A0BE0 (guest 0x801a0be0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_hw_chan_init: critical section, then three bios_tramp_b008 calls
+ * (BIOS B0:0x08 svc) staging buffers at 0x801A0B10/0x801A0B64/0x801A0B78
+ * with sizes 4/0x8000/256; results saved to cells @0x801FEF70/0x801FEF74. */
 void cps_801a0be0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96739,7 +96744,9 @@ block_801A17EC:
 }
 
 /* cps_801a1a40 — clean CPS transliteration of br2eu_func_801A1A40 (guest 0x801a1a40)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_channel_main_init: cpu_critical_enter/exit around BIOS kernel calls
+ * bios_tramp_c002/c003 + bios_kobj_tramp — channel object bring-up. */
 void cps_801a1a40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100000,7 +100007,10 @@ block_801A36C0:
 }
 
 /* cps_801a36f0 — clean CPS transliteration of br2eu_func_801A36F0 (guest 0x801a36f0)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * cd_channel_table_init: cd_bzero then installs handler tables via
+ * cd_handler_pair_install(0x801A1808) and cd_handler_triple_install
+ * (0x801A3D50). */
 void cps_801a36f0(void)
 {
   CPUState *cpu = clean_cpu_state();
