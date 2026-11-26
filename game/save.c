@@ -3200,7 +3200,7 @@ void confirm_code_select(uint32_t a0,uint32_t a1)
   uint8_t *st = (uint8_t *)guest_at(a0);
   uint32_t blk_addr;
   int32_t sel_mode;
-  int32_t code;
+  int32_t sel_code;
 
   blk_addr = *(uint32_t *)(st + 0xc0);
   {
@@ -3214,18 +3214,18 @@ void confirm_code_select(uint32_t a0,uint32_t a1)
     uint8_t *tab = (uint8_t *)guest_at(0x1f8000eb + (uint32_t)c * 264);
     uint32_t idx = tab ? tab[0] : 0;
     static const int8_t map[11] = {0,1,2,5,3,6,4,7,8,10,9};
-    if (idx < 11) code = map[idx]; else code = 0;
-    code += 0x14;
+    if (idx < 11) sel_code = map[idx]; else sel_code = 0;
+    sel_code += 0x14;
   } else if (sel_mode == 1) {
     int32_t map_idx = (int32_t)(int8_t)st[0x98];
     static const int8_t map[13] = {0,1,2,3,4,5,6,7,8,0,1,2,3};
-    if ((uint32_t)map_idx < 0xd) code = map[map_idx]; else code = 0;
-    code += 0xa;
+    if ((uint32_t)map_idx < 0xd) sel_code = map[map_idx]; else sel_code = 0;
+    sel_code += 0xa;
   } else {
     mc_confirm_dispatch(a1,1);
     return;
   }
-  mc_confirm_dispatch(code,1);
+  mc_confirm_dispatch(sel_code,1);
 }
 
 /* ---- select_phase_update @0x8015a1e4 (231 insns) ----
@@ -5637,7 +5637,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
   uint32_t flag, sel;
   uint8_t *c0;
-  int32_t code;
+  int32_t dlg_code;
 
   scroll_offset_set(0x20,0xffffffffu);
   sel = a1 & 0xffff;
@@ -5666,14 +5666,14 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       if (u16_counter_step_pad_a(a0 + 0x14,3,1) == 0) return 0;
       *(uint32_t *)guest_at(0x801c11f0) = 1;
       g[0x9c] = 5;
-      code = *(int16_t *)(st + 0x14);
-      if (code == 1)      g[0x9b] = 1;
-      else if (!(code)) g[0x9b] = 2;
-      else if (code == 2) {
+      dlg_code = *(int16_t *)(st + 0x14);
+      if (dlg_code == 1)      g[0x9b] = 1;
+      else if (!(dlg_code)) g[0x9b] = 2;
+      else if (dlg_code == 2) {
         c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
         c0[0x10] = 0xb;
         g[0x9b] = 0;
-      } else if (code == 3) g[0x9b] = 4;
+      } else if (dlg_code == 3) g[0x9b] = 4;
       if ((*(uint16_t *)(g + 0x68) & 0xe0) != 0) {
         deferred_cmd_post(0x400,0xc,0);
         mc_slot_action(g,0);
@@ -6249,18 +6249,18 @@ int mc_file_cmd_stable_poll(uint32_t a0,const void *a1,uint32_t a2)
 int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
   extern int br2_bail_pending(void);
-  uint32_t aux_out = 0, code = 0;
+  uint32_t aux_out = 0, job_code = 0;
   int32_t prev = 0;
   for (;;) {
     while (mc_job_issue_a(a0,a1,a2,a3,a4) == 0) {
       if (br2_bail_pending()) return -1;
     }
-    while (cd_job_result(0,&aux_out,&code) == 0) {
+    while (cd_job_result(0,&aux_out,&job_code) == 0) {
       if (br2_bail_pending()) return -1;
     }
-    if (!(code)) return 0;
-    if ((int32_t)code != prev) { prev = (int32_t)code; continue; }
-    return (int32_t)code;
+    if (!(job_code)) return 0;
+    if ((int32_t)job_code != prev) { prev = (int32_t)job_code; continue; }
+    return (int32_t)job_code;
   }
 }
 
@@ -6268,18 +6268,18 @@ int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_
 int mc_job_b_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
   extern int br2_bail_pending(void);
-  uint32_t aux_out = 0, code = 0;
+  uint32_t aux_out = 0, job_code = 0;
   int32_t prev = 0;
   for (;;) {
     while (mc_job_issue_b(a0,a1,a2,a3,a4) == 0) {
       if (br2_bail_pending()) return -1;
     }
-    while (cd_job_result(0,&aux_out,&code) == 0) {
+    while (cd_job_result(0,&aux_out,&job_code) == 0) {
       if (br2_bail_pending()) return -1;
     }
-    if (!(code)) return 0;
-    if ((int32_t)code != prev) { prev = (int32_t)code; continue; }
-    return (int32_t)code;
+    if (!(job_code)) return 0;
+    if ((int32_t)job_code != prev) { prev = (int32_t)job_code; continue; }
+    return (int32_t)job_code;
   }
 }
 
@@ -6989,7 +6989,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   uint32_t ctx8 = *(uint32_t *)(g + 8);
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
   uint32_t sel = a1 & 0xffff;
-  uint32_t flag, code;
+  uint32_t flag;
   char buf[16];
 
 #define CAA8_E58C(str,sz,x) \
