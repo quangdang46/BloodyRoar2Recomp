@@ -137,6 +137,8 @@ int cd_feb00_trace_dump(char *out, int cap) {
   }
   return pos;
 }
+/* cd_feb00_trace_total — DIAG: total entries recorded in the
+ * cd_feb00_trace ring (see cd_feb00_trace_dump). */
 uint32_t cd_feb00_trace_total(void) { return s_feb00_seq; }
 
 /* DIAG: ring recording CD seek-position resolutions.
@@ -161,6 +163,8 @@ int cd_seek_dump(char *out, int cap) {
   }
   return pos;
 }
+/* cd_seek_total — DIAG: total entries recorded in the cd_seek_trace
+ * ring (see cd_seek_trace_dump). */
 uint32_t cd_seek_total(void) { return s_seek_seq; }
 extern void     br2_st8p(uint32_t cell, uint8_t v);
 extern void     br2_st16p(uint32_t cell, uint16_t v);
