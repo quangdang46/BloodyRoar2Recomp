@@ -15576,20 +15576,16 @@ static void tpg_cell48_v2(uint32_t r, const uint16_t *fr,
   MW16(r + 12u, (uint16_t)(fr[2] + fr[14]));
 }
 
-uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
-                      const uint16_t *param_3,const int16_t *param_4,
-                      const int16_t *param_5,int32_t param_6,
-                      int32_t param_7,const uint8_t *param_8)
+uint32_t terrain_packet_gen(uint32_t hdr, uint32_t cur,
+                      const uint16_t *u16vec, const int16_t *colvec,
+                      const int16_t *rowvec, int32_t cols,
+                      int32_t rows, const uint8_t *u8vec)
 {
-  uint32_t hdr = param_1;              /* guest $a0 */
-  uint32_t cur = param_2;              /* guest $a1 */
-  int32_t  sx  = param_6;              /* guest $s6: col count + p4 divisor */
-  int32_t  sy  = param_7;              /* guest $s7: row count + p5 divisor */
   uint32_t prod, r48, r72;             /* mult lo; g11/g10 cursors */
   uint16_t fr[16];                     /* guest sp+0..0x1c frame (lhu) */
   int32_t  col, row;                   /* g8/g12 loop counters */
-  int32_t  diff;                       /* g24 = sx - sy (signed) */
-  uint8_t  b0 = param_8[0], b1 = param_8[1], b2 = param_8[2];
+  int32_t  diff;                       /* g24 = cols - rows (signed) */
+  uint8_t  b0 = u8vec[0], b1 = u8vec[1], b2 = u8vec[2];
   int i;
 
   /* ---- block_80135A14: header ---- */
@@ -15597,12 +15593,12 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   MW16(hdr + 0x0cu, 0);
   MW16(hdr + 0x0eu, 0);
 
-  /* mult lo: (sy<sx) ? sx*(sy+1) : (sx+1)*sy — 32-bit product low.
+  /* mult lo: (rows<cols) ? cols*(rows+1) : (cols+1)*rows — 32-bit product low.
    * u32 arithmetic reproduces the guest 32-bit wrap exactly. */
-  prod = (sy < sx)
-       ? (uint32_t)sx * ((uint32_t)sy + 1u)
-       : ((uint32_t)sx + 1u) * (uint32_t)sy;
-  diff = (int32_t)((uint32_t)sx - (uint32_t)sy);
+  prod = (rows < cols)
+       ? (uint32_t)cols * ((uint32_t)rows + 1u)
+       : ((uint32_t)cols + 1u) * (uint32_t)rows;
+  diff = (int32_t)((uint32_t)cols - (uint32_t)rows);
 
   if (diff == 0) {
     /* block_80135A70: single header record, cursors cur+8.. */
@@ -15633,23 +15629,23 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
   }
 
   /* ---- block_80135B00: scaled triples into the sp frame ----
-   * sp+16..20 = lh(param_4)/sx, sp+24..28 = lh(param_5)/sy,
-   * sp+0..4 = lhu(param_3). Frame reloads everywhere below are lhu. */
+   * sp+16..20 = lh(colvec)/cols, sp+24..28 = lh(rowvec)/rows,
+   * sp+0..4 = lhu(u16vec). Frame reloads everywhere below are lhu. */
   for (i = 0; i < 3; i++) {
-    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)param_4[i], sx);
-    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)param_5[i], sy);
+    fr[8  + i] = (uint16_t)tpg_idiv((int32_t)colvec[i], cols);
+    fr[12 + i] = (uint16_t)tpg_idiv((int32_t)rowvec[i], rows);
   }
-  fr[0] = param_3[0];
-  fr[1] = param_3[1];
-  fr[2] = param_3[2];
+  fr[0] = u16vec[0];
+  fr[1] = u16vec[1];
+  fr[2] = u16vec[2];
 
-  if (sy == 0) return r72;             /* block_80135BB0 -> epilogue */
+  if (rows == 0) return r72;             /* block_80135BB0 -> epilogue */
 
   row = 0;
   for (;;) {                           /* block_80135BD0: row head */
     fr[4] = fr[0]; fr[5] = fr[1]; fr[6] = fr[2];  /* snapshot sp+8..12 */
     col = 0;                           /* g8 */
-    if (sx != 0) {                     /* block_80135BE8 guard */
+    if (cols != 0) {                     /* block_80135BE8 guard */
       /* block_80135BF0: g6 = g10+20, g7 = g11+12 — the +20/+12 aliases
        * stay locked to the record cursors because both advance by the
        * record stride together, so the emit helpers derive them from
@@ -15657,9 +15653,9 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
       for (;;) {                       /* block_80135BF8: col head */
         if ((uint32_t)col < (uint32_t)row) {
           /* block_80135D14: lower-triangle column.
-           * emit48 iff diff<0 && col==sx-1 (blocks 80135D1C/80135D28);
+           * emit48 iff diff<0 && col==cols-1 (blocks 80135D1C/80135D28);
            * the 48B cursor then always falls into the v2 72B emit. */
-          if (diff < 0 && (uint32_t)col == (uint32_t)sx - 1u) {
+          if (diff < 0 && (uint32_t)col == (uint32_t)cols - 1u) {
             tpg_cell48_v1(r48, fr, b0, b1, b2);
             r48 += 48u;
           }
@@ -15671,8 +15667,8 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
           r72 += 72u;
           if ((uint32_t)row < (uint32_t)col) {
             /* blocks 80135F00/80135F08: last row of a wide grid also
-             * emits a v2 48B edge record iff diff>0 && row==sy-1. */
-            if (diff > 0 && (uint32_t)row == (uint32_t)sy - 1u) {
+             * emits a v2 48B edge record iff diff>0 && row==rows-1. */
+            if (diff > 0 && (uint32_t)row == (uint32_t)rows - 1u) {
               tpg_cell48_v2(r48, fr, b0, b1, b2);
               r48 += 48u;
             }
@@ -15687,7 +15683,7 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
         fr[0] = (uint16_t)(fr[0] + fr[8]);
         fr[1] = (uint16_t)(fr[1] + fr[9]);
         fr[2] = (uint16_t)(fr[2] + fr[10]);
-        if (!((uint32_t)col < (uint32_t)sx)) break;
+        if (!((uint32_t)col < (uint32_t)cols)) break;
       }
     }
     /* block_8013602C: next row + accumulate row quotients */
@@ -15695,7 +15691,7 @@ uint32_t terrain_packet_gen(uint32_t param_1,uint32_t param_2,
     fr[0] = (uint16_t)(fr[4] + fr[12]);
     fr[1] = (uint16_t)(fr[5] + fr[13]);
     fr[2] = (uint16_t)(fr[6] + fr[14]);
-    if (!((uint32_t)row < (uint32_t)sy)) break;
+    if (!((uint32_t)row < (uint32_t)rows)) break;
   }
   return r72;                          /* $v0 = $t2 (block_80136074) */
 }
@@ -15786,10 +15782,8 @@ uint32_t peak_track(void)
  * from desc+8; the disasm splits them (s7=+0x10 for euler_rotmat,
  * a0=+8 for the sh fields). Ported verbatim here.
  * Return value is whatever v0 last held; callers ignore it. */
-int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t skeleton_init(uint32_t ctrl, uint32_t desc, uint32_t unused)
 {
-  uint32_t ctrl = param_1;
-  uint32_t desc = param_2;
   uint32_t base = MB32(ctrl + 0x30u);
   int32_t  np   = (int8_t)MB8(ctrl + 6u);   /* lb */
   int32_t  nr   = (int8_t)MB8(ctrl + 8u);   /* lb */
@@ -15800,7 +15794,7 @@ int32_t skeleton_init(uint32_t param_1,uint32_t param_2,uint32_t param_3)
   uint32_t seedM   = MB32(desc + 0x10u) + base;
   uint32_t extrat  = MB32(desc + 0x18u) + base;
   int32_t  i, j, k;
-  (void)param_3;
+  (void)unused;
 
   /* zero part-record lead fields: fobj + i*0x50, i = nr-1 .. 0 */
   for (i = nr - 1; i >= 0; i--)
@@ -15992,26 +15986,19 @@ extern uint32_t heap_serialize_tag_01000000(uint32_t,uint32_t,uint32_t,uint32_t,
  * Epilogue: *dst+0x1c = cursor (before trailer), *outp = count,
  * then u32 count + count*16 scratch bytes appended at cursor;
  * returns cursor past the trailer. */
-int32_t heap_serialize(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                     uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                     uint32_t param_7)
+int32_t heap_serialize(uint32_t blk, uint32_t cur, uint32_t dst,
+                     uint32_t mode, uint32_t outp, uint32_t s7,
+                     uint32_t fp)
 {
-  uint32_t blk  = param_1;
-  uint32_t cur  = param_2;
-  uint32_t dst  = param_3;
-  uint32_t mode = param_4;
-  uint32_t outp = param_5;
-  uint32_t s7   = param_6;
-  uint32_t fp   = param_7;
   uint32_t scr[128];             /* sp+0x20: guest fits 16 x 16B;
                                   * 32 here so an over-count can't
                                   * smash the C frame (guest would
                                   * corrupt its own locals instead) */
   uint32_t s3 = 0;
   uint32_t i;
-  uint32_t _eb = param_1;   /* entry blk for trace */
+  uint32_t _eb = blk;   /* entry blk for trace */
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(22,param_1,param_2,param_3,0); }  /* tag22 hser_in */
+    decomp_trace_record(22,blk,cur,dst,0); }  /* tag22 hser_in */
 
 #define B7C0_EMIT(N_) do {                                    \
     scr[s3*4u+0u] = tag;   scr[s3*4u+1u] = param;             \
