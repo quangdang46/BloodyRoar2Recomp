@@ -2742,84 +2742,84 @@ unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 void keyframe_blend_apply(byte *ctrl,byte *motion)
 {
   extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-  byte bVar1;
-  short sVar2;
-  byte *pbVar3;
-  int iVar4;
-  int iVar5;
-  short *psVar6;
-  short *psVar7;
-  int *piVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  uint uVar13;
-  int iVar14;
+  byte tag;
+  short w;
+  byte *rec;
+  int adata;
+  int skel;
+  short *psrc;
+  short *pdst;
+  int *mp;
+  int t1;
+  int t2;
+  int i;
+  int alpha;
+  uint slot;
+  int krec;
   
-  uVar13 = (uint)*(byte *)(motion + 0x100);
-  iVar14 = *(int *)(motion + uVar13 * 4 + 0xf8);
+  slot = (uint)*(byte *)(motion + 0x100);
+  krec = *(int *)(motion + slot * 4 + 0xf8);
   if ((int)*(short *)(motion + 0xce) < (int)*(short *)(motion + 0xca)) {
     /* guest div @0x801859F8: ca==0 -> LO = (dividend<0)?1:-1, no trap */
-    iVar12 = mips_div_lo((int)*(short *)(motion + 0xce) << 0xc,
+    alpha = mips_div_lo((int)*(short *)(motion + 0xce) << 0xc,
                          (int)*(short *)(motion + 0xca));
   }
   else {
-    iVar12 = 0x1000;
+    alpha = 0x1000;
   }
-  anim_lerp_scalar((short *)(motion + 0xd2),(int)*(short *)guest_at(*(uint32_t *)(motion + 0xb8)),uVar13,iVar12);
-  anim_lerp_vec3((short *)(motion + 0xdc),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 2),uVar13,iVar12,0x80);
-  anim_lerp_vec3((short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x24),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 8),uVar13,iVar12,
+  anim_lerp_scalar((short *)(motion + 0xd2),(int)*(short *)guest_at(*(uint32_t *)(motion + 0xb8)),slot,alpha);
+  anim_lerp_vec3((short *)(motion + 0xdc),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 2),slot,alpha,0x80);
+  anim_lerp_vec3((short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x24),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 8),slot,alpha,
                (int)*(short *)(motion + 0xbe));
-  anim_lerp_vec3_raw((short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x78),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 0xe),uVar13,iVar12);
-  iVar5 = *(int *)(ctrl + 0x40);
-  iVar4 = *(int *)(motion + 0xb8);
-  anim_lerp_packed4((short *)guest_at((uint32_t)(iVar5 + 0x1c)),(ushort *)guest_at((uint32_t)(iVar4 + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + 1) * 6)),0,iVar12);
-  iVar5 = iVar5 + 0x38;
-  iVar11 = 2;
+  anim_lerp_vec3_raw((short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x78),(short *)((char *)guest_at(*(uint32_t *)(motion + 0xb8)) + 0xe),slot,alpha);
+  skel = *(int *)(ctrl + 0x40);
+  adata = *(int *)(motion + 0xb8);
+  anim_lerp_packed4((short *)guest_at((uint32_t)(skel + 0x1c)),(ushort *)guest_at((uint32_t)(adata + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + 1) * 6)),0,alpha);
+  skel = skel + 0x38;
+  i = 2;
   do {
-    iVar10 = iVar11;
-    iVar9 = iVar5;
-    iVar11 = iVar10 + 1;
-    anim_lerp_packed4((short *)guest_at((uint32_t)iVar9),(ushort *)guest_at((uint32_t)(iVar4 + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + iVar10) * 6)),uVar13,iVar12);
-    iVar5 = iVar9 + 0x1c;
-  } while (iVar11 < 0x11);
-  anim_lerp_aux((byte *)guest_at((uint32_t)(iVar9 + 0x1c)),
-               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + iVar11) * 2 + iVar4 + 0x74 + -0x20)),uVar13,
-               iVar12);
-  anim_lerp_aux((byte *)guest_at((uint32_t)(iVar9 + 0x38)),
-               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + iVar10 + 2) * 2 + iVar4 + 0x74 + -0x20)),
-               uVar13,iVar12);
-  iVar5 = *(int *)(ctrl + 0x40);
-  bVar1 = *(byte *)((char *)guest_at((uint32_t)iVar4) + 0x78);
-  pbVar3 = (byte *)guest_at((uint32_t)iVar4) + 0x78;
-  while (bVar1 != 0xff) {
+    t2 = i;
+    t1 = skel;
+    i = t2 + 1;
+    anim_lerp_packed4((short *)guest_at((uint32_t)t1),(ushort *)guest_at((uint32_t)(adata + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + t2) * 6)),slot,alpha);
+    skel = t1 + 0x1c;
+  } while (i < 0x11);
+  anim_lerp_aux((byte *)guest_at((uint32_t)(t1 + 0x1c)),
+               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)krec) + i) * 2 + adata + 0x74 + -0x20)),slot,
+               alpha);
+  anim_lerp_aux((byte *)guest_at((uint32_t)(t1 + 0x38)),
+               (int)*(short *)guest_at((uint32_t)((uint)*(byte *)((char *)guest_at((uint32_t)krec) + t2 + 2) * 2 + adata + 0x74 + -0x20)),
+               slot,alpha);
+  skel = *(int *)(ctrl + 0x40);
+  tag = *(byte *)((char *)guest_at((uint32_t)adata) + 0x78);
+  rec = (byte *)guest_at((uint32_t)adata) + 0x78;
+  while (tag != 0xff) {
     {
-      uint32_t _idx = (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + (uint)bVar1);
-      uint32_t _dst = (uint32_t)iVar5 + _idx * 0x1c + 0x24;
+      uint32_t _idx = (uint)*(byte *)((char *)guest_at((uint32_t)krec) + (uint)tag);
+      uint32_t _dst = (uint32_t)skel + _idx * 0x1c + 0x24;
       if (_dst >= 0x801d0000u && _dst < 0x80200000u)
-        decomp_trace_record(52, _dst, (uint32_t)iVar5, (uint8_t)_idx, 0);
+        decomp_trace_record(52, _dst, (uint32_t)skel, (uint8_t)_idx, 0);
     }
-    anim_lerp_packed3((short *)guest_at((uint32_t)(iVar5 + (uint)*(byte *)((char *)guest_at((uint32_t)iVar14) + (uint)bVar1) * 0x1c + 0x24)),(ushort *)pbVar3,uVar13,iVar12);
-    bVar1 = pbVar3[4];
-    pbVar3 = pbVar3 + 4;
+    anim_lerp_packed3((short *)guest_at((uint32_t)(skel + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + (uint)tag) * 0x1c + 0x24)),(ushort *)rec,slot,alpha);
+    tag = rec[4];
+    rec = rec + 4;
   }
-  iVar14 = 1;
-  psVar7 = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x6c);
-  psVar6 = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x28);
-  piVar8 = (int *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(motion + 0x10)) + (*(byte *)(ctrl + 5) & 1) * 0x1c + 8) +
+  krec = 1;
+  pdst = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x6c);
+  psrc = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x28);
+  mp = (int *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(motion + 0x10)) + (*(byte *)(ctrl + 5) & 1) * 0x1c + 8) +
                   *(uint32_t *)(ctrl + 0x30));
   do {
-    iVar14 = iVar14 + 1;
-    iVar12 = *piVar8;
-    piVar8 = piVar8 + 1;
-    psVar7[-2] = (short)((iVar12 << 0x16) >> 0x16) + (psVar6[-2] >> 4);
-    psVar7[-1] = (short)((iVar12 << 0xc) >> 0x16) + (psVar6[-1] >> 4);
-    sVar2 = *psVar6;
-    psVar6 = psVar6 + 0xe;
-    *psVar7 = (short)((iVar12 << 2) >> 0x16) + (sVar2 >> 4);
-    psVar7 = psVar7 + 0x28;
-  } while (iVar14 < 0x13);
+    krec = krec + 1;
+    alpha = *mp;
+    mp = mp + 1;
+    pdst[-2] = (short)((alpha << 0x16) >> 0x16) + (psrc[-2] >> 4);
+    pdst[-1] = (short)((alpha << 0xc) >> 0x16) + (psrc[-1] >> 4);
+    w = *psrc;
+    psrc = psrc + 0xe;
+    *pdst = (short)((alpha << 2) >> 0x16) + (w >> 4);
+    pdst = pdst + 0x28;
+  } while (krec < 0x13);
   return;
 
 }
