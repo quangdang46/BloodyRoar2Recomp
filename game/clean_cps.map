@@ -4595,3 +4595,37 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# scriptop_bra_subops (game/w2_e03.c) — ScriptVM Bra (op01) sub-op pieces.
+# Entries 0x80183008/0x8018304C/0x8018306C/0x8018308C/0x801830AC/0x801830CC/
+# 0x801830EC/0x8018310C + internal blocks and shared tails through the
+# 0x8018322C epilogue of the 0x80182F48 coroutine body.
+80183008 scriptop_bra_subops
+80183018 scriptop_bra_subops
+80183024 scriptop_bra_subops
+80183034 scriptop_bra_subops
+80183044 scriptop_bra_subops
+8018304c scriptop_bra_subops
+8018305c scriptop_bra_subops
+8018306c scriptop_bra_subops
+8018307c scriptop_bra_subops
+8018308c scriptop_bra_subops
+8018309c scriptop_bra_subops
+801830ac scriptop_bra_subops
+801830bc scriptop_bra_subops
+801830cc scriptop_bra_subops
+801830dc scriptop_bra_subops
+801830ec scriptop_bra_subops
+801830fc scriptop_bra_subops
+8018310c scriptop_bra_subops
+80183124 scriptop_bra_subops
+80183128 scriptop_bra_subops
+80183148 scriptop_bra_subops
+80183188 scriptop_bra_subops
+8018318c scriptop_bra_subops
+801831a4 scriptop_bra_subops
+801831c8 scriptop_bra_subops
+80183218 scriptop_bra_subops
+80183224 scriptop_bra_subops
+80183228 scriptop_bra_subops
+8018322c scriptop_bra_subops

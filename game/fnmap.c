@@ -1334,6 +1334,7 @@ extern void script_op_dispatch(void);
 extern void script_stream_tick(void);
 extern void scriptop_add(void);
 extern void scriptop_bra(void);
+extern void scriptop_bra_subops(void);
 extern void scriptop_bsr(void);
 extern void scriptop_camera(void);
 extern void scriptop_chk(void);
@@ -2257,6 +2258,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80181f20, (void *)fighter_script_fsm },
   { 0x80182f3c, (void *)scriptop_end },
   { 0x80182f48, (void *)scriptop_bra },
+  { 0x80183008, (void *)scriptop_bra_subops },
   { 0x80183248, (void *)scriptop_bsr },
   { 0x80183558, (void *)scriptop_ret },
   { 0x801835c4, (void *)script_ctx28_clear },

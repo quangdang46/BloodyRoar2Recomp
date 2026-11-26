@@ -1711,6 +1711,7 @@
 801787dc fighter_frame
 80182f3c scriptop_end
 80182f48 scriptop_bra
+80183008 scriptop_bra_subops
 80183248 scriptop_bsr
 80183558 scriptop_ret
 80183664 scriptop_wait
