@@ -10914,23 +10914,23 @@ void gte_cw_d000_set(undefined4 cw)
 
 }
 
-undefined4 * gte_op_a00428(undefined4 *a0,undefined4 *a1)
+undefined4 * gte_op_a00428(undefined4 *v,undefined4 *out)
 {
-  undefined4 uVar1;
+  undefined4 r;
   undefined4 in_t1;
   undefined4 in_t2;
   undefined4 in_t3;
-  setCopReg(2,in_t1,*a0);
-  setCopReg(2,in_t2,a0[1]);
-  setCopReg(2,in_t3,a0[2]);
+  setCopReg(2,in_t1,*v);
+  setCopReg(2,in_t2,v[1]);
+  setCopReg(2,in_t3,v[2]);
   copFunction(2,0xa00428);
-  uVar1 = getCopReg(2,0x19);
-  *a1 = uVar1;
-  uVar1 = getCopReg(2,0x1a);
-  a1[1] = uVar1;
-  uVar1 = getCopReg(2,0x1b);
-  a1[2] = uVar1;
-  return a1;
+  r = getCopReg(2,0x19);
+  *out = r;
+  r = getCopReg(2,0x1a);
+  out[1] = r;
+  r = getCopReg(2,0x1b);
+  out[2] = r;
+  return out;
 
 }
 
@@ -14099,42 +14099,42 @@ uint * gte_rtps_xform3_t(undefined4 *n,ushort *a1,uint *a2)
 
 }
 
-undefined4 * gte_xform1_ir(undefined4 *n,undefined4 *a1)
+undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 {
-  undefined4 uVar1;
-  setCopReg(2,0,*n);
-  setCopReg(2,0x800,n[1]);
+  undefined4 r;
+  setCopReg(2,0,*mtx);
+  setCopReg(2,0x800,mtx[1]);
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,9);
-  *a1 = uVar1;
-  uVar1 = getCopReg(2,10);
-  a1[1] = uVar1;
-  uVar1 = getCopReg(2,0xb);
-  a1[2] = uVar1;
-  return a1;
+  r = getCopReg(2,9);
+  *out = r;
+  r = getCopReg(2,10);
+  out[1] = r;
+  r = getCopReg(2,0xb);
+  out[2] = r;
+  return out;
 
 }
 
-undefined4 * gte_rtps_xform1_raw(undefined4 *n,undefined4 *a1,undefined4 *a2)
+undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *v,undefined4 *out)
 {
-  undefined4 uVar1;
+  undefined4 r;
   undefined4 in_zero;
   undefined4 in_at;
-  setCopControlWord(2,0,*n);
-  setCopControlWord(2,0x800,n[1]);
-  setCopControlWord(2,0x1000,n[2]);
-  setCopControlWord(2,0x1800,n[3]);
-  setCopControlWord(2,0x2000,n[4]);
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  setCopControlWord(2,0,*mtx);
+  setCopControlWord(2,0x800,mtx[1]);
+  setCopControlWord(2,0x1000,mtx[2]);
+  setCopControlWord(2,0x1800,mtx[3]);
+  setCopControlWord(2,0x2000,mtx[4]);
+  setCopReg(2,in_zero,*v);
+  setCopReg(2,in_at,v[1]);
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x19);
-  *a2 = uVar1;
-  uVar1 = getCopReg(2,0x1a);
-  a2[1] = uVar1;
-  uVar1 = getCopReg(2,0x1b);
-  a2[2] = uVar1;
-  return a2;
+  r = getCopReg(2,0x19);
+  *out = r;
+  r = getCopReg(2,0x1a);
+  out[1] = r;
+  r = getCopReg(2,0x1b);
+  out[2] = r;
+  return out;
 
 }
 
@@ -17170,30 +17170,30 @@ void channel_script_emit_pair_gated(int ctx,undefined4 a1,int a2)
 }
 
 /* guest channel_script_emit_pair_2gate @0x80134128 — emit pair; count-4 gated + h4-count gated. */
-void channel_script_emit_pair_2gate(int ctx,undefined4 a1,int a2)
+void channel_script_emit_pair_2gate(int ctx,undefined4 arg,int nd)
 {
-  int iVar1;
-  iVar1 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(a2 + 0xc));
-  if (iVar1 - 4 > 0) {
-    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) + 0xa0,ctx + 0x2074,a1,iVar1 - 4);
+  int n;
+  n = (int)*(short *)guest_at((uint32_t)(uintptr_t)(nd + 0xc));
+  if (n - 4 > 0) {
+    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(nd + 8)) + 0xa0,ctx + 0x2074,arg,n - 4);
   }
-  iVar1 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(a2 + 4));
-  if (iVar1 != 0) {
-    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)a2),ctx + 0x2074,a1,iVar1);
+  n = (int)*(short *)guest_at((uint32_t)(uintptr_t)(nd + 4));
+  if (n != 0) {
+    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)nd),ctx + 0x2074,arg,n);
   }
   return;
 }
 
 /* guest channel_script_emit_triple @0x801341a0 — emit triple (2048 x2, 2074 gated on c-5). */
-void channel_script_emit_triple(int ctx,undefined4 a1,int a2)
+void channel_script_emit_triple(int ctx,undefined4 arg,int nd)
 {
-  int iVar1;
-  iVar1 = ctx + 0x2048;
-  prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)a2),iVar1,a1,1);
-  prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) + 0xa0,iVar1,a1,1);
-  iVar1 = (int)*(short *)guest_at((uint32_t)(uintptr_t)(a2 + 0xc)) - 5;
-  if (iVar1 > 0) {
-    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(a2 + 8)) + 0xc8,ctx + 0x2074,a1,iVar1);
+  int t;
+  t = ctx + 0x2048;
+  prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)nd),t,arg,1);
+  prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(nd + 8)) + 0xa0,t,arg,1);
+  t = (int)*(short *)guest_at((uint32_t)(uintptr_t)(nd + 0xc)) - 5;
+  if (t > 0) {
+    prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(nd + 8)) + 0xc8,ctx + 0x2074,arg,t);
   }
   return;
 }
@@ -17695,27 +17695,27 @@ void node_list_collect(int head,int out)
 /* guest corner_emit_cond_offset @0x8018bda4 — conditional-offset corner emit: follows
  * p1+8 link when flag&8, packs 4 halfwords on stack, calls
  * gpu_load_image_cmd(stack, t0+0x14 + (p4+p5*lh10)*2). */
-void corner_emit_cond_offset(int a0,int a1,int a2,int a3,int arg5,int arg6,int arg7)
+void corner_emit_cond_offset(int spr,int x0,int y0,int off,int mul,int x1,int y1)
 {
-  int iVar1;
-  short asStack_10 [4];
-  iVar1 = a0;
-  if ((*(int *)guest_at((uint32_t)(uintptr_t)(a0 + 4)) & 8) != 0) {
-    iVar1 = a0 + *(int *)guest_at((uint32_t)(uintptr_t)(a0 + 8));
+  int img;
+  short rc [4];
+  img = spr;
+  if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
+    img = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  asStack_10[0] = (short)a1;
-  asStack_10[1] = (short)a2;
-  asStack_10[2] = (short)arg6;
-  asStack_10[3] = (short)arg7;
-  iVar1 = iVar1 + ((a3 + arg5 * (int)*(short *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10))) << 1) + 0x14;
+  rc[0] = (short)x0;
+  rc[1] = (short)y0;
+  rc[2] = (short)x1;
+  rc[3] = (short)y1;
+  img = img + ((off + mul * (int)*(short *)guest_at((uint32_t)(uintptr_t)(img + 0x10))) << 1) + 0x14;
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t cec_frm = br2_guest_frame(0x20);
-    memcpy(guest_at(cec_frm + 0x10), asStack_10, 8);
-    gpu_load_image_cmd(cec_frm + 0x10,iVar1);
+    memcpy(guest_at(cec_frm + 0x10), rc, 8);
+    gpu_load_image_cmd(cec_frm + 0x10,img);
     br2_guest_frame_free();
   }
   return;
