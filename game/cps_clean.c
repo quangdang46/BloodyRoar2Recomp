@@ -48051,7 +48051,9 @@ block_8014CDBC:
 }
 
 /* cps_8015607c — clean CPS transliteration of br2eu_func_8015607C (guest 0x8015607c)
- * from SLES_017.22_full_19.c. */
+ * from SLES_017.22_full_19.c.
+ * cd_chan_attr_apply_wrap: cd_chan_attr_apply caller — applies channel
+ * attributes. */
 void cps_8015607c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -48134,7 +48136,10 @@ block_801560E8:
 }
 
 /* cps_801565ec — clean CPS transliteration of br2eu_func_801565EC (guest 0x801565ec)
- * from SLES_017.22_full_19.c. */
+ * from SLES_017.22_full_19.c.
+ * cd_file_read_seq (renames.map): cd_seek_param_issue_clamped +
+ * cd_status_shifted_read + cd_mode_store + cd_seek_complete_poll —
+ * full CD file read/seek sequence. */
 void cps_801565ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -48208,7 +48213,9 @@ block_80156638:
 }
 
 /* cps_801587c0 — clean CPS transliteration of br2eu_func_801587C0 (guest 0x801587c0)
- * from SLES_017.22_full_20.c. */
+ * from SLES_017.22_full_20.c.
+ * hud_sprite_emit_seq: hud_text_d + spr_attr_alloc_c/a — HUD text
+ * sprite attribute emit sequence (46 blocks). */
 void cps_801587c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -48937,7 +48944,11 @@ block_80158D78:
 }
 
 /* cps_8015ace4 — clean CPS transliteration of br2eu_func_8015ACE4 (guest 0x8015ace4)
- * from SLES_017.22_full_21.c. */
+ * from SLES_017.22_full_21.c.
+ * menu_stepper_sm (renames.map): menu_stepper_state_advance +
+ * frame_divisor_get + battle_session_arm + frame_tick +
+ * print_mode_dispatch_b + deferred_cmd_post — main menu state
+ * machine (70 blocks). */
 void cps_8015ace4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -49774,7 +49785,11 @@ block_8015B170:
 }
 
 /* cps_8015b190 — clean CPS transliteration of br2eu_func_8015B190 (guest 0x8015b190)
- * from SLES_017.22_full_21.c. */
+ * from SLES_017.22_full_21.c.
+ * boot_display_init: display_mode_setup + frame_advance_helper +
+ * u16_counter_step_pad_a + mode_string_dispatch +
+ * print_dispatch_selfdesc_guest + battle_math_init +
+ * deferred_cmd_post — display/boot init sequence (175 blocks). */
 void cps_8015b190(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -51453,7 +51468,12 @@ block_8015B98C:
 }
 
 /* cps_8015d69c — clean CPS transliteration of br2eu_func_8015D69C (guest 0x8015d69c)
- * from SLES_017.22_full_22.c. */
+ * from SLES_017.22_full_22.c.
+ * screen_composite_fsm_a: 332-block composite — u16_counter_step_pad
+ * + frame_present + banner_stripe_scroll + scroll_offset family +
+ * announce_param_block_init + hud_text_b + gauge_scale_fixed +
+ * brightness_commit + rec_slot_scan. Largest UI body; the shared
+ * screen-composite engine used by title/VS/HUD variants. */
 void cps_8015d69c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -54820,7 +54840,10 @@ block_8015E848:
 }
 
 /* cps_8015e8bc — clean CPS transliteration of br2eu_func_8015E8BC (guest 0x8015e8bc)
- * from SLES_017.22_full_23.c. */
+ * from SLES_017.22_full_23.c.
+ * stream_decode_draw_c: scratch_013_set + stream_block_decode +
+ * spr_draw_pair + cd_file_load_sm + cd_timer_read — stream block
+ * decode+draw variant C. */
 void cps_8015e8bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -55043,7 +55066,11 @@ epilogue:
 }
 
 /* cps_8015ee40 — clean CPS transliteration of br2eu_func_8015EE40 (guest 0x8015ee40)
- * from SLES_017.22_full_23.c. */
+ * from SLES_017.22_full_23.c.
+ * screen_composite_fsm_b: 96-block variant — frame_tick +
+ * frame_present + banner_stripe_scroll + scroll/announce/hud_text_b/
+ * gauge_scale_fixed + deferred_cmd_post + scene_entry + display
+ * invalidate pair. Sibling of 5d69c. */
 void cps_8015ee40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -56265,7 +56292,10 @@ block_8015F56C:
 }
 
 /* cps_80160a64 — clean CPS transliteration of br2eu_func_80160A64 (guest 0x80160a64)
- * from SLES_017.22_full_24.c. */
+ * from SLES_017.22_full_24.c.
+ * hud_score_composite: 133-block — u16_counter_step_pad + banner/
+ * scroll/announce + hud_text_b/d + descblk_variant_d +
+ * hud_time_score_draw + sprintf_core_guest — score/time HUD screen. */
 void cps_80160a64(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -57950,7 +57980,11 @@ block_801615FC:
 }
 
 /* cps_80161630 — clean CPS transliteration of br2eu_func_80161630 (guest 0x80161630)
- * from SLES_017.22_full_24.c. */
+ * from SLES_017.22_full_24.c.
+ * intro_hud_composite: counter_step_pad_c + frame_divisor_get +
+ * frame_tick + banner/scroll/announce + intro_movie_state +
+ * hud_gauge_render + hud_text_d + spr_slot_pkt_submit + sprintf —
+ * intro-movie HUD composite (74 blocks). */
 void cps_80161630(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -58877,7 +58911,8 @@ block_80161C20:
 }
 
 /* cps_80163ddc — clean CPS transliteration of br2eu_func_80163DDC (guest 0x80163ddc)
- * from SLES_017.22_full_25.c. */
+ * from SLES_017.22_full_25.c.
+ * ui_leaf_step_d: 5-block leaf state step, no calls. */
 void cps_80163ddc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -58941,7 +58976,8 @@ block_80163E14:
 }
 
 /* cps_80163e28 — clean CPS transliteration of br2eu_func_80163E28 (guest 0x80163e28)
- * from SLES_017.22_full_25.c. */
+ * from SLES_017.22_full_25.c.
+ * ui_leaf_step_e: 2-block leaf state step, no calls. */
 void cps_80163e28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -58973,7 +59009,11 @@ block_80163E30:
 }
 
 /* cps_80166a60 — clean CPS transliteration of br2eu_func_80166A60 (guest 0x80166a60)
- * from SLES_017.22_full_27.c. */
+ * from SLES_017.22_full_27.c.
+ * battle_frame_render: player_light_apply + fighter_trail_emit +
+ * slot_height_proj + battle_intro_fsm + battle_hud_draw +
+ * prim_list_gte_invoke + prim_list_persp_step — per-frame battle
+ * render composite (53 blocks). */
 void cps_80166a60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -59679,7 +59719,9 @@ block_80166E88:
 }
 
 /* cps_80168838 — clean CPS transliteration of br2eu_func_80168838 (guest 0x80168838)
- * from SLES_017.22_full_27.c. */
+ * from SLES_017.22_full_27.c.
+ * mc_job_a_result_poll (renames.map): mc_job_issue_a + cd_job_result —
+ * memory-card async job issue + result poll. */
 void cps_80168838(void)
 {
   CPUState *cpu = clean_cpu_state();
