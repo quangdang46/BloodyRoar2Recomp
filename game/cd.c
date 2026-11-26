@@ -118,6 +118,7 @@ static void feb00_note(uint32_t tag, uint32_t val) {
   s_feb00_tag[i] = tag;
   s_feb00_seq++;
 }
+/* cd_feb00_trace_dump — format feb00 trace ring (tag:val; CSV) into out, cap-bounded; ret chars written. */
 int cd_feb00_trace_dump(char *out, int cap) {
   int pos = 0, i, n = (int)(s_feb00_seq < FEB00_TRACE_CAP ? s_feb00_seq : FEB00_TRACE_CAP);
   int start = (int)(s_feb00_seq - (uint32_t)n);
@@ -144,6 +145,7 @@ void cd_seek_note(uint32_t tag, uint32_t a, uint32_t b) {
   uint32_t i = s_seek_seq % SEEK_TRACE_CAP;
   s_seek_tag[i] = tag; s_seek_a[i] = a; s_seek_b[i] = b; s_seek_seq++;
 }
+/* cd_seek_dump — format seek trace ring (tag:a>b; CSV) into out; ret chars written. */
 int cd_seek_dump(char *out, int cap) {
   int pos = 0, i, n = (int)(s_seek_seq < SEEK_TRACE_CAP ? s_seek_seq : SEEK_TRACE_CAP);
   int start = (int)(s_seek_seq - (uint32_t)n);
@@ -251,6 +253,7 @@ uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
  * -> infinite 100% CPU spin + repeated cmd=0x09 as boot retries init).
  * Same contract as cd_chan_full_init/cd_ctx_save (commit 15716b2): the
  * br2_call_generated thunk also makes gen_clean_table skip this address. */
+/* cd_init_session — delegate whole body to generated MIPS 0x80198AF0. */
 void cd_init_session(void)
 {
   call_guest4(0x80198af0, 0, 0, 0, 0);
@@ -707,6 +710,7 @@ uint32_t mc_session_b(uint32_t cb)
 
 /* ======== 0x80195ec8 ======== */
 
+/* cd_cmd_issue_async — async variant of cd_cmd_issue_sync: opcode zero-extended, retry loop w/ CD_BIOS_CB_20 handshake. */
 uint32_t cd_cmd_issue_async(int8_t opcode,int param_addr)
 
 {
@@ -891,6 +895,7 @@ uint32_t cd_result_wait_a(int a0,uint8_t *out_buf)
 
 /* ======== 0x80197ad0 ======== */
 
+/* cd_str_print — emit NUL-terminated guest string msg (default 0x801258C8) to console, then console_pct. */
 void cd_str_print(uint32_t msg)
 
 {
@@ -1331,6 +1336,7 @@ bool cd_cmd_issue_sync(int8_t opcode,int param_addr,uint32_t param_val)
 
 /* ======== 0x801962f0 ======== */
 
+/* cd_stamp_to_sector — decode 3-byte BCD-ish timestamp stamp to sector number (-0x96 bias). */
 int cd_stamp_to_sector(const void *stamp)
 
 {
@@ -5137,6 +5143,7 @@ uint32_t cd_bios16_status(void)
 
 /* ======== 0x8019a15c ======== */
 
+/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801BCC90. */
 void cd_chan_reset_seq(void)
 {
   FUN_8019a364();
@@ -5337,6 +5344,7 @@ void cd_chan_reset_b(void)
 
 /* ======== 0x8019af30 ======== */
 
+/* cd_init_stage_b — zero handler-table words @0x801BDDF4 (8), clear @0x801BDDF0, tbl8 dispatch slot 3 -> 0x8019AF7C. */
 uint32_t cd_init_stage_b(void)
 {
   /* Generated zeroes 8 handler-table words at 0x801BDDF4 (0x801C0000-8716),
@@ -5392,6 +5400,7 @@ uint32_t cd_chan_cb_set(uint32_t idx,uint32_t handler)
 
 /* ======== 0x8019ae10 ======== */
 
+/* cd_init_stage_a — init cells @0x801BDDE4/0x801BDDE0, zero32 @0x801BDDC0 (8), tbl8 dispatch slot 0 -> 0x8019AE68. */
 uint32_t cd_init_stage_a(void)
 {
   br2_st32p(0x801bdde4, 0x100);
@@ -5404,6 +5413,7 @@ uint32_t cd_init_stage_a(void)
 /* ======== batch_mass3 ======== */
 
 extern uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+/* cd_gpu_call — table-driven gpu_invoke wrapper: fn=*(tbl+off) via *0x801B8318. */
 static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
                                 uint32_t a2,uint32_t a3)
 {
@@ -5416,6 +5426,7 @@ extern uint32_t cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
 
 /* ======== 0x80191714 ======== */
 
+/* cd_gpu_callpair_a — two gpu_call steps: (0x3C,0,a1,a2,a3) then (0x14,a0+4,byte[a0+3],a2,a3). */
 void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
                   uint32_t a3)
 {
@@ -5426,6 +5437,7 @@ void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x80191084 ======== */
 
+/* cd_gpu_defer_set — swap defer cell @0x801B832C; if trace>=2 fire cb @0x801B831C(0x80125484,a0); ret old. */
 uint32_t cd_gpu_defer_set(uint32_t a0)
 {
   uint32_t old = DB32(0x801b832c);
@@ -5438,6 +5450,7 @@ uint32_t cd_gpu_defer_set(uint32_t a0)
 
 /* ======== 0x80191488 ======== */
 
+/* cd_gpu_call_8 — gpu_rect_bounds_dbg(0x80125510,a0); gpu_call(8,*(tbl+0x1C),a0,8,a1). */
 void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 {
   uint32_t obj;
@@ -5975,6 +5988,7 @@ static int32_t cd_wait_stat(void)
 
 /* ======== 0x80192634 ======== */
 
+/* cd_cmd_queue_load — arm cmd-queue DMA descriptor (cells 0x801B8438-44): end=a0+n*4-4, count=n, trigger 0x11000002, timeout_arm, poll w/ watchdog. */
 int cd_cmd_queue_load(uint32_t a0,uint32_t a1)
 {
   /* 0x80192634-0x80192710. DMA-descriptor arm for the cmd queue:
@@ -6008,6 +6022,7 @@ int cd_cmd_queue_load(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801938c8 ======== */
 
+/* cd_gpu_call_20 — rect dbg 0x801255EC, timeout_arm, wait_stat, dispatch tbl4(2,0x80193CE0), gpu_invoke(tbl+0x20). */
 int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
 {
   int32_t r;
@@ -6025,6 +6040,7 @@ int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801939b4 ======== */
 
+/* cd_gpu_call_1c — same shape, rect dbg 0x80125510, gpu_invoke(tbl+0x1C). */
 int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
 {
   int32_t r;
@@ -6056,6 +6072,7 @@ uint32_t cd_chan_full_init(void)
 
 /* ======== 0x801918a0 ======== */
 
+/* cd_prim_emit_a — prim emit w/ optional trace cb 0x80125584 (>=2); builds packet via gpu tbl. */
 void cd_prim_emit_a(uint32_t a0,uint32_t a1)
 {
   uint32_t s0;
@@ -6079,6 +6096,7 @@ extern uint32_t cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
+/* cd_queue_poll — a0==0: arm timeout, drain queue until counters 0x801B8448==4C then wait_stat; else bounded poll w/ watchdog. */
 int cd_queue_poll(uint32_t a0)
 {
   if (a0 == 0) {
@@ -6294,6 +6312,7 @@ int cd_job_sm6(uint32_t a0)
 
 /* ======== 0x8019f474 ======== */
 
+/* cd_job_submit5 — job submit SM for state-5 job (cb 0x8019F02C): case walk 0->alloc, 0xa->FUN_801A0220 slot, 0x14->pump svc_dual, 0x16->queue_b. */
 int cd_job_submit5(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6346,6 +6365,7 @@ int cd_job_submit5(uint32_t a0)
 
 /* ======== 0x8019f6cc ======== */
 
+/* cd_job_submit6 — sibling submit SM for state-6 job (cb 0x8019F220). */
 int cd_job_submit6(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6463,6 +6483,7 @@ uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019799c ======== */
 
+/* cd_mmio_bit_wait — spin until bit6 of byte at a1 sets; irq_poll each pass, bail-aware. */
 int cd_mmio_bit_wait(uint32_t a0,uint32_t a1)
 {
   volatile uint8_t *p = (volatile uint8_t *)guest_at(a1);
@@ -6898,7 +6919,7 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019ae70 ======== */
 
-/* cd_cb8_run_param — table-8 run with param (see body). */
+/* cd_cb8_run_param — VBlank-ish dispatch: bump counter @0x801BDDE0=a0+1, call each of 8 tbl @0x801BDDC0 handlers with (a0,0). */
 void cd_cb8_run_param(uint32_t a0)
 {
   uint32_t *tbl = (uint32_t *)guest_at(0x801bddc0);
