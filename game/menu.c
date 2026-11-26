@@ -1355,11 +1355,11 @@ void menu_noop(void)
 void results_scoreboard(int mode)
 
 {
-  int iVar1;
+  int tmp;
   undefined4 draw_mode;
   char *title_str;
-  undefined2 uVar4;
-  int iVar5;
+  undefined2 vspace;
+  int rowpos;
   int rec_off;
   int row_off;
   undefined1 *name_ptr;
@@ -1371,36 +1371,36 @@ void results_scoreboard(int mode)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t rsb_frm = br2_guest_frame(0x88);
-  undefined1 *auStack_70 = (undefined1 *)guest_at(rsb_frm + 0x20);
-  int local_60 [6];
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  int local_38;
-  undefined1 *local_34;
-  undefined1 *local_30;
+  undefined1 *line_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
+  int scores [6];
+  int ticks;
+  int scrollx;
+  int offx;
+  int offx_b;
+  int slot_cur;
+  undefined1 *names_a;
+  undefined1 *names_b;
   
   if (mode == 1) {
-    local_30 = (undefined1 *)guest_at(0x801c13a4);
+    names_b = (undefined1 *)guest_at(0x801c13a4);
     goto LAB_80164714;
   }
   if (mode < 2) {
     if (mode != 0) goto LAB_80164714;
-    local_34 = &DAT_801c1264;
+    names_a = &DAT_801c1264;
   }
   else {
     if (mode == 2) {
-      local_30 = &DAT_801c1304;
+      names_b = &DAT_801c1304;
       goto LAB_80164714;
     }
     if (mode != 3) goto LAB_80164714;
-    local_34 = (undefined1 *)guest_at(0x801c13a4);
+    names_a = (undefined1 *)guest_at(0x801c13a4);
   }
-  local_30 = &DAT_801c1304;
+  names_b = &DAT_801c1304;
 LAB_80164714:
-  iVar1 = memcard_err_sentinel();
-  if (iVar1 < 0) {
+  tmp = memcard_err_sentinel();
+  if (tmp < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
     /* Bail-unwind exit must preserve the DAT1 exit invariant: every normal
@@ -1413,70 +1413,70 @@ joined_r0x80164744:
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
-        local_48 = local_48 + -1;
-        if (local_48 == 0) {
+        ticks = ticks + -1;
+        if (ticks == 0) {
           DAT_1f800001 = 0xf0;
         }
-        if ((((-1 < mode) && (mode < 2)) && (local_48 < 0x1f5)) && (local_3c != 0)) {
-          local_40 = local_40 + -4;
-          local_3c = local_3c + -4;
+        if ((((-1 < mode) && (mode < 2)) && (ticks < 0x1f5)) && (offx_b != 0)) {
+          offx = offx + -4;
+          offx_b = offx_b + -4;
         }
-        if (-1 < local_38) {
-          if (local_38 < 5) {
-            local_60[local_38] = 0;
-            local_38 = local_38 + 1;
+        if (-1 < slot_cur) {
+          if (slot_cur < 5) {
+            scores[slot_cur] = 0;
+            slot_cur = slot_cur + 1;
           }
-          else if (local_38 == 5) {
-            if (local_44 < 0xff) {
-              local_44 = local_44 + 4;
+          else if (slot_cur == 5) {
+            if (scrollx < 0xff) {
+              scrollx = scrollx + 4;
             }
-            if (0xff < local_44) {
-              local_44 = 0xff;
+            if (0xff < scrollx) {
+              scrollx = 0xff;
             }
           }
         }
-        uVar4 = 0x10;
+        vspace = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          vspace = 0x20;
         }
         if (mode < 3) {
           if (mode < 1) {
             if (mode != 0) goto LAB_80164a2c;
             title_str = s_RANKING_80122048;
-            iVar1 = _DAT_1f800020 + -0x62;
+            tmp = _DAT_1f800020 + -0x62;
           }
           else {
             title_str = s_TIME_ATTACK_80122050;
-            iVar1 = _DAT_1f800020 + -0x9a;
+            tmp = _DAT_1f800020 + -0x9a;
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_40) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + offx) * 0x10000 >> 0x10,vspace,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164a00;
         }
 LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
-        iVar1 = rec_off;
-        name_ptr = local_34;
+        tmp = rec_off;
+        name_ptr = names_a;
         do {
           if (DAT_1f800015 == '\0') {
-            iVar5 = row_off + 0x30;
+            rowpos = row_off + 0x30;
           }
           else {
-            iVar5 = (row_off + 0x30) * 2;
+            rowpos = (row_off + 0x30) * 2;
           }
-          if (-1 < *(int *)((char *)local_60 + rec_off)) {
-            sprintf_core((char *)auStack_70,&DAT_80121fe0,iVar1 + 1);
-            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)iVar5,3);
+          if (-1 < *(int *)((char *)scores + rec_off)) {
+            sprintf_core((char *)line_buf,&DAT_80121fe0,tmp + 1);
+            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,line_buf,
+                         (offx + 0x38) * 0x10000 >> 0x10,(int)(short)rowpos,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)iVar5,4);
+                         (offx + 0x48) * 0x10000 >> 0x10,(int)(short)rowpos,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1485,55 +1485,55 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,iVar5,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,offx + 0x70,rowpos,name_ptr,draw_mode);
             }
 LAB_80164b68:
-            iVar5 = *(int *)((char *)local_60 + rec_off);
-            if (iVar5 < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)local_60 + rec_off) = iVar5 + 0x10;
+            rowpos = *(int *)((char *)scores + rec_off);
+            if (rowpos < _DAT_1f800020 + 0x80) {
+              *(int *)((char *)scores + rec_off) = rowpos + 0x10;
             }
           }
           rec_off = rec_off + 4;
           name_ptr = name_ptr + 0x10;
-          iVar1 = iVar1 + 1;
+          tmp = tmp + 1;
           row_off = row_off + 0x20;
-        } while (iVar1 < 5);
-        uVar4 = 0x10;
+        } while (tmp < 5);
+        vspace = 0x10;
         if (DAT_1f800015 != '\0') {
-          uVar4 = 0x20;
+          vspace = 0x20;
         }
         if (mode == 0) {
           title_str = s_VS_RANKING_80122068;
-          iVar1 = _DAT_1f800020 + -0x8c;
+          tmp = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (iVar1 / 2 + local_3c) * 0x10000 >> 0x10,uVar4,1);
+                       (tmp / 2 + offx_b) * 0x10000 >> 0x10,vspace,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
-          iVar1 = _DAT_1f800020 + -0x70;
+          tmp = _DAT_1f800020 + -0x70;
           goto LAB_80164c38;
         }
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
-        iVar1 = 0;
-        name_ptr = local_30;
+        tmp = 0;
+        name_ptr = names_b;
         do {
           if (DAT_1f800015 == '\0') {
-            row_off = iVar1 + 0x30;
+            row_off = tmp + 0x30;
           }
           else {
-            row_off = (iVar1 + 0x30) * 2;
+            row_off = (tmp + 0x30) * 2;
           }
-          sprintf_core((char *)auStack_70,&DAT_80121fe0,rec_off + 1);
-          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
-                       (local_3c + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
+          sprintf_core((char *)line_buf,&DAT_80121fe0,rec_off + 1);
+          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,line_buf,
+                       (offx_b + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),
-                       (local_3c + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
+                       (offx_b + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
           if (mode == 1) {
             draw_mode = 5;
 LAB_80164d80:
-            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_3c + 0x70,row_off,name_ptr,draw_mode);
+            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,offx_b + 0x70,row_off,name_ptr,draw_mode);
           }
           else if (mode < 2) {
             if (mode == 0) {
@@ -1546,9 +1546,9 @@ LAB_80164d68:
           name_ptr = name_ptr + 0x10;
           name_tbl = name_tbl + 1;
           rec_off = rec_off + 1;
-          iVar1 = iVar1 + 0x20;
+          tmp = tmp + 0x20;
         } while (rec_off < 5);
-        if (local_44 != 0) {
+        if (scrollx != 0) {
           fighter_reinit_tail(0x1f800000);
         }
         *(short *)guest_at(_DAT_1f8000bc + 0x32) = *(short *)guest_at(_DAT_1f8000bc + 0x32) + 1;
@@ -1564,7 +1564,7 @@ LAB_80164d68:
           DAT_1f800001 = 0xff;
           goto joined_r0x80164744;
         }
-        if ((DAT_1f800001 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+        if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             draw_mode = 9;
             if (*(char *)(_g_system_config_ptr + 0xd) == '\0') {
@@ -1573,18 +1573,18 @@ LAB_80164d68:
             mc_confirm_dispatch(draw_mode,1);
           }
           fighter_respawn_init(0x1f800000);
-          local_38 = 0;
-          local_44 = 0;
-          local_40 = 0;
-          local_3c = 0x200;
+          slot_cur = 0;
+          scrollx = 0;
+          offx = 0;
+          offx_b = 0x200;
           battle_field_set(_DAT_1f8000bc,0x1e);
-          local_60[4] = 0xffffffff;
-          local_60[3] = 0xffffffff;
-          local_60[2] = 0xffffffff;
-          local_60[1] = 0xffffffff;
-          local_60[0] = -1;
+          scores[4] = 0xffffffff;
+          scores[3] = 0xffffffff;
+          scores[2] = 0xffffffff;
+          scores[1] = 0xffffffff;
+          scores[0] = -1;
           battle_session_arm(0x1f800000,0);
-          local_48 = 1000;
+          ticks = 1000;
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_80164830;
         }
