@@ -22570,7 +22570,8 @@ block_80131F30:
 }
 
 /* cps_80131f48 — clean CPS transliteration of br2eu_func_80131F48 (guest 0x80131f48)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_8012fcd0 */
 void cps_80131f48(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -22988,7 +22989,8 @@ block_801329A0:
 }
 
 /* cps_801329a8 — clean CPS transliteration of br2eu_func_801329A8 (guest 0x801329a8)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_80132868 — gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single */
 void cps_801329a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23002,7 +23004,8 @@ block_801329A8:
 }
 
 /* cps_801329ac — clean CPS transliteration of br2eu_func_801329AC (guest 0x801329ac)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_80132868 — gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single */
 void cps_801329ac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23831,7 +23834,8 @@ block_801332E8:
 }
 
 /* cps_801332f0 — clean CPS transliteration of br2eu_func_801332F0 (guest 0x801332f0)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_80133164 — dual_track_step_b: same family — pair_depth_set + u16_step_toward + */
 void cps_801332f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23889,7 +23893,8 @@ block_80133428:
 }
 
 /* cps_80133450 — clean CPS transliteration of br2eu_func_80133450 (guest 0x80133450)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_80133428 */
 void cps_80133450(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23906,7 +23911,8 @@ block_80133450:
 }
 
 /* cps_8013345c — clean CPS transliteration of br2eu_func_8013345C (guest 0x8013345c)
- * from SLES_017.22_full_05.c. */
+ * from SLES_017.22_full_05.c.
+ * split piece of cps_80133450 */
 void cps_8013345c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24060,7 +24066,8 @@ block_80133548:
 }
 
 /* cps_80133550 — clean CPS transliteration of br2eu_func_80133550 (guest 0x80133550)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133550(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24125,7 +24132,8 @@ block_80133574:
 }
 
 /* cps_80133578 — clean CPS transliteration of br2eu_func_80133578 (guest 0x80133578)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133578(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24159,7 +24167,8 @@ block_80133580:
 }
 
 /* cps_80133588 — clean CPS transliteration of br2eu_func_80133588 (guest 0x80133588)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133578 */
 void cps_80133588(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24575,7 +24584,8 @@ block_80133788:
 }
 
 /* cps_80133794 — clean CPS transliteration of br2eu_func_80133794 (guest 0x80133794)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133794(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24592,7 +24602,8 @@ block_80133794:
 }
 
 /* cps_8013379c — clean CPS transliteration of br2eu_func_8013379C (guest 0x8013379c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_8013379c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24617,7 +24628,8 @@ block_8013379C:
 }
 
 /* cps_801337ac — clean CPS transliteration of br2eu_func_801337AC (guest 0x801337ac)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337ac(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24634,7 +24646,8 @@ block_801337AC:
 }
 
 /* cps_801337b4 — clean CPS transliteration of br2eu_func_801337B4 (guest 0x801337b4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_801337b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24794,7 +24807,8 @@ block_801338AC:
 }
 
 /* cps_801338b4 — clean CPS transliteration of br2eu_func_801338B4 (guest 0x801338b4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801338ac */
 void cps_801338b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24808,7 +24822,8 @@ block_801338B4:
 }
 
 /* cps_801338b8 — clean CPS transliteration of br2eu_func_801338B8 (guest 0x801338b8)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801338ac */
 void cps_801338b8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24822,7 +24837,8 @@ block_801338B8:
 }
 
 /* cps_801338bc — clean CPS transliteration of br2eu_func_801338BC (guest 0x801338bc)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801338b8 */
 void cps_801338bc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24853,7 +24869,8 @@ block_801338FC:
 }
 
 /* cps_80133900 — clean CPS transliteration of br2eu_func_80133900 (guest 0x80133900)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801338fc */
 void cps_80133900(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24871,7 +24888,8 @@ block_80133900:
 }
 
 /* cps_8013390c — clean CPS transliteration of br2eu_func_8013390C (guest 0x8013390c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133900 */
 void cps_8013390c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24909,7 +24927,8 @@ block_8013391C:
 }
 
 /* cps_80133928 — clean CPS transliteration of br2eu_func_80133928 (guest 0x80133928)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_8013390c */
 void cps_80133928(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -24923,7 +24942,8 @@ block_80133928:
 }
 
 /* cps_8013392c — clean CPS transliteration of br2eu_func_8013392C (guest 0x8013392c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133900 */
 void cps_8013392c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25146,7 +25166,8 @@ block_80133D68:
 }
 
 /* cps_80133d74 — clean CPS transliteration of br2eu_func_80133D74 (guest 0x80133d74)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133ce8 — record_half_step_h: s16 read/write leaf step. */
 void cps_80133d74(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25200,7 +25221,8 @@ block_80133EBC:
 }
 
 /* cps_80133ef0 — clean CPS transliteration of br2eu_func_80133EF0 (guest 0x80133ef0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80133ebc */
 void cps_80133ef0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25252,7 +25274,8 @@ block_80134080:
 }
 
 /* cps_801340a8 — clean CPS transliteration of br2eu_func_801340A8 (guest 0x801340a8)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134080 */
 void cps_801340a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25268,7 +25291,8 @@ block_801340A8:
 }
 
 /* cps_801340b4 — clean CPS transliteration of br2eu_func_801340B4 (guest 0x801340b4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134080 */
 void cps_801340b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -25285,7 +25309,8 @@ block_801340B4:
 }
 
 /* cps_801340c4 — clean CPS transliteration of br2eu_func_801340C4 (guest 0x801340c4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801340b4 */
 void cps_801340c4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26892,7 +26917,8 @@ block_80134DF0:
 }
 
 /* cps_80134df4 — clean CPS transliteration of br2eu_func_80134DF4 (guest 0x80134df4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134c30 — prim_task_run_wrap: single-call wrapper around prim_task_run. */
 void cps_80134df4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26913,7 +26939,8 @@ block_80134DF4:
 }
 
 /* cps_80134e0c — clean CPS transliteration of br2eu_func_80134E0C (guest 0x80134e0c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134c30 — prim_task_run_wrap: single-call wrapper around prim_task_run. */
 void cps_80134e0c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26931,7 +26958,8 @@ block_80134E0C:
 }
 
 /* cps_80134e20 — clean CPS transliteration of br2eu_func_80134E20 (guest 0x80134e20)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134c30 — prim_task_run_wrap: single-call wrapper around prim_task_run. */
 void cps_80134e20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26948,7 +26976,8 @@ block_80134E20:
 }
 
 /* cps_80134e28 — clean CPS transliteration of br2eu_func_80134E28 (guest 0x80134e28)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80134c30 — prim_task_run_wrap: single-call wrapper around prim_task_run. */
 void cps_80134e28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26970,7 +26999,8 @@ block_80134E28:
 }
 
 /* cps_80135238 — clean CPS transliteration of br2eu_func_80135238 (guest 0x80135238)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135630 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135238(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -27042,7 +27072,8 @@ block_80135264:
 }
 
 /* cps_80135298 — clean CPS transliteration of br2eu_func_80135298 (guest 0x80135298)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135238 */
 void cps_80135298(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -27160,7 +27191,8 @@ block_801352FC:
 }
 
 /* cps_80135314 — clean CPS transliteration of br2eu_func_80135314 (guest 0x80135314)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135298 */
 void cps_80135314(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -27175,7 +27207,8 @@ block_80135314:
 }
 
 /* cps_8013531c — clean CPS transliteration of br2eu_func_8013531C (guest 0x8013531c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135238 */
 void cps_8013531c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28387,7 +28420,8 @@ block_80135898:
 }
 
 /* cps_80135bd0 — clean CPS transliteration of br2eu_func_80135BD0 (guest 0x80135bd0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_8013602c */
 void cps_80135bd0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28427,7 +28461,8 @@ block_80135BF0:
 }
 
 /* cps_80135bf8 — clean CPS transliteration of br2eu_func_80135BF8 (guest 0x80135bf8)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135bd0 */
 void cps_80135bf8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28474,7 +28509,8 @@ block_80135C04:
 }
 
 /* cps_80135c3c — clean CPS transliteration of br2eu_func_80135C3C (guest 0x80135c3c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135bf8 */
 void cps_80135c3c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28543,7 +28579,8 @@ block_80135C3C:
 }
 
 /* cps_80135d14 — clean CPS transliteration of br2eu_func_80135D14 (guest 0x80135d14)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135bf8 */
 void cps_80135d14(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28636,7 +28673,8 @@ block_80135D28:
 }
 
 /* cps_80135de4 — clean CPS transliteration of br2eu_func_80135DE4 (guest 0x80135de4)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135c3c */
 void cps_80135de4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28824,7 +28862,8 @@ block_80135F10:
 }
 
 /* cps_80135fb8 — clean CPS transliteration of br2eu_func_80135FB8 (guest 0x80135fb8)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135fb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28851,7 +28890,8 @@ block_80135FB8:
 }
 
 /* cps_80135ff0 — clean CPS transliteration of br2eu_func_80135FF0 (guest 0x80135ff0)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135ff0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28887,7 +28927,8 @@ block_80135FF0:
 }
 
 /* cps_8013602c — clean CPS transliteration of br2eu_func_8013602C (guest 0x8013602c)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_80135bd0 */
 void cps_8013602c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28926,7 +28967,8 @@ block_8013602C:
 }
 
 /* cps_80136074 — clean CPS transliteration of br2eu_func_80136074 (guest 0x80136074)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_8013602c */
 void cps_80136074(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -28979,7 +29021,8 @@ block_801361A4:
 }
 
 /* cps_801361a8 — clean CPS transliteration of br2eu_func_801361A8 (guest 0x801361a8)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801361a4 */
 void cps_801361a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -29700,7 +29743,8 @@ block_8013654C:
 }
 
 /* cps_80136578 — clean CPS transliteration of br2eu_func_80136578 (guest 0x80136578)
- * from SLES_017.22_full_06.c. */
+ * from SLES_017.22_full_06.c.
+ * split piece of cps_801361bc — table_walk_rtps_b: same table_byte_next_a + rotmat_rtps_build pattern */
 void cps_80136578(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30187,7 +30231,8 @@ block_80136940:
 }
 
 /* cps_80136944 — clean CPS transliteration of br2eu_func_80136944 (guest 0x80136944)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136944(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30211,7 +30256,8 @@ block_80136944:
 }
 
 /* cps_80136950 — clean CPS transliteration of br2eu_func_80136950 (guest 0x80136950)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136950(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30271,7 +30317,8 @@ block_80136970:
 }
 
 /* cps_80136974 — clean CPS transliteration of br2eu_func_80136974 (guest 0x80136974)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136950 */
 void cps_80136974(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30285,7 +30332,8 @@ block_80136974:
 }
 
 /* cps_80136978 — clean CPS transliteration of br2eu_func_80136978 (guest 0x80136978)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136944 */
 void cps_80136978(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30334,7 +30382,8 @@ block_80136984:
 }
 
 /* cps_801369d4 — clean CPS transliteration of br2eu_func_801369D4 (guest 0x801369d4)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_801369d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30398,7 +30447,8 @@ block_80136A10:
 }
 
 /* cps_80136a34 — clean CPS transliteration of br2eu_func_80136A34 (guest 0x80136a34)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_801369d4 */
 void cps_80136a34(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30429,7 +30479,8 @@ block_80136A34:
 }
 
 /* cps_80136a7c — clean CPS transliteration of br2eu_func_80136A7C (guest 0x80136a7c)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136a7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30553,7 +30604,8 @@ block_80136B14:
 }
 
 /* cps_80136b18 — clean CPS transliteration of br2eu_func_80136B18 (guest 0x80136b18)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136b18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30571,7 +30623,8 @@ block_80136B18:
 }
 
 /* cps_80136b2c — clean CPS transliteration of br2eu_func_80136B2C (guest 0x80136b2c)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136b18 */
 void cps_80136b2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30594,7 +30647,8 @@ block_80136B2C:
 }
 
 /* cps_80136b34 — clean CPS transliteration of br2eu_func_80136B34 (guest 0x80136b34)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136b2c */
 void cps_80136b34(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -30636,7 +30690,8 @@ block_80136B70:
 }
 
 /* cps_80136b78 — clean CPS transliteration of br2eu_func_80136B78 (guest 0x80136b78)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80136b70 */
 void cps_80136b78(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31151,7 +31206,8 @@ block_80137074:
 }
 
 /* cps_80137088 — clean CPS transliteration of br2eu_func_80137088 (guest 0x80137088)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137074 */
 void cps_80137088(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31184,7 +31240,8 @@ block_80137528:
 }
 
 /* cps_8013752c — clean CPS transliteration of br2eu_func_8013752C (guest 0x8013752c)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137528 */
 void cps_8013752c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31204,7 +31261,8 @@ block_8013752C:
 }
 
 /* cps_80137548 — clean CPS transliteration of br2eu_func_80137548 (guest 0x80137548)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_8013752c */
 void cps_80137548(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31246,7 +31304,8 @@ block_8013783C:
 }
 
 /* cps_8013784c — clean CPS transliteration of br2eu_func_8013784C (guest 0x8013784c)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_8013783c */
 void cps_8013784c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31283,7 +31342,8 @@ block_8013785C:
 }
 
 /* cps_80137868 — clean CPS transliteration of br2eu_func_80137868 (guest 0x80137868)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_8013784c */
 void cps_80137868(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31604,7 +31664,8 @@ block_80137974:
 }
 
 /* cps_80137abc — clean CPS transliteration of br2eu_func_80137ABC (guest 0x80137abc)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_8013784c */
 void cps_80137abc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31731,7 +31792,8 @@ block_80137B48:
 }
 
 /* cps_80137b58 — clean CPS transliteration of br2eu_func_80137B58 (guest 0x80137b58)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31769,7 +31831,8 @@ block_80137B60:
 }
 
 /* cps_80137b74 — clean CPS transliteration of br2eu_func_80137B74 (guest 0x80137b74)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b74(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31816,7 +31879,8 @@ block_80137B8C:
 }
 
 /* cps_80137bb8 — clean CPS transliteration of br2eu_func_80137BB8 (guest 0x80137bb8)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137b58 */
 void cps_80137bb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31834,7 +31898,8 @@ block_80137BB8:
 }
 
 /* cps_80137bc4 — clean CPS transliteration of br2eu_func_80137BC4 (guest 0x80137bc4)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137b58 */
 void cps_80137bc4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31848,7 +31913,8 @@ block_80137BC4:
 }
 
 /* cps_80137bc8 — clean CPS transliteration of br2eu_func_80137BC8 (guest 0x80137bc8)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137b74 */
 void cps_80137bc8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31866,7 +31932,8 @@ block_80137BC8:
 }
 
 /* cps_80137bd4 — clean CPS transliteration of br2eu_func_80137BD4 (guest 0x80137bd4)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137bd4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -31893,7 +31960,8 @@ block_80137BD4:
 }
 
 /* cps_80137c04 — clean CPS transliteration of br2eu_func_80137C04 (guest 0x80137c04)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137c04(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32034,7 +32102,8 @@ block_80137CA4:
 }
 
 /* cps_80137cb4 — clean CPS transliteration of br2eu_func_80137CB4 (guest 0x80137cb4)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137c04 */
 void cps_80137cb4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -32299,7 +32368,8 @@ block_80137E4C:
 }
 
 /* cps_80137e60 — clean CPS transliteration of br2eu_func_80137E60 (guest 0x80137e60)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80137d28 — task_slot_advance_b: task_slot_step + fighter_chan_delta_accum — */
 void cps_80137e60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -33171,7 +33241,8 @@ block_801385A0:
 }
 
 /* cps_801385b0 — clean CPS transliteration of br2eu_func_801385B0 (guest 0x801385b0)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_80138174 — angle_isqrt_clear: angle_from_xy + isqrt + obj_flag34_clear + GTE — */
 void cps_801385b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -33212,7 +33283,8 @@ void cps_801388dc(void)
 }
 
 /* cps_801388ec — clean CPS transliteration of br2eu_func_801388EC (guest 0x801388ec)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_801388dc */
 void cps_801388ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -33264,7 +33336,8 @@ void cps_8013890c(void)
 }
 
 /* cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_801388ec */
 void cps_80138910(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -33286,7 +33359,8 @@ void cps_80138910(void)
 }
 
 /* cps_8013892c — clean CPS transliteration of br2eu_func_8013892C (guest 0x8013892c)
- * from SLES_017.22_full_07.c. */
+ * from SLES_017.22_full_07.c.
+ * split piece of cps_801388ec */
 void cps_8013892c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -34707,7 +34781,8 @@ block_80139830:
 }
 
 /* cps_80139834 — clean CPS transliteration of br2eu_func_80139834 (guest 0x80139834)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80138cec — impact_fx_update renames.map: GTE transform loop + task_slot_step — */
 void cps_80139834(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35310,7 +35385,8 @@ block_80139D68:
 }
 
 /* cps_80139d98 — clean CPS transliteration of br2eu_func_80139D98 (guest 0x80139d98)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_801393b8 — impact_fx_type_b: GTE ops + impact_fx_spawn — spawns typed impact FX. */
 void cps_80139d98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35369,7 +35445,8 @@ block_80139F1C:
 }
 
 /* cps_80139f20 — clean CPS transliteration of br2eu_func_80139F20 (guest 0x80139f20)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f1c */
 void cps_80139f20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35386,7 +35463,8 @@ block_80139F20:
 }
 
 /* cps_80139f28 — clean CPS transliteration of br2eu_func_80139F28 (guest 0x80139f28)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f20 */
 void cps_80139f28(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35454,7 +35532,8 @@ block_80139F40:
 }
 
 /* cps_80139f58 — clean CPS transliteration of br2eu_func_80139F58 (guest 0x80139f58)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f40 */
 void cps_80139f58(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35473,7 +35552,8 @@ block_80139F58:
 }
 
 /* cps_80139f68 — clean CPS transliteration of br2eu_func_80139F68 (guest 0x80139f68)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f28 */
 void cps_80139f68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35492,7 +35572,8 @@ block_80139F68:
 }
 
 /* cps_80139f78 — clean CPS transliteration of br2eu_func_80139F78 (guest 0x80139f78)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f28 */
 void cps_80139f78(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35510,7 +35591,8 @@ block_80139F78:
 }
 
 /* cps_80139f8c — clean CPS transliteration of br2eu_func_80139F8C (guest 0x80139f8c)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f40 */
 void cps_80139f8c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35524,7 +35606,8 @@ block_80139F8C:
 }
 
 /* cps_80139f90 — clean CPS transliteration of br2eu_func_80139F90 (guest 0x80139f90)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f20 */
 void cps_80139f90(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35565,7 +35648,8 @@ block_80139F9C:
 }
 
 /* cps_80139fb0 — clean CPS transliteration of br2eu_func_80139FB0 (guest 0x80139fb0)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139f90 */
 void cps_80139fb0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35582,7 +35666,8 @@ block_80139FB0:
 }
 
 /* cps_80139fb8 — clean CPS transliteration of br2eu_func_80139FB8 (guest 0x80139fb8)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_80139fb0 */
 void cps_80139fb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35603,7 +35688,8 @@ block_80139FB8:
 }
 
 /* cps_8013a468 — clean CPS transliteration of br2eu_func_8013A468 (guest 0x8013a468)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013a470 — rec_byte_step_f: byte read/write leaf step. */
 void cps_8013a468(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35709,7 +35795,8 @@ block_8013A4B4:
 }
 
 /* cps_8013a4e4 — clean CPS transliteration of br2eu_func_8013A4E4 (guest 0x8013a4e4)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013a470 — rec_byte_step_f: byte read/write leaf step. */
 void cps_8013a4e4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36569,7 +36656,8 @@ block_8013A994:
 }
 
 /* cps_8013a9a8 — clean CPS transliteration of br2eu_func_8013A9A8 (guest 0x8013a9a8)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013a514 — task_batch_spawn: task_alloc_wrap_c/d + rand_lcg + task_node_free — */
 void cps_8013a9a8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36664,7 +36752,8 @@ block_8013AB64:
 }
 
 /* cps_8013ab68 — clean CPS transliteration of br2eu_func_8013AB68 (guest 0x8013ab68)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013ab40 — record_half_step_j: s16 read/write leaf step. */
 void cps_8013ab68(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36682,7 +36771,8 @@ block_8013AB68:
 }
 
 /* cps_8013ab7c — clean CPS transliteration of br2eu_func_8013AB7C (guest 0x8013ab7c)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013ab68 */
 void cps_8013ab7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -36876,7 +36966,8 @@ block_8013AD84:
 }
 
 /* cps_8013ad9c — clean CPS transliteration of br2eu_func_8013AD9C (guest 0x8013ad9c)
- * from SLES_017.22_full_08.c. */
+ * from SLES_017.22_full_08.c.
+ * split piece of cps_8013ac70 — fx_leaf_step: 10-block leaf state step in the FX region. */
 void cps_8013ad9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37552,7 +37643,8 @@ block_8013B374:
 }
 
 /* cps_8013b39c — clean CPS transliteration of br2eu_func_8013B39C (guest 0x8013b39c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b334 — gte_points_xform_wrap: gte_rot_load + gte_tr_load + gte_points_xform */
 void cps_8013b39c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37759,7 +37851,8 @@ block_8013B4E4:
 }
 
 /* cps_8013b508 — clean CPS transliteration of br2eu_func_8013B508 (guest 0x8013b508)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b3a8 — angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b508(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37795,7 +37888,8 @@ block_8013B508:
 }
 
 /* cps_8013b544 — clean CPS transliteration of br2eu_func_8013B544 (guest 0x8013b544)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b3a8 — angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b544(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37809,7 +37903,8 @@ block_8013B544:
 }
 
 /* cps_8013b548 — clean CPS transliteration of br2eu_func_8013B548 (guest 0x8013b548)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b544 */
 void cps_8013b548(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37842,7 +37937,8 @@ block_8013B548:
 }
 
 /* cps_8013b578 — clean CPS transliteration of br2eu_func_8013B578 (guest 0x8013b578)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b1a4 — rec_byte_step_g: half+byte read/write leaf step. */
 void cps_8013b578(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37869,7 +37965,8 @@ block_8013B578:
 }
 
 /* cps_8013b72c — clean CPS transliteration of br2eu_func_8013B72C (guest 0x8013b72c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c9cc — prim_group_emit: gpu_pkt_tag_0c3c + task_node_alloc/free + */
 void cps_8013b72c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -39141,7 +39238,8 @@ block_8013BF10:
 }
 
 /* cps_8013bf20 — clean CPS transliteration of br2eu_func_8013BF20 (guest 0x8013bf20)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013bdc4 — mid_fx_step: 13-block state step in the FX band no direct calls — */
 void cps_8013bf20(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -39988,7 +40086,8 @@ block_8013C50C:
 }
 
 /* cps_8013c510 — clean CPS transliteration of br2eu_func_8013C510 (guest 0x8013c510)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013bf2c — gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE */
 void cps_8013c510(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40036,7 +40135,8 @@ block_8013C530:
 }
 
 /* cps_8013c540 — clean CPS transliteration of br2eu_func_8013C540 (guest 0x8013c540)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013bf2c — gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE */
 void cps_8013c540(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40075,7 +40175,8 @@ block_8013C568:
 }
 
 /* cps_8013c578 — clean CPS transliteration of br2eu_func_8013C578 (guest 0x8013c578)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c540 */
 void cps_8013c578(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40543,7 +40644,8 @@ block_8013C84C:
 }
 
 /* cps_8013c898 — clean CPS transliteration of br2eu_func_8013C898 (guest 0x8013c898)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c984 */
 void cps_8013c898(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40566,7 +40668,8 @@ block_8013C898:
 }
 
 /* cps_8013c89c — clean CPS transliteration of br2eu_func_8013C89C (guest 0x8013c89c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c898 */
 void cps_8013c89c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40580,7 +40683,8 @@ block_8013C89C:
 }
 
 /* cps_8013c8a0 — clean CPS transliteration of br2eu_func_8013C8A0 (guest 0x8013c8a0)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c898 */
 void cps_8013c8a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40663,7 +40767,8 @@ block_8013C97C:
 }
 
 /* cps_8013c984 — clean CPS transliteration of br2eu_func_8013C984 (guest 0x8013c984)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013c750 — gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE */
 void cps_8013c984(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -40706,7 +40811,8 @@ block_8013C990:
 }
 
 /* cps_8013c99c — clean CPS transliteration of br2eu_func_8013C99C (guest 0x8013c99c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013b844 — fx_burst_update: angle_from_xy + gte_rtps_xform1 + task_slot_step + */
 void cps_8013c99c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43172,7 +43278,8 @@ block_8013E654:
 }
 
 /* cps_8013e71c — clean CPS transliteration of br2eu_func_8013E71C (guest 0x8013e71c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e654 */
 void cps_8013e71c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43191,7 +43298,8 @@ block_8013E71C:
 }
 
 /* cps_8013e72c — clean CPS transliteration of br2eu_func_8013E72C (guest 0x8013e72c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e72c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43223,7 +43331,8 @@ block_8013E72C:
 }
 
 /* cps_8013e778 — clean CPS transliteration of br2eu_func_8013E778 (guest 0x8013e778)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e72c */
 void cps_8013e778(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43248,7 +43357,8 @@ block_8013E778:
 }
 
 /* cps_8013e784 — clean CPS transliteration of br2eu_func_8013E784 (guest 0x8013e784)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e778 */
 void cps_8013e784(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43262,7 +43372,8 @@ block_8013E784:
 }
 
 /* cps_8013e788 — clean CPS transliteration of br2eu_func_8013E788 (guest 0x8013e788)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e778 */
 void cps_8013e788(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43353,7 +43464,8 @@ block_8013E7CC:
 }
 
 /* cps_8013e7d0 — clean CPS transliteration of br2eu_func_8013E7D0 (guest 0x8013e7d0)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e790 — task_slot_free_wrap: task_slot_step + task_node_free — advance then */
 void cps_8013e7d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43369,7 +43481,8 @@ block_8013E7D0:
 }
 
 /* cps_8013e7dc — clean CPS transliteration of br2eu_func_8013E7DC (guest 0x8013e7dc)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e7d0 */
 void cps_8013e7dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43391,7 +43504,8 @@ block_8013E7DC:
 }
 
 /* cps_8013e800 — clean CPS transliteration of br2eu_func_8013E800 (guest 0x8013e800)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e7dc */
 void cps_8013e800(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43407,7 +43521,8 @@ block_8013E800:
 }
 
 /* cps_8013e80c — clean CPS transliteration of br2eu_func_8013E80C (guest 0x8013e80c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e778 */
 void cps_8013e80c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43423,7 +43538,8 @@ block_8013E80C:
 }
 
 /* cps_8013e818 — clean CPS transliteration of br2eu_func_8013E818 (guest 0x8013e818)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e80c */
 void cps_8013e818(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43437,7 +43553,8 @@ block_8013E818:
 }
 
 /* cps_8013e820 — clean CPS transliteration of br2eu_func_8013E820 (guest 0x8013e820)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e818 */
 void cps_8013e820(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43455,7 +43572,8 @@ block_8013E820:
 }
 
 /* cps_8013e82c — clean CPS transliteration of br2eu_func_8013E82C (guest 0x8013e82c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e820 */
 void cps_8013e82c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43480,7 +43598,8 @@ block_8013E82C:
 }
 
 /* cps_8013e850 — clean CPS transliteration of br2eu_func_8013E850 (guest 0x8013e850)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e82c */
 void cps_8013e850(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43496,7 +43615,8 @@ block_8013E850:
 }
 
 /* cps_8013e858 — clean CPS transliteration of br2eu_func_8013E858 (guest 0x8013e858)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e850 */
 void cps_8013e858(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43524,7 +43644,8 @@ block_8013E858:
 }
 
 /* cps_8013e86c — clean CPS transliteration of br2eu_func_8013E86C (guest 0x8013e86c)
- * from SLES_017.22_full_09.c. */
+ * from SLES_017.22_full_09.c.
+ * split piece of cps_8013e858 */
 void cps_8013e86c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -43787,7 +43908,8 @@ block_8013E9D4:
 }
 
 /* cps_8013ead4 — clean CPS transliteration of br2eu_func_8013EAD4 (guest 0x8013ead4)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013e790 — task_slot_free_wrap: task_slot_step + task_node_free — advance then */
 void cps_8013ead4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44055,7 +44177,8 @@ block_8013ECCC:
 }
 
 /* cps_8013ecdc — clean CPS transliteration of br2eu_func_8013ECDC (guest 0x8013ecdc)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecdc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44090,7 +44213,8 @@ block_8013ECEC:
 }
 
 /* cps_8013ecf0 — clean CPS transliteration of br2eu_func_8013ECF0 (guest 0x8013ecf0)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecf0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44119,7 +44243,8 @@ block_8013ECF0:
 }
 
 /* cps_8013ed10 — clean CPS transliteration of br2eu_func_8013ED10 (guest 0x8013ed10)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44139,7 +44264,8 @@ block_8013ED10:
 }
 
 /* cps_8013ed24 — clean CPS transliteration of br2eu_func_8013ED24 (guest 0x8013ed24)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44187,7 +44313,8 @@ block_8013ED48:
 }
 
 /* cps_8013ed50 — clean CPS transliteration of br2eu_func_8013ED50 (guest 0x8013ed50)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44221,7 +44348,8 @@ block_8013ED50:
 }
 
 /* cps_8013ed80 — clean CPS transliteration of br2eu_func_8013ED80 (guest 0x8013ed80)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013ed24 */
 void cps_8013ed80(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44398,7 +44526,8 @@ block_8013F8E8:
 }
 
 /* cps_8013f904 — clean CPS transliteration of br2eu_func_8013F904 (guest 0x8013f904)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013f828 */
 void cps_8013f904(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44853,7 +44982,8 @@ block_8013FC28:
 }
 
 /* cps_8013fc38 — clean CPS transliteration of br2eu_func_8013FC38 (guest 0x8013fc38)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013f914 — gte_sxy_pack_ctrl: gte_rtps3_sxy_pack_ctrl + GTE ops — packs */
 void cps_8013fc38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -44919,7 +45049,8 @@ block_8013FC38:
 }
 
 /* cps_8013fd2c — clean CPS transliteration of br2eu_func_8013FD2C (guest 0x8013fd2c)
- * from SLES_017.22_full_10.c. */
+ * from SLES_017.22_full_10.c.
+ * split piece of cps_8013fc38 */
 void cps_8013fd2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -60188,7 +60319,8 @@ block_80175A18:
 }
 
 /* cps_801796e4 — clean CPS transliteration of br2eu_func_801796E4 (guest 0x801796e4)
- * from SLES_017.22_full_34.c. */
+ * from SLES_017.22_full_34.c.
+ * split piece of cps_8017a990 */
 void cps_801796e4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -85274,7 +85406,8 @@ block_80195BFC:
 }
 
 /* cps_80195c00 — clean CPS transliteration of br2eu_func_80195C00 (guest 0x80195c00)
- * from SLES_017.22_full_45.c. */
+ * from SLES_017.22_full_45.c.
+ * split piece of cps_80195c44 */
 void cps_80195c00(void)
 {
   CPUState *cpu = clean_cpu_state();
