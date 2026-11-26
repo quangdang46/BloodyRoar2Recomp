@@ -5808,7 +5808,7 @@
 801709b0 battle_flow_state_machine_alt
 801709c0 battle_flow_state_machine_alt
 801709c8 battle_flow_state_machine_alt
-80175964 cps_80175964
+80175964 reset_guest_cps
 80196718 cps_80196370
 80196798 cps_80196370
 80196818 cps_80196370
