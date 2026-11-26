@@ -7125,7 +7125,7 @@ void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, und
 
 }
 
-undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short step)
+undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
   int len;
@@ -7144,10 +7144,10 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short step)
   delta[0] = (int)*dst - (int)*pos;
   delta[1] = (int)dst[1] - (int)pos[1];
   delta[2] = (int)dst[2] - (int)pos[2];
-  if (step == 0) {
-    step = 1;
+  if (stp == 0) {
+    stp = 1;
   }
-  step = (int)step;
+  step = (int)stp;
   len2 = FUN_80194630((undefined4 *)delta,(undefined4 *)ndir);
   len = FUN_80194500(len2);
   if (len < step) {
@@ -7222,7 +7222,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
-undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short step)
+undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
   int len;
@@ -7239,10 +7239,10 @@ undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short step
   pk[0] = CONCAT22((short)((dst[1] - pos[1]) * 0x10) >> 4,
                       (short)((*dst - *pos) * 0x10) >> 4);
   pk[1] = CONCAT22((pk[1] >> 16),(short)((dst[2] - pos[2]) * 0x10) >> 4);
-  if (step == 0) {
-    step = 1;
+  if (stp == 0) {
+    stp = 1;
   }
-  step = (int)step;
+  step = (int)stp;
   len2 = FUN_80194660((undefined2 *)pk,(undefined2 *)ndir);
   len = FUN_80194500(len2);
   if (step < len) {
