@@ -11588,43 +11588,42 @@ uint32_t spr_attr_alloc_c(uint32_t head_addr,uint32_t x0,uint32_t y0,
  * MB32(0x801f4760), a0&3); spr_draw_pair(MB32(0x801f4764),0,0x1ff,1,
  * 0x200,0,1); cd_timer_read(0); scratch_013_set(s1);
  * MB32(0x801b4154)=a0; MB16(0x1f80008c)=-1; ret 1. */
-int32_t mode_select_commit(uint32_t param_1)
+int32_t mode_select_commit(uint32_t sel)
 {
-  uint32_t v1 = MB32(0x801b4154u);
-  uint32_t s2 = param_1;
-  int32_t s0, s1;
-  int32_t ret;
-  if (v1 == s2) goto commit;
-  if (((int32_t)v1 >> 2) != ((int32_t)s2 >> 2)) {
-    s0 = (int32_t)MBS16(0x1f80008cu);
-    if (s0 == 0) {
+  uint32_t prev = MB32(0x801b4154u);
+  int32_t state, f013;
+  int32_t rc;
+  if (prev == sel) goto commit;
+  if (((int32_t)prev >> 2) != ((int32_t)sel >> 2)) {
+    state = (int32_t)MBS16(0x1f80008cu);
+    if (state == 0) {
       cd_file_load_sm(-1, 0);
-      s0 = 0x10;
+      state = 0x10;
       MW32(0x801c43a0u, 0);
       MB8(0x801e3d00u); /* keep read for faithfulness */
       *(uint8_t *)guest_at(0x801e3d00u) = 0xffu;
-    } else if (s0 != 0x10) {
-      MW16(0x1f80008cu, (uint16_t)s0);
+    } else if (state != 0x10) {
+      MW16(0x1f80008cu, (uint16_t)state);
       return 0;
     }
-    if (cd_file_load_sm((int32_t)(s2 >> 2) + 0x118,
+    if (cd_file_load_sm((int32_t)(sel >> 2) + 0x118,
                      MB32(0x801f4760u)) == 0) {
-      MW16(0x1f80008cu, (uint16_t)s0);
+      MW16(0x1f80008cu, (uint16_t)state);
       return 0;
     }
   }
-  s1 = MB8(0x1f800013u);
+  f013 = MB8(0x1f800013u);
   scratch_013_set(0);
   stream_block_decode(MB32(0x801f4764u), (int *)guest_at(MB32(0x801f4760u)),
-               (int32_t)(s2 & 3u));
+               (int32_t)(sel & 3u));
   spr_draw_pair(MB32(0x801f4764u), 0, 0x1ff, 1, 0x200, 0, 1);
   cd_timer_read(0);
-  scratch_013_set((uint32_t)s1);
-  MW32(0x801b4154u, s2);
+  scratch_013_set((uint32_t)f013);
+  MW32(0x801b4154u, sel);
 commit:
   MW16(0x1f80008cu, 0xffffu);
-  ret = 1;
-  (void)ret;
+  rc = 1;
+  (void)rc;
   return 1;
 }
 
@@ -11645,53 +11644,51 @@ extern void slot_mark2_set(uint32_t);
  * +0xba=MB8(a2+2)<<4, if that byte==0 MB8(a0+0x26)=0.
  * +0xb8 = sx8(MB16(a2+2)>>8)<0 ? -1 : <<4.
  * MB16(MB32(a0+0x38)+0x116) = MB16(a0+0xba). Always ret a2+4. */
-uint32_t desc_state_commit(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t desc_state_commit(uint32_t obj,uint32_t st,
+                      uint32_t desc)
 {
-  uint32_t s0 = param_1;
-  uint32_t s1 = param_3;
-  int32_t v1 = (int32_t)((int16_t)MB16(s1) >> 12);
+  int32_t mode = (int32_t)((int16_t)MB16(desc) >> 12);
   uint32_t v0;
-  uint32_t v1p;
-  int32_t vb;
-  if (v1 == 1) {
-    if ((MB8(s0 + 5) & 1u) != 0) return s1 + 4;
-  } else if (v1 < 2) {
+  uint32_t sub;
+  int32_t b2;
+  if (mode == 1) {
+    if ((MB8(obj + 5) & 1u) != 0) return desc + 4;
+  } else if (mode < 2) {
     /* fall into error stores */
-  } else if (v1 == 2) {
-    if ((MB8(s0 + 5) & 1u) == 0) return s1 + 4;
+  } else if (mode == 2) {
+    if ((MB8(obj + 5) & 1u) == 0) return desc + 4;
   } else {
     /* guest: sh 0xffff -> a1+0x101 (bytes +0x101,+0x102), then the
      * shared sb 0xff -> +0x102,+0x103,+0x104 and the common tail */
-    MW16(param_2 + 0x101, 0xffffu);
-    MW8(param_2 + 0x102, 0xffu);
-    MW8(param_2 + 0x103, 0xffu);
-    MW8(param_2 + 0x104, 0xffu);
+    MW16(st + 0x101, 0xffffu);
+    MW8(st + 0x102, 0xffu);
+    MW8(st + 0x103, 0xffu);
+    MW8(st + 0x104, 0xffu);
     goto common;
   }
-  MW8(param_2 + 0x101, 0xffu);
-  MW8(param_2 + 0x102, 0xffu);
-  MW8(param_2 + 0x103, 0xffu);
-  MW8(param_2 + 0x104, 0xffu);
+  MW8(st + 0x101, 0xffu);
+  MW8(st + 0x102, 0xffu);
+  MW8(st + 0x103, 0xffu);
+  MW8(st + 0x104, 0xffu);
 common:
-  v1p = MB32(s0 + 0x14);
-  MW8(s0 + 0x26, 0xffu);
-  MW8(v1p, 0xffu);
-  v0 = (MB16(s1) >> 8) & 0xfu;
-  MW16(s0 + 0xbc, v0 != 0 ? 0xffffu : 0);
-  if (MBS8(s1 + 2) < 0) {
-    slot_mark2_set(MB8(s1 + 2));
-    MW16(s0 + 0xba, 0xffffu);
+  sub = MB32(obj + 0x14);
+  MW8(obj + 0x26, 0xffu);
+  MW8(sub, 0xffu);
+  v0 = (MB16(desc) >> 8) & 0xfu;
+  MW16(obj + 0xbc, v0 != 0 ? 0xffffu : 0);
+  if (MBS8(desc + 2) < 0) {
+    slot_mark2_set(MB8(desc + 2));
+    MW16(obj + 0xba, 0xffffu);
   } else {
-    vb = MB8(s1 + 2);
-    MW16(s0 + 0xba, (uint16_t)(vb << 4));
-    if (vb == 0) MW8(s0 + 0x26, 0);
+    b2 = MB8(desc + 2);
+    MW16(obj + 0xba, (uint16_t)(b2 << 4));
+    if (b2 == 0) MW8(obj + 0x26, 0);
   }
-  v0 = (uint32_t)(int32_t)(int8_t)(MB16(s1 + 2) >> 8);
-  MW16(s0 + 0xb8, v0 != 0 && (int32_t)(int8_t)v0 < 0 ?
+  v0 = (uint32_t)(int32_t)(int8_t)(MB16(desc + 2) >> 8);
+  MW16(obj + 0xb8, v0 != 0 && (int32_t)(int8_t)v0 < 0 ?
           0xffffu : (uint16_t)((int32_t)(int8_t)v0 << 4));
-  MW16(MB32(s0 + 0x38) + 0x116, MB16(s0 + 0xba));
-  return s1 + 4;
+  MW16(MB32(obj + 0x38) + 0x116, MB16(obj + 0xba));
+  return desc + 4;
 }
 
 /* counter_step_pad_c — port counter step @0x80129c10 (82 insns, 4
@@ -11699,39 +11696,38 @@ common:
  * wrap to 0 if sx16(a1)<s0; flag 0x1000 -> same sfx, s0--, if
  * s0<0 s0=sx16(a1). a3==1: same with 0x2000/0x8000 and sfx 0xb.
  * Returns s0. Flag word = MB16(0x1f800074 + a2*2). */
-int32_t counter_step_pad_c(uint32_t param_1,int32_t param_2,uint32_t param_3,
-                     uint32_t param_4)
+int32_t counter_step_pad_c(uint32_t init,int32_t wrap,uint32_t pad,
+                     uint32_t mode)
 {
-  int32_t s0 = (int32_t)param_1;
-  uint32_t s2 = param_3;
-  uint32_t s4 = (uint32_t)param_2;
-  uint32_t fa = 0x1f800074u + s2 * 2u;
-  if (param_4 == 0) {
-    if (MB16(fa) == 0x4000u) {
+  int32_t ctr = (int32_t)init;
+  uint32_t wrap0 = (uint32_t)wrap;
+  uint32_t faddr = 0x1f800074u + pad * 2u;
+  if (mode == 0) {
+    if (MB16(faddr) == 0x4000u) {
       deferred_cmd_post(0x400, 0xa, 0);
-      s0++;
-      if ((int32_t)(int16_t)param_2 < s0) s0 = 0;
+      ctr++;
+      if ((int32_t)(int16_t)wrap < ctr) ctr = 0;
     }
-    if (MB16(fa) == 0x1000u) {
+    if (MB16(faddr) == 0x1000u) {
       deferred_cmd_post(0x400, 0xa, 0);
-      s0--;
-      if (s0 < 0) s0 = (int32_t)(int16_t)param_2;
+      ctr--;
+      if (ctr < 0) ctr = (int32_t)(int16_t)wrap;
     }
-    return s0;
+    return ctr;
   }
-  if (param_4 == 1) {
-    if (MB16(fa) == 0x2000u) {
+  if (mode == 1) {
+    if (MB16(faddr) == 0x2000u) {
       deferred_cmd_post(0x400, 0xb, 0);
-      s0++;
-      if ((int32_t)(int16_t)param_2 < s0) s0 = 0;
+      ctr++;
+      if ((int32_t)(int16_t)wrap < ctr) ctr = 0;
     }
-    if (MB16(fa) == 0x8000u) {
+    if (MB16(faddr) == 0x8000u) {
       deferred_cmd_post(0x400, 0xb, 0);
-      s0--;
-      if (s0 < 0) s0 = (int32_t)(int16_t)param_2;
+      ctr--;
+      if (ctr < 0) ctr = (int32_t)(int16_t)wrap;
     }
   }
-  return s0;
+  return ctr;
 }
 
 /* ======== batch47 ======== */
@@ -11751,27 +11747,26 @@ static int32_t sdiv6(int32_t p)
  * vec2_rot(0x400, (sx16(v)+0x800)&0xfff, a2arg);
  * vec2_rot(lh(a0+0xa), lh(a0+8), a2arg+6);
  * angle_gte_vec(lh(a0+2), lh(a0), a2arg+0x20). */
-void proj_coord_gte_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4)
+void proj_coord_gte_emit(uint32_t vec,uint32_t dst,uint32_t xform,
+                  uint32_t ent)
 {
-  uint32_t s1 = param_1, s2 = param_2, s3 = param_3, s0 = param_4;
-  uint32_t o = MB32(s0 + 0x20);
-  int32_t v, a2c;
-  uint32_t ang;
-  (void)MB32(o + 0x174);
-  (void)MB32(o + 0x17c);
-  v = atan2_lut((int32_t)MB32(o + 0x17c), (int32_t)MB32(o + 0x174));
-  a2c = MBS16(s0 + 0x72);
-  if (a2c >= 0x601) a2c = 0x600;
-  MW16(s2 + 0x28, (uint16_t)sdiv6(MBS16(s1 + 0x14) * a2c));
-  MW16(s2 + 0x2e, (uint16_t)sdiv6(MBS16(s1 + 0x16) * a2c));
-  MW16(s2 + 0x34, (uint16_t)sdiv6(MBS16(s1 + 0x18) * a2c));
-  ang = ((uint32_t)(int32_t)(int16_t)v + 0x800u) & 0xfffu;
-  vec2_rot(0x400, ang, (undefined2 *)guest_at(s3));
-  vec2_rot((uint32_t)MBS16(s1 + 0xa), (uint32_t)MBS16(s1 + 8),
-               (undefined2 *)guest_at(s3 + 6));
-  angle_gte_vec((uint32_t)MBS16(s1 + 2), (uint32_t)MBS16(s1),
-               (uint *)guest_at(s3 + 0x20));
+  uint32_t obj = MB32(ent + 0x20);
+  int32_t yaw, scale;
+  uint32_t rot;
+  (void)MB32(obj + 0x174);
+  (void)MB32(obj + 0x17c);
+  yaw = atan2_lut((int32_t)MB32(obj + 0x17c), (int32_t)MB32(obj + 0x174));
+  scale = MBS16(ent + 0x72);
+  if (scale >= 0x601) scale = 0x600;
+  MW16(dst + 0x28, (uint16_t)sdiv6(MBS16(vec + 0x14) * scale));
+  MW16(dst + 0x2e, (uint16_t)sdiv6(MBS16(vec + 0x16) * scale));
+  MW16(dst + 0x34, (uint16_t)sdiv6(MBS16(vec + 0x18) * scale));
+  rot = ((uint32_t)(int32_t)(int16_t)yaw + 0x800u) & 0xfffu;
+  vec2_rot(0x400, rot, (undefined2 *)guest_at(xform));
+  vec2_rot((uint32_t)MBS16(vec + 0xa), (uint32_t)MBS16(vec + 8),
+               (undefined2 *)guest_at(xform + 6));
+  angle_gte_vec((uint32_t)MBS16(vec + 2), (uint32_t)MBS16(vec),
+               (uint *)guest_at(xform + 0x20));
 }
 
 /* resource_rebuild_a — two-slot resource rebuild @0x8014c8d4 (87
@@ -11784,29 +11779,29 @@ void proj_coord_gte_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
 void resource_rebuild_a(void)
 {
   int32_t i;
-  uint32_t s1 = 0xaa0, s2 = 0xb90;
+  uint32_t off1 = 0xaa0, off2 = 0xb90;
   for (i = 0; i < 2; i++) {
-    uint32_t e = MB32(0x801f10bcu) + (uint32_t)i * 4u;
-    uint32_t a0;
-    a0 = MB32(e + 4);
-    if (a0 != 0) task_node_free(a0);
-    a0 = MB32(e + 0xc);
-    if (a0 != 0) task_node_free(a0);
-    MW32(e + 4, 0);
-    MW32(e + 0xc, 0);
-    MW32(e + 4, task_alloc_wrap_c(MB32(0x801f10c0u) + s1 + 0xe,
-                             MB32(0x801f10c4u) + s1 + 0xe,
+    uint32_t ent = MB32(0x801f10bcu) + (uint32_t)i * 4u;
+    uint32_t t;
+    t = MB32(ent + 4);
+    if (t != 0) task_node_free(t);
+    t = MB32(ent + 0xc);
+    if (t != 0) task_node_free(t);
+    MW32(ent + 4, 0);
+    MW32(ent + 0xc, 0);
+    MW32(ent + 4, task_alloc_wrap_c(MB32(0x801f10c0u) + off1 + 0xe,
+                             MB32(0x801f10c4u) + off1 + 0xe,
                              0x801b2ed8u, 0x801b2ef4u));
-    MW32(e + 0xc, task_alloc_wrap_c(MB32(0x801f10c0u) + s2 + 0xe,
-                               MB32(0x801f10c4u) + s2 + 0xe,
+    MW32(ent + 0xc, task_alloc_wrap_c(MB32(0x801f10c0u) + off2 + 0xe,
+                               MB32(0x801f10c4u) + off2 + 0xe,
                                0x801b2ed8u, 0x801b2ef4u));
-    s1 += 0x28;
-    s2 += 0x28;
+    off1 += 0x28;
+    off2 += 0x28;
   }
   *(uint8_t *)guest_at(0x1f800001u) = 5;
 }
-
 /* ======== batch48 ======== */
+
 
 /* resource_rebuild_b — two-slot resource rebuild B @0x8014c76c (89
  * insns). MB32(MB32(0x801f10bc)+0x1c) |= 0x820, then the same
