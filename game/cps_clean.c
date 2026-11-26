@@ -112716,6 +112716,11 @@ void cps_801b00a0(void)
     }
     /* Address: 0x801B00A0, Size: 392 bytes, Blocks: 8 */
 
+    /* OT sort-key calc (GTE variant): loads vertex via gte_data[0/1],
+       cmd 0x01 RTPS, reads SZ (data 19>>2) + OT anchor from gte_data[14],
+       bounds-checks depth (a3-17 vs 2063), divides half[a1+80]<<9 by it
+       for the sort key. CPS-blocked (GTE + muldiv). */
+
 block_801B00A0:
     sp = sp + -16;
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -112889,6 +112894,9 @@ void cps_801b03d8(void)
 
     /* Address: 0x801B03D8, Size: 24 bytes, Blocks: 1 */
 
+    /* index resolve + fallthrough: entry = word[word[gp+76]+8] +
+       half[a0+2]; v1 = half[entry+2]; falls into cps_801b03f0. */
+
 block_801B03D8:
     v0 = cpu->read_word(gp + 76);
     v1 = (int32_t)(int16_t)cpu->read_half(a0 + 2);
@@ -112921,6 +112929,11 @@ void cps_801b03f0(void)
         }
     }
     /* Address: 0x801B03F0, Size: 404 bytes, Blocks: 8 */
+
+    /* OT sort-key calc (entry variant of 0x801B00A0): packs three
+       halves (v1, half[v0+6], half[v0+10]) onto stack, GTE cmd 0x01,
+       SZ>>2 depth check vs half[a0+4]-17, divide by depth<<2.
+       CPS-blocked (GTE + muldiv). */
 
 block_801B03F0:
     sp = sp + -24;
@@ -113108,6 +113121,11 @@ void cps_801b07d8(void)
     }
     /* Address: 0x801B07D8, Size: 156 bytes, Blocks: 5 */
 
+    /* display-list cursor step: decrements half[sp+4]+112 counter; on
+       expiry walks word[+108] chain (skips tag-128 nodes via +104
+       fallback), reads half[v0] through +100 index table, writes result
+       to half[a1+54] and half[a1+14], reloads counter. CPS-blocked. */
+
 block_801B07D8:
     a0 = sp + 4;
     cpu->write_word(sp + 4, a1);
@@ -113195,6 +113213,11 @@ void cps_801b0874(void)
     }
     /* Address: 0x801B0874, Size: 84 bytes, Blocks: 2 */
 
+    /* vertex attr fetch: reads three signed halves from a3 (+2/+4/+6),
+       resolves pointers via word[gp+76]+8 and word[gp+80], jal
+       0x8014B2CC(a1=a0+40, a2,a3 offsets), stores result word to *s0.
+       CPS-blocked. */
+
 block_801B0874:
     sp = sp + -24;
     a3 = a0;
@@ -113235,6 +113258,10 @@ void cps_801b08c8(void)
   if (!cpu) return;
 
     /* Address: 0x801B08C8, Size: 244 bytes, Blocks: 1 */
+
+    /* UV/coord table expand: copies half pairs (a0+2,a0+4) into six
+       8-half rows at a1+8..74, adding base offsets half[a1+80]/[a1+82]
+       alternately per column (unrolled 3x2 pattern x3 groups). */
 
 block_801B08C8:
     v0 = cpu->read_half(a0 + 2);
@@ -113311,6 +113338,9 @@ void cps_801b09bc(void)
   if (!cpu) return;
 
     /* Address: 0x801B09BC, Size: 260 bytes, Blocks: 1 */
+
+    /* UV/coord table expand variant: same 6-row layout as 0x801B08C8
+       but sums come from a0's own fields (+6/+8) instead of a1+80/82. */
 
 block_801B09BC:
     v0 = cpu->read_half(a0 + 2);
@@ -113391,6 +113421,10 @@ void cps_801b0ac0(void)
   if (!cpu) return;
 
     /* Address: 0x801B0AC0, Size: 268 bytes, Blocks: 1 */
+
+    /* UV/coord table expand (indexed variant): resolves source record
+       via word[gp+76]+8 + half[a0+2], then same 6-row half-pair expand
+       into a1+8..74 using a1+80/82 bases. */
 
 block_801B0AC0:
     v0 = cpu->read_word(gp + 76);
@@ -113481,6 +113515,11 @@ void cps_801b0bcc(void)
         }
     }
     /* Address: 0x801B0BCC, Size: 372 bytes, Blocks: 3 */
+
+    /* GPU packet builder: resolves src = word[gp+80] + half[a0+2],
+       emits packet header bytes (9,45,128,128,128) at a1+3..7 then
+       copies half/byte fields with pairwise sums into a1-31..+3.
+       CPS-blocked. */
 
 block_801B0BCC:
     t0 = zero;
@@ -113602,6 +113641,11 @@ void cps_801b0d40(void)
   if (!cpu) return;
 
     /* Address: 0x801B0D40, Size: 120 bytes, Blocks: 1 */
+
+    /* GPU packet emit: builds OT entry — idx = half[a0+2]*4 +
+       word[0x801BEB7C]; word[v1] = word[word[0x801BEB84]+idx*4] | 0x09000000;
+       then word[v1] = ((a1 + count*40) << 8) >> 8 (sign-extended byte
+       offset into the ordering table). */
 
 block_801B0D40:
     v0 = 0x801C << 16;  /* 0x801C0000 */
