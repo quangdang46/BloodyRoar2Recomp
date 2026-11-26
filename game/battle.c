@@ -13387,7 +13387,7 @@ void iris_wipe_spawn(int req,int arg)
 
 }
 
-undefined4 * gte_xform3_ip(undefined4 *a0,undefined2 *a1)
+undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 {
   uint uVar1;
   int iVar2;
@@ -13398,25 +13398,25 @@ undefined4 * gte_xform3_ip(undefined4 *a0,undefined2 *a1)
   int iVar7;
   uint uVar8;
   int iVar9;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,CONCAT22(a1[3],*a1));
-  setCopReg(2,0x800,*(uint *)(a1 + 6));
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  setCopReg(2,0,CONCAT22(in[3],*in));
+  setCopReg(2,0x800,*(uint *)(in + 6));
   copFunction(2,0x486012);
   uVar4 = getCopReg(2,0x4800);
   iVar5 = getCopReg(2,0x5000);
   uVar6 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)a1[1] | *(uint *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,*(uint *)(a1 + 6) >> 0x10);
+  setCopReg(2,0,(uint)(ushort)in[1] | *(uint *)(in + 4) << 0x10);
+  setCopReg(2,0x800,*(uint *)(in + 6) >> 0x10);
   copFunction(2,0x486012);
   iVar7 = getCopReg(2,0x4800);
   uVar8 = getCopReg(2,0x5000);
   iVar9 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)(ushort)in[2] | *(uint *)(in + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
   uVar1 = getCopReg(2,0x4800);
   iVar2 = getCopReg(2,0x5000);
@@ -13426,11 +13426,11 @@ undefined4 * gte_xform3_ip(undefined4 *a0,undefined2 *a1)
   setCopControlWord(2,0x5000,iVar2 << 0x10 | uVar8 & 0xffff);
   setCopControlWord(2,0x5800,iVar9 << 0x10 | uVar6 & 0xffff);
   setCopControlWord(2,0x6000,uVar3);
-  return a0;
+  return rt;
 
 }
 
-undefined4 * gte_xform3_t_ip(undefined4 *a0,undefined2 *a1)
+undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 {
   uint uVar1;
   int iVar2;
@@ -13444,31 +13444,31 @@ undefined4 * gte_xform3_t_ip(undefined4 *a0,undefined2 *a1)
   int iVar10;
   uint uVar11;
   int iVar12;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,0,CONCAT22(a1[3],*a1));
-  setCopReg(2,0x800,*(uint *)(a1 + 6));
+  setCopControlWord(2,0,*rt);
+  setCopControlWord(2,0x800,rt[1]);
+  setCopControlWord(2,0x1000,rt[2]);
+  setCopControlWord(2,0x1800,rt[3]);
+  setCopControlWord(2,0x2000,rt[4]);
+  setCopReg(2,0,CONCAT22(in[3],*in));
+  setCopReg(2,0x800,*(uint *)(in + 6));
   copFunction(2,0x486012);
   uVar3 = getCopReg(2,0x4800);
   iVar7 = getCopReg(2,0x5000);
   uVar8 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)a1[1] | *(uint *)(a1 + 4) << 0x10);
-  setCopReg(2,0x800,*(uint *)(a1 + 6) >> 0x10);
+  setCopReg(2,0,(uint)(ushort)in[1] | *(uint *)(in + 4) << 0x10);
+  setCopReg(2,0x800,*(uint *)(in + 6) >> 0x10);
   copFunction(2,0x486012);
   iVar10 = getCopReg(2,0x4800);
   uVar11 = getCopReg(2,0x5000);
   iVar12 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)a1[2] | *(uint *)(a1 + 4) & 0xffff0000);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 8));
+  setCopReg(2,0,(uint)(ushort)in[2] | *(uint *)(in + 4) & 0xffff0000);
+  setCopReg(2,0x800,*(undefined4 *)(in + 8));
   copFunction(2,0x486012);
   uVar1 = getCopReg(2,0x4800);
   iVar4 = getCopReg(2,0x5000);
   uVar9 = getCopReg(2,0x5800);
-  setCopReg(2,0,(uint)(ushort)a1[10] | *(int *)(a1 + 0xc) << 0x10);
-  setCopReg(2,0x800,*(undefined4 *)(a1 + 0xe));
+  setCopReg(2,0,(uint)(ushort)in[10] | *(int *)(in + 0xc) << 0x10);
+  setCopReg(2,0x800,*(undefined4 *)(in + 0xe));
   copFunction(2,0x486012);
   iVar5 = getCopReg(2,0x4800);
   iVar2 = getCopReg(2,0x5000);
@@ -13478,10 +13478,10 @@ undefined4 * gte_xform3_t_ip(undefined4 *a0,undefined2 *a1)
   setCopControlWord(2,0x1000,uVar11 & 0xffff | iVar4 << 0x10);
   setCopControlWord(2,0x1800,iVar12 << 0x10 | uVar8 & 0xffff);
   setCopControlWord(2,0x2000,uVar9);
-  setCopControlWord(2,0x2800,a0[5] + iVar5);
-  setCopControlWord(2,0x3000,iVar2 + a0[6]);
-  setCopControlWord(2,0x3800,a0[7] + iVar6);
-  return a0;
+  setCopControlWord(2,0x2800,rt[5] + iVar5);
+  setCopControlWord(2,0x3000,iVar2 + rt[6]);
+  setCopControlWord(2,0x3800,rt[7] + iVar6);
+  return rt;
 
 }
 
