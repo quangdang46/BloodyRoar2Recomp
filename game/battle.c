@@ -11205,7 +11205,7 @@ void gp_slot24_set(undefined4 v)
 
 }
 
-int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefined4 arg6,undefined4 arg7,int arg8,int arg9,uint arg10, undefined4 arg11)
+int prim_batch_emit(int desc,int idx,undefined4 a2,undefined4 a3,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 arg11)
 {
   undefined2 t1;
   byte cnt;
@@ -11228,58 +11228,58 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
   undefined2 *s6;
   undefined4 *rec;
   /* PTR_PTR_801be894 / PTR_DAT_801be84c are guest pointer-tables: entry
-   * [arg9] is a guest sub-table address, then [a1] indexes it.
+   * [sel] is a guest sub-table address, then [idx] indexes it.
    * Read the 32-bit guest entries via guest_at (never host ** deref). */
-  uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)arg9 * 4);
-  uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)arg9 * 4);
-  node = (int)(intptr_t)task_node_alloc(arg11,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)a1 * 4),0,
-                       (uint)*(uint8_t *)guest_at(datsub + (uint32_t)a1) * *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))* 2
-                       + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))* 0x10 + 0x38);
+  uint32_t ptrsub = *(uint32_t *)guest_at(0x801be894u + (uint32_t)sel * 4);
+  uint32_t datsub = *(uint32_t *)guest_at(0x801be84cu + (uint32_t)sel * 4);
+  node = (int)(intptr_t)task_node_alloc(arg11,2,0xd,*(undefined4 *)guest_at(ptrsub + (uint32_t)idx * 4),0,
+                       (uint)*(uint8_t *)guest_at(datsub + (uint32_t)idx) * *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))* 2
+                       + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))* 0x10 + 0x38);
   if (node == 0) {
     return 0;
   }
   rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
   d0 = rec + 0xe;
-  d1 = d0 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))* 4;
+  d1 = d0 + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))* 4;
   *rec = (undefined4)br2_gaddr(d1);
-  cnt = *(uint8_t *)guest_at(datsub + (uint32_t)a1);
-  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)));
+  cnt = *(uint8_t *)guest_at(datsub + (uint32_t)idx);
+  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)));
   rec[2] = (undefined4)br2_gaddr(d0);
   rec[1] = (undefined4)(br2_gaddr(d1) + (uint)cnt * t0);
-  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc)));
+  t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc)));
   rec[4] = a2;
   rec[7] = a3;
   rec[3] = (undefined4)br2_gaddr(d0 + t0 * 2);
-  rec[6] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18)));
-  t1 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + 8)));
+  rec[6] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x18)));
+  t1 = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((desc + 8)));
   rec[10] = node;
   rec[0xb] = 0;
   *(undefined2 *)(rec + 0xc) = t1;
-  rec[8] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c)));
-  rec[9] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20)));
-  t2 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24)));
+  rec[8] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x1c)));
+  rec[9] = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x20)));
+  t2 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((desc + 0x24)));
   *(undefined2 *)((intptr_t)rec + 0x32) = 0;
   *(undefined2 *)(rec + 0xd) = 1;
   rec[5] = t2;
   t0 = 0;
-  if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))<< 1) {
+  if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))<< 1) {
     do {
       *d0 = 0x1000000;
-      d0[1] = (arg10 & 0x4f) << 5 | 0xe1000000;
+      d0[1] = (fl & 0x4f) << 5 | 0xe1000000;
       t0 = t0 + 1;
       d0 = d0 + 2;
-    } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0xc) ))<< 1);
+    } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 0xc) ))<< 1);
   }
-  switch(a1 + arg9 * 0x100) {
+  switch(idx + sel * 0x100) {
   case 0:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       do {
@@ -11294,7 +11294,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11320,20 +11320,20 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x14;
         t0 = t0 + 1;
         d0 = d0 + 5;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 1:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       do {
@@ -11348,7 +11348,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11374,20 +11374,20 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x18;
         t0 = t0 + 1;
         d0 = d0 + 6;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 2:
     t0 = 0;
     d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d1 = d0 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d1 = d0 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)s0 + 7);
       b0 = (byte *)((intptr_t)d3 + 7);
       s2 = d2 + 2;
@@ -11407,7 +11407,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d0 = (undefined4)br2_gaddr(d3 + 1);
           d0[1] = (undefined4)(br2_gaddr(d3) + 3);
           d0[2] = (undefined4)(br2_gaddr(d3) + 5);
@@ -11438,18 +11438,18 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x1c;
         t0 = t0 + 1;
         s0 = s0 + 7;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
     goto LAB_801a83ec;
   case 3:
     t0 = 0;
     d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d0 = d1 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    d2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d0 = d1 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)s0 + 7);
       b0 = (byte *)((intptr_t)d3 + 7);
       s2 = d2 + 3;
@@ -11471,7 +11471,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d1 = (undefined4)br2_gaddr(d3 + 1);
           d1[1] = (undefined4)(br2_gaddr(d3) + 3);
           d1[2] = (undefined4)(br2_gaddr(d3) + 5);
@@ -11504,21 +11504,21 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x24;
         t0 = t0 + 1;
         s0 = s0 + 9;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
     goto LAB_801a85d4;
   case 4:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       s1 = s3 + 2;
@@ -11544,7 +11544,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11574,23 +11574,23 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x20;
         t0 = t0 + 1;
         d0 = d0 + 8;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 5:
     t0 = 0;
     d1 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*rec));
     d0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(rec[1]));
-    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
-    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
-    d2 = d3 + arg8;
-    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+    s0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+    s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+    s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+    s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+    d3 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
+    s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
+    d2 = d3 + num;
+    if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
       b1 = (byte *)((intptr_t)d0 + 7);
       b0 = (byte *)((intptr_t)d1 + 7);
       s1 = s3 + 3;
@@ -11618,7 +11618,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           cnt = *b1 & 0xfe;
         }
         *b1 = cnt;
-        if (arg8 != 0) {
+        if (num != 0) {
           *d3 = (undefined4)br2_gaddr(d1 + 1);
           d3 = d3 + 1;
           *d2 = (undefined4)br2_gaddr(d0 + 1);
@@ -11648,27 +11648,27 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
         b1 = b1 + 0x28;
         t0 = t0 + 1;
         d0 = d0 + 10;
-      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+      } while (t0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
     }
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 2;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 2;
     break;
   case 6:
     t0 = 0;
     do {
-      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
+      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
       if (t0 == 0) {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
       }
       else {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*arg5 + arg8 * 4)));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*otc + num * 4)));
       }
       wpos = 0;
-      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
         b0 = (byte *)((intptr_t)d1 + 7);
         s1 = s3 + 2;
         d3 = d0 + 2;
@@ -11688,7 +11688,7 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
             cnt = *b0 & 0xfe;
           }
           *b0 = cnt;
-          if (arg8 != 0) {
+          if (num != 0) {
             *s0 = (undefined4)br2_gaddr(d1 + 1);
             s0[1] = (undefined4)(br2_gaddr(d1) + 4);
             s0[2] = (undefined4)(br2_gaddr(d1) + 7);
@@ -11711,29 +11711,29 @@ int prim_batch_emit(int a0,int a1,undefined4 a2,undefined4 a3,int *arg5, undefin
           b0 = b0 + 0x28;
           wpos = wpos + 1;
           d1 = d1 + 10;
-        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
       }
       t0 = t0 + 1;
     } while (t0 < 2);
 LAB_801a83ec:
-    *arg5 = *arg5 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))* 0xc;
+    *otc = *otc + *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))* 0xc;
     return node;
   case 7:
     t0 = 0;
     do {
-      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x24))));
-      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x30))));
-      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x28))));
-      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x2c))));
-      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + 0x20))));
+      d0 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x24))));
+      s3 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x30))));
+      s6 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x28))));
+      s5 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x2c))));
+      s4 = (ushort *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((desc + 0x20))));
       if (t0 == 0) {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*arg5));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)(*otc));
       }
       else {
-        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*arg5 + arg8 * 4)));
+        s0 = (undefined4 *)guest_at((uint32_t)(uintptr_t)((*otc + num * 4)));
       }
       wpos = 0;
-      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8)))) {
+      if (0 < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8)))) {
         b0 = (byte *)((intptr_t)d1 + 7);
         s1 = s3 + 3;
         d3 = d0 + 3;
@@ -11755,7 +11755,7 @@ LAB_801a83ec:
             cnt = *b0 & 0xfe;
           }
           *b0 = cnt;
-          if (arg8 != 0) {
+          if (num != 0) {
             *s0 = (undefined4)br2_gaddr(d1 + 1);
             s0[1] = (undefined4)(br2_gaddr(d1) + 4);
             s0[2] = (undefined4)(br2_gaddr(d1) + 7);
@@ -11779,18 +11779,18 @@ LAB_801a83ec:
           b0 = b0 + 0x34;
           wpos = wpos + 1;
           d1 = d1 + 0xd;
-        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8))));
+        } while (wpos < *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8))));
       }
       t0 = t0 + 1;
     } while (t0 < 2);
 LAB_801a85d4:
-    wpos = *arg5;
-    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))<< 4;
+    wpos = *otc;
+    t0 = *(int *)guest_at((uint32_t)(uintptr_t)((desc + 8) ))<< 4;
     break;
   default:
     goto switchD_801a776c_default;
   }
-  *arg5 = wpos + t0;
+  *otc = wpos + t0;
 switchD_801a776c_default:
   return node;
 
