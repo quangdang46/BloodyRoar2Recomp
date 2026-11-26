@@ -4989,12 +4989,12 @@ sel:
   case 0: return;
   case 1: {
     int32_t b0 = (int32_t)*(int16_t *)(st + 0xb0);
-    int32_t t0 = (int32_t)*(int16_t *)(st + 0xd6);
-    if (t0 < 0) t0 += 0x3f;
+    int32_t ang = (int32_t)*(int16_t *)(st + 0xd6);
+    if (ang < 0) ang += 0x3f;
     print_dispatch((const char *)guest_at(0x801223e0),
                  b0 - (int32_t)*(int16_t *)(st + 0xac),
                  b0 - (int32_t)*(int16_t *)(st + 0xaa),
-                 b0, t0 >> 6);
+                 b0, ang >> 6);
     return;
   }
   case 2: {
@@ -5649,7 +5649,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
   uint32_t flag, sel;
   uint8_t *c0;
-  int32_t v0;
+  int32_t code;
 
   scroll_offset_set(0x20,0xffffffff);
   sel = a1 & 0xffff;
@@ -5678,14 +5678,14 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       if (u16_counter_step_pad_a(a0 + 0x14,3,1) == 0) return 0;
       *(uint32_t *)guest_at(0x801c11f0) = 1;
       g[0x9c] = 5;
-      v0 = *(int16_t *)(st + 0x14);
-      if (v0 == 1)      g[0x9b] = 1;
-      else if (v0 == 0) g[0x9b] = 2;
-      else if (v0 == 2) {
+      code = *(int16_t *)(st + 0x14);
+      if (code == 1)      g[0x9b] = 1;
+      else if (code == 0) g[0x9b] = 2;
+      else if (code == 2) {
         c0 = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
         c0[0x10] = 0xb;
         g[0x9b] = 0;
-      } else if (v0 == 3) g[0x9b] = 4;
+      } else if (code == 3) g[0x9b] = 4;
       if ((*(uint16_t *)(g + 0x68) & 0xe0) != 0) {
         deferred_cmd_post(0x400,0xc,0);
         mc_slot_action(g,0);
@@ -6997,12 +6997,12 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
    * a0 is reused below as a guest address (a0+0xNN counter addrs). */
   extern uint32_t br2_gaddr(const void *);
   a0 = (intptr_t)br2_gaddr((const void *)a0);
-  uint8_t *s3 = (uint8_t *)guest_at((uint32_t)a0);
+  uint8_t *st = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint32_t ctx8 = *(uint32_t *)(g + 8);
   uint32_t ctxc = *(uint32_t *)(g + 0xc);
   uint32_t sel = a1 & 0xffff;
-  uint32_t flag, v0;
+  uint32_t flag, code;
   char buf[16];
 
 #define CAA8_E58C(str,sz,x) \
@@ -7014,7 +7014,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   } while (0)
 
   scroll_offset_set(0x20,0xffffffff);
-  if (sel == (uint32_t)(*(uint16_t *)(s3 + 8) + 0x100)) {
+  if (sel == (uint32_t)(*(uint16_t *)(st + 8) + 0x100)) {
     flag = 0;
     hud_text_b(ctx8,ctxc,(const void *)guest_at(0x80121270),0x1000,0x1000,0);
   } else {
@@ -7039,14 +7039,14 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
       c0  = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc0));
       c8b = (uint8_t *)guest_at(*(uint32_t *)(g + 0xc8));
       c0[0x1d] = c8b[0];
-      c0[7]    = s3[0x18];
-      c0[8]    = s3[0x1a];
-      c0[9]    = s3[0x1c];
-      c0[6]    = s3[0x1e];
-      c0[5]    = s3[0x1e];
-      c0[0x11] = s3[0x20];
-      c0[0x25] = s3[0x22];
-      c0[0x24] = s3[0x2a];
+      c0[7]    = st[0x18];
+      c0[8]    = st[0x1a];
+      c0[9]    = st[0x1c];
+      c0[6]    = st[0x1e];
+      c0[5]    = st[0x1e];
+      c0[0x11] = st[0x20];
+      c0[0x25] = st[0x22];
+      c0[0x24] = st[0x2a];
       memcard_file_flow(0);
       *(uint16_t *)guest_at(*(uint32_t *)(g + 0xc8)) = c0[0x1d];
       dbg_marker_mode_set(c0[0x24]);
@@ -7054,13 +7054,13 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
       gauge_scale_fixed((short)c0[0xe],
                    (short)(int32_t)(((xv * (uint64_t)0x66666667u) >> 32) >> 2));
       brightness_commit((uint16_t)(c0[0xc] ^ 1));
-      *(uint16_t *)(s3 + 0x18) = c0[7];
-      *(uint16_t *)(s3 + 0x1a) = c0[8];
-      *(uint16_t *)(s3 + 0x1c) = c0[9];
-      *(uint16_t *)(s3 + 0x1e) = c0[5];
-      *(uint16_t *)(s3 + 0x20) = c0[0x11];
-      *(uint16_t *)(s3 + 0x22) = c0[0x25];
-      *(uint16_t *)(s3 + 0x2a) = c0[0x24];
+      *(uint16_t *)(st + 0x18) = c0[7];
+      *(uint16_t *)(st + 0x1a) = c0[8];
+      *(uint16_t *)(st + 0x1c) = c0[9];
+      *(uint16_t *)(st + 0x1e) = c0[5];
+      *(uint16_t *)(st + 0x20) = c0[0x11];
+      *(uint16_t *)(st + 0x22) = c0[0x25];
+      *(uint16_t *)(st + 0x2a) = c0[0x24];
       return 0;
     }
     case 2:
@@ -7108,7 +7108,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
       int32_t av;
       if (u16_counter_step_pad_a(a0 + 0x2a,1,1) == 0) return 0;
       BR2_W32(0x801c15f0, 1);
-      av = *(int16_t *)(s3 + 0x2a);
+      av = *(int16_t *)(st + 0x2a);
       if (av == 0)      dbg_marker_mode_set(0);
       else if (av == 1) dbg_marker_mode_set(3);
       else              return 0;
@@ -7118,13 +7118,13 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
       CAA8_GATE();
       {
         uint8_t *d = (uint8_t *)guest_at(0x801b1280);
-        *(uint16_t *)(s3 + 0x18) = d[7];
-        *(uint16_t *)(s3 + 0x1a) = d[8];
-        *(uint16_t *)(s3 + 0x1c) = d[9];
-        *(uint16_t *)(s3 + 0x1e) = d[6];
-        *(uint16_t *)(s3 + 0x20) = d[0x11];
-        *(uint16_t *)(s3 + 0x22) = 0;
-        *(uint16_t *)(s3 + 0x2a) = 0;
+        *(uint16_t *)(st + 0x18) = d[7];
+        *(uint16_t *)(st + 0x1a) = d[8];
+        *(uint16_t *)(st + 0x1c) = d[9];
+        *(uint16_t *)(st + 0x1e) = d[6];
+        *(uint16_t *)(st + 0x20) = d[0x11];
+        *(uint16_t *)(st + 0x22) = 0;
+        *(uint16_t *)(st + 0x2a) = 0;
       }
       CAA8_STATUS();
     default:
@@ -7145,14 +7145,14 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   case 0x103:
     CAA8_E58C(0x80121380,0x1000,flag);
     sprintf_core(buf,(char *)guest_at(0x801212d0),
-                 (int32_t)*(int16_t *)(s3 + 0x18) + 1);
+                 (int32_t)*(int16_t *)(st + 0x18) + 1);
     announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
   case 0x104:
     CAA8_E58C(0x8012138c,0x1000,flag);
     sprintf_core(buf,(char *)guest_at(0x801212d0),
-                 (int32_t)*(int16_t *)(s3 + 0x1a) + 1);
+                 (int32_t)*(int16_t *)(st + 0x1a) + 1);
     announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
@@ -7160,9 +7160,9 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
     CAA8_E58C(0x8012139c,0x1000,flag);
     announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b4060u +
-                     (uint32_t)*(int16_t *)(s3 + 0x1c) * 4)),
+                     (uint32_t)*(int16_t *)(st + 0x1c) * 4)),
                  0x160,0x1000,flag);
-    if (*(int16_t *)(s3 + 0x1c) == 4) {
+    if (*(int16_t *)(st + 0x1c) == 4) {
       scroll_offset_accumulate(0,0xc);
       return 0;
     }
@@ -7173,7 +7173,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   case 0x106:
     CAA8_E58C(0x801213b0,0x1000,flag);
     sprintf_core(buf,(char *)guest_at(0x801212d0),
-                 (int32_t)*(int16_t *)(s3 + 0x1e) + 1);
+                 (int32_t)*(int16_t *)(st + 0x1e) + 1);
     announce_param_block_init(ctx8,ctxc,(const void *)buf,0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
@@ -7181,7 +7181,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
     CAA8_E58C(0x801213bc,0x1000,flag);
     announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b4074u +
-                     (uint32_t)*(int16_t *)(s3 + 0x20) * 4)),
+                     (uint32_t)*(int16_t *)(st + 0x20) * 4)),
                  0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
@@ -7189,7 +7189,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
     CAA8_E58C(0x801213d0,0x1000,flag);
     announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b407cu +
-                     (uint32_t)*(int16_t *)(s3 + 0x22) * 4)),
+                     (uint32_t)*(int16_t *)(st + 0x22) * 4)),
                  0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
@@ -7209,7 +7209,7 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
     CAA8_E58C(0x80121410,0x1000,flag);
     announce_param_block_init(ctx8,ctxc,
                  (const void *)guest_at(g32(0x801b3f70u +
-                     (uint32_t)*(int16_t *)(s3 + 0x2a) * 4)),
+                     (uint32_t)*(int16_t *)(st + 0x2a) * 4)),
                  0x160,0x1000,flag);
     scroll_offset_accumulate(0,0xc);
     return 0;
