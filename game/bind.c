@@ -1384,9 +1384,7 @@ static void bind_globals_3(void)
 uint32_t uRam801beef0, iRam80126228, iRam801be720;
 void halt_baddata(void) { for(;;) { } }
 
-/* ---- UNPORTED weak stubs (game.c callees) ----
- * Guest functions not yet ported. Weak defs keep the tree
- * linkable; strong ports override. Return values are fake. */
+/* ---- game.c globals + bind-time init ---- */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2603,22 +2601,6 @@ int32_t cd_seek_state_machine(uint32_t arg)
     return (int32_t)bind_bios_call_live(0x0b, ret);
 }
 
-/* ---- round-3 unported callees ---- */
-
-/* ---- cd-batch32 callees ---- */
-
-/* ---- cd 99440 callees ---- */
-
-/* ---- menu batch32 callees ---- */
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
