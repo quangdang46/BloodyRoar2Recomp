@@ -12044,7 +12044,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
-int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int num,undefined4 arg5 ,undefined4 arg6)
+int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -12061,7 +12061,7 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int num,undefine
   undefined4 in_s6;
   int num;
   undefined4 in_ra;
-  if (0 < num) {
+  if (0 < total) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
     _DAT_1f8003e0 = in_s6;
