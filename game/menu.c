@@ -9014,32 +9014,32 @@ L_aeec:                                       /* 0x8014f164 */
  * space), so they are dereferenced through the MB/MBS guest macros. The record at
  * *(param_1+0xcc) is a guest pointer; only its +0xa halfword is
  * written. */
-void battle_side_flag_prop(uint32_t param_1,uint8_t *param_2)
+void battle_side_flag_prop(uint32_t battle,uint8_t *side)
 {
-  uint8_t *a1 = param_2;
-  uint32_t v1 = *(uint32_t *)(a1 + 0x5c);
+  uint8_t *s = side;
+  uint32_t v1 = *(uint32_t *)(side + 0x5c);
   uint32_t rec;
   if ((v1 & 8u) == 0) return;
   if ((v1 & 0x40u) != 0 &&
-      (*(uint32_t *)(a1 + 0x6c) & 0x02000000u) == 0 &&
-      MBS8(*(uint32_t *)(a1 + 0x38) + 0x7e) < 0) {
-    rec = MB32(param_1 + 0xcc);
+      (*(uint32_t *)(side + 0x6c) & 0x02000000u) == 0 &&
+      MBS8(*(uint32_t *)(side + 0x38) + 0x7e) < 0) {
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xa,1);
-    if ((a1[5] & 1) != 0) {
-      rec = MB32(param_1 + 0xcc);
+    if ((side[5] & 1) != 0) {
+      rec = MB32(battle + 0xcc);
       MW16(rec + 0xa,(uint16_t)(MB16(rec + 0xa) | 0x200u));
     }
   }
-  if ((*(uint32_t *)(a1 + 0x64) & 0x2000u) != 0) {
-    rec = MB32(param_1 + 0xcc);
+  if ((*(uint32_t *)(side + 0x64) & 0x2000u) != 0) {
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xa,1);
-    if ((a1[5] & 1) != 0) {
-      rec = MB32(param_1 + 0xcc);
+    if ((side[5] & 1) != 0) {
+      rec = MB32(battle + 0xcc);
       MW16(rec + 0xa,(uint16_t)(MB16(rec + 0xa) | 0x100u));
     }
   }
-  if ((MB32(*(uint32_t *)(a1 + 0x2c) + 0x58) & 0x40000000u) != 0) {
-    rec = MB32(param_1 + 0xcc);
+  if ((MB32(*(uint32_t *)(side + 0x2c) + 0x58) & 0x40000000u) != 0) {
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xa,1);
   }
 }
@@ -9048,14 +9048,14 @@ void battle_side_flag_prop(uint32_t param_1,uint8_t *param_2)
  * record tables @0x80128ef0 (41 insns). s0 = guest ptr at a0+0xcc;
  * clears its halfword 0, word-copies 0x21c0 bytes s0+0x18 ->
  * 0x801e1b3c and 0xbd0 bytes s0+0x21d8 -> 0x801e0f6c, then
- * victory_record_restore(param_1,4) and stores the low halfword at s0+6. */
-void engine_tables_restore(uint32_t param_1)
+ * victory_record_restore(battle,4) and stores the low halfword at s0+6. */
+void engine_tables_restore(uint32_t battle)
 {
-  uint32_t s0 = MB32(param_1 + 0xcc);
+  uint32_t s0 = MB32(battle + 0xcc);
   MW16(s0,0);
   memcpy(guest_at(0x801e1b3c),guest_at(s0 + 0x18),0x21c0);
   memcpy(guest_at(0x801e0f6c),guest_at(s0 + 0x21d8),0xbd0);
-  MW16(s0 + 6,(uint16_t)victory_record_restore(param_1,4));
+  MW16(s0 + 6,(uint16_t)victory_record_restore(battle,4));
 }
 
 /* ======== batch37 ======== */
