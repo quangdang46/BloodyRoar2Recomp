@@ -12044,7 +12044,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
-int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,undefined4 arg6)
+int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int num,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
   undefined4 extraout_at;
@@ -12059,9 +12059,9 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
   undefined4 in_s4;
   undefined4 in_s5;
   undefined4 in_s6;
-  int n;
+  int num;
   undefined4 in_ra;
-  if (0 < n) {
+  if (0 < num) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
     _DAT_1f8003e0 = in_s6;
@@ -12079,20 +12079,20 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
         setCopReg(2,in_zero,lst[1]);
         setCopReg(2,extraout_at,lst[2]);
         copFunction(2,0x480012);
-        n = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
+        num = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
         rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
-        if (n != 0) {
+        if (num != 0) {
           t1 = getCopReg(2,0xd000);
           t2 = getCopReg(2,0xd800);
           setCopControlWord(2,0x2800,t0);
           setCopControlWord(2,0x3000,t1);
           setCopControlWord(2,0x3800,t2);
-          /* Generated 0x801871BC jalr's each record fn with the full lst-n
+          /* Generated 0x801871BC jalr's each record fn with the full lst-num
            * set: lst = record[2] (data cursor), a1 = a1 + lh(lst
-           * +0xE), a2 = a2, n = record[1] (per-record field).
+           * +0xE), a2 = a2, num = record[1] (per-record field).
            * task_invoke/call_guest only program $lst/$a1 — $a1 arrived as 0
-           * and $a2/$n stale, so the GTE emit leaf 0x801876BC used a1=0 as
+           * and $a2/$num stale, so the GTE emit leaf 0x801876BC used a1=0 as
            * its OT/link-table base and SWL'd into BIOS kernel RAM
            * (phys 0x0000-0x1FFC). call_guest4 reproduces the guest ABI
            * exactly (same fix as prim_task_run). */
@@ -12100,17 +12100,17 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
             uint32_t prim_a1 = (uint32_t)a1
                 + (uint32_t)(int)*(int16_t *)((char *)lst + 0xe);
             do {
-              n = n + -1;
+              num = num + -1;
               call_guest4((uint32_t)rp[3],(uint32_t)rp[2],prim_a1,
                           (uint32_t)a2,(uint32_t)rp[1]);
               rp = rp + 4;
-            } while (0 < n);
+            } while (0 < num);
           }
         }
       }
-      n = n + -1;
+      num = num + -1;
       lst = lst + 10;
-    } while (0 < n);
+    } while (0 < num);
   }
   return lst;
 
