@@ -670,14 +670,14 @@ switchD_80157ebc_caseD_30:
 int memcard_file_flow(int a0)
 
 {
-  int iVar1;
-  undefined *puVar2;
-  char *pcVar3;
-  int iVar4;
+  int rc;
+  undefined *str_arg;
+  char *fmt_str;
+  int dlg_type;
   int unaff_s2;
-  int iVar5;
-  uint uVar6;
-  uint uVar7;
+  int slot_no;
+  uint ow_flag;
+  uint sm_state;
   /* Guest stepper descriptor: one contiguous 0x24-byte block at
    * sp+0x38..0x5b passed to menu_stepper_state_advance (a0 = sp+0x38);
    * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
@@ -705,12 +705,12 @@ int memcard_file_flow(int a0)
 #define local_a2 (*(uint16_t *)&step_desc[0x1e])
 #define local_a0 (*(uint16_t *)&step_desc[0x20])
 #define local_9e (*(uint16_t *)&step_desc[0x22])
-  char *acStack_78;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
-  undefined4 local_38;
-  int local_34;
-  int local_30;
-  char *local_2c;
-  /* guest sp-0xf8..sp frame image (frame 0xf8). acStack_78 is written by
+  char *msg_buf;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
+  undefined4 op_sel;
+  int sm_ret;
+  int wait_cnt;
+  char *msg_arg;
+  /* guest sp-0xf8..sp frame image (frame 0xf8). msg_buf is written by
    * sprintf_core and re-read by announce_param_block_init* across the
    * whole state loop; without the reservation every nested guest call
    * lands its frame on top of the buffer. frame 0xf8 is 8 mod 16 so the
@@ -721,30 +721,30 @@ int memcard_file_flow(int a0)
   uint32_t mff_frm = br2_guest_frame(0xf8);
 
   extern int br2_bail_pending(void);
-  uVar7 = 0;
-  uVar6 = 0;
-  iVar4 = 0;
-  iVar5 = 0;
+  sm_state = 0;
+  ow_flag = 0;
+  dlg_type = 0;
+  slot_no = 0;
   /* sprintf_core and announce_param_block_init both take host string pointers;
    * back both with the guest stack buffer ($sp+0x80, frame -0xf8 ->
    * entry_sp - 0x78, disasm-verified @0x8015f96c/0x8015fc68+) so one buffer
    * serves both. */
-  acStack_78 = (char *)guest_at(mff_frm + 0x88);
+  msg_buf = (char *)guest_at(mff_frm + 0x88);
   /* stepper descriptor at sp+0x38 -> frm+0x40 (0x24 bytes, ends 0x64,
-   * clear of the acStack_78 string buffer at frm+0x88). */
+   * clear of the msg_buf string buffer at frm+0x88). */
   step_desc = (uint8_t *)guest_at(mff_frm + 0x40);
-  local_2c = acStack_78;
-  local_34 = -1;
-  local_30 = 0;
+  msg_arg = msg_buf;
+  sm_ret = -1;
+  wait_cnt = 0;
   _DAT_1f80008c = 0;
   do {
-    if (br2_bail_pending()) { br2_guest_frame_free(); return local_34; }
-    if (uVar7 != 1) {
-      if (uVar7 < 2) {
-        if ((uVar7 == 0) && (iVar1 = frame_divisor_get(), iVar1 == 0)) {
+    if (br2_bail_pending()) { br2_guest_frame_free(); return sm_ret; }
+    if (sm_state != 1) {
+      if (sm_state < 2) {
+        if ((sm_state == 0) && (rc = frame_divisor_get(), rc == 0)) {
           print_mode_dispatch_b(2,0,0);
-          iVar1 = intro_movie_state(0);
-          if (iVar1 != 0) {
+          rc = intro_movie_state(0);
+          if (rc != 0) {
             deferred_cmd_post(0x203,0,0);
             /* desc+0xc is read by menu_stepper_state_advance as a u32
              * GUEST code address (fn_lookup -> call_guest fallback).
@@ -771,23 +771,23 @@ int memcard_file_flow(int a0)
             local_9e = 0;
             _DAT_801e8518 = 0x30;
             if (a0 != 0) {
-              uVar6 = 0xffffffff;
-              iVar4 = 1;
-              iVar5 = 0;
+              ow_flag = 0xffffffff;
+              dlg_type = 1;
+              slot_no = 0;
               local_bd = '\x11';
             }
             battle_session_arm(0x1f800000,0xffffffff);
-            uVar7 = 1;
+            sm_state = 1;
             goto LAB_8015f820;
           }
         }
         goto LAB_80160550;
       }
-      if (uVar7 == 0xf0) {
+      if (sm_state == 0xf0) {
         deferred_cmd_post(0x203,0,0);
       }
-      else if (uVar7 != 0xf1) goto LAB_80160550;
-      uVar7 = 0xff;
+      else if (sm_state != 0xf1) goto LAB_80160550;
+      sm_state = 0xff;
       goto LAB_80160558;
     }
 LAB_8015f820:
@@ -798,67 +798,67 @@ LAB_8015f820:
     case '\0':
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
-        uVar7 = 0xf0;
+        sm_state = 0xf0;
       }
       if ((local_b8 == local_ba) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
 LAB_8015f8c0:
-        uVar7 = 0xf0;
+        sm_state = 0xf0;
       }
       break;
     case '\x10':
-      uVar6 = 1;
-      local_34 = -1;
+      ow_flag = 1;
+      sm_ret = -1;
       if (local_b8 == 2) {
-        iVar5 = (int)local_aa;
-        iVar4 = 0;
+        slot_no = (int)local_aa;
+        dlg_type = 0;
         goto code_r0x8015ffac;
       }
       if (local_b8 < 3) {
         if (local_b8 == 1) {
-          iVar4 = 4;
-          iVar5 = 0;
+          dlg_type = 4;
+          slot_no = 0;
 LAB_8015fbfc:
           local_bd = '\x12';
         }
       }
       else if (local_b8 == 3) {
-        iVar5 = (int)local_a8;
-        iVar4 = 4;
+        slot_no = (int)local_a8;
+        dlg_type = 4;
         goto LAB_8015fbfc;
       }
       break;
     case '\x11':
-      if ((int)uVar6 < 0) goto code_r0x8015ffac;
+      if ((int)ow_flag < 0) goto code_r0x8015ffac;
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        sprintf_core(acStack_78,s_LOAD_FROM_MEMORY_CARD__s___80121788,
-                     SLOTSTR(iVar5));
+        sprintf_core(msg_buf,s_LOAD_FROM_MEMORY_CARD__s___80121788,
+                     SLOTSTR(slot_no));
         break;
       case 2:
-        sprintf_core(acStack_78,s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(iVar5));
+        sprintf_core(msg_buf,s_FORMAT_MEMORY_CARD__s___801217d8,SLOTSTR(slot_no));
         break;
       case 3:
-        sprintf_core(acStack_78,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(iVar5));
-        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+        sprintf_core(msg_buf,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(slot_no));
+        announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
         scroll_offset_accumulate(0,0x10);
-        sprintf_core(acStack_78,s_OVER_WRITE_OK___8012180c);
+        sprintf_core(msg_buf,s_OVER_WRITE_OK___8012180c);
       default:
         break;
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
         scroll_offset_accumulate(0,0x10);
       case 1:
-        sprintf_core(acStack_78,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(iVar5))
+        sprintf_core(msg_buf,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(slot_no))
         ;
       }
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,uVar6 != 0);
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,uVar6 == 0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_8012181c,0x30,0x1000,ow_flag != 0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,&DAT_80121820,0x90,0x1000,ow_flag == 0);
       scroll_offset_accumulate(0,0x10);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 1:
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824,0x10,0x1000
@@ -867,25 +867,25 @@ LAB_8015fbfc:
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xa000) != 0) {
         deferred_cmd_post(0x400,0xb,0);
-        uVar6 = uVar6 ^ 1;
+        ow_flag = ow_flag ^ 1;
       }
       if ((_DAT_1f80007c & 0x10) == 0) {
         if ((_DAT_1f80007c & 0xe0) != 0) {
           deferred_cmd_post(0x400,0xc,0);
-          switch(iVar4) {
+          switch(dlg_type) {
           case 0:
           case 1:
 switchD_8015fbc4_caseD_0:
-            if (uVar6 == 0) goto LAB_8015fbfc;
+            if (ow_flag == 0) goto LAB_8015fbfc;
             goto LAB_8015fc08;
           case 2:
           case 3:
           case 5:
             if (a0 == 0) goto switchD_8015fbc4_caseD_0;
-            if (uVar6 == 0) goto LAB_8015fbfc;
+            if (ow_flag == 0) goto LAB_8015fbfc;
             local_bd = '\x11';
-            iVar4 = 1;
-            uVar6 = 1;
+            dlg_type = 1;
+            ow_flag = 1;
           }
         }
       }
@@ -898,108 +898,108 @@ LAB_8015fc08:
     case '\x12':
     case '\x13':
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NOW_LOADING_FROM_MEMORY_CARD_80121844,0x10,0x1000
                      ,0);
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s__s____80121864;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s__s____80121864;
         break;
       case 2:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_FORMATTING_MEMORY_CARD__s____8012188c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_FORMATTING_MEMORY_CARD__s____8012188c;
         break;
       case 3:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
         break;
       case 4:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_CHECKING_MEMORY_CARD__s____801218b0;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_CHECKING_MEMORY_CARD__s____801218b0;
         break;
       case 5:
-        iVar4 = 1;
+        dlg_type = 1;
       case 1:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
         break;
       default:
         goto switchD_8015fc3c_default;
       }
-      sprintf_core(acStack_78,pcVar3,puVar2);
+      sprintf_core(msg_buf,fmt_str,str_arg);
 switchD_8015fc3c_default:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,acStack_78,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
       ;
       goto code_r0x8015ffac;
     case '\x14':
-      if (iVar5 == 0) {
-        local_38 = 0;
+      if (slot_no == 0) {
+        op_sel = 0;
       }
-      else if (iVar5 == 1) {
-        local_38 = 0x10;
+      else if (slot_no == 1) {
+        op_sel = 0x10;
       }
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        unaff_s2 = mc_data_read(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
-        if ((unaff_s2 == 0) && (iVar1 = save_blk_cmp32(), iVar1 != 0)) {
+        if ((unaff_s2 == 0) && (rc = save_blk_cmp32(), rc != 0)) {
           unaff_s2 = 2;
         }
         break;
       case 1:
-        unaff_s2 = mc_data_write(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_data_write(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 2:
-        unaff_s2 = mc_op_dispatch(local_38);
+        unaff_s2 = mc_op_dispatch(op_sel);
         break;
       case 3:
-        unaff_s2 = mc_read_queue(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_read_queue(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 4:
-        unaff_s2 = mc_op_dispatch_b(local_38,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        unaff_s2 = mc_op_dispatch_b(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608);
       }
-      local_30 = 100;
-      local_34 = unaff_s2;
+      wait_cnt = 100;
+      sm_ret = unaff_s2;
       if (a0 == 0) {
-        local_30 = -1;
+        wait_cnt = -1;
       }
 code_r0x8015ffac:
       local_bd = local_bd + '\x01';
       break;
     case '\x15':
       scroll_offset_set(0x10,0x68);
-      switch(iVar4) {
+      switch(dlg_type) {
       case 0:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_LOAD_FROM_MEMORY_CARD__s__801218ec;
         break;
       case 1:
       case 3:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_SAVE_TO_MEMORY_CARD__s__80121908;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_SAVE_TO_MEMORY_CARD__s__80121908;
         break;
       case 2:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_FORMAT_MEMORY_CARD__s__80121920;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_FORMAT_MEMORY_CARD__s__80121920;
         break;
       case 4:
-        puVar2 = SLOTSTR(iVar5);
-        pcVar3 = s_CHECKING_MEMORY_CARD__s__80121938;
+        str_arg = SLOTSTR(slot_no);
+        fmt_str = s_CHECKING_MEMORY_CARD__s__80121938;
         break;
       default:
         goto switchD_8015ffe4_default;
       }
-      sprintf_core(acStack_78,pcVar3,puVar2);
+      sprintf_core(msg_buf,fmt_str,str_arg);
 switchD_8015ffe4_default:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_2c,0x10,0x1000,0);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xe0) != 0) {
         deferred_cmd_post(0x400,0xc,0);
@@ -1010,18 +1010,18 @@ switchD_8015ffe4_default:
         local_bd = '\x16';
       }
       if (unaff_s2 == 4) {
-        if (iVar4 == 0) {
-          pcVar3 = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
+        if (dlg_type == 0) {
+          fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
         }
         else {
-          pcVar3 = s_UNFORMATTED_MEMORY_CARD___80121a08;
+          fmt_str = s_UNFORMATTED_MEMORY_CARD___80121a08;
         }
       }
       else if (unaff_s2 < 5) {
         if (unaff_s2 != 1) {
           if (unaff_s2 < 2) {
             if (unaff_s2 != 0) goto LAB_801603ec;
-            switch(iVar4) {
+            switch(dlg_type) {
             case 0:
               gauge_scale_fixed(*(undefined1 *)(_g_system_config_ptr + 0xe),
                            ((uint)*(byte *)(_g_system_config_ptr + 0xf) << 3) / 10);
@@ -1030,13 +1030,13 @@ switchD_8015ffe4_default:
             case 3:
               _DAT_801c15f0 = 0;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
-              iVar1 = local_30 + -1;
-              if ((-1 < local_30) && (local_30 = iVar1, iVar1 == -1)) {
+              rc = wait_cnt + -1;
+              if ((-1 < wait_cnt) && (wait_cnt = rc, rc == -1)) {
                 local_bd = '\x16';
               }
               break;
             case 2:
-              uVar6 = 0xffffffff;
+              ow_flag = 0xffffffff;
               if (a0 == 0) {
                 if (local_b8 != 2) {
                   if (local_b8 < 3) {
@@ -1045,27 +1045,27 @@ switchD_8015ffe4_default:
                   }
                   else {
                     if (local_b8 == 3) {
-                      iVar4 = 1;
-                      iVar5 = (int)local_a8;
+                      dlg_type = 1;
+                      slot_no = (int)local_a8;
                       goto LAB_8016028c;
                     }
                     local_bd = '\x11';
                   }
                   break;
                 }
-                iVar5 = (int)local_aa;
-                iVar4 = 0;
+                slot_no = (int)local_aa;
+                dlg_type = 0;
               }
               else {
 LAB_8016026c:
-                iVar4 = 1;
-                iVar5 = 0;
+                dlg_type = 1;
+                slot_no = 0;
               }
 LAB_8016028c:
               local_bd = '\x11';
               break;
             case 4:
-              iVar4 = 1;
+              dlg_type = 1;
               goto LAB_80160464;
             }
           }
@@ -1074,12 +1074,12 @@ LAB_8016028c:
           }
           else {
             if (unaff_s2 != 3) goto LAB_801603ec;
-            uVar6 = 1;
-            if (iVar4 == 4) {
-              iVar4 = 1;
+            ow_flag = 1;
+            if (dlg_type == 4) {
+              dlg_type = 1;
             }
             else {
-              iVar4 = 5;
+              dlg_type = 5;
             }
             local_bd = '\x11';
           }
@@ -1087,38 +1087,38 @@ LAB_8016028c:
         }
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NO_MEMORY_CARD_IS_INSERTED_IN_80121960,0x10,
                      0x1000,2);
-        sprintf_core(acStack_78,s_MEMORY_CARD__s___80121980,SLOTSTR(iVar5));
-        pcVar3 = local_2c;
+        sprintf_core(msg_buf,s_MEMORY_CARD__s___80121980,SLOTSTR(slot_no));
+        fmt_str = msg_arg;
       }
       else if (unaff_s2 == 7) {
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
                      0x1000,2);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
                      0x1000,2);
-        pcVar3 = s_TO_SAVE__801219d8;
+        fmt_str = s_TO_SAVE__801219d8;
       }
       else {
         if (unaff_s2 < 8) {
           if (unaff_s2 == 5) {
-            pcVar3 = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
+            fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
             goto LAB_801603fc;
           }
         }
         else if (unaff_s2 == 0xf) {
-          iVar4 = 3;
+          dlg_type = 3;
 LAB_80160488:
-          uVar6 = 1;
+          ow_flag = 1;
           local_bd = '\x11';
           break;
         }
 LAB_801603ec:
-        pcVar3 = s_ERROR___80121a34;
+        fmt_str = s_ERROR___80121a34;
       }
 LAB_801603fc:
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,pcVar3,0x10,0x1000,2);
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,fmt_str,0x10,0x1000,2);
       break;
     case '\x16':
-      if (iVar4 == 0) {
+      if (dlg_type == 0) {
         if (a0 != 0) goto LAB_8015f8c0;
         if (unaff_s2 == 0) goto LAB_80160510;
         if (local_b8 != 1) {
@@ -1138,16 +1138,16 @@ LAB_801604a4:
         if (unaff_s2 == 0xf) goto LAB_80160494;
 LAB_80160470:
         if (a0 == 0) goto LAB_801604a4;
-        iVar4 = 1;
+        dlg_type = 1;
         goto LAB_80160488;
       }
       if (unaff_s2 < 4) {
         if ((unaff_s2 < 1) && (unaff_s2 == 0)) goto LAB_80160494;
         goto LAB_80160470;
       }
-      iVar4 = 2;
+      dlg_type = 2;
 LAB_80160464:
-      uVar6 = 1;
+      ow_flag = 1;
       local_bd = '\x11';
       break;
     case ' ':
@@ -1167,9 +1167,9 @@ LAB_80160510:
 LAB_80160550:
     frame_tick(0x1f800000);
 LAB_80160558:
-    if (uVar7 == 0xff) {
+    if (sm_state == 0xff) {
       br2_guest_frame_free();
-      return local_34;
+      return sm_ret;
     }
   } while( true );
 }
