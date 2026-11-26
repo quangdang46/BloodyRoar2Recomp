@@ -2213,3 +2213,7 @@
 8018f9a8 gpu_pkt_field2_get
 8018fee0 vram_span_set
 8018ff00 vram_span_set_max
+8019e600 gpu_state_patch_submit_3w
+801a0ddc cd_hw_chan_release_all
+801a2808 cd_cmd_rec_arm_extent
+801a2ec8 cd_cmd_rec_arm_op
