@@ -1453,10 +1453,10 @@ extern void action_commit(byte*,byte*);
 
 extern void launch_vel_update(byte*,byte*);
 extern void ev_stream_dispatch(byte *ctrl,byte *motion);
-extern void action_switch_guest(int ctrl,int *motion,int param_3);
+extern void action_switch_guest(int ctrl,int *motion,int act);
 extern void slot_apply_guest(int ctrl,int motion);
 extern void part_record_reset(undefined2 *ctrl);
-extern ushort * ev5_action_select(int ctrl,int motion,ushort *param_3);
+extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
