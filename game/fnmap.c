@@ -73,6 +73,7 @@ extern void always_one(void);
 extern void angle_from_xy(void);
 extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
+extern void angle_pair_rotmat_unpack(void);
 extern void angle_vec_build(void);
 extern void ani_cat_tail_nine(void);
 extern void ani_cat_tail_ret(void);
@@ -580,7 +581,10 @@ extern void dialog_mode_mirror(void);
 extern void dialog_msg_dispatch(void);
 extern void dialog_sel_dispatch(void);
 extern void dialog_sel_dispatch_wide(void);
+extern void dir_emit_hpair(void);
+extern void dir_emit_ret_t5(void);
 extern void dir_rotate_acc(void);
+extern void dir_rotate_emit(void);
 extern void dir_rotate_pair(void);
 extern void dir_rotate_set(void);
 extern void dir_rotate_wrap(void);
@@ -617,6 +621,8 @@ extern void elem_pair_flag100(void);
 extern void elem_pair_flag100_wrap(void);
 extern void elem_pair_flag8(void);
 extern void elem_pair_flag8_wrap(void);
+extern void emit_tail_ra(void);
+extern void emit_tail_zero(void);
 extern void emit_task_spawn(void);
 extern void emit_task_spawn_b(void);
 extern void emitter_30_teardown(void);
@@ -1327,6 +1333,7 @@ extern void rand_lo16_store(void);
 extern void rand_seed(void);
 extern void rand_word_store(void);
 extern void range_circle_test(void);
+extern void range_circle_test_tail(void);
 extern void rec16_fill(void);
 extern void rec_clear_irq(void);
 extern void rec_copy_init(void);
@@ -1376,6 +1383,7 @@ extern void rgb_triple_store(void);
 extern void ring_effect_task_update(void);
 extern void rotate_xy_pairs(void);
 extern void rotmat2_build(void);
+extern void rotmat2_build_s16(void);
 extern void rotmat2_pair_build(void);
 extern void rotmat_rtps_build(void);
 extern void round_announce_block(void);
@@ -1629,6 +1637,7 @@ extern void u16_wrap_counter_step(void);
 extern void u8_wrap_counter_step(void);
 extern void unlock_progress_scene_entry(void);
 extern void vec2_rot(void);
+extern void vec2_rot_emit(void);
 extern void vec2_rot_lut(void);
 extern void vec3_approach_step(void);
 extern void vec3_midpoint_angles(void);
@@ -2642,10 +2651,14 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d2e0, (void *)gte_light_set_q4 },
   { 0x8018d2ec, (void *)gte_light_set },
   { 0x8018d300, (void *)fixed_point_divide },
+  { 0x8018d3b4, (void *)dir_rotate_emit },
   { 0x8018d408, (void *)dir_rotate_pair },
   { 0x8018d444, (void *)dir_rotate_acc },
   { 0x8018d468, (void *)dir_rotate_set },
+  { 0x8018d474, (void *)dir_emit_hpair },
+  { 0x8018d47c, (void *)dir_emit_ret_t5 },
   { 0x8018d484, (void *)dir_rotate_wrap },
+  { 0x8018d49c, (void *)vec2_rot_emit },
   { 0x8018d4fc, (void *)vec2_rot_lut },
   { 0x8018d538, (void *)rtps_point_xform },
   { 0x8018d540, (void *)rtps_point_xform2 },
@@ -2653,11 +2666,16 @@ const Br2FnEnt fn_table[] = {
   { 0x8018d5b4, (void *)rtps_pt_xform },
   { 0x8018d5fc, (void *)gte_lwc2_r0_r1 },
   { 0x8018d618, (void *)range_circle_test },
+  { 0x8018d668, (void *)emit_tail_ra },
+  { 0x8018d670, (void *)range_circle_test_tail },
+  { 0x8018d694, (void *)emit_tail_zero },
   { 0x8018d69c, (void *)prim_attr_repack },
   { 0x8018d700, (void *)node_translate_tree },
   { 0x8018d788, (void *)node_xform_apply },
   { 0x8018d8e4, (void *)pad_record_init },
+  { 0x8018da28, (void *)rotmat2_build_s16 },
   { 0x8018da2c, (void *)rotmat2_build },
+  { 0x8018dab4, (void *)angle_pair_rotmat_unpack },
   { 0x8018dac0, (void *)angle_pair_rotmat },
   { 0x8018dc18, (void *)euler_rotmat },
   { 0x8018de6c, (void *)rotmat_rtps_build },
