@@ -9078,23 +9078,23 @@ extern void cmd_queue_push(int32_t,int32_t,int32_t,int32_t,uint32_t);
  * 0/4/8/0x10/0x30 have bodies; each state re-runs its gate
  * cd_file_load_sm and on failure stores the state back and returns 0.
  * On full completion stores -1 to +0x8c and returns 1. */
-int battle_bringup_b(uint32_t a0,void *a1,void *a2,void *a3)
+int battle_bringup_b(uint32_t battle,void *a1,void *a2,void *a3)
 {
   uint32_t *o1 = (uint32_t *)a1;              /* s6: 11 slots */
   uint32_t *o2 = (uint32_t *)a2;              /* s4: 12 slots */
   uint32_t *o3 = (uint32_t *)a3;              /* s7: 6 slots  */
-  uint32_t s3;
-  int32_t st, s0;
+  uint32_t ttab;
+  int32_t state, cur_st;
   uint32_t cur, r;
   int i;
 
-  s3 = guest_of(tag_table_get());         /* tag table 0x801c47c0 */
-  st = MBS16(a0 + 0x8c);
-  if (st < 0) return -1;
-  s0 = st;                                    /* s0 = v1 before dispatch */
-  if ((uint32_t)st >= 0x31) goto L_store;     /* sltiu 0x31 -> default */
+  ttab = guest_of(tag_table_get());         /* tag table 0x801c47c0 */
+  state = MBS16(battle + 0x8c);
+  if (state < 0) return -1;
+  cur_st = state;                                    /* cur_st = v1 before dispatch */
+  if ((uint32_t)state >= 0x31) goto L_store;     /* sltiu 0x31 -> default */
 
-  switch (st) {
+  switch (state) {
   case 0:  goto L_state0;
   case 4:  goto L_state4;
   case 8:  goto L_state8;
@@ -9109,43 +9109,43 @@ L_state0:                                     /* 0x80147e74 */
   MW8(0x801e3d00,0xff);
   MW32(0x801c47b8,0x80010000);
   MW32(0x801e3cfc,0x800dc800);
-  s0 = 4;
+  cur_st = 4;
 L_state4:                                     /* 0x80147eb4 */
   if (cd_file_load_sm(0x8b,MB32(0x801c47b8)) == 0) goto L_store;
   fighter_record_apply(MB32(0x801c47b8),1);
-  s0 = 8;                                     /* delay slot of jal 566a0 */
+  cur_st = 8;                                     /* delay slot of jal 566a0 */
   page_table_ptr_set(1,1,(undefined *)0);
   cd_timer_read(0);
 L_state8:                                     /* 0x80147eec */
   if (cd_file_load_sm(0x8c,MB32(0x801c47b8)) == 0) goto L_store;
   fighter_record_apply(MB32(0x801c47b8),2);
-  s0 = 0x10;
+  cur_st = 0x10;
   page_table_ptr_set(0x11,2,(undefined *)0);
   cd_timer_read(0);
 L_state10:                                    /* 0x80147f24 */
   /* gen 0x80147F28: a1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
    * o2[] offset table) loads INTO the heap data region, NOT the tag table.
-   * Passing s3 (0x801c47c0) overwrote the master decode tag table, so the
+   * Passing ttab (0x801c47c0) overwrote the master decode tag table, so the
    * offset_table_lookup below read foreign data -> wild +1.8MB cursor jump. */
   if (cd_file_load_sm(0x82,(uint32_t)MB32(0x801c47b8)) == 0) goto L_store;
-  s0 = 0;
+  cur_st = 0;
   for (i = 0; i < 0xc; i++)                   /* 0x80147f44 loop */
     o2[i] = offset_table_lookup(MB32(0x801c47b8),i + 0x10);
   /* absolute store: cursor = o2[11] + (o2[1]-o2[0])  (host reads) */
   MW32(0x801c47b8,o2[0xb] + (o2[1] - o2[0]));
-  s0 = 0x30;
+  cur_st = 0x30;
 L_state30:                                    /* 0x80147f84 */
-  if (cd_file_load_sm(0x81,s3) == 0) goto L_store;
+  if (cd_file_load_sm(0x81,ttab) == 0) goto L_store;
   scratch_013_set(0);
   for (i = 0; i < 0xb; i++) {                 /* 0x80147fac loop */
     cur = MB32(0x801c47b8);
-    r = stream_block_decode(cur,(int *)guest_at(s3),i);
+    r = stream_block_decode(cur,(int *)guest_at(ttab),i);
     o1[i] = cur;
     MW32(0x801c47b8,cur + r);
   }
   for (i = 0; i < 6; i++) {                  /* 0x80147fe8 loop */
     cur = MB32(0x801c47b8);
-    r = stream_block_decode(cur,(int *)guest_at(s3),i + 0x20);
+    r = stream_block_decode(cur,(int *)guest_at(ttab),i + 0x20);
     o3[i] = cur;
     MW32(0x801c47b8,cur + r);
   }
@@ -9154,28 +9154,28 @@ L_state30:                                    /* 0x80147f84 */
    * call's delay slot; the 0x34/0x35 steps read the SECOND cursor
    * 0x801e3cfc (never advanced here) while 0x801c47b8 keeps
    * accumulating every return. */
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x31);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x31);
   spr_draw_off(MB32(0x801c47b8),0x300,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x32);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x32);
   spr_draw_off(MB32(0x801c47b8),0x280,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);
-  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x30);
+  r = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x30);
   spr_draw_off(MB32(0x801c47b8),0,0x1e0,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r30, w/ 0x34 call */
-  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x34);
+  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x34);
   spr_draw_off(MB32(0x801e3cfc),0x2c0,0,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r34, w/ 0x35 call */
-  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x35);
+  r = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x35);
   spr_draw_off(MB32(0x801e3cfc),0x2c0,0x100,1);
   MW32(0x801c47b8,MB32(0x801c47b8) + r);      /* += r35, w/ 9a460 */
   cd_timer_read(0);
   scratch_013_set(1);
-  MW16(a0 + 0x8c,0xffff);
+  MW16(battle + 0x8c,0xffff);
   return 1;
 
 L_store:                                      /* 0x8014813c */
-  MW16(a0 + 0x8c,(uint16_t)s0);
+  MW16(battle + 0x8c,(uint16_t)cur_st);
   return 0;
 }
 
@@ -9474,96 +9474,96 @@ void record_flag_byte_set(uint32_t rec)
 void vs_confirm_a(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
                   uint32_t flag)
 {
-  uint8_t *s1 = blk_a;
-  uint8_t *s2 = blk_b;
-  uint32_t s0 = battle;
-  uint32_t s3 = flag;
-  uint32_t rec, v0;
+
+
+
+
+  uint32_t rec, kind;
   int32_t ret;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,s0,flag); }
+    decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,battle,flag); }
 
-  rec = MB32(s0 + 0xcc);
-  v0 = MB8(rec + 0xa);
-  if (v0 >= 6) return;
+  rec = MB32(battle + 0xcc);
+  kind = MB8(rec + 0xa);
+  if (kind >= 6) return;
 
-  switch (v0) {
+  switch (kind) {
   case 0:
     return;                                   /* -> 0x80153dd0 */
 
   case 1:                                     /* 0x80153b0c */
-    MW16(MB32(s0 + 0xcc) + 0xe,MB16(s0 + 0x94));
-    MW16(MB32(s0 + 0xcc) + 0xc,0);            /* jal delay slot */
-    battle_subrecord_set2(s0);
+    MW16(MB32(battle + 0xcc) + 0xe,MB16(battle + 0x94));
+    MW16(MB32(battle + 0xcc) + 0xc,0);            /* jal delay slot */
+    battle_subrecord_set2(battle);
     goto L_reca;                            /* 0x80153d74 */
 
   case 2:                                     /* 0x80153b34 */
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) < 10) return;
     MW16(rec + 0xc,0);                        /* delay slot of j */
     goto L_recA_9e;                           /* 0x80153c5c */
 
   case 3:                                     /* 0x80153b70 */
-    hud_announce(s0,0x10,(uint32_t)MBS16(s0 + 0x8c));
-    if (s1[0] == 1 && s2[0] == 1) s16_dec_with_floor(s0);
-    rec = MB32(s0 + 0xcc);
+    hud_announce(battle,0x10,(uint32_t)MBS16(battle + 0x8c));
+    if (blk_a[0] == 1 && blk_b[0] == 1) s16_dec_with_floor(battle);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
-      battle_field_set(MB32(s0 + 0xbc),s3 != 0 ? 0x10 : 0xe);
+      battle_field_set(MB32(battle + 0xbc),flag != 0 ? 0x10 : 0xe);
       task_table_init(1);
       clear_f0300_records();
-      versus_stage_commit(s0,1);
+      versus_stage_commit(battle,1);
     }
-    rec = MB32(s0 + 0xcc);
-    if (MBS16(rec + 0xc) == 1) MW8(s0 + 0x9e,0);
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
+    if (MBS16(rec + 0xc) == 1) MW8(battle + 0x9e,0);
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));  /* jal delay */
-    ret = subrecord_u16_rw(s0,-1);
+    ret = subrecord_u16_rw(battle,-1);
     if (ret != 4) return;
     deferred_cmd_post(0x400,0x5f,0);
-    MW16(MB32(s0 + 0xcc) + 0xc,0);
+    MW16(MB32(battle + 0xcc) + 0xc,0);
     goto L_recA_9e;
 
   case 4:                                     /* 0x80153c7c */
-    hud_announce(s0,0x10,(uint32_t)MBS16(s0 + 0x8c));
-    if (s1[0] == 1 && s2[0] == 1) s16_dec_with_floor(s0);
-    rec = MB32(s0 + 0xcc);
+    hud_announce(battle,0x10,(uint32_t)MBS16(battle + 0x8c));
+    if (blk_a[0] == 1 && blk_b[0] == 1) s16_dec_with_floor(battle);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 0) {
-      battle_field_set(MB32(s0 + 0xbc),s3 != 0 ? 0x11 : 0xf);
+      battle_field_set(MB32(battle + 0xbc),flag != 0 ? 0x11 : 0xf);
       task_table_init(1);
       clear_f0300_records();
-      versus_stage_commit_b(s0,1);
+      versus_stage_commit_b(battle,1);
     }
-    rec = MB32(s0 + 0xcc);
+    rec = MB32(battle + 0xcc);
     if (MBS16(rec + 0xc) == 2)
-      MW8(s0 + 0x9e,(uint8_t)(MB16(rec + 0xa) >> 8));
-    rec = MB32(s0 + 0xcc);
+      MW8(battle + 0x9e,(uint8_t)(MB16(rec + 0xa) >> 8));
+    rec = MB32(battle + 0xcc);
     MW16(rec + 0xc,(uint16_t)(MB16(rec + 0xc) + 1));  /* jal delay */
-    ret = subrecord_u16_rw(s0,-1);
+    ret = subrecord_u16_rw(battle,-1);
     if (ret != 4) return;
     deferred_cmd_post(0x400,0x60,0);
-    MW16(MB32(s0 + 0xcc) + 0xc,0);
+    MW16(MB32(battle + 0xcc) + 0xc,0);
     goto L_recA_9e;
 
   case 5:                                     /* 0x80153d90 */
-    MW8(s0 + 0xb0,0);
-    MW16(MB32(s0 + 0xbc) + 0x82,0xfffd);      /* jal delay slot */
-    engine_tables_restore(s0);
-    battle_subrecord_set2(s0);
-    MW16(MB32(s0 + 0xcc) + 0xa,0);
-    MW16(s0 + 0x94,MB16(MB32(s0 + 0xcc) + 0xe));
+    MW8(battle + 0xb0,0);
+    MW16(MB32(battle + 0xbc) + 0x82,0xfffd);      /* jal delay slot */
+    engine_tables_restore(battle);
+    battle_subrecord_set2(battle);
+    MW16(MB32(battle + 0xcc) + 0xa,0);
+    MW16(battle + 0x94,MB16(MB32(battle + 0xcc) + 0xe));
     return;
   }
   return;
 
 L_recA_9e:                                    /* 0x80153c5c */
-  MW16(MB32(s0 + 0xcc) + 0xa,(uint16_t)(MB16(MB32(s0 + 0xcc) + 0xa) + 1));
-  MW8(s0 + 0x9e,0);                           /* j delay slot */
+  MW16(MB32(battle + 0xcc) + 0xa,(uint16_t)(MB16(MB32(battle + 0xcc) + 0xa) + 1));
+  MW8(battle + 0x9e,0);                           /* j delay slot */
   return;
 
 L_reca:                                     /* 0x80153d74 */
-  MW16(MB32(s0 + 0xcc) + 0xa,(uint16_t)(MB16(MB32(s0 + 0xcc) + 0xa) + 1));
+  MW16(MB32(battle + 0xcc) + 0xa,(uint16_t)(MB16(MB32(battle + 0xcc) + 0xa) + 1));
   return;
 }
 
