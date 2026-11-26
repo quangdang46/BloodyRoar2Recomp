@@ -4308,154 +4308,154 @@ poll:
 }
 
 /* ---- menu_res_load_sm @0x801709fc (206 insns) ---- */
-int32_t menu_res_load_sm(uint32_t a0,uint8_t *s4,uint8_t *s5,int32_t s2)
+int32_t menu_res_load_sm(uint32_t a0,uint8_t *buf_a,uint8_t *buf_b,int32_t mode)
 {
   extern int br2_bail_pending(void);
   extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-  uint8_t *s1 = (uint8_t *)guest_at(a0);
-  int32_t s3 = 0;
-  int32_t s0;
-  int32_t tmp;
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  int32_t aux = 0;
+  int32_t state;
+  int32_t val;
 
-  tmp = (int32_t)*(int16_t *)(s1 + 0x8c);
-  /* DIAG: record every menu_res_load_sm entry (a0, s4 guest, s5 guest, s2,
-   * incoming s1+0x8c state) so versus-vs-arcade load coverage is provable. */
-  decomp_trace_record(61,a0,s4?guest_of(s4):0,(uint8_t)s2,(uint32_t)tmp);
-  decomp_trace_record(62,a0,s5?guest_of(s5):0,(uint8_t)s2,(uint32_t)tmp);
-  s3 = 0;
-  if (tmp < 0) return tmp;
-  *(int16_t *)(s1 + 0xd2) = 0;
-  if (s2 != 1) {
-    *(int16_t *)(s1 + 0xd0) = 0;   /* delay slot: always executed */
+  val = (int32_t)*(int16_t *)(ctx + 0x8c);
+  /* DIAG: record every menu_res_load_sm entry (a0, buf_a guest, buf_b guest, mode,
+   * incoming ctx+0x8c state) so versus-vs-arcade load coverage is provable. */
+  decomp_trace_record(61,a0,buf_a?guest_of(buf_a):0,(uint8_t)mode,(uint32_t)val);
+  decomp_trace_record(62,a0,buf_b?guest_of(buf_b):0,(uint8_t)mode,(uint32_t)val);
+  aux = 0;
+  if (val < 0) return val;
+  *(int16_t *)(ctx + 0xd2) = 0;
+  if (mode != 1) {
+    *(int16_t *)(ctx + 0xd0) = 0;   /* delay slot: always executed */
   } else {
-    *(int16_t *)(s1 + 0xd0) = 0;
-    s3 = 1;
+    *(int16_t *)(ctx + 0xd0) = 0;
+    aux = 1;
   }
-  s0 = (int32_t)*(int16_t *)(s1 + 0x8c);
+  state = (int32_t)*(int16_t *)(ctx + 0x8c);
 
   for (;;) {
     if (br2_bail_pending()) return -1;
-    if (s0 == 0x30) { s0 = 0x40; goto st40; }
-    if (s0 < 0x31) {
-      if (s0 == 0x10) goto st10;
-      if (s0 < 0x11) {
-        if (s0 == 0) goto st00;
+    if (state == 0x30) { state = 0x40; goto st40; }
+    if (state < 0x31) {
+      if (state == 0x10) goto st10;
+      if (state < 0x11) {
+        if (state == 0) goto st00;
         goto store0;
       }
-      if (s0 == 0x20) goto st20;
+      if (state == 0x20) goto st20;
       goto store0;
     }
-    if (s0 == 0x50) goto st50;
-    if (s0 < 0x51) {
-      if (s0 == 0x40) goto st40;
+    if (state == 0x50) goto st50;
+    if (state < 0x51) {
+      if (state == 0x40) goto st40;
       goto store0;
     }
-    if (s0 == 0xf00) goto stf00;
+    if (state == 0xf00) goto stf00;
     goto store0;
 
 st00:
     cd_file_load_sm(-1,0);
-    s4[0] = 0;
-    s5[0] = 0;
+    buf_a[0] = 0;
+    buf_b[0] = 0;
     *(uint32_t *)guest_at(0x801c47b8) = 0x80010000;
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-    *(uint16_t *)(s1 + 0x8e) = 0;
-    if (s2 == 3) {
-      tmp = (int32_t)g32(0x801c11d8);
-      s0 = 0x40;
+    *(uint16_t *)(ctx + 0x8e) = 0;
+    if (mode == 3) {
+      val = (int32_t)g32(0x801c11d8);
+      state = 0x40;
       *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
+      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)val;
       goto dispatch;
     }
-    if (s2 < 4) {
-      if (s2 == 2) {
-        tmp = (int32_t)g32(0x801c43a0);
-        s0 = 0x20;
-        if (tmp != 0) {
-          *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
+    if (mode < 4) {
+      if (mode == 2) {
+        val = (int32_t)g32(0x801c43a0);
+        state = 0x20;
+        if (val != 0) {
+          *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)val;
         } else {
-          s0 = 0x10;
+          state = 0x10;
         }
         goto dispatch;
       }
-      s0 = 0x10;
+      state = 0x10;
       goto dispatch;
     }
-    if (s2 == 4) {
-      tmp = (int32_t)g32(0x801c15f4);
-      s0 = 0x50;
+    if (mode == 4) {
+      val = (int32_t)g32(0x801c15f4);
+      state = 0x50;
       *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)tmp;
+      *(uint32_t *)guest_at(0x801c47b8) = (uint32_t)val;
       goto dispatch;
     }
-    s0 = 0x10;
+    state = 0x10;
     goto dispatch;
 
 st10:
-    if (save_channel_init_commit(a0,(int32_t)(int8_t)s1[0x98],s4,s5) == 0) {
+    if (save_channel_init_commit(a0,(int32_t)(int8_t)ctx[0x98],buf_a,buf_b) == 0) {
       goto store0;
     }
-    s0 = 0x20;
+    state = 0x20;
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
     *(uint32_t *)guest_at(0x801c43a0) = g32(0x801c47b8);
-    *(uint16_t *)(s1 + 0x8e) = 0;
+    *(uint16_t *)(ctx + 0x8e) = 0;
     /* fall into st20 */
 
 st20:
-    if (save_load_state_machine(a0,(int32_t)(int8_t)s1[0x98]) == 0) {
+    if (save_load_state_machine(a0,(int32_t)(int8_t)ctx[0x98]) == 0) {
       goto store0;
     }
     {
-      int32_t b = (int32_t)(uint8_t)s1[0x98];
+      int32_t b = (int32_t)(uint8_t)ctx[0x98];
       *(uint8_t *)guest_at(0x801befec) = 0xff;
       *(uint8_t *)guest_at(0x801c4582) = 0xff;
       *(uint8_t *)guest_at(0x801befa6) = 0xff;
       *(uint8_t *)guest_at(0x801c4581) = 0xff;
       *(uint8_t *)guest_at(0x801e3d00) = (uint8_t)b;
-      if (s2 == 2) {
-        *(int16_t *)(s1 + 0x8c) = -1;
+      if (mode == 2) {
+        *(int16_t *)(ctx + 0x8c) = -1;
         return 1;
       }
       *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
       *(uint32_t *)guest_at(0x801c11d8) = g32(0x801c47b8);
-      *(uint16_t *)(s1 + 0x8e) = 0;
-      s0 = 0x40;
+      *(uint16_t *)(ctx + 0x8e) = 0;
+      state = 0x40;
       goto st40;
     }
 
 st40:
-    if (save_state_machine_alt(a0,s4,s3) == 0) {
+    if (save_state_machine_alt(a0,buf_a,aux) == 0) {
       goto store0;
     }
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
     *(uint32_t *)guest_at(0x801c15f4) = g32(0x801c47b8);
-    s0 = 0x50;
-    *(uint8_t *)guest_at(0x801c4581) = s4[3];
-    *(uint8_t *)guest_at(0x801befa6) = s4[4];
-    *(uint16_t *)(s1 + 0x8e) = 0;
+    state = 0x50;
+    *(uint8_t *)guest_at(0x801c4581) = buf_a[3];
+    *(uint8_t *)guest_at(0x801befa6) = buf_a[4];
+    *(uint16_t *)(ctx + 0x8e) = 0;
     /* fall into st50 */
 
 st50:
-    if (save_state_machine_alt(a0,s5,s3) == 0) {
+    if (save_state_machine_alt(a0,buf_b,aux) == 0) {
       goto store0;
     }
-    *(uint8_t *)guest_at(0x801c4582) = s5[3];
-    *(uint8_t *)guest_at(0x801befec) = s5[4];
-    *(uint16_t *)(s1 + 0x8e) = 0;
+    *(uint8_t *)guest_at(0x801c4582) = buf_b[3];
+    *(uint8_t *)guest_at(0x801befec) = buf_b[4];
+    *(uint16_t *)(ctx + 0x8e) = 0;
     /* fall into stf00 */
 
 stf00:
-    *(int16_t *)(s1 + 0x8c) = -1;
+    *(int16_t *)(ctx + 0x8c) = -1;
     {
-      int32_t x = (int32_t)*(int16_t *)(s1 + 0x20);
-      int32_t y = (int32_t)*(int16_t *)(s1 + 0x22);
+      int32_t x = (int32_t)*(int16_t *)(ctx + 0x20);
+      int32_t y = (int32_t)*(int16_t *)(ctx + 0x22);
       FUN_80195290(x / 2, y / 2);
-      gte_cw_d000_set((int32_t)*(int16_t *)(s1 + 0x24));
+      gte_cw_d000_set((int32_t)*(int16_t *)(ctx + 0x24));
     }
     return 1;
 
 store0:
-    *(int16_t *)(s1 + 0x8c) = (int16_t)s0;
+    *(int16_t *)(ctx + 0x8c) = (int16_t)state;
     return 0;
 
 dispatch:
