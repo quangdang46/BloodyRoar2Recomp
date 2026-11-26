@@ -27641,7 +27641,7 @@ extern undefined1 * mem_move(undefined1 *param_1,undefined1 *param_2,int param_3
     cpu->gpr[2] = guest_of((const void *)(mem_move(((undefined1 *)guest_at(cpu->gpr[4])), ((undefined1 *)guest_at(cpu->gpr[5])), ((int)cpu->gpr[6]))));
 }
 static void wrap_8018f850(CPUState *cpu) {
-extern void cd_fileop_reset(int32_t param_1);
+extern void cd_fileop_reset(int32_t a0);
     cd_fileop_reset(((int32_t)cpu->gpr[4]));
 }
 static void wrap_8018f884(CPUState *cpu) {
@@ -27685,7 +27685,7 @@ extern void gpu_pkt_attr_set(uint32_t param_1,int param_2);
     gpu_pkt_attr_set(((uint32_t)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8018fa30(CPUState *cpu) {
-extern void cd_fileop_forward(uint32_t param_1,uint32_t param_2);
+extern void cd_fileop_forward(uint32_t a0,uint32_t a1);
     cd_fileop_forward(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8018fa50(CPUState *cpu) {
@@ -27701,7 +27701,7 @@ extern uint32_t file_op_dispatch(int param_1);
     cpu->gpr[2] = (uint32_t)(file_op_dispatch(((int)cpu->gpr[4])));
 }
 static void wrap_8018faec(CPUState *cpu) {
-extern void cd_fileop_dispatch(uint32_t param_1);
+extern void cd_fileop_dispatch(uint32_t a0);
     cd_fileop_dispatch(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8018fb10(CPUState *cpu) {
@@ -27789,8 +27789,8 @@ extern uint32_t set_graph_debug(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(set_graph_debug(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80190fd0(CPUState *cpu) {
-extern uint32_t cd_gpu_call_34(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4);
+extern uint32_t cd_gpu_call_34(uint32_t a0,uint32_t a1,uint32_t a2,
+                      uint32_t a3);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_34(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_80191074(CPUState *cpu) {
@@ -27798,7 +27798,7 @@ extern uint32_t gpu_flag_8322_read(void);
     cpu->gpr[2] = (uint32_t)(gpu_flag_8322_read());
 }
 static void wrap_80191084(CPUState *cpu) {
-extern uint32_t cd_gpu_defer_set(uint32_t param_1);
+extern uint32_t cd_gpu_defer_set(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_gpu_defer_set(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801910e4(CPUState *cpu) {
@@ -27810,7 +27810,7 @@ extern void gpu_draw_sync(undefined4 param_1);
     gpu_draw_sync(((undefined4)cpu->gpr[4]));
 }
 static void wrap_80191184(CPUState *cpu) {
-extern uint32_t cd_gpu_call_3c(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_gpu_call_3c(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_3c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801911e4(CPUState *cpu) {
@@ -27830,19 +27830,19 @@ extern void gpu_load_image_cmd(undefined4 param_1,undefined4 param_2);
     gpu_load_image_cmd(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]));
 }
 static void wrap_80191488(CPUState *cpu) {
-extern void cd_gpu_call_8(uint32_t param_1,uint32_t param_2);
+extern void cd_gpu_call_8(uint32_t a0,uint32_t a1);
     cd_gpu_call_8(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_801914e8(CPUState *cpu) {
-extern uint32_t cd_gpu_rect_draw(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_gpu_rect_draw(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_gpu_rect_draw(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_801915a0(CPUState *cpu) {
-extern uint32_t cd_prim_list_a(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_prim_list_a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801915a8(CPUState *cpu) {
-extern void cd_prim_list_b(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2);
     cd_prim_list_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_80191668(CPUState *cpu) {
@@ -27850,12 +27850,12 @@ extern void gpu_clear_otag_r(uint32_t param_1,uint32_t param_2);
     gpu_clear_otag_r(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80191670(CPUState *cpu) {
-extern void cd_gpu_call_2c(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2);
     cd_gpu_call_2c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_80191714(CPUState *cpu) {
-extern void cd_gpu_callpair_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4);
+extern void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
+                  uint32_t a3);
     cd_gpu_callpair_a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
 static void wrap_80191770(CPUState *cpu) {
@@ -27863,7 +27863,7 @@ extern void gpu_draw_otag(undefined4 param_1);
     gpu_draw_otag(((undefined4)cpu->gpr[4]));
 }
 static void wrap_80191778(CPUState *cpu) {
-extern void cd_gpu_call_8b(uint32_t param_1,uint32_t param_2);
+extern void cd_gpu_call_8b(uint32_t a0,uint32_t a1);
     cd_gpu_call_8b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_801917e0(CPUState *cpu) {
@@ -27871,11 +27871,11 @@ extern uint32_t gpu_draw_env_put(int param_1);
     cpu->gpr[2] = (uint32_t)(gpu_draw_env_put(((int)cpu->gpr[4])));
 }
 static void wrap_801918a0(CPUState *cpu) {
-extern void cd_prim_emit_a(uint32_t param_1,uint32_t param_2);
+extern void cd_prim_emit_a(uint32_t a0,uint32_t a1);
     cd_prim_emit_a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80191978(CPUState *cpu) {
-extern uint32_t cd_blk5c_copy(uint32_t param_1);
+extern uint32_t cd_blk5c_copy(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_blk5c_copy(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801919ac(CPUState *cpu) {
@@ -28149,7 +28149,7 @@ extern uint32_t draw_env_timing_axis_limit(void);
     cpu->gpr[2] = (uint32_t)(draw_env_timing_axis_limit());
 }
 static void wrap_80191ea4(CPUState *cpu) {
-extern uint32_t cd_blk14_copy(uint32_t param_1);
+extern uint32_t cd_blk14_copy(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_blk14_copy(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80191ed8(CPUState *cpu) {
@@ -28157,7 +28157,7 @@ extern uint32_t gpu_stat_sign(void);
     cpu->gpr[2] = (uint32_t)(gpu_stat_sign());
 }
 static void wrap_80191ee0(CPUState *cpu) {
-extern uint32_t cd_vcall_38(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_38(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_38(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80191f08(CPUState *cpu) {
@@ -28165,7 +28165,7 @@ extern void sprite_rect_pkt_fill(uint32_t *pkt, uint16_t *r);
     sprite_rect_pkt_fill(((uint32_t *)guest_at(cpu->gpr[4])), ((uint16_t *)guest_at(cpu->gpr[5])));
 }
 static void wrap_80191f88(CPUState *cpu) {
-extern uint32_t cd_coord_pack_entry(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_coord_pack_entry(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_coord_pack_entry(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801921c0(CPUState *cpu) {
@@ -28197,7 +28197,7 @@ extern uint32_t gpu_data_reg_read(void);
     cpu->gpr[2] = (uint32_t)(gpu_data_reg_read());
 }
 static void wrap_80192634(CPUState *cpu) {
-extern uint32_t cd_cmd_queue_load(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_cmd_queue_load(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_cmd_queue_load(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80192714(CPUState *cpu) {
@@ -28417,7 +28417,7 @@ extern uint32_t gpu_reg_cmd_commit(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(gpu_reg_cmd_commit(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80192ef0(CPUState *cpu) {
-extern uint32_t cd_queue_push_wrap(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_queue_push_wrap(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_queue_push_wrap(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_80192f14(CPUState *cpu) {
@@ -28434,7 +28434,7 @@ extern uint32_t gpu_mode_regs_apply(uint param_1);
     cpu->gpr[2] = (uint32_t)(gpu_mode_regs_apply(((uint)cpu->gpr[4])));
 }
 static void wrap_80193574(CPUState *cpu) {
-extern uint32_t cd_queue_poll(uint32_t param_1);
+extern uint32_t cd_queue_poll(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_queue_poll(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801936b0(CPUState *cpu) {
@@ -28450,19 +28450,19 @@ extern uint32_t gpu_status_cmd(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(gpu_status_cmd(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801938c8(CPUState *cpu) {
-extern uint32_t cd_gpu_call_20(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_gpu_call_20(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_20(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801939b4(CPUState *cpu) {
-extern uint32_t cd_gpu_call_1c(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_1c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80193aa0(CPUState *cpu) {
-extern uint32_t cd_gpu_call_18_b(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_18_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_80193be4(CPUState *cpu) {
-extern uint32_t cd_gpu_call_18(uint32_t param_1);
+extern uint32_t cd_gpu_call_18(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_gpu_call_18(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80193ce0(CPUState *cpu) {
@@ -28802,7 +28802,7 @@ extern undefined1 * cd_param_buf_get(void);
     cpu->gpr[2] = guest_of((const void *)(cd_param_buf_get()));
 }
 static void wrap_80195c1c(CPUState *cpu) {
-extern uint32_t cd_init_mode_dispatch(uint32_t param_1);
+extern uint32_t cd_init_mode_dispatch(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_init_mode_dispatch(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80195c88(CPUState *cpu) {
@@ -28810,55 +28810,55 @@ extern void cd_cmd_reset_wrap(void);
     cd_cmd_reset_wrap();
 }
 static void wrap_80195ca8(CPUState *cpu) {
-extern uint32_t cd_xchg_bc850(uint32_t param_1);
+extern uint32_t cd_xchg_bc850(uint32_t val);
     cpu->gpr[2] = (uint32_t)(cd_xchg_bc850(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80195d24(CPUState *cpu) {
-extern uint32_t cd_sync_wait_a(int param_1,undefined1 *param_2);
+extern uint32_t cd_sync_wait_a(int a0,undefined1 *out_buf);
     cpu->gpr[2] = (uint32_t)(cd_sync_wait_a(((int)cpu->gpr[4]), ((undefined1 *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80195d44(CPUState *cpu) {
-extern void cd_result_wait_b_fwd(int param_1,undefined4 param_2);
+extern void cd_result_wait_b_fwd(int a0,undefined4 out_buf);
     cd_result_wait_b_fwd(((int)cpu->gpr[4]), ((undefined4)cpu->gpr[5]));
 }
 static void wrap_80195d64(CPUState *cpu) {
-extern uint32_t mc_session(undefined4 param_1);
+extern uint32_t mc_session(undefined4 cb);
     cpu->gpr[2] = (uint32_t)(mc_session(((undefined4)cpu->gpr[4])));
 }
 static void wrap_80195d78(CPUState *cpu) {
-extern uint32_t mc_session_b(undefined4 param_1);
+extern uint32_t mc_session_b(undefined4 cb);
     cpu->gpr[2] = (uint32_t)(mc_session_b(((undefined4)cpu->gpr[4])));
 }
 static void wrap_80195d8c(CPUState *cpu) {
-extern uint32_t cd_mode_flag_set(byte param_1,int param_2,undefined4 param_3);
+extern uint32_t cd_mode_flag_set(byte opcode,int param_addr,undefined4 param_val);
     cpu->gpr[2] = (uint32_t)(cd_mode_flag_set(((byte)cpu->gpr[4]), ((int)cpu->gpr[5]), ((undefined4)cpu->gpr[6])));
 }
 static void wrap_80195ec8(CPUState *cpu) {
-extern uint32_t cd_cmd_issue_async(byte param_1,int param_2);
+extern uint32_t cd_cmd_issue_async(byte opcode,int param_addr);
     cpu->gpr[2] = (uint32_t)(cd_cmd_issue_async(((byte)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_80195ffc(CPUState *cpu) {
-extern uint32_t cd_cmd_issue_sync(byte param_1,int param_2,undefined4 param_3);
+extern uint32_t cd_cmd_issue_sync(byte opcode,int param_addr,undefined4 param_val);
     cpu->gpr[2] = (uint32_t)(cd_cmd_issue_sync(((byte)cpu->gpr[4]), ((int)cpu->gpr[5]), ((undefined4)cpu->gpr[6])));
 }
 static void wrap_80196148(CPUState *cpu) {
-extern uint32_t cd_cmd_retry(uintptr_t param_1);
+extern uint32_t cd_cmd_retry(uintptr_t buf);
     cpu->gpr[2] = (uint32_t)(cd_cmd_retry(((uintptr_t)cpu->gpr[4])));
 }
 static void wrap_80196168(CPUState *cpu) {
-extern uint32_t cd_sync_wait_b(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_sync_wait_b(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_sync_wait_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80196188(CPUState *cpu) {
-extern uint32_t cd_sync_wait_c(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_sync_wait_c(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_sync_wait_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801961a8(CPUState *cpu) {
-extern uint32_t cd_cmd_dispatch3(undefined4 param_1);
+extern uint32_t cd_cmd_dispatch3(undefined4 a0);
     cpu->gpr[2] = (uint32_t)(cd_cmd_dispatch3(((undefined4)cpu->gpr[4])));
 }
 static void wrap_801961cc(CPUState *cpu) {
-extern void cd_busy_wait_fwd(int param_1);
+extern void cd_busy_wait_fwd(int a0);
     cd_busy_wait_fwd(((int)cpu->gpr[4]));
 }
 static void wrap_801961ec(CPUState *cpu) {
@@ -28866,7 +28866,7 @@ extern void cd_file_open(int32_t a0, uint8_t *v0);
     cd_file_open(((int32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])));
 }
 static void wrap_801962f0(CPUState *cpu) {
-extern uint32_t cd_stamp_to_sector(const void *param_1);
+extern uint32_t cd_stamp_to_sector(const void *stamp);
     cpu->gpr[2] = (uint32_t)(cd_stamp_to_sector(((const void *)guest_at(cpu->gpr[4]))));
 }
 static void wrap_80196718(CPUState *cpu) {
@@ -28882,7 +28882,7 @@ extern void cps_80196370(void);
     cps_80196370();
 }
 static void wrap_80197220(CPUState *cpu) {
-extern void cd_cmd_bytes(uintptr_t param_1);
+extern void cd_cmd_bytes(uintptr_t cmd);
     cd_cmd_bytes(((uintptr_t)cpu->gpr[4]));
 }
 static void wrap_801972a8(CPUState *cpu) {
@@ -28902,19 +28902,19 @@ extern uint32_t cd_subsystem_init(void);
     cpu->gpr[2] = (uint32_t)(cd_subsystem_init());
 }
 static void wrap_80197698(CPUState *cpu) {
-extern uint32_t cd_busy_wait(int param_1);
+extern uint32_t cd_busy_wait(int report_busy);
     cpu->gpr[2] = (uint32_t)(cd_busy_wait(((int)cpu->gpr[4])));
 }
 static void wrap_80197800(CPUState *cpu) {
-extern uint32_t cd_cmd_issue_b(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_cmd_issue_b(uint32_t arg48,uint32_t arg4c);
     cpu->gpr[2] = (uint32_t)(cd_cmd_issue_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80197900(CPUState *cpu) {
-extern uint32_t cd_cmd_issue_c(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_cmd_issue_c(uint32_t arg48,uint32_t arg4c);
     cpu->gpr[2] = (uint32_t)(cd_cmd_issue_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019799c(CPUState *cpu) {
-extern uint32_t cd_mmio_bit_wait(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_mmio_bit_wait(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_mmio_bit_wait(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801979f8(CPUState *cpu) {
@@ -28966,7 +28966,7 @@ extern uint32_t cd_response_pump(void);
     cpu->gpr[2] = (uint32_t)(cd_response_pump());
 }
 static void wrap_80197ad0(CPUState *cpu) {
-extern void cd_str_print(uint32_t param_1);
+extern void cd_str_print(uint32_t msg);
     cd_str_print(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80197b30(CPUState *cpu) {
@@ -28974,15 +28974,15 @@ extern uint32_t cd_search_file(undefined4 *param_1,uint32_t param_2);
     cpu->gpr[2] = (uint32_t)(cd_search_file(((undefined4 *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80197e08(CPUState *cpu) {
-extern uint32_t cd_strncmp12_eq(undefined4 param_1,undefined4 param_2);
+extern uint32_t cd_strncmp12_eq(undefined4 a0,undefined4 a1);
     cpu->gpr[2] = (uint32_t)(cd_strncmp12_eq(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5])));
 }
 static void wrap_80197e28(CPUState *cpu) {
-extern uint32_t cd_dir_scan(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_dir_scan(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_dir_scan(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801980ec(CPUState *cpu) {
-extern uint32_t cd_file_rec_find(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_file_rec_find(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_file_rec_find(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80198190(CPUState *cpu) {
@@ -29106,7 +29106,7 @@ extern void cps_80198190(void);
     cps_80198190();
 }
 static void wrap_8019842c(CPUState *cpu) {
-extern uint32_t cd_file_load_sync(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_file_load_sync(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_file_load_sync(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_801984a0(CPUState *cpu) {
@@ -29114,7 +29114,7 @@ extern uint32_t cd_strcmp(const void *pa0,const void *pa1);
     cpu->gpr[2] = (uint32_t)(cd_strcmp(((const void *)guest_at(cpu->gpr[4])), ((const void *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80198510(CPUState *cpu) {
-extern uint32_t cd_strncmp(undefined4 param_1,undefined4 param_2,undefined4 param_3);
+extern uint32_t cd_strncmp(undefined4 a0,undefined4 a1,undefined4 a2);
     cpu->gpr[2] = (uint32_t)(cd_strncmp(((undefined4)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6])));
 }
 static void wrap_80198590(CPUState *cpu) {
@@ -29126,7 +29126,7 @@ extern uint32_t cd_read_finish_cb(void);
     cpu->gpr[2] = (uint32_t)(cd_read_finish_cb());
 }
 static void wrap_80198908(CPUState *cpu) {
-extern uint32_t cd_read_open(int param_1);
+extern uint32_t cd_read_open(int reopen);
     cpu->gpr[2] = (uint32_t)(cd_read_open(((int)cpu->gpr[4])));
 }
 static void wrap_80198e2c(CPUState *cpu) {
@@ -29222,15 +29222,15 @@ extern void cd_dir_entry_finalize(void);
     cd_dir_entry_finalize();
 }
 static void wrap_80199100(CPUState *cpu) {
-extern void cd_dir_entry_store(uint32_t param_1,uint32_t param_2);
+extern void cd_dir_entry_store(uint32_t a0,uint32_t a1);
     cd_dir_entry_store(((uint32_t)cpu->gpr[2]), ((uint32_t)cpu->gpr[3]));
 }
 static void wrap_8019917c(CPUState *cpu) {
-extern uint32_t cd_file_open_b(uint32_t param_1);
+extern uint32_t cd_file_open_b(uint32_t name);
     cpu->gpr[2] = (uint32_t)(cd_file_open_b(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80199184(CPUState *cpu) {
-extern uint32_t cd_file_open_seq(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_file_open_seq(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_file_open_seq(((uint32_t)cpu->gpr[2]), ((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801991e0(CPUState *cpu) {
@@ -29238,7 +29238,7 @@ extern void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3
     cd_read_params_store(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)));
 }
 static void wrap_80199270(CPUState *cpu) {
-extern uint32_t cd_dir_entry_probe(int32_t param_1);
+extern uint32_t cd_dir_entry_probe(int32_t entry);
     cpu->gpr[2] = (uint32_t)(cd_dir_entry_probe(((int32_t)cpu->gpr[4])));
 }
 static void wrap_80199320(CPUState *cpu) {
@@ -29246,7 +29246,7 @@ extern void cd_dir_clear(uint32_t a0, uint32_t a1);
     cd_dir_clear(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80199360(CPUState *cpu) {
-extern uint32_t cd_channel_poll(uint32_t *param_1, uint32_t *param_2);
+extern uint32_t cd_channel_poll(uint32_t *out_rec, uint32_t *out_ent);
     cpu->gpr[2] = (uint32_t)(cd_channel_poll(((uint32_t *)guest_at(cpu->gpr[4])), ((uint32_t *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80199420(CPUState *cpu) {
@@ -29263,7 +29263,7 @@ extern uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t 
     cpu->gpr[2] = (uint32_t)(cd_chan_cmd_submit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu))));
 }
 static void wrap_80199f30(CPUState *cpu) {
-extern void cd_read_param_set(uint32_t param_1);
+extern void cd_read_param_set(uint32_t val);
     cd_read_param_set(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80199f7c(CPUState *cpu) {
@@ -29307,7 +29307,7 @@ extern void cd_hdr_clear_fixed(void);
     cd_hdr_clear_fixed();
 }
 static void wrap_8019a24c(CPUState *cpu) {
-extern void cd_hdr_clear(uint32_t param_1);
+extern void cd_hdr_clear(uint32_t a0);
     cd_hdr_clear(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8019a2f0(CPUState *cpu) {
@@ -29343,11 +29343,11 @@ extern void cd_kobj_mcall_5c(void);
     cd_kobj_mcall_5c();
 }
 static void wrap_8019a460(CPUState *cpu) {
-extern uint32_t cd_timer_read(int param_1);
+extern uint32_t cd_timer_read(int mode);
     cpu->gpr[2] = (uint32_t)(cd_timer_read(((int)cpu->gpr[4])));
 }
 static void wrap_8019a5d8(CPUState *cpu) {
-extern void vsync_wait_n(int param_1,int param_2);
+extern void vsync_wait_n(int frame_target,int timeout);
     vsync_wait_n(((int)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8019a670(CPUState *cpu) {
@@ -29359,27 +29359,27 @@ extern void cd_dispatch_tblc(void);
     cd_dispatch_tblc();
 }
 static void wrap_8019a688(CPUState *cpu) {
-extern uint32_t cd_vcall_c(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_c(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a6b0(CPUState *cpu) {
-extern uint32_t cd_dispatch_tbl8(int param_1,uint32_t param_2);
+extern uint32_t cd_dispatch_tbl8(int a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_dispatch_tbl8(((int)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a6b8(CPUState *cpu) {
-extern uint32_t cd_vcall_8(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_8(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_8(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a6e0(CPUState *cpu) {
-extern uint32_t cd_dispatch_tbl4(int param_1,uint32_t param_2);
+extern uint32_t cd_dispatch_tbl4(int a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_dispatch_tbl4(((int)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a6e8(CPUState *cpu) {
-extern uint32_t cd_vcall_4(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_4(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_4(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a710(CPUState *cpu) {
-extern uint32_t cd_ind_dispatch_14(uint32_t param_1);
+extern uint32_t cd_ind_dispatch_14(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_ind_dispatch_14(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019a744(CPUState *cpu) {
@@ -29387,7 +29387,7 @@ extern void cd_chan_block_init(int32_t a0,uint32_t a1);
     cd_chan_block_init(((int32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8019a74c(CPUState *cpu) {
-extern uint32_t cd_vcall_14(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_14(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_14(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a774(CPUState *cpu) {
@@ -29395,7 +29395,7 @@ extern uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t 
     cpu->gpr[2] = (uint32_t)(cd_ind_dispatch_10(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_8019a77c(CPUState *cpu) {
-extern uint32_t cd_vcall_10(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_10(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_10(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a7a4(CPUState *cpu) {
@@ -29403,7 +29403,7 @@ extern uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t 
     cpu->gpr[2] = (uint32_t)(cd_ind_dispatch_18(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_8019a7ac(CPUState *cpu) {
-extern uint32_t cd_vcall_18(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_vcall_18(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_vcall_18(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019a7d4(CPUState *cpu) {
@@ -29411,7 +29411,7 @@ extern uint32_t cd_intc_busy_read(void);
     cpu->gpr[2] = (uint32_t)(cd_intc_busy_read());
 }
 static void wrap_8019a7fc(CPUState *cpu) {
-extern uint32_t cd_u16_swap_store(uint16_t param_1);
+extern uint32_t cd_u16_swap_store(uint16_t val);
     cpu->gpr[2] = (uint32_t)(cd_u16_swap_store(((uint16_t)cpu->gpr[4])));
 }
 static void wrap_8019a87c(CPUState *cpu) {
@@ -29487,7 +29487,7 @@ extern void cd_cb8_dispatch(void);
     cd_cb8_dispatch();
 }
 static void wrap_8019ae70(CPUState *cpu) {
-extern void cd_cb8_run_param(uint32_t param_1);
+extern void cd_cb8_run_param(uint32_t a0);
     cd_cb8_run_param(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8019af00(CPUState *cpu) {
@@ -29499,7 +29499,7 @@ extern uint32_t cd_init_stage_b(void);
     cpu->gpr[2] = (uint32_t)(cd_init_stage_b());
 }
 static void wrap_8019af84(CPUState *cpu) {
-extern void cd_cb7_run(uint32_t param_1);
+extern void cd_cb7_run(uint32_t a0);
     cd_cb7_run(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8019b0fc(CPUState *cpu) {
@@ -29511,7 +29511,7 @@ extern void cd_guest_zero32_c(uint32_t a0,uint32_t a1);
     cd_guest_zero32_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8019b1d0(CPUState *cpu) {
-extern uint32_t cd_xchg_bde20(uint32_t param_1);
+extern uint32_t cd_xchg_bde20(uint32_t val);
     cpu->gpr[2] = (uint32_t)(cd_xchg_bde20(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019b1e4(CPUState *cpu) {
@@ -29535,7 +29535,7 @@ extern uint32_t bios_tramp_b00c(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     cpu->gpr[2] = (uint32_t)(bios_tramp_b00c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_8019b3a0(CPUState *cpu) {
-extern void cd_chan_reg_init(int32_t param_1);
+extern void cd_chan_reg_init(int32_t a0);
     cd_chan_reg_init(((int32_t)cpu->gpr[4]));
 }
 static void wrap_8019b620(CPUState *cpu) {
@@ -29543,11 +29543,11 @@ extern void cd_reg_stream_push(uint32_t a0,uint32_t a1);
     cd_reg_stream_push(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8019b7e8(CPUState *cpu) {
-extern void cd_dma_chan_reset(uint32_t param_1);
+extern void cd_dma_chan_reset(uint32_t a0);
     cd_dma_chan_reset(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8019b89c(CPUState *cpu) {
-extern uint32_t cd_dma_xfer_start(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_dma_xfer_start(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_dma_xfer_start(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8019b8a4(CPUState *cpu) {
@@ -29563,7 +29563,7 @@ extern uint32_t cd_seek_param_issue(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_seek_param_issue(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019bc48(CPUState *cpu) {
-extern uint32_t cd_win_shift_op(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_win_shift_op(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_win_shift_op(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019bcac(CPUState *cpu) {
@@ -29627,23 +29627,23 @@ extern uint32_t bios_tramp_b00a(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(bios_tramp_b00a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019cfc0(CPUState *cpu) {
-extern uint32_t cd_dma_xfer_mode(uint32_t param_1,uint32_t param_2);
+extern uint32_t cd_dma_xfer_mode(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(cd_dma_xfer_mode(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8019d030(CPUState *cpu) {
-extern uint32_t cd_reg_bit40_ctrl(uint32_t param_1);
+extern uint32_t cd_reg_bit40_ctrl(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_reg_bit40_ctrl(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019d170(CPUState *cpu) {
-extern uint32_t cd_reg_rw_d2(uint32_t param_1);
+extern uint32_t cd_reg_rw_d2(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_reg_rw_d2(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019d1b0(CPUState *cpu) {
-extern uint32_t cd_state9_store(uint32_t param_1);
+extern uint32_t cd_state9_store(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_state9_store(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019d1f0(CPUState *cpu) {
-extern uint32_t cd_tbl8_dispatch9(uint32_t param_1);
+extern uint32_t cd_tbl8_dispatch9(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_tbl8_dispatch9(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019d220(CPUState *cpu) {
@@ -29815,7 +29815,7 @@ extern void cd_block7_init(void);
     cd_block7_init();
 }
 static void wrap_8019e730(CPUState *cpu) {
-extern uint32_t cd_job_start_e(uint32_t param_1);
+extern uint32_t cd_job_start_e(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_job_start_e(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019ea98(CPUState *cpu) {
@@ -29823,7 +29823,7 @@ extern uint32_t cd_chan_job_submit(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_chan_job_submit(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019eda8(CPUState *cpu) {
-extern uint32_t cd_file_open_wait(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_file_open_wait(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8019ef30(CPUState *cpu) {
@@ -29831,19 +29831,19 @@ extern void cd_pending_release(void);
     cd_pending_release();
 }
 static void wrap_8019ef74(CPUState *cpu) {
-extern uint32_t cd_submit5(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_submit5(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_submit5(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8019f02c(CPUState *cpu) {
-extern uint32_t cd_job_sm5(uint32_t param_1);
+extern uint32_t cd_job_sm5(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_job_sm5(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019f168(CPUState *cpu) {
-extern uint32_t cd_submit6(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t cd_submit6(uint32_t a0,uint32_t a1,uint32_t a2);
     cpu->gpr[2] = (uint32_t)(cd_submit6(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8019f220(CPUState *cpu) {
-extern uint32_t cd_job_sm6(uint32_t param_1);
+extern uint32_t cd_job_sm6(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_job_sm6(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019f35c(CPUState *cpu) {
@@ -29851,7 +29851,7 @@ extern uint32_t mc_job_issue_a(uint32_t a0,const void *a1,void *a2,uint32_t a3,u
     cpu->gpr[2] = (uint32_t)(mc_job_issue_a(((uint32_t)cpu->gpr[4]), ((const void *)guest_at(cpu->gpr[5])), ((void *)guest_at(cpu->gpr[6])), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8019f474(CPUState *cpu) {
-extern uint32_t cd_job_submit5(uint32_t param_1);
+extern uint32_t cd_job_submit5(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_job_submit5(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019f5b4(CPUState *cpu) {
@@ -29859,7 +29859,7 @@ extern uint32_t mc_job_issue_b(uint32_t a0,const void *a1,void *a2,uint32_t a3,u
     cpu->gpr[2] = (uint32_t)(mc_job_issue_b(((uint32_t)cpu->gpr[4]), ((const void *)guest_at(cpu->gpr[5])), ((void *)guest_at(cpu->gpr[6])), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_8019f6cc(CPUState *cpu) {
-extern uint32_t cd_job_submit6(uint32_t param_1);
+extern uint32_t cd_job_submit6(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(cd_job_submit6(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8019f80c(CPUState *cpu) {
@@ -30068,15 +30068,15 @@ extern uint32_t bios_tramp_b009(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     cpu->gpr[2] = (uint32_t)(bios_tramp_b009(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7])));
 }
 static void wrap_801a11e4(CPUState *cpu) {
-extern uint32_t cd_xchg_fefb4(uint32_t param_1);
+extern uint32_t cd_xchg_fefb4(uint32_t val);
     cpu->gpr[2] = (uint32_t)(cd_xchg_fefb4(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801a11f8(CPUState *cpu) {
-extern uint32_t cd_xchg_fefb8(uint32_t param_1);
+extern uint32_t cd_xchg_fefb8(uint32_t val);
     cpu->gpr[2] = (uint32_t)(cd_xchg_fefb8(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801a120c(CPUState *cpu) {
-extern void cd_tbl4_dispatch3(int32_t param_1);
+extern void cd_tbl4_dispatch3(int32_t a0);
     cd_tbl4_dispatch3(((int32_t)cpu->gpr[4]));
 }
 static void wrap_801a1230(CPUState *cpu) {
