@@ -8817,6 +8817,7 @@ void cps_8012977c(void)
     }
     /* Address: 0x8012977C, Size: 12 bytes, Blocks: 2 */
 
+    /* jal setup: ra=ret, a0=s1 -> next piece. */
 block_8012977C:
     ra = 0x80129784u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -8838,6 +8839,8 @@ void cps_80129788(void)
 
     /* Address: 0x80129788, Size: 20 bytes, Blocks: 1 */
 
+    /* callback dispatch: a1=(s0+256)&0xFFFF; jalr
+       word[s1+12]. CPS-blocked. */
 block_80129788:
     a1 = s0 + 256;
     v0 = cpu->read_word(s1 + 12);
@@ -8859,6 +8862,8 @@ void cps_8012979c(void)
 
     /* Address: 0x8012979C, Size: 20 bytes, Blocks: 1 */
 
+    /* bit-field step: s0++; test half[s1+6]<s0;
+       v0 = (s2 >> (s0&31)). CPS-blocked. */
 block_8012979C:
     v0 = cpu->read_half(s1 + 6);
     s0 = s0 + 1;
@@ -8892,6 +8897,8 @@ void cps_801297b0(void)
     }
     /* Address: 0x801297B0, Size: 44 bytes, Blocks: 2 */
 
+    /* callback dispatch: a1=511; jalr word[s0+12](s0);
+       epilogue pop s0-s2,ra sp+=32. CPS-blocked. */
 block_801297B0:
     a0 = s1;
     v0 = cpu->read_word(a0 + 12);
@@ -8938,6 +8945,9 @@ void cps_80129800(void)
     }
     /* Address: 0x80129800, Size: 124 bytes, Blocks: 9 */
 
+    /* menu nav (up): if half[s1+126]&0x4000 ->
+       jal 0x80156EF4(1024,10,0); cursor half[s0+8]++ clamp
+       vs half[s0+6]. CPS-blocked. */
 block_80129800:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x80129804: 0x00000000 */
@@ -9039,6 +9049,8 @@ void cps_8012987c(void)
 
     /* Address: 0x8012987C, Size: 16 bytes, Blocks: 1 */
 
+    /* menu nav (down): gate half[s1+126]&0x2000 ->
+       jal 0x80156EF4. CPS-blocked. */
 block_8012987C:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x80129880: 0x00000000 */
@@ -9088,6 +9100,8 @@ void cps_80129890(void)
     }
     /* Address: 0x80129890, Size: 44 bytes, Blocks: 4 */
 
+    /* menu nav variant: jal 0x80156EF4(1024,11,0);
+       cursor half[s0+8]++ clamp. CPS-blocked. */
 block_80129890:
     a1 = 11;
     ra = 0x8012989Cu;  /* jal link before delay slot */
@@ -9139,6 +9153,9 @@ void cps_801298bc(void)
     }
     /* Address: 0x801298BC, Size: 60 bytes, Blocks: 4 */
 
+    /* menu nav variant: gate half[s1+126]&0x8000 ->
+       jal 0x80156EF4(1024,11,0); cursor half[s0+8]-- clamp.
+       CPS-blocked. */
 block_801298BC:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x801298C0: 0x00000000 */
@@ -9237,6 +9254,8 @@ void cps_80129918(void)
     }
     /* Address: 0x80129918, Size: 44 bytes, Blocks: 3 */
 
+    /* menu item dispatch: byte[a0+4] check -> jal
+       table 0x8011EC20; epilogue sp+=24. CPS-blocked. */
 block_80129918:
     v0 = cpu->read_byte(a0 + 4);
     /* nop */  /* 0x8012991C: 0x00000000 */
@@ -9465,6 +9484,8 @@ void cps_80129ac8(void)
     }
     /* Address: 0x80129AC8, Size: 24 bytes, Blocks: 2 */
 
+    /* timer clamp: half[s0]=v1; if v0 < v1<<16 keep
+       else half[s0]=0. CPS-blocked. */
 block_80129AC8:
     cpu->write_half(s0, (uint16_t)v1);
     v1 = v1 << 16;
@@ -9504,6 +9525,9 @@ void cps_80129ae0(void)
     }
     /* Address: 0x80129AE0, Size: 104 bytes, Blocks: 5 */
 
+    /* menu confirm/timeout: gate half[s2+126] bit;
+       jal 0x80156EF4(1024,11,0); half[s0]--, reload s4 on
+       underflow. CPS-blocked. */
 block_80129AE0:
     v1 = cpu->read_half(s2 + 126);
     v0 = 16384;
