@@ -14670,11 +14670,11 @@ int32_t state_pair_init(void)
 
 /* descblk_variant_e @0x8012e3c4 — 0x1f80038c text prim init + text_render_full.
  * Verified vs disasm; block layout matches announce_param_block_init port. */
-void descblk_variant_e(uint32_t param_1,uint32_t param_2,void *param_3,
-                  int32_t param_4,int32_t param_5,int32_t param_6)
+void descblk_variant_e(uint32_t ctx,uint32_t ctx2,void *str,
+                  int32_t x,int32_t y,int32_t attr)
 {
-  MW32(0x1f8003a8u, guest_of(param_3));
-  MW16(0x1f800396u, (uint16_t)param_4);              /* +6  x */
+  MW32(0x1f8003a8u, guest_of(str));
+  MW16(0x1f800396u, (uint16_t)x);              /* +6  x */
   MW16(0x1f800398u, 0x18u);                          /* +0xa */
   MW16(0x1f80039au, 0xffffu);                        /* +0xe */
   MW16(0x1f80039cu, 0x20u);                          /* +0x10 */
@@ -14684,44 +14684,44 @@ void descblk_variant_e(uint32_t param_1,uint32_t param_2,void *param_3,
   MW16(0x1f80038eu, 0u);
   MW16(0x1f800390u, 0u);
   MW16(0x1f800392u, 0x20u);                          /* +0xc */
-  MW16(0x1f800394u, (uint16_t)param_5);              /* +8  y */
+  MW16(0x1f800394u, (uint16_t)y);              /* +8  y */
   MW16(0x1f8003a4u, 3u);                             /* +0x18 */
   MW16(0x1f8003a2u,
-       (uint16_t)((((uint32_t)param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)((((uint32_t)attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* descblk_variant_f @0x8012e4f4 — 7-arg variant: +0x12 = arg7, +0x16 from
  * arg6; +0x10 left untouched (disasm-verified). */
-void descblk_variant_f(uint32_t param_1,uint32_t param_2,void *param_3,
-                  int32_t param_4,int32_t param_5,int32_t param_6,
-                  int32_t param_7)
+void descblk_variant_f(uint32_t ctx,uint32_t ctx2,void *str,
+                  int32_t x,int32_t y,int32_t attr,
+                  int32_t f12)
 {
-  MW32(0x1f8003a8u, guest_of(param_3));
-  MW16(0x1f800396u, (uint16_t)param_4);              /* +6 */
+  MW32(0x1f8003a8u, guest_of(str));
+  MW16(0x1f800396u, (uint16_t)x);              /* +6 */
   MW16(0x1f800398u, 0x18u);                          /* +0xa */
   MW16(0x1f80039au, 0xffffu);                        /* +0xe */
   /* +0x10 not written */
-  MW16(0x1f80039eu, (uint16_t)param_7);              /* +0x12 */
+  MW16(0x1f80039eu, (uint16_t)f12);              /* +0x12 */
   MW16(0x1f8003a0u, 2u);                             /* +0x14 */
   MW16(0x1f80038cu, 0u);
   MW16(0x1f80038eu, 0u);
   MW16(0x1f800390u, 0u);
   MW16(0x1f800392u, 0x20u);                          /* +0xc */
-  MW16(0x1f800394u, (uint16_t)param_5);              /* +8 */
+  MW16(0x1f800394u, (uint16_t)y);              /* +8 */
   MW16(0x1f8003a4u, 3u);                             /* +0x18 */
   MW16(0x1f8003a2u,
-       (uint16_t)((((uint32_t)param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)((((uint32_t)attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* attr_records_scan @0x8015643c (16 insns): scan 16-byte records at
  * 0x801f24d0 + i*16 for i in [a0,a1); return 0 on first nonzero
  * byte, 1 if all zero (or empty range). */
-int32_t attr_records_scan(uint32_t param_1,uint32_t param_2)
+int32_t attr_records_scan(uint32_t lo,uint32_t hi)
 {
   uint32_t i;
-  for (i = param_1; i < param_2; i++) {
+  for (i = lo; i < hi; i++) {
     if (MB8(0x801f24d0u + i * 16u) != 0) return 0;
   }
   return 1;
@@ -14731,7 +14731,7 @@ int32_t attr_records_scan(uint32_t param_1,uint32_t param_2)
  * of a1 (a2 = iter count, -4 per block), pump job_wait_pump into a
  * guest-visible 0x80 buffer then compare 0x20 u32s against a0.
  * Returns pump status or -1. */
-int32_t memcard_block_verify(uint32_t param_1,uint32_t param_2,int32_t param_3)
+int32_t memcard_block_verify(uint32_t exp,uint32_t src,int32_t iters)
 {
   /* job_wait_pump DMAs card data to a guest address, so the compare buffer
    * must live in guest RAM — a host .bss array makes guest_of() return 0
@@ -14741,22 +14741,22 @@ int32_t memcard_block_verify(uint32_t param_1,uint32_t param_2,int32_t param_3)
   extern void br2_guest_frame_free(void);
   uint32_t fr = br2_guest_frame(0x80);
   uint32_t gbuf = fr;
-  uint32_t s1 = param_1;
-  uint32_t s3 = param_2;
-  int32_t  s2 = param_3;
+  uint32_t ep = exp;
+  uint32_t sp = src;
+  int32_t  n = iters;
   int32_t  rc = 0;
-  if (s2 <= 0) { br2_guest_frame_free(); return 0; }
+  if (n <= 0) { br2_guest_frame_free(); return 0; }
   do {
-    uint32_t r = job_wait_pump(gbuf, s3, 0x80u);
+    uint32_t pr = job_wait_pump(gbuf, sp, 0x80u);
     uint32_t j;
-    if (r != 0) { rc = (int32_t)r; break; }
+    if (pr != 0) { rc = (int32_t)pr; break; }
     for (j = 0; j < 0x20; j++) {
-      if (MB32(s1) != MB32(gbuf + j * 4u)) { rc = -1; goto out; }
-      s1 += 4u;
+      if (MB32(ep) != MB32(gbuf + j * 4u)) { rc = -1; goto out; }
+      ep += 4u;
     }
-    s3 += 0x80u;
-    s2 -= 4;
-  } while (s2 > 0);
+    sp += 0x80u;
+    n -= 4;
+  } while (n > 0);
 out:
   br2_guest_frame_free();
   return rc;
@@ -14765,19 +14765,19 @@ out:
 /* job_result_poll_stable @0x80168648 — poll cd_file_open_wait until two consecutive
  * equal results; unsigned <3 && ==0 returns 0; ==-1 (unsigned >=3)
  * triggers cd_pending_release each poll before the stability check. */
-int32_t job_result_poll_stable(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+int32_t job_result_poll_stable(uint32_t arg0,uint32_t arg1,uint32_t arg2)
 {
-  int32_t s1 = 0;
-  int32_t s0;
+  int32_t prev = 0;
+  int32_t res;
   for (;;) {
-    s0 = cd_file_open_wait(param_1, param_2, param_3);
-    if ((uint32_t)s0 < 3u) {
-      if (s0 == 0) return 0;
-    } else if (s0 == -1) {
+    res = cd_file_open_wait(arg0, arg1, arg2);
+    if ((uint32_t)res < 3u) {
+      if (res == 0) return 0;
+    } else if (res == -1) {
       cd_pending_release();
     }
-    if (s1 != s0) { s1 = s0; continue; }
-    return s0;
+    if (prev != res) { prev = res; continue; }
+    return res;
   }
 }
 
