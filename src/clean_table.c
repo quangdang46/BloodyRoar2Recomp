@@ -1063,7 +1063,7 @@ extern void scratch_013_set(uint8_t param_1);
     scratch_013_set(((uint8_t)cpu->gpr[4]));
 }
 static void wrap_801274e8(CPUState *cpu) {
-extern void dialog_mode_mirror(int32_t param_1);
+extern void dialog_mode_mirror(int32_t a0);
     dialog_mode_mirror(((int32_t)cpu->gpr[4]));
 }
 static void wrap_801274fc(CPUState *cpu) {
@@ -1115,7 +1115,7 @@ extern void cps_80127b4c(void);
     cps_80127b4c();
 }
 static void wrap_80127b64(CPUState *cpu) {
-extern void selection_stat_bump(uint8_t *param_1,int32_t param_2);
+extern void selection_stat_bump(uint8_t *state,int32_t unused);
     selection_stat_bump(((uint8_t *)guest_at(cpu->gpr[4])), ((int32_t)cpu->gpr[5]));
 }
 static void wrap_80127be4(CPUState *cpu) {
@@ -1123,7 +1123,7 @@ extern void reset_sprite_ot_block(uint32_t a0);
     reset_sprite_ot_block(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80127c60(CPUState *cpu) {
-extern uint32_t results_record_build(int32_t param_1, int32_t param_2);
+extern uint32_t results_record_build(int32_t idx, int32_t val);
     cpu->gpr[2] = (uint32_t)(results_record_build(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5])));
 }
 static void wrap_80128268(CPUState *cpu) {
@@ -1267,7 +1267,7 @@ extern void cps_80128880(void);
     cps_80128880();
 }
 static void wrap_80128898(CPUState *cpu) {
-extern void record_state_stepper(uint32_t param_1);
+extern void record_state_stepper(uint32_t obj_g);
     record_state_stepper(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_801288f0(CPUState *cpu) {
@@ -1383,7 +1383,7 @@ extern void cps_80128ac0(void);
     cps_80128ac0();
 }
 static void wrap_80128b28(CPUState *cpu) {
-extern void battle_subrecord_reset(uint32_t param_1);
+extern void battle_subrecord_reset(uint32_t battle_g);
     battle_subrecord_reset(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80128b9c(CPUState *cpu) {
@@ -1403,7 +1403,7 @@ extern void cps_80128b9c(void);
     cps_80128b9c();
 }
 static void wrap_80128bec(CPUState *cpu) {
-extern void battle_subrecord_set1(uint32_t param_1);
+extern void battle_subrecord_set1(uint32_t battle_g);
     battle_subrecord_set1(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80128bfc(CPUState *cpu) {
@@ -1847,7 +1847,7 @@ extern void cps_80129450(void);
     cps_80129450();
 }
 static void wrap_801294cc(CPUState *cpu) {
-extern void menu_stepper_state_advance(void *param_1);
+extern void menu_stepper_state_advance(void *desc);
     menu_stepper_state_advance(((void *)guest_at(cpu->gpr[4])));
 }
 static void wrap_801294d4(CPUState *cpu) {
@@ -1887,7 +1887,7 @@ extern void cps_801294d4(void);
     cps_801294d4();
 }
 static void wrap_80129540(CPUState *cpu) {
-extern void menu_stepper_button_wait(void *param_1, uint32_t param_2);
+extern void menu_stepper_button_wait(void *desc, uint32_t btn_mask);
     menu_stepper_button_wait(((void *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80129558(CPUState *cpu) {
@@ -2027,7 +2027,7 @@ extern void cps_801296f0(void);
     cps_801296f0();
 }
 static void wrap_80129710(CPUState *cpu) {
-extern void menu_stepper_masked_sweep(void *param_1, uint32_t param_2);
+extern void menu_stepper_masked_sweep(void *desc, uint32_t btn_mask);
     menu_stepper_masked_sweep(((void *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80129750(CPUState *cpu) {
@@ -2183,7 +2183,7 @@ extern void menu_row_paint_b(void *param_1);
     menu_row_paint_b(((void *)guest_at(cpu->gpr[4])));
 }
 static void wrap_80129978(CPUState *cpu) {
-extern uint32_t u16_counter_step_pad_a(uint32_t param_1, int32_t param_2, int32_t param_3);
+extern uint32_t u16_counter_step_pad_a(uint32_t ctr_g, int32_t max, int32_t sfx);
     cpu->gpr[2] = (uint32_t)(u16_counter_step_pad_a(((uint32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6])));
 }
 static void wrap_801299a8(CPUState *cpu) {
@@ -2432,7 +2432,7 @@ extern void mode_string_dispatch(uint32_t param_1,int32_t param_2);
     mode_string_dispatch(((uint32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]));
 }
 static void wrap_80129f64(CPUState *cpu) {
-extern void mode_flag_pair_set(undefined1 param_1);
+extern void mode_flag_pair_set(undefined1 a0);
     mode_flag_pair_set(((undefined1)cpu->gpr[4]));
 }
 static void wrap_80129f70(CPUState *cpu) {
@@ -2464,7 +2464,7 @@ extern void cps_8012a00c(void);
     cps_8012a00c();
 }
 static void wrap_8012a030(CPUState *cpu) {
-extern void perm_table_apply(uint param_1);
+extern void perm_table_apply(uint a0);
     perm_table_apply(((uint)cpu->gpr[4]));
 }
 static void wrap_8012a088(CPUState *cpu) {
@@ -2598,7 +2598,7 @@ extern void cps_8012a5bc(void);
     cps_8012a5bc();
 }
 static void wrap_8012a650(CPUState *cpu) {
-extern uint32_t attr_word_decode(uint8_t *param_1);
+extern uint32_t attr_word_decode(uint8_t *a0);
     cpu->gpr[2] = (uint32_t)(attr_word_decode(((uint8_t *)guest_at(cpu->gpr[4]))));
 }
 static void wrap_8012a664(CPUState *cpu) {
@@ -2678,7 +2678,7 @@ extern void cps_8012a724(void);
     cps_8012a724();
 }
 static void wrap_8012a72c(CPUState *cpu) {
-extern uint32_t pad_state_refresh(intptr_t param_1);
+extern uint32_t pad_state_refresh(intptr_t pad);
     cpu->gpr[2] = (uint32_t)(pad_state_refresh(((intptr_t)guest_at(cpu->gpr[4]))));
 }
 static void wrap_8012a7bc(CPUState *cpu) {
@@ -2718,7 +2718,7 @@ extern void cps_8012a868(void);
     cps_8012a868();
 }
 static void wrap_8012a884(CPUState *cpu) {
-extern void cursor_sprite_anim(uint8_t *param_1);
+extern void cursor_sprite_anim(uint8_t *st);
     cursor_sprite_anim(((uint8_t *)guest_at(cpu->gpr[4])));
 }
 static void wrap_8012a918(CPUState *cpu) {
@@ -2826,7 +2826,7 @@ extern void cps_8012aa58(void);
     cps_8012aa58();
 }
 static void wrap_8012aa6c(CPUState *cpu) {
-extern void scroll_cfg_set(undefined1 param_1,int param_2);
+extern void scroll_cfg_set(undefined1 a0,int a1);
     scroll_cfg_set(((undefined1)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8012aa7c(CPUState *cpu) {
@@ -3362,7 +3362,7 @@ extern void state_word_set_ffff(void);
     state_word_set_ffff();
 }
 static void wrap_8012b49c(CPUState *cpu) {
-extern void flow_cfg_init(undefined1 param_1);
+extern void flow_cfg_init(undefined1 a0);
     flow_cfg_init(((undefined1)cpu->gpr[4]));
 }
 static void wrap_8012b504(CPUState *cpu) {
@@ -3915,7 +3915,7 @@ extern void cps_8012bf04(void);
     cps_8012bf04();
 }
 static void wrap_8012bf0c(CPUState *cpu) {
-extern uint32_t banner_stripe_scroll(int32_t param_1,int32_t param_2,int32_t param_3,int16_t param_4);
+extern uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t aux);
     cpu->gpr[2] = (uint32_t)(banner_stripe_scroll(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]), ((int16_t)cpu->gpr[7])));
 }
 static void wrap_8012bf58(CPUState *cpu) {
@@ -4536,7 +4536,7 @@ extern void proj_coord_gte_emit(uint32_t param_1,uint32_t param_2,uint32_t param
     proj_coord_gte_emit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
 static void wrap_8012ecbc(CPUState *cpu) {
-extern void player_light_apply(byte *param_1,int param_2);
+extern void player_light_apply(byte *fighter,int player_idx);
     player_light_apply(((byte *)guest_at(cpu->gpr[4])), ((int)cpu->gpr[5]));
 }
 static void wrap_8012edf4(CPUState *cpu) {
@@ -4552,7 +4552,7 @@ extern void cps_8012ee40(void);
     cps_8012ee40();
 }
 static void wrap_8012ee48(CPUState *cpu) {
-extern void camera_state_cache(uint param_1,int param_2);
+extern void camera_state_cache(uint camera,int battle);
     camera_state_cache(((uint)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8012ef6c(CPUState *cpu) {
@@ -4560,7 +4560,7 @@ extern void battle_math_init(uint32_t param_1, uint32_t param_2);
     battle_math_init(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8012f024(CPUState *cpu) {
-extern void battle_struct_init(uint32_t param_1, uint32_t param_2);
+extern void battle_struct_init(uint32_t battle_g, uint32_t env_g);
     battle_struct_init(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8012f160(CPUState *cpu) {
@@ -4625,11 +4625,11 @@ extern void menu_step_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     menu_step_b(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
 static void wrap_8012fb04(CPUState *cpu) {
-extern void battle_field_set(uint32_t param_1, int32_t param_2);
+extern void battle_field_set(uint32_t obj_g, int32_t val);
     battle_field_set(((uint32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]));
 }
 static void wrap_8012fb10(CPUState *cpu) {
-extern void battle_camera_step(uint param_1,byte *param_2,byte *param_3,int param_4);
+extern void battle_camera_step(uint cam,byte *fighter_a,byte *fighter_b,int battle);
     battle_camera_step(((uint)cpu->gpr[4]), ((byte *)guest_at(cpu->gpr[5])), ((byte *)guest_at(cpu->gpr[6])), ((int)cpu->gpr[7]));
 }
 static void wrap_8012fb54(CPUState *cpu) {
@@ -8018,7 +8018,7 @@ extern void cps_80135898(void);
     cps_80135898();
 }
 static void wrap_801358e8(CPUState *cpu) {
-extern uint32_t per_side_setup(int32_t param_1, int32_t param_2);
+extern uint32_t per_side_setup(int32_t side, int32_t flag);
     cpu->gpr[2] = (uint32_t)(per_side_setup(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5])));
 }
 static void wrap_80135a14(CPUState *cpu) {
@@ -13499,11 +13499,11 @@ extern uint32_t attr_flag_mask(uint param_1);
     cpu->gpr[2] = (uint32_t)(attr_flag_mask(((uint)cpu->gpr[4])));
 }
 static void wrap_80143bb8(CPUState *cpu) {
-extern uint32_t fighter_range_code(int param_1,int param_2);
+extern uint32_t fighter_range_code(int self,int opp);
     cpu->gpr[2] = (uint32_t)(fighter_range_code(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_80143c6c(CPUState *cpu) {
-extern uint32_t hit_scale_calc(int param_1,int param_2);
+extern uint32_t hit_scale_calc(int self,int opp);
     cpu->gpr[2] = (uint32_t)(hit_scale_calc(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_80143ce8(CPUState *cpu) {
@@ -13535,7 +13535,7 @@ extern void cps_80143d30(void);
     cps_80143d30();
 }
 static void wrap_80143d38(CPUState *cpu) {
-extern uint32_t hit_react_apply(int param_1,int param_2,int param_3,short *param_4,int param_5);
+extern uint32_t hit_react_apply(int self,int opp,int scale,short *hitbox,int hit_kind);
     cpu->gpr[2] = (uint32_t)(hit_react_apply(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]), ((short *)guest_at(cpu->gpr[7])), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))));
 }
 static void wrap_80144034(CPUState *cpu) {
@@ -14223,7 +14223,7 @@ extern uint32_t seg_sphere_hit(int param_1,int param_2,int *param_3,int *param_4
     cpu->gpr[2] = (uint32_t)(seg_sphere_hit(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int *)guest_at(cpu->gpr[6])), ((int *)guest_at(cpu->gpr[7])), ((int *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu))), ((short *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)))));
 }
 static void wrap_801458ac(CPUState *cpu) {
-extern uint32_t hit_elig_check(int param_1,int param_2);
+extern uint32_t hit_elig_check(int self,int opp);
     cpu->gpr[2] = (uint32_t)(hit_elig_check(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_80145924(CPUState *cpu) {
@@ -14263,7 +14263,7 @@ extern void ret_nop(void);
     ret_nop();
 }
 static void wrap_80145970(CPUState *cpu) {
-extern uint32_t hitbox_pair_test(int param_1,int param_2,undefined2 *param_3);
+extern uint32_t hitbox_pair_test(int self,int opp,undefined2 *out);
     cpu->gpr[2] = (uint32_t)(hitbox_pair_test(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((undefined2 *)guest_at(cpu->gpr[6]))));
 }
 static void wrap_80145c90(CPUState *cpu) {
@@ -14271,11 +14271,11 @@ extern uint32_t pt_box_radius_test(int param_1,int param_2,int *param_3,int *par
     cpu->gpr[2] = (uint32_t)(pt_box_radius_test(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int *)guest_at(cpu->gpr[6])), ((int *)guest_at(cpu->gpr[7]))));
 }
 static void wrap_80145d84(CPUState *cpu) {
-extern void camera_aim_offset(int param_1,int param_2,undefined4 param_3);
+extern void camera_aim_offset(int fighter_a,int fighter_b,undefined4 rot);
     camera_aim_offset(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((undefined4)cpu->gpr[6]));
 }
 static void wrap_8014642c(CPUState *cpu) {
-extern uint32_t hitbox_wall_collide(int param_1,undefined2 *param_2,int param_3);
+extern uint32_t hitbox_wall_collide(int fighter,undefined2 *out,int battle);
     cpu->gpr[2] = (uint32_t)(hitbox_wall_collide(((int)cpu->gpr[4]), ((undefined2 *)guest_at(cpu->gpr[5])), ((int)cpu->gpr[6])));
 }
 static void wrap_801468ec(CPUState *cpu) {
@@ -14547,7 +14547,7 @@ extern void cps_801468ec(void);
     cps_801468ec();
 }
 static void wrap_80146e38(CPUState *cpu) {
-extern uint32_t attract_stage_load_step(int param_1,int *param_2);
+extern uint32_t attract_stage_load_step(int state_g,int *out);
     cpu->gpr[2] = (uint32_t)(attract_stage_load_step(((int)cpu->gpr[4]), ((int *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80147034(CPUState *cpu) {
@@ -14555,7 +14555,7 @@ extern void match_loop(void);
     match_loop();
 }
 static void wrap_8014751c(CPUState *cpu) {
-extern uint32_t attract_menu_dispatch(intptr_t param_1,uint param_2);
+extern uint32_t attract_menu_dispatch(intptr_t ctx,uint btn);
     cpu->gpr[2] = (uint32_t)(attract_menu_dispatch(((intptr_t)guest_at(cpu->gpr[4])), ((uint)cpu->gpr[5])));
 }
 static void wrap_801478b0(CPUState *cpu) {
@@ -14816,13 +14816,13 @@ extern void cps_801484e8(void);
     cps_801484e8();
 }
 static void wrap_80148528(CPUState *cpu) {
-extern void select_confirm_handler(uint32_t param_1,uint32_t param_2,uint8_t *param_3,
-                  uint32_t param_4,int32_t param_5);
+extern void select_confirm_handler(uint32_t battle_g,uint32_t player,uint8_t *recs,
+                  uint32_t btns,int32_t direct);
     select_confirm_handler(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint8_t *)guest_at(cpu->gpr[6])), ((uint32_t)cpu->gpr[7]), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)));
 }
 static void wrap_801487ac(CPUState *cpu) {
-extern void fighter_spawn_setup(uint32_t param_1,uint8_t *param_2,uint8_t *param_3,
-                  uint8_t *param_4,int32_t param_5);
+extern void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
+                  uint8_t *cfg,int32_t direct);
     fighter_spawn_setup(((uint32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])), ((uint8_t *)guest_at(cpu->gpr[6])), ((uint8_t *)guest_at(cpu->gpr[7])), ((int32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)));
 }
 static void wrap_80148cb0(CPUState *cpu) {
@@ -14869,7 +14869,7 @@ extern void palette_attr_record_write(uint32_t param_1,uint32_t param_2,int32_t 
     palette_attr_record_write(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]));
 }
 static void wrap_80149114(CPUState *cpu) {
-extern void post_confirm_config_build(uint32_t param_1,uint8_t *param_2,int32_t param_3);
+extern void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct);
     post_confirm_config_build(((uint32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_8014950c(CPUState *cpu) {
@@ -15132,11 +15132,11 @@ extern uint32_t battle_frame(void);
     cpu->gpr[2] = (uint32_t)(battle_frame());
 }
 static void wrap_8014f1c8(CPUState *cpu) {
-extern uint32_t select_cursor_step(int32_t param_1,int32_t param_2);
+extern uint32_t select_cursor_step(int32_t row,int32_t col0);
     cpu->gpr[2] = (uint32_t)(select_cursor_step(((int32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5])));
 }
 static void wrap_8014f260(CPUState *cpu) {
-extern uint32_t select_screen_tick(int32_t param_1);
+extern uint32_t select_screen_tick(int32_t entry_mode);
     cpu->gpr[2] = (uint32_t)(select_screen_tick(((int32_t)cpu->gpr[4])));
 }
 static void wrap_801506d0(CPUState *cpu) {
@@ -15244,7 +15244,7 @@ extern void ko_count_announce_cps(void);
     ko_count_announce_cps();
 }
 static void wrap_8015113c(CPUState *cpu) {
-extern uint32_t confirm_bookkeeping(uint32_t param_1);
+extern uint32_t confirm_bookkeeping(uint32_t battle_g);
     cpu->gpr[2] = (uint32_t)(confirm_bookkeeping(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_80151170(CPUState *cpu) {
@@ -15328,7 +15328,7 @@ extern void confirm_bookkeeping_cps(void);
     confirm_bookkeeping_cps();
 }
 static void wrap_80151328(CPUState *cpu) {
-extern void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t a2);
+extern void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g);
     battle_state_init(((uint8_t *)guest_at(cpu->gpr[4])), ((uint8_t *)guest_at(cpu->gpr[5])), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_801513c8(CPUState *cpu) {
@@ -15336,7 +15336,7 @@ extern void s16_dec_with_floor(uint32_t param_1);
     s16_dec_with_floor(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_801513fc(CPUState *cpu) {
-extern uint32_t slot_name_measure(void *param_1,int32_t param_2);
+extern uint32_t slot_name_measure(void *a0,int32_t a1);
     cpu->gpr[2] = (uint32_t)(slot_name_measure(((void *)guest_at(cpu->gpr[4])), ((int32_t)cpu->gpr[5])));
 }
 static void wrap_8015143c(CPUState *cpu) {
@@ -15496,19 +15496,19 @@ extern void hud_announce_cps(void);
     hud_announce_cps();
 }
 static void wrap_80151cd0(CPUState *cpu) {
-extern void champion_win_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3);
+extern void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player);
     champion_win_announce(((uint32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_80151dc8(CPUState *cpu) {
-extern void stage_fight_announce(uint32_t param_1,uint8_t *param_2);
+extern void stage_fight_announce(uint32_t battle_g,uint8_t *side);
     stage_fight_announce(((uint32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])));
 }
 static void wrap_8015200c(CPUState *cpu) {
-extern void fight_timer_announce(uint32_t param_1,uint8_t *param_2,int32_t param_3);
+extern void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag);
     fight_timer_announce(((uint32_t)cpu->gpr[4]), ((uint8_t *)guest_at(cpu->gpr[5])), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_801521a4(CPUState *cpu) {
-extern uint32_t battle_state_gate(uint32_t param_1,uint32_t param_2);
+extern uint32_t battle_state_gate(uint32_t battle_g,uint32_t unused);
     cpu->gpr[2] = (uint32_t)(battle_state_gate(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80152248(CPUState *cpu) {
@@ -15528,7 +15528,7 @@ extern void FUN_80152264(void);
     FUN_80152264();
 }
 static void wrap_8015226c(CPUState *cpu) {
-extern uint32_t continue_countdown(uint32_t param_1,uint32_t param_2);
+extern uint32_t continue_countdown(uint32_t battle_g,uint32_t player);
     cpu->gpr[2] = (uint32_t)(continue_countdown(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_801524b0(CPUState *cpu) {
@@ -15536,11 +15536,11 @@ extern void please_wait_announce(uint32_t param_1,int param_2);
     please_wait_announce(((uint32_t)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_80152548(CPUState *cpu) {
-extern void bcfg_step_b(uint32_t param_1,int32_t param_2);
+extern void bcfg_step_b(uint32_t battle_g,int32_t flag);
     bcfg_step_b(((uint32_t)cpu->gpr[4]), ((int32_t)cpu->gpr[5]));
 }
 static void wrap_801525c4(CPUState *cpu) {
-extern void rec_timer_pair_clear(intptr_t param_1);
+extern void rec_timer_pair_clear(intptr_t a0);
     rec_timer_pair_clear(((intptr_t)cpu->gpr[4]));
 }
 static void wrap_801525d0(CPUState *cpu) {
@@ -15548,7 +15548,7 @@ extern void dual_mode_announce(uint32_t param_1);
     dual_mode_announce(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_8015260c(CPUState *cpu) {
-extern void mc_slot_action(uint8_t *param_1,int32_t param_2);
+extern void mc_slot_action(uint8_t *a0,int32_t a1);
     mc_slot_action(((uint8_t *)guest_at(cpu->gpr[4])), ((int32_t)cpu->gpr[5]));
 }
 static void wrap_80152698(CPUState *cpu) {
@@ -15556,11 +15556,11 @@ extern void mc_slot_action_case0(void);
     mc_slot_action_case0();
 }
 static void wrap_8015279c(CPUState *cpu) {
-extern void bcfg_step_c(uint32_t param_1,uint32_t param_2);
+extern void bcfg_step_c(uint32_t battle_g,uint32_t player);
     bcfg_step_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80152878(CPUState *cpu) {
-extern void bcfg_step_d(uint32_t param_1,uint32_t param_2);
+extern void bcfg_step_d(uint32_t battle_g,uint32_t player);
     bcfg_step_d(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8015297c(CPUState *cpu) {
@@ -15577,19 +15577,19 @@ extern void side_phase_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3
     side_phase_commit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_80153264(CPUState *cpu) {
-extern uint32_t mc_pad_button_handler(uint8_t *param_1);
+extern uint32_t mc_pad_button_handler(uint8_t *a0);
     cpu->gpr[2] = (uint32_t)(mc_pad_button_handler(((uint8_t *)guest_at(cpu->gpr[4]))));
 }
 static void wrap_801533e0(CPUState *cpu) {
-extern uint32_t bcfg_step_a(uint32_t param_1,uint32_t param_2,uint32_t param_3);
+extern uint32_t bcfg_step_a(uint32_t battle_g,uint32_t player,uint32_t flags);
     cpu->gpr[2] = (uint32_t)(bcfg_step_a(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8015343c(CPUState *cpu) {
-extern uint32_t gate_read_ec(uint32_t param_1,uint32_t param_2);
+extern uint32_t gate_read_ec(uint32_t battle_g,uint32_t player);
     cpu->gpr[2] = (uint32_t)(gate_read_ec(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80153484(CPUState *cpu) {
-extern uint32_t select_phase_gate(uint32_t param_1,uint32_t param_2);
+extern uint32_t select_phase_gate(uint32_t battle_g,uint32_t player);
     cpu->gpr[2] = (uint32_t)(select_phase_gate(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80153534(CPUState *cpu) {
@@ -15601,7 +15601,7 @@ extern void FUN_8015353c(void);
     FUN_8015353c();
 }
 static void wrap_80153544(CPUState *cpu) {
-extern uint32_t battle_config_eval(uint8_t *param_1,uint32_t param_2,int32_t param_3);
+extern uint32_t battle_config_eval(uint8_t *argblk,uint32_t battle_g,int32_t flag);
     cpu->gpr[2] = (uint32_t)(battle_config_eval(((uint8_t *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6])));
 }
 static void wrap_80153730(CPUState *cpu) {
@@ -15649,7 +15649,7 @@ extern void post_battle_dispatch_sel(void);
     post_battle_dispatch_sel();
 }
 static void wrap_80155c14(CPUState *cpu) {
-extern void battle_sides_commit(uint8_t *param_1, uint8_t *param_2, uint32_t param_3);
+extern void battle_sides_commit(uint8_t *side_a, uint8_t *side_b, uint32_t battle_g);
     battle_sides_commit(((uint8_t *)guest_at(cpu->gpr[4])), ((uint8_t *)guest_at(cpu->gpr[5])), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_80155dd0(CPUState *cpu) {
@@ -15701,7 +15701,7 @@ extern void cps_8015607c(void);
     cps_8015607c();
 }
 static void wrap_801560f8(CPUState *cpu) {
-extern uint32_t match_mode_set(int param_1);
+extern uint32_t match_mode_set(int mode);
     cpu->gpr[2] = (uint32_t)(match_mode_set(((int)cpu->gpr[4])));
 }
 static void wrap_80156114(CPUState *cpu) {
@@ -15709,7 +15709,7 @@ extern void brightness_packet_send(int32_t param_1);
     brightness_packet_send(((int32_t)cpu->gpr[4]));
 }
 static void wrap_801561c8(CPUState *cpu) {
-extern void brightness_commit(undefined2 param_1);
+extern void brightness_commit(undefined2 a0);
     brightness_commit(((undefined2)cpu->gpr[4]));
 }
 static void wrap_801561f0(CPUState *cpu) {
@@ -15785,11 +15785,11 @@ extern void fighter_rec_fetch_apply(uint32_t a0,uint32_t a1,uint32_t a2);
     fighter_rec_fetch_apply(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]));
 }
 static void wrap_801566a0(CPUState *cpu) {
-extern void fighter_record_apply(undefined4 param_1,int param_2);
+extern void fighter_record_apply(undefined4 base,int idx);
     fighter_record_apply(((undefined4)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_801566d4(CPUState *cpu) {
-extern void page_table_ptr_set(int param_1,int param_2,undefined *param_3);
+extern void page_table_ptr_set(int bank,int slot,undefined *ptr);
     page_table_ptr_set(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((undefined *)guest_at(cpu->gpr[6])));
 }
 static void wrap_80156784(CPUState *cpu) {
@@ -15857,7 +15857,7 @@ extern uint32_t FUN_80156d90(void);
     cpu->gpr[2] = (uint32_t)(FUN_80156d90());
 }
 static void wrap_80156d98(CPUState *cpu) {
-extern void deferred_cmd_drain(undefined4 param_1,int param_2);
+extern void deferred_cmd_drain(undefined4 a0,int a1);
     deferred_cmd_drain(((undefined4)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_80156ef4(CPUState *cpu) {
@@ -15910,7 +15910,7 @@ extern uint32_t mc_mode_nibble_rw(int32_t a0);
     cpu->gpr[2] = (uint32_t)(mc_mode_nibble_rw(((int32_t)cpu->gpr[4])));
 }
 static void wrap_801574b4(CPUState *cpu) {
-extern uint32_t mc_dialog_bit4(int32_t param_1);
+extern uint32_t mc_dialog_bit4(int32_t a0);
     cpu->gpr[2] = (uint32_t)(mc_dialog_bit4(((int32_t)cpu->gpr[4])));
 }
 static void wrap_801574cc(CPUState *cpu) {
@@ -15926,15 +15926,15 @@ extern uint32_t FUN_80157574(void);
     cpu->gpr[2] = (uint32_t)(FUN_80157574());
 }
 static void wrap_801575bc(CPUState *cpu) {
-extern void datetime_confirm_a(int32_t param_1,uint32_t param_2);
+extern void datetime_confirm_a(int32_t a0,uint32_t a1);
     datetime_confirm_a(((int32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8015768c(CPUState *cpu) {
-extern void datetime_confirm_b(int32_t param_1,uint32_t param_2);
+extern void datetime_confirm_b(int32_t a0,uint32_t a1);
     datetime_confirm_b(((int32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_801577bc(CPUState *cpu) {
-extern void mc_confirm_dispatch(int32_t param_1,uint32_t param_2);
+extern void mc_confirm_dispatch(int32_t a0,uint32_t a1);
     mc_confirm_dispatch(((int32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8015787c(CPUState *cpu) {
@@ -16269,12 +16269,12 @@ extern uint32_t scene_entry(int param_1,int param_2,int param_3);
     cpu->gpr[2] = (uint32_t)(scene_entry(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6])));
 }
 static void wrap_801594a4(CPUState *cpu) {
-extern void display_frame_present(int *param_1,int param_2);
+extern void display_frame_present(int *env,int ticks);
     display_frame_present(((int *)guest_at(cpu->gpr[4])), ((int)cpu->gpr[5]));
 }
 static void wrap_80159734(CPUState *cpu) {
-extern void tile_stream_job_init(undefined4 *param_1,undefined2 param_2,undefined2 param_3,undefined2 param_4,
-                 undefined2 param_5,int *param_6);
+extern void tile_stream_job_init(undefined4 *job,undefined2 param_2,undefined2 param_3,undefined2 param_4,
+                 undefined2 param_5,int *opt);
     tile_stream_job_init(((undefined4 *)guest_at(cpu->gpr[4])), ((undefined2)cpu->gpr[5]), ((undefined2)cpu->gpr[6]), ((undefined2)cpu->gpr[7]), ((undefined2)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((int *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu))));
 }
 static void wrap_801597e0(CPUState *cpu) {
@@ -16282,7 +16282,7 @@ extern void FUN_801597e0(uint32_t t0, uint32_t a3, uint32_t t3);
     FUN_801597e0(((uint32_t)cpu->gpr[8]), ((uint32_t)cpu->gpr[7]), ((uint32_t)cpu->gpr[11]));
 }
 static void wrap_801597ec(CPUState *cpu) {
-extern void tile_stream_open(uint8_t *param_1,void *param_2,int *param_3);
+extern void tile_stream_open(uint8_t *stream,void *name,int *params);
     tile_stream_open(((uint8_t *)guest_at(cpu->gpr[4])), ((void *)guest_at(cpu->gpr[5])), ((int *)guest_at(cpu->gpr[6])));
 }
 static void wrap_80159864(CPUState *cpu) {
@@ -16294,23 +16294,23 @@ extern void hp_bar_tick(void);
     hp_bar_tick();
 }
 static void wrap_80159a14(CPUState *cpu) {
-extern uint32_t blk_io_retry(uint32_t param_1,void *param_2);
+extern uint32_t blk_io_retry(uint32_t a0,void *a1);
     cpu->gpr[2] = (uint32_t)(blk_io_retry(((uint32_t)cpu->gpr[4]), ((void *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80159ab4(CPUState *cpu) {
-extern uint32_t mc_date_serial_cmp(uint8_t *param_1,void *param_2);
+extern uint32_t mc_date_serial_cmp(uint8_t *a0,void *a1);
     cpu->gpr[2] = (uint32_t)(mc_date_serial_cmp(((uint8_t *)guest_at(cpu->gpr[4])), ((void *)guest_at(cpu->gpr[5]))));
 }
 static void wrap_80159c24(CPUState *cpu) {
-extern void tile_decode_wait(intptr_t param_1);
+extern void tile_decode_wait(intptr_t job);
     tile_decode_wait(((intptr_t)cpu->gpr[4]));
 }
 static void wrap_80159ce4(CPUState *cpu) {
-extern void cd_stream_mode_init(undefined4 param_1);
+extern void cd_stream_mode_init(undefined4 cfg_g);
     cd_stream_mode_init(((undefined4)cpu->gpr[4]));
 }
 static void wrap_80159d78(CPUState *cpu) {
-extern uint32_t slot_icon_nibble_resolve(uint8_t *param_1);
+extern uint32_t slot_icon_nibble_resolve(uint8_t *a0);
     cpu->gpr[2] = (uint32_t)(slot_icon_nibble_resolve(((uint8_t *)guest_at(cpu->gpr[4]))));
 }
 static void wrap_80159dac(CPUState *cpu) {
@@ -16342,7 +16342,7 @@ extern void FUN_80159f7c(uint32_t a0);
     FUN_80159f7c(((uint32_t)cpu->gpr[4]));
 }
 static void wrap_80159f84(CPUState *cpu) {
-extern void picker_table_shuffle(uint8_t *param_1);
+extern void picker_table_shuffle(uint8_t *a0);
     picker_table_shuffle(((uint8_t *)guest_at(cpu->gpr[4])));
 }
 static void wrap_8015a1dc(CPUState *cpu) {
@@ -19203,7 +19203,7 @@ extern uint32_t pending_work_drain(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(pending_work_drain(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8015f6a0(CPUState *cpu) {
-extern uint32_t memcard_file_flow(int param_1);
+extern uint32_t memcard_file_flow(int a0);
     cpu->gpr[2] = (uint32_t)(memcard_file_flow(((int)cpu->gpr[4])));
 }
 static void wrap_80160008(CPUState *cpu) {
@@ -20087,7 +20087,7 @@ extern uint32_t pad_handler_c(uint32_t param_1,uint32_t param_2);
     cpu->gpr[2] = (uint32_t)(pad_handler_c(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80163154(CPUState *cpu) {
-extern uint32_t stream_block_decode(undefined4 param_1,int *param_2,int param_3);
+extern uint32_t stream_block_decode(undefined4 dst,int *tbl,int idx);
     cpu->gpr[2] = (uint32_t)(stream_block_decode(((undefined4)cpu->gpr[4]), ((int *)guest_at(cpu->gpr[5])), ((int)cpu->gpr[6])));
 }
 static void wrap_801631b4(CPUState *cpu) {
@@ -20139,7 +20139,7 @@ extern uint32_t match_end_check(intptr_t param_1);
     cpu->gpr[2] = (uint32_t)(match_end_check(((intptr_t)cpu->gpr[4])));
 }
 static void wrap_80163520(CPUState *cpu) {
-extern uint32_t slot_display_pos(uint8_t *param_1,uint32_t param_2);
+extern uint32_t slot_display_pos(uint8_t *a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(slot_display_pos(((uint8_t *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8016362c(CPUState *cpu) {
@@ -20147,7 +20147,7 @@ extern void menu_noop(void);
     menu_noop();
 }
 static void wrap_80163634(CPUState *cpu) {
-extern void mode_name_announce(uint32_t param_1,uint32_t param_2,int32_t param_3);
+extern void mode_name_announce(uint32_t battle_g,uint32_t player,int32_t force);
     mode_name_announce(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_80163744(CPUState *cpu) {
@@ -20231,7 +20231,7 @@ extern uint32_t FUN_801638c0(uint32_t a0);
     cpu->gpr[2] = (uint32_t)(FUN_801638c0(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_801638c8(CPUState *cpu) {
-extern void save_rec_table_copy(uint32_t *param_1,uint32_t param_2,int32_t param_3);
+extern void save_rec_table_copy(uint32_t *a0,uint32_t a1,int32_t a2);
     save_rec_table_copy(((uint32_t *)guest_at(cpu->gpr[4])), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_80163940(CPUState *cpu) {
@@ -20617,7 +20617,7 @@ extern void hud_score_draw_alt(void);
     hud_score_draw_alt();
 }
 static void wrap_80164668(CPUState *cpu) {
-extern void results_scoreboard(int param_1);
+extern void results_scoreboard(int mode);
     results_scoreboard(((int)cpu->gpr[4]));
 }
 static void wrap_80164ea4(CPUState *cpu) {
@@ -21233,7 +21233,7 @@ extern uint32_t card_sprite_load_sm(uint32_t a0,uint32_t a1);
     cpu->gpr[2] = (uint32_t)(card_sprite_load_sm(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_80165cb4(CPUState *cpu) {
-extern void transition_screen_flow(int param_1);
+extern void transition_screen_flow(int mode);
     transition_screen_flow(((int)cpu->gpr[4]));
 }
 static void wrap_801660c0(CPUState *cpu) {
@@ -21249,7 +21249,7 @@ extern void battle_round_init(uint32_t a0,uint32_t a1);
     battle_round_init(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_80166544(CPUState *cpu) {
-extern void battle_frame_tick(int param_1,uint param_2);
+extern void battle_frame_tick(int battle,uint phase_mask);
     battle_frame_tick(((int)cpu->gpr[4]), ((uint)cpu->gpr[5]));
 }
 static void wrap_80166a60(CPUState *cpu) {
@@ -21477,7 +21477,7 @@ extern uint32_t fighter_frame_triple_emit(uint32_t param_1);
     cpu->gpr[2] = (uint32_t)(fighter_frame_triple_emit(((uint32_t)cpu->gpr[4])));
 }
 static void wrap_8016700c(CPUState *cpu) {
-extern void save_slot_state_fixup(uint32_t param_1,uint32_t param_2);
+extern void save_slot_state_fixup(uint32_t a0,uint32_t a1);
     save_slot_state_fixup(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_801670c8(CPUState *cpu) {
@@ -21490,7 +21490,7 @@ extern void dual_sprite_attr_emit(uint32_t param_1,uint32_t param_2,uint32_t par
     dual_sprite_attr_emit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)));
 }
 static void wrap_80167330(CPUState *cpu) {
-extern void battle_intro_flow(int param_1);
+extern void battle_intro_flow(int mode);
     battle_intro_flow(((int)cpu->gpr[4]));
 }
 static void wrap_80167840(CPUState *cpu) {
@@ -21896,7 +21896,7 @@ extern uint32_t heap_record_emit(uint32_t param_1,uint32_t param_2,uint32_t para
     cpu->gpr[2] = (uint32_t)(heap_record_emit(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint32_t)cpu->gpr[7]), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((uint32_t *)guest_at((uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu))), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 28) & 0xffffffffu)), ((uint32_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 32) & 0xffffffffu))));
 }
 static void wrap_8016cd8c(CPUState *cpu) {
-extern void fighter_flash_update(uint param_1,uint param_2,int param_3,byte *param_4);
+extern void fighter_flash_update(uint scene,uint player_idx,int battle,byte *fighter);
     fighter_flash_update(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((int)cpu->gpr[6]), ((byte *)guest_at(cpu->gpr[7])));
 }
 static void wrap_8016d244(CPUState *cpu) {
@@ -21937,7 +21937,7 @@ extern void scratchpad_pair_init(void);
     scratchpad_pair_init();
 }
 static void wrap_8016fc74(CPUState *cpu) {
-extern void chan_blocks_reset(uint32_t param_1,uint32_t param_2,int32_t param_3);
+extern void chan_blocks_reset(uint32_t a0,uint32_t a1,int32_t a2);
     chan_blocks_reset(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((int32_t)cpu->gpr[6]));
 }
 static void wrap_8016fca8(CPUState *cpu) {
@@ -22898,7 +22898,7 @@ extern void fighter_anim_table_init(int32_t a0);
     fighter_anim_table_init(((int32_t)cpu->gpr[4]));
 }
 static void wrap_801737ec(CPUState *cpu) {
-extern void battle_hud_draw(int param_1,int param_2,int param_3,int param_4);
+extern void battle_hud_draw(int unused,int battle,int fighter_a,int fighter_b);
     battle_hud_draw(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]), ((int)cpu->gpr[7]));
 }
 static void wrap_801756b0(CPUState *cpu) {
@@ -24934,7 +24934,7 @@ extern void ev_stream_dispatch(byte *param_1,byte *param_2);
     ev_stream_dispatch(((byte *)guest_at(cpu->gpr[4])), ((byte *)guest_at(cpu->gpr[5])));
 }
 static void wrap_8017eb10(CPUState *cpu) {
-extern void hit_pose_swap(int param_1,int param_2);
+extern void hit_pose_swap(int ctrl,int rec);
     hit_pose_swap(((int)cpu->gpr[4]), ((int)cpu->gpr[5]));
 }
 static void wrap_8017eb78(CPUState *cpu) {
@@ -24946,11 +24946,11 @@ extern void flag_table_dump(uint32_t a0, uint32_t a1);
     flag_table_dump(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]));
 }
 static void wrap_8017f398(CPUState *cpu) {
-extern void fighter_contact_resolve(int param_1,int param_2,int param_3);
+extern void fighter_contact_resolve(int fighter_a,int fighter_b,int battle);
     fighter_contact_resolve(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]));
 }
 static void wrap_8017f7c4(CPUState *cpu) {
-extern uint32_t fighter_atk_dir(int param_1,int param_2);
+extern uint32_t fighter_atk_dir(int self,int opp);
     cpu->gpr[2] = (uint32_t)(fighter_atk_dir(((int)cpu->gpr[4]), ((int)cpu->gpr[5])));
 }
 static void wrap_8017f97c(CPUState *cpu) {
@@ -25054,7 +25054,7 @@ extern void cps_8017fb00(void);
     cps_8017fb00();
 }
 static void wrap_8017fb34(CPUState *cpu) {
-extern void fighter_state_tick(uint *param_1,undefined4 param_2,int param_3);
+extern void fighter_state_tick(uint *fighter,undefined4 battle,int camera);
     fighter_state_tick(((uint *)guest_at(cpu->gpr[4])), ((undefined4)cpu->gpr[5]), ((int)cpu->gpr[6]));
 }
 static void wrap_8017fe60(CPUState *cpu) {
@@ -25166,7 +25166,7 @@ extern void hitbox_xform_epilogue(void);
     hitbox_xform_epilogue();
 }
 static void wrap_801809c8(CPUState *cpu) {
-extern void fighter_pair_update(int param_1,int param_2,int param_3);
+extern void fighter_pair_update(int fighter_a,int fighter_b,int battle);
     fighter_pair_update(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]));
 }
 static void wrap_80181000(CPUState *cpu) {
@@ -27033,7 +27033,7 @@ extern uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     cpu->gpr[2] = (uint32_t)(prim_persp_ot_emit_112(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((int32_t)cpu->gpr[7])));
 }
 static void wrap_8018babc(CPUState *cpu) {
-extern void dbg_marker_mode_set(int param_1);
+extern void dbg_marker_mode_set(int a0);
     dbg_marker_mode_set(((int)cpu->gpr[4]));
 }
 static void wrap_8018bae8(CPUState *cpu) {
@@ -27340,7 +27340,7 @@ extern uint32_t prim_attr_repack(uint32_t src_a, uint32_t dst_a);
     cpu->gpr[2] = (uint32_t)(prim_attr_repack(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5])));
 }
 static void wrap_8018d700(CPUState *cpu) {
-extern void node_translate_tree(int param_1,int param_2,int param_3,int param_4);
+extern void node_translate_tree(int node,int tx,int ty,int tz);
     node_translate_tree(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((int)cpu->gpr[6]), ((int)cpu->gpr[7]));
 }
 static void wrap_8018d788(CPUState *cpu) {
