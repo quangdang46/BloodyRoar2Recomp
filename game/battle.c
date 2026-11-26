@@ -657,20 +657,20 @@ void player_light_apply(byte *fighter,int player_idx)
   return;
 
 }
-void fighter_pair_update(int param_1,int param_2,int param_3)
+void fighter_pair_update(int fighter_a,int fighter_b,int battle)
 {
-  short sVar1;
-  short sVar2;
-  undefined2 uVar3;
+  short base_a;
+  short base_b;
+  undefined2 div_out;
   int iVar4;
-  int iVar5;
+  int elig_ba;
   undefined4 uVar6;
   int iVar7;
   int iVar8;
   int iVar9;
-  int unaff_s6;
+  int scale_a;
   undefined4 uVar10;
-  int unaff_s7;
+  int scale_b;
   /* Guest stack layout (br2eu_func_801809C8): the two hitbox-result buffers
    * are 8-byte slots at sp+0x18 and sp+0x20. hitbox_pair_test /
    * seg_sphere_hit / sphere_pt_hit write result shorts at indices 0..2
@@ -678,53 +678,54 @@ void fighter_pair_update(int param_1,int param_2,int param_3)
    * plus a trailing scalar, so index-2 writes ran off the end of the array
    * and smashed fighter_pair_update's saved x28 on the host stack
    * (observed: x28 low16 overwritten -> fighter_flash_update param_4
-   * garbage -> SIGSEGV). Model each slot as a 4-short array; local_34 is
-   * local_38[2], local_2c is local_30[2]. */
-  short local_38 [4];
-  short local_30 [4];
+   * garbage -> SIGSEGV). Model each slot as a 4-short array; the
+   * decompiler's trailing scalars (local_34/local_2c) map to
+   * hitbox_a[2]/hitbox_b[2]. */
+  short hitbox_a [4];
+  short hitbox_b [4];
   
   iVar9 = 0;
   iVar8 = 0;
-  hitbox_corners_xform(param_1,param_2);
-  fighter_height_track(param_1,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38))));
-  fighter_height_track(param_2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38))));
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x10000000) != 0) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))| 0x40000000;
+  hitbox_corners_xform(fighter_a,fighter_b);
+  fighter_height_track(fighter_a,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38))));
+  fighter_height_track(fighter_b,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38))));
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x10000000) != 0) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))| 0x40000000;
   }
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x10000000) != 0) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))| 0x40000000;
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x10000000) != 0) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))| 0x40000000;
   }
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x800000) != 0) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))| 0x2000;
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x800000) != 0) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))| 0x2000;
   }
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x800000) != 0) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))| 0x2000;
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x800000) != 0) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))| 0x2000;
   }
-  iVar4 = hit_elig_check(param_1,param_2);
-  iVar5 = hit_elig_check(param_2,param_1);
+  iVar4 = hit_elig_check(fighter_a,fighter_b);
+  elig_ba = hit_elig_check(fighter_b,fighter_a);
   iVar7 = 0;
   if (iVar4 != 0) {
-    uVar6 = fighter_range_code(param_1,param_2);
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x68) ))= uVar6;
-    unaff_s6 = hit_scale_calc(param_1,param_2);
-    iVar9 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xda) ))* unaff_s6;
+    uVar6 = fighter_range_code(fighter_a,fighter_b);
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x68) ))= uVar6;
+    scale_a = hit_scale_calc(fighter_a,fighter_b);
+    iVar9 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0xda) ))* scale_a;
     if (iVar9 < 0) {
       iVar9 = iVar9 + 0x7f;
     }
     iVar9 = iVar9 >> 7;
-    iVar7 = hitbox_pair_test(param_1,param_2,local_38);
+    iVar7 = hitbox_pair_test(fighter_a,fighter_b,hitbox_a);
   }
   iVar4 = 0;
-  if (iVar5 != 0) {
-    uVar6 = fighter_range_code(param_2,param_1);
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x68) ))= uVar6;
-    unaff_s7 = hit_scale_calc(param_2,param_1);
-    iVar8 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xda) ))* unaff_s7;
+  if (elig_ba != 0) {
+    uVar6 = fighter_range_code(fighter_b,fighter_a);
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x68) ))= uVar6;
+    scale_b = hit_scale_calc(fighter_b,fighter_a);
+    iVar8 = (uint)*(byte *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0xda) ))* scale_b;
     if (iVar8 < 0) {
       iVar8 = iVar8 + 0x7f;
     }
     iVar8 = iVar8 >> 7;
-    iVar4 = hitbox_pair_test(param_2,param_1,local_30);
+    iVar4 = hitbox_pair_test(fighter_b,fighter_a,hitbox_b);
   }
   if (iVar7 != 0) {
     if (iVar4 != 0) {
@@ -736,112 +737,112 @@ void fighter_pair_update(int param_1,int param_2,int param_3)
       }
     }
     if (iVar7 != 0) {
-      hit_react_apply(param_1,param_2,unaff_s6,local_38,iVar7);
+      hit_react_apply(fighter_a,fighter_b,scale_a,hitbox_a,iVar7);
     }
   }
   if (iVar4 != 0) {
-    hit_react_apply(param_2,param_1,unaff_s7,local_30,iVar4);
+    hit_react_apply(fighter_b,fighter_a,scale_b,hitbox_b,iVar4);
   }
-  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x48000) == 0) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))& 0x4000000) == 0)
+  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x48000) == 0) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))& 0x4000000) == 0)
      ) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))& 0xdfffffff;
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))& 0xdfffffff;
   }
-  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x10000000) == 0) &&
-     ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))& 0x2000000) == 0)) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))& 0xbfffdfff;
+  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x10000000) == 0) &&
+     ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))& 0x2000000) == 0)) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))& 0xbfffdfff;
   }
-  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x48000) == 0) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0x4000000) == 0)
+  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x48000) == 0) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))& 0x4000000) == 0)
      ) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0xdfffffff;
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))& 0xdfffffff;
   }
-  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x10000000) == 0) &&
-     ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0x2000000) == 0)) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0xbfffdfff;
+  if (((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x10000000) == 0) &&
+     ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))& 0x2000000) == 0)) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))& 0xbfffdfff;
   }
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x5c) ))& 0x60000000) == 0) {
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0xdd) ))= 0;
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x5c) ))& 0x60000000) == 0) {
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0xdd) ))= 0;
   }
-  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x5c) ))& 0x60000000) == 0) {
-    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0xdd) ))= 0;
+  if ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x5c) ))& 0x60000000) == 0) {
+    *(undefined1 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0xdd) ))= 0;
   }
-  iVar9 = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x3c) ))-
-                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x3c))),
-                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x34) ))-
-                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x34))));
-  camera_aim_offset(param_1,param_2,iVar9);
-  iVar8 = hitbox_wall_collide(param_1,local_38,param_3);
-  iVar7 = hitbox_wall_collide(param_2,local_30,param_3);
-  if ((((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x40000000) == 0) ||
-      ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x100000) == 0)) &&
-     (((*(uint *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x58) ))& 0x40000000) == 0 ||
-      ((*(uint *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x58) ))& 0x100000) == 0)))) {
+  iVar9 = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x3c) ))-
+                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x3c))),
+                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x34) ))-
+                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x34))));
+  camera_aim_offset(fighter_a,fighter_b,iVar9);
+  iVar8 = hitbox_wall_collide(fighter_a,hitbox_a,battle);
+  iVar7 = hitbox_wall_collide(fighter_b,hitbox_b,battle);
+  if ((((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x40000000) == 0) ||
+      ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x100000) == 0)) &&
+     (((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x58) ))& 0x40000000) == 0 ||
+      ((*(uint *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x58) ))& 0x100000) == 0)))) {
     if (iVar8 != 0) {
-      node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20))),(int)local_38[0],0,(int)local_38[2]);
-      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))=
-           *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))+ local_38[0];
-      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd8) ))=
-           *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd8) ))+ local_38[2];
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x18) ))=
-           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x34)));
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x1a) ))=
-           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x38)));
-      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x1c) ))=
-           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x3c)));
+      node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20))),(int)hitbox_a[0],0,(int)hitbox_a[2]);
+      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd4) ))=
+           *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd4) ))+ hitbox_a[0];
+      *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd8) ))=
+           *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd8) ))+ hitbox_a[2];
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x18) ))=
+           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x34)));
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x1a) ))=
+           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x38)));
+      *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x1c) ))=
+           *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x3c)));
     }
     if (iVar7 == 0) goto LAB_80180f88;
-    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20))),(int)local_30[0],0,(int)local_30[2]);
-    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38) ))+ 0xd4) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38) ))+ 0xd4) ))+ local_30[0];
-    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38)));
+    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20))),(int)hitbox_b[0],0,(int)hitbox_b[2]);
+    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38) ))+ 0xd4) ))=
+         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38) ))+ 0xd4) ))+ hitbox_b[0];
+    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38)));
   }
   else {
     if (iVar8 == 0 && iVar7 == 0) goto LAB_80180f88;
-    local_38[0] = local_38[0] + local_30[0];
-    local_38[2] = local_38[2] + local_30[2];
-    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20))),(int)local_38[0],0,(int)local_38[2]);
-    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd4) ))+ local_38[0];
-    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd8) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x38) ))+ 0xd8) ))+ local_38[2];
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x18) ))=
-         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x34)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x1a) ))=
-         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x38)));
-    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x1c) ))=
-         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x3c)));
-    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20))),(int)local_38[0],0,(int)local_38[2]);
-    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38) ))+ 0xd4) ))=
-         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38) ))+ 0xd4) ))+ local_38[0];
-    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x38)));
-    local_30[2] = local_38[2];
+    hitbox_a[0] = hitbox_a[0] + hitbox_b[0];
+    hitbox_a[2] = hitbox_a[2] + hitbox_b[2];
+    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20))),(int)hitbox_a[0],0,(int)hitbox_a[2]);
+    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd4) ))=
+         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd4) ))+ hitbox_a[0];
+    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd8) ))=
+         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x38) ))+ 0xd8) ))+ hitbox_a[2];
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x18) ))=
+         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x34)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x1a) ))=
+         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x38)));
+    *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x1c) ))=
+         *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x3c)));
+    node_translate_tree(*(undefined4 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20))),(int)hitbox_a[0],0,(int)hitbox_a[2]);
+    *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38) ))+ 0xd4) ))=
+         *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38) ))+ 0xd4) ))+ hitbox_a[0];
+    iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x38)));
+    hitbox_b[2] = hitbox_a[2];
   }
-  *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))+ local_30[2];
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x18) ))=
-       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x34)));
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x1a) ))=
-       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x38)));
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x1c) ))=
-       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x3c)));
+  *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 0xd8) ))+ hitbox_b[2];
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x18) ))=
+       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x34)));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x1a) ))=
+       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x38)));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x1c) ))=
+       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x3c)));
 LAB_80180f88:
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x4e)));
-  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x4e)));
-  iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x34)));
-  uVar6 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x20) ))+ 0x3c)));
-  iVar7 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x34)));
-  uVar10 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x20) ))+ 0x3c)));
-  *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x74) ))= (short)((iVar9 - sVar1) * 0x100000 >> 0x14);
-  *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x74) ))=
-       (short)((int)(((iVar9 + 0x800U & 0xfff) - (int)sVar2) * 0x100000) >> 0x14);
+  base_a = *(short *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x4e)));
+  base_b = *(short *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x4e)));
+  iVar8 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x34)));
+  uVar6 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x20) ))+ 0x3c)));
+  iVar7 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x34)));
+  uVar10 = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x20) ))+ 0x3c)));
+  *(short *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x74) ))= (short)((iVar9 - base_a) * 0x100000 >> 0x14);
+  *(short *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x74) ))=
+       (short)((int)(((iVar9 + 0x800U & 0xfff) - (int)base_b) * 0x100000) >> 0x14);
   iVar9 = atan2_lut(uVar6,-iVar8);
-  uVar3 = fixed_point_divide(uVar6,iVar8);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x72) ))= uVar3;
-  *(short *)guest_at((uint32_t)(uintptr_t)((param_1 + 0x70) ))= (short)((iVar9 - sVar1) * 0x100000 >> 0x14);
+  div_out = fixed_point_divide(uVar6,iVar8);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x72) ))= div_out;
+  *(short *)guest_at((uint32_t)(uintptr_t)((fighter_a + 0x70) ))= (short)((iVar9 - base_a) * 0x100000 >> 0x14);
   iVar9 = atan2_lut(uVar10,-iVar7);
-  uVar3 = fixed_point_divide(uVar10,iVar7);
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x72) ))= uVar3;
-  *(short *)guest_at((uint32_t)(uintptr_t)((param_2 + 0x70) ))= (short)((iVar9 - sVar2) * 0x100000 >> 0x14);
-  fighter_attach_run(param_1);
-  fighter_attach_run(param_2);
+  div_out = fixed_point_divide(uVar10,iVar7);
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x72) ))= div_out;
+  *(short *)guest_at((uint32_t)(uintptr_t)((fighter_b + 0x70) ))= (short)((iVar9 - base_b) * 0x100000 >> 0x14);
+  fighter_attach_run(fighter_a);
+  fighter_attach_run(fighter_b);
   return;
 
 }
