@@ -1587,7 +1587,12 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
  * floor/height clamps, hit-zone tests, turn, action resolve+commit. */
 void fighter_frame(byte *ctrl, uint8_t *motion)
 {
-
+  /* Locals: motion_p = ctrl+0x38 motion object; dv = short scratch
+   * (gauge delta, zone result, action id); uv = uint scratch (flag
+   * words, zone results, deferred-cmd arg, resolver result); z2/z3 =
+   * hit-zone test results; tab/auxv/fidx = deferred-cmd table
+   * lookup; ia/ib/ic = int scratch (guest addrs, actor ptr,
+   * products); acc = +0x8c accumulator; downed = KO flag. */
   byte fidx;
   bool downed;
   short dv;
@@ -2006,6 +2011,9 @@ uint *rotmat_rtps_build(uint,uint*);
  * advance timers/blends, steer toward foe, post deferred cmds. */
 void action_commit(byte *ctrl, byte *motion)
 {
+  /* Locals: rem = countdown remainder; f6c = ctrl+0x6c flag word;
+   * tv/delta = steering scratch; dvec = foe-self position delta;
+   * sign = clamp direction flag; rotm = output rotation matrix. */
   bool sign;
   ushort rem;
   uint f6c;
@@ -2936,7 +2944,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
     tag = rec[4];
     rec = rec + 4;
   }
-  krec = 1;
+  krec = 1;  /* reused as loop counter (was keyframe rec ptr) */
   pdst = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x6c);
   psrc = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x28);
   mp = (int *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(motion + 0x10)) + (*(byte *)(ctrl + 5) & 1) * 0x1c + 8) +
@@ -3084,7 +3092,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sz - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -3117,7 +3125,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
   if (dy < 0) {
     dy = dy + 0xfff;
   }
-  alpha = ((int)sz - (int)dst[2]) * alpha;
+  alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -3166,7 +3174,7 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
   if (d2 < 0) {
     d2 = d2 + 0xfff;
   }
-  alpha = (d3 * 2 - (int)dst[3]) * alpha;
+  alpha = (d3 * 2 - (int)dst[3]) * alpha;  /* alpha reused as last-channel delta */
   dst[2] = dst[2] + (short)(d2 >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
@@ -3222,7 +3230,7 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
   if (q < 0) {
     q = q + 0xfff;
   }
-  alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;
+  alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;  /* alpha reused as last-channel delta */
   dst[1] = dst[1] + (short)(q >> 0xc);
   if (alpha < 0) {
     alpha = alpha + 0xfff;
