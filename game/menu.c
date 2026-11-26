@@ -3728,75 +3728,75 @@ void selection_stat_bump(uint8_t *state,int32_t unused)
 extern int32_t gate_read_ec(uint32_t,uint32_t);
 void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(battle_g);
-  uint8_t *s4 = recs;
-  uint8_t *a3 = (uint8_t *)guest_at(0x801b23ac);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
+  uint8_t *xlat = (uint8_t *)guest_at(0x801b23ac);
   uint8_t *u16src = (uint8_t *)guest_at(0x801b2378);
-  int32_t s1, s5 = direct;
+int32_t pi;
   int32_t i;
 
   confirm_bookkeeping(battle_g);
   for (i = 0; i < 0xa; i++)
-    *(uint16_t *)(s4 + 0x88 + i * 2) = *(uint16_t *)(u16src + i * 2);
+    *(uint16_t *)(recs + 0x88 + i * 2) = *(uint16_t *)(u16src + i * 2);
 
-  *(uint32_t *)(s4 + 0x14) = 0x1387;
-  *(uint32_t *)(s4 + 0x20) = 0;
-  *(uint32_t *)(s4 + 0x1c) = 1;
-  s4[0x24] = 0; s4[0x25] = 0;
-  *(uint32_t *)(s4 + 4) = 0;
-  *(uint32_t *)(s4 + 8) = 0;
-  *(uint32_t *)(s4 + 0xc) = 0;
-  *(uint32_t *)(s4 + 0x10) = 0;
-  *(uint32_t *)(s4 + 0x18) = (uint32_t)(int32_t)(int8_t)s3[0x98];
+  *(uint32_t *)(recs + 0x14) = 0x1387;
+  *(uint32_t *)(recs + 0x20) = 0;
+  *(uint32_t *)(recs + 0x1c) = 1;
+  recs[0x24] = 0; recs[0x25] = 0;
+  *(uint32_t *)(recs + 4) = 0;
+  *(uint32_t *)(recs + 8) = 0;
+  *(uint32_t *)(recs + 0xc) = 0;
+  *(uint32_t *)(recs + 0x10) = 0;
+  *(uint32_t *)(recs + 0x18) = (uint32_t)(int32_t)(int8_t)b[0x98];
 
-  for (s1 = 0; s1 < 2; s1++) {
-    uint8_t *s0 = s4 + s1 * 0x30;
-    uint16_t *ph = (uint16_t *)(s3 + 0xb4 + s1 * 2);
+  for (pi = 0; pi < 2; pi++) {
+    uint8_t *prec = recs + pi * 0x30;
+    uint16_t *ph = (uint16_t *)(b + 0xb4 + pi * 2);
     uint32_t cls = *ph & 0xf00;
     uint32_t t, a0, v1;
-    *(uint32_t *)(s0 + 0x38) = (uint32_t)select_phase_gate(battle_g,s1);
-    t = *(uint32_t *)(s0 + 0x28);
+    *(uint32_t *)(prec + 0x38) = (uint32_t)select_phase_gate(battle_g,pi);
+    t = *(uint32_t *)(prec + 0x28);
     if (cls==0x100||cls==0x200||cls==0x700) t |= 1; else t &= ~1u;
-    *(uint32_t *)(s0 + 0x28) = t;
+    *(uint32_t *)(prec + 0x28) = t;
     {
-      int32_t r = gate_read_ec(battle_g,s1);
+      int32_t r = gate_read_ec(battle_g,pi);
       a0 = (t & ~3u) | ((uint32_t)(r & 1) << 1);
-      *(uint32_t *)(s0 + 0x28) = a0;
-      *(uint32_t *)(s0 + 0x54) = 0;
+      *(uint32_t *)(prec + 0x28) = a0;
+      *(uint32_t *)(prec + 0x54) = 0;
       v1 = a0 & ~4u;
       v1 |= (*ph >> 0xa) & 4;
-      *(uint32_t *)(s0 + 0x28) = v1;
+      *(uint32_t *)(prec + 0x28) = v1;
     }
   }
 
   {
-    uint32_t mode = s3[0x9b];
+    uint32_t mode = b[0x9b];
     int32_t a2 = 1;
     if (mode == 3) {
       /* path A: both players forced-ready */
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *a1 = s4 + s1 * 0x30;
-        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
-        *(uint32_t *)(a1 + 0x3c) = (uint32_t)s1;
-        *(uint32_t *)(a1 + 0x40) = (uint32_t)s1;
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *a1 = recs + pi * 0x30;
+        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
+        *(uint32_t *)(a1 + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(a1 + 0x40) = (uint32_t)pi;
         *(uint32_t *)(a1 + 0x38) = 1;
-        if (s5) *(uint32_t *)(a1 + 0x44) = cr[s1 + 0x1b];
-        else    *(uint32_t *)(a1 + 0x44) = a3[cr[s1 + 0x1b]];
+        if (direct) *(uint32_t *)(a1 + 0x44) = cr[pi + 0x1b];
+        else    *(uint32_t *)(a1 + 0x44) = xlat[cr[pi + 0x1b]];
         *(uint32_t *)(a1 + 0x4c) = 0;
         *(uint32_t *)(a1 + 0x28) |= 0x78;
       }
     } else if ((mode < 4 && (int8_t)mode >= 0) || mode == 4) {
       /* main per-player fill loop */
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *a0 = s4 + s1 * 0x30;
-        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
-        uint32_t v0 = *(uint32_t *)(a0 + 0x38);
-        *(uint32_t *)(a0 + 0x3c) = (uint32_t)s1;
-        *(uint32_t *)(a0 + 0x40) = (uint32_t)s1;
-        if (v0 == 0) {
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *a0 = recs + pi * 0x30;
+        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
+        uint32_t g38 = *(uint32_t *)(a0 + 0x38);
+        *(uint32_t *)(a0 + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(a0 + 0x40) = (uint32_t)pi;
+        if (g38 == 0) {
           /* char select then +0x28 bit0 test */
-          if (s5) *(uint32_t *)(a0 + 0x44) = cr[s1 + 0x1b];
-          else    *(uint32_t *)(a0 + 0x44) = a3[cr[s1 + 0x1b]];
+          if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
+          else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
           {
             uint32_t v1 = *(uint32_t *)(a0 + 0x28);
             if (v1 & 1) {
@@ -3807,29 +3807,29 @@ void post_confirm_config_build(uint32_t battle_g,uint8_t *recs,int32_t direct)
               *(uint32_t *)(a0 + 0x4c) = (uint32_t)a2;
             }
           }
-        } else if (v0 == (uint32_t)a2) {
+        } else if (g38 == (uint32_t)a2) {
           uint32_t fl_old = *(uint32_t *)(a0 + 0x28);
           uint32_t foe_bit;
           *(uint32_t *)(a0 + 0x28) = fl_old | 0x40;
-          foe_bit = ((*(uint32_t *)(s4 + (s1 ^ 1) * 0x30 + 0x28) >> 1) & 1);
+          foe_bit = ((*(uint32_t *)(recs + (pi ^ 1) * 0x30 + 0x28) >> 1) & 1);
           if (foe_bit != (uint32_t)a2) {
             /* 493c4: cr-based char select */
-            if (s5) *(uint32_t *)(a0 + 0x44) = cr[s1 + 0x1b];
-            else    *(uint32_t *)(a0 + 0x44) = a3[cr[s1 + 0x1b]];
+            if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
+            else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
           } else {
             /* 49380: +0x28 = old|0x58, char via battle+0xa8 table */
             int16_t off;
             *(uint32_t *)(a0 + 0x28) = fl_old | 0x58;
-            off = *(int16_t *)(s3 + 0xa2);
-            if (s5) *(uint32_t *)(a0 + 0x44) =
-              *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off);
-            else    *(uint32_t *)(a0 + 0x44) = a3[
-              *(uint8_t *)guest_at(*(uint32_t *)(s3 + 0xa8) + (uint32_t)off)];
+            off = *(int16_t *)(b + 0xa2);
+            if (direct) *(uint32_t *)(a0 + 0x44) =
+              *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off);
+            else    *(uint32_t *)(a0 + 0x44) = xlat[
+              *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off)];
           }
           /* 49408 tail */
-          if (*(uint8_t *)(s3 + 0x9c) == 5 &&
-              (*(uint8_t *)(s3 + 0x9b) == (uint8_t)a2 ||
-               *(uint8_t *)(s3 + 0x9b) == 4)) {
+          if (*(uint8_t *)(b + 0x9c) == 5 &&
+              (*(uint8_t *)(b + 0x9b) == (uint8_t)a2 ||
+               *(uint8_t *)(b + 0x9b) == 4)) {
             *(uint32_t *)(a0 + 0x4c) = 0;
             *(uint32_t *)(a0 + 0x28) |= 0x78;
           } else {
