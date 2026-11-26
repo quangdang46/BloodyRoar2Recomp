@@ -12949,6 +12949,10 @@ void cps_8012b06c(void)
     }
     /* Address: 0x8012B06C, Size: 172 bytes, Blocks: 7 */
 
+    /* voice channel drain: half[s1+210] count -> slots
+       a0*24-stride at s2+8408 tagged 0x05000000, word[s3+8316]
+       drained; byte[s1+19] countdown; indexed param fetch.
+       CPS-blocked. */
 block_8012B06C:
     a0 = (int32_t)(int16_t)cpu->read_half(s1 + 210);
     /* nop */  /* 0x8012B070: 0x00000000 */
@@ -13092,6 +13096,7 @@ void cps_8012b154(void)
 
     /* Address: 0x8012B154, Size: 8 bytes, Blocks: 1 */
 
+    /* jal 0x80191770(s3+8316). CPS-blocked. */
 block_8012B154:
     ra = 0x8012B15Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13117,6 +13122,11 @@ void cps_8012b15c(void)
     }
     /* Address: 0x8012B15C, Size: 128 bytes, Blocks: 3 */
 
+    /* channel alloc: idx=(word[s1+12]^1)*208-stride ->
+       0x801E0000+16544; word[0x1F8000DC]++ seq; stores s2/s3
+       ptrs to s1+4/8/12; jal 0x80191668(s3,2080); then
+       word[s2+112]|=0x00FFFFFF; jal 0x8016362C(s1).
+       CPS-blocked. */
 block_8012B15C:
     ra = 0x8012B164u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13200,6 +13210,8 @@ void cps_8012b1e0(void)
     }
     /* Address: 0x8012B1E0, Size: 60 bytes, Blocks: 6 */
 
+    /* voice status query: byte[word[s1+200]+2]>>7 ->
+       a0; three jal setups -> epilogue sp+=40. CPS-blocked. */
 block_8012B1E0:
     v0 = cpu->read_word(s1 + 200);
     /* nop */  /* 0x8012B1E4: 0x00000000 */
@@ -13292,6 +13304,9 @@ void cps_8012b2a4(void)
     }
     /* Address: 0x8012B2A4, Size: 56 bytes, Blocks: 6 */
 
+    /* sound cmd seq: jal 0x8019A460(1); jal
+       0x8019117C(0)->half[s1+26]; jal 0x8019A460(1); jal
+       0x8019A460(byte[s1+16])->half[s1+28]. CPS-blocked. */
 block_8012B2A4:
     int _bc_8012B2A4 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -13359,6 +13374,9 @@ void cps_8012b2dc(void)
     }
     /* Address: 0x8012B2DC, Size: 36 bytes, Blocks: 4 */
 
+    /* sound cmd seq B: jal 0x8019A460(1); half[s1+28]
+       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
+       jal 0x80190E00(1). CPS-blocked. */
 block_8012B2DC:
     ra = 0x8012B2E4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13505,6 +13523,9 @@ void cps_8012b36c(void)
     }
     /* Address: 0x8012B36C, Size: 44 bytes, Blocks: 3 */
 
+    /* channel walk setup: s2=v0-4296 (0x801C table),
+       s3=0x801C4530 -> loop jal 0x80191428 per slot.
+       CPS-blocked. */
 block_8012B36C:
     s2 = v0 + -4296;
     s0 = a0 + -1;
@@ -13555,6 +13576,9 @@ void cps_8012b398(void)
     }
     /* Address: 0x8012B398, Size: 160 bytes, Blocks: 6 */
 
+    /* sample param fetch + upload: idx=(word[s1+12]^1)*208;
+       half[0x801F0000+1632 + idx*45 +14] -> half[t0+10]; bytes
+       t0+4..6 -> a1/a2/a3; jal 0x80191300(t0+8). CPS-blocked. */
 block_8012B398:
     v0 = cpu->read_byte(s1 + 19);
     /* nop */  /* 0x8012B39C: 0x00000000 */
@@ -13654,6 +13678,8 @@ void cps_8012b438(void)
     }
     /* Address: 0x8012B438, Size: 20 bytes, Blocks: 3 */
 
+    /* jal 0x80191770(v0+{8428|16956}) variant tail.
+       CPS-blocked. */
 block_8012B438:
     int _bc_8012B438 = (s4 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
