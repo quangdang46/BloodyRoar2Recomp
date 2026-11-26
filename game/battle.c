@@ -10632,31 +10632,31 @@ LAB_80135630:
 
 }
 
-bool burst_slot_active(int a0)
+bool burst_slot_active(int slot)
 {
-  return *(short *)(&DAT_801f04e4 + a0 * 2) != 0;
+  return *(short *)(&DAT_801f04e4 + slot * 2) != 0;
 
 }
 
 /* ---- batch15: GTE/vector + string helpers ---- */
-void prim_packet_init_tex(int a0,int a1,int a2,uint a3,byte *arg5)
+void prim_packet_init_tex(int pkt,int a1,int a2,uint fl,byte *arg5)
 {
   uint uVar1;
   uVar1 = 0xe1000000;
-  *(undefined1 *)guest_at((uint32_t)(uintptr_t)((a0 + 3) ))= 2;
+  *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 2;
   if (a2 != 0) {
     uVar1 = 0xe1000200;
   }
-  a3 = a3 & 0x9ff;
+  fl = fl & 0x9ff;
   if (a1 != 0) {
-    a3 = a3 | 0x400;
+    fl = fl | 0x400;
   }
-  *(uint *)guest_at((uint32_t)(uintptr_t)((a0 + 4) ))= uVar1 | a3;
+  *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= uVar1 | fl;
   if (arg5 == (byte *)0x0) {
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))= 0;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))= 0;
   }
   else {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((a0 + 8) ))=
+    *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 8) ))=
          (uint)(arg5[2] >> 3) << 0xf | (uint)(*arg5 >> 3) << 10 | 0xe2000000 |
          (-(int)*(short *)(arg5 + 6) & 0xf8U) << 2 |
          (int)(-(int)*(short *)(arg5 + 4) & 0xffU) >> 3;
@@ -10876,33 +10876,33 @@ undefined2 * gte_rtps_xform1(undefined4 *a0,undefined4 *a1,undefined2 *a2)
 
 }
 
-void gte_rot_load(undefined4 *a0)
+void gte_rot_load(undefined4 *m)
 {
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
+  setCopControlWord(2,0,*m);
+  setCopControlWord(2,0x800,m[1]);
+  setCopControlWord(2,0x1000,m[2]);
+  setCopControlWord(2,0x1800,m[3]);
+  setCopControlWord(2,0x2000,m[4]);
   return;
 
 }
 
-void gte_light_load(undefined4 *a0)
+void gte_light_load(undefined4 *light)
 {
-  setCopControlWord(2,0x8000,*a0);
-  setCopControlWord(2,0x8800,a0[1]);
-  setCopControlWord(2,0x9000,a0[2]);
-  setCopControlWord(2,0x9800,a0[3]);
-  setCopControlWord(2,0xa000,a0[4]);
+  setCopControlWord(2,0x8000,*light);
+  setCopControlWord(2,0x8800,light[1]);
+  setCopControlWord(2,0x9000,light[2]);
+  setCopControlWord(2,0x9800,light[3]);
+  setCopControlWord(2,0xa000,light[4]);
   return;
 
 }
 
-void gte_tr_load(int a0)
+void gte_tr_load(int t)
 {
-  setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x14))));
-  setCopControlWord(2,0x3000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18))));
-  setCopControlWord(2,0x3800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c))));
+  setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x14))));
+  setCopControlWord(2,0x3000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x18))));
+  setCopControlWord(2,0x3800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x1c))));
   return;
 
 }
@@ -10934,7 +10934,7 @@ undefined4 * gte_op_a00428(undefined4 *a0,undefined4 *a1)
 
 }
 
-void orbit_fx_spawn(int a0)
+void orbit_fx_spawn(int rec)
 {
   int iVar1;
   int iVar2;
@@ -10946,8 +10946,8 @@ void orbit_fx_spawn(int a0)
   if (iVar2 != 0) {
     piVar6 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
     iVar2 = 0;
-    if (a0 == 6) {
-      a0 = 1;
+    if (rec == 6) {
+      rec = 1;
     }
     puVar5 = &DAT_801b1d78;
     piVar4 = piVar6;
@@ -10959,7 +10959,7 @@ void orbit_fx_spawn(int a0)
         tween_dur_spread(iVar3,*puVar5);
         obj_flag34_clear(*piVar4);
         tween_ensure(*piVar4);
-        iVar3 = (a0 * 5 + iVar2) * 8;
+        iVar3 = (rec * 5 + iVar2) * 8;
         *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar4 ))+ 0x14) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + -0x7fe4e27c)));
         *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar4 ))+ 0x18) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + -0x7fe4e27a)));
         *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar4 ))+ 0x1c) ))= (int)*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + -0x7fe4e278)));
@@ -10981,25 +10981,25 @@ void orbit_fx_spawn(int a0)
     iVar2 = DAT_801b185c;
     piVar6[0xb] = DAT_801b1858;
     piVar6[0xc] = iVar2;
-    a0 = a0 * 0x28;
-    *(undefined2 *)(piVar6 + 0xd) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + -0x7fe4e27c)));
-    *(undefined2 *)((intptr_t)piVar6 + 0x36) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + -0x7fe4e27a)));
-    *(undefined2 *)(piVar6 + 0xe) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + -0x7fe4e278)));
+    rec = rec * 0x28;
+    *(undefined2 *)(piVar6 + 0xd) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((rec + -0x7fe4e27c)));
+    *(undefined2 *)((intptr_t)piVar6 + 0x36) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((rec + -0x7fe4e27a)));
+    *(undefined2 *)(piVar6 + 0xe) = *(undefined2 *)guest_at((uint32_t)(uintptr_t)((rec + -0x7fe4e278)));
   }
   return;
 
 }
 
 /* ---- batch16: task/resource internals ---- */
-void task_heads_clear(int a0)
+void task_heads_clear(int pool)
 {
   int iVar1;
   iVar1 = 0;
-  a0 = a0 * 0x48;
+  pool = pool * 0x48;
   do {
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + -0x7fe00c68) ))= 0;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pool + -0x7fe00c68) ))= 0;
     iVar1 = iVar1 + 1;
-    a0 = a0 + 4;
+    pool = pool + 4;
   } while (iVar1 < 0x10);
   return;
 
@@ -11033,15 +11033,15 @@ void task_slot_step(void)
 
 }
 
-void task_slot_fns_run(int a0)
+void task_slot_fns_run(int slot)
 {
   int iVar1;
   int iVar2;
   int unaff_gp = (int)guest_gp();
   int local_10 [2];
   iVar2 = 0;
-  local_10[0] = a0 * 0x48 + -0x7fe00c68;
-  *(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x1c) ))= a0;
+  local_10[0] = slot * 0x48 + -0x7fe00c68;
+  *(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x1c) ))= slot;
   do {
     if (*(int *)guest_at((uint32_t)(uintptr_t)((local_10[0] + iVar2 * 4) ))!= 0) {
       iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x20)));
@@ -11049,7 +11049,7 @@ void task_slot_fns_run(int a0)
       {
         void *fn = fn_lookup((uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 * 4 + iVar1))));
         if (fn != (void *)0x0) {
-          /* Guest jalr passes a0 = &ctx_base cell (sp+0x10) and
+          /* Guest jalr passes slot = &ctx_base cell (sp+0x10) and
            * a1 = ctx_base[i] node-head guest addr.  The clean slot fns take
            * host pointers, so resolve a1 through guest_at. */
           uint32_t nodeg_ = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((local_10[0] + iVar2 * 4)));
@@ -11158,34 +11158,34 @@ int task_pool_alloc(int a0,int a1,int a2)
 
 }
 
-void task_pool_free(int a0)
+void task_pool_free(int pool)
 {
   short sVar1;
   int *piVar2;
   int iVar3;
   int iVar4;
-  piVar2 = (int *)guest_at((uint32_t)(uintptr_t)((a0 + -0x10)));
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((a0 + -4)));
-  iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc)));
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a0 + -4) ))= 0;
-  iVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((a0 + -2) ))* 0x3c + -0x7fe00da4 + sVar1 * 0xc;
+  piVar2 = (int *)guest_at((uint32_t)(uintptr_t)((pool + -0x10)));
+  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((pool + -4)));
+  iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((pool + -0xc)));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((pool + -4) ))= 0;
+  iVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((pool + -2) ))* 0x3c + -0x7fe00da4 + sVar1 * 0xc;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc) ))== 0) {
-    *(int *)guest_at((uint32_t)(uintptr_t)((a0 + -8) ))= *(int *)guest_at((uint32_t)(uintptr_t)((a0 + -8) ))+ 0x10 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8)));
+    *(int *)guest_at((uint32_t)(uintptr_t)((pool + -8) ))= *(int *)guest_at((uint32_t)(uintptr_t)((pool + -8) ))+ 0x10 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8)));
     if (iVar3 == *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4)))) {
       *(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= (uint32_t)guest_of(piVar2);
     }
     /* free-list links are GUEST addresses: resolve inner ptr, store guest addr */
-    *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc) ))+ 4) )))= (uint32_t)guest_of(piVar2);
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc) ))+ 4)));
+    *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((pool + -0xc) ))+ 4) )))= (uint32_t)guest_of(piVar2);
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pool + -0xc) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((pool + -0xc) ))+ 4)));
   }
   iVar3 = *piVar2;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc) ))== 0) {
-    *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8) ))= *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8) ))+ 0x10 + *(int *)guest_at((uint32_t)(uintptr_t)((a0 + -8)));
+    *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8) ))= *(int *)guest_at((uint32_t)(uintptr_t)((iVar3 + 8) ))+ 0x10 + *(int *)guest_at((uint32_t)(uintptr_t)((pool + -8)));
     if ((int)guest_of(piVar2) == *(int *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4)))) {
       *(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 4) ))= (uint32_t)*piVar2;
     }
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*piVar2 + 4) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc)));
-    *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a0 + -0xc) )))= (uint32_t)*piVar2;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*piVar2 + 4) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pool + -0xc)));
+    *(uint32_t *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((pool + -0xc) )))= (uint32_t)*piVar2;
   }
   return;
 
@@ -13174,7 +13174,7 @@ LAB_80136b18:
 
 }
 
-void radial_glow_draw(int *a0)
+void radial_glow_draw(int *rec)
 {
   undefined4 uVar1;
   undefined4 in_zero;
@@ -13194,8 +13194,8 @@ void radial_glow_draw(int *a0)
   short local_38;
   short local_36;
   uint uVar7;
-  setCopReg(2,in_zero,a0[0xd]);
-  setCopReg(2,in_at,a0[0xe]);
+  setCopReg(2,in_zero,rec[0xd]);
+  setCopReg(2,in_at,rec[0xe]);
   copFunction(2,0x180001);
   uVar1 = getCopReg(2,0xe);
   local_48 = (short)uVar1;
@@ -13244,14 +13244,14 @@ void radial_glow_draw(int *a0)
         } while (iVar12 < 2);
       }
       iVar12 = 0;
-      piVar11 = a0;
+      piVar11 = rec;
       do {
         iVar10 = *piVar11;
         piVar11 = piVar11 + 1;
         iVar12 = iVar12 + 1;
         obj_flag34_set(iVar10);
       } while (iVar12 < 3);
-      piVar11 = a0 + 3;
+      piVar11 = rec + 3;
       do {
         uVar7 = rand_lcg();
         if ((uVar7 & 3) == 0) {
@@ -13261,7 +13261,7 @@ void radial_glow_draw(int *a0)
           obj_flag34_set(*piVar11);
         }
         piVar11 = piVar11 + 1;
-      } while ((intptr_t)piVar11 < (intptr_t)(a0 + 5));
+      } while ((intptr_t)piVar11 < (intptr_t)(rec + 5));
       iVar10 = iVar5 * 0x10 + -0x200;
       iVar12 = (0x1000 - iVar10) / 2 + 0x800;
       iVar5 = iVar12;
@@ -13273,24 +13273,24 @@ void radial_glow_draw(int *a0)
         uVar9 = 0xfff;
       }
       iVar5 = 1;
-      *(undefined2 *)(a0 + 5) = uVar9;
-      *(undefined2 *)(a0 + 7) = uVar9;
-      *(undefined2 *)(a0 + 9) = uVar9;
-      piVar11 = a0;
+      *(undefined2 *)(rec + 5) = uVar9;
+      *(undefined2 *)(rec + 7) = uVar9;
+      *(undefined2 *)(rec + 9) = uVar9;
+      piVar11 = rec;
       do {
         piVar11 = piVar11 + 1;
         iVar5 = iVar5 + 1;
         tween_seek(*piVar11,iVar10);
       } while (iVar5 < 5);
       iVar5 = 0;
-      piVar11 = a0;
+      piVar11 = rec;
       do {
         if (*piVar11 != 0) {
           if (iVar5 == 0) {
-            gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)&DAT_1f8003e0,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*a0))));
+            gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)&DAT_1f8003e0,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*rec))));
           }
           else if (iVar5 == 1) {
-            gte_rtps_xform3((undefined4 *)(a0 + 5),(ushort *)(uintptr_t)&DAT_801f0760,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(a0[1]))));
+            gte_rtps_xform3((undefined4 *)(rec + 5),(ushort *)(uintptr_t)&DAT_801f0760,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(rec[1]))));
           }
           else {
             *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*piVar11 )))= _DAT_801f0760;
@@ -13307,8 +13307,8 @@ void radial_glow_draw(int *a0)
     }
   }
   do {
-    iVar5 = *a0;
-    a0 = a0 + 1;
+    iVar5 = *rec;
+    rec = rec + 1;
     iVar12 = iVar12 + 1;
     obj_flag34_clear(iVar5);
   } while (iVar12 < 5);
@@ -13690,17 +13690,17 @@ int * prim_list_persp_step(int *a0,undefined4 a1,undefined4 a2,int a3,undefined4
 
 }
 
-void gte_light_set(undefined4 a0,undefined4 a1,undefined4 a2)
+void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 {
-  setCopControlWord(2,0x6800,a0);
-  setCopControlWord(2,0x7000,a1);
-  setCopControlWord(2,0x7800,a2);
+  setCopControlWord(2,0x6800,x);
+  setCopControlWord(2,0x7000,y);
+  setCopControlWord(2,0x7800,z);
   return;
 
 }
 
 
-int * gte_xform_add_off(int a0,undefined4 *a1,int *a2)
+int * gte_xform_add_off(int x,undefined4 *y,int *z)
 {
   undefined4 in_zero;
   undefined4 in_at;
@@ -13709,22 +13709,22 @@ int * gte_xform_add_off(int a0,undefined4 *a1,int *a2)
   int iVar3;
   int iVar4;
   int iVar5;
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  setCopReg(2,in_zero,*y);
+  setCopReg(2,in_at,y[1]);
   copFunction(2,0x486012);
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x18)));
-  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x1c)));
+  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x18)));
+  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x1c)));
   iVar3 = getCopReg(2,0x4800);
   iVar4 = getCopReg(2,0x5000);
   iVar5 = getCopReg(2,0x5800);
-  *a2 = *(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x14) ))+ iVar3;
-  a2[1] = iVar1 + iVar4;
-  a2[2] = iVar2 + iVar5;
-  return a2;
+  *z = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x14) ))+ iVar3;
+  z[1] = iVar1 + iVar4;
+  z[2] = iVar2 + iVar5;
+  return z;
 
 }
 
-uint * angle_pair_rotmat(uint a0,uint a1,uint *a2)
+uint * angle_pair_rotmat(uint x,uint y,uint *z)
 {
   int iVar1;
   int iVar2;
@@ -13733,58 +13733,58 @@ uint * angle_pair_rotmat(uint a0,uint a1,uint *a2)
   uint uVar5;
   uint uVar6;
   int iVar7;
-  iVar1 = (a0 & 0x3ff) * 2;
-  iVar7 = (a0 & 0x3ff) * -2 + 0x800;
+  iVar1 = (x & 0x3ff) * 2;
+  iVar7 = (x & 0x3ff) * -2 + 0x800;
   iVar4 = iVar1;
-  if ((a0 & 0x400) != 0) {
+  if ((x & 0x400) != 0) {
     iVar4 = iVar7;
     iVar7 = iVar1;
   }
   iVar4 = (int)*(short *)(&DAT_801247a8 + iVar4);
-  if ((a0 & 0x800) != 0) {
+  if ((x & 0x800) != 0) {
     iVar4 = -iVar4;
   }
-  iVar2 = (a1 & 0x3ff) * 2;
-  iVar3 = (a1 & 0x3ff) * -2 + 0x800;
+  iVar2 = (y & 0x3ff) * 2;
+  iVar3 = (y & 0x3ff) * -2 + 0x800;
   iVar1 = iVar2;
-  if ((a1 & 0x400) != 0) {
+  if ((y & 0x400) != 0) {
     iVar1 = iVar3;
     iVar3 = iVar2;
   }
   iVar1 = (int)*(short *)(&DAT_801247a8 + iVar1);
-  if ((a1 & 0x800) != 0) {
+  if ((y & 0x800) != 0) {
     iVar1 = -iVar1;
   }
   uVar6 = (uint)*(short *)(&DAT_801247a8 + iVar3);
-  if ((a1 + 0x400 & 0x800) != 0) {
+  if ((y + 0x400 & 0x800) != 0) {
     uVar6 = -uVar6;
   }
   uVar5 = (uint)*(short *)(&DAT_801247a8 + iVar7);
-  if ((a0 + 0x400 & 0x800) != 0) {
+  if ((x + 0x400 & 0x800) != 0) {
     uVar5 = -uVar5;
   }
-  a2[3] = -iVar1 & 0xffffU | ((int)(uVar6 * iVar4) >> 0xc) << 0x10;
-  *a2 = uVar6 & 0xffff | (iVar1 * iVar4 >> 0xc) << 0x10;
-  a2[1] = (int)(iVar1 * uVar5) >> 0xc & 0xffff;
-  a2[2] = uVar5 & 0xffff | iVar4 * -0x10000;
-  *(short *)(a2 + 4) = (short)((int)(uVar6 * uVar5) >> 0xc);
-  return a2;
+  z[3] = -iVar1 & 0xffffU | ((int)(uVar6 * iVar4) >> 0xc) << 0x10;
+  *z = uVar6 & 0xffff | (iVar1 * iVar4 >> 0xc) << 0x10;
+  z[1] = (int)(iVar1 * uVar5) >> 0xc & 0xffff;
+  z[2] = uVar5 & 0xffff | iVar4 * -0x10000;
+  *(short *)(z + 4) = (short)((int)(uVar6 * uVar5) >> 0xc);
+  return z;
 
 }
 
 /* ---- batch18: task/alloc + GTE helpers ---- */
-void vec_emit_spawn(undefined4 *a0)
+void vec_emit_spawn(undefined4 *rec)
 {
   int iVar1;
   iVar1 = fx_group_alloc(1,1,3,3);
   if (iVar1 != 0) {
-    noop_a(iVar1,*a0,a0[1],a0[2]);
+    noop_a(iVar1,*rec,rec[1],rec[2]);
   }
   return;
 
 }
 
-void iris_wipe_update(int *a0)
+void iris_wipe_update(int *rec)
 {
   short sVar1;
   undefined4 in_zero;
@@ -13807,51 +13807,51 @@ void iris_wipe_update(int *a0)
   undefined1 auStack_58 [24];
   ushort local_40 [12];
   if (DAT_801bef20 == 0) {
-    iVar2 = a0[0xd1];
-    a0[0xd1] = iVar2 + -1;
+    iVar2 = rec[0xd1];
+    rec[0xd1] = iVar2 + -1;
     if (iVar2 + -1 < 1) {
       task_slot_step();
       return;
     }
-    if (*(short *)((intptr_t)a0 + 0x34a) != 0) {
-      if (*(char *)guest_at((uint32_t)(uintptr_t)((*a0 + 5) ))== '\0') {
-        *(undefined2 *)(a0 + 0xd3) = 0;
+    if (*(short *)((intptr_t)rec + 0x34a) != 0) {
+      if (*(char *)guest_at((uint32_t)(uintptr_t)((*rec + 5) ))== '\0') {
+        *(undefined2 *)(rec + 0xd3) = 0;
         return;
       }
-      if ((short)a0[0xd3] == 0) {
-        *(undefined2 *)(a0 + 0xd3) = 1;
-        *(undefined2 *)(a0 + 0xd2) = 0;
+      if ((short)rec[0xd3] == 0) {
+        *(undefined2 *)(rec + 0xd3) = 1;
+        *(undefined2 *)(rec + 0xd2) = 0;
       }
     }
     iVar15 = 0;
     iVar7 = 0x14;
     iVar2 = 4;
-    *(short *)(a0 + 0xd2) = (short)a0[0xd2] + 1;
-    piVar6 = a0;
+    *(short *)(rec + 0xd2) = (short)rec[0xd2] + 1;
+    piVar6 = rec;
     do {
-      iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((*a0 + 0x20)));
+      iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20)));
       setCopControlWord(2,0,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc0))));
       setCopControlWord(2,0x800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xc4))));
       setCopControlWord(2,0x1000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 200))));
       setCopControlWord(2,0x1800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xcc))));
       setCopControlWord(2,0x2000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar3 + 0xd0))));
-      setCopReg(2,in_zero,*(undefined4 *)((intptr_t)a0 + iVar2));
-      setCopReg(2,in_at,((undefined4 *)((intptr_t)a0 + iVar2))[1]);
+      setCopReg(2,in_zero,*(undefined4 *)((intptr_t)rec + iVar2));
+      setCopReg(2,in_at,((undefined4 *)((intptr_t)rec + iVar2))[1]);
       copFunction(2,0x486012);
-      puVar4 = (undefined2 *)((intptr_t)a0 + iVar7);
+      puVar4 = (undefined2 *)((intptr_t)rec + iVar7);
       uVar8 = getCopReg(2,0x4800);
       uVar9 = getCopReg(2,0x5000);
       uVar10 = getCopReg(2,0x5800);
       *puVar4 = (short)uVar8;
       puVar4[1] = (short)uVar9;
       puVar4[2] = (short)uVar10;
-      *(short *)(piVar6 + 5) = (short)piVar6[5] + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*a0 + 0x20) ))+ 0xd4)));
+      *(short *)(piVar6 + 5) = (short)piVar6[5] + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ 0xd4)));
       iVar7 = iVar7 + 0x30;
       *(short *)((intptr_t)piVar6 + 0x16) =
-           *(short *)((intptr_t)piVar6 + 0x16) + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*a0 + 0x20) ))+ 0xd8)));
+           *(short *)((intptr_t)piVar6 + 0x16) + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ 0xd8)));
       iVar2 = iVar2 + 8;
       iVar15 = iVar15 + 1;
-      *(short *)(piVar6 + 6) = (short)piVar6[6] + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*a0 + 0x20) ))+ 0xdc)));
+      *(short *)(piVar6 + 6) = (short)piVar6[6] + *(short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ 0xdc)));
       piVar6 = piVar6 + 0xc;
     } while (iVar15 < 2);
     iVar7 = 0;
@@ -13862,10 +13862,10 @@ void iris_wipe_update(int *a0)
       do {
         iVar3 = iVar3 + -1;
         iVar5 = iVar3 * 8 + iVar2;
-        uVar8 = *(undefined4 *)((intptr_t)a0 + iVar5 + 0x18);
-        *(undefined4 *)((intptr_t)a0 + iVar15 + iVar2 + 0x14) =
-             *(undefined4 *)((intptr_t)a0 + iVar5 + 0x14);
-        *(undefined4 *)((intptr_t)a0 + iVar15 + iVar2 + 0x18) = uVar8;
+        uVar8 = *(undefined4 *)((intptr_t)rec + iVar5 + 0x18);
+        *(undefined4 *)((intptr_t)rec + iVar15 + iVar2 + 0x14) =
+             *(undefined4 *)((intptr_t)rec + iVar5 + 0x14);
+        *(undefined4 *)((intptr_t)rec + iVar15 + iVar2 + 0x18) = uVar8;
         iVar15 = iVar3 * 8;
       } while (0 < iVar3);
       iVar7 = iVar7 + 1;
@@ -13876,15 +13876,15 @@ void iris_wipe_update(int *a0)
   gte_rot_load((undefined4 *)(uintptr_t)&DAT_801be838);
   iVar7 = 0;
   gte_tr_load(DAT_801be838);
-  gte_points_xform(a0 + 5,psVar14,local_40,auStack_58,auStack_58,0xc);
+  gte_points_xform(rec + 5,psVar14,local_40,auStack_58,auStack_58,0xc);
   iVar2 = _DAT_1f80000c * 0x5a + 0x1d;
   do {
-    puVar13 = (uint *)(a0 + iVar2);
+    puVar13 = (uint *)(rec + iVar2);
     iVar2 = 0;
     psVar12 = (short *)((intptr_t)puVar13 + 0x22);
     psVar11 = psVar14 + 3;
     do {
-      if ((short)a0[0xd2] <= iVar2) break;
+      if ((short)rec[0xd2] <= iVar2) break;
       uVar8 = angle_from_xy((int)psVar11[-1] - (int)*psVar14,(int)*psVar11 - (int)psVar11[-2]);
       iVar3 = mips_div_lo((int32_t)((int)((uint)_DAT_1f800024 << 0x10) >> 0xc),(int32_t)(int)((uint)local_40[0] << 2)); /* guest div @0x8013B3F0 */
       iVar15 = lut_cos_q12(uVar8);
@@ -13956,13 +13956,13 @@ undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
 
 }
 
-int trig_sin_lookup(uint a0)
+int trig_sin_lookup(uint ang)
 {
   uint uVar1;
   int iVar2;
-  uVar1 = a0 & 0x3ff;
-  if ((a0 & 0x400) != 0) {
-    uVar1 = (a0 & 0x400) - uVar1;
+  uVar1 = ang & 0x3ff;
+  if ((ang & 0x400) != 0) {
+    uVar1 = (ang & 0x400) - uVar1;
   }
   if ((int)(uVar1 - 0x3af) < 0) {
     iVar2 = (int)*(short *)(&DAT_80124048 + uVar1 * 2);
@@ -13970,14 +13970,14 @@ int trig_sin_lookup(uint a0)
   else {
     iVar2 = 0x7fff;
   }
-  if ((a0 & 0x400) != 0) {
+  if ((ang & 0x400) != 0) {
     return -iVar2;
   }
   return iVar2;
 
 }
 
-uint * angle_vec_build(uint a0,uint *a1)
+uint * angle_vec_build(uint ang,uint *a1)
 {
   int iVar1;
   int iVar2;
@@ -13985,19 +13985,19 @@ uint * angle_vec_build(uint a0,uint *a1)
   int iVar4;
   uint uVar5;
   *(undefined2 *)(a1 + 4) = 0x1000;
-  iVar1 = (a0 & 0x3ff) * 2;
-  iVar4 = (a0 & 0x3ff) * -2 + 0x800;
+  iVar1 = (ang & 0x3ff) * 2;
+  iVar4 = (ang & 0x3ff) * -2 + 0x800;
   iVar2 = iVar1;
-  if ((a0 & 0x400) != 0) {
+  if ((ang & 0x400) != 0) {
     iVar2 = iVar4;
     iVar4 = iVar1;
   }
   uVar3 = (uint)*(ushort *)(&DAT_801247a8 + iVar2);
-  if ((a0 & 0x800) != 0) {
+  if ((ang & 0x800) != 0) {
     uVar3 = -uVar3;
   }
   uVar5 = (uint)*(ushort *)(&DAT_801247a8 + iVar4);
-  if ((a0 + 0x400 & 0x800) != 0) {
+  if ((ang + 0x400 & 0x800) != 0) {
     uVar5 = -uVar5 & 0xffff;
   }
   *a1 = uVar5 | uVar3 * -0x10000;
