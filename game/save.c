@@ -3786,77 +3786,76 @@ single:
 void card_fade_sm(uint32_t a0)
 {
   extern int br2_bail_pending(void);
-  static int32_t s1;
-  static int32_t s2;
-  uint8_t *s0 = (uint8_t *)guest_at(0x1f800000);
-  int32_t s3 = 0xff;
-  int32_t s4 = (int32_t)a0;
-  int32_t v1 = 0;
+  static int32_t fade_t;
+  static int32_t bright_acc;
+  uint8_t *ctx = (uint8_t *)guest_at(0x1f800000);
+  int32_t arg0 = (int32_t)a0;
+  int32_t bright = 0;
 
-  s2 = (int32_t)((uint32_t)(s1 * 255) + 0xffff06faU);
-  s0[1] = 0;
-  *(uint16_t *)(s0 + 0x8c) = 0;
+  bright_acc = (int32_t)((uint32_t)(fade_t * 255) + 0xffff06faU);
+  ctx[1] = 0;
+  *(uint16_t *)(ctx + 0x8c) = 0;
   for (;;) {
     if (br2_bail_pending()) return;
-    int32_t st = s0[1];
+    int32_t st = ctx[1];
     if (st == 1) goto tick;
     if (st < 2) {
       if (st == 0) {
-        if (card_sprite_load_sm(0x1f800000,(uint32_t)(s4 + 4)) != 0 &&
+        if (card_sprite_load_sm(0x1f800000,(uint32_t)(arg0 + 4)) != 0 &&
             frame_divisor_get() == 0) {
-          spr_attr_alloc_a(*(uint32_t *)(s0 + 8),0,0,
-                        (int16_t)*(uint16_t *)(s0 + 0x20),
-                        (int16_t)*(uint16_t *)(s0 + 0x22),
+          spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
+                        (int16_t)*(uint16_t *)(ctx + 0x20),
+                        (int16_t)*(uint16_t *)(ctx + 0x22),
                         0x31ce,3);
-          s1 = 0x12c;
-          s0[1] = (uint8_t)(s0[1] + 1);
+          fade_t = 0x12c;
+          ctx[1] = (uint8_t)(ctx[1] + 1);
           goto tick;
         }
       }
     } else if (st == 0xf0) {
       deferred_cmd_post(0x204,0,0);
-      s0[1] = (uint8_t)(s0[1] + 1);   /* dead: overwritten below */
-      s0[1] = 0xff;
+      ctx[1] = (uint8_t)(ctx[1] + 1);   /* dead: overwritten below */
+      ctx[1] = 0xff;
       goto check;
     } else if (st == 0xf1) {
-      s0[1] = 0xff;
+      ctx[1] = 0xff;
       goto check;
     }
     goto poll;
 tick:
-    s1--;
-    s2 -= 0xff;
-    if (s1 == 0) {
-      s0[1] = 0xf0;
+    fade_t--;
+    bright_acc -= 0xff;
+    if (fade_t == 0) {
+      ctx[1] = 0xf0;
       goto poll;
     }
-    if (s1 < 0x32) {
-      v1 = 0xff - (int32_t)((int32_t)(s1 * 255) / 50);
-      spr_attr_alloc_a(*(uint32_t *)(s0 + 8),0,0,
-                    (int16_t)*(uint16_t *)(s0 + 0x20),
-                    (int16_t)*(uint16_t *)(s0 + 0x22),
-                    (uint32_t)(v1 * 0x10101),3);
-    } else if (s1 >= 0xfa && s1 < 0x12c) {
-      v1 = (int32_t)((int32_t)s2 / 50);
-      spr_attr_alloc_a(*(uint32_t *)(s0 + 8),0,0,
-                    (int16_t)*(uint16_t *)(s0 + 0x20),
-                    (int16_t)*(uint16_t *)(s0 + 0x22),
-                    (uint32_t)(v1 * 0x10101),3);
+    if (fade_t < 0x32) {
+      bright = 0xff - (int32_t)((int32_t)(fade_t * 255) / 50);
+      spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
+                    (int16_t)*(uint16_t *)(ctx + 0x20),
+                    (int16_t)*(uint16_t *)(ctx + 0x22),
+                    (uint32_t)(bright * 0x10101),3);
+    } else if (fade_t >= 0xfa && fade_t < 0x12c) {
+      bright = (int32_t)((int32_t)bright_acc / 50);
+      spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
+                    (int16_t)*(uint16_t *)(ctx + 0x20),
+                    (int16_t)*(uint16_t *)(ctx + 0x22),
+                    (uint32_t)(bright * 0x10101),3);
     }
-    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0,0xefff0088,0x7c000000);
-    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0x100,0xefff008a,0x7c400000);
-    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0xf00000,0xefff0099,0x7c800000);
-    spr_slot_pkt_submit(*(uint32_t *)(s0 + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
+    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0,0xefff0088,0x7c000000);
+    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0x100,0xefff008a,0x7c400000);
+    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00000,0xefff0099,0x7c800000);
+    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
     goto poll;
 poll:
     /* guest a0 = 0x1f800000 (immediate) — pass the guest address. */
     frame_tick(0x1f800000);
 check:
-    if (s0[1] != 0xff) continue;
+    if (ctx[1] != 0xff) continue;
     break;
   }
-  s0[1] = 0;
-  (void)v1;
+  ctx[1] = 0;
+  (void)bright;
 }
 
 /* ---- battle_round_init @0x8016642c (69 insns) ---- */
