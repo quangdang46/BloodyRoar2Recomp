@@ -757,6 +757,15 @@ extern void gpu_graph_reset(void);
 extern void gpu_load_image_cmd(void);
 extern void gpu_mode_regs_apply(void);
 extern void gpu_pkt_attr_set(void);
+extern void gpu_pkt_cmd_f22c(void);
+extern void gpu_pkt_cmd_f238(void);
+extern void gpu_pkt_cmd_f264(void);
+extern void gpu_pkt_cmd_f2bc(void);
+extern void gpu_pkt_cmd_f3dc(void);
+extern void gpu_pkt_cmd_f4dc(void);
+extern void gpu_pkt_cmd_f4f0(void);
+extern void gpu_pkt_cmd_f4fc(void);
+extern void gpu_pkt_cmd_f608(void);
 extern void gpu_pkt_low24_or(void);
 extern void gpu_pkt_merge24(void);
 extern void gpu_pkt_pack(void);
@@ -2775,6 +2784,15 @@ const Br2FnEnt fn_table[] = {
   { 0x8018ef60, (void *)sprintf_core_guest },
   { 0x8018ef6c, (void *)sprintf_core_engine },
   { 0x8018f220, (void *)sprintf_core_engine_piece_f220 },
+  { 0x8018f22c, (void *)gpu_pkt_cmd_f22c },
+  { 0x8018f238, (void *)gpu_pkt_cmd_f238 },
+  { 0x8018f264, (void *)gpu_pkt_cmd_f264 },
+  { 0x8018f2bc, (void *)gpu_pkt_cmd_f2bc },
+  { 0x8018f3dc, (void *)gpu_pkt_cmd_f3dc },
+  { 0x8018f4dc, (void *)gpu_pkt_cmd_f4dc },
+  { 0x8018f4f0, (void *)gpu_pkt_cmd_f4f0 },
+  { 0x8018f4fc, (void *)gpu_pkt_cmd_f4fc },
+  { 0x8018f608, (void *)gpu_pkt_cmd_f608 },
   { 0x8018f7e0, (void *)mem_move },
   { 0x8018f850, (void *)cd_fileop_reset },
   { 0x8018f9b4, (void *)gpu_pkt_attr_set },

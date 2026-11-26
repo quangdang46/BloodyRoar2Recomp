@@ -5897,3 +5897,13 @@
 8018e708 printf_cps_8018e708
 8018e710 printf_cps_8018e710
 8018e76c printf_cps_8018e76c
+8018f22c gpu_pkt_cmd_f22c
+8018f238 gpu_pkt_cmd_f238
+8018f264 gpu_pkt_cmd_f264
+8018f2bc gpu_pkt_cmd_f2bc
+8018f3dc gpu_pkt_cmd_f3dc
+8018f4dc gpu_pkt_cmd_f4dc
+8018f4f0 gpu_pkt_cmd_f4f0
+8018f4fc gpu_pkt_cmd_f4fc
+8018f608 gpu_pkt_cmd_f608
+8018f504 cps_8018ef6c

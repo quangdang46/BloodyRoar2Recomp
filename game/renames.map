@@ -2165,3 +2165,12 @@
 8018ebd4 printf_core_piece_ebd4
 8018ef6c sprintf_core_engine
 8018f220 sprintf_core_engine_piece_f220
+8018f22c gpu_pkt_cmd_f22c
+8018f238 gpu_pkt_cmd_f238
+8018f264 gpu_pkt_cmd_f264
+8018f2bc gpu_pkt_cmd_f2bc
+8018f3dc gpu_pkt_cmd_f3dc
+8018f4dc gpu_pkt_cmd_f4dc
+8018f4f0 gpu_pkt_cmd_f4f0
+8018f4fc gpu_pkt_cmd_f4fc
+8018f608 gpu_pkt_cmd_f608
