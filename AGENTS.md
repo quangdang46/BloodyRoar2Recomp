@@ -948,3 +948,20 @@ generated dispatches left are `0x1FC0xxxx`/`0xBFC0xxxx` = the recompiled
 BIOS (phys≥0x1FC00000 = BIOS ROM), which is legitimately generated per
 psxrecomp architecture (BIOS = recomp target #1). **Game-side `generated/`
 is dead code at runtime.** Verified: 44k+ frames, zero errors.
+
+### ⚠ TOOLING LIMITATION — `read_ram`/`write_ram` bypass overlay resolution
+
+All state-inspection tools (versus_*, memcard, combat probes) read guest
+memory via `read_ram`→`psx_read_byte`→`ram[]` DIRECTLY. But the recomp's
+overlay/paging system (`overlay_loader.c`) demand-loads game modules into
+guest RAM; only the resident boot image (~0x80120000-0x801b0000) is backed
+in `ram[]`. Stack/BSS/scratchpad/overlay data read as **zeros** even though
+the CPU uses them (sp_ring shows live sp=0x801FFCF8 while read_ram sees
+0x801ffc00=0). `write_ram`/`read_ram` round-trip correctly on `ram[]`, so
+the path works — it just doesn't resolve overlays the way real CPU accesses
+do. **Consequence:** versus/state tools can't navigate or confirm combat/
+memcard on this build. Working verification that DOES NOT need read_ram:
+`frame`, `dispatch_stats` (0 misses), `cdrom_state`, `fntrace`,
+`clean_trace`, `phase_profile`, `bioscall_dump`. To fix read_ram properly,
+route it through the same overlay/paging resolution real CPU loads use —
+a memory-subsystem change, not a debug_server tweak.
