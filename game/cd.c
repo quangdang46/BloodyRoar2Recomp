@@ -429,16 +429,16 @@ bool cd_read_setup(undefined4 count,undefined4 pos,uint mode)
 }
 
 #if 0
-  int iVar1;
-  int iVar2;
-  uint uVar3;
+  int t1;
+  int t2;
+  uint status;
 
   if (CD_RD_DONE != 0) {
-    iVar1 = cd_timer_read(0xffffffff);
+    t1 = cd_timer_read(0xffffffff);
     do {
       if (CD_RD_DONE == 0) goto LAB_80198d0c;
-      iVar2 = cd_timer_read(0xffffffff);
-    } while ((uint)(iVar2 - iVar1) < 0x79);
+      t2 = cd_timer_read(0xffffffff);
+    } while ((uint)(t2 - t1) < 0x79);
     mc_session(CD_RD_SESS_A);
     CD_RD_DONE = 0;
   }
@@ -461,12 +461,12 @@ LAB_80198d0c:
     CD_RD_DISP = cd_cmd_dispatch3(0);
   }
   CD_RD_TS_PAUSE = cd_timer_read(0xffffffff);
-  uVar3 = cd_status_raw();
-  if ((uVar3 & 0xe0) != 0) {
+  status = cd_status_raw();
+  if ((status & 0xe0) != 0) {
     cd_cmd_issue_sync(9,0,0);
   }
-  iVar1 = cd_read_open(0);
-  return 0 < iVar1;
+  t1 = cd_read_open(0);
+  return 0 < t1;
 }
 #endif
 
