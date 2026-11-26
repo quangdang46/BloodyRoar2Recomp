@@ -83187,6 +83187,7 @@ block_80190DA0:
  * from SLES_017.22_full_43.c. */
 void cps_80191a78(void)
 {
+/* draw_env_timing piece: continues at 0x80191AA4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83235,6 +83236,7 @@ block_80191A8C:
  * from SLES_017.22_full_43.c. */
 void cps_80191aa4(void)
 {
+/* draw_env_timing thunk -> gp_bde20_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83468,6 +83470,7 @@ block_80191B6C:
  * from SLES_017.22_full_43.c. */
 void cps_80191b80(void)
 {
+/* draw_env_timing piece: continues at 0x80191b90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83498,6 +83501,7 @@ block_80191B88:
  * from SLES_017.22_full_43.c. */
 void cps_80191b90(void)
 {
+/* draw_env_timing piece: continues at 0x80191C08 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83598,6 +83602,7 @@ block_80191BF8:
  * from SLES_017.22_full_43.c. */
 void cps_80191c04(void)
 {
+/* draw_env_timing piece: continues at 0x80191c08 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83613,6 +83618,7 @@ block_80191C04:
  * from SLES_017.22_full_43.c. */
 void cps_80191c08(void)
 {
+/* draw_env_timing thunk -> gp_bde20_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83748,6 +83754,7 @@ block_80191C78:
  * from SLES_017.22_full_43.c. */
 void cps_80191c88(void)
 {
+/* draw_env_timing piece: continues at 0x80191d0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83852,6 +83859,7 @@ block_80191D08:
  * from SLES_017.22_full_43.c. */
 void cps_80191d0c(void)
 {
+/* draw_env_timing piece: continues at 0x80191E0C */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -83973,6 +83981,7 @@ block_80191D78:
  * from SLES_017.22_full_43.c. */
 void cps_80191d80(void)
 {
+/* draw_env_timing piece: continues at 0x80191d90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84007,6 +84016,7 @@ block_80191D8C:
  * from SLES_017.22_full_43.c. */
 void cps_80191d90(void)
 {
+/* draw_env_timing piece: continues at 0x80191d9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84040,6 +84050,7 @@ block_80191D98:
  * from SLES_017.22_full_43.c. */
 void cps_80191d9c(void)
 {
+/* draw_env_timing piece: continues at 0x80191e0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84159,6 +84170,7 @@ block_80191E08:
  * from SLES_017.22_full_43.c. */
 void cps_80191e0c(void)
 {
+/* draw_env_timing piece: continues at 0x80191e14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84182,6 +84194,7 @@ block_80191E0C:
  * from SLES_017.22_full_43.c. */
 void cps_80191e14(void)
 {
+/* draw_env_timing piece: continues at 0x80191e18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84197,6 +84210,7 @@ block_80191E14:
  * from SLES_017.22_full_43.c. */
 void cps_80191e18(void)
 {
+/* draw_env_timing piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84249,6 +84263,7 @@ block_80191E48:
  * from SLES_017.22_full_43.c. */
 void cps_80191e74(void)
 {
+/* draw_env_timing thunk -> guest_memcpy */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -84288,6 +84303,7 @@ block_80191E88:
  * from SLES_017.22_full_44.c. */
 void cps_80191fc8(void)
 {
+/* cd_coord_pack_entry thunk -> gpu_coord_clamp_a -> gpu_coord_clamp_b -> gpu_coord_pack -> gpu_pkt_pack -> gpu_texpage_pack */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
