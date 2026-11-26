@@ -5807,21 +5807,21 @@ void noop_fn(void)
 
 }
 
-undefined2 * rtps_pt_xform(ushort *a0,undefined2 *a1)
+undefined2 * rtps_pt_xform(ushort *in,undefined2 *out)
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  setCopReg(2,0,*(int *)(a0 + 2) << 0x10 | (uint)*a0);
-  setCopReg(2,0x800,*(undefined4 *)(a0 + 4));
+  undefined4 gx;
+  undefined4 gy;
+  undefined4 gz;
+  setCopReg(2,0,*(int *)(in + 2) << 0x10 | (uint)*in);
+  setCopReg(2,0x800,*(undefined4 *)(in + 4));
   copFunction(2,0x486012);
-  uVar1 = getCopReg(2,0x4800);
-  uVar2 = getCopReg(2,0x5000);
-  uVar3 = getCopReg(2,0x5800);
-  *a1 = (short)uVar1;
-  a1[1] = (short)uVar2;
-  a1[2] = (short)uVar3;
-  return a1;
+  gx = getCopReg(2,0x4800);
+  gy = getCopReg(2,0x5000);
+  gz = getCopReg(2,0x5800);
+  *out = (short)gx;
+  out[1] = (short)gy;
+  out[2] = (short)gz;
+  return out;
 
 }
 
@@ -6925,27 +6925,27 @@ switchD_8013a1f8_caseD_10:
 
 int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 pal_g)
 {
-  int iVar1;
-  int iVar2;
-  iVar1 = (int)DAT_1f8000b1;
-  if (iVar1 == 0) {
+  int en;
+  int node;
+  en = (int)DAT_1f8000b1;
+  if (en == 0) {
     /* guest passes kind = 0x801B1EA8 (guest addr of the fn-ptr table) to
      * task_alloc_wrap_e — &PTR_FUN_801b1ea8 is a host pointer; convert. */
-    iVar2 = task_alloc_wrap_e((int)(uintptr_t)(kind + 0x1c),(int)br2_gaddr(&PTR_FUN_801b1ea8),pal_g);
-    iVar1 = 0;
-    if (iVar2 != 0) {
-      *(uint *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10) ))= fl & 0xfffffff;
-      *(uint *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x18) ))= fl & 0xf0000000;
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))= aux;
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 8) ))= pos_g;
-      *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc) ))= iVar2 + 0x1c;
-      /* iVar2 is a guest address; fx_record_init dereferences pos_g as a
+    node = task_alloc_wrap_e((int)(uintptr_t)(kind + 0x1c),(int)br2_gaddr(&PTR_FUN_801b1ea8),pal_g);
+    en = 0;
+    if (node != 0) {
+      *(uint *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))= fl & 0xfffffff;
+      *(uint *)guest_at((uint32_t)(uintptr_t)((node + 0x18) ))= fl & 0xf0000000;
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((node + 0x14) ))= aux;
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((node + 8) ))= pos_g;
+      *(int *)guest_at((uint32_t)(uintptr_t)((node + 0xc) ))= node + 0x1c;
+      /* node is a guest address; fx_record_init dereferences pos_g as a
        * host pointer, so resolve it (a raw cast sign-extends KSEG0 addrs). */
-      fx_record_init((undefined4 *)guest_at((uint32_t)iVar2));
-      iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc)));
+      fx_record_init((undefined4 *)guest_at((uint32_t)node));
+      en = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0xc)));
     }
   }
-  return iVar1;
+  return en;
 
 }
 
@@ -6984,20 +6984,20 @@ void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undef
 
 void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl)
 {
-  int iVar1;
-  undefined4 *puVar2;
-  undefined4 uVar3;
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013eb04,0,0x20);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    uVar3 = pos[1];
-    *puVar2 = *pos;
-    puVar2[1] = uVar3;
-    puVar2[5] = eb;
-    puVar2[6] = ea;
-    *(undefined2 *)(puVar2 + 7) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1e) = 0;
-    puVar2[4] = fl;
+  int node;
+  undefined4 *pay;
+  undefined4 py;
+  node = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013eb04,0,0x20);
+  if (node != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    py = pos[1];
+    *pay = *pos;
+    pay[1] = py;
+    pay[5] = eb;
+    pay[6] = ea;
+    *(undefined2 *)(pay + 7) = 0;
+    *(undefined2 *)((intptr_t)pay + 0x1e) = 0;
+    pay[4] = fl;
   }
   return;
 
@@ -7108,18 +7108,18 @@ LAB_80141918:
 
 void group_fx_spawn(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3, undefined4 arg5,undefined4 arg6,undefined4 arg7)
 {
-  int iVar1;
-  int iVar2;
-  iVar1 = fx_group_alloc(1,1,0,0xc);
-  if (iVar1 != 0) {
-    iVar2 = noop_c(iVar1);
-    noop_b(iVar1,a0, (undefined4)br2_gaddr(&DAT_801f0760));
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0xc) ))= a1;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10) ))= a2;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))= a3;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x18) ))= arg5;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x1c) ))= arg6;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x20) ))= arg7;
+  int grp;
+  int pay;
+  grp = fx_group_alloc(1,1,0,0xc);
+  if (grp != 0) {
+    pay = noop_c(grp);
+    noop_b(grp,a0, (undefined4)br2_gaddr(&DAT_801f0760));
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0xc) ))= a1;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x10) ))= a2;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x14) ))= a3;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x18) ))= arg5;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x1c) ))= arg6;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((pay + 0x20) ))= arg7;
   }
   return;
 
