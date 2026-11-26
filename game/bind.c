@@ -991,7 +991,8 @@ extern void br2_bios_tramp(uint32_t,uint32_t);
 extern void gpu_state_patch_defer(void);
 extern /* canonical guest name: cpu_critical_enter (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
 void FUN_8018e300(void);
-extern void FUN_8018e310(uint32_t);
+extern /* canonical guest name: cpu_critical_exit (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
+void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
 uint32_t br2_ld32(uint32_t addr);
 uint16_t br2_ld16(uint32_t addr);
@@ -2940,6 +2941,7 @@ int FUN_80195370(uint32_t *in, uint32_t *out)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* no renames.map entry — unnamed guest fn (eight-channel DI/EI B0:09 sweep). */
 void FUN_8019a0ddc(void)
 {
     /* guest 0x801A0DDC: DI ($v0 = old IEc saved to s0); for i=0..7
