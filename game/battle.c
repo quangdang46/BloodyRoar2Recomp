@@ -15186,150 +15186,150 @@ void popup_spawn(int ent,uint id,uint arg)
 void confetti_burst_spawn(undefined4 a0,undefined4 a1)
 
 {
-  ushort uVar1;
-  ushort uVar2;
-  ushort uVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  undefined4 *puVar7;
-  undefined4 *puVar8;
-  int iVar9;
-  undefined4 *puVar10;
+  ushort r1;
+  ushort r2;
+  ushort r3;
+  int tmp;
+  int i2;
+  int j;
+  undefined4 *p1;
+  undefined4 *p2;
+  int i;
+  undefined4 *pay;
   
-  iVar4 = (int)(uintptr_t)task_node_alloc(1,2,0xb,0x8013d7e4,0,0x598);
-  iVar9 = 0;
-  if (iVar4 != 0) {
-    puVar10 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar4 + 0x10))));
-    puVar10[0x155] = 0x10;
-    puVar10[0x152] = a0;
-    puVar10[0x154] = a1;
-    uVar1 = rand_lcg();
-    uVar2 = rand_lcg();
-    puVar7 = puVar10;
-    puVar8 = puVar10;
+  tmp = (int)(uintptr_t)task_node_alloc(1,2,0xb,0x8013d7e4,0,0x598);
+  i = 0;
+  if (tmp != 0) {
+    pay = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+    pay[0x155] = 0x10;
+    pay[0x152] = a0;
+    pay[0x154] = a1;
+    r1 = rand_lcg();
+    r2 = rand_lcg();
+    p1 = pay;
+    p2 = pay;
     do {
-      uVar1 = uVar1 + 99;
-      uVar2 = uVar2 + 0x85;
-      *(ushort *)(puVar7 + 0x140) = (uVar1 & 0x1ff) - 0x100;
-      *(ushort *)((intptr_t)puVar7 + 0x502) = (uVar2 & 0x1ff) - 0x100;
-      *(undefined2 *)(puVar8 + 0x156) = 0x1000;
-      uVar3 = rand_lcg();
-      *(ushort *)(puVar8 + 0x15e) = (uVar3 & 0x3f) + 10;
-      puVar8 = (undefined4 *)((intptr_t)puVar8 + 2);
-      iVar9 = iVar9 + 1;
-      puVar7 = puVar7 + 1;
-    } while (iVar9 < 0x10);
-    iVar9 = 0;
-    iVar4 = 0;
-    puVar7 = puVar10;
+      r1 = r1 + 99;
+      r2 = r2 + 0x85;
+      *(ushort *)(p1 + 0x140) = (r1 & 0x1ff) - 0x100;
+      *(ushort *)((intptr_t)p1 + 0x502) = (r2 & 0x1ff) - 0x100;
+      *(undefined2 *)(p2 + 0x156) = 0x1000;
+      r3 = rand_lcg();
+      *(ushort *)(p2 + 0x15e) = (r3 & 0x3f) + 10;
+      p2 = (undefined4 *)((intptr_t)p2 + 2);
+      i = i + 1;
+      p1 = p1 + 1;
+    } while (i < 0x10);
+    i = 0;
+    tmp = 0;
+    p1 = pay;
     do {
-      iVar6 = 0;
-      puVar8 = puVar7;
-      iVar5 = iVar4;
+      j = 0;
+      p2 = p1;
+      i2 = tmp;
       do {
-        *puVar8 = 0x9000000;
-        *(undefined1 *)((intptr_t)puVar8 + 7) = 0x2c;
-        *(undefined2 *)((intptr_t)puVar10 + iVar5 + 0x16) = 0x3f;
-        *(undefined2 *)((intptr_t)puVar10 + iVar5 + 0xe) = 31000;
-        iVar6 = iVar6 + 1;
-        *(undefined1 *)(puVar8 + 3) = 0x40;
-        *(undefined1 *)((intptr_t)puVar8 + 0xd) = 0x80;
-        *(undefined1 *)(puVar8 + 5) = 0x48;
-        *(undefined1 *)((intptr_t)puVar8 + 0x15) = 0x80;
-        *(undefined1 *)(puVar8 + 7) = 0x40;
-        *(undefined1 *)((intptr_t)puVar8 + 0x1d) = 0x88;
-        *(undefined1 *)(puVar8 + 9) = 0x48;
-        *(undefined1 *)((intptr_t)puVar8 + 0x25) = 0x88;
-        *(undefined1 *)(puVar8 + 1) = 0x7f;
-        *(undefined1 *)((intptr_t)puVar8 + 5) = 0x7f;
-        *(undefined1 *)((intptr_t)puVar8 + 6) = 0x7f;
-        *(byte *)((intptr_t)puVar8 + 7) = *(byte *)((intptr_t)puVar8 + 7) & 0xfe | 2;
-        puVar8 = puVar8 + 10;
-        iVar5 = iVar5 + 0x28;
-      } while (iVar6 < 0x10);
-      puVar7 = puVar7 + 0xa0;
-      iVar9 = iVar9 + 1;
-      iVar4 = iVar4 + 0x280;
-    } while (iVar9 < 2);
+        *p2 = 0x9000000;
+        *(undefined1 *)((intptr_t)p2 + 7) = 0x2c;
+        *(undefined2 *)((intptr_t)pay + i2 + 0x16) = 0x3f;
+        *(undefined2 *)((intptr_t)pay + i2 + 0xe) = 31000;
+        j = j + 1;
+        *(undefined1 *)(p2 + 3) = 0x40;
+        *(undefined1 *)((intptr_t)p2 + 0xd) = 0x80;
+        *(undefined1 *)(p2 + 5) = 0x48;
+        *(undefined1 *)((intptr_t)p2 + 0x15) = 0x80;
+        *(undefined1 *)(p2 + 7) = 0x40;
+        *(undefined1 *)((intptr_t)p2 + 0x1d) = 0x88;
+        *(undefined1 *)(p2 + 9) = 0x48;
+        *(undefined1 *)((intptr_t)p2 + 0x25) = 0x88;
+        *(undefined1 *)(p2 + 1) = 0x7f;
+        *(undefined1 *)((intptr_t)p2 + 5) = 0x7f;
+        *(undefined1 *)((intptr_t)p2 + 6) = 0x7f;
+        *(byte *)((intptr_t)p2 + 7) = *(byte *)((intptr_t)p2 + 7) & 0xfe | 2;
+        p2 = p2 + 10;
+        i2 = i2 + 0x28;
+      } while (j < 0x10);
+      p1 = p1 + 0xa0;
+      i = i + 1;
+      tmp = tmp + 0x280;
+    } while (i < 2);
   }
   return;
 }
 
 /* guest speech_bubble_spawn @0x8013f178 */
-void speech_bubble_spawn(undefined4 *a0,short a1,int a2,ushort a3)
+void speech_bubble_spawn(undefined4 *pos,short dir,int pt,ushort at)
 
 {
-  short *psVar1;
-  int iVar2;
-  int iVar3;
-  uint uVar4;
-  int *piVar5;
+  short *fx;
+  int tmp;
+  int tmp2;
+  uint oct;
+  int *pay;
   
   if (((DAT_1f8000b1 == '\0') && (_DAT_801f0930 < 3)) &&
      ((*(ushort *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) {
-    if ((DAT_1f800098 != '\x01') && ((a3 & 0xf0) == 0)) {
-      psVar1 = (short *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(a0),6,0x8000000a,2,PTR_DAT_801b1d44)));
-      if (psVar1 != (short *)0x0) {
-        *psVar1 = a1 + 0x800;
+    if ((DAT_1f800098 != '\x01') && ((at & 0xf0) == 0)) {
+      fx = (short *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(pos),6,0x8000000a,2,PTR_DAT_801b1d44)));
+      if (fx != (short *)0x0) {
+        *fx = dir + 0x800;
       }
     }
-    iVar2 = (int)(uintptr_t)task_node_alloc(1,2,5,0x8013e558,0,0x48);
-    if (iVar2 != 0) {
-      piVar5 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-      iVar3 = (int)(uintptr_t)prim_group_build((undefined4)br2_gaddr(piVar5),*(undefined4 *)(&DAT_801c43a8 + a2 * 4),0,1);
-      *piVar5 = (int)(uintptr_t)iVar3;
-      if (iVar3 != 0) {
-        if ((a3 & 0xf) != 0) {
-          prim_attr_word_set(iVar3,(a3 & 0xf) << 6 | 0x781a);
+    tmp = (int)(uintptr_t)task_node_alloc(1,2,5,0x8013e558,0,0x48);
+    if (tmp != 0) {
+      pay = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0x10))));
+      tmp2 = (int)(uintptr_t)prim_group_build((undefined4)br2_gaddr(pay),*(undefined4 *)(&DAT_801c43a8 + pt * 4),0,1);
+      *pay = (int)(uintptr_t)tmp2;
+      if (tmp2 != 0) {
+        if ((at & 0xf) != 0) {
+          prim_attr_word_set(tmp2,(at & 0xf) << 6 | 0x781a);
         }
-        iVar3 = tween_ensure(*piVar5);
-        if (iVar3 != 0) {
-          *(undefined2 *)((intptr_t)piVar5 + 0x46) = 0;
-          iVar3 = DAT_801b1848;
-          iVar2 = DAT_801b1844;
-          piVar5[1] = DAT_801b1840;
-          piVar5[2] = iVar2;
-          piVar5[3] = iVar3;
-          iVar3 = DAT_801b1854;
-          iVar2 = DAT_801b1850;
-          piVar5[4] = DAT_801b184c;
-          piVar5[5] = iVar2;
-          piVar5[6] = iVar3;
-          iVar2 = DAT_801b185c;
-          piVar5[7] = DAT_801b1858;
-          piVar5[8] = iVar2;
-          *(undefined2 *)(piVar5 + 0x11) = 0x138;
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x14) ))= *a0;
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x18) ))= a0[1];
-          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x1c) ))= a0[2];
-          iVar2 = angle_from_xy(*a0,a0[2]);
-          uVar4 = (int)(iVar2 + 0x200U & 0xfff) >> 10;
-          if (uVar4 == 1) {
-            iVar2 = 0x400;
-            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x14) ))= (int)_DAT_801f093a;
+        tmp2 = tween_ensure(*pay);
+        if (tmp2 != 0) {
+          *(undefined2 *)((intptr_t)pay + 0x46) = 0;
+          tmp2 = DAT_801b1848;
+          tmp = DAT_801b1844;
+          pay[1] = DAT_801b1840;
+          pay[2] = tmp;
+          pay[3] = tmp2;
+          tmp2 = DAT_801b1854;
+          tmp = DAT_801b1850;
+          pay[4] = DAT_801b184c;
+          pay[5] = tmp;
+          pay[6] = tmp2;
+          tmp = DAT_801b185c;
+          pay[7] = DAT_801b1858;
+          pay[8] = tmp;
+          *(undefined2 *)(pay + 0x11) = 0x138;
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x14) ))= *pos;
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x18) ))= pos[1];
+          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x1c) ))= pos[2];
+          tmp = angle_from_xy(*pos,pos[2]);
+          oct = (int)(tmp + 0x200U & 0xfff) >> 10;
+          if (oct == 1) {
+            tmp = 0x400;
+            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x14) ))= (int)_DAT_801f093a;
           }
-          else if (uVar4 < 2) {
-            if (uVar4 == 0) {
-              iVar2 = 0x800;
-              *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x1c) ))= -(int)_DAT_801f093e;
+          else if (oct < 2) {
+            if (oct == 0) {
+              tmp = 0x800;
+              *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x1c) ))= -(int)_DAT_801f093e;
             }
           }
-          else if (uVar4 == 2) {
-            iVar2 = 0;
-            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x1c) ))= (int)_DAT_801f093e;
+          else if (oct == 2) {
+            tmp = 0;
+            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x1c) ))= (int)_DAT_801f093e;
           }
-          else if (uVar4 == 3) {
-            iVar2 = 0xc00;
-            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar5 ))+ 0x14) ))= -(int)_DAT_801f093a;
+          else if (oct == 3) {
+            tmp = 0xc00;
+            *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*pay ))+ 0x14) ))= -(int)_DAT_801f093a;
           }
-          rotmat_rtps_build(iVar2,piVar5 + 9);
+          rotmat_rtps_build(tmp,pay + 9);
           _DAT_801f0930 = _DAT_801f0930 + 1;
           return;
         }
-        node_tree_free(*piVar5);
+        node_tree_free(*pay);
       }
-      task_node_free((int *)(uintptr_t)iVar2);
+      task_node_free((int *)(uintptr_t)tmp);
     }
   }
   return;
