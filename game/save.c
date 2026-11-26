@@ -691,7 +691,7 @@ int memcard_file_flow(int a0)
   uint8_t *str_arg;
   char *fmt_str;
   int dlg_type;
-  int unaff_s2;
+  int op_rc;
   int slot_no;
   uint ow_flag;
   uint sm_state;
@@ -959,32 +959,32 @@ switchD_8015fc3c_default:
       }
       switch(dlg_type) {
       case 0:
-        unaff_s2 = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        op_rc = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
-        if ((unaff_s2 == 0) && (rc = save_blk_cmp32(), rc != 0)) {
-          unaff_s2 = 2;
+        if ((op_rc == 0) && (rc = save_blk_cmp32(), rc != 0)) {
+          op_rc = 2;
         }
         break;
       case 1:
-        unaff_s2 = mc_data_write(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        op_rc = mc_data_write(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 2:
-        unaff_s2 = mc_op_dispatch(op_sel);
+        op_rc = mc_op_dispatch(op_sel);
         break;
       case 3:
-        unaff_s2 = mc_read_queue(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        op_rc = mc_read_queue(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
                                 PTR_DAT_801b4618,&DAT_801c11e0,0x414);
         break;
       case 4:
-        unaff_s2 = mc_op_dispatch_b(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
+        op_rc = mc_op_dispatch_b(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608);
       }
       wait_cnt = 100;
-      sm_ret = unaff_s2;
+      sm_ret = op_rc;
       if (a0 == 0) {
         wait_cnt = -1;
       }
@@ -1026,7 +1026,7 @@ switchD_8015ffe4_default:
         deferred_cmd_post(0x400,0xd,0);
         local_bd = '\x16';
       }
-      if (unaff_s2 == 4) {
+      if (op_rc == 4) {
         if (dlg_type == 0) {
           fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
         }
@@ -1034,10 +1034,10 @@ switchD_8015ffe4_default:
           fmt_str = s_UNFORMATTED_MEMORY_CARD___80121a08;
         }
       }
-      else if (unaff_s2 < 5) {
-        if (unaff_s2 != 1) {
-          if (unaff_s2 < 2) {
-            if (unaff_s2 != 0) goto LAB_801603ec;
+      else if (op_rc < 5) {
+        if (op_rc != 1) {
+          if (op_rc < 2) {
+            if (op_rc != 0) goto LAB_801603ec;
             switch(dlg_type) {
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
@@ -1086,11 +1086,11 @@ LAB_8016028c:
               goto LAB_80160464;
             }
           }
-          else if (unaff_s2 == 2) {
+          else if (op_rc == 2) {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DATA_ERROR____80121a24,0x10,0x1000,2);
           }
           else {
-            if (unaff_s2 != 3) goto LAB_801603ec;
+            if (op_rc != 3) goto LAB_801603ec;
             ow_flag = 1;
             if (dlg_type == 4) {
               dlg_type = 1;
@@ -1107,7 +1107,7 @@ LAB_8016028c:
         sprintf_core(msg_buf,s_MEMORY_CARD__s___80121980,SLOTSTR(slot_no));
         fmt_str = msg_arg;
       }
-      else if (unaff_s2 == 7) {
+      else if (op_rc == 7) {
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
                      0x1000,2);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
@@ -1115,13 +1115,13 @@ LAB_8016028c:
         fmt_str = s_TO_SAVE__801219d8;
       }
       else {
-        if (unaff_s2 < 8) {
-          if (unaff_s2 == 5) {
+        if (op_rc < 8) {
+          if (op_rc == 5) {
             fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
             goto LAB_801603fc;
           }
         }
-        else if (unaff_s2 == 0xf) {
+        else if (op_rc == 0xf) {
           dlg_type = 3;
 LAB_80160488:
           ow_flag = 1;
@@ -1137,29 +1137,29 @@ LAB_801603fc:
     case '\x16':
       if (dlg_type == 0) {
         if (a0 != 0) goto LAB_8015f8c0;
-        if (unaff_s2 == 0) goto LAB_80160510;
+        if (op_rc == 0) goto LAB_80160510;
         if (local_b8 != 1) {
           local_bd = '\0';
           break;
         }
         goto LAB_80160504;
       }
-      if (unaff_s2 == 5) {
+      if (op_rc == 5) {
 LAB_80160494:
         if (a0 != 0) goto LAB_8015f8c0;
 LAB_801604a4:
-        if (unaff_s2 != 0) goto LAB_801604f4;
+        if (op_rc != 0) goto LAB_801604f4;
         goto LAB_80160510;
       }
-      if (5 < unaff_s2) {
-        if (unaff_s2 == 0xf) goto LAB_80160494;
+      if (5 < op_rc) {
+        if (op_rc == 0xf) goto LAB_80160494;
 LAB_80160470:
         if (a0 == 0) goto LAB_801604a4;
         dlg_type = 1;
         goto LAB_80160488;
       }
-      if (unaff_s2 < 4) {
-        if ((unaff_s2 < 1) && (unaff_s2 == 0)) goto LAB_80160494;
+      if (op_rc < 4) {
+        if ((op_rc < 1) && (op_rc == 0)) goto LAB_80160494;
         goto LAB_80160470;
       }
       dlg_type = 2;
@@ -2461,13 +2461,13 @@ void mc_state_init(void)
 uint32_t mc_mode_nibble_rw(int32_t a0)
 {
   uint8_t *s0 = (uint8_t *)guest_at(0x801bef60);
-  uint32_t v0;
+  uint32_t val;
   if (s0 == NULL) return 0;
   if (a0 < 0) return s0[0xe] & 0xff;
   mc_state_init();
-  v0 = (s0[0xe] & 0xf0) | (uint32_t)a0;
-  s0[0xe] = (uint8_t)v0;
-  return v0 & 0xff;
+  val = (s0[0xe] & 0xf0) | (uint32_t)a0;
+  s0[0xe] = (uint8_t)val;
+  return val & 0xff;
 }
 
 /* se_value_select — gauge/se value select: gauge_scale_fixed(0,a0),
@@ -2499,12 +2499,12 @@ extern uint32_t block_copy_ret_len(uint32_t,uint32_t);
 extern uint32_t lzss_decode(uint32_t,uint32_t);
 uint32_t mode3_dispatch(uint32_t a0,uint32_t a1)
 {
-  uint32_t v1 = *(uint32_t *)guest_at(a1);
+  uint32_t mode = *(uint32_t *)guest_at(a1);
   (void)a0;
-  decomp_trace_record(0,a0,a1,(uint8_t)v1,0);
-  if (v1 == 0) return block_copy_ret_len(a0,a1);
-  if (v1 == 1) return 1;
-  if (v1 == 2) return lzss_decode(a0,a1);
+  decomp_trace_record(0,a0,a1,(uint8_t)mode,0);
+  if (mode == 0) return block_copy_ret_len(a0,a1);
+  if (mode == 1) return 1;
+  if (mode == 2) return lzss_decode(a0,a1);
   return 0;
 }
 
@@ -2693,12 +2693,12 @@ void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t 
 {
   uint8_t *t0 = a0 + a1 * 16;
   const uint8_t *a3 = (const uint8_t *)a3_;
-  int32_t v1;
+  int32_t i;
   if (a1 >= count || a1 < 0) {
     return;
   }
-  for (v1 = count - 2; v1 >= a1; v1--)
-    memcpy(a0 + (v1 + 1) * 16,a0 + v1 * 16,16);
+  for (i = count - 2; i >= a1; i--)
+    memcpy(a0 + (i + 1) * 16,a0 + i * 16,16);
   t0[0] = a3[0]; t0[1] = a3[1]; t0[2] = a3[2]; t0[3] = a3[3];
   t0[4] = a2[3];
   *(uint32_t *)(t0 + 8) = *(uint32_t *)(a2 + 0xf0);
