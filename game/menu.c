@@ -7891,14 +7891,14 @@ L_inc:                                          /* 0x80152bb4 */
  * 2 or 3 @+0x9a (3 when the signed byte went negative) and 6 @+1. */
 void side_phase_commit(uint32_t obj,uint32_t unused_a,uint32_t unused_b)
 {
-  uint32_t s0 = obj;
+
   (void)unused_a; (void)unused_b;
-  if ((int32_t)MBS8(s0 + 0x99) >= 0)
-    MW8(s0 + 0x99,(uint8_t)(MB8(s0 + 0x99) + 1));
-  if ((uint32_t)MB8(s0 + 0x9b) < 4) {
-    confirm_bookkeeping(s0);
-    MW8(s0 + 0x9a,(uint8_t)(((int32_t)MBS8(s0 + 0x99) < 0) ? 3 : 2));
-    MW8(s0 + 1,6);
+  if ((int32_t)MBS8(obj + 0x99) >= 0)
+    MW8(obj + 0x99,(uint8_t)(MB8(obj + 0x99) + 1));
+  if ((uint32_t)MB8(obj + 0x9b) < 4) {
+    confirm_bookkeeping(obj);
+    MW8(obj + 0x9a,(uint8_t)(((int32_t)MBS8(obj + 0x99) < 0) ? 3 : 2));
+    MW8(obj + 1,6);
   }
 }
 
@@ -13012,13 +13012,13 @@ void system_tick_frame(void)
  * byte; mode = (t0>>4)&3. mode1/2 gate on MB8(a0+5)&1 (mode1:
  * set -> ret; mode2: clear -> ret; else continue).
  * src byte pair: flag40 ? MB8(MB32(a0+0x2c)+2/3) : MB8(a0+2/3);
- * a3 = t0&0xf.
- * a3==0: q = MBS16(s0+4)<<4 / MBS16(a0+0x88); deferred_cmd_post(0x400,
- *   lh(s0+2) + (lh>=0xc0 && srcB!=0 ? 0x40 : 0), q).
- * a3==1: A = lh(s0+2), B = srcB. If MB8(a0+5)&1==0: A==0xfe ->
- *   T_fe[B<0xb]; A==0xff -> T_ff[B<0xb]; A==0xfd -> T_fd[B<0xb];
- *   else keep A. If bit set: compare chain -> 0xc3/0xc4/keep.
- *   Tables (B index 0..10):
+ * subop = t0&0xf.
+ * subop==0: quo = MBS16(s0+4)<<4 / MBS16(a0+0x88); deferred_cmd_post(0x400,
+ *   lh(s0+2) + (lh>=0xc0 && srcB!=0 ? 0x40 : 0), quo).
+ * subop==1: cmdarg = lh(s0+2), tbl_i = srcB. If MB8(a0+5)&1==0: cmdarg==0xfe ->
+ *   T_fe[tbl_i<0xb]; cmdarg==0xff -> T_ff[tbl_i<0xb]; cmdarg==0xfd -> T_fd[tbl_i<0xb];
+ *   else keep cmdarg. If bit set: compare chain -> 0xc3/0xc4/keep.
+ *   Tables (tbl_i index 0..10):
  *   ff: d3 cf cd cd ce d0 cd cb d2 d2 cc
  *   fe: d4 d0 ce ce cf d1 ce cc d3 d3 cd
  *   fd: d5 d1 cf cf d0 d2 cf cd d0 cc ce
@@ -13030,7 +13030,7 @@ uint32_t desc_cmd_map(uint32_t obj,uint32_t st,
 {
   int32_t op = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t mode = (op >> 4) & 3;
-  int32_t flag40, a3, A, B, a2, q, den;
+  int32_t flag40, subop, cmdarg, tbl_i, a2, quo, den;
   uint32_t sub;
   static const uint8_t t_ff[11] = {0xd3,0xcf,0xcd,0xcd,0xce,0xd0,0xcd,0xcb,0xd2,0xd2,0xcc};
   static const uint8_t t_fe[11] = {0xd4,0xd0,0xce,0xce,0xcf,0xd1,0xce,0xcc,0xd3,0xd3,0xcd};
@@ -13044,48 +13044,48 @@ uint32_t desc_cmd_map(uint32_t obj,uint32_t st,
   if (flag40) {
     sub = MB32(obj + 0x2c);
     a2 = MB8(sub + 2);
-    B = MB8(sub + 3);
+    tbl_i = MB8(sub + 3);
   } else {
     a2 = MB8(obj + 2);
-    B = MB8(obj + 3);
+    tbl_i = MB8(obj + 3);
   }
-  a3 = op & 0xf;
-  if (a3 == 0) {
+  subop = op & 0xf;
+  if (subop == 0) {
     int32_t c = MBS16(desc + 2);
     int32_t n4 = (int32_t)MBS16(desc + 4) << 4;
     den = MBS16(obj + 0x88);
     /* guest 0x8017E22C/0x8017E254: lh/lh/sll4/div unconditional —
      * MIPS div-by-zero LO = num>=0 ? -1 : 1. */
-    q = den != 0 ? n4 / den : (n4 >= 0 ? -1 : 1);
-    deferred_cmd_post(0x400, c + (c >= 0xc0 && a2 != 0 ? 0x40 : 0), q);
+    quo = den != 0 ? n4 / den : (n4 >= 0 ? -1 : 1);
+    deferred_cmd_post(0x400, c + (c >= 0xc0 && a2 != 0 ? 0x40 : 0), quo);
     return desc + 6;
   }
-  if (a3 != 1) return desc + 6;
-  A = MBS16(desc + 2);
-  a2 = A;
+  if (subop != 1) return desc + 6;
+  cmdarg = MBS16(desc + 2);
+  a2 = cmdarg;
   if (MB8(obj + 5) & 1) {
     /* bit set: compare chain */
-    if (A == 6) a2 = 0xc3;
-    else if (A < 7) {
-      if (A == 2) a2 = 0xc3;
-      else if (A < 3) {
-        if (A == 0) a2 = 0xc4;
-        else if (A == (op & 0xf)) a2 = 0xc3;
-        /* else keep A */
+    if (cmdarg == 6) a2 = 0xc3;
+    else if (cmdarg < 7) {
+      if (cmdarg == 2) a2 = 0xc3;
+      else if (cmdarg < 3) {
+        if (cmdarg == 0) a2 = 0xc4;
+        else if (cmdarg == (op & 0xf)) a2 = 0xc3;
+        /* else keep cmdarg */
       } else a2 = 0xc3;
-    } else if (A == 9) a2 = 0xc3;
-    else if (A < 0xa) a2 = 0xc3;      /* 7,8 */
-    else if (A == 0xa) a2 = 0xc3;
-    else if (A < 0x100) {
-      if (A >= 0xfd) a2 = 0xc4;
-      /* else keep A */
+    } else if (cmdarg == 9) a2 = 0xc3;
+    else if (cmdarg < 0xa) a2 = 0xc3;      /* 7,8 */
+    else if (cmdarg == 0xa) a2 = 0xc3;
+    else if (cmdarg < 0x100) {
+      if (cmdarg >= 0xfd) a2 = 0xc4;
+      /* else keep cmdarg */
     }
-    /* A >= 0x100 keeps A */
+    /* cmdarg >= 0x100 keeps cmdarg */
   } else {
-    if (A == 0xfe) { if ((uint32_t)B < 0xb) a2 = t_fe[B]; }
-    else if (A == 0xff) { if ((uint32_t)B < 0xb) a2 = t_ff[B]; }
-    else if (A == 0xfd) { if ((uint32_t)B < 0xb) a2 = t_fd[B]; }
-    /* else keep A (a2 already = A? no — a2 was src byte!) */
+    if (cmdarg == 0xfe) { if ((uint32_t)tbl_i < 0xb) a2 = t_fe[tbl_i]; }
+    else if (cmdarg == 0xff) { if ((uint32_t)tbl_i < 0xb) a2 = t_ff[tbl_i]; }
+    else if (cmdarg == 0xfd) { if ((uint32_t)tbl_i < 0xb) a2 = t_fd[tbl_i]; }
+    /* else keep cmdarg (a2 already = cmdarg? no — a2 was src byte!) */
   }
   if (a2 < 0) return desc + 6;
   if (!flag40) {
