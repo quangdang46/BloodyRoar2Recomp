@@ -432,14 +432,12 @@ extern void gfx_tbls_init(void);
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
 extern void display_mode_setup(uint32_t);
-extern void FUN_80195290(int,int);
-extern void FUN_80195290(int,int);
+extern void gte_ofs_set(int,int);
 extern void gte_cw_d000_set(int);
 extern void sprite_attr_init_b(int,int,int,int,int);
 extern void sprite_attr_init_a(int,int,int,int,int);
 extern void oam_list_rebuild(void);
 extern void hud_sprite_desc_init(void);
-extern void FUN_8019117c_(void);
 extern void frame_counter_bump(int);
 extern void spr_desc_tbl_a_init(void);
 extern void spr_desc_tbl_b_init(void);
@@ -1016,7 +1014,7 @@ void scratch_zero_reset(void)
  * mode = video mode (0-7 from system config +0xb):
  *   0,2,4,6 -> 0xf0-height variant (interlaced?), odd -> 0x1e0.
  * Sets _DAT_1f800020/22/24 screen geometry, OAM window regs via
- * FUN_80195290/2b0, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
+ * gte_ofs_set/gte_cw_d000_set, sprite blocks at 0x801e40a0/0x801e61f0/0x801e40fc/
  * 0x801e624c, then oam_list_rebuild mode commit + hud_sprite_desc_init. */
 void display_mode_setup(uint32_t mode)
 {
@@ -1061,7 +1059,7 @@ LAB_80127134:
     DAT_1f800015 = '\x01';
 LAB_80127160:
     _DAT_1f800024 = 0x168;
-    FUN_80195290(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
+    gte_ofs_set(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
     gte_cw_d000_set((int)_DAT_1f800024);
     *(uint8_t *)g_DAT_801e625e = 1;
     *(uint8_t *)g_DAT_801e410e = 1;
