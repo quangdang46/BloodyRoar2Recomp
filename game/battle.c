@@ -5722,79 +5722,79 @@ undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 
 }
 
-void debug_strike_fx_a(short *a0,int a1,int a2,undefined4 a3,int arg5)
+void debug_strike_fx_a(short *pos,int x,int y,undefined4 unused,int f)
 {
-  int iVar1;
-  /* Guest vec3 slot: quad_fx_spawn reads a2[0..2] as 3
+  int en;
+  /* Guest vec3 slot: quad_fx_spawn reads y[0..2] as 3
    * contiguous u32; the decompiler split the 12-byte vec3 into
-   * scalars. local_28[0..2] = old local_28/local_24/local_20. */
-  int local_28 [3];
-  if ((((DAT_1f8000b1 == '\0') && (iVar1 = always_one(8), iVar1 != 0)) &&
+   * scalars. vpos[0..2] = old vpos/local_24/local_20. */
+  int vpos [3];
+  if ((((DAT_1f8000b1 == '\0') && (en = always_one(8), en != 0)) &&
       ((*(ushort *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) && (DAT_1f8000b1 == '\0')) {
-    impact_fx_spawn(a0,0x40000001,0,0,0);
-    if ((*(uint *)guest_at((uint32_t)(uintptr_t)((arg5 + 100) ))& 0x20000) != 0) {
-      local_28[0] = (int)*a0;
-      local_28[1] = (int)a0[1];
-      local_28[2] = (int)a0[2];
-      quad_fx_spawn(arg5,0x13,(undefined4 *)local_28,800,0x1000,0,1);
-      emit_task_spawn(a0,6,a1,a2,0x18,1);
-      emit_task_spawn(a0,6,a1 + 0x800,0x800 - a2,0xc,1);
+    impact_fx_spawn(pos,0x40000001,0,0,0);
+    if ((*(uint *)guest_at((uint32_t)(uintptr_t)((f + 100) ))& 0x20000) != 0) {
+      vpos[0] = (int)*pos;
+      vpos[1] = (int)pos[1];
+      vpos[2] = (int)pos[2];
+      quad_fx_spawn(f,0x13,(undefined4 *)vpos,800,0x1000,0,1);
+      emit_task_spawn(pos,6,x,y,0x18,1);
+      emit_task_spawn(pos,6,x + 0x800,0x800 - y,0xc,1);
     }
   }
   return;
 
 }
 
-void debug_strike_fx_b(short *a0,undefined4 a1,undefined4 a2,ushort a3,int arg5)
+void debug_strike_fx_b(short *pos,undefined4 x,undefined4 y,ushort ang,int f)
 {
-  char cVar1;
-  undefined *puVar2;
-  undefined2 *puVar3;
-  uint uVar4;
-  ushort uVar5;
-  ushort uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
+  char mode;
+  undefined *pal;
+  undefined2 *rec;
+  uint fl;
+  ushort t;
+  ushort dur;
+  undefined4 ea;
+  undefined4 eb;
   if (DAT_1f8000b1 == '\0') {
-    cVar1 = *(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((arg5 + 0x38) ))+ 0x101)));
-    a3 = a3 & 0xfff;
-    if ((((cVar1 == '\x02') || (cVar1 == '\f')) && (*(char *)guest_at((uint32_t)(uintptr_t)((_DAT_1f8000c4 + 2) ))!= '\0')) &&
-       ((*(uint *)guest_at((uint32_t)(uintptr_t)((arg5 + 100) ))& 0x20000) == 0)) {
-      impact_fx_spawn(a0,0x40000000,a3,0,0);
-      if (a3 < 0xf) {
-        puVar2 = &DAT_801b1bd4;
+    mode = *(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x38) ))+ 0x101)));
+    ang = ang & 0xfff;
+    if ((((mode == '\x02') || (mode == '\f')) && (*(char *)guest_at((uint32_t)(uintptr_t)((_DAT_1f8000c4 + 2) ))!= '\0')) &&
+       ((*(uint *)guest_at((uint32_t)(uintptr_t)((f + 100) ))& 0x20000) == 0)) {
+      impact_fx_spawn(pos,0x40000000,ang,0,0);
+      if (ang < 0xf) {
+        pal = &DAT_801b1bd4;
       }
       else {
-        puVar2 = &DAT_801b1be8;
+        pal = &DAT_801b1be8;
       }
-      puVar3 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(a0),6,0x40000005,0,(undefined4)br2_gaddr(puVar2))));
-      if (puVar3 != (undefined2 *)0x0) {
-        puVar3[1] = 0x400 - (short)a2;
-        *puVar3 = (short)a1;
-        uVar5 = 10;
-        if (9 < a3) {
-          uVar5 = a3;
+      rec = (undefined2 *)guest_at((uint32_t)(uintptr_t)(fx_record_alloc((undefined4)br2_gaddr(pos),6,0x40000005,0,(undefined4)br2_gaddr(pal))));
+      if (rec != (undefined2 *)0x0) {
+        rec[1] = 0x400 - (short)y;
+        *rec = (short)x;
+        t = 10;
+        if (9 < ang) {
+          t = ang;
         }
-        uVar6 = 0x17;
-        if (uVar5 < 0x18) {
-          uVar6 = uVar5;
+        dur = 0x17;
+        if (t < 0x18) {
+          dur = t;
         }
-        puVar3[2] = uVar6;
+        rec[2] = dur;
       }
     }
     else {
-      uVar4 = *(uint *)guest_at((uint32_t)(uintptr_t)((arg5 + 100)));
-      emit_task_spawn(a0,6,a1,a2,a3,0);
-      impact_fx_spawn(a0,0x40000000,a3,0,0);
-      uVar7 = _DAT_801f0790;
-      uVar8 = _DAT_801f0780;
-      if ((0xf < a3) &&
-         (emit_task_spawn(a0,8,a1,a2,a3,0), uVar7 = _DAT_801f0798,
-         uVar8 = _DAT_801f0788, a3 < 0x17)) {
-        uVar7 = _DAT_801f0794;
-        uVar8 = _DAT_801f0784;
+      fl = *(uint *)guest_at((uint32_t)(uintptr_t)((f + 100)));
+      emit_task_spawn(pos,6,x,y,ang,0);
+      impact_fx_spawn(pos,0x40000000,ang,0,0);
+      ea = _DAT_801f0790;
+      eb = _DAT_801f0780;
+      if ((0xf < ang) &&
+         (emit_task_spawn(pos,8,x,y,ang,0), ea = _DAT_801f0798,
+         eb = _DAT_801f0788, ang < 0x17)) {
+        ea = _DAT_801f0794;
+        eb = _DAT_801f0784;
       }
-      emit_task_spawn_b(a0,uVar7,uVar8,uVar4 & 0x20000);
+      emit_task_spawn_b(pos,ea,eb,fl & 0x20000);
     }
   }
   return;
@@ -6428,40 +6428,40 @@ switchD_80181ff0_caseD_9:
 
 }
 
-bool pt_box_radius_test(int a0,int a1,int *a2,int *a3)
+bool pt_box_radius_test(int r0,int r1,int *p,int *q)
 {
-  int iVar1;
-  int iVar2;
+  int r2;
+  int ad;
   /* Guest vec3 slot: gte_op_a00428 reads/writes 3 contiguous u32
-   * through local_18; the decompiler split the 12-byte vec3 into
-   * scalars. local_18[0..2] = old local_18/local_14/local_10. */
-  int local_18 [3];
-  a0 = a0 + a1;
-  local_18[0] = *a3 - *a2;
-  iVar2 = local_18[0];
-  if (local_18[0] < 0) {
-    iVar2 = -local_18[0];
+   * through vdif; the decompiler split the 12-byte vec3 into
+   * scalars. vdif[0..2] = old vdif/local_14/local_10. */
+  int vdif [3];
+  r0 = r0 + r1;
+  vdif[0] = *q - *p;
+  ad = vdif[0];
+  if (vdif[0] < 0) {
+    ad = -vdif[0];
   }
-  if (iVar2 < a0) {
-    local_18[1] = a3[1] - a2[1];
-    iVar2 = local_18[1];
-    if (local_18[1] < 0) {
-      iVar2 = -local_18[1];
+  if (ad < r0) {
+    vdif[1] = q[1] - p[1];
+    ad = vdif[1];
+    if (vdif[1] < 0) {
+      ad = -vdif[1];
     }
-    if (iVar2 < a0) {
-      local_18[2] = a3[2] - a2[2];
-      iVar2 = local_18[2];
-      if (local_18[2] < 0) {
-        iVar2 = -local_18[2];
+    if (ad < r0) {
+      vdif[2] = q[2] - p[2];
+      ad = vdif[2];
+      if (vdif[2] < 0) {
+        ad = -vdif[2];
       }
-      iVar1 = a0 * a0;
-      if (iVar2 < a0) {
-        gte_op_a00428((undefined4 *)local_18,(undefined4 *)local_18);
-        if (iVar1 <= local_18[0]) {
+      r2 = r0 * r0;
+      if (ad < r0) {
+        gte_op_a00428((undefined4 *)vdif,(undefined4 *)vdif);
+        if (r2 <= vdif[0]) {
           return false;
         }
-        if (local_18[0] + local_18[1] < iVar1) {
-          return local_18[0] + local_18[1] + local_18[2] < iVar1;
+        if (vdif[0] + vdif[1] < r2) {
+          return vdif[0] + vdif[1] + vdif[2] < r2;
         }
       }
     }
@@ -6476,44 +6476,44 @@ undefined4 always_one(int unused)
 
 }
 
-void triple_track_spawn(int a0,undefined2 a1,int a2)
+void triple_track_spawn(int idx,undefined2 val,int tid)
 {
-  undefined2 uVar1;
-  int iVar2;
-  undefined2 *puVar3;
-  undefined4 *puVar4;
+  undefined2 uv;
+  int task;
+  undefined2 *src;
+  undefined4 *dst;
   if (DAT_1f8000b1 == '\0') {
-    if (*(int *)(&DAT_801f0740 + a0 * 4) != 0) {
-      task_node_free((int *)(uintptr_t)*(int *)(&DAT_801f0740 + a0 * 4));
+    if (*(int *)(&DAT_801f0740 + idx * 4) != 0) {
+      task_node_free((int *)(uintptr_t)*(int *)(&DAT_801f0740 + idx * 4));
     }
-    iVar2 = (int)(intptr_t)task_node_alloc(1,2,8,0x8013885c,0,0x10);
-    *(int *)(&DAT_801f0740 + a0 * 4) = iVar2;
-    if (iVar2 != 0) {
-      puVar4 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
+    task = (int)(intptr_t)task_node_alloc(1,2,8,0x8013885c,0,0x10);
+    *(int *)(&DAT_801f0740 + idx * 4) = task;
+    if (task != 0) {
+      dst = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((task + 0x10))));
       /* Table @0x801b1e8c holds 4-byte GUEST pointers to u16-pair data.
        * g_PTR_DAT_801b1e8c is uint8_t** so [&PTR][i] reads 8 bytes at i*8,
        * folding two guest entries into one bogus host ptr (SIGSEGV
        * 0x801B1DE4801B1DD4). Index as u32 and guest_at() the entry. */
-      puVar3 = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[a2]);
-      *(undefined2 *)((intptr_t)puVar4 + 0xe) = a1;
-      *(short *)(puVar4 + 2) = (short)a0;
-      *(undefined2 *)(puVar4 + 3) = 0;
-      uVar1 = *puVar3;
-      puVar3 = puVar3 + 1;
-      *puVar4 = (undefined4)br2_gaddr(puVar3);
-      puVar4[1] = (undefined4)br2_gaddr(puVar3);
-      *(undefined2 *)((intptr_t)puVar4 + 10) = uVar1;
+      src = (undefined2 *)guest_at(((uint32_t *)&PTR_DAT_801b1e8c)[tid]);
+      *(undefined2 *)((intptr_t)dst + 0xe) = val;
+      *(short *)(dst + 2) = (short)idx;
+      *(undefined2 *)(dst + 3) = 0;
+      uv = *src;
+      src = src + 1;
+      *dst = (undefined4)br2_gaddr(src);
+      dst[1] = (undefined4)br2_gaddr(src);
+      *(undefined2 *)((intptr_t)dst + 10) = uv;
     }
   }
   return;
 
 }
 
-void xform_accum_spawn(int a0,int a1)
+void xform_accum_spawn(int mode,int lvl)
 {
-  undefined4 uVar1;
-  short *psVar2;
-  short sVar3;
+  undefined4 tmp;
+  short *rec;
+  short v;
   if (DAT_1f8000b1 != '\0') {
     return;
   }
@@ -6524,48 +6524,48 @@ void xform_accum_spawn(int a0,int a1)
   if (_DAT_801f0748 == 0) {
     return;
   }
-  a1 = a1 << 8;
-  psVar2 = (short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0748 + 0x10))));
-  psVar2[8] = 0xfff;
-  psVar2[9] = 0;
-  uVar1 = _DAT_1f800320;
-  *(undefined4 *)psVar2 = _DAT_1f80031c;
-  *(undefined4 *)(psVar2 + 2) = uVar1;
-  uVar1 = _DAT_1f800320;
-  *(undefined4 *)(psVar2 + 4) = _DAT_1f80031c;
-  *(undefined4 *)(psVar2 + 6) = uVar1;
-  if (0xfff < a1) {
-    a1 = 0xfff;
+  lvl = lvl << 8;
+  rec = (short *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((_DAT_801f0748 + 0x10))));
+  rec[8] = 0xfff;
+  rec[9] = 0;
+  tmp = _DAT_1f800320;
+  *(undefined4 *)rec = _DAT_1f80031c;
+  *(undefined4 *)(rec + 2) = tmp;
+  tmp = _DAT_1f800320;
+  *(undefined4 *)(rec + 4) = _DAT_1f80031c;
+  *(undefined4 *)(rec + 6) = tmp;
+  if (0xfff < lvl) {
+    lvl = 0xfff;
   }
-  sVar3 = (short)a1;
-  if (a0 == 1) {
-    psVar2[4] = sVar3;
+  v = (short)lvl;
+  if (mode == 1) {
+    rec[4] = v;
     goto LAB_80138c24;
   }
-  if (a0 < 2) {
-    psVar2[4] = sVar3;
+  if (mode < 2) {
+    rec[4] = v;
 LAB_80138c1c:
-    psVar2[5] = sVar3;
+    rec[5] = v;
   }
-  else if (a0 != 2) {
-    if (a0 == 3) {
-      psVar2[4] = sVar3;
-      psVar2[5] = sVar3;
+  else if (mode != 2) {
+    if (mode == 3) {
+      rec[4] = v;
+      rec[5] = v;
       goto LAB_80138c24;
     }
-    psVar2[4] = sVar3;
+    rec[4] = v;
     goto LAB_80138c1c;
   }
-  psVar2[6] = sVar3;
+  rec[6] = v;
 LAB_80138c24:
-  psVar2[4] = psVar2[4] - *psVar2;
-  psVar2[5] = psVar2[5] - psVar2[1];
-  psVar2[6] = psVar2[6] - psVar2[2];
+  rec[4] = rec[4] - *rec;
+  rec[5] = rec[5] - rec[1];
+  rec[6] = rec[6] - rec[2];
   return;
 
 }
 
-void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
+void impact_fx_spawn(undefined4 *pos,uint fid,int ang,int aux,uint fl)
 {
   undefined2 uVar1;
   ushort uVar2;
@@ -6589,7 +6589,7 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
     return;
   }
   iVar4 = (int)(intptr_t)task_node_alloc(1,2,10,0x80138cec,0x80139e0c,
-                       *(short *)(&DAT_801b1880 + (a1 & 0xfffffff) * 2) + 0x68);
+                       *(short *)(&DAT_801b1880 + (fid & 0xfffffff) * 2) + 0x68);
   if (iVar4 == 0) {
     return;
   }
@@ -6601,18 +6601,18 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
     g_pu_raw=(uint32_t)(uintptr_t)puVar14; g_pu_guestof=_gof;
     g_pu_gbuf=_gbuf; g_pu_node=(uint32_t)iVar4;
   }
-  if (((a1 & 0xf0000000) == 0x40000000) || ((a1 & 0xf0000000) != 0x80000000)) {
-    uVar12 = a0[1];
-    puVar14[0x16] = *a0;
+  if (((fid & 0xf0000000) == 0x40000000) || ((fid & 0xf0000000) != 0x80000000)) {
+    uVar12 = pos[1];
+    puVar14[0x16] = *pos;
     puVar14[0x17] = uVar12;
   }
   else {
-    *(undefined2 *)(puVar14 + 0x16) = *(undefined2 *)a0;
-    *(undefined2 *)((intptr_t)puVar14 + 0x5a) = *(undefined2 *)(a0 + 1);
-    *(undefined2 *)(puVar14 + 0x17) = *(undefined2 *)(a0 + 2);
+    *(undefined2 *)(puVar14 + 0x16) = *(undefined2 *)pos;
+    *(undefined2 *)((intptr_t)puVar14 + 0x5a) = *(undefined2 *)(pos + 1);
+    *(undefined2 *)(puVar14 + 0x17) = *(undefined2 *)(pos + 2);
   }
-  *(short *)(puVar14 + 0x19) = (short)a1;
-  puVar14[0x15] = (int)*(short *)(&DAT_801b18a8 + ((int)(a1 << 0x10) >> 0xf));
+  *(short *)(puVar14 + 0x19) = (short)fid;
+  puVar14[0x15] = (int)*(short *)(&DAT_801b18a8 + ((int)(fid << 0x10) >> 0xf));
   if (*(short *)(&DAT_801b1880 + *(short *)(puVar14 + 0x19) * 2) == 0) {
     puVar14[0x18] = 0;
   }
@@ -6643,11 +6643,11 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
   case 0:
     iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
     if (iVar10 != 0) {
-      if (a2 < 10) {
+      if (ang < 10) {
         puVar14[0x15] = 0xa4;
         return;
       }
-      if (a2 < 0xf) {
+      if (ang < 0xf) {
         puVar14[0x15] = 200;
         return;
       }
@@ -6677,7 +6677,7 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
   case 3:
     iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14), (undefined4)br2_gaddr(&DAT_801b1a74), (undefined4)br2_gaddr(&DAT_801b1a50));
     if (iVar10 != 0) {
-      *(uint32_t *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= (uint32_t)guest_of(a0);
+      *(uint32_t *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18] ))= (uint32_t)guest_of(pos);
       uVar6 = rand_lcg();
       iVar4 = 0;
       puVar14[0x15] = (uVar6 & 0x7f) + 0x60;
@@ -6685,8 +6685,8 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
         *(undefined1 *)(puVar14 + 1) = 0xff;
         *(undefined1 *)((intptr_t)puVar14 + 5) = 0xff;
         *(undefined1 *)((intptr_t)puVar14 + 6) = 0xff;
-        if (a2 != 0) {
-          *(ushort *)((intptr_t)puVar14 + 0xe) = ((short)a2 + 0x1e0U & 0x1ff) * 0x40 + 0x1a;
+        if (ang != 0) {
+          *(ushort *)((intptr_t)puVar14 + 0xe) = ((short)ang + 0x1e0U & 0x1ff) * 0x40 + 0x1a;
         }
         iVar4 = iVar4 + 1;
         puVar14 = puVar14 + 10;
@@ -6706,15 +6706,15 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
     iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar9), (undefined4)br2_gaddr(&DAT_801b1bb4), (undefined4)br2_gaddr(&DAT_801b1b90));
     if (iVar10 != 0) {
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      puVar14[0x15] = (int)arg5 >> 0xf;
+      puVar14[0x15] = (int)fl >> 0xf;
       uVar6 = rand_lcg();
-      iVar10 = (int)((arg5 & 0xffff) * ((uVar6 & 0x7ff) + 0x400)) >> 0xc;
+      iVar10 = (int)((fl & 0xffff) * ((uVar6 & 0x7ff) + 0x400)) >> 0xc;
       uVar6 = rand_lcg();
-      iVar5 = a2 + -0x100 + (uVar6 & 0x1ff);
+      iVar5 = ang + -0x100 + (uVar6 & 0x1ff);
       uVar6 = rand_lcg();
       iVar4 = lut_cos_q12(iVar5);
       *puVar13 = (short)(iVar4 * iVar10 >> 0xb);
-      iVar4 = lut_sin_q12(a3 + -0x100 + (uVar6 & 0x1ff));
+      iVar4 = lut_sin_q12(aux + -0x100 + (uVar6 & 0x1ff));
       puVar13[1] = (short)(iVar4 * iVar10 >> 0xb);
       iVar4 = lut_sin_q12(iVar5);
       puVar13[2] = (short)(iVar4 * iVar10 >> 0xb);
@@ -6766,21 +6766,21 @@ void impact_fx_spawn(undefined4 *a0,uint a1,int a2,int a3,uint arg5)
     if ((iVar5 != 0) && (iVar5 != 3)) {
       puVar14[0x15] = 0x5a;
     }
-    if (a2 == 1) {
+    if (ang == 1) {
       sVar3 = psVar11[2] - *(short *)(puVar14 + 0x15);
     }
     else {
-      if (a2 < 2) {
-        if (a2 == 0) {
+      if (ang < 2) {
+        if (ang == 0) {
           *psVar11 = *psVar11 - *(short *)(puVar14 + 0x15);
         }
         goto LAB_8013a628;
       }
-      if (a2 == 2) {
+      if (ang == 2) {
         *psVar11 = *psVar11 + *(short *)(puVar14 + 0x15);
         goto LAB_8013a628;
       }
-      if (a2 != 3) goto LAB_8013a628;
+      if (ang != 3) goto LAB_8013a628;
       sVar3 = psVar11[2] + *(short *)(puVar14 + 0x15);
     }
     psVar11[2] = sVar3;
@@ -6813,11 +6813,11 @@ LAB_8013a628:
           return;
         }
         puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-        iVar4 = lut_cos_q12(a3);
+        iVar4 = lut_cos_q12(aux);
         *puVar13 = (short)(iVar4 >> 7);
-        iVar4 = lut_sin_q12(a2);
+        iVar4 = lut_sin_q12(ang);
         puVar13[1] = (short)(iVar4 >> 9);
-        iVar4 = lut_sin_q12(a3);
+        iVar4 = lut_sin_q12(aux);
         puVar13[2] = (short)(iVar4 >> 7);
         return;
       }
@@ -6828,7 +6828,7 @@ LAB_8013a628:
   case 0xb:
   case 0xc:
   case 0xd:
-    /* guest: lw a3, (0x801B19D4 + (idx-10)*4) — u32 table of guest addrs,
+    /* guest: lw aux, (0x801B19D4 + (idx-10)*4) — u32 table of guest addrs,
      * passed raw to task_alloc_wrap_d. g_PTR_DAT_801b19d4 is uint8_t** so
      * [&PTR][i] would read 8 bytes at i*8; index as u32 instead. */
     iVar10 = task_alloc_wrap_d((undefined4)br2_gaddr(puVar14),(undefined4)br2_gaddr(puVar14 + 10),(undefined4)br2_gaddr(puVar14 + 0x14),(undefined4)((uint32_t *)&PTR_DAT_801b19d4)[*(short *)(puVar14 + 0x19) + -10], (undefined4)br2_gaddr(&DAT_801b192c));
@@ -6838,7 +6838,7 @@ LAB_8013a628:
       iVar10 = (uVar6 & 0xc63) + 0x200;
       uVar6 = rand_lcg();
       uVar7 = rand_lcg();
-      iVar5 = a2 + -0x400 + (uVar7 & 0x7ff);
+      iVar5 = ang + -0x400 + (uVar7 & 0x7ff);
       uVar7 = rand_lcg();
       iVar4 = lut_cos_q12(iVar5);
       iVar4 = (iVar4 >> 7) * iVar10;
@@ -6852,12 +6852,12 @@ LAB_8013a628:
         iVar10 = iVar10 + 0xfff;
       }
       puVar13[2] = (short)(iVar10 >> 0xc);
-      if (arg5 == 0x10) {
+      if (fl == 0x10) {
         uVar2 = rand_lcg();
         sVar3 = (uVar2 & 0x3f) + 0x20;
       }
       else {
-        iVar4 = lut_sin_q12(a3 + -0x400 + (uVar7 & 0x7ff));
+        iVar4 = lut_sin_q12(aux + -0x400 + (uVar7 & 0x7ff));
         iVar4 = (iVar4 >> 7) * ((uVar6 & 0xc63) + 0x200);
         if (iVar4 < 0) {
           iVar4 = iVar4 + 0xfff;
@@ -6890,20 +6890,20 @@ LAB_8013a628:
         return;
       }
       puVar13 = (undefined2 *)guest_at((uint32_t)(uintptr_t)(puVar14[0x18]));
-      iVar4 = lut_cos_q12(a2);
-      iVar4 = (iVar4 >> 5) * arg5;
+      iVar4 = lut_cos_q12(ang);
+      iVar4 = (iVar4 >> 5) * fl;
       if (iVar4 < 0) {
         iVar4 = iVar4 + 0xfff;
       }
       *puVar13 = (short)(iVar4 >> 0xc);
-      iVar4 = lut_sin_q12(a3);
-      iVar4 = (iVar4 >> 5) * arg5;
+      iVar4 = lut_sin_q12(aux);
+      iVar4 = (iVar4 >> 5) * fl;
       if (iVar4 < 0) {
         iVar4 = iVar4 + 0xfff;
       }
       puVar13[1] = (short)(iVar4 >> 0xc);
-      iVar4 = lut_sin_q12(a2);
-      iVar4 = (iVar4 >> 5) * arg5;
+      iVar4 = lut_sin_q12(ang);
+      iVar4 = (iVar4 >> 5) * fl;
       if (iVar4 < 0) {
         iVar4 = iVar4 + 0xfff;
       }
