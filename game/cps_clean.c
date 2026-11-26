@@ -70002,8 +70002,11 @@ block_80189024:
     cpu->pc = _jt_80189024; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018902c — clean CPS transliteration of br2eu_func_8018902C (guest 0x8018902c)
- * from SLES_017.22_full_40.c. */
+/* cps_8018902c — guest 0x8018902C: GTE batch transform → OT packet
+ * writer (env-mapped group). t4 = 32 (+32 when a2!=0); cmds 0x30/0x06/
+ * 0x1B; writes gte_data[12..14] at t3+8/16/24, gte_data[22] at t3+4.
+ * Src reads a0+24/28, reads flag byte t3+7. Stride a0 += 96.
+ * Continuations: 80189034/.../CC/D4. */
 void cps_8018902c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -70151,8 +70154,11 @@ block_801890D4:
     cpu->pc = _jt_801890D4; return;  /* CPS: jr $ra */
 }
 
-/* cps_801890dc — clean CPS transliteration of br2eu_func_801890DC (guest 0x801890dc)
- * from SLES_017.22_full_40.c. */
+/* cps_801890dc — guest 0x801890DC: GTE batch transform → OT packet
+ * writer (env-mapped). t4 = 40 (+40 when a2!=0); cmds 0x30/0x06/0x01/
+ * 0x1B; writes gte_data[12..14] at t3+16/24/32, gte_data[22] at t3+4,
+ * raw word t9 at t3+8. Src reads a0+24..+36, flag byte t3+7.
+ * Stride a0 += 120. */
 void cps_801890dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -70312,8 +70318,11 @@ block_8018919C:
     cpu->pc = _jt_8018919C; return;  /* CPS: jr $ra */
 }
 
-/* cps_801891a4 — clean CPS transliteration of br2eu_func_801891A4 (guest 0x801891a4)
- * from SLES_017.22_full_40.c. */
+/* cps_801891a4 — guest 0x801891A4: GTE batch transform → OT packet
+ * writer (env-mapped, dual output). t4 = 48 (+40 when a2!=0); cmds
+ * 0x30/0x06/0x3F; writes gte_data[12..14] at t3+8/20/32 and
+ * gte_data[20..22] at t3+4/16/28 — two coordinate triples.
+ * Flag byte t3+7. Stride a0 += 128. */
 void cps_801891a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -70481,8 +70490,11 @@ block_80189264:
     cpu->pc = _jt_80189264; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018926c — clean CPS transliteration of br2eu_func_8018926C (guest 0x8018926c)
- * from SLES_017.22_full_40.c. */
+/* cps_8018926c — guest 0x8018926C: GTE batch transform → OT packet
+ * writer (env-mapped, widest record). t4 = 64 (+52 when a2!=0); cmds
+ * 0x30/0x06/0x01/0x1B/0x3F; writes gte_data[12..14] at t3+8/20/32/44
+ * and gte_data[20..22] at t3+4/16/28/40 — four coordinate quads.
+ * Flag byte t3+7. Stride a0 += 168. */
 void cps_8018926c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -70675,8 +70687,10 @@ block_80189358:
     cpu->pc = _jt_80189358; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189360 — clean CPS transliteration of br2eu_func_80189360 (guest 0x80189360)
- * from SLES_017.22_full_40.c. */
+/* cps_80189360 — guest 0x80189360: GTE batch transform → OT packet
+ * writer (3-vertex env variant). t4 = 44 (+28 when a2!=0); cmds
+ * 0x30/0x06/3×0x1B; writes gte_data[22] at t3+4/12/20 (per-vertex
+ * depth/flag) and gte_data[12..14] at t3+8/16/24. Stride a0 += 100. */
 void cps_80189360(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -70840,8 +70854,10 @@ block_80189420:
     cpu->pc = _jt_80189420; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189428 — clean CPS transliteration of br2eu_func_80189428 (guest 0x80189428)
- * from SLES_017.22_full_40.c. */
+/* cps_80189428 — guest 0x80189428: GTE batch transform → OT packet
+ * writer, same 3-vertex env shape as cps_80189360. t4 = 60 (+28 when
+ * a2!=0); cmds 0x30/0x06/3×0x1B; gte_data[22] at t3+4/12/20,
+ * gte_data[12..14] at t3+8/16/24. Stride a0 += 116. */
 void cps_80189428(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71017,8 +71033,11 @@ block_801894F8:
     cpu->pc = _jt_801894F8; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189500 — clean CPS transliteration of br2eu_func_80189500 (guest 0x80189500)
- * from SLES_017.22_full_40.c. */
+/* cps_80189500 — guest 0x80189500: GTE batch transform → OT packet
+ * writer (4-vertex env variant). t4 = 56 (+36 when a2!=0); cmds
+ * 0x30/0x06/0x01/4×0x1B; gte_data[22] at t3+4/12/20/28 (per-vertex),
+ * gte_data[12..14] at t3+16/24/32 plus raw word at t3+8.
+ * Stride a0 += 128. */
 void cps_80189500(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71205,8 +71224,11 @@ block_801895F0:
     cpu->pc = _jt_801895F0; return;  /* CPS: jr $ra */
 }
 
-/* cps_801895f8 — clean CPS transliteration of br2eu_func_801895F8 (guest 0x801895f8)
- * from SLES_017.22_full_40.c. */
+/* cps_801895f8 — guest 0x801895F8: GTE batch transform → OT packet
+ * writer (4-vertex env variant, wider src). t4 = 80 (+36 when a2!=0);
+ * cmds 0x30/0x06/0x01/4×0x1B; gte_data[22] at t3+4/12/20/28,
+ * gte_data[12..14] at t3+16/24/32 plus raw word at t3+8.
+ * Stride a0 += 152. */
 void cps_801895f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71411,8 +71433,11 @@ block_801896FC:
     cpu->pc = _jt_801896FC; return;  /* CPS: jr $ra */
 }
 
-/* cps_80189704 — clean CPS transliteration of br2eu_func_80189704 (guest 0x80189704)
- * from SLES_017.22_full_40.c. */
+/* cps_80189704 — guest 0x80189704: GTE batch transform → OT packet
+ * writer (single-vertex, perspective group). t4 = 20 (+20 when a2!=0);
+ * cmds 0x06/0x1C; writes gte_data[22] at t3+4 and raw triple
+ * t0/t1/t2 at t3+8/12/16 (UV+attr from src). Src reads a0+4/8/16,
+ * halfword at t0+2. Stride a0 += 60. */
 void cps_80189704(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71544,8 +71569,11 @@ block_801897A8:
     cpu->pc = _jt_801897A8; return;  /* CPS: jr $ra */
 }
 
-/* cps_801897b0 — clean CPS transliteration of br2eu_func_801897B0 (guest 0x801897b0)
- * from SLES_017.22_full_40.c. */
+/* cps_801897b0 — guest 0x801897B0: GTE batch transform → OT packet
+ * writer (3-vertex, perspective group). t4 = 28 (+28 when a2!=0);
+ * cmds 0x06/3×0x1C; writes gte_data[22] at t3+4/12/20 and raw
+ * triples t0/t1/t2 at t3+8/16/24. Src reads a0+4..+24, halfwords at
+ * t0+2/t6+2. Stride a0 += 84. */
 void cps_801897b0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71712,8 +71740,11 @@ block_80189898:
     cpu->pc = _jt_80189898; return;  /* CPS: jr $ra */
 }
 
-/* cps_801898a0 — clean CPS transliteration of br2eu_func_801898A0 (guest 0x801898a0)
- * from SLES_017.22_full_40.c. */
+/* cps_801898a0 — guest 0x801898A0: GTE batch transform → OT packet
+ * writer (single-vertex variant). t4 = 16 (+32 when a2!=0); cmds
+ * 0x06/0x1C; writes gte_data[22] at t3+4 and raw triple at
+ * t3+8/16/24. Src reads a0+4/8/12, flag byte t3+7, halfword t0+2.
+ * Stride a0 += 80. */
 void cps_801898a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -71849,8 +71880,11 @@ block_80189954:
     cpu->pc = _jt_80189954; return;  /* CPS: jr $ra */
 }
 
-/* cps_8018995c — clean CPS transliteration of br2eu_func_8018995C (guest 0x8018995c)
- * from SLES_017.22_full_40.c. */
+/* cps_8018995c — guest 0x8018995C: GTE batch transform → OT packet
+ * writer (3-vertex, wider record). t4 = 24 (+40 when a2!=0); cmds
+ * 0x06/3×0x1C; writes gte_data[22] at t3+4/16/28 and raw triples at
+ * t3+8/20/32. Src reads a0+4..+20, flag byte t3+7, halfwords t0+2/
+ * t6+2. Stride a0 += 104. */
 void cps_8018995c(void)
 {
   CPUState *cpu = clean_cpu_state();
