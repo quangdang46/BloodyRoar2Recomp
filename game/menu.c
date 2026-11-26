@@ -15728,16 +15728,16 @@ uint32_t peak_track(void)
   for (i = i_lo; i < i_hi; i++) {
     uint32_t p = 0x801f36f0u + i * 2u;
     int32_t samp_a = MBS16(p);
-    int32_t v1 = MBS16(p + 0x400u);
+    int32_t samp_b = MBS16(p + 0x400u);
     int32_t mag_a = samp_a < 0 ? -samp_a : samp_a;
-    int32_t mag_b = v1 < 0 ? -v1 : v1;
+    int32_t mag_b = samp_b < 0 ? -samp_b : samp_b;
     if ((uint16_t)pk_a < (uint16_t)mag_a) pk_a = (uint32_t)mag_a;
     if ((uint16_t)pk_b < (uint16_t)mag_b) pk_b = (uint32_t)mag_b;
   }
   {
     uint32_t pk_a16 = pk_a & 0xffffu;
     uint32_t mag_a = pk_b & 0xffffu;
-    uint32_t v1;
+    uint32_t tcnt;
     MW32(0x801f46f8u, pk_a16);
     if (MB32(0x801f36e4u) < pk_a16) {
       MW32(0x801f36e8u, mag_a);
@@ -15748,21 +15748,21 @@ uint32_t peak_track(void)
       MW32(0x801f46f0u, mag_a);
       MW32(0x801b3ed4u, 0);
     }
-    v1 = MB32(0x801b3ed0u);
-    if (v1 < 0x78) {
-      MW32(0x801b3ed0u, v1 + 1);
+    tcnt = MB32(0x801b3ed0u);
+    if (tcnt < 0x78) {
+      MW32(0x801b3ed0u, tcnt + 1);
     } else {
       MW32(0x801b3ed0u, 0);
       MW32(0x801f36e4u, pk_a16);
     }
-    v1 = MB32(0x801b3ed4u);
-    if (v1 < 0x78) {
-      MW32(0x801b3ed4u, v1 + 1);
-      return v1 + 1;
+    tcnt = MB32(0x801b3ed4u);
+    if (tcnt < 0x78) {
+      MW32(0x801b3ed4u, tcnt + 1);
+      return tcnt + 1;
     }
-    v1 = MB32(0x801f36e8u);
+    tcnt = MB32(0x801f36e8u);
     MW32(0x801b3ed4u, 0);
-    MW32(0x801f46f0u, v1);
+    MW32(0x801f46f0u, tcnt);
     return 0x801f0000u;
   }
 }
