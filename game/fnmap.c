@@ -1228,6 +1228,13 @@ extern void print_dispatch_selfdesc_guest(void);
 extern void print_mode_dispatch_b(void);
 extern void print_mode_dispatch_guest(void);
 extern void printf_core(void);
+extern void printf_core_piece_e86c(void);
+extern void printf_core_piece_e8cc(void);
+extern void printf_core_piece_e8d0(void);
+extern void printf_core_piece_e904(void);
+extern void printf_core_piece_e910(void);
+extern void printf_core_piece_ebc0(void);
+extern void printf_core_piece_ebd4(void);
 extern void printf_forward_guest(void);
 extern void proj_coord_gte_emit(void);
 extern void pt_box_radius_test(void);
@@ -1402,6 +1409,8 @@ extern void spr_prim_tag_b(void);
 extern void spr_slot_pkt_submit(void);
 extern void spr_tbl_init_a(void);
 extern void spr_tbl_init_b(void);
+extern void sprintf_core_engine(void);
+extern void sprintf_core_engine_piece_f220(void);
 extern void sprintf_core_guest(void);
 extern void sprite_9slice_build(void);
 extern void sprite_anim_chain_build(void);
@@ -2450,6 +2459,13 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e510, (void *)str_len },
   { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
+  { 0x8018e86c, (void *)printf_core_piece_e86c },
+  { 0x8018e8cc, (void *)printf_core_piece_e8cc },
+  { 0x8018e8d0, (void *)printf_core_piece_e8d0 },
+  { 0x8018e904, (void *)printf_core_piece_e904 },
+  { 0x8018e910, (void *)printf_core_piece_e910 },
+  { 0x8018ebc0, (void *)printf_core_piece_ebc0 },
+  { 0x8018ebd4, (void *)printf_core_piece_ebd4 },
   { 0x8018ec30, (void *)ctype_adj_m32 },
   { 0x8018ec64, (void *)ctype_adj_p32 },
   { 0x8018eca0, (void *)strchr_bounded },
@@ -2459,6 +2475,8 @@ const Br2FnEnt fn_table[] = {
   { 0x8018ee28, (void *)debug_line_putc },
   { 0x8018ef50, (void *)bios_tramp_b035 },
   { 0x8018ef60, (void *)sprintf_core_guest },
+  { 0x8018ef6c, (void *)sprintf_core_engine },
+  { 0x8018f220, (void *)sprintf_core_engine_piece_f220 },
   { 0x8018f7e0, (void *)mem_move },
   { 0x8018f850, (void *)cd_fileop_reset },
   { 0x8018f9b4, (void *)gpu_pkt_attr_set },
