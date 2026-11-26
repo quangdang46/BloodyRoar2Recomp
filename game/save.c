@@ -251,6 +251,18 @@ extern uint8_t  *g_DAT_801b43f0;
 #define _DAT_801f268a   (*(uint16_t *)g__DAT_801f268a)
 #define _DAT_801f268c   (*(uint16_t *)g__DAT_801f268c)
 #define _DAT_801f36c0   (*(uint16_t *)g__DAT_801f36c0) /* guest sh @0x801f36c0 (0x801561c8) */
+/* _DAT_* family roles (verified from use; names keep the guest addr):
+ *   0x1f800008/00c  u32 pair — first args to announce_param_block_init
+ *                   (display/env context for menu text blocks)
+ *   0x1f80007c      u16 pad state word — menu confirm (&0x10),
+ *                   cancel/back cluster (&0xe0), &0xa000 tested
+ *   0x801c15f0      u32 status word (cleared in memcard_file_flow)
+ *   0x801e8508/8518 u32 menu-flow fields (init 0 / 0x30)
+ *   0x801f2650..268c  CD register-window record fields
+ *                   (same 0x801f2650 block cd_reg_window_update
+ *                   receives as DAT_801f2650; individual fields
+ *                   written in memcard_file_flow)
+ *   0x801f36c0      u16 scratch word (guest sh @0x801561c8) */
 #define PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0 ((uint8_t *)guest_at(*(uint32_t *)g_DAT_801b43f0))
 #define SLOTSTR(i) ((char *)guest_at(g_PTR_u32_801b4160[i]))
 
