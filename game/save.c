@@ -9908,28 +9908,28 @@ void elem_pair_field_set_alt(uint32_t v0,uint32_t a0,uint32_t a1,
  * Disasm 0x801b1140-0x801b1280. */
 uint32_t mat3x3_build(int32_t a0,int32_t a1,int32_t a2,uint32_t a3)
 {
-  /* t2=d29c(a0) t1=d298(a0) t9=d29c(a1) t3=d298(a1)
-   * t5=d29c(a2) cos_a2=d298(a2); mult+mflo+sra 12 (signed, >>12 arith) */
-  int32_t t2 = lut_sin_q12(a0);
-  int32_t t1 = lut_cos_q12(a0);
-  int32_t t9 = lut_sin_q12(a1);
-  int32_t t3 = lut_cos_q12(a1);
-  int32_t t5 = lut_sin_q12(a2);
+  /* sin0=d29c(a0) cos0=d298(a0) sin1=d29c(a1) cos1=d298(a1)
+   * sin2=d29c(a2) cos_a2=d298(a2); mult+mflo+sra 12 (signed, >>12 arith) */
+  int32_t sin0 = lut_sin_q12(a0);
+  int32_t cos0 = lut_cos_q12(a0);
+  int32_t sin1 = lut_sin_q12(a1);
+  int32_t cos1 = lut_cos_q12(a1);
+  int32_t sin2 = lut_sin_q12(a2);
   int32_t cos_a2 = lut_cos_q12(a2);
-  int32_t t4 = -t9;                    /* -cos a1 */
-  int32_t t9n = -t3;                   /* -sin a1 (neg at 0x801b1214) */
-  int32_t t6a = (t2 * t5) >> 12;       /* cos0*cos2 */
-  int32_t t6b = (t2 * cos_a2) >> 12;       /* cos0*sin2 */
+  int32_t nsin1 = -sin1;                    /* -cos a1 */
+  int32_t ncos1 = -cos1;                   /* -sin a1 (neg at 0x801b1214) */
+  int32_t t6a = (sin0 * sin2) >> 12;       /* cos0*cos2 */
+  int32_t t6b = (sin0 * cos_a2) >> 12;       /* cos0*sin2 */
   int16_t *m = (int16_t *)mem_ptr(a3);
-  m[2] = (int16_t)(-((t9 * t1) >> 12));
-  m[8] = (int16_t)((t9 * cos_a2) >> 12);
-  m[6] = (int16_t)(((t9 * cos_a2) >> 12) + ((t3 * t6a) >> 12));
-  m[5] = (int16_t)(-t2);
-  m[0] = (int16_t)(((t3 * cos_a2) >> 12) + ((t4 * t6a) >> 12));
-  m[7] = (int16_t)(((t4 * t5) >> 12) + ((t3 * t6b) >> 12));
-  m[1] = (int16_t)(((t9n * t5) >> 12) + ((t4 * t6b) >> 12));
-  m[3] = (int16_t)((t1 * t5) >> 12);
-  m[4] = (int16_t)((t1 * cos_a2) >> 12);
+  m[2] = (int16_t)(-((sin1 * cos0) >> 12));
+  m[8] = (int16_t)((sin1 * cos_a2) >> 12);
+  m[6] = (int16_t)(((sin1 * cos_a2) >> 12) + ((cos1 * t6a) >> 12));
+  m[5] = (int16_t)(-sin0);
+  m[0] = (int16_t)(((cos1 * cos_a2) >> 12) + ((nsin1 * t6a) >> 12));
+  m[7] = (int16_t)(((nsin1 * sin2) >> 12) + ((cos1 * t6b) >> 12));
+  m[1] = (int16_t)(((ncos1 * sin2) >> 12) + ((nsin1 * t6b) >> 12));
+  m[3] = (int16_t)((cos0 * sin2) >> 12);
+  m[4] = (int16_t)((cos0 * cos_a2) >> 12);
   return a3;
 }
 
@@ -9941,72 +9941,72 @@ uint32_t mat3x3_build(int32_t a0,int32_t a1,int32_t a2,uint32_t a3)
  * Returns 1 ok / 0 fail. Disasm 0x801a7038-0x801a7298. */
 int anim_node_alloc(uint32_t a0,int32_t a1)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(a0);
-  int32_t s0 = a1;
-  uint32_t g, v0, v1, idx;
-  int32_t s2;
-  if (s1 == (uint8_t *)0x0) return 0;
-  g = *(uint32_t *)(s1 + 8);
-  v1 = *(uint32_t *)guest_at(g + 0xc);
-  if (v1 == 0) return 0;
-  v0 = *(uint32_t *)(s1 + 0x44);
-  if (v0 == 0 || s0 < 0 || s0 >= (int32_t)v0) return 0;
-  if ((v1 - 1) < 2) {
-    uint32_t arr = *(uint32_t *)(s1 + 0x1c);
-    if (*(uint32_t *)guest_at(arr + (uint32_t)s0 * 4) != 0) return 0;
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  int32_t slot = a1;
+  uint32_t sub, cnt, mode, idx;
+  int32_t aux;
+  if (ctx == (uint8_t *)0x0) return 0;
+  sub = *(uint32_t *)(ctx + 8);
+  mode = *(uint32_t *)guest_at(sub + 0xc);
+  if (mode == 0) return 0;
+  cnt = *(uint32_t *)(ctx + 0x44);
+  if (cnt == 0 || slot < 0 || slot >= (int32_t)cnt) return 0;
+  if ((mode - 1) < 2) {
+    uint32_t arr = *(uint32_t *)(ctx + 0x1c);
+    if (*(uint32_t *)guest_at(arr + (uint32_t)slot * 4) != 0) return 0;
   }
-  if (*(uint32_t *)guest_at(g + 0x10) == 1) {
-    uint32_t arr = *(uint32_t *)(s1 + 0x20);
-    if (*(uint32_t *)guest_at(arr + (uint32_t)s0 * 4) != 0) return 0;
+  if (*(uint32_t *)guest_at(sub + 0x10) == 1) {
+    uint32_t arr = *(uint32_t *)(ctx + 0x20);
+    if (*(uint32_t *)guest_at(arr + (uint32_t)slot * 4) != 0) return 0;
   }
-  g = *(uint32_t *)(s1 + 8);
-  s2 = (int32_t)*(uint32_t *)guest_at(
-      *(uint32_t *)guest_at(g + 0x7c) + (uint32_t)s0 * 8 + 4);
-  v1 = *(uint32_t *)guest_at(g + 0xc);
-  if ((v1 - 1) >= 2) return 0;
+  sub = *(uint32_t *)(ctx + 8);
+  aux = (int32_t)*(uint32_t *)guest_at(
+      *(uint32_t *)guest_at(sub + 0x7c) + (uint32_t)slot * 8 + 4);
+  mode = *(uint32_t *)guest_at(sub + 0xc);
+  if ((mode - 1) >= 2) return 0;
   {
-    uint32_t sp10 = *(uint32_t *)guest_at(g + 0x24);
-    uint32_t sp14 = *(uint32_t *)guest_at(*(uint32_t *)(s1 + 8) + 0x2c);
-    int32_t  sp1c = (int8_t)*(uint8_t *)guest_at(*(uint32_t *)(s1 + 0x14) + 0x14);
+    uint32_t sp10 = *(uint32_t *)guest_at(sub + 0x24);
+    uint32_t sp14 = *(uint32_t *)guest_at(*(uint32_t *)(ctx + 8) + 0x2c);
+    int32_t  sp1c = (int8_t)*(uint8_t *)guest_at(*(uint32_t *)(ctx + 0x14) + 0x14);
     uint32_t r = (uint32_t)tween_seq_alloc(0,
-        (uint16_t)*(uint32_t *)guest_at(g + 0xc),
-        *(uint32_t *)(s1 + 0x28),
-        *(uint32_t *)guest_at(g + 0x84),
-        (int16_t)sp10,(uint16_t)sp14,s2,sp1c);
+        (uint16_t)*(uint32_t *)guest_at(sub + 0xc),
+        *(uint32_t *)(ctx + 0x28),
+        *(uint32_t *)guest_at(sub + 0x84),
+        (int16_t)sp10,(uint16_t)sp14,aux,sp1c);
     uint32_t arr, nd;
-    idx = (uint32_t)s0 * 4;
-    arr = *(uint32_t *)(s1 + 0x1c);
+    idx = (uint32_t)slot * 4;
+    arr = *(uint32_t *)(ctx + 0x1c);
     *(uint32_t *)guest_at(arr + idx) = r;
     nd = *(uint32_t *)guest_at(arr + idx);
     if (nd == 0) return 0;
-    arr = *(uint32_t *)(s1 + 0x34);
+    arr = *(uint32_t *)(ctx + 0x34);
     *(uint32_t *)guest_at(arr + idx) = *(uint32_t *)guest_at(nd + 0x10);
   }
   /* second pass: only when node mode fC in {1,2} and f10==1 */
-  g = *(uint32_t *)(s1 + 8);
-  v0 = *(uint32_t *)guest_at(g + 0xc);
-  if ((v0 - 1) < 2) {
-    if (*(uint32_t *)guest_at(g + 0x10) != 1) return 0;
+  sub = *(uint32_t *)(ctx + 8);
+  cnt = *(uint32_t *)guest_at(sub + 0xc);
+  if ((cnt - 1) < 2) {
+    if (*(uint32_t *)guest_at(sub + 0x10) != 1) return 0;
     {
-      uint32_t sp10 = *(uint32_t *)guest_at(g + 0x24);
-      uint32_t sp14 = *(uint32_t *)guest_at(*(uint32_t *)(s1 + 8) + 0x2c);
-      int32_t  sp1c = (int8_t)*(uint8_t *)guest_at(*(uint32_t *)(s1 + 0x14) + 0x14);
+      uint32_t sp10 = *(uint32_t *)guest_at(sub + 0x24);
+      uint32_t sp14 = *(uint32_t *)guest_at(*(uint32_t *)(ctx + 8) + 0x2c);
+      int32_t  sp1c = (int8_t)*(uint8_t *)guest_at(*(uint32_t *)(ctx + 0x14) + 0x14);
       uint32_t r = (uint32_t)tween_seq_alloc(0,
-          (uint16_t)*(uint32_t *)guest_at(g + 0x10),
-          *(uint32_t *)(s1 + 0x2c),
-          *(uint32_t *)guest_at(g + 0x88),
-          (int16_t)sp10,(uint16_t)sp14,s2,sp1c);
+          (uint16_t)*(uint32_t *)guest_at(sub + 0x10),
+          *(uint32_t *)(ctx + 0x2c),
+          *(uint32_t *)guest_at(sub + 0x88),
+          (int16_t)sp10,(uint16_t)sp14,aux,sp1c);
       uint32_t arr, nd;
-      arr = *(uint32_t *)(s1 + 0x20);
+      arr = *(uint32_t *)(ctx + 0x20);
       *(uint32_t *)guest_at(arr + idx) = r;
       nd = *(uint32_t *)guest_at(arr + idx);
       if (nd != 0) {
-        arr = *(uint32_t *)(s1 + 0x38);
+        arr = *(uint32_t *)(ctx + 0x38);
         *(uint32_t *)guest_at(arr + idx) = *(uint32_t *)guest_at(nd + 0x10);
         return 1;
       }
       /* alloc failed: free arr1c[idx] node, clear slot, ret 0 */
-      arr = *(uint32_t *)(s1 + 0x1c);
+      arr = *(uint32_t *)(ctx + 0x1c);
       nd = *(uint32_t *)guest_at(arr + idx);
       task_node_free((int *)(uintptr_t)nd);
       *(uint32_t *)guest_at(arr + idx) = 0;
@@ -10094,24 +10094,24 @@ int op_anim_delta_walk(uint32_t a0,int32_t a1)
  * Disasm 0x801aad24-0x801aadc0. */
 int op_ctx_node_attach(uint32_t a0,uint32_t a1)
 {
-  uint8_t *s0;
-  uint32_t v0, r, A, v1g, nd;
+  uint8_t *ctx;
+  uint32_t have, r, src, link, node;
   if (a0 == 0) return 0;
-  s0 = (uint8_t *)guest_at(a0);
-  v0 = *(uint32_t *)(s0 + 0x48);
-  if (v0 != 0) return (int)v0;
+  ctx = (uint8_t *)guest_at(a0);
+  have = *(uint32_t *)(ctx + 0x48);
+  if (have != 0) return (int)have;
   if (a1 == 0) return 0;
-  r = (uint32_t)(uintptr_t)node_lazy_attach((int)*(uint32_t *)(s0 + 0x18),
+  r = (uint32_t)(uintptr_t)node_lazy_attach((int)*(uint32_t *)(ctx + 0x18),
                                       0x801aadc4,0x801aad18,0x30);
   if (r == 0) return 0;
-  A = *(uint32_t *)(s0 + 0x18);
-  v1g = *(uint32_t *)guest_at(A + 0x10);
-  *(uint32_t *)guest_at(v1g + 0x24) = *(uint32_t *)guest_at(a1);
-  nd = *(uint32_t *)guest_at(r + 0x10);
-  *(uint32_t *)guest_at(nd)     = a0;
-  *(uint32_t *)guest_at(nd + 4) = a1;
+  src = *(uint32_t *)(ctx + 0x18);
+  link = *(uint32_t *)guest_at(src + 0x10);
+  *(uint32_t *)guest_at(link + 0x24) = *(uint32_t *)guest_at(a1);
+  node = *(uint32_t *)guest_at(r + 0x10);
+  *(uint32_t *)guest_at(node)     = a0;
+  *(uint32_t *)guest_at(node + 4) = a1;
   *(uint32_t *)guest_at(a0 + 0x48) = r;
-  *(uint32_t *)guest_at(nd + 0xc) = v1g + 0x24;
+  *(uint32_t *)guest_at(node + 0xc) = link + 0x24;
   return (int)r;
 }
 
@@ -10121,17 +10121,17 @@ int op_ctx_node_attach(uint32_t a0,uint32_t a1)
 int op_node_alloc_init(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
 {
   uint32_t row = *(uint32_t *)guest_at(0x801ff620 + (uint32_t)a2 * 4);
-  uint32_t s0  = *(uint32_t *)guest_at(row + (uint32_t)a3 * 4);
+  uint32_t cell  = *(uint32_t *)guest_at(row + (uint32_t)a3 * 4);
   uint32_t r = (uint32_t)(uintptr_t)task_node_alloc(a0,a1,4,
       0x801b0db8,0x801ad298,
-      *(uint32_t *)guest_at(s0 + 4) + 0x1c);
+      *(uint32_t *)guest_at(cell + 4) + 0x1c);
   if (r != 0) {
-    uint32_t v1 = *(uint32_t *)guest_at(r + 0x10);
-    *(uint32_t *)guest_at(v1)      = a4;
-    *(uint32_t *)guest_at(v1 + 8)  = v1 + 0x1c;
-    *(uint32_t *)guest_at(v1 + 4)  = s0;
-    *(uint32_t *)guest_at(v1 + 0xc) = s0 + *(uint32_t *)guest_at(s0);
-    *(uint32_t *)guest_at(v1 + 0x1c) = v1 + 0x1c;
+    uint32_t nd = *(uint32_t *)guest_at(r + 0x10);
+    *(uint32_t *)guest_at(nd)      = a4;
+    *(uint32_t *)guest_at(nd + 8)  = nd + 0x1c;
+    *(uint32_t *)guest_at(nd + 4)  = cell;
+    *(uint32_t *)guest_at(nd + 0xc) = cell + *(uint32_t *)guest_at(cell);
+    *(uint32_t *)guest_at(nd + 0x1c) = nd + 0x1c;
   }
   return (int)r;
 }
