@@ -3103,7 +3103,7 @@ undefined8 vec2_rot_lut(undefined4 angle,int mag)
 /* ---- event-stream runner + GTE helpers (batch21) ---- */
 /* ev_stream_dispatch — event-stream dispatcher (guest-verbatim; a2-pc
  * residual modelled explicitly: handlers get pc = motion+0x84). */
-void ev_stream_dispatch(byte *ctrl,byte *mo)
+void ev_stream_dispatch(byte *ctrl,byte *motion)
 {
   byte *pbVar1;
   extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -3118,14 +3118,14 @@ void ev_stream_dispatch(byte *ctrl,byte *mo)
    * resume/fallback reads a stale pc. Keep pc in a local guest
    * address for the a2-residual AND mirror it into +0x84 like the
    * guest does. */
-  uint32_t pc_g = *(uint32_t *)(mo + 0x84);
+  uint32_t pc_g = *(uint32_t *)(motion + 0x84);
   uint32_t _dbsp_n = 0;
-  if (*(short *)(mo + 0x90) < 1) {
+  if (*(short *)(motion + 0x90) < 1) {
     for (;;) {
       uint8_t op = *(uint8_t *)guest_at(pc_g);
       uint32_t npc_g = 0;
       if (op < 24) {
-        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)ctrl,(uint8_t *)mo, pc_g);
+        pbVar1 = (byte *)PTR_FUN_801b4e68[op]((uint8_t *)ctrl,(uint8_t *)motion, pc_g);
         npc_g = pbVar1 ? guest_of(pbVar1) : 0;
       } else {
         /* Opcodes >=24 dispatch through the guest handler table; try the
@@ -3133,13 +3133,13 @@ void ev_stream_dispatch(byte *ctrl,byte *mo)
          * the same generated fallback br2_call_generated used. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
         extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-        npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(mo), pc_g, 0);
+        npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
         pbVar1 = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
       }
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-        decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(mo), op, npc_g); }
+        decomp_trace_record(60, pc_g, (uint32_t)br2_gaddr(motion), op, npc_g); }
       if (npc_g == 0) break;
-      *(uint32_t *)(mo + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
+      *(uint32_t *)(motion + 0x84) = npc_g;   /* guest sw @0x8017EAF4 */
       pc_g = npc_g;
       /* The generated body reaches debug_server_poll via
        * psx_check_interrupts_at at every block boundary (~16k checks);
@@ -3154,7 +3154,7 @@ void ev_stream_dispatch(byte *ctrl,byte *mo)
     }
   }
   else {
-    *(short *)(mo + 0x90) = *(short *)(mo + 0x90) - *(short *)(mo + 0xce);
+    *(short *)(motion + 0x90) = *(short *)(motion + 0x90) - *(short *)(motion + 0xce);
   }
   return;
 }
