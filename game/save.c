@@ -3713,69 +3713,69 @@ int card_sprite_load_sm(uint32_t a0,uint32_t a1)
     0x86,0x1f,0x1e,0x1d,0x26,0x2e,0x36,0x3e,
     0x46,0x4e,0x56,0x5e,0x66,0x6e,0x76,0x1c
   };
-  uint8_t *s4 = (uint8_t *)guest_at(a0);
-  int32_t s2 = (int32_t)a1;
-  int32_t s1;
-  int32_t s0 = 0x1c;
-  int32_t s5;
-  uint32_t v47b8;
-  uint32_t v3cfc;
+  uint8_t *ctx = (uint8_t *)guest_at(a0);
+  int32_t sel = (int32_t)a1;
+  int32_t state;
+  int32_t res_id = 0x1c;
+  int32_t saved_013;
+  uint32_t spr_addr;
+  uint32_t strm;
 
-  s1 = (int32_t)*(int16_t *)(s4 + 0x8c);
-  if (s1 < 0) return -1;
-  if (s1 == 0) {
+  state = (int32_t)*(int16_t *)(ctx + 0x8c);
+  if (state < 0) return -1;
+  if (state == 0) {
     cd_file_load_sm(-1,0);
-    s1 = 0x10;
+    state = 0x10;
     *(uint32_t *)guest_at(0x801c43a0) = 0;
     *(uint8_t *)guest_at(0x801e3d00) = 0xff;
     *(uint32_t *)guest_at(0x801c47b8) = 0x80010000;
     *(uint32_t *)guest_at(0x801e3cfc) = 0x800f0000;
-  } else if (s1 != 0x10) {
-    *(int16_t *)(s4 + 0x8c) = (int16_t)s1;
+  } else if (state != 0x10) {
+    *(int16_t *)(ctx + 0x8c) = (int16_t)state;
     return 0;
   }
-  if ((uint32_t)s2 < 0x10) s0 = tab[s2];
-  v3cfc = g32(0x801e3cfc);
-  if (cd_file_load_sm(s0,v3cfc) == 0) {
-    *(int16_t *)(s4 + 0x8c) = (int16_t)s1;
+  if ((uint32_t)sel < 0x10) res_id = tab[sel];
+  strm = g32(0x801e3cfc);
+  if (cd_file_load_sm(res_id,strm) == 0) {
+    *(int16_t *)(ctx + 0x8c) = (int16_t)state;
     return 0;
   }
-  s5 = g8(0x1f800013);
+  saved_013 = g8(0x1f800013);
   scratch_013_set(0);
-  v47b8 = g32(0x801c47b8);
-  v3cfc = g32(0x801e3cfc);
-  if (s2 < 0xf) {
-    if (s2 >= 4) {
+  spr_addr = g32(0x801c47b8);
+  strm = g32(0x801e3cfc);
+  if (sel < 0xf) {
+    if (sel >= 4) {
       /* four-sprite block */
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
-      spr_draw_pair(v47b8,0,0x1f0,1,0x200,0,1);
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
-      spr_draw_pair(v47b8,0,0x1f1,1,0x280,0,1);
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),2);
-      spr_draw_pair(v47b8,0,0x1f2,1,0x240,0x100,1);
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),3);
-      spr_draw_pair(v47b8,0,0x1f3,1,0x2c0,0x100,1);
-    } else if (s2 == 3) {
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
-      spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
-      stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
-      spr_draw_off((int32_t)v47b8,0x280,0,1);
+      stream_block_decode(spr_addr,(int *)guest_at(strm),0);
+      spr_draw_pair(spr_addr,0,0x1f0,1,0x200,0,1);
+      stream_block_decode(spr_addr,(int *)guest_at(strm),1);
+      spr_draw_pair(spr_addr,0,0x1f1,1,0x280,0,1);
+      stream_block_decode(spr_addr,(int *)guest_at(strm),2);
+      spr_draw_pair(spr_addr,0,0x1f2,1,0x240,0x100,1);
+      stream_block_decode(spr_addr,(int *)guest_at(strm),3);
+      spr_draw_pair(spr_addr,0,0x1f3,1,0x2c0,0x100,1);
+    } else if (sel == 3) {
+      stream_block_decode(spr_addr,(int *)guest_at(strm),0);
+      spr_draw_pair(spr_addr,0,0x1f4,1,0x300,0,1);
+      stream_block_decode(spr_addr,(int *)guest_at(strm),1);
+      spr_draw_off((int32_t)spr_addr,0x280,0,1);
     } else {
       goto single;
     }
-  } else if (s2 == 0xf) {
-    stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
-    spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
-    stream_block_decode(v47b8,(int *)guest_at(v3cfc),1);
-    spr_draw_off((int32_t)v47b8,0x340,0,1);
+  } else if (sel == 0xf) {
+    stream_block_decode(spr_addr,(int *)guest_at(strm),0);
+    spr_draw_pair(spr_addr,0,0x1f4,1,0x300,0,1);
+    stream_block_decode(spr_addr,(int *)guest_at(strm),1);
+    spr_draw_off((int32_t)spr_addr,0x340,0,1);
   } else {
 single:
-    stream_block_decode(v47b8,(int *)guest_at(v3cfc),0);
-    spr_draw_pair(v47b8,0,0x1f4,1,0x300,0,1);
+    stream_block_decode(spr_addr,(int *)guest_at(strm),0);
+    spr_draw_pair(spr_addr,0,0x1f4,1,0x300,0,1);
   }
   cd_timer_read(0);
-  scratch_013_set(s5);
-  *(int16_t *)(s4 + 0x8c) = -1;
+  scratch_013_set(saved_013);
+  *(int16_t *)(ctx + 0x8c) = -1;
   return 1;
 }
 
