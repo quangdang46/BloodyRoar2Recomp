@@ -66062,7 +66062,8 @@ ret_ok:
 }
 
 /* cps_801800a4 — clean CPS transliteration of br2eu_func_801800A4 (guest 0x801800a4)
- * from SLES_017.22_full_37.c. */
+ * from SLES_017.22_full_37.c.
+ * hitbox_xform_node_commit (renames.map canonical name). */
 void cps_801800a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66274,7 +66275,8 @@ block_80180190:
 }
 
 /* cps_801802cc — clean CPS transliteration of br2eu_func_801802CC (guest 0x801802cc)
- * from SLES_017.22_full_37.c. */
+ * from SLES_017.22_full_37.c.
+ * hitbox_xform_flag_pair (renames.map canonical name). */
 void cps_801802cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66919,7 +66921,8 @@ block_80180998:
 }
 
 /* cps_80181000 — clean CPS transliteration of br2eu_func_80181000 (guest 0x80181000)
- * from SLES_017.22_full_37.c. */
+ * from SLES_017.22_full_37.c.
+ * pair_update_attach_tail (renames.map canonical name). */
 void cps_80181000(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67075,7 +67078,8 @@ block_80181F18:
 }
 
 /* cps_801835d0 — clean CPS transliteration of br2eu_func_801835D0 (guest 0x801835d0)
- * from SLES_017.22_full_38.c. */
+ * from SLES_017.22_full_38.c.
+ * scriptop_ret_cond_0x801835d0 (renames.map canonical name). */
 void cps_801835d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -67233,7 +67237,8 @@ block_8018365C:
 }
 
 /* cps_801870a4 — clean CPS transliteration of br2eu_func_801870A4 (guest 0x801870a4)
- * from SLES_017.22_full_40.c. */
+ * from SLES_017.22_full_40.c.
+ * prim_xform3_task_run_b (renames.map canonical name). */
 void cps_801870a4(void)
 {
   CPUState *cpu = clean_cpu_state();
