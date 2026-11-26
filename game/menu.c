@@ -1612,20 +1612,20 @@ LAB_80164e34:
 void player_name_entry(void)
 
 {
-  bool bVar1;
+  bool more;
   int iVar2;
-  undefined4 uVar3;
-  char *pcVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  uint32_t *ppuVar8;
-  undefined1 *puVar9;
-  int iVar10;
+  undefined4 sel;
+  char *ch_ptr;
+  int di;
+  int xcur;
+  int cursor;
+  uint32_t *ptab;
+  undefined1 *names;
+  int name_len;
   /* Guest string slots at sp+0x18/0x20/0x28/0x30 (8-byte stride, offsets
    * verified against the generated body's sp accesses): slot0 @sp+0x18 is
    * the name buffer — local_78 u32 at +0 with name chars appended through
-   * local_30 = &local_78 + iVar10 — and slot3 @sp+0x30 is the local_60
+   * local_30 = &local_78 + name_len — and slot3 @sp+0x30 is the local_60
    * per-char display slot ("A\0" -> char + NUL). announce_param_block_init_alt
    * stores guest_of(param_3) into the text prim, so both must live in guest
    * RAM (guest_of is 0 for host locals); name_rec_insert/name_rec_gate/
@@ -1658,7 +1658,7 @@ void player_name_entry(void)
   undefined1 *local_34;
   undefined4 *local_30;
   
-  iVar7 = 0;
+  cursor = 0;
   local_4c = &DAT_1f8000e8;
   local_48 = &DAT_1f8001f0;
   local_44 = &DAT_1f8000e8;
@@ -1671,7 +1671,7 @@ void player_name_entry(void)
   local_67 = DAT_80122079;
   local_60[0] = DAT_8012207c;
   local_60[1] = DAT_8012207d;
-  iVar10 = 0;
+  name_len = 0;
   if (DAT_1f80009c == 3) {
     local_38 = (undefined1 *)guest_at(0x801c13a4);
   }
@@ -1692,35 +1692,35 @@ LAB_801652bc:
         iVar2 = local_3c * 2;
         if ((*(ushort *)(&DAT_1f800074 + iVar2) & 0x8000) != 0) {
           deferred_cmd_post(0x400,0xb,0);
-          iVar7 = iVar7 + -1;
+          cursor = cursor + -1;
         }
         if ((*(ushort *)(&DAT_1f800074 + iVar2) & 0x2000) != 0) {
           deferred_cmd_post(0x400,0xb,0);
-          iVar7 = iVar7 + 1;
+          cursor = cursor + 1;
         }
-        iVar2 = (iVar7 + 0x2b) % 0x2b;
-        iVar7 = iVar2;
-        if (2 < iVar10) {
+        iVar2 = (cursor + 0x2b) % 0x2b;
+        cursor = iVar2;
+        if (2 < name_len) {
           if (iVar2 < 0x1f) {
-            iVar7 = 0x1f;
+            cursor = 0x1f;
           }
           if (0x20 < iVar2) {
-            iVar7 = 0x20;
+            cursor = 0x20;
           }
         }
-        pcVar4 = (char *)local_30 + iVar10;
-        *pcVar4 = ((char *)guest_at(0x801b43bc))[iVar7];
+        ch_ptr = (char *)local_30 + name_len;
+        *ch_ptr = ((char *)guest_at(0x801b43bc))[cursor];
         if ((*(ushort *)(&DAT_1f800068 + local_3c * 2) & 0xe0) != 0) {
-          if (*pcVar4 == '<') {
+          if (*ch_ptr == '<') {
             deferred_cmd_post(0x400,0xd,0);
-            if (0 < iVar10) {
-              *pcVar4 = ' ';
-              iVar10 = iVar10 + -1;
+            if (0 < name_len) {
+              *ch_ptr = ' ';
+              name_len = name_len + -1;
             }
           }
-          else if (*pcVar4 == '^') {
+          else if (*ch_ptr == '^') {
             deferred_cmd_post(0x400,0xc,0);
-            *pcVar4 = ' ';
+            *ch_ptr = ' ';
             local_78 = local_78 & 0xffffff;
             hud_name_fixup(local_30);
             rec_u32_store(local_38,local_40,local_30);
@@ -1734,70 +1734,70 @@ LAB_801652bc:
           }
           else {
             deferred_cmd_post(0x400,0xc,0);
-            iVar10 = iVar10 + 1;
-            if (2 < iVar10) {
-              iVar7 = 0x20;
+            name_len = name_len + 1;
+            if (2 < name_len) {
+              cursor = 0x20;
             }
           }
         }
 LAB_801654c0:
         scroll_offset_set(0x20,0x30);
         iVar2 = 0;
-        ppuVar8 = &PTR_DAT_801b4254;
-        puVar9 = local_38;
+        ptab = &PTR_DAT_801b4254;
+        names = local_38;
         do {
           sprintf_core((char *)local_34,&DAT_80121fe0,iVar2 + 1);
           if (local_40 == iVar2) {
             scroll_offset_accumulate(0,0xfffffffc);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,local_34,0x20,0x1000,3);
-            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
-            uVar3 = 0x13;
+            announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ptab),0x1000,0x1000,0);
+            sel = 0x13;
             if (DAT_1f80009c == 3) {
-              uVar3 = 0x15;
+              sel = 0x15;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,puVar9,uVar3);
-            iVar6 = 0x108;
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,names,sel);
+            xcur = 0x108;
             if (DAT_1f800001 == 3) {
-              iVar5 = 0;
-              if (-1 < iVar10) {
-                bVar1 = true;
-                while (bVar1) {
-                  if ((iVar5 != iVar10) || ((_DAT_1f8000dc & 8) != 0)) {
-                    local_60[0] = *(undefined1 *)((char *)local_30 + iVar5);
-                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,local_60,iVar6,0x1000,0);
+              di = 0;
+              if (-1 < name_len) {
+                more = true;
+                while (more) {
+                  if ((di != name_len) || ((_DAT_1f8000dc & 8) != 0)) {
+                    local_60[0] = *(undefined1 *)((char *)local_30 + di);
+                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,local_60,xcur,0x1000,0);
                   }
-                  iVar5 = iVar5 + 1;
-                  iVar6 = iVar6 + 0x10;
-                  if (iVar10 < iVar5) break;
-                  bVar1 = iVar5 < 4;
+                  di = di + 1;
+                  xcur = xcur + 0x10;
+                  if (name_len < di) break;
+                  more = di < 4;
                 }
               }
             }
             else {
               if ((_DAT_1f8000dc & 4) == 0) {
-                uVar3 = 3;
+                sel = 3;
               }
               else {
-                uVar3 = 0;
+                sel = 0;
               }
-              announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,&local_78,0x108,0x1000,uVar3);
+              announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,&local_78,0x108,0x1000,sel);
             }
-            uVar3 = 0x14;
+            sel = 0x14;
           }
           else {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,local_34,0x20,0x1000,3);
-            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ppuVar8),0x1000,0x1000,0);
-            uVar3 = 0x12;
+            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*ptab),0x1000,0x1000,0);
+            sel = 0x12;
             if (DAT_1f80009c == 3) {
-              uVar3 = 0x14;
+              sel = 0x14;
             }
-            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,puVar9,uVar3);
-            uVar3 = 0x10;
+            hud_time_score_draw(_DAT_1f800008,_DAT_1f80000c,0x60,0x1000,names,sel);
+            sel = 0x10;
           }
-          puVar9 = puVar9 + 0x10;
-          scroll_offset_accumulate(0,uVar3);
+          names = names + 0x10;
+          scroll_offset_accumulate(0,sel);
           iVar2 = iVar2 + 1;
-          ppuVar8 = ppuVar8 + 1;
+          ptab = ptab + 1;
         } while (iVar2 < 10);
         scroll_offset_set(0x20,0x18);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NAME_ENTRY_80122080,0x1000,0x1000,0);
@@ -1863,14 +1863,14 @@ LAB_801651e8:
             local_78 = local_78 & 0xffffff00;
           }
           else {
-            uVar3 = 9;
+            sel = 9;
             if (_g_system_config_ptr[0xd] == '\0') {
-              uVar3 = 0x29;
+              sel = 0x29;
             }
-            mc_confirm_dispatch(uVar3,1);
+            mc_confirm_dispatch(sel,1);
             if (*_g_system_config_ptr != '\0') {
-              iVar10 = 3;
-              iVar7 = 0x20;
+              name_len = 3;
+              cursor = 0x20;
               local_78 = (uint)CONCAT12(_g_system_config_ptr[2],
                                         CONCAT11(_g_system_config_ptr[1],*_g_system_config_ptr));
             }
@@ -1895,11 +1895,11 @@ LAB_801651e8:
         if (DAT_1f800001 < 0xf1) {
           if (DAT_1f800001 != 4) goto LAB_801658b4;
           if (local_50 == 0) {
-            uVar3 = 7;
+            sel = 7;
             if (_g_system_config_ptr[0xd] == '\0') {
-              uVar3 = 0x28;
+              sel = 0x28;
             }
-            mc_confirm_dispatch(uVar3,0);
+            mc_confirm_dispatch(sel,0);
             deferred_cmd_post(0x400,0x83,0x1e);
             deferred_cmd_post(0x400,0x84,0x23);
             deferred_cmd_post(0x400,0x85,0x28);
