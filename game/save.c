@@ -3205,16 +3205,16 @@ int ret_one(void)
 void confirm_code_select(uint32_t a0,uint32_t a1)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
-  uint32_t v0g;
-  int32_t a2;
+  uint32_t blk_addr;
+  int32_t sel_mode;
   int32_t code;
 
-  v0g = *(uint32_t *)(s0 + 0xc0);
+  blk_addr = *(uint32_t *)(s0 + 0xc0);
   {
-    uint8_t *v0 = (uint8_t *)guest_at(v0g);
-    a2 = v0 ? (int8_t)v0[0xd] : 0;
+    uint8_t *blk = (uint8_t *)guest_at(blk_addr);
+    sel_mode = blk ? (int8_t)blk[0xd] : 0;
   }
-  if (a2 == 0) {
+  if (sel_mode == 0) {
     uint16_t b4 = *(uint16_t *)(s0 + 0xb4);
     uint16_t b6 = *(uint16_t *)(s0 + 0xb6);
     int c = ((b6 & 0x1000) == 0) || ((b4 & 0x1000) != 0);
@@ -3223,10 +3223,10 @@ void confirm_code_select(uint32_t a0,uint32_t a1)
     static const int8_t map[11] = {0,1,2,5,3,6,4,7,8,10,9};
     if (idx < 11) code = map[idx]; else code = 0;
     code += 0x14;
-  } else if (a2 == 1) {
-    int32_t v1 = (int32_t)(int8_t)s0[0x98];
+  } else if (sel_mode == 1) {
+    int32_t map_idx = (int32_t)(int8_t)s0[0x98];
     static const int8_t map[13] = {0,1,2,3,4,5,6,7,8,0,1,2,3};
-    if ((uint32_t)v1 < 0xd) code = map[v1]; else code = 0;
+    if ((uint32_t)map_idx < 0xd) code = map[map_idx]; else code = 0;
     code += 0xa;
   } else {
     mc_confirm_dispatch(a1,1);
