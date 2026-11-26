@@ -98502,7 +98502,11 @@ block_801A1F64:
 }
 
 /* cps_801a24cc — clean CPS transliteration of br2eu_func_801A24CC (guest 0x801a24cc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * CD command-record field setter: rec[55] = a1 (byte), rec[44] = a2
+ * (word), rec[54] = a3 (byte); returns via jr ra. Same record family as
+ * the RX-state handlers (state byte at rec+70, counters at +71/+73).
+ */
 void cps_801a24cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98521,7 +98525,12 @@ block_801A24CC:
 }
 
 /* cps_801a2560 — clean CPS transliteration of br2eu_func_801A2560 (guest 0x801a2560)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_rx_state_default — default RX-state handler for the CD command
+ * record state machine (clean port: cd_cmd_rx_state_default in
+ * game/w5_e01.c). Dispatches on rec[70] state byte; continuations and
+ * the generated entry share this body via cpu->pc.
+ */
 void cps_801a2560(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98972,7 +98981,13 @@ block_801A27C0:
 }
 
 /* cps_801a2808 — clean CPS transliteration of br2eu_func_801A2808 (guest 0x801a2808)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_rec_arm_extent — arms an RX extent on the command record
+ * (clean port: cd_cmd_rec_arm_extent in game/w5_e01.c). Gate: jalr
+ * through handler @0x801BE77C must return 0; on arm sets rec[73]=4,
+ * rec[70]=1, rec[20]=0x801A28F4, rec[24]=0x801A298C and the extent
+ * table rec[0]/[4]/[8] from rec[227]/rec[233]; returns 1 on arm.
+ */
 void cps_801a2808(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99095,7 +99110,11 @@ block_801A28C8:
 }
 
 /* cps_801a28dc — clean CPS transliteration of br2eu_func_801A28DC (guest 0x801a28dc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * RX-state handler (rec[70] dispatch family, sibling of
+ * cd_cmd_rx_state_default): branches on state byte values 1-4+ and
+ * drives record field updates / continuation arms.
+ */
 void cps_801a28dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99262,7 +99281,11 @@ block_801A2974:
 }
 
 /* cps_801a2984 — clean CPS transliteration of br2eu_func_801A2984 (guest 0x801a2984)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * RX-state handler (rec[70] dispatch family, 49 blocks): same state
+ * machine as cd_cmd_rx_state_default — extent offset computation via
+ * the 0x801A27D0 helper family and arm/notify tail dispatches.
+ */
 void cps_801a2984(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99938,7 +99961,12 @@ block_801A2D74:
 }
 
 /* cps_801a2ec8 — clean CPS transliteration of br2eu_func_801A2EC8 (guest 0x801a2ec8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_cmd_rec_arm_op — arms an RX op on the command record (clean port:
+ * cd_cmd_rec_arm_op in game/w5_e01.c). Same @0x801BE77C gate; on arm
+ * sets rec[70]=1, rec[20]=0x801A2F70, rec[24]=0x801A2FC4, rec[81]=a1,
+ * rec[82]=a2, rec[83]=((a1&0xFF)^rec[228])==0; returns 1 on arm.
+ */
 void cps_801a2ec8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100019,7 +100047,11 @@ block_801A2F44:
 }
 
 /* cps_801a2f60 — clean CPS transliteration of br2eu_func_801A2F60 (guest 0x801a2f60)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * RX-state handler (rec[70] dispatch family): branches on state ==2/
+ * ==3 and updates record fields around rec[77]+ before rejoining the
+ * state machine.
+ */
 void cps_801a2f60(void)
 {
   CPUState *cpu = clean_cpu_state();
