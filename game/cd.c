@@ -29,16 +29,22 @@ extern uint32_t psx_read_word(uint32_t addr);
 extern void psx_write_word(uint32_t addr, uint32_t val);
 
 uint32_t cd_timer_read(int);
+/* cd_busy_wait_fwd — forward to cd_busy_wait. */
 void cd_busy_wait_fwd(int);
+/* cd_cmd_dispatch3 — cd_dispatch_tbl4(3,a0): dispatch-table slot 3. */
 int cd_cmd_dispatch3(uint32_t);
+/* cd_init_done_cb — trace; mc_session(*0x801BCBA8); clear done flag @0x801BCBA4. */
 void cd_init_done_cb(void);
+/* mc_session — install cb as BIOS callback cell @0x801BCB20-ish; returns previous. */
 uint32_t mc_session(uint32_t);
+/* mc_session_b — traced variant: CDFN + seq-ring record of cb/prev/ra; swaps CD_BIOS_CB_40. */
 uint32_t mc_session_b(uint32_t);
 uint32_t cd_cmd_issue_async(int8_t,int);
 uint32_t cd_read_open(int);
 uint32_t cd_cmd_issue(int8_t,uint32_t,uint32_t,int);
 bool cd_read_setup(uint32_t,uint32_t,uint32_t);
 int cd_chan_boot_init(int);
+/* cd_result_wait_b_fwd — resolve guest-addr out_buf via guest_at, forward to cd_result_wait_b. */
 void cd_result_wait_b_fwd(int,uint32_t);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
