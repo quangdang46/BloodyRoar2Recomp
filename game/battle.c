@@ -4841,25 +4841,25 @@ void fighter_attach_run(int f)
 
 void fighter_height_track(int f,int st)
 {
-  short sVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
+  short h;
+  int cur;
+  uint fl;
+  int ht;
   
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x94)));
-  iVar4 = (int)sVar1;
-  uVar3 = *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))& 0xfffffe7f;
-  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x38)));
-  *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))= uVar3;
-  if ((iVar2 != iVar4) || (*(short *)guest_at((uint32_t)(uintptr_t)((f + 0x90) ))!= 0 || *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x92) ))!= 0)) {
-    *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))= uVar3 | 0x80;
-    if ((iVar4 <= iVar2) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x58) ))& 0x1000000) == 0)) {
+  h = *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x94)));
+  ht = (int)h;
+  fl = *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))& 0xfffffe7f;
+  cur = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x38)));
+  *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))= fl;
+  if ((cur != ht) || (*(short *)guest_at((uint32_t)(uintptr_t)((f + 0x90) ))!= 0 || *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x92) ))!= 0)) {
+    *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))= fl | 0x80;
+    if ((ht <= cur) && ((*(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x58) ))& 0x1000000) == 0)) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f + 0x92) ))= 0;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((f + 0x90) ))= 0;
       *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x6c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x6c) ))| 0x80000;
       *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))= *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))& 0xffffff7f;
-      *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x38) ))= iVar4;
-      *(short *)guest_at((uint32_t)(uintptr_t)((st + 0xd6) ))= sVar1;
+      *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x38) ))= ht;
+      *(short *)guest_at((uint32_t)(uintptr_t)((st + 0xd6) ))= h;
       return;
     }
     if (0 < *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x90)))) {
@@ -6984,20 +6984,20 @@ void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undef
 
 void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl)
 {
-  int iVar1;
-  undefined4 *puVar2;
-  undefined4 uVar3;
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013eb04,0,0x20);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    uVar3 = pos[1];
-    *puVar2 = *pos;
-    puVar2[1] = uVar3;
-    puVar2[5] = eb;
-    puVar2[6] = ea;
-    *(undefined2 *)(puVar2 + 7) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1e) = 0;
-    puVar2[4] = fl;
+  int node;
+  undefined4 *rec;
+  undefined4 w;
+  node = (int)(intptr_t)task_node_alloc(1,2,0xb,0x8013eb04,0,0x20);
+  if (node != 0) {
+    rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    w = pos[1];
+    *rec = *pos;
+    rec[1] = w;
+    rec[5] = eb;
+    rec[6] = ea;
+    *(undefined2 *)(rec + 7) = 0;
+    *(undefined2 *)((intptr_t)rec + 0x1e) = 0;
+    rec[4] = fl;
   }
   return;
 
@@ -7708,32 +7708,32 @@ int * rtps_point_xform(undefined4 *mtx,undefined4 *v,int *out,int flag)
 
 }
 
-int * rtps_point_xform2(undefined4 *a0,undefined4 *a1,int *a2)
+int * rtps_point_xform2(undefined4 *mtx,undefined4 *v,int *out)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  setCopControlWord(2,0,*a0);
-  setCopControlWord(2,0x800,a0[1]);
-  setCopControlWord(2,0x1000,a0[2]);
-  setCopControlWord(2,0x1800,a0[3]);
-  setCopControlWord(2,0x2000,a0[4]);
-  setCopReg(2,in_zero,*a1);
-  setCopReg(2,in_at,a1[1]);
+  int oy;
+  int oz;
+  int x;
+  int y;
+  int z;
+  setCopControlWord(2,0,*mtx);
+  setCopControlWord(2,0x800,mtx[1]);
+  setCopControlWord(2,0x1000,mtx[2]);
+  setCopControlWord(2,0x1800,mtx[3]);
+  setCopControlWord(2,0x2000,mtx[4]);
+  setCopReg(2,in_zero,*v);
+  setCopReg(2,in_at,v[1]);
   copFunction(2,0x486012);
-  iVar1 = a0[6];
-  iVar2 = a0[7];
-  iVar3 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  iVar5 = getCopReg(2,0x5800);
-  *a2 = a0[5] + iVar3;
-  a2[1] = iVar1 + iVar4;
-  a2[2] = iVar2 + iVar5;
-  return a2;
+  oy = mtx[6];
+  oz = mtx[7];
+  x = getCopReg(2,0x4800);
+  y = getCopReg(2,0x5000);
+  z = getCopReg(2,0x5800);
+  *out = mtx[5] + x;
+  out[1] = oy + y;
+  out[2] = oz + z;
+  return out;
 
 }
 
@@ -8607,28 +8607,28 @@ LAB_801a6cfc:
 
 undefined4 tween_chan_alloc(int grp,int idx)
 {
-  undefined4 uVar1;
-  int iVar2;
-  if ((((grp != 0) && (iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((grp + 8) ))+ 0x14))), iVar2 != 0)) &&
+  undefined4 seq;
+  int t;
+  if ((((grp != 0) && (t = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((grp + 8) ))+ 0x14))), t != 0)) &&
       (*(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))!= 0)) && ((-1 < idx && (idx < *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44)))))))
   {
-    if ((iVar2 == 1) && (*(int *)guest_at((uint32_t)(uintptr_t)((idx * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24)))) ))!= 0)) {
+    if ((t == 1) && (*(int *)guest_at((uint32_t)(uintptr_t)((idx * 4 + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24)))) ))!= 0)) {
       return 0;
     }
-    iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((grp + 8)));
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14) ))!= 1) {
+    t = *(int *)guest_at((uint32_t)(uintptr_t)((grp + 8)));
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((t + 0x14) ))!= 1) {
       return 1;
     }
-    uVar1 = tween_seq_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x30))),
-                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x24))),
+    seq = tween_seq_alloc(2,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x14))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x30))),
+                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x8c))),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x24))),
                          *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((grp + 8) ))+ 0x30))),
-                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx * 8 + *(int *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x7c) ))+ 4))),
+                         *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx * 8 + *(int *)guest_at((uint32_t)(uintptr_t)((t + 0x7c) ))+ 4))),
                          (int)*(char *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x14) ))+ 0x14))));
     idx = idx * 4;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24)))) ))= uVar1;
-    iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24))))));
-    if (iVar2 != 0) {
-      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x3c)))) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10)));
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24)))) ))= seq;
+    t = *(int *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x24))))));
+    if (t != 0) {
+      *(undefined4 *)guest_at((uint32_t)(uintptr_t)((idx + *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x3c)))) ))= *(undefined4 *)guest_at((uint32_t)(uintptr_t)((t + 0x10)));
       return 1;
     }
   }
@@ -9013,64 +9013,64 @@ int task_alloc_wrap_c(undefined4 v0,undefined4 v1,int v2,undefined4 v3)
 
 }
 
-int task_alloc_wrap_d(undefined4 a0,undefined4 a1,undefined4 a2,undefined4 a3,int arg5)
+int task_alloc_wrap_d(undefined4 v0,undefined4 v1,undefined4 v2,undefined4 v3,int v4)
 {
-  int iVar1;
-  undefined4 *puVar2;
+  int node;
+  undefined4 *rec;
   /* creation-time arg latch: the dest-ptr args must be real guest addrs
    * (>=0x80100000). Recording them lets freeze_check tell a bad br2_gaddr /
    * puVar14 at alloc apart from the stream state being overwritten later. */
   { extern uint32_t g_wd_last_p1,g_wd_last_p2,g_wd_last_p3,g_wd_last_p4,g_wd_last_p5;
     extern uint32_t g_wd_bad_count,g_wd_bad_node,g_wrap_src;
     g_wrap_src=2;
-    g_wd_last_p1=(uint32_t)a0; g_wd_last_p2=(uint32_t)a1;
-    g_wd_last_p3=(uint32_t)a2; g_wd_last_p4=(uint32_t)a3;
-    g_wd_last_p5=(uint32_t)arg5;
-    if (((uint32_t)a0 < 0x80100000u || (uint32_t)a1 < 0x80100000u ||
-         (uint32_t)a2 < 0x80100000u) &&
-        (uint32_t)a0 != 0u && (uint32_t)a1 != 0u) {
-      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)a3;
+    g_wd_last_p1=(uint32_t)v0; g_wd_last_p2=(uint32_t)v1;
+    g_wd_last_p3=(uint32_t)v2; g_wd_last_p4=(uint32_t)v3;
+    g_wd_last_p5=(uint32_t)v4;
+    if (((uint32_t)v0 < 0x80100000u || (uint32_t)v1 < 0x80100000u ||
+         (uint32_t)v2 < 0x80100000u) &&
+        (uint32_t)v0 != 0u && (uint32_t)v1 != 0u) {
+      g_wd_bad_count++; g_wd_bad_node=(uint32_t)(uintptr_t)v3;
     }
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
-  if (iVar1 != 0) {
-    puVar2 = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    *puVar2 = a0;
-    puVar2[1] = a1;
-    puVar2[2] = a2;
-    puVar2[3] = a3;
-    puVar2[4] = arg5;
-    puVar2[5] = arg5 + -4;
-    *(undefined2 *)(puVar2 + 6) = 0;
-    *(undefined2 *)((intptr_t)puVar2 + 0x1a) = 0;
+  node = (int)(intptr_t)task_node_alloc(1,2,6,0x80137824,0,0x1c);
+  if (node != 0) {
+    rec = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *rec = v0;
+    rec[1] = v1;
+    rec[2] = v2;
+    rec[3] = v3;
+    rec[4] = v4;
+    rec[5] = v4 + -4;
+    *(undefined2 *)(rec + 6) = 0;
+    *(undefined2 *)((intptr_t)rec + 0x1a) = 0;
   }
-  return iVar1;
+  return node;
 
 }
 
-int task_alloc_wrap_e(int a0,int a1,int a2)
+int task_alloc_wrap_e(int sz,int v0,int v1)
 {
-  int iVar1;
-  int *piVar2;
+  int t;
+  int *rec;
   { extern uint32_t g_wrape_calls,g_wrape_last_ret,g_wrape_p1,g_wrape_p2,g_wrape_p3;
-    g_wrape_calls++; g_wrape_p1=(uint32_t)a0;
-    g_wrape_p2=(uint32_t)a1; g_wrape_p3=(uint32_t)a2; }
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,a0 + 0x14);
-  if (iVar1 == 0) {
-    iVar1 = 0;
+    g_wrape_calls++; g_wrape_p1=(uint32_t)sz;
+    g_wrape_p2=(uint32_t)v0; g_wrape_p3=(uint32_t)v1; }
+  t = (int)(intptr_t)task_node_alloc(1,2,6,0x80137acc,0,sz + 0x14);
+  if (t == 0) {
+    t = 0;
     { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = 0; }
   }
   else {
-    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)iVar1; }
-    piVar2 = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10))));
-    piVar2[1] = a2;
-    piVar2[2] = a2;
-    piVar2[4] = 0;
-    piVar2[3] = a1;
-    iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((iVar1 + 0x10) ))+ 0x14;
-    *piVar2 = iVar1;
+    { extern uint32_t g_wrape_last_ret; g_wrape_last_ret = (uint32_t)t; }
+    rec = (int *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((t + 0x10))));
+    rec[1] = v1;
+    rec[2] = v1;
+    rec[4] = 0;
+    rec[3] = v0;
+    t = *(int *)guest_at((uint32_t)(uintptr_t)((t + 0x10) ))+ 0x14;
+    *rec = t;
   }
-  return iVar1;
+  return t;
 
 }
 
