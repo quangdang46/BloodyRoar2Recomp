@@ -15930,7 +15930,9 @@ block_8012BCD4:
 
 /* cps_8012bce4 — clean CPS transliteration of br2eu_func_8012BCE4 (guest 0x8012bce4)
  * from SLES_017.22_full_02.c.
- * ui_state_step: 18-block leaf state step in the menu/GPU band. */
+ * param_range_dispatch: a2&0x00E8 bucketed into 4 ranges
+ * (<65/<129/<193/else) -> 4-way tail dispatch to 0x8012BD88/90/98/9C;
+ * reads t7 flag bits for sub-cases. */
 void cps_8012bce4(void)
 {
 /* GPU/pad fragment: continues at 0x8012BDA0. */
@@ -16212,7 +16214,10 @@ block_8012BD9C:
 
 /* cps_8012bda0 — clean CPS transliteration of br2eu_func_8012BDA0 (guest 0x8012bda0)
  * from SLES_017.22_full_02.c.
- * ui_leaf_step_b: 12-block leaf state step. */
+ * record_param_pack_b: packs half[t0+14/+22] and half[t1]/[t1+2]
+ * into a3/t2, then table-driven byte writes t0+12/13/20/21/28/29
+ * via lookup 0x801B1314/0x801B1458 indexed by (a3+t5)<<1; CPS tail
+ * continues at 0x8012BE70. */
 void cps_8012bda0(void)
 {
 /* GPU/pad fragment: continues at 0x8012be70 */
@@ -16509,7 +16514,10 @@ block_8012BF04:
 
 /* cps_8012bf58 — clean CPS transliteration of br2eu_func_8012BF58 (guest 0x8012bf58)
  * from SLES_017.22_full_02.c.
- * ui_leaf_step_c: 5-block leaf state step. */
+ * fade_ramp_step: word[a0]-=a2, then ramp-fills word[a1+t0+i] by
+ * s2 until >= -s2; tail paired table lookups @0x801E8508 gated by
+ * half[0x1F800020], unpacks fp/a3<<16 into s-regs, falls through to
+ * cps_8012c008. */
 void cps_8012bf58(void)
 {
 /* GPU/pad fragment: continues at 0x8012C06C. */
@@ -38618,7 +38626,9 @@ block_8013AC6C:
 
 /* cps_8013ac70 — clean CPS transliteration of br2eu_func_8013AC70 (guest 0x8013ac70)
  * from SLES_017.22_full_08.c.
- * fx_leaf_step: 10-block leaf state step in the FX region. */
+ * fx_spawn_init: projectile/FX spawn — word[a1]=s1, unaligned 24B
+ * record build, range gates (v0<46, v0<401), s2&0x80 flag select,
+ * tables @0x801B0000+off; continues 0x8013AD9C. */
 void cps_8013ac70(void)
 {
 /* popup_spawn piece: continues at 0x8013ad9c */
@@ -45652,8 +45662,9 @@ block_8013E86C:
 
 /* cps_8013e874 — clean CPS transliteration of br2eu_func_8013E874 (guest 0x8013e874)
  * from SLES_017.22_full_10.c.
- * fx_state_step_b: 12-block leaf state step in the paired_task_cb
- * region. */
+ * rotated_vertex_emit: 4-point emit — fp*0x5556 hi -> sp+16 scale,
+ * s7<4 / s7<3 loop bounds, lut_cos_q12/lut_sin_q12 chain
+ * (0x1F800000 / 0x09000000 coeffs); paired_task_cb thunk entry. */
 void cps_8013e874(void)
 {
 /* task/trig thunk -> lut_cos_q12 -> lut_sin_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 -> lut_cos_q12 */
@@ -61398,7 +61409,9 @@ block_80161C20:
 
 /* cps_80163ddc — clean CPS transliteration of br2eu_func_80163DDC (guest 0x80163ddc)
  * from SLES_017.22_full_25.c.
- * ui_leaf_step_d: 5-block leaf state step, no calls. */
+ * name_patch_scan: nested byte-compare — for each word ptr t0
+ * (step -4) compare 3 bytes at a3+a1 vs t1+a1 down to 0; on match
+ * patch t1[0..2] = t2/t3/t4, return 1. hud_name_fixup piece. */
 void cps_80163ddc(void)
 {
 /* hud_name_fixup piece: continues at 0x80163E28 */
