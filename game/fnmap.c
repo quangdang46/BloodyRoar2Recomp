@@ -876,6 +876,7 @@ extern void guard_dispatch_b(void);
 extern void guard_dispatch_c(void);
 extern void guard_dispatch_d(void);
 extern void guest_bzero(void);
+extern void guest_main(void);
 extern void guest_memcpy(void);
 extern void guest_memset(void);
 extern void guest_memset_b(void);
@@ -1764,6 +1765,7 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
+  { 0x8011e800, (void *)guest_main },
   { 0x80120000, (void *)cps_801a8ee0 },
   { 0x80120948, (void *)battle_state_gate_tail },
   { 0x80125698, (void *)cps_80195cf0 },

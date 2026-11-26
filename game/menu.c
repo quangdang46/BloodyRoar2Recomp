@@ -37,7 +37,7 @@ extern uint8_t *_g_system_config_ptr;
 extern uint8_t *_g_pad_buffer;
 extern CPUState *clean_cpu_state(void);
 /* g_game_state/g_sub_state are guest scratchpad bytes at 0x1f800000/0x1f800002
- * (the top-level mode SM read by entry_0x80126234 in game.c). They must alias
+ * (the top-level mode SM read by guest_main in game.c). They must alias
  * the SAME guest storage — declaring them `extern int` bound them to throwaway
  * host ints in bind.c, so menu writes (e.g. g_game_state=8 on mode confirm)
  * never reached the dispatcher and battle_flow_state_machine never ran. */
@@ -3601,33 +3601,33 @@ LAB_80150610:
  * mod 4 and returns the validated bit. Disasm-verified. */
 int32_t select_cursor_step(int32_t row,int32_t col0)
 {
-  int32_t a3 = col0;
-  uint8_t *t0 = (uint8_t *)guest_at(0x801b3218);
-  uint32_t t1 = *(uint32_t *)(_g_system_config_ptr + 0x4c);
-  uint32_t v1 = t1;
-  int32_t a2 = t0[a3 + row * 4];
-  uint32_t v0 = (v1 >> a2) & 1;
-  if (v0 != 0) return (int32_t)v0;
-  v1 = (uint32_t)a2 * 4;
+  int32_t col = col0;
+  uint8_t *grid = (uint8_t *)guest_at(0x801b3218);
+  uint32_t unlocked = *(uint32_t *)(_g_system_config_ptr + 0x4c);
+  uint32_t v1 = unlocked;
+  int32_t ch_idx = grid[col + row * 4];
+  uint32_t ok = (v1 >> ch_idx) & 1;
+  if (ok != 0) return (int32_t)ok;
+  v1 = (uint32_t)ch_idx * 4;
   goto LAB_f208;
 LAB_f248:
-  v0 = (t1 >> a2) & 1;
+  ok = (unlocked >> ch_idx) & 1;
 LAB_f24c:
-  v0 &= 1;
-  if (v0 == 0) goto LAB_f208;
-  return (int32_t)v0;
+  ok &= 1;
+  if (ok == 0) goto LAB_f208;
+  return (int32_t)ok;
 LAB_f208:
   {
-    int32_t b = t0[a3 + v1];
-    a2 = b;
-    if (b != a2) goto LAB_f248;
-    a3 = (a3 - 1) & 3;
-    if (a3 != col0) {
-      a2 = t0[a3 + v1];
-      v0 = (t1 >> a2) & 1;
+    int32_t nch = grid[col + v1];
+    ch_idx = nch;
+    if (nch != ch_idx) goto LAB_f248;
+    col = (col - 1) & 3;
+    if (col != col0) {
+      ch_idx = grid[col + v1];
+      ok = (unlocked >> ch_idx) & 1;
       goto LAB_f24c;
     }
-    a2 = row;
+    ch_idx = row;
     goto LAB_f248;
   }
 }
@@ -4624,24 +4624,24 @@ extern int32_t ret_zero_c(uint32_t);
 extern int str_len(char *);
 int32_t continue_countdown(uint32_t battle_g,uint32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
-  uint32_t s1 = player;
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
+
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; str_len/
    * hud_text_blk_alt re-read it through nested frames, so the
    * write->draw span below runs inside a reserved guest frame
    * (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t v0 = 0;
+
   uint32_t dc;
   if (battle_state_gate(battle_g,1) == 0) return 0;
   dc = *(uint32_t *)guest_at(0x1f8000dc);
-  if (((*(uint16_t *)guest_at(*(uint32_t *)(s0 + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
+  if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) != 0 &&
       (dc & 0x40) != 0 && ((dc >> 4) & 3) != 0) {
     /* remaining = 9 - (counter&0x3fff)/10000 */
-    uint32_t cnt = *(uint16_t *)(s0 + 0xb2) & 0x3fff;
-    int64_t m = (int64_t)(int32_t)cnt * 0x66666667;
-    int32_t q = (int32_t)(((int32_t)(m >> 32) << 0xb) >> 0x10); /* hi>>5 */
-    int32_t rem = 9 - q;
+    uint32_t cnt = *(uint16_t *)(b + 0xb2) & 0x3fff;
+    int64_t prod = (int64_t)(int32_t)cnt * 0x66666667;
+    int32_t quo = (int32_t)(((int32_t)(prod >> 32) << 0xb) >> 0x10); /* hi>>5 */
+    int32_t rem = 9 - quo;
     int w;
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
@@ -4651,40 +4651,40 @@ int32_t continue_countdown(uint32_t battle_g,uint32_t player)
     w = str_len((char *)buf);
     {
       int32_t y;
-      int32_t v1 = w * 3;
-      if (s1 != 0) { y = (int32_t)*(int16_t *)(s0 + 0x20) - (v1 + 0x50); }
-      else         { y = 0x50 - v1; }
-      hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
+      int32_t xext = w * 3;
+      if (player != 0) { y = (int32_t)*(int16_t *)(b + 0x20) - (xext + 0x50); }
+      else         { y = 0x50 - xext; }
+      hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
                    buf,(int16_t)y,0x20,1);
     }
     br2_guest_frame_free();
   }
-  if (*(int16_t *)(s0 + 0xb2) == 0) ret_zero_a(s1);
+  if (*(int16_t *)(b + 0xb2) == 0) ret_zero_a(player);
   {
-    uint32_t b2 = *(uint16_t *)(s0 + 0xb2);
-    if ((b2 & 0x3fff) < 0x31f) *(uint16_t *)(s0 + 0xb2) = (uint16_t)(b2 + 1);
+    uint32_t b2 = *(uint16_t *)(b + 0xb2);
+    if ((b2 & 0x3fff) < 0x31f) *(uint16_t *)(b + 0xb2) = (uint16_t)(b2 + 1);
   }
-  if ((*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0x800) != 0) {
-    if (ret_zero_c(s1) < 0) return 1;
+  if ((*(uint16_t *)(b + player * 2 + 0x68) & 0x800) != 0) {
+    if (ret_zero_c(player) < 0) return 1;
   }
-  if (ret_zero_a(s1) != 0)
-    *(uint16_t *)(s0 + 0xb2) = (uint16_t)((*(uint16_t *)(s0 + 0xb2) & 0x4000) + 1);
-  if ((*(uint16_t *)(s0 + 0xb2) & 0x4000) == 0 &&
-      (*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0x800) != 0)
-    *(uint16_t *)(s0 + 0xb2) = 0x4001;
+  if (ret_zero_a(player) != 0)
+    *(uint16_t *)(b + 0xb2) = (uint16_t)((*(uint16_t *)(b + 0xb2) & 0x4000) + 1);
+  if ((*(uint16_t *)(b + 0xb2) & 0x4000) == 0 &&
+      (*(uint16_t *)(b + player * 2 + 0x68) & 0x800) != 0)
+    *(uint16_t *)(b + 0xb2) = 0x4001;
   {
-    uint32_t a1 = *(uint16_t *)(s0 + 0xb2);
-    uint32_t a0 = a1 & 0x3fff;
-    if (a0 < 4) return 0;
-    if (a0 >= 0xa0 &&
-        (*(uint16_t *)(s0 + s1 * 2 + 0x68) & 0xe8) != 0) {
-      /* (a0+0x50)/100 * 80 | flag */
-      uint32_t x = a0 + 0x50;
-      int64_t m = (int64_t)(int32_t)x * 0x66666667;
-      int32_t q = (int32_t)(((int32_t)(m >> 32)) >> 5) - ((int32_t)x >> 31);
-      *(uint16_t *)(s0 + 0xb2) = (uint16_t)((uint32_t)q * 80 | (a1 & 0x4000));
+    uint32_t b2raw = *(uint16_t *)(b + 0xb2);
+    uint32_t count = b2raw & 0x3fff;
+    if (count < 4) return 0;
+    if (count >= 0xa0 &&
+        (*(uint16_t *)(b + player * 2 + 0x68) & 0xe8) != 0) {
+      /* (count+0x50)/100 * 80 | flag */
+      uint32_t x = count + 0x50;
+      int64_t prod = (int64_t)(int32_t)x * 0x66666667;
+      int32_t quo = (int32_t)(((int32_t)(prod >> 32)) >> 5) - ((int32_t)x >> 31);
+      *(uint16_t *)(b + 0xb2) = (uint16_t)((uint32_t)quo * 80 | (b2raw & 0x4000));
     }
-    if ((*(uint16_t *)(s0 + 0xb2) & 0x3fff) >= 0x31f) return -1;
+    if ((*(uint16_t *)(b + 0xb2) & 0x3fff) >= 0x31f) return -1;
     return 0;
   }
 }
@@ -4726,38 +4726,38 @@ void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
 extern int32_t results_record_build(int32_t,int32_t);
 void record_state_stepper(uint32_t obj_g)
 {
-  uint32_t s0 = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
-  int32_t st = (int16_t)MB16(s0);          /* lh ($s0) */
+  uint32_t rec = *(uint32_t *)((uint8_t *)guest_at(obj_g) + 0xcc);
+  int32_t st = (int16_t)MB16(rec);          /* lh ($s0) */
   if ((uint32_t)st >= 7) return;           /* sltiu $v1,7 */
   switch (st) {
   case 1: {
-    uint32_t nc = MB16(s0 + 6) + 1;        /* lhu +6, +1 */
-    int32_t  ts = (int16_t)MB16(s0 + 8);   /* lh +8 zero test */
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)nc;   /* sh delay slot */
+    uint32_t nc = MB16(rec + 6) + 1;        /* lhu +6, +1 */
+    int32_t  ts = (int16_t)MB16(rec + 8);   /* lh +8 zero test */
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)nc;   /* sh delay slot */
     if (ts != 0) {
-      *(uint16_t *)guest_at(s0 + 8) = (uint16_t)(MB16(s0 + 8) - 1);
+      *(uint16_t *)guest_at(rec + 8) = (uint16_t)(MB16(rec + 8) - 1);
     } else {
-      results_record_build((int16_t)MB16(s0 + 2), (int16_t)nc);
-      *(uint16_t *)guest_at(s0 + 8) = 0x14;
-      uint32_t f2 = MB16(s0 + 2) + 1;
-      *(uint16_t *)guest_at(s0 + 2) = (uint16_t)f2;
-      if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(s0 + 2) = 0;
+      results_record_build((int16_t)MB16(rec + 2), (int16_t)nc);
+      *(uint16_t *)guest_at(rec + 8) = 0x14;
+      uint32_t f2 = MB16(rec + 2) + 1;
+      *(uint16_t *)guest_at(rec + 2) = (uint16_t)f2;
+      if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(rec + 2) = 0;
     }
     break;
   }
   case 6: {
-    uint32_t nc = MB16(s0 + 6) + 1;
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)nc;   /* jal delay slot */
-    results_record_build((int16_t)MB16(s0 + 2), (int16_t)nc);
-    *(uint16_t *)guest_at(s0 + 8) = 0xc8;
-    uint32_t f2 = MB16(s0 + 2) + 1;
-    *(uint16_t *)guest_at(s0 + 2) = (uint16_t)f2;
-    if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(s0 + 2) = 0;
-    *(uint16_t *)guest_at(s0) = 1;                 /* sh $v0,($s0), v0=1 */
+    uint32_t nc = MB16(rec + 6) + 1;
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)nc;   /* jal delay slot */
+    results_record_build((int16_t)MB16(rec + 2), (int16_t)nc);
+    *(uint16_t *)guest_at(rec + 8) = 0xc8;
+    uint32_t f2 = MB16(rec + 2) + 1;
+    *(uint16_t *)guest_at(rec + 2) = (uint16_t)f2;
+    if ((int16_t)f2 >= 3) *(uint16_t *)guest_at(rec + 2) = 0;
+    *(uint16_t *)guest_at(rec) = 1;                 /* sh $v0,($rec), v0=1 */
     break;
   }
   case 2: case 3: case 4: case 5:
-    *(uint16_t *)guest_at(s0 + 6) = (uint16_t)(MB16(s0 + 6) + 1);
+    *(uint16_t *)guest_at(rec + 6) = (uint16_t)(MB16(rec + 6) + 1);
     break;
   default: break;                                    /* case 0: nop */
   }
@@ -4874,18 +4874,18 @@ extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern void record_table_select(int32_t,int32_t);
 int32_t per_side_setup(int32_t side, int32_t flag)
 {
-  const uint32_t s0 = 0x801f04a8u;
-  const uint32_t s2 = ((uint32_t)side << 4) + 0x8011fda0u;
-  uint16_t *D = (uint16_t *)guest_at(s0 + 0x34);
-  const uint16_t *S = (const uint16_t *)guest_at(s2);
+  const uint32_t dst_g = 0x801f04a8u;
+  const uint32_t src_g = ((uint32_t)side << 4) + 0x8011fda0u;
+  uint16_t *D = (uint16_t *)guest_at(dst_g + 0x34);
+  const uint16_t *S = (const uint16_t *)guest_at(src_g);
   uint32_t c0, fn, t;
   int32_t i, lhs, rhs;
   record_table_select(side,flag);
-  *(uint16_t *)guest_at(s0 + 0x1e) = 0;
+  *(uint16_t *)guest_at(dst_g + 0x1e) = 0;
   c0  = MB32(0x1f8000c0);
   lhs = (int32_t)(int8_t)MB8(0x1f800099) + 1;
   rhs = (int32_t)MB8(c0 + 4) * 2 - 1;
-  *(uint8_t *)guest_at(s0 + 0x21) = (lhs < rhs) ? 1 : 0;
+  *(uint8_t *)guest_at(dst_g + 0x21) = (lhs < rhs) ? 1 : 0;
   for (i = 0; i < 4; i++) {
     D[i]     = S[i];
     D[4 + i] = S[4 + i];
@@ -4893,12 +4893,12 @@ int32_t per_side_setup(int32_t side, int32_t flag)
     D[8 + i]  = 0;
     D[12 + i] = 0;
   }
-  if (flag == 0) *(uint16_t *)guest_at(s0 + 0x22) = 0;
+  if (flag == 0) *(uint16_t *)guest_at(dst_g + 0x22) = 0;
   t = 0x801b1774u +
       (uint32_t)((int32_t)((uint32_t)MB8(0x1f800098) << 24) >> 22);
   fn = MB32(t);
   if (fn != 0)
-    return (int32_t)call_guest(fn,s0,0x1f800000u);
+    return (int32_t)call_guest(fn,dst_g,0x1f800000u);
   return 0;
 }
 
@@ -4920,25 +4920,25 @@ extern void s16_dec_with_floor(uint32_t);
 extern void post_battle_side_commit(uint8_t *,uint8_t *,uint32_t);
 void battle_sides_commit(uint8_t *side_a, uint8_t *side_b, uint32_t battle_g)
 {
-  uint8_t *s1 = (uint8_t *)guest_at(battle_g);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
   uint8_t *s2 = side_a;
   uint8_t *s3 = side_b;
-  uint32_t s0 = 0;
+  uint32_t cfg_fl = 0;
   int32_t t;
   uint8_t b92;
   t = (int32_t)MB32(*(uint32_t *)(s2 + 0x20) + 0x38);
   if (t <= 0) {
     t = (int32_t)MB32(*(uint32_t *)(s3 + 0x20) + 0x38);
-    if (t <= 0) { s1[0x9d] = 0; goto L_eval; }
+    if (t <= 0) { b[0x9d] = 0; goto L_eval; }
   }
-  s1[0x9d] = 1;
+  b[0x9d] = 1;
 L_eval:
-  s0 |= (uint32_t)battle_config_eval(s2,battle_g,0);
-  s0 |= (uint32_t)battle_config_eval(s3,battle_g,0);
-  if (s1[0x92] == 4)
-    battle_input_dispatch(battle_g,s0 & 0xffff);
+  cfg_fl |= (uint32_t)battle_config_eval(s2,battle_g,0);
+  cfg_fl |= (uint32_t)battle_config_eval(s3,battle_g,0);
+  if (b[0x92] == 4)
+    battle_input_dispatch(battle_g,cfg_fl & 0xffff);
   if ((int16_t)MB16((battle_g) + 0x82) != 0) return;
-  b92 = s1[0x92];
+  b92 = b[0x92];
   if (b92 >= 5) return;
   switch (b92) {
   case 0: {
@@ -4946,33 +4946,33 @@ L_eval:
     *(uint16_t *)guest_at(bc + 0x82) = (uint16_t)-1;
     battle_field_set(bc,3);
     clear_f0300_records();
-    *(uint16_t *)(s1 + 0x8c) = 0;
+    *(uint16_t *)(b + 0x8c) = 0;
     battle_subrecord_reset(battle_g);
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 1);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 1);
     break;
   }
   case 1:
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 2);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 2);
     /* fallthrough */
   case 2:
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 3);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 3);
     /* fallthrough */
   case 3:
     *(uint32_t *)(s2 + 0x60) = 0;
     *(uint32_t *)(s3 + 0x60) = 0;
     battle_subrecord_set1(battle_g);
-    *(uint16_t *)(s1 + 0x92) =
-      (uint16_t)((*(uint16_t *)(s1 + 0x92) & 0xff00) | 4);
+    *(uint16_t *)(b + 0x92) =
+      (uint16_t)((*(uint16_t *)(b + 0x92) & 0xff00) | 4);
     /* fallthrough */
   case 4:
     s16_dec_with_floor(battle_g);
     post_battle_side_commit(s2,s3,battle_g);
-    if (s0 & 0x100) {
-      s1[0x9a] = 2;
-      s1[1]    = 6;
+    if (cfg_fl & 0x100) {
+      b[0x9a] = 2;
+      b[1]    = 6;
     }
     break;
   default: break;
@@ -4995,49 +4995,49 @@ extern void cd_ctx_set_fwd(int32_t,uint32_t,int32_t);
 extern void cd_ctx_cmd_fwd(int32_t,uint32_t);
 void pad_slot_state_walk(void)
 {
-  uint32_t s2a, s0a, s1a;
-  int32_t s3;
+  uint32_t cur2, cur0, cur1;
+  int32_t ctx_off;
   int32_t st;
   if ((MB8(0x801b55d0) & 1) == 0) return;
-  s2a = 0x801f5968u; s0a = 0x801f596cu; s1a = 0x801f5970u; s3 = 0;
+  cur2 = 0x801f5968u; cur0 = 0x801f596cu; cur1 = 0x801f5970u; ctx_off = 0;
   do {
-    st = cd_ctx_status_map(s3);
+    st = cd_ctx_status_map(ctx_off);
     if ((uint32_t)st < 7) {
       switch (st) {
       case 6:
-        if (MB8(s2a) == 0) {
-          if (cd_ctx_field_get(s3,2,0) != 0) {
-            cd_ctx_set_fwd(s3,s1a,2);
-            cd_ctx_cmd_fwd(s3,0x801b55d4u);
+        if (MB8(cur2) == 0) {
+          if (cd_ctx_field_get(ctx_off,2,0) != 0) {
+            cd_ctx_set_fwd(ctx_off,cur1,2);
+            cd_ctx_cmd_fwd(ctx_off,0x801b55d4u);
           }
         }
-        MB8(s2a) = 1;
+        MB8(cur2) = 1;
         /* fallthrough */
       case 4: case 5:
-        if (*(int8_t *)guest_at(s0a) != 0)
-          MB8(s0a) = (uint8_t)(MB8(s0a) - 1);
+        if (*(int8_t *)guest_at(cur0) != 0)
+          MB8(cur0) = (uint8_t)(MB8(cur0) - 1);
         else
-          MB8(s1a) = 0;
-        if (*(int8_t *)guest_at(s0a + 1) != 0)
-          MB8(s0a + 1) = (uint8_t)(MB8(s0a + 1) - 1);
+          MB8(cur1) = 0;
+        if (*(int8_t *)guest_at(cur0 + 1) != 0)
+          MB8(cur0 + 1) = (uint8_t)(MB8(cur0 + 1) - 1);
         else
-          MB8(s1a + 1) = 0;
+          MB8(cur1 + 1) = 0;
         break;
       case 2:
-        MB8(s1a + 1) = 0; MB8(s1a) = 0;
-        MB8(s0a + 1) = 0; MB8(s0a) = 0;
-        MB8(s2a)     = 1;
+        MB8(cur1 + 1) = 0; MB8(cur1) = 0;
+        MB8(cur0 + 1) = 0; MB8(cur0) = 0;
+        MB8(cur2)     = 1;
         break;
       case 0: case 1:
-        MB8(s1a + 1) = 0; MB8(s1a) = 0;
-        MB8(s0a + 1) = 0; MB8(s0a) = 0;
-        MB8(s2a)     = 0;
+        MB8(cur1 + 1) = 0; MB8(cur1) = 0;
+        MB8(cur0 + 1) = 0; MB8(cur0) = 0;
+        MB8(cur2)     = 0;
         break;
       default: break;                            /* case 3: nop */
       }
     }
-    s2a += 1; s0a += 2; s1a += 2; s3 += 0x10;
-  } while (s2a < 0x801f596au);
+    cur2 += 1; cur0 += 2; cur1 += 2; ctx_off += 0x10;
+  } while (cur2 < 0x801f596au);
 }
 
 /* ======== batch32: menu helpers (capstone-verified disasm ports) ======== */
@@ -5063,11 +5063,11 @@ void pad_slot_state_walk(void)
 static uint32_t desc_frag_store_pair(uint32_t off, uint32_t src,
                                      uint32_t owner)
 {
-  uint32_t h  = MB16(src + 2);                  /* lhu a2+2 */
-  uint32_t t1 = MB32(owner + 0x18);
-  uint32_t t2 = MB32(owner + 0x1c);
-  MW16(t1 + off + 0x0c, h);
-  MW16(t2 + off + 0x0c, h);
+  uint32_t hval  = MB16(src + 2);                  /* lhu a2+2 */
+  uint32_t dst_a = MB32(owner + 0x18);
+  uint32_t dst_b = MB32(owner + 0x1c);
+  MW16(dst_a + off + 0x0c, hval);
+  MW16(dst_b + off + 0x0c, hval);
   return src + 4;
 }
 
