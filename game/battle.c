@@ -16124,50 +16124,50 @@ void firework_task_update(int rec)
 
 /* motion_integrator_tail — motion integrator tail: rotate velocity by facing,
  * decay position deltas. Called by fighter_anim_advance when +0xc0==0. */
-void motion_integrator_tail(int a0,int a1)
+void motion_integrator_tail(int f,int node)
 {
   short sVar1;
   short sVar2;
   short sVar3;
   short sVar4;
-  int iVar5;
-  undefined2 *puVar6;
-  int iVar7;
-  int iVar8;
+  int tr;
+  undefined2 *jt;
+  int ang;
+  int tmp;
 
-  iVar8 = 1;
-  puVar6 = (undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((a0 + 0x40) ))+ 0x24)));
+  tmp = 1;
+  jt = (undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f + 0x40) ))+ 0x24)));
   do {
-    puVar6[-1] = (short)(((int)((uint)(ushort)puVar6[-1] << 0x13) >> 0x14) << 1);
-    if ((iVar8 != 1) && (iVar8 != 4)) {
-      puVar6[2] = 0;
-      puVar6[1] = 0;
-      *puVar6 = 0;
+    jt[-1] = (short)(((int)((uint)(ushort)jt[-1] << 0x13) >> 0x14) << 1);
+    if ((tmp != 1) && (tmp != 4)) {
+      jt[2] = 0;
+      jt[1] = 0;
+      *jt = 0;
     }
-    iVar8 = iVar8 + 1;
-    puVar6 = puVar6 + 0xe;
-  } while (iVar8 < 0x13);
-  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xdc)));
-  iVar7 = (int)*(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd0)));
-  sVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xde)));
-  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xe0)));
-  iVar8 = lut_cos_q12(iVar7);
-  iVar5 = lut_sin_q12(iVar7);
-  *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd6) ))= *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd6) ))+ (sVar4 >> 4);
-  *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd4) ))=
-       *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd4) ))+ (short)((uint)(sVar1 * iVar8 - sVar2 * iVar5) >> 0x10);
-  iVar8 = lut_sin_q12(iVar7);
-  iVar5 = lut_cos_q12(iVar7);
-  sVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xe4)));
-  sVar3 = *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd2)));
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a1 + 0xdc) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a1 + 0xde) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a1 + 0xe0) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a1 + 0xe4) ))= 0;
-  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd2) ))= 0;
-  *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd0) ))= (short)((iVar7 + sVar3 + (int)sVar4) * 0x100000 >> 0x14);
-  *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd8) ))=
-       *(short *)guest_at((uint32_t)(uintptr_t)((a1 + 0xd8) ))+ (short)((uint)(sVar1 * iVar8 + sVar2 * iVar5) >> 0x10);
+    tmp = tmp + 1;
+    jt = jt + 0xe;
+  } while (tmp < 0x13);
+  sVar1 = *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xdc)));
+  ang = (int)*(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd0)));
+  sVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xde)));
+  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xe0)));
+  tmp = lut_cos_q12(ang);
+  tr = lut_sin_q12(ang);
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd6) ))= *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd6) ))+ (sVar4 >> 4);
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd4) ))=
+       *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd4) ))+ (short)((uint)(sVar1 * tmp - sVar2 * tr) >> 0x10);
+  tmp = lut_sin_q12(ang);
+  tr = lut_cos_q12(ang);
+  sVar4 = *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xe4)));
+  sVar3 = *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd2)));
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xdc) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xde) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xe0) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xe4) ))= 0;
+  *(undefined2 *)guest_at((uint32_t)(uintptr_t)((node + 0xd2) ))= 0;
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd0) ))= (short)((ang + sVar3 + (int)sVar4) * 0x100000 >> 0x14);
+  *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd8) ))=
+       *(short *)guest_at((uint32_t)(uintptr_t)((node + 0xd8) ))+ (short)((uint)(sVar1 * tmp + sVar2 * tr) >> 0x10);
   return;
 }
 
