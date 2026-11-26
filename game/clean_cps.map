@@ -4595,3 +4595,18 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# printf_core CPS piece-entries (guest 0x8018E590 body, gfx_emit_p05.c).
+# NOT function entries — alias piece-entry/continuation PCs inside the
+# printf_core CPS body (br2eu_psx_alias_body_8018E590 switch(entry)).
+# Each addr enters printf_cps_body mid-stream after the prologue frame;
+# cpu->pc == dispatched addr routes via the body's _cont switch.
+8018e63c printf_cps_8018e63c
+8018e64c printf_cps_8018e64c
+8018e654 printf_cps_8018e654
+8018e670 printf_cps_8018e670
+8018e678 printf_cps_8018e678
+8018e680 printf_cps_8018e680
+8018e708 printf_cps_8018e708
+8018e710 printf_cps_8018e710
+8018e76c printf_cps_8018e76c
