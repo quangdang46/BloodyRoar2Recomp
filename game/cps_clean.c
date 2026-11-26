@@ -67772,6 +67772,12 @@ void cps_80188200(void)
     }
     /* Address: 0x80188200, Size: 264 bytes, Blocks: 7 */
 
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 84),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2D, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
+
 block_80188200:
     int _bc_80188200 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -67930,17 +67936,7 @@ block_801882F8:
     }
 
 block_80188300:
-    uint32_t _jt_80188300 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188300);
-    cpu->pc = _jt_80188300; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188308 — clean CPS transliteration of br2eu_func_80188308 (guest 0x80188308)
- * from SLES_017.22_full_40.c. */
-void cps_80188308(void)
-{
+    uint32_t _jt_80188300 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67957,6 +67953,12 @@ void cps_80188308(void)
         }
     }
     /* Address: 0x80188308, Size: 300 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 92),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2D, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188308:
     int _bc_80188308 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -68125,17 +68127,7 @@ block_80188424:
     }
 
 block_8018842C:
-    uint32_t _jt_8018842C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018842C);
-    cpu->pc = _jt_8018842C; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188434 — clean CPS transliteration of br2eu_func_80188434 (guest 0x80188434)
- * from SLES_017.22_full_40.c. */
-void cps_80188434(void)
-{
+    uint32_t _jt_8018842C = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68152,6 +68144,12 @@ void cps_80188434(void)
         }
     }
     /* Address: 0x80188434, Size: 220 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 72),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2E, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188434:
     int _bc_80188434 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -68280,17 +68278,7 @@ block_80188500:
     }
 
 block_80188508:
-    uint32_t _jt_80188508 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188508);
-    cpu->pc = _jt_80188508; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018866c — clean CPS transliteration of br2eu_func_8018866C (guest 0x8018866c)
- * from SLES_017.22_full_40.c. */
-void cps_8018866c(void)
-{
+    uint32_t _jt_80188508 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68307,6 +68295,12 @@ void cps_8018866c(void)
         }
     }
     /* Address: 0x8018866C, Size: 232 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 100),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2E, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018866C:
     int _bc_8018866C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -68438,17 +68432,7 @@ block_80188744:
     }
 
 block_8018874C:
-    uint32_t _jt_8018874C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018874C);
-    cpu->pc = _jt_8018874C; return;  /* CPS: jr $ra */
-}
-
-/* cps_801888c0 — clean CPS transliteration of br2eu_func_801888C0 (guest 0x801888c0)
- * from SLES_017.22_full_40.c. */
-void cps_801888c0(void)
-{
+    uint32_t _jt_8018874C = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68465,6 +68449,12 @@ void cps_801888c0(void)
         }
     }
     /* Address: 0x801888C0, Size: 308 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 108),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2E, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801888C0:
     int _bc_801888C0 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -68648,17 +68638,7 @@ block_801889E4:
     }
 
 block_801889EC:
-    uint32_t _jt_801889EC = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801889EC);
-    cpu->pc = _jt_801889EC; return;  /* CPS: jr $ra */
-}
-
-/* cps_801889f4 — clean CPS transliteration of br2eu_func_801889F4 (guest 0x801889f4)
- * from SLES_017.22_full_40.c. */
-void cps_801889f4(void)
-{
+    uint32_t _jt_801889EC = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68675,6 +68655,12 @@ void cps_801889f4(void)
         }
     }
     /* Address: 0x801889F4, Size: 360 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 120),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C/2E, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801889F4:
     int _bc_801889F4 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -68871,17 +68857,7 @@ block_80188B4C:
     }
 
 block_80188B54:
-    uint32_t _jt_80188B54 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188B54);
-    cpu->pc = _jt_80188B54; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188b5c — clean CPS transliteration of br2eu_func_80188B5C (guest 0x80188b5c)
- * from SLES_017.22_full_40.c. */
-void cps_80188b5c(void)
-{
+    uint32_t _jt_80188B54 = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68902,6 +68878,12 @@ void cps_80188b5c(void)
         }
     }
     /* Address: 0x80188B5C, Size: 216 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/2D/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188B5C:
     t6 = 20;
@@ -69042,17 +69024,7 @@ block_80188C24:
     }
 
 block_80188C2C:
-    uint32_t _jt_80188C2C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188C2C);
-    cpu->pc = _jt_80188C2C; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188c34 — clean CPS transliteration of br2eu_func_80188C34 (guest 0x80188c34)
- * from SLES_017.22_full_40.c. */
-void cps_80188c34(void)
-{
+    uint32_t _jt_80188C2C = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69073,6 +69045,12 @@ void cps_80188c34(void)
         }
     }
     /* Address: 0x80188C34, Size: 248 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/2E/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188C34:
     t6 = 24;
@@ -69228,17 +69206,7 @@ block_80188D1C:
     }
 
 block_80188D24:
-    uint32_t _jt_80188D24 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188D24);
-    cpu->pc = _jt_80188D24; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188d2c — clean CPS transliteration of br2eu_func_80188D2C (guest 0x80188d2c)
- * from SLES_017.22_full_40.c. */
-void cps_80188d2c(void)
-{
+    uint32_t _jt_80188D24 = ra;  /* latch indirect target b
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69255,6 +69223,12 @@ void cps_80188d2c(void)
         }
     }
     /* Address: 0x80188D2C, Size: 160 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 76),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188D2C:
     int _bc_80188D2C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -69373,17 +69347,7 @@ block_80188DBC:
     }
 
 block_80188DC4:
-    uint32_t _jt_80188DC4 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188DC4);
-    cpu->pc = _jt_80188DC4; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188dcc — clean CPS transliteration of br2eu_func_80188DCC (guest 0x80188dcc)
- * from SLES_017.22_full_40.c. */
-void cps_80188dcc(void)
-{
+    uint32_t _jt_80188DC4 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69400,6 +69364,12 @@ void cps_80188dcc(void)
         }
     }
     /* Address: 0x80188DCC, Size: 188 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 92),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188DCC:
     int _bc_80188DCC = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -69531,17 +69501,7 @@ block_80188E78:
     }
 
 block_80188E80:
-    uint32_t _jt_80188E80 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188E80);
-    cpu->pc = _jt_80188E80; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188e88 — clean CPS transliteration of br2eu_func_80188E88 (guest 0x80188e88)
- * from SLES_017.22_full_40.c. */
-void cps_80188e88(void)
-{
+    uint32_t _jt_80188E80 = ra;  /* latch indirect target b
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69558,6 +69518,12 @@ void cps_80188e88(void)
         }
     }
     /* Address: 0x80188E88, Size: 184 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 108),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30/3F, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188E88:
     int _bc_80188E88 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -69696,17 +69662,7 @@ block_80188F30:
     }
 
 block_80188F38:
-    uint32_t _jt_80188F38 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80188F38);
-    cpu->pc = _jt_80188F38; return;  /* CPS: jr $ra */
-}
-
-/* cps_80188f40 — clean CPS transliteration of br2eu_func_80188F40 (guest 0x80188f40)
- * from SLES_017.22_full_40.c. */
-void cps_80188f40(void)
-{
+    uint32_t _jt_80188F38 = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69723,6 +69679,12 @@ void cps_80188f40(void)
         }
     }
     /* Address: 0x80188F40, Size: 236 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 140),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30/3F, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80188F40:
     int _bc_80188F40 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -69887,17 +69849,7 @@ block_8018901C:
     }
 
 block_80189024:
-    uint32_t _jt_80189024 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189024);
-    cpu->pc = _jt_80189024; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018902c — clean CPS transliteration of br2eu_func_8018902C (guest 0x8018902c)
- * from SLES_017.22_full_40.c. */
-void cps_8018902c(void)
-{
+    uint32_t _jt_80189024 = ra;  /* latch indirect targ
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -69914,6 +69866,12 @@ void cps_8018902c(void)
         }
     }
     /* Address: 0x8018902C, Size: 176 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 96),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018902C:
     int _bc_8018902C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70036,17 +69994,7 @@ block_801890CC:
     }
 
 block_801890D4:
-    uint32_t _jt_801890D4 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801890D4);
-    cpu->pc = _jt_801890D4; return;  /* CPS: jr $ra */
-}
-
-/* cps_801890dc — clean CPS transliteration of br2eu_func_801890DC (guest 0x801890dc)
- * from SLES_017.22_full_40.c. */
-void cps_801890dc(void)
-{
+    uint32_t _jt_801890D4 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70063,6 +70011,12 @@ void cps_801890dc(void)
         }
     }
     /* Address: 0x801890DC, Size: 200 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 120),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801890DC:
     int _bc_801890DC = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70197,17 +70151,7 @@ block_80189194:
     }
 
 block_8018919C:
-    uint32_t _jt_8018919C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018919C);
-    cpu->pc = _jt_8018919C; return;  /* CPS: jr $ra */
-}
-
-/* cps_801891a4 — clean CPS transliteration of br2eu_func_801891A4 (guest 0x801891a4)
- * from SLES_017.22_full_40.c. */
-void cps_801891a4(void)
-{
+    uint32_t _jt_8018919C = ra;  /* latch indirect target 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70224,6 +70168,12 @@ void cps_801891a4(void)
         }
     }
     /* Address: 0x801891A4, Size: 200 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 128),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30/3F, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801891A4:
     int _bc_801891A4 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70366,17 +70316,7 @@ block_8018925C:
     }
 
 block_80189264:
-    uint32_t _jt_80189264 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189264);
-    cpu->pc = _jt_80189264; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018926c — clean CPS transliteration of br2eu_func_8018926C (guest 0x8018926c)
- * from SLES_017.22_full_40.c. */
-void cps_8018926c(void)
-{
+    uint32_t _jt_80189264 = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70393,6 +70333,12 @@ void cps_8018926c(void)
         }
     }
     /* Address: 0x8018926C, Size: 244 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 168),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30/3F, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018926C:
     int _bc_8018926C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70560,17 +70506,7 @@ block_80189350:
     }
 
 block_80189358:
-    uint32_t _jt_80189358 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189358);
-    cpu->pc = _jt_80189358; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189360 — clean CPS transliteration of br2eu_func_80189360 (guest 0x80189360)
- * from SLES_017.22_full_40.c. */
-void cps_80189360(void)
-{
+    uint32_t _jt_80189358 = ra;  /* latch indirect targ
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70587,6 +70523,12 @@ void cps_80189360(void)
         }
     }
     /* Address: 0x80189360, Size: 200 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 100),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189360:
     int _bc_80189360 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70725,17 +70667,7 @@ block_80189418:
     }
 
 block_80189420:
-    uint32_t _jt_80189420 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189420);
-    cpu->pc = _jt_80189420; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189428 — clean CPS transliteration of br2eu_func_80189428 (guest 0x80189428)
- * from SLES_017.22_full_40.c. */
-void cps_80189428(void)
-{
+    uint32_t _jt_80189420 = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70752,6 +70684,12 @@ void cps_80189428(void)
         }
     }
     /* Address: 0x80189428, Size: 216 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 116),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189428:
     int _bc_80189428 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -70902,17 +70840,7 @@ block_801894F0:
     }
 
 block_801894F8:
-    uint32_t _jt_801894F8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801894F8);
-    cpu->pc = _jt_801894F8; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189500 — clean CPS transliteration of br2eu_func_80189500 (guest 0x80189500)
- * from SLES_017.22_full_40.c. */
-void cps_80189500(void)
-{
+    uint32_t _jt_801894F8 = ra;  /* latch indirect target bef
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70929,6 +70857,12 @@ void cps_80189500(void)
         }
     }
     /* Address: 0x80189500, Size: 248 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 128),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189500:
     int _bc_80189500 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71090,17 +71024,7 @@ block_801895E8:
     }
 
 block_801895F0:
-    uint32_t _jt_801895F0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801895F0);
-    cpu->pc = _jt_801895F0; return;  /* CPS: jr $ra */
-}
-
-/* cps_801895f8 — clean CPS transliteration of br2eu_func_801895F8 (guest 0x801895f8)
- * from SLES_017.22_full_40.c. */
-void cps_801895f8(void)
-{
+    uint32_t _jt_801895F0 = ra;  /* latch indirect target 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71117,6 +71041,12 @@ void cps_801895f8(void)
         }
     }
     /* Address: 0x801895F8, Size: 268 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 152),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/1B/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801895F8:
     int _bc_801895F8 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71296,17 +71226,7 @@ block_801896F4:
     }
 
 block_801896FC:
-    uint32_t _jt_801896FC = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801896FC);
-    cpu->pc = _jt_801896FC; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189704 — clean CPS transliteration of br2eu_func_80189704 (guest 0x80189704)
- * from SLES_017.22_full_40.c. */
-void cps_80189704(void)
-{
+    uint32_t _jt_801896FC = ra;  /* latch indirect target 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71323,6 +71243,12 @@ void cps_80189704(void)
         }
     }
     /* Address: 0x80189704, Size: 172 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 60),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189704:
     int _bc_80189704 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71429,17 +71355,7 @@ block_801897A0:
     }
 
 block_801897A8:
-    uint32_t _jt_801897A8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_801897A8);
-    cpu->pc = _jt_801897A8; return;  /* CPS: jr $ra */
-}
-
-/* cps_801897b0 — clean CPS transliteration of br2eu_func_801897B0 (guest 0x801897b0)
- * from SLES_017.22_full_40.c. */
-void cps_801897b0(void)
-{
+    uint32_t _jt_801897A8 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71456,6 +71372,12 @@ void cps_801897b0(void)
         }
     }
     /* Address: 0x801897B0, Size: 240 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 84),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801897B0:
     int _bc_801897B0 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71597,17 +71519,7 @@ block_80189890:
     }
 
 block_80189898:
-    uint32_t _jt_80189898 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189898);
-    cpu->pc = _jt_80189898; return;  /* CPS: jr $ra */
-}
-
-/* cps_801898a0 — clean CPS transliteration of br2eu_func_801898A0 (guest 0x801898a0)
- * from SLES_017.22_full_40.c. */
-void cps_801898a0(void)
-{
+    uint32_t _jt_80189898 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71624,6 +71536,12 @@ void cps_801898a0(void)
         }
     }
     /* Address: 0x801898A0, Size: 188 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 80),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_801898A0:
     int _bc_801898A0 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71734,17 +71652,7 @@ block_8018994C:
     }
 
 block_80189954:
-    uint32_t _jt_80189954 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189954);
-    cpu->pc = _jt_80189954; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018995c — clean CPS transliteration of br2eu_func_8018995C (guest 0x8018995c)
- * from SLES_017.22_full_40.c. */
-void cps_8018995c(void)
-{
+    uint32_t _jt_80189954 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71761,6 +71669,12 @@ void cps_8018995c(void)
         }
     }
     /* Address: 0x8018995C, Size: 260 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 104),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018995C:
     int _bc_8018995C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -71907,17 +71821,7 @@ block_80189A50:
     }
 
 block_80189A58:
-    uint32_t _jt_80189A58 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189A58);
-    cpu->pc = _jt_80189A58; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189a60 — clean CPS transliteration of br2eu_func_80189A60 (guest 0x80189a60)
- * from SLES_017.22_full_40.c. */
-void cps_80189a60(void)
-{
+    uint32_t _jt_80189A58 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71934,6 +71838,12 @@ void cps_80189a60(void)
         }
     }
     /* Address: 0x80189A60, Size: 240 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 84),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189A60:
     int _bc_80189A60 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72079,17 +71989,7 @@ block_80189B40:
     }
 
 block_80189B48:
-    uint32_t _jt_80189B48 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189B48);
-    cpu->pc = _jt_80189B48; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189b50 — clean CPS transliteration of br2eu_func_80189B50 (guest 0x80189b50)
- * from SLES_017.22_full_40.c. */
-void cps_80189b50(void)
-{
+    uint32_t _jt_80189B48 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72106,6 +72006,12 @@ void cps_80189b50(void)
         }
     }
     /* Address: 0x80189B50, Size: 252 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 92),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189B50:
     int _bc_80189B50 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72254,17 +72160,7 @@ block_80189C3C:
     }
 
 block_80189C44:
-    uint32_t _jt_80189C44 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189C44);
-    cpu->pc = _jt_80189C44; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189c4c — clean CPS transliteration of br2eu_func_80189C4C (guest 0x80189c4c)
- * from SLES_017.22_full_40.c. */
-void cps_80189c4c(void)
-{
+    uint32_t _jt_80189C44 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72281,6 +72177,12 @@ void cps_80189c4c(void)
         }
     }
     /* Address: 0x80189C4C, Size: 188 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 72),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189C4C:
     int _bc_80189C4C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72391,17 +72293,7 @@ block_80189CF8:
     }
 
 block_80189D00:
-    uint32_t _jt_80189D00 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189D00);
-    cpu->pc = _jt_80189D00; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189d08 — clean CPS transliteration of br2eu_func_80189D08 (guest 0x80189d08)
- * from SLES_017.22_full_40.c. */
-void cps_80189d08(void)
-{
+    uint32_t _jt_80189D00 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72418,6 +72310,12 @@ void cps_80189d08(void)
         }
     }
     /* Address: 0x80189D08, Size: 292 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 108),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189D08:
     int _bc_80189D08 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72581,17 +72479,7 @@ block_80189E1C:
     }
 
 block_80189E24:
-    uint32_t _jt_80189E24 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189E24);
-    cpu->pc = _jt_80189E24; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189e2c — clean CPS transliteration of br2eu_func_80189E2C (guest 0x80189e2c)
- * from SLES_017.22_full_40.c. */
-void cps_80189e2c(void)
-{
+    uint32_t _jt_80189E24 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72608,6 +72496,12 @@ void cps_80189e2c(void)
         }
     }
     /* Address: 0x80189E2C, Size: 208 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 100),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189E2C:
     int _bc_80189E2C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72723,17 +72617,7 @@ block_80189EEC:
     }
 
 block_80189EF4:
-    uint32_t _jt_80189EF4 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_80189EF4);
-    cpu->pc = _jt_80189EF4; return;  /* CPS: jr $ra */
-}
-
-/* cps_80189efc — clean CPS transliteration of br2eu_func_80189EFC (guest 0x80189efc)
- * from SLES_017.22_full_40.c. */
-void cps_80189efc(void)
-{
+    uint32_t _jt_80189EF4 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72750,6 +72634,12 @@ void cps_80189efc(void)
         }
     }
     /* Address: 0x80189EFC, Size: 308 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 136),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_80189EFC:
     int _bc_80189EFC = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -72917,17 +72807,7 @@ block_8018A020:
     }
 
 block_8018A028:
-    uint32_t _jt_8018A028 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A028);
-    cpu->pc = _jt_8018A028; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a030 — clean CPS transliteration of br2eu_func_8018A030 (guest 0x8018a030)
- * from SLES_017.22_full_40.c. */
-void cps_8018a030(void)
-{
+    uint32_t _jt_8018A028 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72944,6 +72824,12 @@ void cps_8018a030(void)
         }
     }
     /* Address: 0x8018A030, Size: 284 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 108),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A030:
     int _bc_8018A030 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -73111,17 +72997,7 @@ block_8018A13C:
     }
 
 block_8018A144:
-    uint32_t _jt_8018A144 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A144);
-    cpu->pc = _jt_8018A144; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a14c — clean CPS transliteration of br2eu_func_8018A14C (guest 0x8018a14c)
- * from SLES_017.22_full_40.c. */
-void cps_8018a14c(void)
-{
+    uint32_t _jt_8018A144 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73138,6 +73014,12 @@ void cps_8018a14c(void)
         }
     }
     /* Address: 0x8018A14C, Size: 304 bytes, Blocks: 7 */
+
+    /* GTE geometry kernel (7 blocks): loops a3 records (stride 120),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/1C, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A14C:
     int _bc_8018A14C = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -73310,17 +73192,7 @@ block_8018A26C:
     }
 
 block_8018A274:
-    uint32_t _jt_8018A274 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A274);
-    cpu->pc = _jt_8018A274; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a27c — clean CPS transliteration of br2eu_func_8018A27C (guest 0x8018a27c)
- * from SLES_017.22_full_41.c. */
-void cps_8018a27c(void)
-{
+    uint32_t _jt_8018A274 = ra;  /* latch indirect target before
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73341,6 +73213,12 @@ void cps_8018a27c(void)
         }
     }
     /* Address: 0x8018A27C, Size: 196 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A27C:
     t6 = 20;
@@ -73474,17 +73352,7 @@ block_8018A330:
     }
 
 block_8018A338:
-    uint32_t _jt_8018A338 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A338);
-    cpu->pc = _jt_8018A338; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a340 — clean CPS transliteration of br2eu_func_8018A340 (guest 0x8018a340)
- * from SLES_017.22_full_41.c. */
-void cps_8018a340(void)
-{
+    uint32_t _jt_8018A338 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73505,6 +73373,12 @@ void cps_8018a340(void)
         }
     }
     /* Address: 0x8018A340, Size: 228 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A340:
     t6 = 24;
@@ -73653,17 +73527,7 @@ block_8018A414:
     }
 
 block_8018A41C:
-    uint32_t _jt_8018A41C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A41C);
-    cpu->pc = _jt_8018A41C; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a424 — clean CPS transliteration of br2eu_func_8018A424 (guest 0x8018a424)
- * from SLES_017.22_full_41.c. */
-void cps_8018a424(void)
-{
+    uint32_t _jt_8018A41C = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73684,6 +73548,12 @@ void cps_8018a424(void)
         }
     }
     /* Address: 0x8018A424, Size: 212 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A424:
     t6 = 24;
@@ -73804,17 +73674,7 @@ block_8018A4E8:
     }
 
 block_8018A4F0:
-    uint32_t _jt_8018A4F0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A4F0);
-    cpu->pc = _jt_8018A4F0; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a59c — clean CPS transliteration of br2eu_func_8018A59C (guest 0x8018a59c)
- * from SLES_017.22_full_41.c. */
-void cps_8018a59c(void)
-{
+    uint32_t _jt_8018A4F0 = ra;  /* latch indirect target before del
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73839,6 +73699,12 @@ void cps_8018a59c(void)
         }
     }
     /* Address: 0x8018A59C, Size: 312 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A59C:
     t6 = 24;
@@ -74032,17 +73898,7 @@ block_8018A6C4:
     }
 
 block_8018A6CC:
-    uint32_t _jt_8018A6CC = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A6CC);
-    cpu->pc = _jt_8018A6CC; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a6d4 — clean CPS transliteration of br2eu_func_8018A6D4 (guest 0x8018a6d4)
- * from SLES_017.22_full_41.c. */
-void cps_8018a6d4(void)
-{
+    uint32_t _jt_8018A6CC = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -74067,6 +73923,12 @@ void cps_8018a6d4(void)
         }
     }
     /* Address: 0x8018A6D4, Size: 368 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A6D4:
     t6 = 28;
@@ -74280,17 +74142,7 @@ block_8018A834:
     }
 
 block_8018A83C:
-    uint32_t _jt_8018A83C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A83C);
-    cpu->pc = _jt_8018A83C; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a844 — clean CPS transliteration of br2eu_func_8018A844 (guest 0x8018a844)
- * from SLES_017.22_full_41.c. */
-void cps_8018a844(void)
-{
+    uint32_t _jt_8018A83C = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -74320,6 +74172,12 @@ void cps_8018a844(void)
         }
     }
     /* Address: 0x8018A844, Size: 388 bytes, Blocks: 20 */
+
+    /* GTE geometry kernel (20 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/2D/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A844:
     t6 = 20;
@@ -74568,17 +74426,7 @@ block_8018A9B8:
     /* fall through to block_8018A9C0 */
 
 block_8018A9C0:
-    uint32_t _jt_8018A9C0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018A9C0);
-    cpu->pc = _jt_8018A9C0; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018a9c8 — clean CPS transliteration of br2eu_func_8018A9C8 (guest 0x8018a9c8)
- * from SLES_017.22_full_41.c. */
-void cps_8018a9c8(void)
-{
+    uint32_t _jt_8018A9C0 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -74608,6 +74456,12 @@ void cps_8018a9c8(void)
         }
     }
     /* Address: 0x8018A9C8, Size: 444 bytes, Blocks: 20 */
+
+    /* GTE geometry kernel (20 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/2E/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018A9C8:
     t6 = 24;
@@ -74876,17 +74730,7 @@ block_8018AB74:
     /* fall through to block_8018AB7C */
 
 block_8018AB7C:
-    uint32_t _jt_8018AB7C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018AB7C);
-    cpu->pc = _jt_8018AB7C; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018ad80 — clean CPS transliteration of br2eu_func_8018AD80 (guest 0x8018ad80)
- * from SLES_017.22_full_41.c. */
-void cps_8018ad80(void)
-{
+    uint32_t _jt_8018AB7C = ra;  /* latch indirect target b
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -74911,6 +74755,12 @@ void cps_8018ad80(void)
         }
     }
     /* Address: 0x8018AD80, Size: 360 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride 112),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/2E/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018AD80:
     int _bc_8018AD80 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -75139,17 +74989,7 @@ block_8018AED8:
     /* fall through to block_8018AEE0 */
 
 block_8018AEE0:
-    uint32_t _jt_8018AEE0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018AEE0);
-    cpu->pc = _jt_8018AEE0; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018aee8 — clean CPS transliteration of br2eu_func_8018AEE8 (guest 0x8018aee8)
- * from SLES_017.22_full_41.c. */
-void cps_8018aee8(void)
-{
+    uint32_t _jt_8018AEE0 = ra;  /* latch indirect target
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -75174,6 +75014,12 @@ void cps_8018aee8(void)
         }
     }
     /* Address: 0x8018AEE8, Size: 360 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride 136),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/2E/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018AEE8:
     int _bc_8018AEE8 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -75402,17 +75248,7 @@ block_8018B040:
     /* fall through to block_8018B048 */
 
 block_8018B048:
-    uint32_t _jt_8018B048 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018B048);
-    cpu->pc = _jt_8018B048; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018b100 — clean CPS transliteration of br2eu_func_8018B100 (guest 0x8018b100)
- * from SLES_017.22_full_41.c. */
-void cps_8018b100(void)
-{
+    uint32_t _jt_8018B048 = ra;  /* latch indirect target
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -75434,6 +75270,12 @@ void cps_8018b100(void)
         }
     }
     /* Address: 0x8018B100, Size: 264 bytes, Blocks: 12 */
+
+    /* GTE geometry kernel (12 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 12, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018B100:
     int _bc_8018B100 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
@@ -75595,17 +75437,7 @@ block_8018B1D8:
     /* fall through to block_8018B200 */
 
 block_8018B200:
-    uint32_t _jt_8018B200 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018B200);
-    cpu->pc = _jt_8018B200; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018b380 — clean CPS transliteration of br2eu_func_8018B380 (guest 0x8018b380)
- * from SLES_017.22_full_41.c. */
-void cps_8018b380(void)
-{
+    uint32_t _jt_8018B200 = ra;  /* latch indirect target before del
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -75630,6 +75462,12 @@ void cps_8018b380(void)
         }
     }
     /* Address: 0x8018B380, Size: 312 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018B380:
     t6 = 24;
@@ -75823,17 +75661,7 @@ block_8018B4A8:
     }
 
 block_8018B4B0:
-    uint32_t _jt_8018B4B0 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018B4B0);
-    cpu->pc = _jt_8018B4B0; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018b4b8 — clean CPS transliteration of br2eu_func_8018B4B8 (guest 0x8018b4b8)
- * from SLES_017.22_full_41.c. */
-void cps_8018b4b8(void)
-{
+    uint32_t _jt_8018B4B0 = ra;  /* latch indirect target before 
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -75858,6 +75686,12 @@ void cps_8018b4b8(void)
         }
     }
     /* Address: 0x8018B4B8, Size: 368 bytes, Blocks: 15 */
+
+    /* GTE geometry kernel (15 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018B4B8:
     t6 = 28;
@@ -76071,17 +75905,7 @@ block_8018B618:
     }
 
 block_8018B620:
-    uint32_t _jt_8018B620 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
-    psx_check_interrupts_at(cpu, _jt_8018B620);
-    cpu->pc = _jt_8018B620; return;  /* CPS: jr $ra */
-}
-
-/* cps_8018b628 — clean CPS transliteration of br2eu_func_8018B628 (guest 0x8018b628)
- * from SLES_017.22_full_41.c. */
-void cps_8018b628(void)
-{
+    uint32_t _jt_8018B620 = ra;  /* latch indirect target befo
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -76102,6 +75926,12 @@ void cps_8018b628(void)
         }
     }
     /* Address: 0x8018B628, Size: 272 bytes, Blocks: 11 */
+
+    /* GTE geometry kernel (11 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/2D/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
 
 block_8018B628:
     t6 = 32;
@@ -76282,6 +76112,439 @@ block_8018B730:
     /* delay slot (always executes) */
     v0 = a0;
     psx_check_interrupts_at(cpu, _jt_8018B730);
+    cpu->pc = _jt_8018B730; return;  /* CPS: jr $ra */B5F4;
+            case 0x8018B604u: goto block_8018B604;
+            case 0x8018B618u: goto block_8018B618;
+            case 0x8018B620u: goto block_8018B620;
+            default: break;
+        }
+    }
+    /* Address: 0x8018B4B8, Size: 368 bytes, Blocks: 15 */
+
+block_8018B4B8:
+    t6 = 28;
+    t7 = 88;
+    /* delay slot (always executes) */
+    t8 = 4;
+    psx_check_interrupts_at(cpu, 0x8018B504u);
+    goto block_8018B504;  /* j */
+
+block_8018B4C8:
+    t6 = 24;
+    t7 = 80;
+    /* delay slot (always executes) */
+    t8 = 4;
+    psx_check_interrupts_at(cpu, 0x8018B504u);
+    goto block_8018B504;  /* j */
+
+block_8018B4D8:
+    t6 = 36;
+    t7 = 104;
+    /* delay slot (always executes) */
+    t8 = 8;
+    psx_check_interrupts_at(cpu, 0x8018B504u);
+    goto block_8018B504;  /* j */
+
+block_8018B4E8:
+    t6 = 40;
+    t7 = 112;
+    /* delay slot (always executes) */
+    t8 = 8;
+    psx_check_interrupts_at(cpu, 0x8018B504u);
+    goto block_8018B504;  /* j */
+
+block_8018B4F8:
+    t6 = 52;
+    t7 = 136;
+    t8 = 12;
+    /* fall through to block_8018B504 */
+
+block_8018B504:
+    int _bc_8018B504 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B508: 0x00000000 */
+    if (_bc_8018B504) {
+        psx_check_interrupts_at(cpu, 0x8018B620u);
+        goto block_8018B620;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B50Cu);
+        goto block_8018B50C;  /* not taken */
+    }
+
+block_8018B50C:
+    int _bc_8018B50C = (a2 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t4 = 32;
+    if (_bc_8018B50C) {
+        psx_check_interrupts_at(cpu, 0x8018B518u);
+        goto block_8018B518;  /
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018B7B0u: goto block_8018B7B0;
+            case 0x8018B7CCu: goto block_8018B7CC;
+            case 0x8018B848u: goto block_8018B848;
+            case 0x8018B858u: goto block_8018B858;
+            case 0x8018B870u: goto block_8018B870;
+            default: break;
+        }
+    }
+    /* Address: 0x8018B76C, Size: 280 bytes, Blocks: 6 */
+
+    /* GTE geometry kernel (6 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 01/06/2E/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
+
+block_8018B76C:
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((a0)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((a0 + 4))));
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[2] = (cpu->read_word((a0 + 8)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 3, (cpu->read_word((a0 + 12))));
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[4] = (cpu->read_word((a0 + 16)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 5, (cpu->read_word((a0 + 20))));
+    a3 = a3 + -1;
+    gte_execute(cpu, 0x0280030);  /* gte cmd 0x30 */  /* 0x8018B788: 0x4A280030 */
+    t1 = cpu->read_word(a0 + 24);
+    t2 = cpu->read_word(a0 + 28);
+    t9 = 0x7FC4 << 16;  /* 0x7FC40000 */
+    
+    psx_gte_read(cpu, 2);
+    v0 = gte_read_ctrl(cpu, 31);  /* cfc2 */  /* 0x8018B798: 0x4842F800 */
+    gte_execute(cpu, 0x1400006);  /* gte cmd 0x06 */  /* 0x8018B79C: 0x4B400006 */
+    /* nop */  /* 0x8018B7A0: 0x00000000 */
+    t9 = v0 & t9;  /* 0x8018B7A4: 0x0059C824 */
+    int _bc_8018B7A8 = (t9 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t3 = a0 + t4;
+    if (_bc_8018B7A8) {
+        psx_check_interrupts_at(cpu, 0x8018B884u);
+        cpu->pc = 0x8018B884u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B7B0u);
+        goto block_8018B7B0;  /* not taken */
+    }
+
+block_8018B7B0:
+    t3 = t3 + 8;
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = t1;  /* mtc2 */
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, t2);  /* mtc2 */
+    
+    psx_gte_read(cpu, 9);
+    t1 = cpu->gte_data[24];  /* mfc2 */
+    
+    psx_gte_read(cpu, 8);
+    t0 = cpu->gte_data[12];  /* mfc2 */
+    int _bc_8018B7C4 = ((int32_t)t1 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(t3, t0);
+    if (_bc_8018B7C4) {
+        psx_check_interrupts_at(cpu, 0x8018B884u);
+        cpu->pc = 0x8018B884u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B7CCu);
+        goto block_8018B7CC;  /* not taken */
+    }
+
+block_8018B7CC:
+    
+    psx_gte_read(cpu, 9);
+    t1 = cpu->gte_data[13];  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    t2 = cpu->gte_data[14];  /* mfc2 */
+    t3 = t3 + t8;
+    cpu->write_word(t3, t1);
+    t3 = t3 + t8;
+    cpu->write_word(t3, t2);
+    gte_execute(cpu, 0x0180001);  /* gte cmd 0x01 */  /* 0x8018B7E4: 0x4A180001 */
+    t9 = t0 & 0xFFFF;  /* 0x8018B7E8: 0x3119FFFF */
+t9 = psx_ws_cull_sltiu(t9, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B7EC: 0x2F390200 */
+    t0 = (int32_t)t0 >> 16;
+    t0 = (t0 < (uint32_t)480) ? 1 : 0;  /* 0x8018B7F4: 0x2D0801E0 */
+    t5 = t1 & 0xFFFF;  /* 0x8018B7F8: 0x312DFFFF */
+t5 = psx_ws_cull_sltiu(t5, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B7FC: 0x2DAD0200 */
+    t9 = t9 + t5;
+    t1 = (int32_t)t1 >> 16;
+    t1 = (t1 < (uint32_t)480) ? 1 : 0;  /* 0x8018B808: 0x2D2901E0 */
+    t0 = t0 + t1;
+    t5 = t2 & 0xFFFF;  /* 0x8018B810: 0x314DFFFF */
+t5 = psx_ws_cull_sltiu(t5, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B814: 0x2DAD0200 */
+    t9 = t9 + t5;
+    t2 = (int32_t)t2 >> 16;
+    t2 = (t2 < (uint32_t)480) ? 1 : 0;  /* 0x8018B820: 0x2D4A01E0 */
+    t0 = t0 + t2;
+    
+    psx_gte_read(cpu, 10);
+    t2 = cpu->gte_data[14];  /* mfc2 */
+    t3 = t3 + t8;
+    cpu->write_word(t3, t2);
+    t5 = t2 & 0xFFFF;  /* 0x8018B834: 0x314DFFFF */
+t5 = psx_ws_cull_sltiu(t5, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B838: 0x2DAD0200 */
+    t9 = t9 + t5;
+    int _bc_8018B840 = (t9 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t2 = (int32_t)t2 >> 16;
+    if (_bc_8018B840) {
+        psx_check_interrupts_at(cpu, 0x8018B884u);
+        cpu->pc = 0x8018B884u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B848u);
+        goto block_8018B848;  /* not taken */
+    }
+
+block_8018B848:
+    t2 = (t2 < (uint32_t)480) ? 1 : 0;  /* 0x8018B848: 0x2D4A01E0 */
+    t0 = t0 + t2;
+    int _bc_8018B850 = (t0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t3 = a0 + t4;
+    if (_bc_8018B850) {
+        psx_check_interrupts_at(cpu, 0x8018B884u);
+        cpu->pc = 0x8018B884u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B858u);
+        goto block_8018B858;  /* not taken */
+    }
+
+block_8018B858:
+    gte_execute(cpu, 0x168002E);  /* gte cmd 0x2E */  /* 0x8018B858: 0x4B68002E */
+    
+    psx_gte_read(cpu, 8);
+    t0 = gte_read_data(cpu, 7);  /* mfc2 */
+    /* nop */  /* 0x8018B860: 0x00000000 */
+    t0 = ((int32_t)t0 < 2048) ? 1 : 0;  /* 0x8018B864: 0x29080800 */
+    int _bc_8018B868 = (t0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B86C: 0x00000000 */
+    if (_bc_8018B868) {
+        psx_check_interrupts_at(cpu, 0x8018B884u);
+        cpu->pc = 0x8018B884u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B870u);
+        goto block_8018B870;  /* not taken */
+    }
+
+block_8018B870:
+    t0 = cpu->read_word(a1);
+    t1 = t3 << 8;
+    t0 = t0 << 8;
+    cpu->pc = 0x8018b884u; return;  /* fallthrough to split piece */4u: goto block_8018B684;
+            case 0x8018B698u: goto block_8018B698;
+            case 0x8018B6C4u: goto block_8018B6C4;
+            case 0x8018B6E8u: goto block_8018B6E8;
+            case 0x8018B710u: goto block_8018B710;
+            case 0x8018B728u: goto block_8018B728;
+            case 0x8018B730u: goto block_8018B730;
+          
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8018B8A8u: goto block_8018B8A8;
+            case 0x8018B8B0u: goto block_8018B8B0;
+            case 0x8018B8B4u: goto block_8018B8B4;
+            case 0x8018B8F0u: goto block_8018B8F0;
+            case 0x8018B904u: goto block_8018B904;
+            case 0x8018B930u: goto block_8018B930;
+            case 0x8018B954u: goto block_8018B954;
+            case 0x8018B97Cu: goto block_8018B97C;
+            case 0x8018B984u: goto block_8018B984;
+            default: break;
+        }
+    }
+    /* Address: 0x8018B894, Size: 248 bytes, Blocks: 10 */
+
+    /* GTE geometry kernel (10 blocks): loops a3 records (stride ?),
+       loads 3 vertex ptrs -> mtc2, cmd 0x06 setup, conditional
+       inner transform gated on SZ>0 running cmds 06/30, stores
+       gte_data[22] projections into the out record and indexes
+       the a1 table by (val & 0x1FFC). CPS-blocked. */
+
+block_8018B894:
+    t6 = 32;
+    t7 = 88;
+    t8 = 8;
+    int _bc_8018B8A0 = ((int32_t)a3 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8018B8A4: 0x00000000 */
+    if (_bc_8018B8A0) {
+        psx_check_interrupts_at(cpu, 0x8018B984u);
+        goto block_8018B984;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B8A8u);
+        goto block_8018B8A8;  /* not taken */
+    }
+
+block_8018B8A8:
+    int _bc_8018B8A8 = (a2 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t4 = 24;
+    if (_bc_8018B8A8) {
+        psx_check_interrupts_at(cpu, 0x8018B8B4u);
+        goto block_8018B8B4;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B8B0u);
+        goto block_8018B8B0;  /* not taken */
+    }
+
+block_8018B8B0:
+    t4 = t4 + t6;
+    /* fall through to block_8018B8B4 */
+
+block_8018B8B4:
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[0] = (cpu->read_word((a0)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 1, (cpu->read_word((a0 + 4))));
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[2] = (cpu->read_word((a0 + 8)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 3, (cpu->read_word((a0 + 12))));
+    
+    psx_gte_stall(cpu);
+    cpu->gte_data[4] = (cpu->read_word((a0 + 16)));
+    
+    psx_gte_stall(cpu);
+    gte_write_data(cpu, 5, (cpu->read_word((a0 + 20))));
+    a3 = a3 + -1;
+    gte_execute(cpu, 0x0280030);  /* gte cmd 0x30 */  /* 0x8018B8D0: 0x4A280030 */
+    t9 = 0x7FC4 << 16;  /* 0x7FC40000 */
+    
+    psx_gte_read(cpu, 2);
+    v0 = gte_read_ctrl(cpu, 31);  /* cfc2 */  /* 0x8018B8D8: 0x4842F800 */
+    gte_execute(cpu, 0x1400006);  /* gte cmd 0x06 */  /* 0x8018B8DC: 0x4B400006 */
+    /* nop */  /* 0x8018B8E0: 0x00000000 */
+    t9 = v0 & t9;  /* 0x8018B8E4: 0x0059C824 */
+    int _bc_8018B8E8 = (t9 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t3 = a0 + t4;
+    if (_bc_8018B8E8) {
+        psx_check_interrupts_at(cpu, 0x8018B984u);
+        goto block_8018B984;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B8F0u);
+        goto block_8018B8F0;  /* not taken */
+    }
+
+block_8018B8F0:
+    t3 = t3 + 8;
+    
+    psx_gte_read(cpu, 9);
+    t1 = cpu->gte_data[24];  /* mfc2 */
+    
+    psx_gte_read(cpu, 8);
+    t0 = cpu->gte_data[12];  /* mfc2 */
+    int _bc_8018B8FC = ((int32_t)t1 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t9 = t0 & 0xFFFF;  /* 0x8018B900: 0x3119FFFF */
+    if (_bc_8018B8FC) {
+        psx_check_interrupts_at(cpu, 0x8018B984u);
+        goto block_8018B984;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B904u);
+        goto block_8018B904;  /* not taken */
+    }
+
+block_8018B904:
+    
+    psx_gte_read(cpu, 9);
+    t1 = cpu->gte_data[13];  /* mfc2 */
+    
+    psx_gte_read(cpu, 10);
+    t2 = cpu->gte_data[14];  /* mfc2 */
+t9 = psx_ws_cull_sltiu(t9, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B90C: 0x2F390200 */
+    t5 = t1 & 0xFFFF;  /* 0x8018B910: 0x312DFFFF */
+t5 = psx_ws_cull_sltiu(t5, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B914: 0x2DAD0200 */
+    t9 = t9 + t5;
+    t5 = t2 & 0xFFFF;  /* 0x8018B91C: 0x314DFFFF */
+t5 = psx_ws_cull_sltiu(t5, 512);  /* ws auto screen-x cull (both edges) */  /* 0x8018B920: 0x2DAD0200 */
+    t9 = t9 + t5;
+    int _bc_8018B928 = (t9 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    t9 = (int32_t)t0 >> 16;
+    if (_bc_8018B928) {
+        psx_check_interrupts_at(cpu, 0x8018B97Cu);
+        goto block_8018B97C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B930u);
+        goto block_8018B930;  /* not taken */
+    }
+
+block_8018B930:
+    t9 = (t9 < (uint32_t)480) ? 1 : 0;  /* 0x8018B930: 0x2F3901E0 */
+    t5 = (int32_t)t1 >> 16;
+    t5 = (t5 < (uint32_t)480) ? 1 : 0;  /* 0x8018B938: 0x2DAD01E0 */
+    t9 = t9 + t5;
+    t5 = (int32_t)t2 >> 16;
+    t5 = (t5 < (uint32_t)480) ? 1 : 0;  /* 0x8018B944: 0x2DAD01E0 */
+    t9 = t9 + t5;
+    int _bc_8018B94C = (t9 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    cpu->write_word(t3, t0);
+    if (_bc_8018B94C) {
+        psx_check_interrupts_at(cpu, 0x8018B97Cu);
+        goto block_8018B97C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B954u);
+        goto block_8018B954;  /* not taken */
+    }
+
+block_8018B954:
+    t3 = t3 + t8;
+    cpu->write_word(t3, t1);
+    t3 = t3 + t8;
+    cpu->write_word(t3, t2);
+    t3 = a0 + t4;
+    t0 = cpu->read_word(a1);
+    t1 = t3 << 8;
+    t0 = t0 << 8;
+    /* fall through to block_8018B97C */
+
+block_8018B97C:
+    int _bc_8018B97C = ((int32_t)a3 > 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    a0 = a0 + t7;
+    if (_bc_8018B97C) {
+        psx_check_interrupts_at(cpu, 0x8018B8B4u);
+        goto block_8018B8B4;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8018B984u);
+        goto block_8018B984;  /* not taken */
+    }
+
+block_8018B984:
+    uint32_t _jt_8018B984 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    v0 = a0;
+    psx_check_interrupts_at(cpu, _jt_8018B984);
+    cpu->pc = _jt_8018B984; return;  /* CPS: jr $ra */s_at(cpu, _jt_8018B730);
     cpu->pc = _jt_8018B730; return;  /* CPS: jr $ra */
 }
 
@@ -76304,6 +76567,9 @@ void cps_8018b738(void)
     }
     /* Address: 0x8018B738, Size: 52 bytes, Blocks: 5 */
 
+    /* record-layout selector prologue: picks (t6,t7,t8) = (24,80,4) or
+       (40,112,8) by entry point, then t4 = 32 (+t6 if a2!=0) — feeds the
+       stride/field setup consumed by cps_8018b76c. CPS-blocked. */
 block_8018B738:
     t6 = 24;
     t7 = 80;
@@ -76530,10 +76796,9 @@ void cps_8018b88c(void)
 
     /* Address: 0x8018B88C, Size: 8 bytes, Blocks: 1 */
 
-block_8018B88C:
+    /* return a0 unchanged */
     uint32_t _jt_8018B88C = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    v0 = a0;
+    v0 = a0;                             /* delay slot: result */
     psx_check_interrupts_at(cpu, _jt_8018B88C);
     cpu->pc = _jt_8018B88C; return;  /* CPS: jr $ra */
 }
@@ -76735,10 +77000,8 @@ void cps_8018bae8(void)
 
     /* Address: 0x8018BAE8, Size: 8 bytes, Blocks: 1 */
 
-block_8018BAE8:
+    /* bare return (jr $ra, nop delay slot) */
     uint32_t _jt_8018BAE8 = ra;  /* latch indirect target before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8018BAEC: 0x00000000 */
     psx_check_interrupts_at(cpu, _jt_8018BAE8);
     cpu->pc = _jt_8018BAE8; return;  /* CPS: jr $ra */
 }
@@ -76760,6 +77023,10 @@ void cps_8018baf0(void)
     }
     /* Address: 0x8018BAF0, Size: 72 bytes, Blocks: 3 */
 
+    /* mode byte writer: a0==2 -> exit via 0x8018BB48; a0!=3 -> return;
+       a0==3 writes a 4-byte pattern into 0x801F0000+22892/22896
+       (30,a2,30,64 / 30,a1,30,a2 interleaved) then falls into
+       cps_8018bb38. CPS-blocked. */
 block_8018BAF0:
     v0 = 2;
     int _bc_8018BAF4 = (a0 == v0);  /* save branch cond before delay slot */
@@ -76836,6 +77103,9 @@ void cps_8018bb4c(void)
     }
     /* Address: 0x8018BB4C, Size: 92 bytes, Blocks: 5 */
 
+    /* 2x2 byte-table clear: zeroes 0x801F0000+22892[2*a2 + i] and
+       +22896[2*a2 + i] for a2 in {a2..1} x i in {0,1}, then stores a0 to
+       0x801B0000+21968 and returns. CPS-blocked. */
 block_8018BB4C:
     v0 = 0x801F << 16;  /* 0x801F0000 */
     t1 = v0 + 22892;
@@ -76908,6 +77178,8 @@ void cps_8018c0f8(void)
     }
     /* Address: 0x8018C0F8, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write: v1 = (v1<32)?v1:0; *a0=a1 with a0=a2;
+       *(a3+21980)=v1; returns a0+4. CPS-blocked. */
 block_8018C0F8:
     v0 = ((int32_t)v1 < 32) ? 1 : 0;  /* 0x8018C0F8: 0x28620020 */
     int _bc_8018C0FC = (v0 != zero);  /* save branch cond before delay slot */
@@ -76952,6 +77224,8 @@ void cps_8018c1d4(void)
     }
     /* Address: 0x8018C1D4, Size: 32 bytes, Blocks: 3 */
 
+    /* clamped slot write (sibling of 0x8018C0F8): v1 = (v1<32)?v1:0;
+       *a0=a1 with a0=a2; *(a3+21984)=v1; returns a0+4. CPS-blocked. */
 block_8018C1D4:
     v0 = ((int32_t)v1 < 32) ? 1 : 0;  /* 0x8018C1D4: 0x28620020 */
     int _bc_8018C1D8 = (v0 != zero);  /* save branch cond before delay slot */
