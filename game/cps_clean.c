@@ -103669,7 +103669,9 @@ block_801A3D24:
 
 /* cps_801a3d2c — clean CPS transliteration of br2eu_func_801A3D2C (guest 0x801a3d2c)
  * from SLES_017.22_full_50.c.
- * leaf reg-op / return-value helper */
+ * cd_cmd_rec_base_sel: v0 = 0x801FF080 (0x80200000-3968); if
+ * a0&0x00F0 != 0 add 240 -> 0x801FF170; returns selected base in
+ * v0. Terminal piece of cd_cmd_rec_scan. */
 void cps_801a3d2c(void)
 {
 /* cd_cmd_rec_scan terminal piece. */
@@ -105468,7 +105470,9 @@ block_801A6F34:
 
 /* cps_801a7544 — clean CPS transliteration of br2eu_func_801A7544 (guest 0x801a7544)
  * from SLES_017.22_full_51.c.
- * CPS leaf — 0 stores, 4 loads */
+ * ptr_chase_s16: if a0==0 return; else v0 =
+ * s16(*(*(*(a0+16)) + 16) + 52) — field-load + two derefs ending in
+ * a signed-half read at +52. */
 void cps_801a7544(void)
 {
   CPUState *cpu = clean_cpu_state();
