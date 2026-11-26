@@ -337,7 +337,7 @@ void memcard_tick(void)
    * 0x11, 0x12) and passes sp+0x10 to cd_stamp_to_sector, which reads
    * s[0..2]. Ghidra split it into 3 scalars — keep it one array. */
   uint8_t timestamp_bcd[3];
-  
+
   if (DAT_801bef6f) {
     return;
   }
@@ -1221,7 +1221,7 @@ void memcard_slot_poll(void)
   char *slot_flag;
   int slot_i;
   char status_buf [24];
-  
+
   slot_status_fill(status_buf);
   slot_flag = &DAT_801f24d0;
   slot_i = 0;
@@ -1276,7 +1276,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
   int16_t *rec_s;
   uint16_t *rec_u;
   int slot_i;
-  
+
   cls300_seen = false;
   cls400_seen = false;
   rec_u = (uint16_t *)&DAT_801f3600;
@@ -1333,7 +1333,7 @@ void save_defaults_fill(void)
   uint8_t *dst;
   uint16_t *src;
   int i;
-  
+
   i = 0;
   src = &DAT_801b3f78;
   dst = &DAT_801c11e0;
@@ -1359,7 +1359,7 @@ void save_block_init(void)
   int i;
   int j;
   int n;
-  
+
   src_name = PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0;
   i = 0;
   n = 0x1f;
@@ -1410,7 +1410,7 @@ void dbg_marker_mode_set(int a0)
   int idx;
   int j;
   int i;
-  
+
   DAT_801f5969 = 0;
   DAT_801f5968 = 0;
   if (a0 == 1) {
@@ -1502,7 +1502,7 @@ void perm_table_load(void)
   uint8_t *dst;
   int i;
   int j;
-  
+
   dst = (uint8_t *)guest_at(0x801e8400);
   i = 0;
   do {
@@ -1523,7 +1523,7 @@ void perm_table_apply(uint32_t a0)
   uint8_t swap_tmp;
   uint8_t *cell;
   int i;
-  
+
   i = 0;
   do {
     cell = (uint8_t *)guest_at((uint32_t)(i - 0x7fe17c00));
@@ -1570,7 +1570,7 @@ void flow_cfg_init(uint8_t a0)
 {
   int idx;
   int i;
-  
+
   uint32_t *cfg;
   empty_ret();
   _DAT_1f800082 = 0;
@@ -1616,7 +1616,7 @@ uint32_t attr_word_decode(uint8_t *a0)
 {
   int8_t attr_hi;
   uint32_t attr_word;
-  
+
   attr_hi = *(int8_t *)(a0 + 1) & 0xf0;
   if (attr_hi == 0x40) {
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
