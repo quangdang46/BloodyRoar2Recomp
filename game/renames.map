@@ -44,6 +44,7 @@
 8012e73c hud_text_c
 8012e7cc hud_text_d
 8018cdf8 sprite_node_alloc
+8018ce50 sprite_node_alloc_commit
 8018ce70 sprite_node_emit_a
 8018c92c sprite_node_emit_b
 80196e14 cd_cmd_issue
@@ -71,6 +72,8 @@
 8019737c cd_reg_init_seq
 8019a3f0 cd_kobj_init_a
 8019a378 cd_kobj_init_b
+8019a350 cd_kobj_mcall_58
+8019a364 cd_kobj_mcall_5c
 801957f0 bios_tramp_a044
 80195800 cd_dir_table_set
 80195830 cd_dir_read_wrap
@@ -86,6 +89,9 @@
 80195d8c cd_mode_flag_set
 80199420 cd_read_param_block
 8019e410 cd_mode_apply_wrap
+8019e4c8 cd_kobj_b56_commit
+8019e55c cd_kobj_b57_commit
+8019e5cc cd_kobj_param_copy
 80199320 cd_dir_clear
 8019e400 cd_mode_apply
 8019e320 bios_tramp_a070
@@ -204,6 +210,7 @@
 80151328 battle_state_init
 801487ac fighter_spawn_setup
 8015113c confirm_bookkeeping
+80151300 confirm_bookkeeping_cps
 8015343c gate_read_ec
 8014f260 select_screen_tick
 801583cc peak_track
@@ -215,6 +222,7 @@
 80154930 post_battle_dispatch
 801506d0 battle_init
 8015143c hud_announce
+80151494 hud_announce_cps
 8012e100 hud_text_blk
 801524b0 please_wait_announce
 80166f64 fighter_reinit_tail
@@ -233,6 +241,15 @@
 80129e40 menu_step_a
 8012f2a8 menu_step_b
 801919ac draw_env_timing
+80191a78 draw_env_field_compare_fragment
+80191aa4 gpu_callback_state_flags
+80191b80 gpu_callback_dispatch
+80191b90 gpu_callback_descriptor_match
+80191c04 gpu_callback_resume_next
+80191c08 draw_env_timing_status_store
+80191c88 draw_env_timing_interpolate
+80191d0c draw_env_timing_span_clamp
+80191d80 draw_env_timing_axis_limit
 80193ea0 sprite_attr_init_a
 80193f60 sprite_attr_init_b
 8018bd40 bitfield_or_write
@@ -246,8 +263,18 @@
 8018c71c spr_attr_alloc_b
 8012c374 hud_gauge_render
 8018cbfc spr_pool_a_alloc
+8018cc4c spr_pool_a_alloc_commit
 8018c0a8 spr_pool_b_alloc
 8018e590 printf_core
+8018e774 printf_flags_h_set
+8018e77c printf_flags_l_set
+8018e784 printf_arg_byte
+8018e7a0 printf_arg_dec_l
+8018e7a4 printf_arg_dec
+8018e7e8 printf_arg_word
+8018e824 printf_arg_oct_l
+8018e828 printf_arg_oct
+8018e85c printf_arg_hex
 8018ecf0 console_emit
 8018edec console_pct
 8018c1f4 sprite_9slice_build
@@ -269,6 +296,9 @@
 8018fb10 mdec_pump_a
 8018fc90 mdec_pump_b
 80190a04 text_win_printf_guest
+80190ca4 text_format_copy_byte_fragment
+80190cc4 text_format_measure_string_fragment
+80190ce4 text_format_width_check_fragment
 80179ae0 skeleton_init
 80179a6c part_record_reset
 80179964 part_link_unlink
@@ -319,6 +349,7 @@
 80148f58 palette_attr_record_write
 8014a804 victory_jingle_schedule
 80150f04 ko_count_announce
+80151074 ko_count_announce_cps
 8015a614 string_pair_emit
 80127ae0 record_field_step
 80128bfc battle_subrecord_set2
@@ -640,6 +671,7 @@
 8018c034 spr_desc_tbl_a_init
 8018c118 spr_desc_tbl_b_init
 8018c18c spr_desc_slot_alloc
+8018c1d4 spr_desc_slot_alloc_commit
 8018c824 spr_slot_pkt_submit
 80191428 gpu_load_image_cmd
 80191300 gpu_clear_image_cmd
@@ -1197,6 +1229,7 @@
 
 8018b208 prim_list_persp_step
 
+8018d2e0 gte_light_set_q4
 8018d2ec gte_light_set
 
 8018d568 gte_xform_add_off
@@ -1210,6 +1243,9 @@
 80184f28 script_op_dispatch
 
 8018d244 trig_sin_lookup
+8018d27c lut_tail_neg
+8018d284 lut_sat_sign
+8018d290 lut_tail_pos
 
 8018e028 angle_vec_build
 
@@ -1296,6 +1332,7 @@
 8018d298 lut_cos_q12
 
 8018d29c lut_sin_q12
+8018d2d8 lut_q12_tail_pos
 
 801561f0 deferred_cmd_reset
 
@@ -1668,6 +1705,24 @@
 
 8018da2c rotmat2_build
 
+8018dbe4 euler_rotmat_unpack
+
+8018dc00 euler_rotmat_neg
+
+8018dc20 euler_rotmat_core
+
+8018de68 rotmat_rtps_build_half
+
+8018def4 rotmat2_pair_build_word
+
+8018e024 angle_vec_build_half
+
+8018e0b0 rotmat_half_euler_a
+
+8018e1d0 rotmat_half_euler_b
+
+8018e320 u16_lut_slot_set
+
 801a4308 task_node_alloc
 
 801a48fc task_node_free
@@ -1739,6 +1794,7 @@
 80182f48 scriptop_bra
 80182ff0 scriptop_bra_pc_commit
 801831e0 scriptop_bra_cps
+80183008 scriptop_bra_subops
 80183248 scriptop_bsr
 801832f0 scriptop_bsr_cps
 80183338 scriptop_bsr_cps
@@ -1761,8 +1817,8 @@
 801837b0 scriptop_wait_fragment_801837b0
 801838b0 scriptop_wait_fragment_801838b0
 801838e8 scriptop_wait_fragment_801838e8
-80183920 scriptop_wait_fragment_80183920
-80183948 scriptop_wait_fragment_80183948
+80183920 scriptop_wait_atk3_self
+80183948 scriptop_wait_atk3_foe
 80183964 scriptop_wait_cps_80183964
 8018397c scriptop_wait_cps_8018397c
 80183988 scriptop_wait_cps_80183988
@@ -1782,6 +1838,10 @@
 80183ec4 chk_atk3_foe
 80183ef0 chk_mode1_self
 80183efc chk_mode1_foe
+80184018 chk_state20
+80184040 chk_atk3_free
+80184110 chk_mask_op
+80184210 chk_distx
 80184378 scriptop_cmp
 8018444c scriptop_move
 80184620 scriptop_move_ext_cases
@@ -1811,19 +1871,24 @@
 80185444 anim_ret_nop
 801858f8 anim_angle_approach
 80194500 fixed_rsqrt_q12
+8019457c fixed_rsqrt_q12_zero_result
 80194590 fixed_rsqrt_q12_ex
+80194614 fixed_point_ret_neg1
 8019461c vec3_s32_h_normalize
 80194630 vec3_s32_normalize
 80194660 vec3_s16_normalize
+8019466c vec3_s32_h_normalize_store_tail
 80194690 gte_vec3_normalize
 80190228 cpu_regs_snapshot
 80191074 gpu_flag_8322_read
 80194000 gpu_pkt_merge24
 80194040 gpu_pkt_low24_or
 80194100 gpu_pkt_tag_0c3c
+80194470 gte_screen_init_defer_mfhi
 80194478 gte_screen_init_defer
 80194750 gte_xform_norm3pts
 801948c0 fixed_recip_lut
+80194940 fixed_recip_neg_exp
 80195290 gte_ofs_set
 801952c0 gte_mvmva_vec3
 801952e8 gte_dpcl_vec3
@@ -1867,6 +1932,7 @@
 8018ec30 ctype_adj_m32
 8018ec64 ctype_adj_p32
 8018cfb4 file_rec_size_get
+8018cfd4 file_rec_size_get_zero
 8018d5fc gte_lwc2_r0_r1
 8018bb38 flag_801b55d0_set
 8018bd24 rec_hibyte_pair_swap
@@ -2010,6 +2076,9 @@
 801aff20 op_pair_rec_init
 8017cf6c byte2_probe_commit
 8017db88 desc_cmd_interp
+80188200 prim_poly_emit_54a
+80188308 prim_poly_emit_5ca
+80188434 prim_point_emit_48a
 80188510 prim_poly_emit_6c
 8018866c prim_poly_emit_64
 80188754 prim_poly_emit_88
@@ -2083,3 +2152,87 @@
 80181ef0 ani_cat_tail_v2
 80181f10 ani_cat_tail_nine
 80181f18 ani_cat_tail_ret
+80156864 page_table_ptr_set_alt_38d0
+80156870 page_table_ptr_set_alt_3968
+80156888 page_table_ptr_set_alt_3a84
+80156894 page_table_ptr_set_alt_3b08
+80157910 confirm_code_select_alt_0
+80157918 confirm_code_select_alt_1
+80157920 confirm_code_select_alt_2
+80157928 confirm_code_select_alt_5
+80157930 confirm_code_select_alt_3
+80157938 confirm_code_select_alt_6
+80157940 confirm_code_select_alt_4
+80164070 hud_score_draw_alt
+80165174 player_name_entry_alt
+80168494 mc_op_result_poll_alt
+80168624 mc_file_cmd_stable_poll_alt
+80170050 battle_flow_state_machine_alt
+801870a4 prim_xform3_task_run_b
+80188200 prim_quad_emit_54
+80188308 prim_quad_emit_5c
+80188434 prim_emit_48
+801890dc prim_persp_emit_78
+8018b738 prim_persp_ot_emit_var
+8018b88c prim_emit_ret_a0
+8018b894 prim_persp_ot_emit_58
+8018bae8 prim_emit_ret_v0
+8018baf0 dbg_marker_mode_set_dispatch
+8018bb48 dbg_marker_mode_set_clr_gate
+8018bb4c dbg_marker_mode_set_clear
+8018bc2c pad_slot_walk_case6_resume
+8018bc78 pad_slot_walk_decay_resume
+8018bcb4 pad_slot_walk_case2_resume
+8018bcd0 pad_slot_walk_case01_resume
+8018bce4 pad_slot_walk_tail_resume
+8018c0f8 spr_pool_b_commit
+8018d3b4 dir_rotate_emit
+8018d474 dir_emit_hpair
+8018d47c dir_emit_ret_t5
+8018d49c vec2_rot_emit
+8018d668 emit_tail_ra
+8018d670 range_circle_test_tail
+8018d694 emit_tail_zero
+8018da28 rotmat2_build_s16
+8018dab4 angle_pair_rotmat_unpack
+8018e63c printf_cps_8018e63c
+8018e64c printf_cps_8018e64c
+8018e654 printf_cps_8018e654
+8018e670 printf_cps_8018e670
+8018e678 printf_cps_8018e678
+8018e680 printf_cps_8018e680
+8018e708 printf_cps_8018e708
+8018e710 printf_cps_8018e710
+8018e76c printf_cps_8018e76c
+8018e86c printf_core_piece_e86c
+8018e8cc printf_core_piece_e8cc
+8018e8d0 printf_core_piece_e8d0
+8018e904 printf_core_piece_e904
+8018e910 printf_core_piece_e910
+8018ebc0 printf_core_piece_ebc0
+8018ebd4 printf_core_piece_ebd4
+8018ef6c sprintf_core_engine
+8018f220 sprintf_core_engine_piece_f220
+8018f22c gpu_pkt_cmd_f22c
+8018f238 gpu_pkt_cmd_f238
+8018f264 gpu_pkt_cmd_f264
+8018f2bc gpu_pkt_cmd_f2bc
+8018f3dc gpu_pkt_cmd_f3dc
+8018f4dc gpu_pkt_cmd_f4dc
+8018f4f0 gpu_pkt_cmd_f4f0
+8018f4fc gpu_pkt_cmd_f4fc
+8018f608 gpu_pkt_cmd_f608
+8018f884 mdec_parambuf_restore
+8018f910 mdec_parambuf_commit
+8018f9a8 gpu_pkt_field2_get
+8018fee0 vram_span_set
+8018ff00 vram_span_set_max
+8019e600 gpu_state_patch_submit_3w
+801a0ddc cd_hw_chan_release_all
+801a2808 cd_cmd_rec_arm_extent
+801a2ec8 cd_cmd_rec_arm_op
+# GPU/GTE entries from the 0x80192xxx/0x80194xxx sweep, sorted by address.
+80192b80 gpu_image_transfer_dma
+80192e24 gpu_tag_cmd_byte_get
+80192e38 gpu_command_words_send
+80194470 gte_screen_init_hi_entry
