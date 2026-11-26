@@ -109,8 +109,6 @@ extern int32_t pending_action_gate(uint32_t, byte*, uint32_t, uint32_t);
 void slot_mark2_set(int);
 int lut_cos_q12(int);
 int lut_sin_q12(uint);
-/* deferred_cmd_reset - clear deferred-cmd count and all ring
- * entries. */
 void deferred_cmd_reset(void);
 undefined8 vec2_rot_lut(undefined4,int);
 void dir_rotate_acc(int,int,byte*,byte*);
@@ -1478,11 +1476,7 @@ extern void action_switch_guest(int ctrl,int *motion,int act);
 extern void slot_apply_guest(int ctrl,int motion);
 extern void part_record_reset(undefined2 *ctrl);
 extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
-/* part_matrix_compute - build a part rotation matrix from euler
- * angles + twist via GTE RTPS/RTPT ops; store to mat. */
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
-/* matrix_vec3_apply - apply the matrix to vec xyz via GTE ops;
- * returns vec. */
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
 #define DAT_1f8003a0 (*g_DAT_1f8003a0)
@@ -2953,6 +2947,8 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 
 }
 
+/* deferred_cmd_reset - clear deferred-cmd count and all ring
+ * entries. */
 void deferred_cmd_reset(void)
 {
   undefined2 *ent;
@@ -3235,6 +3231,8 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
   return;
 }
 
+/* part_matrix_compute - build a part rotation matrix from euler
+ * angles + twist via GTE RTPS/RTPT ops; store to mat. */
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle)
 {
   uint m1;
@@ -3316,6 +3314,8 @@ void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 ang
 
 }
 
+/* matrix_vec3_apply - apply the matrix to vec xyz via GTE ops;
+ * returns vec. */
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
 {
   uint r1;
