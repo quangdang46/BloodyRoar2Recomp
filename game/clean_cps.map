@@ -4595,3 +4595,21 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# dir_rotate_emit (game/gfx_emit_p03.c) — rotated-pair store emit family.
+# Entries 0x8018D3B4/0x8018D3D0/0x8018D3EC + jal-return continuations.
+8018d3b4 dir_rotate_emit
+8018d3c0 dir_rotate_emit
+8018d3d0 dir_rotate_emit
+8018d3dc dir_rotate_emit
+8018d3ec dir_rotate_emit
+8018d3f8 dir_rotate_emit
+8018d474 dir_emit_hpair
+8018d47c dir_emit_ret_t5
+8018d49c vec2_rot_emit
+8018d4ac vec2_rot_emit
+8018d668 emit_tail_ra
+8018d670 range_circle_test_tail
+8018d694 emit_tail_zero
+8018da28 rotmat2_build_s16
+8018dab4 angle_pair_rotmat_unpack

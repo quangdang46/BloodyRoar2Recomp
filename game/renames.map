@@ -1971,3 +1971,12 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
+8018d3b4 dir_rotate_emit
+8018d474 dir_emit_hpair
+8018d47c dir_emit_ret_t5
+8018d49c vec2_rot_emit
+8018d668 emit_tail_ra
+8018d670 range_circle_test_tail
+8018d694 emit_tail_zero
+8018da28 rotmat2_build_s16
+8018dab4 angle_pair_rotmat_unpack
