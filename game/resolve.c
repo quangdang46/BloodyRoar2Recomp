@@ -250,9 +250,6 @@ void anim_lerp_packed3(short*,ushort*,int,int);
 uint *rotmat_rtps_build(uint,uint*);
 
 
-/* action_commit - commit resolved action: sync motion state,
- * advance timers/blends, steer toward foe, post deferred cmds. */
-
 extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_gaddr(const void *p);
@@ -2018,6 +2015,8 @@ LAB_8017938c:
 
 }
 
+/* action_commit - commit resolved action: sync motion state,
+ * advance timers/blends, steer toward foe, post deferred cmds. */
 void action_commit(byte *ctrl, byte *motion)
 {
   /* Locals: rem = countdown remainder; f6c = ctrl+0x6c flag word;
