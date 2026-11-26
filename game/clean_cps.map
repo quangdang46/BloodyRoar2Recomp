@@ -4624,3 +4624,10 @@
 80182740 fighter_script_fsm_cps
 8018287c fighter_script_fsm_cps
 80182960 fighter_script_fsm_cps
+
+# w2_e06 — continuation pieces of guest fn 0x801835D0 (script-operand
+# compare/select family). The clean CPS body cps_801835d0 (game/cps_clean.c)
+# already contains block_80183630 and block_80183648 verbatim.
+80183630 cps_801835d0
+80183648 cps_801835d0
+

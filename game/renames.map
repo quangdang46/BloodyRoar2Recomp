@@ -1722,6 +1722,12 @@
 80183248 scriptop_bsr
 80183558 scriptop_ret
 80183664 scriptop_wait
+8018371c scriptop_wait_fragment_8018371c
+801837b0 scriptop_wait_fragment_801837b0
+801838b0 scriptop_wait_fragment_801838b0
+801838e8 scriptop_wait_fragment_801838e8
+80183920 scriptop_wait_fragment_80183920
+80183948 scriptop_wait_fragment_80183948
 80183bd0 scriptop_sflag
 80183c30 scriptop_chk
 80183d0c scriptop_chk_state_bits

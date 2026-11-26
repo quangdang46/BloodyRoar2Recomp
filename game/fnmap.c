@@ -1349,6 +1349,12 @@ extern void scriptop_ret(void);
 extern void scriptop_sflag(void);
 extern void scriptop_sub(void);
 extern void scriptop_wait(void);
+extern void scriptop_wait_fragment_8018371c(void);
+extern void scriptop_wait_fragment_801837b0(void);
+extern void scriptop_wait_fragment_801838b0(void);
+extern void scriptop_wait_fragment_801838e8(void);
+extern void scriptop_wait_fragment_80183920(void);
+extern void scriptop_wait_fragment_80183948(void);
 extern void scroll_attr_100_update(void);
 extern void scroll_cfg_set(void);
 extern void scroll_offset_accumulate(void);
@@ -2264,6 +2270,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80183558, (void *)scriptop_ret },
   { 0x801835c4, (void *)script_ctx28_clear },
   { 0x80183664, (void *)scriptop_wait },
+  { 0x8018371c, (void *)scriptop_wait_fragment_8018371c },
+  { 0x801837b0, (void *)scriptop_wait_fragment_801837b0 },
+  { 0x801838b0, (void *)scriptop_wait_fragment_801838b0 },
+  { 0x801838e8, (void *)scriptop_wait_fragment_801838e8 },
+  { 0x80183920, (void *)scriptop_wait_fragment_80183920 },
+  { 0x80183948, (void *)scriptop_wait_fragment_80183948 },
   { 0x80183bd0, (void *)scriptop_sflag },
   { 0x80183c30, (void *)scriptop_chk },
   { 0x80183d0c, (void *)scriptop_chk_state_bits },
