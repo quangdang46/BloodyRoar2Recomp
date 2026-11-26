@@ -495,3 +495,23 @@ stay generated.
 clean_table: 8750 wrappers, 5 skips (unchanged legit set).
 Verified: clean build EU + USA; headless :4937 frames 43061 -> 52410+
 attract CD streaming, no wedge.
+
+## Batch 17 (orch/w5/e05) — 12 more unrouted CD leaves -> cpst_
+
+Exact-entry fix from batch 16 cleared all embedded-piece failures —
+12/12 candidates emitted cleanly, zero transformer errors:
+
+cpst_801a9b1c, cpst_801a9ebc, cpst_8019fe78, cpst_801a9d30,
+cpst_801af938, cpst_801af97c, cpst_801af9c0, cpst_801af9f8,
+cpst_801afb24, cpst_801a1d50, cpst_801aa558, cpst_801a4fc0 —
+all single-block leaves, 12 map rows (entry-only).
+
+Chain note: cpst_801aa558 tail-dispatches to 801AA55C — the parent of
+batch-16's embedded entry cpst_801aa5c8; and the 0x801AF9xx run
+(af938/af97c/af9c0/af9f8/afb24) are sibling leaves of one cluster,
+all now timed at their entries.
+
+clean_table: 8762 wrappers, 5 skips (unchanged legit set).
+Remaining pool ~423 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4941 frames 23834 -> 27954+
+attract CD streaming, no wedge.
