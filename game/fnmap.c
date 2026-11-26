@@ -75,6 +75,7 @@ extern void angle_gte_vec(void);
 extern void angle_pair_rotmat(void);
 extern void angle_pair_rotmat_unpack(void);
 extern void angle_vec_build(void);
+extern void angle_vec_build_half(void);
 extern void ani_cat_tail_nine(void);
 extern void ani_cat_tail_ret(void);
 extern void ani_cat_tail_v2(void);
@@ -637,6 +638,9 @@ extern void engine_tables_restore(void);
 extern void entry_attr_bump_loop(void);
 extern void entry_setup_guest(void);
 extern void euler_rotmat(void);
+extern void euler_rotmat_core(void);
+extern void euler_rotmat_neg(void);
+extern void euler_rotmat_unpack(void);
 extern void ev20_timer_dispatch(void);
 extern void ev24_fx_spawn(void);
 extern void ev24_fx_spawn_alias(void);
@@ -1385,7 +1389,11 @@ extern void rotate_xy_pairs(void);
 extern void rotmat2_build(void);
 extern void rotmat2_build_s16(void);
 extern void rotmat2_pair_build(void);
+extern void rotmat2_pair_build_word(void);
+extern void rotmat_half_euler_a(void);
+extern void rotmat_half_euler_b(void);
 extern void rotmat_rtps_build(void);
+extern void rotmat_rtps_build_half(void);
 extern void round_announce_block(void);
 extern void round_banner_draw(void);
 extern void rtps_basis_xform(void);
@@ -1631,6 +1639,7 @@ extern void u16_counter_step_pad_a(void);
 extern void u16_counter_step_pad_b(void);
 extern void u16_lut_lookup(void);
 extern void u16_lut_slot_clear(void);
+extern void u16_lut_slot_set(void);
 extern void u16_step_toward(void);
 extern void u16_tbl_copy(void);
 extern void u16_wrap_counter_step(void);
@@ -2677,13 +2686,22 @@ const Br2FnEnt fn_table[] = {
   { 0x8018da2c, (void *)rotmat2_build },
   { 0x8018dab4, (void *)angle_pair_rotmat_unpack },
   { 0x8018dac0, (void *)angle_pair_rotmat },
+  { 0x8018dbe4, (void *)euler_rotmat_unpack },
+  { 0x8018dc00, (void *)euler_rotmat_neg },
   { 0x8018dc18, (void *)euler_rotmat },
+  { 0x8018dc20, (void *)euler_rotmat_core },
+  { 0x8018de68, (void *)rotmat_rtps_build_half },
   { 0x8018de6c, (void *)rotmat_rtps_build },
+  { 0x8018def4, (void *)rotmat2_pair_build_word },
   { 0x8018df00, (void *)rotmat2_pair_build },
+  { 0x8018e024, (void *)angle_vec_build_half },
   { 0x8018e028, (void *)angle_vec_build },
+  { 0x8018e0b0, (void *)rotmat_half_euler_a },
+  { 0x8018e1d0, (void *)rotmat_half_euler_b },
   { 0x8018e2f0, (void *)guest_bzero },
   { 0x8018e300, (void *)cpu_critical_enter },
   { 0x8018e310, (void *)cpu_critical_exit },
+  { 0x8018e320, (void *)u16_lut_slot_set },
   { 0x8018e3bc, (void *)u16_lut_lookup },
   { 0x8018e3f4, (void *)lut_mask_or },
   { 0x8018e424, (void *)lut_mask_clear },

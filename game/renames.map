@@ -1676,6 +1676,24 @@
 
 8018da2c rotmat2_build
 
+8018dbe4 euler_rotmat_unpack
+
+8018dc00 euler_rotmat_neg
+
+8018dc20 euler_rotmat_core
+
+8018de68 rotmat_rtps_build_half
+
+8018def4 rotmat2_pair_build_word
+
+8018e024 angle_vec_build_half
+
+8018e0b0 rotmat_half_euler_a
+
+8018e1d0 rotmat_half_euler_b
+
+8018e320 u16_lut_slot_set
+
 801a4308 task_node_alloc
 
 801a48fc task_node_free
