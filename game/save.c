@@ -8161,7 +8161,7 @@ void op_list_head_reset(uint32_t *a0)
 /* 0x801ad6f0 — ctx->fC = GP50 + a0[0]; call 0x801b0db8(ctx); *a1 += 4. */
 void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
 {
-  uint32_t s0 = *a1;
+  uint32_t cur = *a1;
   uint32_t v = BR2_GP50 + (uint32_t)(int32_t)a0[0];
   BR2_GPF(0xc) = v;
   {
@@ -8175,7 +8175,7 @@ void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
       call_guest(0x801b0db8u,BR2_GPC,guest_of(a1));
     }
   }
-  *a1 = s0 + 4;
+  *a1 = cur + 4;
   return;
 }
 
@@ -8249,8 +8249,8 @@ void op_cached_lookup(int16_t *a0,uint32_t a1)
 {
   BR2_GPF(0x14) = 0;
   if (*(uint32_t *)guest_at(a1) == 0) {
-    uint32_t t1 = *(uint32_t *)guest_at(0x801ff638 + (uint32_t)(int32_t)a0[1] * 4);
-    uint32_t av = *(uint32_t *)guest_at(t1 + (uint32_t)(int32_t)a0[2] * 4);
+    uint32_t row = *(uint32_t *)guest_at(0x801ff638 + (uint32_t)(int32_t)a0[1] * 4);
+    uint32_t av = *(uint32_t *)guest_at(row + (uint32_t)(int32_t)a0[2] * 4);
     uint32_t r = (uint32_t)prim_group_build(a1,(int)av,a0[3],a0[4]);
     *(uint32_t *)guest_at(a1) = r;
     if (r != 0) {
@@ -8267,8 +8267,8 @@ void op_cached_lookup_b(int16_t *a0,uint32_t a1)
   uint32_t mid = *(uint32_t *)guest_at(idx);
   BR2_GPF(0x14) = 0;
   if (*(uint32_t *)guest_at(a1) == 0) {
-    uint32_t t1 = *(uint32_t *)guest_at(0x801ff638 + (uint32_t)(int32_t)a0[1] * 4);
-    uint32_t av = *(uint32_t *)guest_at(t1 + mid * 4);
+    uint32_t row = *(uint32_t *)guest_at(0x801ff638 + (uint32_t)(int32_t)a0[1] * 4);
+    uint32_t av = *(uint32_t *)guest_at(row + mid * 4);
     uint32_t r = (uint32_t)prim_group_build(a1,(int)av,a0[3],a0[4]);
     *(uint32_t *)guest_at(a1) = r;
     if (r != 0) {
@@ -8285,8 +8285,8 @@ void op_cached_lookup_c(int16_t *a0,uint32_t a1)
   uint32_t mid = *(uint32_t *)guest_at(idx);
   BR2_GPF(0x14) = 0;
   if (*(uint32_t *)guest_at(a1) == 0) {
-    uint32_t t1 = *(uint32_t *)guest_at(0x801ff638 + mid * 4);
-    uint32_t av = *(uint32_t *)guest_at(t1 + (uint32_t)(int32_t)a0[2] * 4);
+    uint32_t row = *(uint32_t *)guest_at(0x801ff638 + mid * 4);
+    uint32_t av = *(uint32_t *)guest_at(row + (uint32_t)(int32_t)a0[2] * 4);
     uint32_t r = (uint32_t)prim_group_build(a1,(int)av,a0[3],a0[4]);
     *(uint32_t *)guest_at(a1) = r;
     if (r != 0) {
@@ -8299,11 +8299,11 @@ void op_cached_lookup_c(int16_t *a0,uint32_t a1)
 /* 0x801af238 — free ctx8[a0[0]] cell via node_tree_free. */
 void op_ctx8_cell_free(int16_t *a0)
 {
-  uint32_t s0 = BR2_GPF(8) + (uint32_t)(int32_t)a0[0];
-  uint32_t p = *(uint32_t *)guest_at(s0);
+  uint32_t cell = BR2_GPF(8) + (uint32_t)(int32_t)a0[0];
+  uint32_t p = *(uint32_t *)guest_at(cell);
   if (p != 0) {
     node_tree_free((int)p);
-    *(uint32_t *)guest_at(s0) = 0;
+    *(uint32_t *)guest_at(cell) = 0;
   }
   return;
 }
@@ -8312,11 +8312,11 @@ void op_ctx8_cell_free(int16_t *a0)
 void op_ctx8_cell_free_b(int16_t *a0)
 {
   uint32_t b = BR2_GPF(8);
-  uint32_t s0 = b + *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[0]);
-  uint32_t p = *(uint32_t *)guest_at(s0);
+  uint32_t cell = b + *(uint32_t *)guest_at(b + (uint32_t)(int32_t)a0[0]);
+  uint32_t p = *(uint32_t *)guest_at(cell);
   if (p != 0) {
     node_tree_free((int)p);
-    *(uint32_t *)guest_at(s0) = 0;
+    *(uint32_t *)guest_at(cell) = 0;
   }
   return;
 }
@@ -8394,10 +8394,10 @@ void op_mat3_build_opt(int16_t *a0,uint32_t a1)
   if (a1 != 0) {
     uint32_t d = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
     uint8_t *p = guest_at(d);
-    int16_t t0 = *(int16_t *)p;
-    int16_t t1 = *(int16_t *)(p + 2);
-    int16_t t2 = *(int16_t *)(p + 4);
-    mat3x3_build(t0,t1,t2,*(uint32_t *)guest_at(a1));
+    int16_t m0 = *(int16_t *)p;
+    int16_t m1 = *(int16_t *)(p + 2);
+    int16_t m2 = *(int16_t *)(p + 4);
+    mat3x3_build(m0,m1,m2,*(uint32_t *)guest_at(a1));
   }
   return;
 }
@@ -8410,9 +8410,9 @@ void op_call_38040(int16_t *a0,uint32_t a1)
   uint32_t a3 = b + (uint32_t)(int32_t)a0[3];
   int32_t r;
   if (a0[1] != 0) {
-    uint32_t s0 = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
-    r = task_alloc_wrap_f(a1,s0,a2,a3);
-    *(uint32_t *)guest_at(s0) = (uint32_t)r;
+    uint32_t slot = BR2_GPF(8) + (uint32_t)(int32_t)a0[1];
+    r = task_alloc_wrap_f(a1,slot,a2,a3);
+    *(uint32_t *)guest_at(slot) = (uint32_t)r;
   } else {
     r = task_alloc_wrap_f(a1,0,a2,a3);
   }
@@ -8461,25 +8461,25 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
   (void)a0;
   {
     int32_t off = *a2;
-    uint32_t fp = *(uint32_t *)guest_at(a1);
-    void *fn = fn_lookup(fp);
+    uint32_t fnaddr = *(uint32_t *)guest_at(a1);
+    void *fn = fn_lookup(fnaddr);
     if (off != 0) {
-      uint32_t s0 = BR2_GPF(8) + (uint32_t)off;
+      uint32_t slot = BR2_GPF(8) + (uint32_t)off;
       uint32_t r = 0;
       if (fn != (void *)0x0) {
         r = ((uint32_t (*)(uint32_t))fn)(a0);
       }
       else {
-        /* Guest jalr: a0/a1 = incoming regs (a0 raw, a1 = fp-cell addr),
+        /* Guest jalr: a0/a1 = incoming regs (a0 raw, a1 = fnaddr-cell addr),
          * a2/a3 passthrough — call_guest leaves gpr[6]/gpr[7] live. */
-        r = call_guest(fp,a0,a1);
+        r = call_guest(fnaddr,a0,a1);
       }
-      *(uint32_t *)guest_at(s0) = r;
+      *(uint32_t *)guest_at(slot) = r;
     } else if (fn != (void *)0x0) {
       ((void (*)(uint32_t))fn)(a0);
     }
     else {
-      call_guest(fp,a0,a1);
+      call_guest(fnaddr,a0,a1);
     }
   }
   return;
@@ -8614,11 +8614,11 @@ void op_ctx_validate_call(uint8_t *a0)
 /* 0x801aec40 — lazy ctx8[a0[3]] fill via op_job_alloc_init. */
 void op_ctx8_lazy_fill(int16_t *a0)
 {
-  uint32_t s0 = BR2_GPF(8) + (uint32_t)(int32_t)a0[3];
-  if (*(uint32_t *)guest_at(s0) == 0) {
+  uint32_t cell = BR2_GPF(8) + (uint32_t)(int32_t)a0[3];
+  if (*(uint32_t *)guest_at(cell) == 0) {
     uint32_t stack5 = BR2_GP50 + (uint32_t)(int32_t)a0[2];
-    int *jr = op_job_alloc_init(a0[0],a0[1],BR2_GPC,s0,stack5);
-    *(uint32_t *)guest_at(s0) = (uint32_t)(uintptr_t)jr;
+    int *jr = op_job_alloc_init(a0[0],a0[1],BR2_GPC,cell,stack5);
+    *(uint32_t *)guest_at(cell) = (uint32_t)(uintptr_t)jr;
   }
   return;
 }
@@ -9068,21 +9068,21 @@ void op_node_register(uint32_t a0)
 int op_node_count16(uint32_t a0)
 {
   uint32_t tab = 0x801ff398 + a0 * 72;
-  int32_t s0 = 0;
+  int32_t cnt = 0;
   int32_t i;
   for (i = 0; i < 0x10; i++) {
     uint32_t node = *(uint32_t *)guest_at(tab);
     if (node != 0) {
       for (;;) {
         node = *(uint32_t *)guest_at(node);
-        s0++;
+        cnt++;
         if (node == 0) break;
       }
     }
     tab += 4;
   }
-  text_win_printf((const char *)guest_at(0x80126008),s0);
-  return s0;
+  text_win_printf((const char *)guest_at(0x80126008),cnt);
+  return cnt;
 }
 
 /* 0x801a46c8 — node bucket move: unlink guest node a0 from the chain
@@ -9166,11 +9166,11 @@ void op_dbg_dump_ring(uint32_t a0,uint32_t a1)
 /* 0x801a50d8 — header + 3 field dumps of table node (a0*60+a1*12+0x801ff268 indexed by a2? see asm: s0 = a1*60 + a2*12... actually a0*60? recheck: sll s0,a1,4; subu s0,s0,a1 → a1*15; sll 2 → a1*60. v0=a2*3*4=a2*12. s0 += a2*12 + 0x801ff268. */
 void op_dbg_dump_node(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  uint32_t s0 = 0x801ff268 + a1 * 60 + a2 * 12;
+  uint32_t addr = 0x801ff268 + a1 * 60 + a2 * 12;
   text_win_printf((const char *)guest_at(0x801ceec),a0);
-  text_win_printf((const char *)guest_at(0x80126014),*(uint32_t *)guest_at(s0));
-  text_win_printf((const char *)guest_at(0x80126024),*(uint32_t *)guest_at(s0 + 4));
-  text_win_printf((const char *)guest_at(0x80126034),*(uint32_t *)guest_at(s0 + 8));
+  text_win_printf((const char *)guest_at(0x80126014),*(uint32_t *)guest_at(addr));
+  text_win_printf((const char *)guest_at(0x80126024),*(uint32_t *)guest_at(addr + 4));
+  text_win_printf((const char *)guest_at(0x80126034),*(uint32_t *)guest_at(addr + 8));
   return;
 }
 
@@ -9181,14 +9181,14 @@ extern void op_tag_G_set(uint8_t *,uint32_t);
 /* 0x801a24dc — dispatch on a0[0x46]: 3->3048(a0,a0[0xe4]) 2->3034(a0,a1) 4->3088(a0,a0[0x47]). */
 void op_tag_dispatch(uint8_t *a0,uint32_t a1)
 {
-  uint8_t v1 = *(uint8_t *)(a0 + 0x46);
-  if (v1 == 3) {
+  uint8_t tag = *(uint8_t *)(a0 + 0x46);
+  if (tag == 3) {
     op_tag_L_set(a0,*(uint8_t *)(a0 + 0xe4));
-  } else if (v1 < 4) {
-    if (v1 == 2) {
+  } else if (tag < 4) {
+    if (tag == 2) {
       op_tag_E_set(a0,a1);
     }
-  } else if (v1 == 4) {
+  } else if (tag == 4) {
     op_tag_G_set(a0,*(uint8_t *)(a0 + 0x47));
   }
   return;
@@ -9216,25 +9216,25 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
   uint32_t node = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
-  uint32_t fp = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fp);
+  uint32_t fnaddr = *(uint32_t *)guest_at(a1);
+  void *fn = fn_lookup(fnaddr);
   if (a2v != 0) {
-    uint32_t s0 = BR2_GPF(8) + (uint32_t)a2v;
+    uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
     uint32_t r = 0;
     if (fn != (void *)0x0) {
       r = ((uint32_t (*)(uint32_t))fn)(node);
     }
     else {
-      /* Guest jalr: a0=node, a1=fp-cell addr, a2=lh value (sign-extended),
+      /* Guest jalr: a0=node, a1=fnaddr-cell addr, a2=lh value (sign-extended),
        * a3=base — all four regs explicit. */
-      r = br2_call_clean(fp,node,a1,(uint32_t)a2v,a3);
+      r = br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
     }
-    *(uint32_t *)guest_at(s0) = r;
+    *(uint32_t *)guest_at(slot) = r;
   } else if (fn != (void *)0x0) {
     ((void (*)(uint32_t))fn)(node);
   }
   else {
-    br2_call_clean(fp,node,a1,(uint32_t)a2v,a3);
+    br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
   }
   return;
 }
@@ -9245,24 +9245,24 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   int32_t a2v = *a2;
   uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
   uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
-  uint32_t fp = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fp);
+  uint32_t fnaddr = *(uint32_t *)guest_at(a1);
+  void *fn = fn_lookup(fnaddr);
   if (a2v != 0) {
-    uint32_t s0 = BR2_GPF(8) + (uint32_t)a2v;
+    uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
     uint32_t r = 0;
     if (fn != (void *)0x0) {
       r = ((uint32_t (*)(uint32_t,uint32_t))fn)(n0,n1);
     }
     else {
       /* Guest jalr: a0=n0, a1=n1, a2=lh value, a3=base. */
-      r = br2_call_clean(fp,n0,n1,(uint32_t)a2v,a3);
+      r = br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
     }
-    *(uint32_t *)guest_at(s0) = r;
+    *(uint32_t *)guest_at(slot) = r;
   } else if (fn != (void *)0x0) {
     ((void (*)(uint32_t,uint32_t))fn)(n0,n1);
   }
   else {
-    br2_call_clean(fp,n0,n1,(uint32_t)a2v,a3);
+    br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
   }
   return;
 }
@@ -9306,16 +9306,16 @@ void op_walk_dispatch_e(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return
 void op_walk_dispatch_f(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
 
 /* 0x801aa3fc — free slot a1 of container s1 (f24[] and f3c[] arrays). */
-void op_slot_free(uint8_t *s1,int32_t a1)
+void op_slot_free(uint8_t *cont,int32_t a1)
 {
-  if (s1 != (uint8_t *)0x0 && a1 >= 0 &&
-      a1 < (int32_t)*(uint32_t *)(s1 + 0x44)) {
+  if (cont != (uint8_t *)0x0 && a1 >= 0 &&
+      a1 < (int32_t)*(uint32_t *)(cont + 0x44)) {
     uint32_t o = (uint32_t)a1 * 4;
-    uint32_t *arr = (uint32_t *)guest_at(*(uint32_t *)(s1 + 0x24));
+    uint32_t *arr = (uint32_t *)guest_at(*(uint32_t *)(cont + 0x24));
     task_node_free((int *)(uintptr_t)arr[a1]);
     arr[a1] = 0;
     {
-      uint32_t *arr2 = (uint32_t *)guest_at(*(uint32_t *)(s1 + 0x3c));
+      uint32_t *arr2 = (uint32_t *)guest_at(*(uint32_t *)(cont + 0x3c));
       arr2[a1] = 0;
     }
     (void)o;
@@ -9372,55 +9372,55 @@ void op_globals_reset_shift(void)
 }
 
 /* 0x801a40f8 — per-frame state advance on s0 (host struct). */
-void op_frame_advance(uint8_t *s0)
+void op_frame_advance(uint8_t *ctx)
 {
-  uint32_t ctr = *(uint32_t *)(s0 + 0x4c) + 1;
-  *(uint32_t *)(s0 + 0x4c) = ctr;
+  uint32_t ctr = *(uint32_t *)(ctx + 0x4c) + 1;
+  *(uint32_t *)(ctx + 0x4c) = ctr;
   {
-    uint8_t mode = *(uint8_t *)(s0 + 0x46);
+    uint8_t mode = *(uint8_t *)(ctx + 0x46);
     if (mode != 0) {
       if (mode == 1) {
-        uint8_t t = *(uint8_t *)(s0 + 0x4a);
+        uint8_t t = *(uint8_t *)(ctx + 0x4a);
         if ((uint32_t)t < 0xb) {
-          *(uint8_t *)(s0 + 0x4a) = (uint8_t)(t + 1);
+          *(uint8_t *)(ctx + 0x4a) = (uint8_t)(t + 1);
           return;   /* rec70==1, rec74<11 -> END (no clear-tail) */
         } else {
-          *(uint8_t *)(s0 + 0x49) = 2;
-          *(uint8_t *)(s0 + 0x46) = 0xff;
+          *(uint8_t *)(ctx + 0x49) = 2;
+          *(uint8_t *)(ctx + 0x46) = 0xff;
           return;   /* rec70==1 exhaust -> END (no clear-tail) */
         }
       } else {
-        uint8_t t = *(uint8_t *)(s0 + 0x4a);
+        uint8_t t = *(uint8_t *)(ctx + 0x4a);
         if ((uint32_t)t < 0xb) {
-          *(uint8_t *)(s0 + 0x4a) = (uint8_t)(t + 1);
+          *(uint8_t *)(ctx + 0x4a) = (uint8_t)(t + 1);
           return;   /* rec70>=2, rec74<11 -> END (no clear-tail) */
-        } else if (*(uint8_t *)(s0 + 0x49) != 0) {
-          uint32_t fp = *(uint32_t *)guest_at(0x801be784);
-          void *fn = fn_lookup(fp);
+        } else if (*(uint8_t *)(ctx + 0x49) != 0) {
+          uint32_t fnaddr = *(uint32_t *)guest_at(0x801be784);
+          void *fn = fn_lookup(fnaddr);
           if (fn != (void *)0x0) {
-            ((void (*)(uint32_t))fn)((uint32_t)guest_of(s0));
+            ((void (*)(uint32_t))fn)((uint32_t)guest_of(ctx));
           }
           else {
-            /* Guest jalr: a0 = s0 guest addr (delay-slot move), a1 =
+            /* Guest jalr: a0 = ctx guest addr (delay-slot move), a1 =
              * caller's live $a1. */
             CPUState *cpu = clean_cpu_state();
-            call_guest(fp,(uint32_t)guest_of(s0),
+            call_guest(fnaddr,(uint32_t)guest_of(ctx),
                        cpu != NULL ? cpu->gpr[5] : 0u);
           }
         }
       }
     }
   }
-  /* s0+0x3c / s0+0x30 hold guest addresses — deref through guest_at, the
+  /* ctx+0x3c / ctx+0x30 hold guest addresses — deref through guest_at, the
    * same way the generated lw/sb pair resolves them. */
-  if (*(uint8_t *)guest_at(*(uint32_t *)(s0 + 0x3c)) == 0xf3) {
+  if (*(uint8_t *)guest_at(*(uint32_t *)(ctx + 0x3c)) == 0xf3) {
     /* fallthrough: nothing */
   } else {
-    uint8_t *t = (uint8_t *)guest_at(*(uint32_t *)(s0 + 0x30));
+    uint8_t *t = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0x30));
     t[0] = 0xff;
     t[1] = 0;
-    *(uint8_t *)(s0 + 0xe8) = 0;
-    *(uint8_t *)(s0 + 0x35) = 0;
+    *(uint8_t *)(ctx + 0xe8) = 0;
+    *(uint8_t *)(ctx + 0x35) = 0;
   }
   return;
 }
@@ -9429,10 +9429,10 @@ void op_frame_advance(uint8_t *s0)
 void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
-  uint32_t fp = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fp);
+  uint32_t fnaddr = *(uint32_t *)guest_at(a1);
+  void *fn = fn_lookup(fnaddr);
   if (a2v != 0) {
-    uint32_t s0 = BR2_GPF(8) + (uint32_t)a2v;
+    uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
     uint32_t r = 0;
     uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
     uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
@@ -9443,9 +9443,9 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     }
     else {
       /* Guest jalr: a0-a3 = the four node values (a0[2..5] entries). */
-      r = br2_call_clean(fp,n0,n1,n2,n3);
+      r = br2_call_clean(fnaddr,n0,n1,n2,n3);
     }
-    *(uint32_t *)guest_at(s0) = r;
+    *(uint32_t *)guest_at(slot) = r;
   } else if (fn != (void *)0x0) {
     ((void (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
@@ -9454,7 +9454,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4));
   }
   else {
-    br2_call_clean(fp,
+    br2_call_clean(fnaddr,
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4),
@@ -9529,13 +9529,13 @@ uint32_t op_tag_K_set(uint8_t *a0,uint32_t a1)
 static int mc_issue(uint32_t a0,const void *a1,void *a2,
                         uint32_t a3,uint32_t a4,int state,uint32_t cb)
 {
-  uint32_t *s1 = (uint32_t *)guest_at(0x801febe0);
+  uint32_t *sblk = (uint32_t *)guest_at(0x801febe0);
   uint8_t *blk = (uint8_t *)guest_at(0x801febe0 + 0x24);
-  if ((int32_t)s1[0] > 0) {
+  if ((int32_t)sblk[0] > 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     return 0;
   }
-  if ((int32_t)s1[5] >= 0) {
+  if ((int32_t)sblk[5] >= 0) {
     printf_forward((const char *)guest_at(0x80125de4));
     return 0;
   }
@@ -9547,15 +9547,15 @@ static int mc_issue(uint32_t a0,const void *a1,void *a2,
     printf_forward((const char *)guest_at(0x80125e5c));
     return 0;
   }
-  cd_file_header_copy(a0,blk);
-  cd_strcat_guard(blk,(uintptr_t)a1);
-  s1[0] = (uint32_t)state;
-  s1[1] = 0;
-  s1[2] = 0;
-  s1[6] = a3;
-  s1[8] = guest_of(a2);
-  s1[7] = a4;
-  s1[4] = a0;                        /* delay-slot store: before the call */
+  cd_file_header_copy(a0,sblk);
+  cd_strcat_guard(sblk,(uintptr_t)a1);
+  sblk[0] = (uint32_t)state;
+  sblk[1] = 0;
+  sblk[2] = 0;
+  sblk[6] = a3;
+  sblk[8] = guest_of(a2);
+  sblk[7] = a4;
+  sblk[4] = a0;                        /* delay-slot store: before the call */
   cd_job_slot_alloc(cb,0);
   return 1;
 }
@@ -9576,7 +9576,7 @@ int mc_job_issue_b(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
  * Disasm 0x8019fb9c-0x8019fd94. */
 int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
 {
-  uint32_t *s0 = (uint32_t *)guest_at(0x801febe0);
+  uint32_t *cblk = (uint32_t *)guest_at(0x801febe0);
   /* cmd blk crosses the BIOS boundary (FUN_801a0220/801a0250 kernel
    * services) — must be guest RAM, so reserve a real guest frame. */
   extern uint32_t br2_guest_frame(uint32_t);
@@ -9586,56 +9586,56 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   uint32_t fr = br2_guest_frame(0x40);
   uint8_t *blk = (uint8_t *)guest_at(fr + 0x10);
   uint32_t a2hi;
-  int32_t s2 = 0;
+  int32_t tries = 0;
   uint32_t st;
-  int32_t v0;
-  if (s0[0] != 0) {
+  int32_t fd;
+  if (cblk[0] != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     br2_guest_frame_free();
     return -1;
   }
-  cd_file_header_copy(a0,blk);
-  cd_strcat_guard(blk,(uintptr_t)a1);
-  s0[3] |= 1u << (s0[4] & 31);
-  v0 = FUN_801a0220(fr + 0x10,1,s0[4]);
+  cd_file_header_copy(a0,cblk);
+  cd_strcat_guard(cblk,(uintptr_t)a1);
+  cblk[3] |= 1u << (cblk[4] & 31);
+  fd = FUN_801a0220(fr + 0x10,1,cblk[4]);
   a2hi = a2 << 16;                    /* delay slot: always executes */
-  if (v0 >= 0) {
-    FUN_801a0250(v0);
+  if (fd >= 0) {
+    FUN_801a0250(fd);
     br2_guest_frame_free();
     return 6;
   }
   for (;;) {
-    v0 = FUN_801a0220(fr + 0x10,(a2hi | 0x200),s0[4]);
-    if (v0 >= 0) {
-      FUN_801a0250(v0);
+    fd = FUN_801a0220(fr + 0x10,(a2hi | 0x200),cblk[4]);
+    if (fd >= 0) {
+      FUN_801a0250(fd);
       br2_guest_frame_free();
       return 0;
     }
     *(uint32_t *)guest_at(0x801fec38) = cd_xchg_fec24(0);
-    if ((int32_t)s0[0] > 0) {
+    if ((int32_t)cblk[0] > 0) {
       printf_forward((const char *)guest_at(0x80125ce8));
     } else {
-      s0[0] = 2;
-      s0[1] = 0;
-      s0[2] = 0;
+      cblk[0] = 2;
+      cblk[1] = 0;
+      cblk[2] = 0;
       *(uint32_t *)guest_at(0x801febf0) = a0;  /* delay-slot store */
       cd_job_slot_alloc(0x8019eb00,0);
     }
     /* wait for state change */
-    if (s0[0] == 0 && s0[2] == 0) {
+    if (cblk[0] == 0 && cblk[2] == 0) {
       while (*(uint32_t *)guest_at(0x801febe8) == 0) {
         if (br2_bail_pending()) { br2_guest_frame_free(); return -1; }
         br2_irq_poll();
       }
     }
     st = *(uint32_t *)guest_at(0x801febd4);
-    s0[2] = 0;
+    cblk[2] = 0;
     cd_xchg_fec24(*(uint32_t *)guest_at(0x801fec38));
     if (st == 0) { br2_guest_frame_free(); return 7; }
     if (st == 3) continue;             /* re-issue same cmd */
     if (st == 2) {
-      s2++;
-      if (s2 < 4) continue;            /* retry issue */
+      tries++;
+      if (tries < 4) continue;            /* retry issue */
     }
     br2_guest_frame_free();
     return (int32_t)st;
