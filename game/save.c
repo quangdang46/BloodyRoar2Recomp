@@ -1868,11 +1868,11 @@ void dialog_mode_mirror(int32_t a0)
  * measure a0 with str_len. Returns str_len's result. */
 int slot_name_measure(void *a0,int32_t a1)
 {
-  uint32_t uVar1 = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)a1 << 3));
+  uint32_t name_ent = *(uint32_t *)guest_at(0x801b47ec + ((uint32_t)a1 << 3));
   /* disasm-verified @0x801513fc: guest does sprintf(a0, name) straight
    * into the caller's buffer (a0), then str_len(a0). a0 is already
    * a host pointer into guest memory, so no staging buffer is needed. */
-  sprintf_core((char *)a0,(char *)guest_at(uVar1));
+  sprintf_core((char *)a0,(char *)guest_at(name_ent));
   return str_len((char *)a0);
 }
 
@@ -1924,7 +1924,7 @@ void picker_table_shuffle(uint8_t *a0)
   uint8_t *tab_a = (uint8_t *)guest_at(0x801f47a0);
   uint8_t *tab_b = (uint8_t *)guest_at(0x801f4770);
   uint8_t *cur;
-  uint8_t tmp, bVar5, bVar6;
+  uint8_t tmp;
   int32_t n;
   int32_t i;
   int32_t j;
