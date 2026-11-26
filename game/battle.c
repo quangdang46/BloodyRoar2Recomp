@@ -13700,27 +13700,27 @@ void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 }
 
 
-int * gte_xform_add_off(int x,undefined4 *y,int *z)
+int * gte_xform_add_off(int obj,undefined4 *v,int *out)
 {
   undefined4 in_zero;
   undefined4 in_at;
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  setCopReg(2,in_zero,*y);
-  setCopReg(2,in_at,y[1]);
+  int ty;
+  int tz;
+  int rx;
+  int ry;
+  int rz;
+  setCopReg(2,in_zero,*v);
+  setCopReg(2,in_at,v[1]);
   copFunction(2,0x486012);
-  iVar1 = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x18)));
-  iVar2 = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x1c)));
-  iVar3 = getCopReg(2,0x4800);
-  iVar4 = getCopReg(2,0x5000);
-  iVar5 = getCopReg(2,0x5800);
-  *z = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x14) ))+ iVar3;
-  z[1] = iVar1 + iVar4;
-  z[2] = iVar2 + iVar5;
-  return z;
+  ty = *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x18)));
+  tz = *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x1c)));
+  rx = getCopReg(2,0x4800);
+  ry = getCopReg(2,0x5000);
+  rz = getCopReg(2,0x5800);
+  *out = *(int *)guest_at((uint32_t)(uintptr_t)((obj + 0x14) ))+ rx;
+  out[1] = ty + ry;
+  out[2] = tz + rz;
+  return out;
 
 }
 
@@ -13775,10 +13775,10 @@ uint * angle_pair_rotmat(uint x,uint y,uint *z)
 /* ---- batch18: task/alloc + GTE helpers ---- */
 void vec_emit_spawn(undefined4 *rec)
 {
-  int iVar1;
-  iVar1 = fx_group_alloc(1,1,3,3);
-  if (iVar1 != 0) {
-    noop_a(iVar1,*rec,rec[1],rec[2]);
+  int grp;
+  grp = fx_group_alloc(1,1,3,3);
+  if (grp != 0) {
+    noop_a(grp,*rec,rec[1],rec[2]);
   }
   return;
 
