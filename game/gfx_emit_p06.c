@@ -30,7 +30,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "cpu_state.h"
 
 typedef uint8_t  undefined;
