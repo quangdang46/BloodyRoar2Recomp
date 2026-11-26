@@ -70494,6 +70494,7 @@ block_80189024:
  * from SLES_017.22_full_40.c. */
 void cps_8018902c(void)
 {
+/* prim_nclip_emit_60 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70643,6 +70644,7 @@ block_801890D4:
  * from SLES_017.22_full_40.c. */
 void cps_801890dc(void)
 {
+/* prim_nclip_emit_60 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70804,6 +70806,7 @@ block_8018919C:
  * from SLES_017.22_full_40.c. */
 void cps_801891a4(void)
 {
+/* prim_nclip_emit_80 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -70973,6 +70976,7 @@ block_80189264:
  * from SLES_017.22_full_40.c. */
 void cps_8018926c(void)
 {
+/* prim_nclip_emit_a8 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71167,6 +71171,7 @@ block_80189358:
  * from SLES_017.22_full_40.c. */
 void cps_80189360(void)
 {
+/* prim_nclip_emit_64 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71332,6 +71337,7 @@ block_80189420:
  * from SLES_017.22_full_40.c. */
 void cps_80189428(void)
 {
+/* prim_nclip_emit_74 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71509,6 +71515,7 @@ block_801894F8:
  * from SLES_017.22_full_40.c. */
 void cps_80189500(void)
 {
+/* prim_nclip_emit_80b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71697,6 +71704,7 @@ block_801895F0:
  * from SLES_017.22_full_40.c. */
 void cps_801895f8(void)
 {
+/* prim_nclip_emit_98 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -71903,6 +71911,7 @@ block_801896FC:
  * from SLES_017.22_full_40.c. */
 void cps_80189704(void)
 {
+/* prim_poly_emit_3c piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72036,6 +72045,7 @@ block_801897A8:
  * from SLES_017.22_full_40.c. */
 void cps_801897b0(void)
 {
+/* prim_poly_emit_54 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72204,6 +72214,7 @@ block_80189898:
  * from SLES_017.22_full_40.c. */
 void cps_801898a0(void)
 {
+/* prim_poly_emit_50 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72341,6 +72352,7 @@ block_80189954:
  * from SLES_017.22_full_40.c. */
 void cps_8018995c(void)
 {
+/* prim_poly_emit_68 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72514,6 +72526,7 @@ block_80189A58:
  * from SLES_017.22_full_40.c. */
 void cps_80189a60(void)
 {
+/* prim_poly_emit_54b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72686,6 +72699,7 @@ block_80189B48:
  * from SLES_017.22_full_40.c. */
 void cps_80189b50(void)
 {
+/* prim_poly_emit_5c piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72861,6 +72875,7 @@ block_80189C44:
  * from SLES_017.22_full_40.c. */
 void cps_80189c4c(void)
 {
+/* prim_point_emit_48 piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -72998,6 +73013,7 @@ block_80189D00:
  * from SLES_017.22_full_40.c. */
 void cps_80189d08(void)
 {
+/* prim_poly_emit_6cb piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73188,6 +73204,7 @@ block_80189E24:
  * from SLES_017.22_full_40.c. */
 void cps_80189e2c(void)
 {
+/* prim_poly_emit_64_vs piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -73330,6 +73347,7 @@ block_80189EF4:
  * from SLES_017.22_full_40.c. */
 void cps_80189efc(void)
 {
+/* prim_poly_emit_88b piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
