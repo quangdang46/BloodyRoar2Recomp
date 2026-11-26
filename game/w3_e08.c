@@ -2961,6 +2961,9 @@ void mc_op_result_poll_alt(void)
      * classes >=5 are "in flight" — re-poll until the index stops
      * changing, then return it in v0. */
 
+    /* memcard op-result poll: retry 0x8019EA98 until v0!=0, then retry
+     * 0x8019FA80; index word(sp+20) (<5) dispatches via table s2, else
+     * re-poll while the value keeps changing; v0 = word(sp+20) on return */
 block_80168424:
     sp = sp + -40;
     cpu->write_word(sp + 28, s1);
@@ -2981,16 +2984,16 @@ block_80168448:
     cpu->pc = 0x8019EA98u; return;  /* CPS jal -> cd_chan_job_submit */
 
 block_80168450:
-    int _bc_80168450 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_80168450) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168448u);
-        goto block_80168448;  /* taken — job not accepted yet, resubmit */
+        goto block_80168448;  /* taken: poll again */
     } else {
         psx_check_interrupts_at(cpu, 0x80168458u);
-        goto block_80168458;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x80168458u);
+    /* fall through to block_80168458 */
 
 block_80168458:
     a1 = sp + 16;                    /* &result_word */
@@ -3001,16 +3004,16 @@ block_80168458:
     cpu->pc = 0x8019FA80u; return;  /* CPS jal -> cd_job_result */
 
 block_80168464:
-    int _bc_80168464 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     a0 = zero;
-    if (_bc_80168464) {
+    if (v0 == zero) {
         psx_check_interrupts_at(cpu, 0x80168458u);
-        goto block_80168458;  /* taken — result not ready, refetch */
+        goto block_80168458;  /* taken: poll again */
     } else {
         psx_check_interrupts_at(cpu, 0x8016846Cu);
-        goto block_8016846C;  /* not taken */
     }
+    psx_check_interrupts_at(cpu, 0x8016846Cu);
+    /* fall through to block_8016846C */
 
 block_8016846C:
     v1 = cpu->read_word(sp + 20);    /* v1 = result index/class */
@@ -3021,11 +3024,12 @@ block_8016846C:
     v0 = v1 << 2;
     if (_bc_80168478) {
         psx_check_interrupts_at(cpu, 0x80168494u);
-        goto block_80168494;  /* taken — class >=5: in-flight, wait for stable */
+        goto block_80168494;  /* taken: index >=5 -> stability check */
     } else {
         psx_check_interrupts_at(cpu, 0x80168480u);
-        goto block_80168480;  /* not taken — class <5: dispatch handler */
     }
+    psx_check_interrupts_at(cpu, 0x80168480u);
+    /* fall through to block_80168480 */
 
 block_80168480:
     v0 = v0 + s2;                    /* table_8012212C[class] */
@@ -3045,11 +3049,12 @@ block_80168494:
     s0 = v0;                         /* remember this index */
     if (_bc_8016849C) {
         psx_check_interrupts_at(cpu, 0x801684B0u);
-        goto block_801684B0;  /* taken — index unchanged: stable, exit */
+        goto block_801684B0;  /* taken: unchanged -> done */
     } else {
         psx_check_interrupts_at(cpu, 0x801684A4u);
-        goto block_801684A4;  /* not taken — still changing: re-poll */
     }
+    psx_check_interrupts_at(cpu, 0x801684A4u);
+    /* fall through to block_801684A4 */
 
 block_801684A4:
     /* delay slot (always executes) */
@@ -3101,6 +3106,9 @@ void mc_file_cmd_stable_poll_alt(void)
      * in flight" — re-issue until the result stops changing, then
      * return it in v0. */
 
+    /* stable-result poll: retry 0x8019FB9C until v0!=0; index v0 (<8)
+     * dispatches via table s1, else re-poll while the value keeps
+     * changing; v0 = last index on return */
 block_801685B4:
     sp = sp + -40;
     cpu->write_word(sp + 24, s2);
@@ -3134,11 +3142,12 @@ block_801685F8:
     v0 = v1 << 2;
     if (_bc_80168600) {
         psx_check_interrupts_at(cpu, 0x8016861Cu);
-        goto block_8016861C;  /* taken — class >=8: in-flight, wait for stable */
+        goto block_8016861C;  /* taken: index >=8 -> stability check */
     } else {
         psx_check_interrupts_at(cpu, 0x80168608u);
-        goto block_80168608;  /* not taken — class <8: dispatch handler */
     }
+    psx_check_interrupts_at(cpu, 0x80168608u);
+    /* fall through to block_80168608 */
 
 block_80168608:
     v0 = v0 + s1;                    /* table_80122144[class] */
@@ -3156,11 +3165,12 @@ block_8016861C:
     s0 = v1;                         /* remember this result */
     if (_bc_8016861C) {
         psx_check_interrupts_at(cpu, 0x801685E8u);
-        goto block_801685E8;  /* taken — result changed: re-issue/poll */
+        goto block_801685E8;  /* taken: changed -> repoll */
     } else {
         psx_check_interrupts_at(cpu, 0x80168624u);
-        goto block_80168624;  /* not taken — stable: exit */
     }
+    psx_check_interrupts_at(cpu, 0x80168624u);
+    /* fall through to block_80168624 */
 
 block_80168624:
     v0 = v1;                         /* return stable result */

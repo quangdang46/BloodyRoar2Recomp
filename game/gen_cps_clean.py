@@ -44,6 +44,20 @@ REAL_OP_RE = re.compile(
     r'|cpu->(?:write|read)_(?:word|half|byte)\s*\([^;]*\);'
     r'|cpu->gpr\[\d+\]\s*=\s*psx_cyc_load_\w+\s*\([^;]*\);)')
 
+# --timing mode: CD/IRQ-region faithful CPS. Keeps the per-instruction
+# psx_cyc_step / psx_cyc_load_* / psx_cyc_lwc2_read / psx_icache_fetch /
+# psx_slice_block calls that the default transform strips — without them a
+# cps_ piece runs its whole block on a frozen cycle counter and device
+# deadlines (CD IRQ, DMA, VBlank) never service inside the piece (the
+# cps_fallthrough_cycle_wedge.md intra-piece timing loss). Still drops
+# debug/cosim/PGXP instrumentation and the cycle-batch defer calls (charges
+# then take the unbatched psx_cyc_charge -> psx_advance_cycles path, which is
+# the same accounting generated code performs at every flush boundary).
+TIMING = False
+DROP_SUBSTR_TIMING = [d for d in DROP_SUBSTR
+                      if d not in ('psx_cyc_step', 'psx_icache_fetch',
+                                   'psx_slice_block')]
+
 _LOAD_RE = re.compile(
     r'psx_cyc_load_(word|half|byte)\s*\(\s*cpu\s*,\s*(.+?)\s*,\s*\d+\s*,\s*0x[0-9a-fA-F]+u?\s*\)')
 # cpu->read_word/read_half/read_byte are function pointers bound to the
@@ -63,6 +77,20 @@ _UNAL_RE = re.compile(
 # is a synchronous call to the next CPS split piece of the same logical fn.
 _FT_RE = re.compile(
     r'\b(?:br2eu_func_|br2eu_psx_alias_body_)([0-9a-fA-F]{8})\s*\(\s*cpu\s*\)')
+# --timing mode: psx_lwl/lwr/swl/swr are static inline in the generated
+# SLES decls header (invisible to game/*.c). Route them to file-local
+# cpst_* helpers that keep the generated cycle semantics verbatim
+# (psx_cyc_load_word interlock for loads, psx_store_cycle_barrier for
+# stores). Arg list is captured whole — args are simple exprs, at most
+# one paren nesting level.
+_UNAL_T_RE = re.compile(
+    r'\bpsx_(lwl|lwr|swl|swr)\s*\(\s*((?:[^()]|\([^()]*\))*)\)')
+# 2-arg alias dispatch: br2eu_psx_alias_body_<base>(cpu, 0x<entry>u) tail-enters
+# the shared host body at guest entry <entry> — equivalent to dispatching
+# cpu->pc = <entry> through clean_try_dispatch.
+_ALIAS_CALL_RE = re.compile(
+    r'\bbr2eu_psx_alias_body_[0-9a-fA-F]{8}\s*\(\s*cpu\s*,\s*'
+    r'0x([0-9a-fA-F]+)u?\s*\)')
 
 
 # COP2 lwc2: psx_cyc_lwc2_read(cpu, addr) is a 32-bit GTE load == cpu->read_word
@@ -81,8 +109,10 @@ def _sub_temps(expr, tmap):
 
 def _conv(expr):
     """Apply load/store semantic rewrites to an expression/statement."""
-    expr = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', expr)
-    return _sub_loads(expr)
+    if not TIMING:
+        expr = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', expr)
+        expr = _sub_loads(expr)
+    return expr
 
 
 def unwrap_pgx_group(text):
@@ -106,25 +136,36 @@ def unwrap_pgx_group(text):
     body = re.sub(r'PGXP_\w+\s*\([^;]*\)\s*;?', '', body)
     body = re.sub(r'g_debug_last_store_pc\s*=\s*[^;]+;', '', body)
     body = re.sub(r'psx_store_cycle_barrier\s*\(\s*\)\s*;?', '', body)
-    body = re.sub(r'psx_cyc_step\s*\([^;]*\)\s*;?', '', body)
+    if not TIMING:
+        body = re.sub(r'psx_cyc_step\s*\([^;]*\)\s*;?', '', body)
     # drop stray braces / whitespace
     body = body.replace('{', ' ').replace('}', ' ')
     # keep only real statements: gpr/gte_data assign, cpu->read/write_*,
     # gte_write_data / gte_precision_store_word / gte_read_data calls, cps_ fallthrough
+    keep_re = (r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|'
+               r'gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|'
+               r'cps_[0-9a-f]|br2_lw|br2_sw)')
+    if TIMING:
+        keep_re = keep_re[:-1] + r'|psx_|_jt_)'
     stmts = []
     for st in body.split(';'):
         st = st.strip()
         if not st:
             continue
-        if re.match(r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|cps_[0-9a-f]|br2_lw|br2_sw)', st):
+        if re.match(keep_re, st):
             stmts.append(_sub_loads(_sub_temps(st, tmap)).strip() + ';')
     return stmts
 
 
 def _sub_loads(s):
-    s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
-    s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
+    if not TIMING:
+        s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
+        s = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', s)
+        s = _UNAL_RE.sub(lambda m: f'br2_{m.group(1)}(cpu, {m.group(2).strip()}, {m.group(3).strip()})', s)
+    else:
+        s = _UNAL_T_RE.sub(lambda m: f'cpst_{m.group(1)}({m.group(2).strip()})', s)
     s = _FT_RE.sub(lambda m: f'cps_{m.group(1).lower()}()', s)
+    s = _ALIAS_CALL_RE.sub(lambda m: f'cpu->pc = 0x{m.group(1)}u; return;', s)
     return s
 
 
@@ -140,7 +181,8 @@ def rewrite_line(ln):
     """Rewrite a non-brace semantic line; return None to drop it."""
     if not ln.strip():
         return ln
-    for d in DROP_SUBSTR:
+    drops = DROP_SUBSTR_TIMING if TIMING else DROP_SUBSTR
+    for d in drops:
         if d in ln and 'psx_check_interrupts_at' not in ln:
             return None
     if any(r.search(ln) for r in DROP_LINE_RE):
@@ -156,7 +198,7 @@ def find_body(addr):
         txt = open(path, errors='replace').read()
         for m in re.finditer(
                 r'void (br2eu_func_[0-9a-fA-F]+|br2eu_psx_alias_body_[0-9a-fA-F]+)'
-                r'\(CPUState\*\s*cpu\)\s*\{', txt):
+                r'\(CPUState\*\s*cpu\s*(?:,\s*uint32_t\s+\w+\s*)?\)\s*\{', txt):
             name = m.group(1)
             start = m.end()
             end = txt.find('\n}\n', start)
@@ -166,11 +208,91 @@ def find_body(addr):
             covers = (f'case 0x{addr:08X}u' in body or
                       f'case 0x{addr:x}u' in body or
                       f'block_{addr:08X}:' in body or
-                      f'block_{addr:08x}:' in body)
+                      f'block_{addr:08x}:' in body or
+                      # embedded entry: addr is an instruction inside a block
+                      # (jal target mid-block — e.g. 0x8019D508 inside
+                      # br2eu_func_8019D500's first block). The /* 0xADDR: ENC */
+                      # op comment is the per-instruction anchor.
+                      f'/* 0x{addr:08X}:' in body)
             if covers and 'block_' in body:
                 if best is None or len(body) > len(best[1]):
                     best = (name, body, path)
     return best
+
+
+def _truncate_embedded_entry(body, entry):
+    """Emit a body variant whose FIRST block starts executing at guest
+    instruction `entry` (a mid-block jal target). Only the first block can
+    host an embedded entry: it is reachable solely via function dispatch,
+    so dropping its leading instructions is safe — no internal goto targets
+    the block head. Later blocks are branch targets and must stay whole.
+
+    Returns the rewritten body, or None if `entry` is not an instruction
+    anchor inside the first block (caller must not emit a body then — a
+    plain parent transliteration would execute instructions the guest
+    entry point skips)."""
+    m = re.search(r'(?m)^block_[0-9A-Fa-f]+:', body)
+    if not m:
+        return None
+    lines = body.split('\n')
+    # first-block line range: [bi, b_end)
+    bi = next(i for i, l in enumerate(lines) if re.match(r'^block_[0-9A-Fa-f]+:', l))
+    b_end = next((i for i in range(bi + 1, len(lines))
+                  if re.match(r'^block_[0-9A-Fa-f]+:', lines[i])), len(lines))
+    block_label = re.match(r'block_([0-9A-Fa-f]+):', lines[bi]).group(1)
+    block_addr = int(block_label, 16)
+    # find the op line anchored at entry inside the first block
+    pat = f'/* 0x{entry:08X}:'
+    op_i = None
+    for i in range(bi, b_end):
+        if pat in lines[i]:
+            op_i = i
+            break
+    if op_i is None or op_i == bi:
+        return None
+    # entry instr's prelude starts after the previous instr's cosim_instr
+    # #endif. Walk back from the op line to the previous cosim_instr.
+    cut = None
+    for i in range(op_i - 1, bi - 1, -1):
+        if 'cosim_instr(' in lines[i]:
+            for j in range(i + 1, min(i + 6, len(lines))):
+                if lines[j].strip() == '#endif':
+                    cut = j + 1
+                    break
+            break
+    if cut is None:
+        return None
+    # prologue = block head through the first timing fetch/step line
+    # (kept so the icache fetch + slice guard still bracket the block).
+    p_end = None
+    for i in range(bi, cut):
+        if 'psx_icache_fetch(' in lines[i] or 'psx_cyc_step(' in lines[i]:
+            p_end = i + 1
+            break
+    if p_end is None:
+        return None
+    # rewrite the slice guard inside the prologue only: entry addr +
+    # reduced instr budget (bcyc counts 4-byte instr slots block-start..end).
+    skipped = (entry - block_addr) // 4
+    prologue = []
+    for l in lines[bi:p_end]:
+        if 'psx_slice_block(' in l:
+            l = re.sub(
+                r'psx_slice_block\(cpu, 0x[0-9A-Fa-f]+u, (\d+)u,',
+                lambda mm: (f'psx_slice_block(cpu, 0x{entry:08X}u, '
+                            f'{max(1, int(mm.group(1)) - skipped)}u,'),
+                l, count=1)
+        prologue.append(l)
+    kept = lines[:bi] + prologue + lines[cut:]
+    body2 = '\n'.join(kept)
+    # rename the truncated block label so it reads as the embedded entry
+    body2 = body2.replace(f'block_{block_label}:', f'block_{entry:08X}:', 1)
+    # explicit _cont case for the embedded entry (default fallthrough would
+    # also reach it, but the case documents the dispatch contract).
+    body2 = re.sub(r'(switch \(_cont\) \{\n)',
+                   rf'\1            case 0x{entry:08X}u: goto block_{entry:08X};\n',
+                   body2, count=1)
+    return body2
 
 
 def transform(body):
@@ -274,6 +396,53 @@ static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
     cpu->write_word(aligned, word);
 }
 
+/* --timing unaligned word ops: verbatim ports of the generated
+ * SLES_017.22_decls.h psx_lwl/lwr/swl/swr (static inline there, so
+ * invisible to game/*.c). Loads keep the full psx_cyc_load_word
+ * interlock; stores keep psx_store_cycle_barrier + read-modify-write. */
+static inline uint32_t cpst_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value, uint32_t rt, uint32_t reg_mask) {
+    uint32_t word = psx_cyc_load_word(cpu, addr & ~3u, rt, reg_mask);
+    switch (addr & 3u) {
+        case 0: return (rt_value & 0x00FFFFFFu) | (word << 24);
+        case 1: return (rt_value & 0x0000FFFFu) | (word << 16);
+        case 2: return (rt_value & 0x000000FFu) | (word << 8);
+        default: return word;
+    }
+}
+static inline uint32_t cpst_lwr(CPUState *cpu, uint32_t addr, uint32_t rt_value, uint32_t rt, uint32_t reg_mask) {
+    uint32_t word = psx_cyc_load_word(cpu, addr & ~3u, rt, reg_mask);
+    switch (addr & 3u) {
+        case 0: return word;
+        case 1: return (rt_value & 0xFF000000u) | (word >> 8);
+        case 2: return (rt_value & 0xFFFF0000u) | (word >> 16);
+        default: return (rt_value & 0xFFFFFF00u) | (word >> 24);
+    }
+}
+static inline void cpst_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    psx_store_cycle_barrier();
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = (word & 0xFFFFFF00u) | (rt_value >> 24); break;
+        case 1: word = (word & 0xFFFF0000u) | (rt_value >> 16); break;
+        case 2: word = (word & 0xFF000000u) | (rt_value >> 8); break;
+        default: word = rt_value; break;
+    }
+    cpu->write_word(aligned, word);
+}
+static inline void cpst_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
+    psx_store_cycle_barrier();
+    uint32_t aligned = addr & ~3u;
+    uint32_t word = cpu->read_word(aligned);
+    switch (addr & 3u) {
+        case 0: word = rt_value; break;
+        case 1: word = (word & 0x000000FFu) | (rt_value << 8); break;
+        case 2: word = (word & 0x0000FFFFu) | (rt_value << 16); break;
+        default: word = (word & 0x00FFFFFFu) | (rt_value << 24); break;
+    }
+    cpu->write_word(aligned, word);
+}
+
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
 #define at   cpu->gpr[1]
@@ -324,8 +493,30 @@ def emit_fn(addr):
         print(f'/* {addr:#x}: no generated body found */', file=sys.stderr)
         return None
     name, body, path = found
-    sym = f'cps_{addr:08x}'
+    # Embedded entry: addr is not a block label or _cont case but anchors an
+    # instruction inside the parent's FIRST block (mid-block jal target).
+    # Truncate the first block so execution starts at that instruction —
+    # emitting the untruncated parent would run instructions the guest entry
+    # point skips (e.g. 0x8019D508 skips func_8019D500's lui/lw prelude).
+    has_entry = (f'case 0x{addr:08X}u' in body or f'case 0x{addr:x}u' in body or
+                 f'block_{addr:08X}:' in body or f'block_{addr:08x}:' in body)
+    if not has_entry:
+        tb = _truncate_embedded_entry(body, addr)
+        if tb is None:
+            print(f'/* {addr:#x}: embedded entry not in first block of '
+                  f'{name} — no body emitted */', file=sys.stderr)
+            return None
+        body = tb
+    sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
+    if 'alias_body' in name:
+        # Overlapping-alias bodies take (cpu, entry): the alias-entry
+        # switch dispatches on the C param, not cpu->pc. In clean CPS the
+        # dispatched addr always arrives in cpu->pc, so bind entry to it
+        # before the _cont consumption zeroes cpu->pc. Resume addrs are
+        # still caught by the _cont switch first; alias entries fall
+        # through to switch(entry) exactly as generated.
+        core = '    uint32_t entry = cpu->pc;\n' + core
     hdr = (f'\n/* {sym} — clean CPS transliteration of {name} (guest {addr:#x})\n'
            f' * from {os.path.basename(path)}. */\n')
     return hdr + f'void {sym}(void)\n{{\n  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n' + core + '\n}\n'
@@ -333,6 +524,9 @@ def emit_fn(addr):
 
 if __name__ == '__main__':
     args = sys.argv[1:]
+    if '--timing' in args:
+        TIMING = True
+        args.remove('--timing')
     if args and args[0] == '--file':
         addrs = [int(a, 16) for a in args[1:]]
         # two passes: emit prototypes for every cps_ sym first (split-piece
@@ -343,7 +537,7 @@ if __name__ == '__main__':
             r = emit_fn(a)
             if r:
                 fns.append(r)
-                syms.append(f'cps_{a:08x}')
+                syms.append(f'cpst_{a:08x}' if TIMING else f'cps_{a:08x}')
         protos = ''.join(f'void {s}(void);\n' for s in syms)
         sys.stdout.write(FILE_HDR + protos + ''.join(fns))
     else:

@@ -7964,6 +7964,40 @@ extern void sio_get_pad_sticks(int slot, uint8_t out[4]);
 extern uint32_t br2_dbg_clean_trace(uint32_t i);
 extern uint32_t br2_dbg_clean_trace_ra(uint32_t i);
 extern uint32_t br2_dbg_clean_count(void);
+extern uint32_t br2_dbg_clean_hit_count(void);
+extern uint32_t br2_dbg_clean_hit_at(uint32_t i, uint64_t *cnt);
+/* clean_stats — per-clean-entry lifetime hit counts (complements the
+ * 512-entry clean_trace ring, which only shows the recent window).
+ * Emits every dispatch slot with count>0, capped at 4096 rows. */
+static void handle_clean_stats(int id, const char *json)
+{
+    (void)json;
+    uint32_t n = br2_dbg_clean_hit_count();
+    uint32_t nz = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        uint64_t c;
+        br2_dbg_clean_hit_at(i, &c);
+        if (c) nz++;
+    }
+    char *buf = (char *)malloc(1u << 20);
+    if (!buf) { send_err(id, "oom"); return; }
+    size_t pos = 0, cap = (1u << 20) - 64;
+    pos += snprintf(buf + pos, cap - pos,
+                    "{\"id\":%d,\"ok\":true,\"slots\":%u,\"nonzero\":%u,\"hits\":[",
+                    id, n, nz);
+    uint32_t emitted = 0;
+    for (uint32_t i = 0; i < n && emitted < 4096; i++) {
+        uint64_t c;
+        uint32_t a = br2_dbg_clean_hit_at(i, &c);
+        if (!c) continue;
+        pos += snprintf(buf + pos, cap - pos, "%s{\"a\":\"0x%08X\",\"n\":%llu}",
+                        emitted ? "," : "", a, (unsigned long long)c);
+        emitted++;
+    }
+    pos += snprintf(buf + pos, cap - pos, "]}");
+    debug_server_send_line(buf);
+    free(buf);
+}
 static void handle_clean_trace(int id, const char *json)
 {
     (void)json;
@@ -14825,6 +14859,7 @@ static const CmdEntry s_commands[] = {
     { "press",             handle_press },
     { "pad_status",        handle_pad_status },
     { "clean_trace",       handle_clean_trace },
+    { "clean_stats",       handle_clean_stats },
     { "bios_svc_trace",    handle_bios_svc_trace },
     { "clear_input",       handle_clear_input },
     { "input_route_clear", handle_input_route_clear },
@@ -15836,6 +15871,8 @@ void br2_dbg_write32(uint32_t addr, int val) { psx_write_word(addr, (uint32_t)va
 __attribute__((weak)) uint32_t br2_dbg_clean_trace(uint32_t i) { (void)i; return 0; }
 __attribute__((weak)) uint32_t br2_dbg_clean_trace_ra(uint32_t i) { (void)i; return 0; }
 __attribute__((weak)) uint32_t br2_dbg_clean_count(void) { return 0; }
+__attribute__((weak)) uint32_t br2_dbg_clean_hit_count(void) { return 0; }
+__attribute__((weak)) uint32_t br2_dbg_clean_hit_at(uint32_t i, uint64_t *cnt) { (void)i; (void)cnt; return 0; }
 __attribute__((weak)) uint32_t br2_dbg_svc_count(void) { return 0; }
 __attribute__((weak)) int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]) { (void)i; (void)out; return 0; }
 
