@@ -3417,9 +3417,8 @@ uint32_t gte_xform_packet(uint32_t a0)
     g[3] = 528482304u;
     g[3] = g[3] | 992;
     g[2] = br2_ld32(g[4] + (int32_t)32); /* 801AAE10 */
-    { int _bc1 = (g[2] == g[0]);
-      g[5] = g[4] + g[0];
-      if (_bc1) goto L_801AB84Cu; } /* beq 801AAE18 */
+    g[5] = g[4] + g[0];            /* beq delay: a1 = a0 (+0) */
+    if (g[2] != 0) {               /* !beq 801AAE18: f20 set -> stage A/B */
     g[2] = br2_ld32(g[4] + (int32_t)20); /* 801AAE20 */
     br2_st32(g[3] + (int32_t)20, g[2]); /* 801AAE28 */
     g[2] = br2_ld32(g[4] + (int32_t)24); /* 801AAE2C */
@@ -3427,11 +3426,9 @@ uint32_t gte_xform_packet(uint32_t a0)
     g[2] = br2_ld32(g[4] + (int32_t)28); /* 801AAE38 */
     br2_st32(g[3] + (int32_t)28, g[2]); /* 801AAE40 */
     g[2] = br2_ld32(g[4] + (int32_t)36); /* 801AAE44 */
-    { int _bc2 = (g[2] == g[0]);
-      if (_bc2) goto L_801AB470u; } /* beq 801AAE4C */
+    if (g[2] != 0) {               /* !beq 801AAE4C: f24 set -> stage A */
     g[2] = (uint32_t)(int32_t)(int16_t)br2_ld16(g[4] + (int32_t)40); /* 801AAE54 */
-    { int _bc3 = (g[2] == g[0]);
-      if (_bc3) goto L_801AB07Cu; } /* beq 801AAE5C */
+    if (g[2] != 0) {               /* !beq 801AAE5C: h28 set -> stage-A extra */
     g[6] = br2_ld32(g[5] + (int32_t)36); /* 801AAE64 */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801AAE6C */
     g[13] = br2_ld32(g[6] + (int32_t)4); /* 801AAE70 */
@@ -3552,7 +3549,8 @@ uint32_t gte_xform_packet(uint32_t a0)
     c->gte_ctrl[10] = g[12]; /* ctc2 801AB070 */
     c->gte_ctrl[11] = g[13]; /* ctc2 801AB074 */
     gte_write_ctrl(c, 12, g[14]); /* ctc2 801AB078 */
-L_801AB07Cu:
+    }                              /* end stage-A extra (!bc3) */
+    /* L_801AB07Cu: stage-A tail join */
     g[12] = br2_ld32(g[5] + (int32_t)0); /* 801AB07C */
     g[13] = br2_ld32(g[5] + (int32_t)4); /* 801AB080 */
     c->gte_ctrl[0] = g[12]; /* ctc2 801AB084 */
@@ -3776,10 +3774,10 @@ L_801AB07Cu:
     c->gte_ctrl[6] = g[13]; /* ctc2 801AB460 */
     c->gte_ctrl[7] = g[14]; /* ctc2 801AB464 */
     return g[2]; /* jr $ra 801AB468 */
-L_801AB470u:
+    }                              /* end stage A (!bc2) */
+    /* stage B entry (bc2 taken: f24 == 0) */
     g[2] = (uint32_t)(int32_t)(int16_t)br2_ld16(g[4] + (int32_t)40); /* 801AB470 */
-    { int _bc4 = (g[2] == g[0]);
-      if (_bc4) goto L_801AB5A4u; } /* beq 801AB478 */
+    if (g[2] != 0) {               /* !beq 801AB478: h28 set -> stage-B body */
     g[6] = br2_ld32(g[28] + (int32_t)52); /* 801AB480 */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801AB488 */
     g[13] = br2_ld32(g[6] + (int32_t)4); /* 801AB48C */
@@ -3846,7 +3844,8 @@ L_801AB470u:
     c->gte_ctrl[10] = g[12]; /* ctc2 801AB598 */
     c->gte_ctrl[11] = g[13]; /* ctc2 801AB59C */
     gte_write_ctrl(c, 12, g[14]); /* ctc2 801AB5A0 */
-L_801AB5A4u:
+    }                              /* end stage-B body (!bc4) */
+    /* L_801AB5A4u: stage-B tail join */
     g[12] = br2_ld32(g[5] + (int32_t)0); /* 801AB5A4 */
     g[13] = br2_ld32(g[5] + (int32_t)4); /* 801AB5A8 */
     c->gte_ctrl[0] = g[12]; /* ctc2 801AB5AC */
@@ -3997,13 +3996,12 @@ L_801AB5A4u:
     c->gte_ctrl[6] = g[13]; /* ctc2 801AB83C */
     c->gte_ctrl[7] = g[14]; /* ctc2 801AB840 */
     return g[2]; /* jr $ra 801AB844 */
-L_801AB84Cu:
+    }                              /* end stage A/B (!bc1) */
+    /* stage C/D entry (bc1 taken: f20 == 0) */
     g[2] = br2_ld32(g[4] + (int32_t)36); /* 801AB84C */
-    { int _bc5 = (g[2] == g[0]);
-      if (_bc5) goto L_801ABD94u; } /* beq 801AB854 */
+    if (g[2] != 0) {               /* !beq 801AB854: f24 set -> stage C */
     g[2] = (uint32_t)(int32_t)(int16_t)br2_ld16(g[4] + (int32_t)40); /* 801AB85C */
-    { int _bc6 = (g[2] == g[0]);
-      if (_bc6) goto L_801ABA84u; } /* beq 801AB864 */
+    if (g[2] != 0) {               /* !beq 801AB864: h28 set -> stage-C part1 */
     g[6] = br2_ld32(g[5] + (int32_t)36); /* 801AB86C */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801AB874 */
     g[13] = br2_ld32(g[6] + (int32_t)4); /* 801AB878 */
@@ -4124,7 +4122,8 @@ L_801AB84Cu:
     c->gte_ctrl[10] = g[12]; /* ctc2 801ABA78 */
     c->gte_ctrl[11] = g[13]; /* ctc2 801ABA7C */
     gte_write_ctrl(c, 12, g[14]); /* ctc2 801ABA80 */
-L_801ABA84u:
+    }                              /* end stage-C part1 (!bc6) */
+    /* L_801ABA84u: stage-C part2 join */
     g[6] = 2149318656u;
     g[6] = br2_ld32(g[6] + (int32_t)-6088); /* 801ABA88 */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801ABA90 */
@@ -4298,10 +4297,10 @@ L_801ABA84u:
     c->gte_ctrl[6] = g[13]; /* ctc2 801ABD84 */
     c->gte_ctrl[7] = g[14]; /* ctc2 801ABD88 */
     return g[2]; /* jr $ra 801ABD8C */
-L_801ABD94u:
+    }                              /* end stage C (!bc5) */
+    /* stage D entry (bc5 taken: f24 == 0) */
     g[2] = (uint32_t)(int32_t)(int16_t)br2_ld16(g[4] + (int32_t)40); /* 801ABD94 */
-    { int _bc7 = (g[2] == g[0]);
-      if (_bc7) goto L_801ABEC8u; } /* beq 801ABD9C */
+    if (g[2] != 0) {               /* !beq 801ABD9C: h28 set -> stage-D body */
     g[6] = br2_ld32(g[28] + (int32_t)52); /* 801ABDA4 */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801ABDAC */
     g[13] = br2_ld32(g[6] + (int32_t)4); /* 801ABDB0 */
@@ -4368,7 +4367,8 @@ L_801ABD94u:
     c->gte_ctrl[10] = g[12]; /* ctc2 801ABEBC */
     c->gte_ctrl[11] = g[13]; /* ctc2 801ABEC0 */
     gte_write_ctrl(c, 12, g[14]); /* ctc2 801ABEC4 */
-L_801ABEC8u:
+    }                              /* end stage-D body (!bc7) */
+    /* L_801ABEC8u: stage-D tail join */
     g[6] = 2149318656u;
     g[6] = br2_ld32(g[6] + (int32_t)-6088); /* 801ABECC */
     g[12] = br2_ld32(g[6] + (int32_t)0); /* 801ABED4 */
