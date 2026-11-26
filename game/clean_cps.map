@@ -5327,3 +5327,26 @@
 80183fe4 scriptop_chk_state_bits
 80184354 chk_atk2_self
 80184358 scriptop_chk_state_bits
+
+# --- w4_e01: scriptop_move ext-byte cases + scriptop_add src cases ---
+# scriptop_move_ext_cases (guest pieces of 0x8018444C alias body) — ext
+# src==15 field-source cases e7-e11 plus shared tails 0x80184680/AC/D8/DC/E0.
+80184620 scriptop_move_ext_cases
+80184658 scriptop_move_ext_cases
+80184668 scriptop_move_ext_cases
+80184678 scriptop_move_ext_cases
+80184680 scriptop_move_ext_cases
+80184694 scriptop_move_ext_cases
+801846ac scriptop_move_ext_cases
+801846d8 scriptop_move_ext_cases
+801846dc scriptop_move_ext_cases
+801846e0 scriptop_move_ext_cases
+
+# scriptop_add_src_cases (guest pieces of 0x80184710 alias body) — src
+# selector cases plus shared tails 0x801847EC/F0.
+80184758 scriptop_add_src_cases
+80184778 scriptop_add_src_cases
+80184784 scriptop_add_src_cases
+80184790 scriptop_add_src_cases
+801847ec scriptop_add_src_cases
+801847f0 scriptop_add_src_cases

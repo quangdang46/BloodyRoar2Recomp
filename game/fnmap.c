@@ -1387,6 +1387,7 @@ extern void script_move_timer_eval(void);
 extern void script_op_dispatch(void);
 extern void script_stream_tick(void);
 extern void scriptop_add(void);
+extern void scriptop_add_src_cases(void);
 extern void scriptop_bra(void);
 extern void scriptop_bra_cps(void);
 extern void scriptop_bra_pc_commit(void);
@@ -1405,6 +1406,7 @@ extern void scriptop_div(void);
 extern void scriptop_end(void);
 extern void scriptop_gpad(void);
 extern void scriptop_move(void);
+extern void scriptop_move_ext_cases(void);
 extern void scriptop_mul(void);
 extern void scriptop_ret(void);
 extern void scriptop_ret_cond_0x801835d0(void);
@@ -2425,7 +2427,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80183efc, (void *)chk_mode1_foe },
   { 0x80184378, (void *)scriptop_cmp },
   { 0x8018444c, (void *)scriptop_move },
+  { 0x801846e0, (void *)scriptop_move_ext_cases },
   { 0x80184710, (void *)scriptop_add },
+  { 0x801847f0, (void *)scriptop_add_src_cases },
   { 0x80184810, (void *)scriptop_sub },
   { 0x80184890, (void *)scriptop_mul },
   { 0x80184914, (void *)scriptop_div },
