@@ -97466,7 +97466,10 @@ block_801A1DD4:
 }
 
 /* cps_801a1dd8 — clean CPS transliteration of br2eu_func_801A1DD8 (guest 0x801a1dd8)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_wait_poll: polls status cell @0x801BE878 bit 0x80 (busy), arms byte
+ * @0x801BE858=1, then 0x801A4210(60)/0x801A23FC poll; on ok calls
+ * 0x801A248C and returns byte@0x801BE858 into v0 (0/-3 paths split). */
 void cps_801a1dd8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99374,7 +99377,9 @@ block_801A2F44:
 }
 
 /* cps_801a2f60 — clean CPS transliteration of br2eu_func_801A2F60 (guest 0x801a2f60)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_mode_arm: dispatches on byte@rec+70 — 2: byte+55=68, ptr+44=rec+81,
+ * byte+54=2; 3: byte+55=77, ptr+44=rec+93, byte+54=6; else no arm; jr ra. */
 void cps_801a2f60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99535,7 +99540,9 @@ block_801A34D8:
 }
 
 /* cps_801a34dc — clean CPS transliteration of br2eu_func_801A34DC (guest 0x801a34dc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * mode_dispatch_piece: tail of cd/cmd state fn — v0!=0 && v1>=0 && v1!=4
+ * → jal 0x801A3570(s1); v1==4 → store s5→*s2 then same tail. */
 void cps_801a34dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99715,7 +99722,10 @@ block_801A3568:
 }
 
 /* cps_801a3570 — clean CPS transliteration of br2eu_func_801A3570 (guest 0x801a3570)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * status_query_chain: jalr cell @0x801BE858(a1=s4) → jal 0x801A1F74(s1,
+ * ret&0xFF); on negative → split 0x801A36C0; else 0x801A4210(60)+
+ * 0x801A23FC poll, v0!=0 → 0x801A35B8 else 0x801A35B0. */
 void cps_801a3570(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108938,7 +108948,10 @@ block_801AE198:
 }
 
 /* cps_801ae1a4 — clean CPS transliteration of br2eu_func_801AE1A4 (guest 0x801ae1a4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * s16_fixed_div: scaled s16 table divmod — a3=(s16[a0+2]<<1)+a1,
+ * v1=(s16[a0+6]<<1)+a2, s16 divmod, traps on /0, -1, INT_MIN, stores
+ * lo back to s16@a3. */
 void cps_801ae1a4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -109024,7 +109037,9 @@ block_801AE1F0:
 }
 
 /* cps_801ae1fc — clean CPS transliteration of br2eu_func_801AE1FC (guest 0x801ae1fc)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * u32_fixed_div: same as ae1a4 but word-width tables (<<2 offsets,
+ * w reads/writes) — s32 divmod with identical /0,-1,INT_MIN break traps. */
 void cps_801ae1fc(void)
 {
   CPUState *cpu = clean_cpu_state();
