@@ -14584,25 +14584,25 @@ void gte_points_xform(undefined4 *a0,undefined4 *a1,undefined2 *a2,undefined2 *a
 
 int tween_track_alloc(int a0,undefined2 a1,undefined4 a2,undefined2 *a3,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 arg8)
 {
-  undefined2 uVar1;
-  int iVar2;
-  int iVar3;
-  undefined2 *puVar4;
-  iVar2 = (int)(uintptr_t)task_node_alloc(arg8,2,3,0x801a972c,0,0x4c);
-  iVar3 = 0;
-  if (iVar2 != 0) {
-    puVar4 = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar2 + 0x10))));
-    *puVar4 = (short)a0;
-    puVar4[1] = a1;
-    puVar4[2] = 0;
-    puVar4[3] = arg5 + -1;
-    puVar4[4] = arg6;
-    puVar4[6] = arg7;
+  undefined2 kcnt;
+  int node;
+  int res;
+  undefined2 *pay;
+  node = (int)(uintptr_t)task_node_alloc(arg8,2,3,0x801a972c,0,0x4c);
+  res = 0;
+  if (node != 0) {
+    pay = (undefined2 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((node + 0x10))));
+    *pay = (short)a0;
+    pay[1] = a1;
+    pay[2] = 0;
+    pay[3] = arg5 + -1;
+    pay[4] = arg6;
+    pay[6] = arg7;
     if (a0 == 0) {
-      *(undefined4 *)(puVar4 + 0xe) = a2;
+      *(undefined4 *)(pay + 0xe) = a2;
     }
     else {
-      *(undefined4 *)(puVar4 + 0x10) = a2;
+      *(undefined4 *)(pay + 0x10) = a2;
     }
     /* a3 is a GUEST address (keyframe descriptor); resolve fields via
      * guest_at and store it as a 32-bit guest pointer, not a host ptr.
@@ -14610,38 +14610,38 @@ int tween_track_alloc(int a0,undefined2 a1,undefined4 a2,undefined2 *a3,short ar
      * or as a host pointer (clean_table wrap); br2_gaddr yields the
      * canonical guest address for both. */
     uint32_t p4g = br2_gaddr(a3);
-    *(uint32_t *)((char *)puVar4 + 0x18) = p4g;
-    *(undefined4 *)((char *)puVar4 + 0x24) = *(uint32_t *)guest_at(p4g + 8);
-    *(undefined4 *)((char *)puVar4 + 0x28) = *(uint32_t *)guest_at(p4g + 12);
-    *(undefined4 *)((char *)puVar4 + 0x14) = *(uint32_t *)guest_at(p4g + 16);
-    uVar1 = *(undefined2 *)guest_at(p4g);
-    puVar4[5] = 0;
-    puVar4[7] = 0;
-    puVar4[8] = uVar1;
-    *(int *)(puVar4 + 0x16) = (int)(short)puVar4[5];
-    *(int *)(puVar4 + 0x18) = (int)(short)puVar4[7];
-    iVar3 = iVar2;
+    *(uint32_t *)((char *)pay + 0x18) = p4g;
+    *(undefined4 *)((char *)pay + 0x24) = *(uint32_t *)guest_at(p4g + 8);
+    *(undefined4 *)((char *)pay + 0x28) = *(uint32_t *)guest_at(p4g + 12);
+    *(undefined4 *)((char *)pay + 0x14) = *(uint32_t *)guest_at(p4g + 16);
+    kcnt = *(undefined2 *)guest_at(p4g);
+    pay[5] = 0;
+    pay[7] = 0;
+    pay[8] = kcnt;
+    *(int *)(pay + 0x16) = (int)(short)pay[5];
+    *(int *)(pay + 0x18) = (int)(short)pay[7];
+    res = node;
   }
-  return iVar3;
+  return res;
 
 }
 
 void tween_apply(short *seq,int v0,int v1)
 {
-  short sVar1;
-  short sVar2;
-  ushort uVar3;
-  bool bVar4;
-  int iVar5;
-  short *psVar6;
-  short *psVar7;
-  int iVar8;
-  int iVar9;
-  int iVar10;
-  uint in_t4;
-  int in_t6;
+  short ky;
+  short kz;
+  ushort ok;
+  bool go;
+  int tmp;
+  short *kf;
+  short *tv;
+  int ad;
+  int d;
+  int off;
+  uint ph;
+  int dir;
   short sVar11;
-  int unaff_gp = (int)guest_gp();
+  int gp_save = (int)guest_gp();
   int local_18 [4];
   if (seq == (short *)0x0) {
     return;
@@ -14671,14 +14671,14 @@ void tween_apply(short *seq,int v0,int v1)
     if (*seq != 2) {
       return;
     }
-    iVar5 = seq[7] * 0x14 + *(int *)(seq + 0xc);
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))== 0) {
-      iVar10 = *(int *)(seq + 0x10);
+    tmp = seq[7] * 0x14 + *(int *)(seq + 0xc);
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x24) ))== 0) {
+      off = *(int *)(seq + 0x10);
     }
     else {
-      iVar10 = *(int *)(seq + 0x10) + seq[4] * 4;
+      off = *(int *)(seq + 0x10) + seq[4] * 4;
     }
-    verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar5 + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((iVar5 + 0xc)))),iVar10,
+    verts_rgb_apply((uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 8)))),(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((tmp + 0xc)))),off,
                  (short *)guest_at(*(uint32_t *)(seq + 10)),(int)seq[8],v1);
     return;
   }
@@ -14689,87 +14689,87 @@ void tween_apply(short *seq,int v0,int v1)
     return;
   }
   local_18[1] = 0;
-  iVar5 = (int)seq[7];
-  if (iVar5 < v0) {
-    in_t6 = 1;
-    in_t4 = 0;
+  tmp = (int)seq[7];
+  if (tmp < v0) {
+    dir = 1;
+    ph = 0;
     local_18[2] = v1;
-    local_18[0] = *(int *)guest_at((uint32_t)(uintptr_t)((iVar5 * 0x14 + *(int *)(seq + 0xc) + 4) ))- (int)seq[5];
+    local_18[0] = *(int *)guest_at((uint32_t)(uintptr_t)((tmp * 0x14 + *(int *)(seq + 0xc) + 4) ))- (int)seq[5];
   }
   else {
-    if (v0 < iVar5) {
-      in_t6 = -1;
+    if (v0 < tmp) {
+      dir = -1;
       local_18[0] = -(int)seq[5];
-      iVar5 = *(int *)guest_at((uint32_t)(uintptr_t)((v0 * 0x14 + *(int *)(seq + 0xc) + 4)));
-      in_t4 = 0;
+      tmp = *(int *)guest_at((uint32_t)(uintptr_t)((v0 * 0x14 + *(int *)(seq + 0xc) + 4)));
+      ph = 0;
     }
     else {
-      bVar4 = (int)in_t4 < 3;
-      if (iVar5 != v0) goto LAB_801a9d14;
-      in_t6 = 0;
-      iVar5 = (int)seq[5];
-      in_t4 = 2;
+      go = (int)ph < 3;
+      if (tmp != v0) goto LAB_801a9d14;
+      dir = 0;
+      tmp = (int)seq[5];
+      ph = 2;
     }
-    local_18[2] = v1 - iVar5;
+    local_18[2] = v1 - tmp;
   }
-  bVar4 = in_t4 < 3;
+  go = ph < 3;
 LAB_801a9d14:
-  if (bVar4) {
+  if (go) {
     do {
-      iVar5 = 0;
+      tmp = 0;
       if (0 < seq[8]) {
-        iVar10 = 0;
+        off = 0;
         do {
-          iVar9 = local_18[in_t4];
-          psVar6 = (short *)guest_at((uint32_t)(uintptr_t)((iVar5 * 8 + *(int *)(seq + 0x12))));
-          sVar1 = psVar6[1];
-          sVar2 = psVar6[2];
-          if (*psVar6 * iVar9 != 0) {
-            psVar7 = (short *)guest_at((uint32_t)(uintptr_t)((*(short *)guest_at((uint32_t)(uintptr_t)((iVar10 + *(int *)(seq + 10)) ))* 8 +
+          d = local_18[ph];
+          kf = (short *)guest_at((uint32_t)(uintptr_t)((tmp * 8 + *(int *)(seq + 0x12))));
+          ky = kf[1];
+          kz = kf[2];
+          if (*kf * d != 0) {
+            tv = (short *)guest_at((uint32_t)(uintptr_t)((*(short *)guest_at((uint32_t)(uintptr_t)((off + *(int *)(seq + 10)) ))* 8 +
                               *(int *)(seq + 0xe))));
-            *psVar7 = *psVar7 + (short)(*psVar6 * iVar9);
+            *tv = *tv + (short)(*kf * d);
           }
-          if (sVar1 * iVar9 != 0) {
-            iVar8 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar10 + *(int *)(seq + 10)) ))* 8 + *(int *)(seq + 0xe);
-            *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 2) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 2) ))+ (short)(sVar1 * iVar9);
+          if (ky * d != 0) {
+            ad = *(short *)guest_at((uint32_t)(uintptr_t)((off + *(int *)(seq + 10)) ))* 8 + *(int *)(seq + 0xe);
+            *(short *)guest_at((uint32_t)(uintptr_t)((ad + 2) ))= *(short *)guest_at((uint32_t)(uintptr_t)((ad + 2) ))+ (short)(ky * d);
           }
-          if (sVar2 * iVar9 != 0) {
-            iVar8 = *(short *)guest_at((uint32_t)(uintptr_t)((iVar10 + *(int *)(seq + 10)) ))* 8 + *(int *)(seq + 0xe);
-            *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 4) ))= *(short *)guest_at((uint32_t)(uintptr_t)((iVar8 + 4) ))+ (short)(sVar2 * iVar9);
+          if (kz * d != 0) {
+            ad = *(short *)guest_at((uint32_t)(uintptr_t)((off + *(int *)(seq + 10)) ))* 8 + *(int *)(seq + 0xe);
+            *(short *)guest_at((uint32_t)(uintptr_t)((ad + 4) ))= *(short *)guest_at((uint32_t)(uintptr_t)((ad + 4) ))+ (short)(kz * d);
           }
-          iVar5 = iVar5 + 1;
-          iVar10 = iVar10 + 2;
-        } while (iVar5 < seq[8]);
+          tmp = tmp + 1;
+          off = off + 2;
+        } while (tmp < seq[8]);
       }
-      if (in_t4 == 1) {
-        uVar3 = seq[7];
-        seq[7] = (short)((uint)uVar3 + in_t6);
-        iVar5 = (int)(((uint)uVar3 + in_t6) * 0x10000) >> 0x10;
+      if (ph == 1) {
+        ok = seq[7];
+        seq[7] = (short)((uint)ok + dir);
+        tmp = (int)(((uint)ok + dir) * 0x10000) >> 0x10;
 LAB_801a9ec0:
-        if (iVar5 == v0) {
-          in_t4 = 2;
+        if (tmp == v0) {
+          ph = 2;
         }
       }
-      else if ((int)in_t4 < 2) {
-        if (in_t4 == 0) {
-          uVar3 = seq[7];
-          seq[7] = (short)((uint)uVar3 + in_t6);
-          local_18[1] = *(int *)guest_at((uint32_t)(uintptr_t)((((int)(((uint)uVar3 + in_t6) * 0x10000) >> 0x10) * 0x14 +
-                                 *(int *)(seq + 0xc) + 4) ))* in_t6;
-          iVar5 = (int)seq[7];
-          in_t4 = 1;
+      else if ((int)ph < 2) {
+        if (ph == 0) {
+          ok = seq[7];
+          seq[7] = (short)((uint)ok + dir);
+          local_18[1] = *(int *)guest_at((uint32_t)(uintptr_t)((((int)(((uint)ok + dir) * 0x10000) >> 0x10) * 0x14 +
+                                 *(int *)(seq + 0xc) + 4) ))* dir;
+          tmp = (int)seq[7];
+          ph = 1;
           goto LAB_801a9ec0;
         }
       }
-      else if (in_t4 == 2) {
-        in_t4 = 3;
+      else if (ph == 2) {
+        ph = 3;
       }
       *(undefined4 *)(seq + 0x12) =
            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((seq[7] * 0x14 + *(int *)(seq + 0xc) + 8)));
       *(undefined4 *)(seq + 10) =
            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((seq[7] * 0x14 + *(int *)(seq + 0xc) + 0x10)));
       seq[8] = *(short *)guest_at((uint32_t)(uintptr_t)((seq[7] * 0x14 + *(int *)(seq + 0xc))));
-    } while ((int)in_t4 < 3);
+    } while ((int)ph < 3);
   }
   seq[5] = sVar11;
   *(int *)(seq + 0x16) = (int)sVar11;
@@ -14780,18 +14780,18 @@ LAB_801a9ec0:
 
 void rect_prim_tick(uint *prim)
 {
-  uint uVar1;
+  uint t;
   uint *puVar2;
-  int unaff_gp = (int)guest_gp();
-  uVar1 = prim[7];
-  prim[7] = uVar1 - 1;
-  if ((int)(uVar1 - 1) < 0) {
+  int gp_save = (int)guest_gp();
+  t = prim[7];
+  prim[7] = t - 1;
+  if ((int)(t - 1) < 0) {
     task_slot_step();
   }
   else {
-    *prim = *(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x48) )))| 0x4000000;
-    *(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x48) )))= guest_of(prim) & 0xffffff;
-    puVar2 = (uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x48))));
+    *prim = *(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x48) )))| 0x4000000;
+    *(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x48) )))= guest_of(prim) & 0xffffff;
+    puVar2 = (uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x48))));
     prim[5] = *puVar2 | 0x1000000;
     *puVar2 = guest_of(prim + 5) & 0xffffff;
   }
