@@ -10023,33 +10023,33 @@ int anim_node_alloc(uint32_t a0,int32_t a1)
  * Disasm 0x801a984c-0x801a99dc. */
 int op_anim_delta_walk(uint32_t a0,int32_t a1)
 {
-  uint8_t *s3;
-  int32_t s2;
-  int32_t s1;
+  uint8_t *ctx;
+  int32_t target;
+  int32_t pass;
   if (a0 == 0) return 0;
-  s3 = (uint8_t *)guest_at(a0);
-  s2 = a1;
-  if (s2 < 0) s2 = 0;
-  if (s2 >= 0x1001) s2 = 0x1000;
-  s1 = 0;
+  ctx = (uint8_t *)guest_at(a0);
+  target = a1;
+  if (target < 0) target = 0;
+  if (target >= 0x1001) target = 0x1000;
+  pass = 0;
   for (;;) {
-    /* 0x801A988C slot head: s1==0 -> [s3+0x34], s1==1 -> [s3+0x38]. */
-    uint32_t arr = *(uint32_t *)(s3 + (s1 == 0 ? 0x34 : 0x38));
-    uint32_t s0g = *(uint32_t *)guest_at(arr);
-    uint8_t *s0;
+    /* 0x801A988C slot head: pass==0 -> [ctx+0x34], pass==1 -> [ctx+0x38]. */
+    uint32_t arr = *(uint32_t *)(ctx + (pass == 0 ? 0x34 : 0x38));
+    uint32_t head = *(uint32_t *)guest_at(arr);
+    uint8_t *seq;
     int32_t cnt, a1c = 0, a2c = 0;
-    uint32_t a0o = 0, a3u = 0;
-    if (s0g == 0) goto slot_done;              /* beqz s0 -> 0x801A99B4 */
-    s0 = (uint8_t *)guest_at(s0g);
-    cnt = *(int16_t *)(s0 + 6);                /* lh cnt,[s0+6] */
+    uint32_t off = 0, acc = 0;
+    if (head == 0) goto slot_done;              /* beqz seq -> 0x801A99B4 */
+    seq = (uint8_t *)guest_at(head);
+    cnt = *(int16_t *)(seq + 6);                /* lh cnt,[seq+6] */
     if (cnt < 0) goto slot_done;               /* bltz -> 0x801A99B4 */
     for (;;) {                                 /* 0x801A98E8 loop top */
       uint32_t ev = *(uint32_t *)guest_at(
-          *(uint32_t *)(s0 + 0x18) + a0o + 4);
-      int32_t dv = *(int16_t *)(s0 + 0xc);     /* lh -> sign-extended */
+          *(uint32_t *)(seq + 0x18) + off + 4);
+      int32_t dv = *(int16_t *)(seq + 0xc);     /* lh -> sign-extended */
       int32_t num, quo;
-      a3u += ev;                               /* gpr[7] += ev (wraps) */
-      num = (int32_t)(a3u << 12);              /* sll v0,a3,12 */
+      acc += ev;                               /* gpr[7] += ev (wraps) */
+      num = (int32_t)(acc << 12);              /* sll v0,a3,12 */
       /* div @0x801A9904 + break @0x801A9910 (recompiler no-op): dv==0
        * FALLS THROUGH with LO = num>=0 ? -1 : 1 into the normal
        * mflo/slt/advance path — it does NOT exit the loop.
@@ -10060,30 +10060,30 @@ int op_anim_delta_walk(uint32_t a0,int32_t a1)
       } else {
         quo = (num >= 0) ? -1 : 1;
       }
-      /* mflo @0x801A992C; slt quo<s2; xori 1; beqz -> advance @0x801A9998,
-       * else finish @0x801A9944 (i.e. quo >= s2). */
-      if (quo < s2) {
-        /* advance: a1c++, a2c++, a0o += 0x14; cnt reloaded each step. */
+      /* mflo @0x801A992C; slt quo<target; xori 1; beqz -> advance @0x801A9998,
+       * else finish @0x801A9944 (i.e. quo >= target). */
+      if (quo < target) {
+        /* advance: a1c++, a2c++, off += 0x14; cnt reloaded each step. */
         a1c++;
         a2c++;
-        a0o += 0x14;
-        cnt = *(int16_t *)(s0 + 6);
+        off += 0x14;
+        cnt = *(int16_t *)(seq + 6);
         if (cnt < a2c) break;                  /* -> 0x801A99B4 slot_done */
         continue;
       }
       /* finish @0x801A9944-0x801A998C: t0 (gpr[8]) provably 0, so
-       * q2 = (s2<<12)/1; +0xfff only if negative (impossible, s2>=0);
-       * a2 = sra(q2,12) = s2; jal tween_apply(s0, a1c, s2). */
+       * q2 = (target<<12)/1; +0xfff only if negative (impossible, target>=0);
+       * a2 = sra(q2,12) = target; jal tween_apply(seq, a1c, target). */
       {
-        int32_t q2 = s2 << 12;
+        int32_t q2 = target << 12;
         if (q2 < 0) q2 += 0xfff;
-        tween_apply((short *)s0,a1c,q2 >> 12);
+        tween_apply((short *)seq,a1c,q2 >> 12);
       }
-      break;                                   /* -> 0x801A9990 s1++ */
+      break;                                   /* -> 0x801A9990 pass++ */
     }
   slot_done:
-    s1++;                                      /* 0x801A99B4 */
-    if (s1 >= 2) break;                        /* slti s1,2 @0x801A99B8 */
+    pass++;                                      /* 0x801A99B4 */
+    if (pass >= 2) break;                        /* slti pass,2 @0x801A99B8 */
   }
   return 0;
 }
