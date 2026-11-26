@@ -215,6 +215,13 @@ def find_body(addr):
                       # op comment is the per-instruction anchor.
                       f'/* 0x{addr:08X}:' in body)
             if covers and 'block_' in body:
+                # Exact-entry match wins over a larger parent that merely
+                # contains the addr as an instruction anchor: when the
+                # recompiler emitted a standalone piece at this addr
+                # (br2eu_func_<addr>), guest dispatch enters THAT piece,
+                # not the parent's mid-block instruction.
+                if name.lower().endswith(f'_{addr:08x}'):
+                    return (name, body, path)
                 if best is None or len(body) > len(best[1]):
                     best = (name, body, path)
     return best
