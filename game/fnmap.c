@@ -609,6 +609,7 @@ extern void display_mode_setup(void);
 extern void display_page_commit_a(void);
 extern void display_page_commit_b(void);
 extern void display_pair_invalidate(void);
+extern void draw_env_field_compare_fragment(void);
 extern void draw_env_timing(void);
 extern void dual_axis_coord_xform(void);
 extern void dual_entry_attr_bump(void);
@@ -1668,6 +1669,9 @@ extern void task_spawn_var_a(void);
 extern void task_spawn_var_b(void);
 extern void task_table_init(void);
 extern void terrain_packet_gen(void);
+extern void text_format_copy_byte_fragment(void);
+extern void text_format_measure_string_fragment(void);
+extern void text_format_width_check_fragment(void);
 extern void text_line_select(void);
 extern void text_render_full(void);
 extern void text_render_simple(void);
@@ -2855,6 +2859,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80190390, (void *)text_win_init },
   { 0x80190430, (void *)text_widget_alloc },
   { 0x80190a04, (void *)text_win_printf_guest },
+  { 0x80190ca4, (void *)text_format_copy_byte_fragment },
+  { 0x80190cc4, (void *)text_format_measure_string_fragment },
+  { 0x80190ce4, (void *)text_format_width_check_fragment },
   { 0x80190dd0, (void *)guest_memset_b },
   { 0x80190e00, (void *)gpu_graph_reset },
   { 0x80190f74, (void *)set_graph_debug },
@@ -2881,6 +2888,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801918a0, (void *)cd_prim_emit_a },
   { 0x80191978, (void *)cd_blk5c_copy },
   { 0x801919ac, (void *)draw_env_timing },
+  { 0x80191a78, (void *)draw_env_field_compare_fragment },
   { 0x80191ea4, (void *)cd_blk14_copy },
   { 0x80191ed8, (void *)gpu_stat_sign },
   { 0x80191ee0, (void *)cd_vcall_38 },

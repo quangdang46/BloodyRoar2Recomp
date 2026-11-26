@@ -241,6 +241,7 @@
 80129e40 menu_step_a
 8012f2a8 menu_step_b
 801919ac draw_env_timing
+80191a78 draw_env_field_compare_fragment
 80193ea0 sprite_attr_init_a
 80193f60 sprite_attr_init_b
 8018bd40 bitfield_or_write
@@ -287,6 +288,9 @@
 8018fb10 mdec_pump_a
 8018fc90 mdec_pump_b
 80190a04 text_win_printf_guest
+80190ca4 text_format_copy_byte_fragment
+80190cc4 text_format_measure_string_fragment
+80190ce4 text_format_width_check_fragment
 80179ae0 skeleton_init
 80179a6c part_record_reset
 80179964 part_link_unlink
