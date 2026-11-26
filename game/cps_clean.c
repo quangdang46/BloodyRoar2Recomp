@@ -1384,13 +1384,10 @@ void cps_80126178(void)
 
     /* Address: 0x80126178, Size: 16 bytes, Blocks: 1 */
 
-block_80126178:
-    v0 = 0x801C << 16;  /* 0x801C0000 */
-    v0 = v0 + -4368;
-    v1 = 0x8020 << 16;  /* 0x80200000 */
-    v1 = v1 + -2480;
+    /* zero-fill bounds: [0x801BEEF0, 0x801FF650) */
+    v0 = 0x801BEEF0u;   /* 0x801C0000 - 4368 */
+    v1 = 0x801FF650u;   /* 0x80200000 - 2480 */
     cpu->pc = 0x80126188u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126188u; return;/* fallthrough to next function */
 }
 
 /* cps_80126188 — clean CPS transliteration of br2eu_func_80126188 (guest 0x80126188)
@@ -1402,12 +1399,10 @@ void cps_80126188(void)
 
     /* Address: 0x80126188, Size: 12 bytes, Blocks: 1 */
 
-block_80126188:
-    cpu->write_word(v0, zero);
-    v0 = v0 + 4;
-    at = (v0 < v1) ? 1 : 0;  /* 0x80126190: 0x0043082B */
+    cpu->write_word(v0, zero);   /* *cursor = 0 */
+    v0 += 4;
+    at = (v0 < v1);              /* sltu: words remain? */
     cpu->pc = 0x80126194u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126194u; return;/* fallthrough to next function */
 }
 
 /* cps_80126194 — clean CPS transliteration of br2eu_func_80126194 (guest 0x80126194)
@@ -1419,18 +1414,14 @@ void cps_80126194(void)
 
     /* Address: 0x80126194, Size: 4 bytes, Blocks: 1 */
 
-block_80126194:
-    int _bc_80126194 = (at != zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x80126198: 0x00000000 */
-    if (_bc_80126194) {
+    int keep_going = (at != zero);  /* branch cond latched before delay slot */
+    /* delay slot: nop */
+    if (keep_going) {
         psx_check_interrupts_at(cpu, 0x80126188u);
-        cpu->pc = 0x80126188u; return;  /* CPS taken: split */
-    } else {
-        psx_check_interrupts_at(cpu, 0x8012619Cu);
-        cpu->pc = 0x8012619Cu; return;  /* CPS not taken: split */
+        cpu->pc = 0x80126188u; return;   /* loop: clear next word */
     }
-    cpu->pc = 0x80126198u; return;/* fallthrough to next function */
+    psx_check_interrupts_at(cpu, 0x8012619Cu);
+    cpu->pc = 0x8012619Cu; return;       /* fill done */
 }
 
 /* cps_80126198 — clean CPS transliteration of br2eu_func_80126198 (guest 0x80126198)
@@ -1442,10 +1433,8 @@ void cps_80126198(void)
 
     /* Address: 0x80126198, Size: 4 bytes, Blocks: 1 */
 
-block_80126198:
-    /* nop */  /* 0x80126198: 0x00000000 */
+    /* guest 0x80126198: delay-slot nop of the fill-loop branch */
     cpu->pc = 0x8012619cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x8012619cu; return;/* fallthrough to next function */
 }
 
 /* cps_8012619c — clean CPS transliteration of br2eu_func_8012619C (guest 0x8012619c)
@@ -1457,19 +1446,12 @@ void cps_8012619c(void)
 
     /* Address: 0x8012619C, Size: 40 bytes, Blocks: 1 */
 
-block_8012619C:
+    /* load word via the 0x80120000-based pointer table, index v0=4 */
     v0 = 4;
-    /* nop */  /* 0x801261A0: 0x00000000 */
-    /* nop */  /* 0x801261A4: 0x00000000 */
-    /* nop */  /* 0x801261A8: 0x00000000 */
-    /* nop */  /* 0x801261AC: 0x00000000 */
-    a0 = 0x8012 << 16;  /* 0x80120000 */
-    a0 = a0 + 25124;
-    a0 = a0 + v0;
+    a0 = 0x80120000u + 25124u + v0;
     v0 = cpu->read_word(a0);
-    t0 = 0x8000 << 16;  /* 0x80000000 */
+    t0 = 0x80000000u;                /* tag bit for the sp fixup in 0x801261C4 */
     cpu->pc = 0x801261c4u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801261c4u; return;/* fallthrough to next function */
 }
 
 /* cps_801261c4 — clean CPS transliteration of br2eu_func_801261C4 (guest 0x801261c4)
@@ -1481,14 +1463,9 @@ void cps_801261c4(void)
 
     /* Address: 0x801261C4, Size: 20 bytes, Blocks: 1 */
 
-block_801261C4:
-    sp = v0 | t0;
-    a0 = 0x8020 << 16;  /* 0x80200000 */
-    a0 = a0 + -2480;
-    a0 = a0 << 3;
-    a0 = (uint32_t)a0 >> 3;
+    sp = v0 | t0;                     /* tagged pointer into $sp */
+    a0 = (0x801FF650u << 3) >> 3;     /* sll/srl pair: keep low 29 bits */
     cpu->pc = 0x801261d8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801261d8u; return;/* fallthrough to next function */
 }
 
 /* cps_801261d8 — clean CPS transliteration of br2eu_func_801261D8 (guest 0x801261d8)
@@ -1500,17 +1477,13 @@ void cps_801261d8(void)
 
     /* Address: 0x801261D8, Size: 32 bytes, Blocks: 1 */
 
-block_801261D8:
-    v1 = 0x801C << 16;  /* 0x801C0000 */
-    v1 = cpu->read_word(v1 + -6368);
-    /* nop */  /* 0x801261E0: 0x00000000 */
-    a1 = v0 - v1;
-    a1 = a1 - a0;
-    a0 = a0 | t0;
-    at = 0x801C << 16;  /* 0x801C0000 */
-    cpu->write_word(at + -4368, ra);
+    v1 = cpu->read_word(0x801BE720u);   /* 0x801C0000 - 6368: saved base */
+    a1 = v0 - v1;                        /* ptr delta vs saved base */
+    a1 -= a0;                            /* minus region extent */
+    a0 |= t0;                            /* retag with 0x80000000 */
+    at = 0x801C0000u;                    /* $gp-relative base (stays live) */
+    cpu->write_word(at - 4368, ra);       /* save ra at 0x801BEEF0 */
     cpu->pc = 0x801261f8u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801261f8u; return;/* fallthrough to next function */
 }
 
 /* cps_801261f8 — clean CPS transliteration of br2eu_func_801261F8 (guest 0x801261f8)
@@ -1530,24 +1503,19 @@ void cps_801261f8(void)
     /* Address: 0x801261F8, Size: 36 bytes, Blocks: 2 */
 
 block_801261F8:
-    gp = 0x801C << 16;  /* 0x801C0000 */
-    gp = gp + -4388;
+    gp = 0x801BEEDCu;                 /* $gp = small-data base */
     fp = sp;
-    ra = 0x8012620Cu;  /* jal link before delay slot */
-    /* delay slot (always executes) */
-    a0 = a0 + 4;
+    ra = 0x8012620Cu;                 /* return site after helper call */
+    a0 += 4;                          /* delay slot: bump arg ptr */
     psx_check_interrupts_at(cpu, 0x8018E2F0u);
-    cpu->pc = 0x8018E2F0u; return;  /* CPS jal -> 0x8018E2F0 */
+    cpu->pc = 0x8018E2F0u; return;    /* CPS jal -> 0x8018E2F0 */
 
 block_8012620C:
-    ra = 0x801C << 16;  /* 0x801C0000 */
-    ra = cpu->read_word(ra + -4368);
-    /* nop */  /* 0x80126214: 0x00000000 */
-    ra = 0x80126220u;  /* jal link before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x8012621C: 0x00000000 */
+    ra = cpu->read_word(0x801BEEF0u); /* reload saved ra (0x801C0000-4368) */
+    ra = 0x80126220u;                 /* jal link before delay slot */
+    /* delay slot: nop */
     psx_check_interrupts_at(cpu, 0x80126234u);
-    cpu->pc = 0x80126234u; return;  /* CPS jal -> 0x80126234 */
+    cpu->pc = 0x80126234u; return;    /* CPS jal -> 0x80126234 */
 }
 
 /* cps_8012621c — clean CPS transliteration of br2eu_func_8012621C (guest 0x8012621c)
@@ -1559,10 +1527,8 @@ void cps_8012621c(void)
 
     /* Address: 0x8012621C, Size: 4 bytes, Blocks: 1 */
 
-block_8012621C:
-    /* nop */  /* 0x8012621C: 0x00000000 */
+    /* guest 0x8012621C: delay-slot nop */
     cpu->pc = 0x80126220u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126220u; return;/* fallthrough to next function */
 }
 
 /* cps_80126220 — clean CPS transliteration of br2eu_func_80126220 (guest 0x80126220)
@@ -1574,11 +1540,8 @@ void cps_80126220(void)
 
     /* Address: 0x80126220, Size: 8 bytes, Blocks: 1 */
 
-block_80126220:
     /* break(1) — trap, no-op in recompiler */  /* 0x80126220: 0x0000004D */
-    /* nop */  /* 0x80126224: 0x00200000 */
     cpu->pc = 0x80126228u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126228u; return;/* fallthrough to next function */
 }
 
 /* cps_80126228 — clean CPS transliteration of br2eu_func_80126228 (guest 0x80126228)
@@ -1590,12 +1553,8 @@ void cps_80126228(void)
 
     /* Address: 0x80126228, Size: 12 bytes, Blocks: 1 */
 
-block_80126228:
-    /* nop */  /* 0x80126228: 0x00200000 */
-    /* nop */  /* 0x8012622C: 0x00200000 */
-    /* nop */  /* 0x80126230: 0x00200000 */
+    /* guest 0x80126228: nop sled before next piece */
     cpu->pc = 0x80126234u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x80126234u; return;/* fallthrough to next function */
 }
 
 /* cps_80126234 — clean CPS transliteration of br2eu_func_80126234 (guest 0x80126234)
@@ -1615,25 +1574,23 @@ void cps_80126234(void)
     /* Address: 0x80126234, Size: 40 bytes, Blocks: 2 */
 
 block_80126234:
-    sp = sp + -64;
+    sp -= 64;                             /* frame for s0-s5 + ra */
     cpu->write_word(sp + 56, ra);
     cpu->write_word(sp + 52, s5);
     cpu->write_word(sp + 48, s4);
     cpu->write_word(sp + 44, s3);
     cpu->write_word(sp + 40, s2);
     cpu->write_word(sp + 36, s1);
-    ra = 0x80126258u;  /* jal link before delay slot */
-    /* delay slot (always executes) */
-    cpu->write_word(sp + 32, s0);
+    ra = 0x80126258u;                     /* jal link before delay slot */
+    cpu->write_word(sp + 32, s0);         /* delay slot */
     psx_check_interrupts_at(cpu, 0x80126170u);
-    cpu->pc = 0x80126170u; return;  /* CPS jal -> 0x80126170 */
+    cpu->pc = 0x80126170u; return;        /* CPS jal -> empty_leaf_e */
 
 block_80126258:
-    ra = 0x80126260u;  /* jal link before delay slot */
-    /* delay slot (always executes) */
-    s3 = zero;
+    ra = 0x80126260u;                     /* jal link before delay slot */
+    s3 = zero;                            /* delay slot */
     psx_check_interrupts_at(cpu, 0x80126F04u);
-    cpu->pc = 0x80126F04u; return;  /* CPS jal -> 0x80126F04 */
+    cpu->pc = 0x80126F04u; return;        /* CPS jal -> boot */
 }
 
 /* cps_8012625c — clean CPS transliteration of br2eu_func_8012625C (guest 0x8012625c)
