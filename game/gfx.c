@@ -1516,12 +1516,22 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   if (fmt == 0) return 0;
   const char *digits = s_0123456789abcdef_80124fe8;
   count = 0;
-LAB_8018e5e0:
-  v = (uint32_t)*fmt;
-  if (v != 0) {
+  /* Outer format loop (0x8018E5E0): plain chars go straight to
+   * console_emit; '%' enters the flag/width/precision scan. Every path
+   * reconverges at fmt++ (0x8018EBEC). End-of-string and a dangling '%'
+   * both flush the line buffer via console_pct and return. */
+  for (;;) {
+    v = (uint32_t)*fmt;
+    if (v == 0) break;
     flags = 0;
     pfx = 0; alt = 0; sht = 0; lng = 0;
-    if (v == 0x25) {
+    if (v != 0x25) {
+      console_emit(v);                          /* plain char (0x8018EBE4) */
+    } else {
+      /* spec init (0x8018E5F8) + flag-scan loop (0x8018E60C).
+       * emit_kind: -1 = still scanning, 0 = advance only ('n'/literal),
+       * 1 = string emit ('c'/'s'), 2 = numeric (digit-gen then emit). */
+      int emit_kind = -1;
       prec_raw = -1;
       sign = 0;
       prec = 0;
@@ -1540,232 +1550,189 @@ LAB_8018e60c:
         count = count + 1;
         args = (const uint32_t *)ap;
         break;
-      case 0x20:
         fp = fmt;
         if (sign == 0) sign = 0x20;
-        goto LAB_8018e60c;
-      case 0x23:
         alt = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2a:
-        apn = ap + 1;
         width = (intptr_t)*ap;
         ap = apn;
-        fp = fmt;
-        if (-1 < (int)width) goto LAB_8018e60c;
-        width = -width;
         /* fallthrough */
-      case 0x2d:
         flags |= 0x10;
-        ap = apn;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2b:
         sign = 0x2b;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x2e:
-        fp = fp + 2;
         c1 = *fp;
-        if (c1 == 0x2a) {
           prec_raw = (intptr_t)*ap;
-          ap = ap + 1;
         } else {
-          prec_raw = 0;
           while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
-            fp = fp + 1;
-            c1 = *fp;
-            prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
-          }
-          fp = fp - 1;
-        }
-        if ((int)prec_raw < 0) prec_raw = -1;
-        goto LAB_8018e60c;
-      case 0x30:
-        flags |= 0x20;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x31: case 0x32: case 0x33: case 0x34:
-      case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
-        width = 0;
         do {
-          fp = fmt;
-          fmt = fp + 1;
-          width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
-          if (0x7f < *fmt) break;
-        } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
-        goto LAB_8018e60c;
-      case 0x44:
         lng = 1;
-        /* fallthrough */
-      case 100:
-      case 0x69:
-        if (lng || !sht) v = *ap;
         else v = (uint32_t)(int16_t)*ap;
         base = 10;
-        if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
-        goto LAB_8018e95c_d;
-      case 0x4c:
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x4f:
-        lng = 1;
-        /* fallthrough */
-      case 0x6f:
-        if (lng || (base = 8, !sht)) {
-          v = *ap;
-          base = 8;
-          goto LAB_8018e958_d;
-        }
-        v = (uint32_t)(int16_t)*ap;
-        sign = 0;
-        goto LAB_8018e95c_d;
-      case 0x55:
-        lng = 1;
-        /* fallthrough */
-      case 0x75:
-        if (lng || (base = 10, !sht)) {
-          v = *ap;
+      for (;;) {
           base = 10;
-          goto LAB_8018e958_d;
-        }
-        v = (uint32_t)(int16_t)*ap;
-        sign = 0;
-        goto LAB_8018e95c_d;
-      case 0x58:
-        digits = s_0123456789ABCDEF_80125004;
-        /* fallthrough */
-      case 0x78:
-        if (lng || !sht) v = *ap;
-        else v = (uint32_t)(int16_t)*ap;
-        base = 0x10;
-        sign = 0;
-        if (alt && v != 0) { pfx = 1; goto LAB_8018e958_d; }
-        goto LAB_8018e95c_d;
-      case 99:
-        txt = (char *)dbuf;
-        left = (uint32_t *)1;
-        sign = 0;
-        dbuf[0] = (char)*ap;
-        goto LAB_8018e9fc_d;
-      case 0x68:
-        sht = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x6c:
-        lng = 1;
-        fp = fmt;
-        goto LAB_8018e60c;
-      case 0x6e:
-        if (lng || !sht) {
+          if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
+          emit_kind = 2;
+          break;
+        case 0x4c:
+          fp = fmt;
+          break;
+        case 0x4f:
+          lng = 1;
+          /* fallthrough */
+        case 0x6f:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 8;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x55:
+          lng = 1;
+          /* fallthrough */
+        case 0x75:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 10;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x58:
+          digits = s_0123456789ABCDEF_80125004;
+          /* fallthrough */
+        case 0x78:
+          if (lng || !sht) v = *ap;
+          else v = (uint32_t)(int16_t)*ap;
+          base = 0x10;
+          sign = 0;
+          if (alt && v != 0) pfx = 1;
+          emit_kind = 2;
+          break;
+        case 99:
+          txt = (char *)dbuf;
+          left = (uint32_t *)1;
+          sign = 0;
+          dbuf[0] = (char)*ap;
+          emit_kind = 1;
+          break;
+        case 0x68:
+          sht = 1;
+          fp = fmt;
+          break;
+        case 0x6c:
+          lng = 1;
+          fp = fmt;
+          break;
+        case 0x6e:
           args = (const uint32_t *)(ap + 1);
-          *(uint32_t *)guest_at(*ap) = (uint32_t)count;
-        } else {
-          args = (const uint32_t *)(ap + 1);
-          *(uint16_t *)guest_at(*ap) = (uint16_t)count;
-        }
-        goto LAB_8018ebec_d;
-      case 0x70:
-        v = *ap;
-        base = 0x10;
-        goto LAB_8018e958_d;
-      case 0x73:
-        txt = *ap == 0 ? (char *)s__null__80124ffc
+          if (lng || !sht) *(uint32_t *)guest_at(*ap) = (uint32_t)count;
+          else *(uint16_t *)guest_at(*ap) = (uint16_t)count;
+          emit_kind = 0;
+          break;
+        case 0x70:
+          v = *ap;
+          base = 0x10;
+          sign = 0;
+          emit_kind = 2;
+          break;
+        case 0x73:
+          txt = *ap == 0 ? (char *)s__null__80124ffc
                                 : (char *)guest_at(*ap);
-        if ((int)prec_raw < 0) {
-          prec_raw = str_len(txt);
-        } else {
-          char *hit = strchr_bounded(txt,0,(int)prec_raw);
-          if (hit != 0 &&
-              (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
-               hit - txt <= (intptr_t)prec_raw))
-            goto LAB_8018e9fc_d;
+          if ((int)prec_raw < 0) {
+            prec_raw = str_len(txt);
+          } else {
+            char *hit = strchr_bounded(txt,0,(int)prec_raw);
+            if (hit != 0 &&
+                (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
+                 hit - txt <= (intptr_t)prec_raw)) {
+              emit_kind = 1;
+              break;
+            }
+          }
+          sign = 0;
+          left = (uint32_t *)prec_raw;
+          emit_kind = 1;
+          break;
+        default:
+          v = (uint32_t)(char)*fmt;
+          count = count + 1;
+          args = (const uint32_t *)ap;
+          console_emit(v);
+          emit_kind = 0;
+          break;
         }
-        sign = 0;
-        left = (uint32_t *)prec_raw;
-        goto LAB_8018e9fc_d;
+        if (emit_kind >= 0) break;
       }
-      console_emit(v);
-      goto LAB_8018ebec_d;
+      if (emit_kind == 2) {
+        /* numeric: precision setup + digit generation (0x8018E95C/984) */
+        prec = (intptr_t)prec_raw;
+        if (-1 < (int)prec_raw) flags &= ~0x20;
+        /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
+         * s2 starts one past the top and walks down storing digits. The
+         * emitted string starts at the final cursor; its length is
+         * top - cursor. */
+        dcur = dbuf + sizeof(dbuf);
+        if (v != 0 || prec_raw != 0) {
+          do {
+            quo = v / base;
+            if (base == 0) { /* guest break 7 — div-by-zero */ }
+            dig = digits[v % base];
+            dcur = dcur - 1;
+            *dcur = dig;
+            v = quo;
+          } while (quo != 0);
+          digits = s_0123456789abcdef_80124fe8;
+          if (alt && base == 8 && dig != '0') {
+            dcur = dcur - 1;
+            *dcur = '0';
+          }
+          txt = dcur;
+          left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
+        } else {
+          txt = dcur;
+          left = (uint32_t *)0;
+        }
+        emit_kind = 1;
+      }
+      if (emit_kind == 1) {
+        /* shared string emit + padding (0x8018E9FC) */
+        args = (const uint32_t *)((const uint32_t *)ap + 1);
+        need = (uint32_t *)((intptr_t)left + zpad);
+        if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
+        if (pfx) need = (uint32_t *)((intptr_t)need + 2);
+        fldw = (uint32_t *)prec;
+        if (prec < (intptr_t)need) fldw = need;
+        if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x20); pad++; } while (pad < width);
+        }
+        if (sign != 0) console_emit((uint32_t)sign);
+        if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
+        if (flags == 0x20 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x30); pad++; } while (pad < width);
+        }
+        if ((intptr_t)need < prec) {
+          do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
+          while ((intptr_t)need < prec);
+        }
+        while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
+          dig = *txt;
+          txt = (char *)((intptr_t)txt + 1);
+          console_emit((uint32_t)dig);
+        }
+        while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
+        if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
+          intptr_t pad = (intptr_t)fldw;
+          do { console_emit(0x20); pad++; } while (pad < width);
+        }
+        need = (uint32_t *)width;
+        if (width < (intptr_t)fldw) need = fldw;
+        count = count + (intptr_t)need;
+      }
     }
-switchD_8018e634_caseD_0:
-    console_pct();
+    fmt = fmt + 1;                                /* LAB_8018ebec_d */
   }
+spec_flush:                                        /* 0x8018EBC0 */
+  console_pct();
   return (uint32_t)count;
-LAB_8018e958_d:
-  sign = 0;
-LAB_8018e95c_d:
-  prec = (intptr_t)prec_raw;
-  if (-1 < (int)prec_raw) flags &= ~0x20;
-  {
-    /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
-     * s2 starts one past the top (sp+0x38, adjacent to the count char
-     * counter) and walks down storing digits. The emitted string starts
-     * at the final cursor and its length is top - cursor. Ghidra split
-     * the scratch into &count/dbuf scalars and emitted pointer
-     * arithmetic that wrote digits below the dcur variable itself and
-     * never assigned txt — rebuild it as one real buffer. */
-    dcur = dbuf + sizeof(dbuf);
-    if (v != 0 || prec_raw != 0)
-      goto LAB_8018e984_d;
-    txt = dcur;
-    left = (uint32_t *)0;
-    goto LAB_8018e9fc_d;
-  }
-LAB_8018e984_d:
-  do {
-    quo = v / base;
-    if (base == 0) { /* guest break 7 — div-by-zero */ }
-    dig = digits[v % base];
-    dcur = dcur - 1;
-    *dcur = dig;
-    v = quo;
-  } while (quo != 0);
-  digits = s_0123456789abcdef_80124fe8;
-  if (alt && base == 8 && dig != '0') {
-    dcur = dcur - 1;
-    *dcur = '0';
-  }
-  txt = dcur;
-  left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
-LAB_8018e9fc_d:
-  args = (const uint32_t *)((const uint32_t *)ap + 1);
-  need = (uint32_t *)((intptr_t)left + zpad);
-  if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
-  if (pfx) need = (uint32_t *)((intptr_t)need + 2);
-  fldw = (uint32_t *)prec;
-  if (prec < (intptr_t)need) fldw = need;
-  if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x20); pad++; } while (pad < width);
-  }
-  if (sign != 0) console_emit((uint32_t)sign);
-  if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
-  if (flags == 0x20 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x30); pad++; } while (pad < width);
-  }
-  if ((intptr_t)need < prec) {
-    do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
-    while ((intptr_t)need < prec);
-  }
-  while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
-    dig = *txt;
-    txt = (char *)((intptr_t)txt + 1);
-    console_emit((uint32_t)dig);
-  }
-  while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
-  if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
-    intptr_t pad = (intptr_t)fldw;
-    do { console_emit(0x20); pad++; } while (pad < width);
-  }
-  need = (uint32_t *)width;
-  if (width < (intptr_t)fldw) need = fldw;
-  count = count + (intptr_t)need;
-LAB_8018ebec_d:
-  fmt = fmt + 1;
-  goto LAB_8018e5e0;
 }
 
 /* ======== debug console emit layer ========
@@ -4753,7 +4720,7 @@ void scene_emit_xform(void)
   XF_G(2) = XF_G(5) - 17u;                        /* addiu v0,a1,-17  */
   XF_G(2) = (XF_G(2) < 2063u) ? 1u : 0u;          /* sltiu v0,v0,2063 */
   br2_st32(sp + 16, XF_G(5));                     /* delay: sw a1,16  */
-  if (XF_G(2) == 0) goto L_emit_ret;              /* beqz -> 801B03D0 */
+  if (XF_G(2) != 0) {
 
   /* 0x801B02C4: signed divide (lh(a3+0x50)<<9) / (a1<<2). The div-by-zero
    * and break(7168)/break(6144) trap paths are no-ops that all converge on
@@ -4812,8 +4779,9 @@ void scene_emit_xform(void)
   XF_G(2) = XF_G(6) << 8;                         /* sll v0,a2,8      */
   XF_G(2) = XF_G(2) >> 8;                         /* srl v0,v0,8      */
   br2_st32(XF_G(3), XF_G(2));                     /* sw v0,(v1)       */
+  }
 
-L_emit_ret:                                       /* 0x801B03D0 */
+  /* L_emit_ret 0x801B03D0 */
   br2_guest_frame_free();                         /* addiu sp,+24;jr  */
 #undef XF_G
 #undef XF_LD16S
