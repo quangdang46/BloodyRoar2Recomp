@@ -104109,11 +104109,9 @@ void cps_801a9d1c(void)
     /* Address: 0x801A9D1C, Size: 20 bytes, Blocks: 2 */
 
 block_801A9D1C:
-    v0 = (int32_t)(int16_t)cpu->read_half(t2 + 16);
-    /* nop */  /* 0x801A9D20: 0x00000000 */
-    int _bc_801A9D24 = ((int32_t)v0 <= 0);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    t1 = zero;
+    v0 = (int32_t)(int16_t)cpu->read_half(t2 + 16);   /* channel count */
+    int _bc_801A9D24 = ((int32_t)v0 <= 0);   /* save branch cond before delay slot */
+    t1 = zero;                             /* delay slot: channel index */
     if (_bc_801A9D24) {
         psx_check_interrupts_at(cpu, 0x801A9E28u);
         cpu->pc = 0x801A9E28u; return;  /* CPS taken: split */
@@ -104123,7 +104121,7 @@ block_801A9D1C:
     }
 
 block_801A9D2C:
-    v0 = t4 << 2;
+    v0 = t4 << 2;                          /* byte offset into out-params */
     cpu->pc = 0x801a9d30u; return;  /* fallthrough to split piece */
 }
 
@@ -104136,11 +104134,9 @@ void cps_801a9d30(void)
 
     /* Address: 0x801A9D30, Size: 8 bytes, Blocks: 1 */
 
-block_801A9D30:
-    t5 = a2 + v0;
-    t0 = t1;
+    t5 = a2 + v0;                        /* &out[t4] */
+    t0 = t1;                             /* running byte offset */
     cpu->pc = 0x801a9d38u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9d38u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9d38 — clean CPS transliteration of br2eu_func_801A9D38 (guest 0x801a9d38)
@@ -104160,31 +104156,27 @@ void cps_801a9d38(void)
     /* Address: 0x801A9D38, Size: 76 bytes, Blocks: 2 */
 
 block_801A9D38:
-    v1 = t1 << 3;
-    v0 = cpu->read_word(t2 + 36);
-    a0 = cpu->read_word(t5);
+    v1 = t1 << 3;                        /* channel*8 into coef table */
+    v0 = cpu->read_word(t2 + 36);        /* coef table base */
+    a0 = cpu->read_word(t5);             /* scale factor */
     v1 = v1 + v0;
     v0 = (int32_t)(int16_t)cpu->read_half(v1);
-    /* nop */  /* 0x801A9D4C: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
-    a3 = cpu->lo;
+    a3 = cpu->lo;                        /* scaled delta ch0 */
     psx_muldiv_stall(cpu);
     v0 = (int32_t)(int16_t)cpu->read_half(v1 + 2);
-    /* nop */  /* 0x801A9D5C: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
-    t3 = cpu->lo;
+    t3 = cpu->lo;                        /* scaled delta ch1 */
     psx_muldiv_stall(cpu);
     v0 = (int32_t)(int16_t)cpu->read_half(v1 + 4);
-    /* nop */  /* 0x801A9D6C: 0x00000000 */
     { int64_t result = (int64_t)(int32_t)v0 * (int64_t)(int32_t)a0; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
     psx_muldiv_set(cpu, psx_mult_latency_s(v0));
-    a0 = cpu->lo;
+    a0 = cpu->lo;                        /* scaled delta ch2 */
     psx_muldiv_stall(cpu);
-    int _bc_801A9D78 = (a3 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A9D7C: 0x00000000 */
+    int _bc_801A9D78 = (a3 == zero);     /* save branch cond before delay slot */
+    /* delay slot: nop */
     if (_bc_801A9D78) {
         psx_check_interrupts_at(cpu, 0x801A9DACu);
         cpu->pc = 0x801A9DACu; return;  /* CPS taken: split */
@@ -104194,7 +104186,7 @@ block_801A9D38:
     }
 
 block_801A9D80:
-    v0 = cpu->read_word(t2 + 20);
+    v0 = cpu->read_word(t2 + 20);        /* index-table base */
     cpu->pc = 0x801a9d84u; return;  /* fallthrough to split piece */
 }
 
@@ -104207,19 +104199,14 @@ void cps_801a9d84(void)
 
     /* Address: 0x801A9D84, Size: 40 bytes, Blocks: 1 */
 
-block_801A9D84:
-    /* nop */  /* 0x801A9D84: 0x00000000 */
-    v0 = t0 + v0;
-    v1 = (int32_t)(int16_t)cpu->read_half(v0);
-    v0 = cpu->read_word(t2 + 28);
-    v1 = v1 << 3;
-    v1 = v1 + v0;
-    v0 = cpu->read_half(v1);
-    /* nop */  /* 0x801A9DA0: 0x00000000 */
-    v0 = v0 + a3;
+    v0 = t0 + v0;                        /* index-table[t0] slot ptr */
+    v1 = (int32_t)(int16_t)cpu->read_half(v0);  /* channel index */
+    v0 = cpu->read_word(t2 + 28);        /* channel table base */
+    v1 = (v1 << 3) + v0;                 /* *8 stride */
+    v0 = cpu->read_half(v1);             /* current ch0 value */
+    v0 = v0 + a3;                        /* += scaled delta */
     cpu->write_half(v1, (uint16_t)v0);
     cpu->pc = 0x801a9dacu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9dacu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9dac — clean CPS transliteration of br2eu_func_801A9DAC (guest 0x801a9dac)
@@ -104231,10 +104218,8 @@ void cps_801a9dac(void)
 
     /* Address: 0x801A9DAC, Size: 8 bytes, Blocks: 1 */
 
-block_801A9DAC:
-    int _bc_801A9DAC = (t3 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A9DB0: 0x00000000 */
+    int _bc_801A9DAC = (t3 == zero);     /* save branch cond before delay slot */
+    /* delay slot: nop */
     if (_bc_801A9DAC) {
         psx_check_interrupts_at(cpu, 0x801A9DE0u);
         cpu->pc = 0x801A9DE0u; return;  /* CPS taken: split */
@@ -104242,7 +104227,6 @@ block_801A9DAC:
         psx_check_interrupts_at(cpu, 0x801A9DB4u);
         cpu->pc = 0x801A9DB4u; return;  /* CPS not taken: split */
     }
-    cpu->pc = 0x801a9db4u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9db4 — clean CPS transliteration of br2eu_func_801A9DB4 (guest 0x801a9db4)
@@ -104254,20 +104238,15 @@ void cps_801a9db4(void)
 
     /* Address: 0x801A9DB4, Size: 44 bytes, Blocks: 1 */
 
-block_801A9DB4:
-    v0 = cpu->read_word(t2 + 20);
-    /* nop */  /* 0x801A9DB8: 0x00000000 */
-    v0 = t0 + v0;
-    v1 = (int32_t)(int16_t)cpu->read_half(v0);
-    v0 = cpu->read_word(t2 + 28);
-    v1 = v1 << 3;
-    v1 = v1 + v0;
-    v0 = cpu->read_half(v1 + 2);
-    /* nop */  /* 0x801A9DD4: 0x00000000 */
-    v0 = v0 + t3;
+    v0 = cpu->read_word(t2 + 20);        /* index-table base */
+    v0 = t0 + v0;                        /* slot ptr */
+    v1 = (int32_t)(int16_t)cpu->read_half(v0);  /* channel index */
+    v0 = cpu->read_word(t2 + 28);        /* channel table base */
+    v1 = (v1 << 3) + v0;
+    v0 = cpu->read_half(v1 + 2);         /* current ch1 value */
+    v0 = v0 + t3;                        /* += scaled delta */
     cpu->write_half(v1 + 2, (uint16_t)v0);
     cpu->pc = 0x801a9de0u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9de0u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9de0 — clean CPS transliteration of br2eu_func_801A9DE0 (guest 0x801a9de0)
@@ -104287,9 +104266,8 @@ void cps_801a9de0(void)
     /* Address: 0x801A9DE0, Size: 40 bytes, Blocks: 2 */
 
 block_801A9DE0:
-    int _bc_801A9DE0 = (a0 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A9DE4: 0x00000000 */
+    int _bc_801A9DE0 = (a0 == zero);     /* save branch cond before delay slot */
+    /* delay slot: nop */
     if (_bc_801A9DE0) {
         psx_check_interrupts_at(cpu, 0x801A9E14u);
         cpu->pc = 0x801A9E14u; return;  /* CPS taken: split */
@@ -104299,14 +104277,12 @@ block_801A9DE0:
     }
 
 block_801A9DE8:
-    v0 = cpu->read_word(t2 + 20);
-    /* nop */  /* 0x801A9DEC: 0x00000000 */
-    v0 = t0 + v0;
-    v1 = (int32_t)(int16_t)cpu->read_half(v0);
-    v0 = cpu->read_word(t2 + 28);
-    v1 = v1 << 3;
-    v1 = v1 + v0;
-    v0 = cpu->read_half(v1 + 4);
+    v0 = cpu->read_word(t2 + 20);        /* index-table base */
+    v0 = t0 + v0;                        /* slot ptr */
+    v1 = (int32_t)(int16_t)cpu->read_half(v0);  /* channel index */
+    v0 = cpu->read_word(t2 + 28);        /* channel table base */
+    v1 = (v1 << 3) + v0;
+    v0 = cpu->read_half(v1 + 4);         /* current ch2 value */
     cpu->pc = 0x801a9e08u; return;  /* fallthrough to split piece */
 }
 
@@ -104319,12 +104295,9 @@ void cps_801a9e08(void)
 
     /* Address: 0x801A9E08, Size: 12 bytes, Blocks: 1 */
 
-block_801A9E08:
-    /* nop */  /* 0x801A9E08: 0x00000000 */
-    v0 = v0 + a0;
+    v0 = v0 + a0;                        /* += scaled delta ch2 */
     cpu->write_half(v1 + 4, (uint16_t)v0);
     cpu->pc = 0x801a9e14u; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9e14u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e14 — clean CPS transliteration of br2eu_func_801A9E14 (guest 0x801a9e14)
@@ -104336,21 +104309,18 @@ void cps_801a9e14(void)
 
     /* Address: 0x801A9E14, Size: 20 bytes, Blocks: 1 */
 
-block_801A9E14:
-    v0 = (int32_t)(int16_t)cpu->read_half(t2 + 16);
-    t1 = t1 + 1;
+    v0 = (int32_t)(int16_t)cpu->read_half(t2 + 16);   /* channel count */
+    t1 = t1 + 1;                        /* next channel */
     v0 = ((int32_t)t1 < (int32_t)v0) ? 1 : 0;  /* 0x801A9E1C: 0x0122102A */
-    int _bc_801A9E20 = (v0 != zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    t0 = t0 + 2;
+    int _bc_801A9E20 = (v0 != zero);    /* save branch cond before delay slot */
+    t0 = t0 + 2;                        /* delay slot: next index entry */
     if (_bc_801A9E20) {
         psx_check_interrupts_at(cpu, 0x801A9D38u);
-        cpu->pc = 0x801A9D38u; return;  /* CPS taken: split */
+        cpu->pc = 0x801A9D38u; return;  /* CPS taken: split (loop) */
     } else {
         psx_check_interrupts_at(cpu, 0x801A9E28u);
         cpu->pc = 0x801A9E28u; return;  /* CPS not taken: split */
     }
-    cpu->pc = 0x801a9e28u; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e28 — clean CPS transliteration of br2eu_func_801A9E28 (guest 0x801a9e28)
@@ -104371,9 +104341,8 @@ void cps_801a9e28(void)
 
 block_801A9E28:
     v0 = 1;
-    int _bc_801A9E2C = (t4 == v0);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    v0 = ((int32_t)t4 < 2) ? 1 : 0;  /* 0x801A9E30: 0x29820002 */
+    int _bc_801A9E2C = (t4 == v0);       /* save branch cond before delay slot */
+    v0 = ((int32_t)t4 < 2) ? 1 : 0;     /* 0x801A9E30: 0x29820002 */
     if (_bc_801A9E2C) {
         psx_check_interrupts_at(cpu, 0x801A9EA8u);
         cpu->pc = 0x801A9EA8u; return;  /* CPS taken: split */
@@ -104383,9 +104352,8 @@ block_801A9E28:
     }
 
 block_801A9E34:
-    int _bc_801A9E34 = (v0 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    v0 = 2;
+    int _bc_801A9E34 = (v0 == zero);    /* save branch cond before delay slot */
+    v0 = 2;                             /* delay slot */
     if (_bc_801A9E34) {
         psx_check_interrupts_at(cpu, 0x801A9E4Cu);
         cpu->pc = 0x801A9E4Cu; return;  /* CPS taken: split */
@@ -104404,10 +104372,8 @@ void cps_801a9e38(void)
 
     /* Address: 0x801A9E38, Size: 4 bytes, Blocks: 1 */
 
-block_801A9E38:
     v0 = 2;
     cpu->pc = 0x801a9e3cu; return;  /* fallthrough to split piece */
-    cpu->pc = 0x801a9e3cu; return;/* fallthrough to next function */
 }
 
 /* cps_801a9e3c — clean CPS transliteration of br2eu_func_801A9E3C (guest 0x801a9e3c)
@@ -104427,9 +104393,8 @@ void cps_801a9e3c(void)
     /* Address: 0x801A9E3C, Size: 16 bytes, Blocks: 2 */
 
 block_801A9E3C:
-    int _bc_801A9E3C = (t4 == zero);  /* save branch cond before delay slot */
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A9E40: 0x00000000 */
+    int _bc_801A9E3C = (t4 == zero);     /* save branch cond before delay slot */
+    /* delay slot: nop */
     if (_bc_801A9E3C) {
         psx_check_interrupts_at(cpu, 0x801A9E5Cu);
         cpu->pc = 0x801A9E5Cu; return;  /* CPS taken: split */
@@ -104439,8 +104404,6 @@ block_801A9E3C:
     }
 
 block_801A9E44:
-    /* delay slot (always executes) */
-    /* nop */  /* 0x801A9E48: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x801A9ED4u);
     cpu->pc = 0x801A9ED4u; return;  /* CPS j: split */
 }
