@@ -3976,13 +3976,13 @@ int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   uint8_t *buf18 = (uint8_t *)guest_at(fr + 0x20);
   uint8_t *bc0 = (uint8_t *)guest_at(fr + 0x50);
   uint8_t *b40 = (uint8_t *)guest_at(fr + 0x80);
-  int32_t s2 = (p0 != 0) ? 0x10 : 0;
-  int32_t s4 = 0;
+  int32_t chan = (p0 != 0) ? 0x10 : 0;
+  int32_t hdr_flag = 0;
   int32_t ret;
   uint32_t slot;
   uint8_t *dat;
   uint32_t i;
-  uint8_t t0;
+  uint8_t xor_sum;
   uint32_t st;
   uint32_t asz;
   uint32_t sel;
@@ -3991,7 +3991,7 @@ int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   in[3] = 0; in[4] = 0; in[5] = 0; in[6] = 0; in[7] = 0;
 
 poll:
-  ret = mc_op_result_poll((uint32_t)s2);
+  ret = mc_op_result_poll((uint32_t)chan);
   if (ret == 3) {
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
     *(uint32_t *)guest_at(slot) = (uint32_t)ret;
@@ -4010,28 +4010,28 @@ poll:
   return 4;
 
 probe:
-  ret = mc_chan_job_stable_poll((uint32_t)s2,in,buf18,bc0,0,1);
+  ret = mc_chan_job_stable_poll((uint32_t)chan,in,buf18,bc0,0,1);
   if (ret != 0) { br2_guest_frame_free(); return ret; }
   st = *(uint32_t *)bc0;
   if (st != 0) {
     /* header already present: verify slot state then decompress */
     slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
     if (*(uint32_t *)guest_at(slot) == 3) { br2_guest_frame_free(); return 0xf; }
-    ret = mc_job_a_result_poll((uint32_t)s2,in,b40,0x200,
+    ret = mc_job_a_result_poll((uint32_t)chan,in,b40,0x200,
                        *(uint32_t *)guest_at(slot));
     if (ret != 0) { br2_guest_frame_free(); return ret; }
-    s4 = (*(uint8_t *)b40 < 1) ? 1 : 0;
+    hdr_flag = (*(uint8_t *)b40 < 1) ? 1 : 0;
     goto stage2;
   }
-  ret = mc_file_cmd_stable_poll((uint32_t)s2,in,p7);
+  ret = mc_file_cmd_stable_poll((uint32_t)chan,in,p7);
   if (ret == 4) goto poll;
   if ((uint32_t)ret < 5) {
     if (ret != 0) { br2_guest_frame_free(); return ret; }
     memset(b40,0,0x80);
-    s4 = 0;
+    hdr_flag = 0;
   } else if (ret == 6) {
     memset(b40,0,0x80);
-    s4 = 0;
+    hdr_flag = 0;
   } else {
     br2_guest_frame_free();
     return ret;
@@ -4039,28 +4039,28 @@ probe:
 
 stage2:
   asz = ((uint32_t)(p12 + 0x7f)) & ~0x7fu;
-  sel = (s4 != 0) ? p9 : p8;
+  sel = (hdr_flag != 0) ? p9 : p8;
   {
     void *dp = mem_ptr(p10);
     void *dd = mem_ptr(p11);
-    ret = mc_job_b_result_poll((uint32_t)s2,in,dp,0,0x200);
+    ret = mc_job_b_result_poll((uint32_t)chan,in,dp,0,0x200);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
-    ret = mc_op_seq_probe((uint32_t)s2,in,dp,0,0x200);
+    ret = mc_op_seq_probe((uint32_t)chan,in,dp,0,0x200);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
-    ret = mc_job_b_result_poll((uint32_t)s2,in,dd,sel,asz);
+    ret = mc_job_b_result_poll((uint32_t)chan,in,dd,sel,asz);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
-    ret = mc_op_seq_probe((uint32_t)s2,in,dd,sel,asz);
+    ret = mc_op_seq_probe((uint32_t)chan,in,dd,sel,asz);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
     dat = (uint8_t *)dd;
-    t0 = 0;
+    xor_sum = 0;
     if ((int32_t)p12 > 0) {
-      for (i = 0; i < p12; i++) t0 ^= dat[i];
+      for (i = 0; i < p12; i++) xor_sum ^= dat[i];
     }
-    b40[0] = (uint8_t)s4;
-    b40[(uint32_t)s4 + 1] = t0;
-    ret = mc_job_b_result_poll((uint32_t)s2,in,b40,0x200,0x80);
+    b40[0] = (uint8_t)hdr_flag;
+    b40[(uint32_t)hdr_flag + 1] = xor_sum;
+    ret = mc_job_b_result_poll((uint32_t)chan,in,b40,0x200,0x80);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
-    ret = mc_op_seq_probe((uint32_t)s2,in,b40,0x200,0x80);
+    ret = mc_op_seq_probe((uint32_t)chan,in,b40,0x200,0x80);
     if (ret != 0) { br2_guest_frame_free(); return ret; }
   }
   slot = 0x801b43e8 + ((p0 != 0) ? 4 : 0);
@@ -4092,29 +4092,29 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   uint8_t *buf;
   size_t asz;
   uint32_t fr;
-  int32_t s7 = (int32_t)p0;
-  int32_t s4;
+  int32_t port = (int32_t)p0;
+  int32_t chan;
   int32_t ret;
   uint32_t slot;
-  uint32_t s0 = p12;
-  uint32_t s3 = p11;
-  uint8_t s6, s5;
+  uint32_t dlen = p12;
+  uint32_t dst_addr = p11;
+  uint8_t cur_idx, want_xor;
   uint32_t i;
 
-  if (s0 == 0) return 0;
-  s4 = (s7 != 0) ? -1 : 0;
-  s4 &= 0x10;
+  if (dlen == 0) return 0;
+  chan = (port != 0) ? -1 : 0;
+  chan &= 0x10;
 
-  ret = mc_op_result_poll((uint32_t)s4);
+  ret = mc_op_result_poll((uint32_t)chan);
   if (ret == 3 || ret == 0) {
     /* ok */
   } else {
-    slot = 0x801b43e8 + (s4 & 4);
+    slot = 0x801b43e8 + (chan & 4);
     *(uint32_t *)guest_at(slot) = 3;
     return ret;
   }
 
-  asz = ((uint32_t)(s0 + 0x7f)) & ~0x7fu;
+  asz = ((uint32_t)(dlen + 0x7f)) & ~0x7fu;
   fr = br2_guest_frame(0x488 + (uint32_t)asz + 0x20);
   in = (uint32_t *)guest_at(fr + 0x00);
   buf = (uint8_t *)guest_at(fr + 0x488);
@@ -4124,35 +4124,35 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
   in[7]=p8; in[8]=p9; in[9]=p10; in[10]=p11; in[11]=p12;
 
   *(uint32_t *)(buf - 8) = 0x80; /* sp+0x10 outgoing arg */
-  ret = mc_job_a_result_poll((uint32_t)s4,in,buf,0x200,0x80);
+  ret = mc_job_a_result_poll((uint32_t)chan,in,buf,0x200,0x80);
   if (ret != 0) { br2_guest_frame_free(); return ret; }
 
-  s6 = buf[0];
-  s5 = buf[(uint8_t)s6 + 1];
+  cur_idx = buf[0];
+  want_xor = buf[(uint8_t)cur_idx + 1];
   {
-    uint32_t idx = (uint8_t)s6;
+    uint32_t idx = (uint8_t)cur_idx;
     for (;;) {
-      uint32_t a3v = in[7 + idx];
-      uint32_t sum = 0;
-      uint32_t s1new;
+      uint32_t seg_arg = in[7 + idx];
+      uint32_t xor_sum = 0;
+      uint32_t next_idx;
       *(uint32_t *)(buf - 8) = asz;
-      ret = mc_job_a_result_poll((uint32_t)s4,in,buf,a3v,asz);
+      ret = mc_job_a_result_poll((uint32_t)chan,in,buf,seg_arg,asz);
       if (ret != 0) { br2_guest_frame_free(); return ret; }
-      if ((int32_t)s0 > 0) {
-        for (i = 0; i < s0; i++) sum ^= buf[i];
+      if ((int32_t)dlen > 0) {
+        for (i = 0; i < dlen; i++) xor_sum ^= buf[i];
       }
-      s1new = (s6 < 1) ? 1 : 0;
-      if (s5 == (sum & 0xff)) {
-        uint8_t *dst = (uint8_t *)mem_ptr(s3);
+      next_idx = (cur_idx < 1) ? 1 : 0;
+      if (want_xor == (xor_sum & 0xff)) {
+        uint8_t *dst = (uint8_t *)mem_ptr(dst_addr);
         uint8_t *src = buf;
-        for (i = 0; i < s0; i++) *dst++ = *src++;
-        slot = 0x801b43e8 + ((s7 != 0) ? 4 : 0);
+        for (i = 0; i < dlen; i++) *dst++ = *src++;
+        slot = 0x801b43e8 + ((port != 0) ? 4 : 0);
         *(uint32_t *)guest_at(slot) = 0;
         br2_guest_frame_free();
         return 0;
       }
-      idx = s1new;
-      if (s6 == s1new) { br2_guest_frame_free(); return 2; }
+      idx = next_idx;
+      if (cur_idx == next_idx) { br2_guest_frame_free(); return 2; }
     }
   }
 }
