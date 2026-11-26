@@ -90823,8 +90823,6 @@ void cps_80199aa8(void)
 
     /* Address: 0x80199AA8, Size: 8 bytes, Blocks: 1 */
 
-    /* store arg to *0x801BCC88 (at delay slot) ->
-       0x801399D4C/0x80199AB0. CPS-blocked. */
 block_80199AA8:
     /* delay slot (always executes) */
     cpu->write_word(0x801BCC88u, v0);          /* at(0x801C0000) - 13176 */
@@ -90852,9 +90850,6 @@ void cps_80199ab0(void)
     }
     /* Address: 0x80199AB0, Size: 60 bytes, Blocks: 2 */
 
-    /* DMA/blit: half[a0]=v0; row ptr 0x801FC6C0/
-       src 0x801FEB18; clears 0x801FC6A4; copies
-       word[v1]->word[a1] -> 0x801399AEC. CPS-blocked. */
 block_80199AB0:
     cpu->write_half(a0, (uint16_t)v0);        /* store arg halfword @a0 */
     a1 = cpu->read_word(0x801FC6C0u);         /* dst buffer ptr cell */
@@ -90951,9 +90946,6 @@ void cps_80199b30(void)
 
     /* Address: 0x80199B30, Size: 68 bytes, Blocks: 1 */
 
-    /* record setup: row 0x801FC6A4; half 0x801FC684;
-       mode 0x801FC688; rec 0x801FC6BC ->
-       0x801399B9C/74. CPS-blocked. */
 block_80199B30:
     a1 = cpu->read_word(0x801FC6A4u);          /* row index cell */
     v0 = v0 + 1;                               /* count + 1 */
@@ -90989,8 +90981,6 @@ void cps_80199b74(void)
 
     /* Address: 0x80199B74, Size: 40 bytes, Blocks: 1 */
 
-    /* cmd pair: *0x801BCC50/54 = v1/v0 ->
-       0x801399BB8/9BC. CPS-blocked. */
 block_80199B74:
     v1 = 0x00020943u;                          /* was 0x0002<<16 | 0x0943 */
     v0 = cpu->read_word(0x801BCC50u);          /* cmd buf ptr A */
@@ -91034,8 +91024,6 @@ void cps_80199bb8(void)
 
     /* Address: 0x80199BB8, Size: 16 bytes, Blocks: 1 */
 
-    /* rec read: rec=*0x801FEB18; half[rec+6] ->
-       0x801399BC8. CPS-blocked. */
 block_80199BB8:
     v0 = cpu->read_word(0x801FEB18u);          /* record buf ptr cell */
     /* nop */  /* 0x80199BC0: 0x00000000 */
@@ -91064,9 +91052,6 @@ void cps_80199bc8(void)
     }
     /* Address: 0x80199BC8, Size: 68 bytes, Blocks: 3 */
 
-    /* field ops: half[v0+4]; base 0x801FC6B0 ->
-       store 0x801FC69C; sect 0x801FC6A0/rec
-       0x801FC6BC -> 0x801399C30. CPS-blocked. */
 block_80199BC8:
     v0 = cpu->read_half(v0 + 4);               /* rec+4 halfword */
     v1 = v1 + -1;                              /* status - 1 */
@@ -91121,8 +91106,6 @@ void cps_80199c0c(void)
     }
     /* Address: 0x80199C0C, Size: 36 bytes, Blocks: 2 */
 
-    /* sect loop: word[0x801FC6A0] self-bump ->
-       0x801399C54/D5C. CPS-blocked. */
 block_80199C0C:
     ra = 0x80199C14u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -91151,8 +91134,6 @@ void cps_80199c30(void)
 
     /* Address: 0x80199C30, Size: 32 bytes, Blocks: 1 */
 
-    /* stack pack: sp+16=t0, sp+20=v1, sp+24=0 ->
-       jal 0x801399D88. CPS-blocked. */
 block_80199C30:
     a0 = 3;                                    /* cmd type */
     a2 = zero;
@@ -91194,9 +91175,6 @@ void cps_80199c54(void)
 
     /* Address: 0x80199C54, Size: 36 bytes, Blocks: 1 */
 
-    /* save/restore: half 0x801FC684=0;
-       word 0x801FC680=0; word 0x801FC698=v0(0x801FC690)
-       -> 0x801399CF0/9C78. CPS-blocked. */
 block_80199C54:
     v0 = cpu->read_word(0x801FC690u);          /* saved cursor word */
     cpu->write_half(0x801FC684u, (uint16_t)zero);
@@ -91227,8 +91205,6 @@ void cps_80199c78(void)
     }
     /* Address: 0x80199C78, Size: 28 bytes, Blocks: 2 */
 
-    /* base read: word[0x801FC6B0] ->
-       0x801399CCC/9C94. CPS-blocked. */
 block_80199C78:
     v0 = cpu->read_word(0x801FC6B0u);          /* base/flag cell */
     /* nop */  /* 0x80199C80: 0x00000000 */
@@ -91267,9 +91243,6 @@ void cps_80199c94(void)
     }
     /* Address: 0x80199C94, Size: 56 bytes, Blocks: 2 */
 
-    /* section walk: a1=word[a1-14688]; rec
-       0x801FC6BC -> jal 0x801399D5C; sect bump ->
-       0x801399CF0. CPS-blocked. */
 block_80199C94:
     a1 = cpu->read_word(a1 + -14688);         /* sector counter (a1=0x80200000) */
     a0 = cpu->read_word(0x801FC6BCu);         /* record ptr */
@@ -91302,8 +91275,6 @@ void cps_80199ccc(void)
 
     /* Address: 0x80199CCC, Size: 36 bytes, Blocks: 1 */
 
-    /* stack pack: sp+16=t0, sp+20/24=0 ->
-       jal 0x801399D88. CPS-blocked. */
 block_80199CCC:
     a0 = 3;                                    /* cmd type */
     a2 = zero;
@@ -91339,9 +91310,6 @@ void cps_80199cf0(void)
     }
     /* Address: 0x80199CF0, Size: 92 bytes, Blocks: 3 */
 
-    /* cmd/rec emit: *0x801BCC54=v0; half[rec
-       *0x801FEB18]=v0; count swap 0x801FC6A4/6B0 ->
-       0x801399D5C. CPS-blocked. */
 block_80199CF0:
     v1 = cpu->read_word(0x801BCC54u);          /* cmd buf ptr B */
     v0 = 4901;                                 /* 0x1325 */
@@ -91394,8 +91362,6 @@ void cps_80199d4c(void)
 
     /* Address: 0x80199D4C, Size: 16 bytes, Blocks: 1 */
 
-    /* epilogue fragment: ra = word[sp+56].
-       CPS-blocked. */
 block_80199D4C:
     ra = cpu->read_word(sp + 56);
     sp = sp + 64;
@@ -91452,9 +91418,6 @@ void cps_8019a00c(void)
     }
     /* Address: 0x8019A00C, Size: 144 bytes, Blocks: 8 */
 
-    /* prologue: saves s0-s3/ra sp+16..32 ->
-       0x8019A3F0 -> jal 0x8018E300 -> 0x8019A378.
-       CPS-blocked. */
 block_8019A00C:
     /* prologue: s0-s3 = a0-a3 (args forwarded to bios_tramp_b015) */
     sp = sp + -40;
@@ -91558,9 +91521,6 @@ void cps_8019a09c(void)
     }
     /* Address: 0x8019A09C, Size: 144 bytes, Blocks: 8 */
 
-    /* sibling prologue (same saves) ->
-       0x8019A3F0 -> 0x8018E300 -> 0x8019A378.
-       CPS-blocked. */
 block_8019A09C:
     /* prologue: s0-s3 = a0-a3 (args forwarded to bios_tramp_b012) */
     sp = sp + -40;
@@ -91659,8 +91619,6 @@ void cps_8019a2ac(void)
     }
     /* Address: 0x8019A2AC, Size: 64 bytes, Blocks: 4 */
 
-    /* flag/ptr deref: v1=*0x801BCC98; v0=[v1+4];
-       v0=[v1]. CPS-blocked. */
 block_8019A2AC:
     v1 = cpu->read_word(0x801BCC98u);          /* flag-pair ptr cell */
     /* nop */  /* 0x8019A2B4: 0x00000000 */
@@ -91772,9 +91730,6 @@ void cps_8019a378(void)
     }
     /* Address: 0x8019A378, Size: 112 bytes, Blocks: 6 */
 
-    /* at-slot save 0x801FEB50; jalr -> v0=[v0+364];
-       at 0x801FEB58/5C=v1; word[v0+1428]=0 ->
-       jal 0x801957F0. CPS-blocked. */
 block_8019A378:
     cpu->write_word(0x801FEB50u, ra);          /* at(0x80200000) - 5296: save ra */
     ra = 0x8019A388u;  /* jal link before delay slot */
@@ -91859,9 +91814,6 @@ void cps_8019a3f0(void)
     }
     /* Address: 0x8019A3F0, Size: 104 bytes, Blocks: 7 */
 
-    /* at-slot save 0x801FEB60; jalr -> v0=[v0+364];
-       word[v1]=0 -> 0x801957F0/0x8018E310; restore
-       ra. CPS-blocked. */
 block_8019A3F0:
     cpu->write_word(0x801FEB60u, ra);          /* at(0x80200000) - 5280: save ra */
     ra = 0x8019A400u;  /* jal link before delay slot */
@@ -91952,9 +91904,6 @@ void cps_8019a5d8(void)
     }
     /* Address: 0x8019A5D8, Size: 152 bytes, Blocks: 9 */
 
-    /* tick wrapper: a1->sp+16; *0x801BDDE0 tick;
-       sp+24=ra; pack -> jal 0x80197AD0/0x80199FE0.
-       CPS-blocked. */
 block_8019A5D8:
     sp = sp + -32;
     a1 = a1 << 15;                             /* poll budget = a1 * 0x8000 */
@@ -92130,8 +92079,6 @@ void cps_8019aabc(void)
     }
     /* Address: 0x8019AABC, Size: 328 bytes, Blocks: 20 */
 
-    /* frame: saves s0-s4/ra sp+16..36; s4=word[a0]
-       (old); half 0x801BCD18 a1-related. CPS-blocked. */
 block_8019AABC:
     /* s1 = slot index, s2 = new value; slot_tbl @0x801BCD1C */
     sp = sp + -40;
@@ -92347,8 +92294,6 @@ void cps_8019adcc(void)
 
     /* Address: 0x8019ADCC, Size: 60 bytes, Blocks: 1 */
 
-    /* context restore: ra/gp/sp/fp/s0-s2+ = word[a0+..]
-       (setjmp-style). CPS-blocked. */
 block_8019ADCC:
     /* restore full context from jmp_buf @a0: ra@0, sp@4, fp@8, gp@44, s0-s7@12..40 */
     ra = cpu->read_word(a0);
@@ -92390,7 +92335,6 @@ void cps_8019aed4(void)
     }
     /* Address: 0x8019AED4, Size: 44 bytes, Blocks: 3 */
 
-    /* swap: v0=word[a0]; word[a0]=a1. */
 block_8019AED4:
     v0 = 0x801BDDC0u;  /* 0x801C0000 -8768 */    a0 = a0 << 2;
     a0 = a0 + v0;
@@ -92455,8 +92399,6 @@ void cps_8019af7c(void)
     }
     /* Address: 0x8019AF7C, Size: 384 bytes, Blocks: 16 */
 
-    /* frame: *0x801BDDF0 chan; saves s0-s5/ra
-       sp+16..40. CPS-blocked. */
 block_8019AF7C:
     v0 = cpu->read_word(0x801BDDF0u);          /* channel status ptr cell */
     sp = sp + -48;
@@ -92707,10 +92649,7 @@ void cps_8019b290(void)
     }
     /* Address: 0x8019B290, Size: 120 bytes, Blocks: 2 */
 
-    /* CD init/verify: half[v0+4/6]=0, word[v0+8/12]=0,
-       word[0x801BDE4C]=a1; jal cd_u16_table_store(a0?,0); then
-       clears 9 CD state cells 0x801BDE3C..0x801BDF18; epilogue.
-       CPS-blocked. */
+
 
 block_8019B290:
     cpu->write_half(v0 + 4, (uint16_t)zero);
@@ -93319,8 +93258,6 @@ void cps_8019bd94(void)
     }
     /* Address: 0x8019BD94, Size: 60 bytes, Blocks: 4 */
 
-    /* table setup: *0x801BDEB0/0x801BDED8; a0=half[a0];
-       CPS-blocked. */
 block_8019BD94:
     v0 = cpu->read_word(0x801BDEB0u);          /* 0x801C0000 - 8528: u16 table ptr */
     a0 = a0 << 1;
@@ -93377,8 +93314,6 @@ void cps_8019bdd0(void)
     }
     /* Address: 0x8019BDD0, Size: 88 bytes, Blocks: 4 */
 
-    /* self-heal: *0x801BDEC0 relink — reads v0=[a1]
-       twice, writes back. CPS-blocked. */
 block_8019BDD0:
     a1 = cpu->read_word(0x801BDEC0u);          /* 0x801C0000 - 8512: reg ptr cell */
     v1 = 0xFFF8FFFFu;                          /* clear bits 16-18 */
@@ -93447,8 +93382,6 @@ void cps_8019bfe0(void)
     }
     /* Address: 0x8019BFE0, Size: 128 bytes, Blocks: 10 */
 
-    /* record fetch: *0x801BDF18; rec=[a1]/[a1+4];
-       half[rec+12]; byte code written. CPS-blocked. */
 block_8019BFE0:
     v0 = cpu->read_word(0x801BDF18u);          /* 0x801C0000 - 8424: record ptr cell */
     /* nop */  /* 0x8019BFE8: 0x00000000 */
@@ -94045,9 +93978,6 @@ void cps_8019e330(void)
     }
     /* Address: 0x8019E330, Size: 108 bytes, Blocks: 11 */
 
-    /* frame: s0/ra sp+16/20 -> jal 0x80199FE0 ->
-       0x8018E300 -> 0x80199FFC -> 0x8019E400 ->
-       0x8019E5CC -> 0x8019E4C8. CPS-blocked. */
 block_8019E330:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -94154,9 +94084,6 @@ void cps_8019e39c(void)
     }
     /* Address: 0x8019E39C, Size: 56 bytes, Blocks: 5 */
 
-    /* frame: save ra sp+16 -> 0x8018E300 ->
-       0x8019E410 -> 0x80199FE0 -> 0x8018E310 -> restore.
-       CPS-blocked. */
 block_8019E39C:
     sp = sp + -24;
     cpu->write_word(sp + 16, ra);
@@ -94216,8 +94143,6 @@ void cps_8019e430(void)
     }
     /* Address: 0x8019E430, Size: 44 bytes, Blocks: 3 */
 
-    /* half pair update: half[v1+10]=t9 (t7 read).
-       CPS-blocked. */
 block_8019E430:
     t7 = cpu->read_half(v1 + 10);               /* current reg half */
     t0 = 0x00000000u;
@@ -94268,8 +94193,6 @@ void cps_8019e45c(void)
     }
     /* Address: 0x8019E45C, Size: 68 bytes, Blocks: 4 */
 
-    /* field reads: word[v1+4212]/[v1+4164]/
-       [0x0001DFF4]. CPS-blocked. */
 block_8019E45C:
     v0 = cpu->read_word(v1 + 4212);              /* status word A */
     /* nop */  /* 0x8019E460: 0x00000000 */
@@ -94326,7 +94249,6 @@ void cps_8019e4a0(void)
 
     /* Address: 0x8019E4A0, Size: 16 bytes, Blocks: 1 */
 
-    /* leaf fragment (1 block). */
 block_8019E4A0:
     v0 = 0xA000DFACu;  /* 0xA0010000 -8276 */    uint32_t _jt_8019E4A8 = v0;  /* latch indirect target before delay slot */
     uint32_t tail_pc = v0;  /* latch indirect target before delay slot */
@@ -94580,9 +94502,6 @@ void cps_8019e600(void)
     }
     /* Address: 0x8019E600, Size: 112 bytes, Blocks: 7 */
 
-    /* at-slot save -5216; jalr -> v0=[v0+24];
-       word[v0+112]=word[t2] -> 0x801957F0/0x8018E310.
-       CPS-blocked. */
 block_8019E600:
     at = 0x80200000u;                          /* 0x8020 << 16 */
     cpu->write_word(at + -5216, ra);           /* save ra @0x801FEB60 */
@@ -96081,8 +96000,6 @@ void cps_8019fd98(void)
     }
     /* Address: 0x8019FD98, Size: 132 bytes, Blocks: 6 */
 
-    /* frame: s3=0x801FEBE0; saves s0-s3/ra sp+56..72;
-       word[s3] chan -> jal 0x8018E550. CPS-blocked. */
 block_8019FD98:
     sp = sp + -80;
     cpu->write_word(sp + 64, s2);
@@ -96171,9 +96088,6 @@ void cps_8019fe1c(void)
     }
     /* Address: 0x8019FE1C, Size: 88 bytes, Blocks: 7 */
 
-    /* res->sp+48; -> jal 0x801A0270 -> 0x8019FF2C ->
-       0x8019FA6C; rec word[s0] -> at-5064 ->
-       0x8018E550/0x8019FE78. CPS-blocked. */
 block_8019FE1C:
     ra = 0x8019FE24u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -96301,9 +96215,6 @@ void cps_8019fe7c(void)
     }
     /* Address: 0x8019FE7C, Size: 176 bytes, Blocks: 13 */
 
-    /* rec fields: word[s0+8]/[s0]/[s0+4]; gate
-       word[v1]; v0=0x801FEBD4; word[s0+8]=0 ->
-       sp+48 pack. CPS-blocked. */
 block_8019FE7C:
     /* nop */  /* 0x8019FE7C: 0x00000000 */
     int cond_busy0 = (v0 != zero);             /* latch: delay is nop */
@@ -96461,7 +96372,7 @@ void cps_8019ff30(void)
 
     /* Address: 0x8019FF30, Size: 28 bytes, Blocks: 1 */
 
-    /* epilogue: pop s0-s3, ra (sp += 80), jr ra */
+
 
 block_8019FF30:
     ra = cpu->read_word(sp + 72);
@@ -96508,11 +96419,7 @@ void cps_801a0008(void)
     }
     /* Address: 0x801A0008, Size: 180 bytes, Blocks: 14 */
 
-    /* module init/verify: checks a sentinel word at 0x801FF630-0x13;
-       on success calls 0x8018E550 (header check on 0x80125E6C), else
-       fills sp+16..143 with 0xFF and runs a 15-iteration loop calling
-       0x801A0E90/0x801A0610/0x801A0600/0x801A1070 (per-slot init+verify),
-       returning 1 on success / -1 or 0 on failure. CPS-blocked. */
+
 block_801A0008:
     sp = sp + -160;
     v0 = 0x801FEBE0u;  /* 0x80200000 -5152 */    cpu->write_word(sp + 152, ra);
@@ -96657,10 +96564,7 @@ void cps_801a041c(void)
     }
     /* Address: 0x801A041C, Size: 256 bytes, Blocks: 12 */
 
-    /* pool/slot allocator: optionally marks *s2=1, sizes the free region
-       via mulhi(*0x154/0x154) magic-divide, walks 80-byte records calling
-       0x801984A0 until one accepts (then stores link at rec+52), and
-       tail-dispatches an indirect callback from 0x801FAFA0-0x13. CPS-blocked. */
+
 block_801A041C:
     sp -= 48;
     cpu->write_word(sp + 24, s2);
@@ -96822,11 +96726,7 @@ void cps_801a0660(void)
     }
     /* Address: 0x801A0660, Size: 324 bytes, Blocks: 22 */
 
-    /* checksum-verified load with retries: XOR-folds 127 bytes of s3 into
-       a seed byte written back at s3+127, then up to 8 attempts run
-       0x801A0610/0x801A0600/0x801A09F0/0x801A09B0/0x801A09E0 (decode+verify
-       into sp+16), recomputes the XOR and compares against s3[127];
-       failure calls 0x8018E550 on 0x80125F68. Returns 1 on match. CPS-blocked. */
+
 block_801A0660:
     sp = sp + -176;
     cpu->write_word(sp + 144, s0);
@@ -97249,10 +97149,7 @@ void cps_801a0be0(void)
     }
     /* Address: 0x801A0BE0, Size: 136 bytes, Blocks: 5 */
 
-    /* DMA/channel setup prologue: calls 0x8018E300, then issues four
-       0x8019B380 requests (a0=0xF4000001, sizes 4/0x8000/256/8192) with
-       buffers at 0x801A0B10/2C/48 guest addrs, storing results into
-       0x801FAEC8/CC; falls through into cps_801a0c68. CPS-blocked. */
+
 block_801A0BE0:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
@@ -97345,10 +97242,7 @@ void cps_801a0c68(void)
     }
     /* Address: 0x801A0C68, Size: 340 bytes, Blocks: 17 */
 
-    /* DMA/channel setup part 2 (continues cps_801a0be0): five more
-       0x8019B380 requests (a0=0xF0000011, sizes 4/0x8000/256/8192) storing
-       handles at 0x801FAEB4..C8, then eight 0x8019B390 calls on the stored
-       handles, then 0x801A0E90 and a conditional 0x8018E310. CPS-blocked. */
+
 block_801A0C68:
     a3 = a3 + 2892;
     at = 0x8020 << 16;  /* 0x80200000 */
@@ -97554,9 +97448,7 @@ void cps_801a0ddc(void)
     }
     /* Address: 0x801A0DDC, Size: 180 bytes, Blocks: 12 */
 
-    /* channel teardown: calls 0x8018E300, then 0x801A11C0 on each of the
-       eight stored handles at 0x801FAEC8..E4 (first result kept in s0),
-       then conditional 0x8018E310. CPS-blocked. */
+
 block_801A0DDC:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
@@ -97714,9 +97606,7 @@ void cps_801a1290(void)
     }
     /* Address: 0x801A1290, Size: 76 bytes, Blocks: 4 */
 
-    /* predicate: returns 1 iff global flag 0x801AE6EC != 0 AND
-       byte[0x801AE6D4 + (a0>>4)*240 + 232] == 8 (xor 8 then <1).
-       CPS-blocked. */
+
 block_801A1290:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6196);  /* @0x801BE7CC */
@@ -97793,11 +97683,7 @@ void cps_801a14a0(void)
     }
     /* Address: 0x801A14A0, Size: 212 bytes, Blocks: 13 */
 
-    /* record field getter: jalr-resolves a record via table
-       0x801AE6E4-6252, bounds-checks index s0 against byte[rec+233],
-       then returns one of 5 byte fields (rec+233..237 or via ptr rec+4 +
-       s0*5) selected through jump table 0x80126028+(s1-1)*4; 0 if OOB.
-       CPS-blocked. */
+
 block_801A14A0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -97954,10 +97840,7 @@ void cps_801a1574(void)
     }
     /* Address: 0x801A1574, Size: 168 bytes, Blocks: 10 */
 
-    /* nested record field getter (sibling of 0x801A14A0): jalr-resolves
-       via 0x801AE6E4-6252, bounds-checks s0 against byte[rec+234],
-       indexes 8-byte subrecords via rec+8 + s0*8, then bounds-checks s1
-       and returns byte[sub+4 + s1]; 0 on any OOB. CPS-blocked. */
+
 block_801A1574:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -98088,9 +97971,7 @@ void cps_801a1654(void)
     }
     /* Address: 0x801A1654, Size: 72 bytes, Blocks: 3 */
 
-    /* byte-triple forwarder: jalr-resolves record via
-       0x801AE6E4-6252, then tail-jals 0x801A2EC8(a0=record,
-       a1=a1&0xFF, a2=a2&0xFF). CPS-blocked. */
+
 block_801A1654:
     v0 = 0x801C << 16;  /* 0x801C0000 */
     v0 = cpu->read_word(v0 + -6252);  /* handler ptr @0x801BE78C */
@@ -98160,12 +98041,7 @@ void cps_801a16f0(void)
     }
     /* Address: 0x801A16F0, Size: 280 bytes, Blocks: 13 */
 
-    /* mode-flag setter: computes expected = (g[0x801AE644]<<1)|(
-       g[0x801AE644-4]<1) and compares to a0; per bit0/bit1 sets or
-       clears globals 0x801AE6DC/0x801AE6E0 (with <150 counter gates on
-       0x801FAEF0/F4) and fires two jalr notify callbacks via
-       0x801AE6D4 table (base and +240); finally sets flag 0x801AE6EC
-       and returns s1. CPS-blocked. */
+
 block_801A16F0:
     v1 = 0x801C << 16;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -6188);  /* @0x801BE7D4 */
@@ -98347,12 +98223,7 @@ void cps_801a1a40(void)
     }
     /* Address: 0x801A1A40, Size: 204 bytes, Blocks: 8 */
 
-    /* channel init/teardown sequence: clears flag 0x801AE6EC, calls
-       0x8018E300, channel ops 0x8019A340/0x8019A330 on handle
-       0x801FAEE0, writes -2 + sets bit0 in table entry 0x801AE660,
-       calls 0x8019A670(3,0), 0x8018E310, then two jalr callbacks via
-       0x801AE6D4 (base/+240), zeroes counters 0x801FAEF0/F4, sets
-       flag 0x801AE6EC=1. CPS-blocked. */
+
 block_801A1A40:
     sp = sp + -24;
     cpu->write_word(sp + 20, ra);
@@ -98486,9 +98357,7 @@ void cps_801a1bc4(void)
     }
     /* Address: 0x801A1BC4, Size: 40 bytes, Blocks: 3 */
 
-    /* refcount guard piece: stores half(a0+10)=v1, reads slot
-       0x801AE6D8[v0] — negative splits to 0x801A1CAC, zero to
-       0x801A1C58, positive continues into cps_801a1bec. CPS-blocked. */
+
 block_801A1BC4:
     cpu->write_half(a0 + 10, (uint16_t)v1);
     at = 0x801C << 16;  /* 0x801C0000 */
@@ -98544,10 +98413,7 @@ void cps_801a1bec(void)
     }
     /* Address: 0x801A1BEC, Size: 92 bytes, Blocks: 2 */
 
-    /* refcount decrement + notify: slot = 0x801AE650[g[0x801AE648]];
-       *slot -= 1; computes offset idx*240 into record s0+12 and
-       jalr-calls handler g[0x801AE610]; continuation 0x801A1C48 reloads
-       the slot pointer. CPS-blocked. */
+
 block_801A1BEC:
     v1 = 0x801C << 16;  /* 0x801C0000 */
     v1 = cpu->read_word(v1 + -6208);
@@ -99279,7 +99145,7 @@ void cps_801a1e70(void)
 
     /* Address: 0x801A1E70, Size: 20 bytes, Blocks: 1 */
 
-    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
+
 
 block_801A1E70:
     ra = cpu->read_word(sp + 24);
@@ -101713,7 +101579,7 @@ void cps_801a36c0(void)
 
     /* Address: 0x801A36C0, Size: 36 bytes, Blocks: 1 */
 
-    /* epilogue: pop s0-s5, ra (sp += 48), jr ra */
+
 
 block_801A36C0:
     ra = cpu->read_word(sp + 40);
@@ -103877,11 +103743,7 @@ void cps_801a8ee0(void)
     }
     /* Address: 0x801A8EE0, Size: 768 bytes, Blocks: 21 */
 
-    /* GTE math routine on descriptor a0 (t2): gated by half(t2+52),
-       resolves table ptrs t2+24/+36 and index gp+36, then runs a conditional
-       sequence of GTE commands (0x30/0x06/0x2D/0x01/0x3F) writing data
-       regs 1/3/5 and reading SZ (data 12). Kept as CPS blocks: every branch
-       is a psx_check_interrupts_at resume point. */
+
 block_801A8EE0:
     sp = sp + -24;
     t2 = a0;
@@ -104328,9 +104190,7 @@ void cps_801a91e0(void)
     }
     /* Address: 0x801A91E0, Size: 860 bytes, Blocks: 21 */
 
-    /* GTE math routine on descriptor a0 (t2) — extended variant of
-       0x801A8EE0 with the same prologue/gates plus extra commands
-       (0x0180001, 0x108041B). CPS-blocked; do not restructure. */
+
 block_801A91E0:
     sp = sp + -24;
     t2 = a0;
@@ -104812,10 +104672,7 @@ void cps_801a972c(void)
     }
     /* Address: 0x801A972C, Size: 288 bytes, Blocks: 18 */
 
-    /* record scan/sync: gated by gp+68==1 and a0 != NULL; compares
-       half(a0+10) against word(a0+44), walks an index bounded by the
-       difference, decrements a counter, then stores half(a0+44) into
-       half(a0+10) and tail-calls 0x801A9C24. CPS-blocked. */
+
 block_801A972C:
     sp = sp + -24;
     v1 = cpu->read_word(gp + 68);
@@ -106479,10 +106336,7 @@ void cps_801aa618(void)
     }
     /* Address: 0x801AA618, Size: 464 bytes, Blocks: 24 */
 
-    /* state-field update on record s0: gated by half(s0+68), compares the
-       sign-extended byte a0 against half(s0+70), uses muldiv/div helpers,
-       contains break() traps, and writes results to half(s0+64/66) before
-       falling through to 0x801AA7E8. CPS-blocked. */
+
 block_801AA618:
     v0 = (int32_t)(int16_t)cpu->read_half(s0 + 68);
     /* nop */  /* 0x801AA61C: 0x00000000 */
@@ -107044,11 +106898,7 @@ void cps_801ab470(void)
     }
     /* Address: 0x801AB470, Size: 988 bytes, Blocks: 3 */
 
-    /* GTE vertex transform: gated by half(a0+40); loads a rotation matrix
-       from the table at gp+52 into GTE ctrl regs (ctc2), then for each of
-       ~9 points loads XYZ halves into data regs 9/10/11 (mtc2), runs GTE
-       command 0x12 (project), and reads back data 12/13/14. One giant
-       straight-line block — CPS-blocked. */
+
 block_801AB470:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 40);
     /* nop */  /* 0x801AB474: 0x00000000 */
@@ -107519,10 +107369,7 @@ void cps_801ab84c(void)
     }
     /* Address: 0x801AB84C, Size: 1352 bytes, Blocks: 4 */
 
-    /* GTE vertex transform, two-stage variant of 0x801AB470: same matrix
-       load and per-point mtc2 + cmd-0x12 project loop, but with two
-       transform passes (two cmd-0x12 groups) over the point set.
-       CPS-blocked. */
+
 block_801AB84C:
     v0 = cpu->read_word(a0 + 36);
     /* nop */  /* 0x801AB850: 0x00000000 */
@@ -108158,9 +108005,7 @@ void cps_801abd94(void)
     }
     /* Address: 0x801ABD94, Size: 732 bytes, Blocks: 3 */
 
-    /* GTE vertex transform variant of 0x801AB470: same matrix load
-       (gp+52 -> ctc2) and per-point mtc2 + cmd-0x12 project/readback
-       pattern over ~6 points, ending with cmd 0x0480012. CPS-blocked. */
+
 block_801ABD94:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 40);
     /* nop */  /* 0x801ABD98: 0x00000000 */
@@ -116049,9 +115894,6 @@ void cps_8019a814(void)
     }
     /* Address: 0x8019A814, Size: 104 bytes, Blocks: 3 */
 
-    /* frame: s0=0x801BCD18; half[s0] ctx; saves
-       s0/ra -> 0x8019A8DC; ptrs 0x801BDDA4/A8;
-       half[v0]=0. CPS-blocked. */
 block_8019A814:
     sp = sp + -24;
     cpu->write_word(sp + 16, s0);
@@ -116134,8 +115976,6 @@ void cps_8019a8ec(void)
     }
     /* Address: 0x8019A8EC, Size: 464 bytes, Blocks: 20 */
 
-    /* frame: s1=0x801BCD18; saves s0-s4/ra ->
-       half[s1] ctx read. CPS-blocked. */
 block_8019A8EC:
     sp = sp + -40;
     cpu->write_word(sp + 20, s1);
@@ -116399,9 +116239,6 @@ void cps_8019b308(void)
     }
     /* Address: 0x8019B308, Size: 112 bytes, Blocks: 7 */
 
-    /* frame: *0x801BDEA0; save ra; mark at-8544;
-       -> jal 0x8018E300 -> 0x8019BEE0/0x8019B380;
-       at-8648=a0 -> 0x8019B390. CPS-blocked. */
 block_8019B308:
     v0 = cpu->read_word(0x801BDEA0u);          /* 0x801C0000 - 8544: init flag */
 
