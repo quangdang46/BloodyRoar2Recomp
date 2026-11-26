@@ -11,14 +11,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
 #ifndef bool
 #define bool int
 #define true 1
@@ -44,20 +36,20 @@ extern uint16_t br2_ld16(uint32_t a);
 extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
 
-void gpu_load_image_cmd(undefined4,undefined4);
-void prim_packet_init_tex(int,int,int,uint,byte *);
-undefined1 * guest_memcpy(uint32_t *,uint32_t *,int);
+void gpu_load_image_cmd(uint32_t,uint32_t);
+void prim_packet_init_tex(int,int,int,uint32_t,int8_t *);
+uint8_t * guest_memcpy(uint32_t *,uint32_t *,int);
 void printf_forward(const char *, ...);
-void  guest_memset(uint32_t *,undefined1,int);
+void  guest_memset(uint32_t *,uint8_t,int);
 void  cd_dispatch_tblc(void);
 void  cd_timeout_arm(void);
 int   cd_pump_watchdog(void);
-void  bios_call_a0(uint);
-undefined4 gpu_mode_regs_apply(uint);
-void  gpu_prim_pkt_build(int,ushort *);
-undefined4 gp_bde20_read(void);
+void  bios_call_a0(uint32_t);
+uint32_t gpu_mode_regs_apply(uint32_t);
+void  gpu_prim_pkt_build(int,uint16_t *);
+uint32_t gp_bde20_read(void);
 uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-void  gpu_rect_bounds_dbg(undefined4,short *);
+void  gpu_rect_bounds_dbg(uint32_t,short *);
 
 /* ---- guest globals ---- */
 extern uint8_t *g_DAT_801b55dc;
@@ -122,7 +114,7 @@ static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
 }
 #define GPU_ADDR(p) guest_of((const void *)(uintptr_t)(p))
 /* PSX callers hand gpu_load_image_cmd a stack RECT (x,y,w,h s16 x4); the
- * port has no guest stack, so stage the 8-byte rect in the arg-build
+ * port has no guest stack, so stage the 8-int8_t rect in the arg-build
  * area below the guest stack pointer (o32 sp-0x10..sp-1) — scratchpad
  * is only 0x400 bytes, so no fixed 0x1f8xxxx stand-in is valid. */
 uint32_t gpu_rect(const void *p)
@@ -142,13 +134,13 @@ static void gpu_dbg(const char *fmt, ...)
 
 /* ======== 0x8018bd50 ======== */
 
-void gpu_pkt_unlink_n(uint *head,int count)
+void gpu_pkt_unlink_n(uint32_t *head,int count)
 
 {
-  uint word;
-  uint expect;
-  uint *prev;
-  uint *hp;
+  uint32_t word;
+  uint32_t expect;
+  uint32_t *prev;
+  uint32_t *hp;
   uint32_t p1g, p1;
   
   /* head arrives as a host pointer from the clean_table wrapper
@@ -157,7 +149,7 @@ void gpu_pkt_unlink_n(uint *head,int count)
    * is the guest address's low 24 bits. */
   p1g = guest_of(head);
   p1 = p1g ? p1g : (uint32_t)(uintptr_t)head;
-  hp = (uint *)guest_at(p1);
+  hp = (uint32_t *)guest_at(p1);
   expect = p1 & 0xffffff;
   do {
     word = *hp;
@@ -189,7 +181,7 @@ void gpu_pkt_unlink_n(uint *head,int count)
 void spr_draw_off(int spr,short x,short y,int abs_coords)
 
 {
-  /* Guest builds one contiguous 8-byte RECT at sp+0x10..0x17
+  /* Guest builds one contiguous 8-int8_t RECT at sp+0x10..0x17
    * (sh @0x10,@0x12,@0x14,@0x16, disasm 0x8018bf40: frame 0x20) and
    * gpu_load_image_cmd reads it through generated GPU frames — stage it
    * in a reserved guest frame (sp+0x10 -> frm+0x10) or the callee's own
@@ -201,7 +193,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
    * _DAT_801e3cfc); resolve before dereferencing. spr + 0x14
    * stays a guest address for gpu_load_image_cmd's a1. */
   desc = (uint8_t *)guest_at((uint32_t)spr);
-  if ((*(uint *)(desc + 4) & 8) != 0) {
+  if ((*(uint32_t *)(desc + 4) & 8) != 0) {
     spr = spr + *(int *)(desc + 8);
     desc = (uint8_t *)guest_at((uint32_t)spr);
   }
@@ -211,14 +203,14 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
     rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
     rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
   }
-  rect[2] = *(undefined2 *)(desc + 0x10);
-  rect[3] = *(undefined2 *)(desc + 0x12);
+  rect[2] = *(uint16_t *)(desc + 0x10);
+  rect[3] = *(uint16_t *)(desc + 0x12);
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t frm = br2_guest_frame(0x20);
     memcpy(guest_at(frm + 0x10), rect, 8);
-    gpu_load_image_cmd(frm + 0x10,(undefined4)(spr + 0x14));
+    gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
     br2_guest_frame_free();
   }
   return;
@@ -234,15 +226,15 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
   
   /* spr is a guest address; see spr_draw_off. */
   desc = (uint8_t *)guest_at((uint32_t)spr);
-  if ((*(uint *)(desc + 4) & 8) != 0) {
+  if ((*(uint32_t *)(desc + 4) & 8) != 0) {
     rect[0] = (uint16_t)x;
     rect[1] = (uint16_t)y;
     if (abs_coords == 0) {
       rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
       rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
     }
-    rect[2] = *(undefined2 *)(desc + 0x10);
-    rect[3] = *(undefined2 *)(desc + 0x12);
+    rect[2] = *(uint16_t *)(desc + 0x10);
+    rect[3] = *(uint16_t *)(desc + 0x12);
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
     {
@@ -250,7 +242,7 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
       extern void br2_guest_frame_free(void);
       uint32_t frm = br2_guest_frame(0x20);
       memcpy(guest_at(frm + 0x10), rect, 8);
-      gpu_load_image_cmd(frm + 0x10,(undefined4)(spr + 0x14));
+      gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
       br2_guest_frame_free();
     }
   }
@@ -259,8 +251,8 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
 
 /* ======== 0x8018bfcc ======== */
 
-void spr_draw_pair(undefined4 spr,undefined4 cx,undefined4 cy,undefined4 cflag,
-                 undefined4 ox,undefined4 oy,undefined4 oflag)
+void spr_draw_pair(uint32_t spr,uint32_t cx,uint32_t cy,uint32_t cflag,
+                 uint32_t ox,uint32_t oy,uint32_t oflag)
 
 {
   spr_draw_off(spr,ox,oy,oflag);
@@ -349,11 +341,11 @@ void *spr_desc_slot_alloc(void)
 
 /* ======== 0x8018c824 ======== */
 
-undefined4 spr_slot_pkt_submit(uint *ot_cell,undefined4 pos,undefined4 col,uint attr)
+uint32_t spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_t attr)
 
 {
-  uint *pkt;
-  undefined4 ret;
+  uint32_t *pkt;
+  uint32_t ret;
   uint32_t pkt_g;
   uint32_t *cell;
   
@@ -365,18 +357,18 @@ undefined4 spr_slot_pkt_submit(uint *ot_cell,undefined4 pos,undefined4 col,uint 
     uint32_t p1g = guest_of(ot_cell);
     cell = (uint32_t *)guest_at(p1g ? p1g : (uint32_t)(uintptr_t)ot_cell);
   }
-  pkt = (uint *)spr_desc_slot_alloc();
-  if (pkt == (uint *)0x0) {
+  pkt = (uint32_t *)spr_desc_slot_alloc();
+  if (pkt == (uint32_t *)0x0) {
     ret = 0xffffffff;
   }
   else {
     pkt_g = guest_of(pkt);
-    *(ushort *)(pkt + 4) = ((ushort)((uint)col >> 0x10) & 0xff) + 1;
+    *(uint16_t *)(pkt + 4) = ((uint16_t)((uint32_t)col >> 0x10) & 0xff) + 1;
     pkt[3] = attr;
-    *(ushort *)((char *)pkt + 0x12) = (byte)((uint)col >> 0x18) + 1;
+    *(uint16_t *)((char *)pkt + 0x12) = (int8_t)((uint32_t)col >> 0x18) + 1;
     *(short *)(pkt + 2) = (short)pos;
-    *(short *)((char *)pkt + 10) = (short)((uint)pos >> 0x10);
-    *(byte *)((char *)pkt + 7) = *(byte *)((char *)pkt + 7) & 0xfd | 1;
+    *(short *)((char *)pkt + 10) = (short)((uint32_t)pos >> 0x10);
+    *(int8_t *)((char *)pkt + 7) = *(int8_t *)((char *)pkt + 7) & 0xfd | 1;
     pkt[1] = 0x64808080;
     prim_packet_init_tex((int)guest_of(pkt + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)col,0);
     ret = 0;
@@ -392,7 +384,7 @@ undefined4 spr_slot_pkt_submit(uint *ot_cell,undefined4 pos,undefined4 col,uint 
 
 /* ======== 0x80191428 ======== */
 
-void gpu_load_image_cmd(undefined4 rect,undefined4 src)
+void gpu_load_image_cmd(uint32_t rect,uint32_t src)
 
 {
   gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504),(short *)(uintptr_t)rect);
@@ -402,7 +394,7 @@ void gpu_load_image_cmd(undefined4 rect,undefined4 src)
 
 /* ======== 0x80191300 ======== */
 
-void gpu_clear_image_cmd(undefined4 rect,uint r,uint g,uint b)
+void gpu_clear_image_cmd(uint32_t rect,uint32_t r,uint32_t g,uint32_t b)
 
 {
   gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec),(short *)(uintptr_t)rect);
@@ -413,7 +405,7 @@ void gpu_clear_image_cmd(undefined4 rect,uint r,uint g,uint b)
 
 /* ======== 0x80191390 ======== */
 
-void gpu_clear_image_cmd2(undefined4 rect,uint r,uint g,uint b)
+void gpu_clear_image_cmd2(uint32_t rect,uint32_t r,uint32_t g,uint32_t b)
 
 {
   gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8),(short *)(uintptr_t)rect);
@@ -440,7 +432,7 @@ void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
 
 /* ======== 0x80191770 ======== */
 
-void gpu_draw_otag(undefined4 otag)
+void gpu_draw_otag(uint32_t otag)
 
 {
   if (1 < gpu_dbg_level) {
@@ -455,14 +447,14 @@ void gpu_draw_otag(undefined4 otag)
 int gpu_draw_env_put(int env_g)
 
 {
-  undefined *envp;
+  uint8_t *envp;
   intptr_t hp;
   
   hp = (intptr_t)guest_at((uint32_t)env_g);
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDrawEnv__08x_____8012556c,env_g);
   }
-  gpu_prim_pkt_build(env_g + 0x1c,(ushort *)(uintptr_t)env_g);
+  gpu_prim_pkt_build(env_g + 0x1c,(uint16_t *)(uintptr_t)env_g);
   *(uint32_t *)((char *)hp + 0x1c) = *(uint32_t *)((char *)hp + 0x1c) | 0xffffff;
   gpu_call(8,GPU_TBL()[6],env_g + 0x1c,0x40,0);
   guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)env_g,0x5c);
@@ -471,10 +463,10 @@ int gpu_draw_env_put(int env_g)
 
 /* ======== 0x80191ed8 ======== */
 
-uint gpu_stat_sign(void)
+uint32_t gpu_stat_sign(void)
 
 {
-  uint stat;
+  uint32_t stat;
   
   stat = gpu_call(0x38,0,0,0,0);
   return stat >> 0x1f;
@@ -485,7 +477,7 @@ uint gpu_stat_sign(void)
 void gpu_disp_mask_set(int enable)
 
 {
-  undefined4 cmd;
+  uint32_t cmd;
   
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_SetDispMask__d_____801254a0,enable);
@@ -503,7 +495,7 @@ void gpu_disp_mask_set(int enable)
 
 /* ======== 0x8019117c ======== */
 
-void gpu_draw_sync(undefined4 n)
+void gpu_draw_sync(uint32_t n)
 
 {
   if (1 < gpu_dbg_level) {
@@ -516,10 +508,10 @@ void gpu_draw_sync(undefined4 n)
 
 /* ======== 0x80190e00 ======== */
 
-uint gpu_graph_reset(uint arg)
+uint32_t gpu_graph_reset(uint32_t arg)
 
 {
-  uint v;
+  uint32_t v;
   
   v = arg & 7;
   if (v == 3) {
@@ -532,11 +524,11 @@ LAB_80190e68:
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
     gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
     DAT_801b8321 = 1;
-    disp_width = *(undefined2 *)((char *)guest_at(0x801b83a0) + (uint)gpu_mode * 4);
-    disp_height = *(undefined2 *)((char *)guest_at(0x801b83ac) + (uint)gpu_mode * 4);
+    disp_width = *(uint16_t *)((char *)guest_at(0x801b83a0) + (uint32_t)gpu_mode * 4);
+    disp_height = *(uint16_t *)((char *)guest_at(0x801b83ac) + (uint32_t)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
-    v = (uint)gpu_mode;
+    v = (uint32_t)gpu_mode;
   }
   else {
     if (v < 4) {
@@ -556,27 +548,27 @@ LAB_80190e68:
 /* ======== 0x801919ac ======== */
 
 /* Draw-env -> GPU display timing. param_1 is a guest address of the
- * 20-byte env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
+ * 20-int8_t env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
  * bridged to host here. Returns the host env pointer. */
 uint32_t draw_env_timing(uint32_t env_g)
 
 {
-  ushort hgt;
+  uint16_t hgt;
   bool narrow;
   char gp_type;
   int tbl_off;
   int delta;
-  uint td;
-  uint ta;
-  uint tb;
+  uint32_t td;
+  uint32_t ta;
+  uint32_t tb;
   int std_idx;
-  uint tc;
-  uint tot;
-  ushort *env;
+  uint32_t tc;
+  uint32_t tot;
+  uint16_t *env;
   uint16_t *timing_tbl;
   uint8_t  *timing_b;
   
-  env = (ushort *)guest_at(env_g);
+  env = (uint16_t *)guest_at(env_g);
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDispEnv__08x_____801255a0,env_g);
   }
@@ -624,7 +616,7 @@ uint32_t draw_env_timing(uint32_t env_g)
       tc = tc | 0x24;
     }
     gpu_call(0x10,tc,0,0,0);
-    *(undefined1 *)(env + 9) = 8;
+    *(uint8_t *)(env + 9) = 8;
   }
   if (((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
      ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))
@@ -645,13 +637,13 @@ uint32_t draw_env_timing(uint32_t env_g)
       (std_idx = 2, 400 < (short)hgt)) && (std_idx = 4, (short)hgt < 0x231)) {
     std_idx = 3;
   }
-  tbl_off = ((uint)(byte)env[9] * 5 + std_idx) * 4;
+  tbl_off = ((uint32_t)(int8_t)env[9] * 5 + std_idx) * 4;
   timing_tbl = (uint16_t *)guest_at(0x801b83f4);
   /* tbl_off is a BYTE offset into the u16 timing table (MIPS: lhu @base+tbl_off),
    * not a u16 element index — divide by 2 for timing_tbl[] indexing. */
   delta = (int)timing_tbl[tbl_off / 2 + 1] - (int)timing_tbl[tbl_off / 2];
-  ta = (uint)timing_tbl[tbl_off / 2] +
-          (int)(short)env[4] * (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx];
+  ta = (uint32_t)timing_tbl[tbl_off / 2] +
+          (int)(short)env[4] * (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx];
   if ((short)env[6] != 0) {
     delta = delta * (short)env[6] >> 8;
   }
@@ -661,7 +653,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((499 < (int)ta) && (tb = 0xcb2, (int)ta < 0xcb3)) {
       tb = ta;
     }
-    ta = tb + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    ta = tb + (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
     if (((int)ta <= (int)td) && (ta = 0xcda, (int)td < 0xcdb)) {
       ta = td;
     }
@@ -686,7 +678,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((0x21b < (int)ta) && (tb = 0xc94, (int)ta < 0xc95)) {
       tb = ta;
     }
-    ta = tb + (uint)(byte)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    ta = tb + (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
     if (((int)ta <= (int)td) && (ta = 0xcbc, (int)td < 0xcbd)) {
       ta = td;
     }
@@ -724,7 +716,7 @@ extern uint32_t gpu_coord_pack(int,int);
 extern uint32_t gpu_pkt_pack(uint8_t,char,uint16_t);
 extern uint32_t gpu_texpage_pack(uint16_t *);
 extern uint32_t cd_u16_swap_store(int);
-extern uint32_t gpu_status_cmd(uint);
+extern uint32_t gpu_status_cmd(uint32_t);
 extern void cd_chan_reg_init(int);
 extern void cd_ext_init_once(void);
 extern void cd_u16_table_store(int,uint32_t,int);
@@ -742,7 +734,7 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 /* ======== 0x80193d08 ======== */
 
-void guest_memset(uint32_t *dst,undefined1 val,int len)
+void guest_memset(uint32_t *dst,uint8_t val,int len)
 
 {
   int i;
@@ -764,15 +756,15 @@ void guest_memset(uint32_t *dst,undefined1 val,int len)
 
 /* ======== 0x8018e490 ======== */
 
-undefined1 * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
+uint8_t * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
 
 {
-  undefined1 c;
-  undefined1 *wp;
-  undefined1 *ret;
+  uint8_t c;
+  uint8_t *wp;
+  uint8_t *ret;
   uint8_t *d, *s;
   
-  ret = (undefined1 *)0x0;
+  ret = (uint8_t *)0x0;
   /* params arrive as host pointers from the clean_table wrapper but as
    * guest-address values from cd.c callers — resolve either form. */
   {
@@ -783,11 +775,11 @@ undefined1 * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
   }
   wp = d;
   if (dst != (uint32_t *)0x0) {
-    for (; ret = (undefined1 *)d, 0 < len; len = len + -1) {
+    for (; ret = (uint8_t *)d, 0 < len; len = len + -1) {
       c = *s;
       s = s + 1;
       *wp = c;
-      wp = (undefined1 *)(wp + 1);
+      wp = (uint8_t *)(wp + 1);
     }
   }
   return ret;
@@ -795,40 +787,40 @@ undefined1 * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
 
 /* ======== 0x801921c0 ======== */
 
-void gpu_prim_pkt_build(int pkt_g,ushort *env_p)
+void gpu_prim_pkt_build(int pkt_g,uint16_t *env_p)
 
 {
-  ushort h_raw;
-  ushort w;
-  ushort h;
-  undefined4 word;
+  uint16_t h_raw;
+  uint16_t w;
+  uint16_t h;
+  uint32_t word;
   char tag;
-  undefined4 dxy;
-  undefined4 wh;
+  uint32_t dxy;
+  uint32_t wh;
   uint8_t *dst;
-  ushort *env;
+  uint16_t *env;
   
   /* env_p: host pointer from clean_table wrapper, guest-address value
    * from gpu_draw_env_put — resolve either form. pkt_g stays a guest
    * address value in both paths. */
   uint32_t p2g = guest_of(env_p);
   dst = (uint8_t *)guest_at((uint32_t)pkt_g);
-  env = (ushort *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)env_p);
+  env = (uint16_t *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)env_p);
   word = gpu_coord_clamp_a((int)(short)env[0],(int)(short)env[1]);
-  *(undefined4 *)(dst + 4) = word;
-  word = gpu_coord_clamp_b((int)(((uint)env[2] + (uint)env[0] + -1) * 0x10000) >> 0x10,
-                       (int)(((uint)env[1] + (uint)env[3] + -1) * 0x10000) >> 0x10);
-  *(undefined4 *)(dst + 8) = word;
+  *(uint32_t *)(dst + 4) = word;
+  word = gpu_coord_clamp_b((int)(((uint32_t)env[2] + (uint32_t)env[0] + -1) * 0x10000) >> 0x10,
+                       (int)(((uint32_t)env[1] + (uint32_t)env[3] + -1) * 0x10000) >> 0x10);
+  *(uint32_t *)(dst + 8) = word;
   word = gpu_coord_pack((int)(short)env[4],(int)(short)env[5]);
-  *(undefined4 *)(dst + 0xc) = word;
+  *(uint32_t *)(dst + 0xc) = word;
   word = gpu_pkt_pack(*(uint8_t *)((char *)env + 0x17),(char)env[0xb],env[10]);
-  *(undefined4 *)(dst + 0x10) = word;
+  *(uint32_t *)(dst + 0x10) = word;
   word = gpu_texpage_pack(env + 6);
-  *(undefined4 *)(dst + 0x14) = word;
-  *(undefined4 *)(dst + 0x18) = 0xe6000000;
+  *(uint32_t *)(dst + 0x14) = word;
+  *(uint32_t *)(dst + 0x18) = 0xe6000000;
   tag = '\a';
   if ((char)env[0xc] != '\0') {
-    word = *(undefined4 *)env;
+    word = *(uint32_t *)env;
     h = env[2];
     h_raw = env[3];
     w = 0;
@@ -847,20 +839,20 @@ void gpu_prim_pkt_build(int pkt_g,ushort *env_p)
     wh = ((uint32_t)h << 16) | w;
     if (((env[0] & 0x3f) == 0) && ((w & 0x3f) == 0)) {
       tag = '\n';
-      *(uint *)(dst + 0x1c) =
-           (uint)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint)(uint8_t)env[0xd] << 8 | 0x2000000
-           | (uint)*(uint8_t *)((char *)env + 0x19);
-      *(undefined4 *)(dst + 0x20) = word;
-      *(undefined4 *)(dst + 0x24) = wh;
+      *(uint32_t *)(dst + 0x1c) =
+           (uint32_t)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint32_t)(uint8_t)env[0xd] << 8 | 0x2000000
+           | (uint32_t)*(uint8_t *)((char *)env + 0x19);
+      *(uint32_t *)(dst + 0x20) = word;
+      *(uint32_t *)(dst + 0x24) = wh;
     }
     else {
       tag = '\n';
       dxy = ((uint32_t)(uint16_t)(env[1] - env[5]) << 16) | (uint16_t)(env[0] - env[4]);
-      *(uint *)(dst + 0x1c) =
-           (uint)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint)(uint8_t)env[0xd] << 8 | 0x60000000
-           | (uint)*(uint8_t *)((char *)env + 0x19);
-      *(undefined4 *)(dst + 0x20) = dxy;
-      *(undefined4 *)(dst + 0x24) = wh;
+      *(uint32_t *)(dst + 0x1c) =
+           (uint32_t)*(uint8_t *)((char *)env + 0x1b) << 0x10 | (uint32_t)(uint8_t)env[0xd] << 8 | 0x60000000
+           | (uint32_t)*(uint8_t *)((char *)env + 0x19);
+      *(uint32_t *)(dst + 0x20) = dxy;
+      *(uint32_t *)(dst + 0x24) = wh;
     }
   }
   *(char *)(dst + 3) = tag + -1;
@@ -888,7 +880,7 @@ void gpu_prim_pkt_build(int pkt_g,ushort *env_p)
  *   {2,4,6,7}: no register writes.
  * Tail (all modes): v0 = cd_u16_swap_store(*0x801B8468); if mode==0
  * v0 = gpu_status_cmd(a0). Returns last call's $v0. */
-undefined4 gpu_mode_regs_apply(uint arg)
+uint32_t gpu_mode_regs_apply(uint32_t arg)
 {
   uint32_t mode = arg & 7u;
   uint32_t v0 = cd_u16_swap_store(0);
@@ -916,7 +908,7 @@ undefined4 gpu_mode_regs_apply(uint arg)
 
 /* ======== 0x80193d30 ======== */
 
-void bios_call_a0(uint arg)
+void bios_call_a0(uint32_t arg)
 
 {
   /* guest 0x80193d30: `li t2,0xa0; jr t2; li t1,0x49` — BIOS svc A0/0x49
@@ -928,7 +920,7 @@ void bios_call_a0(uint arg)
 
 /* ======== 0x801911e4 ======== */
 
-void gpu_rect_bounds_dbg(undefined4 name,short *rect)
+void gpu_rect_bounds_dbg(uint32_t name,short *rect)
 
 {
   int y;
@@ -966,7 +958,7 @@ void gpu_rect_bounds_dbg(undefined4 name,short *rect)
 
 /* ======== 0x8019b1e4 ======== */
 
-undefined4 gp_bde20_read(void)
+uint32_t gp_bde20_read(void)
 
 {
   return GP32(0x801bde20);
@@ -981,7 +973,7 @@ void cd_chan_boot_init(int chan)
    * OpenEvent(0xF0000009) init path runs. Delegating this body (and
    * cd_chan_boot_fwd) to generated was tried; the generated CPS path did not
    * dispatch cd_ext_init_once either, leaving the guard unset. */
-  undefined2 *w;
+  uint16_t *w;
   int i;
   uint16_t *base;
   
@@ -1102,7 +1094,7 @@ void bitfield_or_write(const void *p,int val)
 }
 
 /* spr_desc_a/4060/4090 — per-slot sprite descriptor helpers.
- * param_1 = guest address of a 0x28-byte slot record. */
+ * param_1 = guest address of a 0x28-int8_t slot record. */
 void spr_desc_a(uint32_t slot_g)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -1158,13 +1150,13 @@ void text_line_select(int32_t line)
   }
 }
 
-/* text_widget_alloc — allocate one 0x30-byte text-string widget slot.
+/* text_widget_alloc — allocate one 0x30-int8_t text-string widget slot.
  * Returns slot index or -1 when DAT_801b78c0 >= 8. */
 int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
                      uint16_t aux,int32_t mode,int32_t count)
 {
   int32_t i, tmp;
-  /* guest sp-0x30..-0x28 is one contiguous 8-byte texcoord buffer read by
+  /* guest sp-0x30..-0x28 is one contiguous 8-int8_t texcoord buffer read by
    * prim_packet_init_tex as bytes 0..7 (mode[0..2] + shorts +4/+6).
    * Ghidra split the four halfwords into scalars; keep them contiguous. */
   uint16_t uv[4];
@@ -1179,7 +1171,7 @@ int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
     uv[2] = 0x100; uv[3] = 0x100;
     uv[0] = 0;     uv[1] = 0;
     prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
-                 (byte *)uv);
+                 (int8_t *)uv);
     if (mode != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
       GB8(0x801b7744 + slot) = 0;
@@ -1285,7 +1277,7 @@ uint32_t spr_attr_alloc_b(uint32_t head_g,uint32_t pxy,uint32_t pc,
     b[0x1c] = (uint8_t)prgb;
     b[0x15] = (uint8_t)ca;
     ca = (int8_t)(ca + (pc >> 24) + 1);
-    pkt[3] = prgb;                    /* byte 0x0c */
+    pkt[3] = prgb;                    /* int8_t 0x0c */
     *(int16_t *)(b + 0x16) = (int16_t)pc;
     b[0x14] = (uint8_t)cb;
     b[0x1d] = (uint8_t)ca;
@@ -1373,7 +1365,7 @@ LAB_8012c64c:
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
     spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
     spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-    spr_slot_pkt_submit((uint *)guest_at(cell),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
+    spr_slot_pkt_submit((uint32_t *)guest_at(cell),(*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
                  ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                  ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
     sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
@@ -1391,18 +1383,18 @@ LAB_8012cb64:
         cell = head_g + 4;
         hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
         hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
                      (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
         goto LAB_8012c64c;
       }
       if (variant != 0x10) return;
       hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-      spr_slot_pkt_submit((uint *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+      spr_slot_pkt_submit((uint32_t *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
     } else {
       if (variant == 0x30) {
         cell = head_g + 4;
@@ -1410,7 +1402,7 @@ LAB_8012cb64:
         spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
         spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
         spr_attr_alloc_b(cell,0x280180,0x1780001e,0x7a5680ff,0x200,0x48);
-        spr_slot_pkt_submit((uint *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
+        spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
                      ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff,0x277e001e,
                      ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
         sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
@@ -1422,9 +1414,9 @@ LAB_8012cb64:
     v = head_g + 4;
     hud_text_d(v,attr,guest_at(0x8011f10c),0xc0,
                  (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-    spr_slot_pkt_submit((uint *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
+    spr_slot_pkt_submit((uint32_t *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
+    spr_slot_pkt_submit((uint32_t *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
+    spr_slot_pkt_submit((uint32_t *)guest_at(v),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
     spr_attr_alloc_b(head_g,0x200000,0x1780001e,0x7a5680ff,0x80,0x40);
     spr_attr_alloc_b(head_g,0x200080,0x1780001e,0x7a9680ff,0x100,0x40);
     spr_attr_alloc_b(head_g,0x200100,0x177e001e,0x7a968080,0x180,0x40);
@@ -1782,7 +1774,7 @@ LAB_8018ebec_d:
 }
 
 /* ======== debug console emit layer ========
- * 32-byte line buffer @0x801f68f0, col @0x801b6790, count @0x801b6794,
+ * 32-int8_t line buffer @0x801f68f0, col @0x801b6790, count @0x801b6794,
  * flushed via bios_tramp_b035(1, buf, count). */
 extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
@@ -2134,7 +2126,7 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
 
 /* ======== 0x80190a04 ======== */
 
-/* Text-window printf: vsprintf into the 0x30-byte window slot at
+/* Text-window printf: vsprintf into the 0x30-int8_t window slot at
  * 0x801b7740 + win*0x30 (fields: +0x1c limit, +0x24 line buffer guest
  * ptr, +0x28 cursor). a0 selects the window; if a0 is out of range it
  * is itself the format string and DAT_801b78c4 picks the window.
@@ -2499,7 +2491,7 @@ void vram_tile_decode(uint8_t *vram)
   }
 }
 
-/* spr_prim_tag_a — sprite-prim tag init: byte+3=5, byte+7=0x28.
+/* spr_prim_tag_a — sprite-prim tag init: int8_t+3=5, int8_t+7=0x28.
  * a0 is a guest address. Disasm 0x801940c0-0x801940d0. */
 void spr_prim_tag_a(uint32_t pkt_g)
 {
@@ -2509,7 +2501,7 @@ void spr_prim_tag_a(uint32_t pkt_g)
   p[7] = 0x28;
 }
 
-/* spr_prim_tag_b — sprite-prim tag init: byte+3=3, byte+7=0x40.
+/* spr_prim_tag_b — sprite-prim tag init: int8_t+3=3, int8_t+7=0x40.
  * a0 is a guest address. Disasm 0x80194160-0x80194170. */
 void spr_prim_tag_b(uint32_t pkt_g)
 {
@@ -2536,7 +2528,7 @@ uint32_t gpu_coord_pack(int a0,int a1)
   return ((uint32_t)a0 & 0x7ff) | 0xe5000000 | (((uint32_t)a1 & 0x7ff) << 11);
 }
 
-/* gpu_texpage_pack — GPU texpage/coord pack from 8-byte descriptor:
+/* gpu_texpage_pack — GPU texpage/coord pack from 8-int8_t descriptor:
  * returns 0 on NULL; else packed (clut<<22)|(page<<12)|((u8+2)>>3)<<15|
  * ((-s16+6 &0xff)>>3)<<5 | ((-s16+4 &0xff)>>3). Disasm verified. */
 uint32_t gpu_texpage_pack(uint16_t *a0_)
@@ -2594,7 +2586,7 @@ uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
  * links node into *a0. Disasm 0x8018c31c-0x8018c574. */
 extern void *spr_pool_b_alloc(void);
 extern int lut_cos_q12(int);
-extern int lut_sin_q12(uint);
+extern int lut_sin_q12(uint32_t);
 int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
                 int32_t s5, int32_t s6, int32_t fp)
 {
@@ -2628,7 +2620,7 @@ int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
     /* jal delay slots: s0 = lut_sin_q12(angle) (f1),
      * v0 = lut_cos_q12(angle) (f2). */
     int32_t ang = (int16_t)fp;
-    sn = lut_sin_q12((uint)ang);
+    sn = lut_sin_q12((uint32_t)ang);
     cs = lut_cos_q12(ang);
   }
   t2 = (-s2) * cs;          /* -s2 * f2 */
@@ -2780,7 +2772,7 @@ uint32_t cpu_regs_snapshot(void)
 }
 
 /* ======== 0x80191074 ======== */
-/* Single-byte flag read @0x801c8322 (adjacent to the 0x801c8324/26
+/* Single-int8_t flag read @0x801c8322 (adjacent to the 0x801c8324/26
  * screen-dimension words used by gpu_coord_clamp_*). Disasm
  * 0x80191074-0x80191080. */
 uint32_t gpu_flag_8322_read(void)
@@ -2872,7 +2864,7 @@ uint32_t gpu_draw_env_dma(uint32_t envg, uint32_t listg)
 
 /* ======== 0x80194000 ======== */
 /* Swap the low-24 payload fields of the two packet words while keeping
- * each word's own top byte, then tag *a0 with the compressed a1 pointer:
+ * each word's own top int8_t, then tag *a0 with the compressed a1 pointer:
  *   *a1 = (*a1 & 0xff000000) | (*a0 & 0x00ffffff)
  *   *a0 = (*a0 & 0xff000000) | (a1_guest & 0x00ffffff)
  * The second store ORs the pointer-compressed form of a1 itself (the
@@ -2901,7 +2893,7 @@ void gpu_pkt_low24_or(uint32_t a0g)
 }
 
 /* ======== 0x80194100 ======== */
-/* Packet tag byte pair: p[3]=0x0c, p[7]=0x3c. Sits between the
+/* Packet tag int8_t pair: p[3]=0x0c, p[7]=0x3c. Sits between the
  * spr_prim_tag_a/b helpers (0x801940c0/0x80194160). Disasm
  * 0x80194100-0x80194114. */
 void gpu_pkt_tag_0c3c(uint32_t a0g)
@@ -3141,7 +3133,7 @@ uint32_t gte_rtps_vec3(uint32_t in, uint32_t out_sxy, uint32_t out_mac,
 
 /* ======== 0x80194a70 ======== */
 /* Vertex screen-projection pack: three RTPS passes (cmd 0x0486012)
- * over the s16 coord fields of the 20-byte record at a0, with the
+ * over the s16 coord fields of the 20-int8_t record at a0, with the
  * SXY read-backs (gte data 9/10/11) of each pass saved in GPRs and
  * repacked — as (hi<<16 | lo&0xffff) u32 words — into +0/+4/+8/+12,
  * then swc2 gte[11] -> +16. Returns a0 ($v0 = $a0 in the delay-slot
@@ -4870,9 +4862,9 @@ void scene_leaf_ret(void)
 
 /* ======== 0x801B06A4 ======== */
 
-/* scene_op_flush — op-stream terminator: copies the 4-byte record
+/* scene_op_flush — op-stream terminator: copies the 4-int8_t record
  * {b0,b1,b2,b3} at *(a1+0x54) + lhu(cursor)*4 into the t0 output struct
- * (byte pairs at +0x0C/+0x14/+0x1C/+0x24/+0x34/+0x3C/+0x44/+0x4C with the
+ * (int8_t pairs at +0x0C/+0x14/+0x1C/+0x24/+0x34/+0x3C/+0x44/+0x4C with the
  * guest's exact per-field add pattern), then stores lhu(cursor+2) into
  * a1+0x60 and returns. Disasm-verified vs generated/SLES_017.22_full_54.c
  * (all loads are LBU; the final `lb v1,3(v1)` clobbers $v1 with b3). */
@@ -4929,7 +4921,7 @@ void scene_op_flush(void)
  * (step -> next -> step) once per stream record, so they are one clean CFG
  * with an entry selector — guest CPS resume addresses are internal-only.
  * $a1 = stream ctx (+0x54 record table, +0x58 cursor, +0x5C index table,
- * +0x60 counter, +0x62 byte index); $t0 = output struct (set by caller);
+ * +0x60 counter, +0x62 int8_t index); $t0 = output struct (set by caller);
  * $t1/$t2 = tag bounds 0xFE00/0x8000 (set by scene_op_tick). */
 static void scene_op_loop(uint32_t entry)
 {
@@ -5078,7 +5070,7 @@ uint32_t gpu_data_reg_read(void)
 /* ======== 0x80192e00 ======== */
 
 /* gpu_tag_cmd_store — issue a0 through register cell @0x801b8428 and
- * record a0's low byte in the 256-entry tag table @0x801fad68 indexed
+ * record a0's low int8_t in the 256-entry tag table @0x801fad68 indexed
  * by a0>>24. Guest returns a0>>24 in $v0 (the srl result survives
  * into the jr delay slot which performs the sb). Disasm
  * 0x80192e00-0x80192e20. */
@@ -5557,7 +5549,7 @@ uint32_t op_hpair_store_0e_36(uint32_t a0, uint32_t a1)
 
 /* ======== 0x801AFF20 ======== */
 
-/* op_pair_rec_init — initialize two 40-byte records at a1 (and a1+40)
+/* op_pair_rec_init — initialize two 40-int8_t records at a1 (and a1+40)
  * with the fixed tag bytes {+3=9, +7=46, +4..+6=128}, then copy
  * lhu(a0+2)->a1+0x50 and lhu(a0+4)->a1+0x52. The 2-iteration loop and
  * the jr-delay halfword load are reproduced exactly; $a2 ends at 2,
@@ -5591,7 +5583,7 @@ uint32_t op_pair_rec_init(uint32_t a0, uint32_t a1)
 
 /* ======== 0x80187dcc ======== */
 
-/* gte_persp_batch — GTE batch transform over 16-byte records.
+/* gte_persp_batch — GTE batch transform over 16-int8_t records.
  * Guest loop (a3 = count, a0 = cursor, returns end cursor):
  *   per record: mtc2 gte[0]=rec[0], gte[1]=rec[1]; GTE cmd 0x4A6412;
  *   swc2 gte[9] -> rec+8, mfc2 gte[10] -> h, swc2 gte[11] -> rec+12,
@@ -5639,8 +5631,8 @@ void gte_lwc2_r0_r1(uint32_t a0)
  * ra/s0-s7 to scratchpad 0x1f8003dc-0x1f8003fc (same cells the generated
  * bodies use; epilogue reloads only feed callee-saved regs the clean body
  * never touches). a1 selects the output-record slot (a1 <<= 2 indexes a
- * 4-byte table at a2), a2 is the record descriptor:
- *   +0x10 vertex table (8-byte xy/z pairs), +0x18 index stream,
+ * 4-int8_t table at a2), a2 is the record descriptor:
+ *   +0x10 vertex table (8-int8_t xy/z pairs), +0x18 index stream,
  *   +0x24 flags words, +0x30 signed record count (lh).
  * Per record: lwc2/mtc2 vertex loads -> RTPT -> NCLIP -> SXY stores ->
  * MAC0/flags gate -> ordering-table insert. Pure guest-RAM + COP2 state:
@@ -5989,7 +5981,7 @@ static int prim_emit_tex_desc(uint32_t desc, uint32_t *slotidx,
   return 1;
 }
 
-/* Load three 8-byte vertex records (V0,V1,V2) by signed index. */
+/* Load three 8-int8_t vertex records (V0,V1,V2) by signed index. */
 static void prim_emit_load_v012(int32_t i0, int32_t i1, int32_t i2,
                                 uint32_t vtab)
 {
@@ -6013,7 +6005,7 @@ static void prim_emit_tag_insert(uint32_t otbase, uint32_t out,
 
 /* 0x801A88DC — textured triangle emitter. Descriptor layout matches the
  * prim_emit_* family (+0x10 vertex table, +0x14 color stream, +0x18 index
- * stream of 3xh16 stride 6, +0x1c 8-byte color table, +0x20 secondary
+ * stream of 3xh16 stride 6, +0x1c 8-int8_t color table, +0x20 secondary
  * index stream stride 2, +0x24 flag stream, +0x30 count, +0x32 mode,
  * +0x34 gate). Per record it RTPT/NCLIPs three vertices, optionally runs
  * AVSZ3 for the OT depth when mode==0, then emits a textured tri packet
@@ -6207,10 +6199,10 @@ uint32_t flag_801b55d0_set(void)
 
 /* ======== 0x8018bd24 ======== */
 
-/* rec_hibyte_pair_swap — cross record high-byte store: t = *(u32*)a0;
+/* rec_hibyte_pair_swap — cross record high-int8_t store: t = *(u32*)a0;
  * *(u16*)(a0+2) = (u16)(a1 << 8); *(u16*)(a1+2) = (u16)(t << 8);
- * returns a0. Each sh keeps only the source low byte in the halfword's
- * high byte (low byte zeroed). Disasm 0x8018bd24-0x8018bd3c
+ * returns a0. Each sh keeps only the source low int8_t in the halfword's
+ * high int8_t (low int8_t zeroed). Disasm 0x8018bd24-0x8018bd3c
  * (lw, sll x2, sh x2, jr ra with v0=a0 in the delay slot). */
 uint32_t rec_hibyte_pair_swap(uint32_t a0, uint32_t a1)
 {
@@ -6469,7 +6461,7 @@ uint32_t prim_emit_8c(uint32_t cur, uint32_t ot, uint32_t sel,
 
 /* ======== 0x801875fc ======== */
 
-/* prim_emit_60 — input stride 0x60. RTPT/NCLIP gate with the attribute byte
+/* prim_emit_60 — input stride 0x60. RTPT/NCLIP gate with the attribute int8_t
  * at out+7 folded into GTE6 ((b<<24)|0x808080), AVSZ3 + NCCS, OT link.
  * Disasm 0x801875fc-0x801876b8. */
 uint32_t prim_emit_60(uint32_t cur, uint32_t ot, uint32_t sel,
@@ -6515,7 +6507,7 @@ uint32_t prim_emit_60(uint32_t cur, uint32_t ot, uint32_t sel,
 
 /* ======== 0x801876bc ======== */
 
-/* prim_emit_78 — input stride 0x78. RTPT/NCLIP gate, attribute-byte GTE6,
+/* prim_emit_78 — input stride 0x78. RTPT/NCLIP gate, attribute-int8_t GTE6,
  * one RTPS vector, AVSZ4 + NCCS, OT link; also stores the pre-branch SXY0
  * read (gte12) as a GPR word at out+8. Disasm 0x801876bc-0x80187790. */
 uint32_t prim_emit_78(uint32_t cur, uint32_t ot, uint32_t sel,
@@ -6568,7 +6560,7 @@ uint32_t prim_emit_78(uint32_t cur, uint32_t ot, uint32_t sel,
 
 /* ======== 0x80187794 ======== */
 
-/* prim_emit_80 — input stride 0x80. RTPT/NCLIP gate, attribute-byte GTE6,
+/* prim_emit_80 — input stride 0x80. RTPT/NCLIP gate, attribute-int8_t GTE6,
  * AVSZ3 + NCCT color triple, OT link. Disasm 0x80187794-0x80187868. */
 uint32_t prim_emit_80(uint32_t cur, uint32_t ot, uint32_t sel,
                       int32_t count)
@@ -6621,7 +6613,7 @@ uint32_t prim_emit_80(uint32_t cur, uint32_t ot, uint32_t sel,
 /* ======== 0x8018786c ======== */
 
 /* prim_emit_a8 — input stride 0xa8. Largest member of the family: RTPT/NCLIP
- * gate, attribute-byte GTE6, RTPS + NCCT + AVSZ4 + NCCS color groups and
+ * gate, attribute-int8_t GTE6, RTPS + NCCT + AVSZ4 + NCCS color groups and
  * the indexed OT link. Disasm 0x8018786c-0x8018797c. */
 uint32_t prim_emit_a8(uint32_t cur, uint32_t ot, uint32_t sel,
                       int32_t count)
@@ -7095,7 +7087,7 @@ uint32_t prim_emit_ptr_54(uint32_t cur, uint32_t ot, uint32_t sel,
 
 /* prim_emit_ptr_50 — pointer-chase emit variant, stride 0x50. Same NCLIP
  * pointer preamble as prim_emit_ptr_54 but a single shade pointer at
- * cur+0xc; MAC0>0 folds the out+7 attribute byte into GTE6, runs AVSZ3 +
+ * cur+0xc; MAC0>0 folds the out+7 attribute int8_t into GTE6, runs AVSZ3 +
  * one 0x138041c shade and the indexed OT link. Disasm
  * 0x80187ffc-0x801880d0. */
 uint32_t prim_emit_ptr_50(uint32_t cur, uint32_t ot, uint32_t sel,
@@ -7672,13 +7664,13 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
  * final transformed vertices back through a0/a1. Hot path (~2.5k calls).
  * Disasm 0x801864dc-0x8018694c. */
 
-extern int *rtps_point_xform2(undefined4 *, undefined4 *, int *);
-extern undefined2 *gte_rtps_xform1(undefined4 *, undefined4 *, undefined2 *);
-extern uint *gte_rtps_xform3(undefined4 *, ushort *, uint *);
-extern void part_matrix_compute(undefined4 *, byte *, short *, undefined4);
+extern int *rtps_point_xform2(uint32_t *, uint32_t *, int *);
+extern uint16_t *gte_rtps_xform1(uint32_t *, uint32_t *, uint16_t *);
+extern uint32_t *gte_rtps_xform3(uint32_t *, uint16_t *, uint32_t *);
+extern void part_matrix_compute(uint32_t *, int8_t *, short *, uint32_t);
 extern int atan2_lut(int, int);
 extern int lut_cos_q12(int);
-extern int lut_sin_q12(uint);
+extern int lut_sin_q12(uint32_t);
 
 static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
 {
@@ -7736,8 +7728,8 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   /* jal 0x80186564 -> rtps_point_xform2(a0=g30, a1=a1+24, a2=a1+52) */
   g[4] = g[30];
   g[2] = (uint32_t)guest_of(rtps_point_xform2(
-      (undefined4 *)guest_at(g[4]),
-      (undefined4 *)guest_at(g[5]),
+      (uint32_t *)guest_at(g[4]),
+      (uint32_t *)guest_at(g[5]),
       (int *)guest_at(g[6])));
 
 L_80186568:
@@ -7830,9 +7822,9 @@ L_801865F8:
   g[6] = 0x1F800000u;
   g[6] |= 0x38Cu;                        /* delay slot */
   g[2] = (uint32_t)guest_of(gte_rtps_xform1(
-      (undefined4 *)guest_at(g[4]),
-      (undefined4 *)guest_at(g[5]),
-      (undefined2 *)guest_at(g[6])));
+      (uint32_t *)guest_at(g[4]),
+      (uint32_t *)guest_at(g[5]),
+      (uint16_t *)guest_at(g[6])));
 
   /* ---- flag halfword @ a2-part +0: 0x8000 -> zero out a2+6 ---- */
   g[2] = (int32_t)(int16_t)br2_ld16(g[20]);       /* lh */
@@ -7873,8 +7865,8 @@ L_801865F8:
   g[7] = (int32_t)g[7] >> 17;             /* s16 << 16 >> 17 = s16 >> 1 */
   /* jal 0x80186734 -> part_matrix_compute(sp+16, g5+g2, sp+56, g7) */
   g[5] = g[5] + g[2];                     /* delay slot */
-  part_matrix_compute((undefined4 *)guest_at(g[4]),
-                      (byte *)guest_at(g[5]),
+  part_matrix_compute((uint32_t *)guest_at(g[4]),
+                      (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
 L_8018673C:
@@ -7890,9 +7882,9 @@ L_8018674C:
   /* jal 0x80186754 -> gte_rtps_xform1(s2+8, sp+48, s2) */
   g[6] = g[18];                           /* delay slot */
   g[2] = (uint32_t)guest_of(gte_rtps_xform1(
-      (undefined4 *)guest_at(g[4]),
-      (undefined4 *)guest_at(g[5]),
-      (undefined2 *)guest_at(g[6])));
+      (uint32_t *)guest_at(g[4]),
+      (uint32_t *)guest_at(g[5]),
+      (uint16_t *)guest_at(g[6])));
 
   /* ---- mode dispatch on lh(a1+2) ---- */
   g[3] = (int32_t)(int16_t)br2_ld16(g[20] + 2);   /* lh */
@@ -8036,8 +8028,8 @@ L_801868D8:
   g[7] = 0;                               /* move zero */
   /* jal 0x80186900 -> part_matrix_compute(a1+4, sp+16, a2, 0) */
   br2_st16(g[23] + 4, (uint16_t)g[2]);    /* delay slot: sh a2+4 */
-  part_matrix_compute((undefined4 *)guest_at(g[4]),
-                      (byte *)guest_at(g[5]),
+  part_matrix_compute((uint32_t *)guest_at(g[4]),
+                      (int8_t *)guest_at(g[5]),
                       (short *)guest_at(g[6]), g[7]);
 
 L_80186908:
@@ -8047,9 +8039,9 @@ L_80186908:
   /* jal 0x80186914 -> gte_rtps_xform3(g8+32, a1+4, a1+32) */
   g[4] = g[8] + 32;                       /* delay slot */
   g[2] = (uint32_t)guest_of(gte_rtps_xform3(
-      (undefined4 *)guest_at(g[4]),
-      (ushort *)guest_at(g[5]),
-      (uint *)guest_at(g[6])));
+      (uint32_t *)guest_at(g[4]),
+      (uint16_t *)guest_at(g[5]),
+      (uint32_t *)guest_at(g[6])));
 
   /* ================= epilogue ================= */
 L_8018691C:
@@ -8227,7 +8219,7 @@ block_80188664:
  * loaded as raw xyz into GTE V0 (mtc2 data 12/13/14), NCLIP
  * (0x1400006) writes the MAC0-class flag into data[24]; the three source
  * xyz words are stored raw at out+8/+16/+24. MAC0<=0 skips the transform
- * body. Otherwise: attribute byte = lbu(out+7)<<24 | 0x00808080 written
+ * body. Otherwise: attribute int8_t = lbu(out+7)<<24 | 0x00808080 written
  * DIRECT to gte_data[6] (mtc2, no lwc2); companion t9=ld32(a0+12) and
  * v1=ld32(a0+16); all four lwc2 attribute words load up front —
  * gte16=t6+4, gte17=t7+4, gte18=t8+4, gte19=t9+4 — then AVSZ4
@@ -8335,7 +8327,7 @@ block_8018874C:
 /* prim_poly_emit_88 — sibling polygon GTE emitter, input stride 0x88
  * (136). Same skeleton as prim_poly_emit_6c with a wider output record:
  * out-delta t4 = 32 when a2==0 else 84 (32+52); NCLIP raw stores at
- * out+8/+20/+32; attribute byte = lbu(out+7)<<24 | 0x00808080 written
+ * out+8/+20/+32; attribute int8_t = lbu(out+7)<<24 | 0x00808080 written
  * direct to gte_data[6] (no lwc2); vertex ptrs at a0+16/+20/+24/+28
  * (vs +20..+32 in the 0x6c variant); companion data t9=ld32(a0+12)+4 ->
  * gte16..19 as before; lagged swc2 gte[22] stores at out+4/+16/+28/+40;
@@ -9307,7 +9299,7 @@ block_80189024:
 /* prim_nclip_emit_60 — NCLIP-gated GTE emitter, input record stride 96
  * (0x60). Same six-word prologue; out-delta t4 = 32 (a2==0) else 32+32=64;
  * a0 += 96 per element. MAC0<=0 skips. Otherwise: t3 = out, attribute
- * byte = lbu(out+7)<<24 | 0x00808080 (built in gpr[24] via lui/ori/or);
+ * int8_t = lbu(out+7)<<24 | 0x00808080 (built in gpr[24] via lui/ori/or);
  * t1 = lw(a0+24), t2 = lw(a0+28); cfc2; NCLIP; THEN mtc2 gte[6]=attr
  * (DIRECT gte_data[]), gte[0]=t1 (DIRECT), gte[1]=t2 (gte_write_data);
  * data24<=0 skips. Otherwise gte cmd 0x108041B; swc2 gte[12]/[13]/[14]
@@ -9393,7 +9385,7 @@ block_801890D4:
  *
  * Per record: six-word prologue lwc2 gte[0..5] @a0+0..20 (direct gte_data[]
  * for regs 0/2/4, gte_write_data for 1/3/5); a3--; t3 = a0+t4 (out) BEFORE
- * the GTE ops; gte cmd 0x30; attribute byte = lbu(out+7)<<24 | 0x00808080
+ * the GTE ops; gte cmd 0x30; attribute int8_t = lbu(out+7)<<24 | 0x00808080
  * built in gpr[24]/gpr[25] and written DIRECT to gte_data[6]; cfc2;
  * NCLIP (0x1400006); lwc2 gte[0] @a0+24 (DIRECT); MAC0 (data24)<=0 skips.
  * Otherwise: lwc2 gte[1..5] @a0+28..44; gte cmd 0x118043F; swc2
@@ -9482,7 +9474,7 @@ block_80189264:
 
 /* prim_nclip_emit_a8 — NCLIP-gated GTE emitter, input record stride 168
  * (0xa8). Same gated prologue as prim_nclip_emit_80 (a2==0 -> t4=64, else
- * t4=64+52=116; attr byte -> gte_data[6]; NCLIP gate on data24). The body
+ * t4=64+52=116; attr int8_t -> gte_data[6]; NCLIP gate on data24). The body
  * is a multi-stage transform: lwc2 gte[1] @a0+28 then swc2 gte[12]->out+8
  * BEFORE gte cmd 0x01; lwc2 gte[2..5] @a0+40..52; swc2 gte[14]->out+44;
  * lwc2 gte[0]/[1] @a0+32/+36; gte cmd 0x118043F; swc2 gte[12]/[13]->
@@ -9581,7 +9573,7 @@ block_80189358:
 
 /* prim_nclip_emit_64 — NCLIP-gated GTE emitter, input record stride 100
  * (0x64). Same six-word prologue and NCLIP gate as the family but NO
- * attribute byte: out-delta t4 = 44 (a2==0) else 44+28=72; t3 = a0+t4 is
+ * attribute int8_t: out-delta t4 = 44 (a2==0) else 44+28=72; t3 = a0+t4 is
  * computed AFTER the data24 mfc2. MAC0<=0 skips. Otherwise a three-vertex
  * RTPS-style body: vertex 1 gets lwc2 gte[6] @a0+24 (DIRECT), gte[0]/[1]
  * @a0+36/+40, gte cmd 0x108041B, swc2 gte[12]/[13]/[14]->out+8/+16/+24 and
@@ -9666,7 +9658,7 @@ block_80189420:
 
 /* prim_nclip_emit_74 — NCLIP-gated GTE emitter, input record stride 116
  * (0x74). Same gate as prim_nclip_emit_64 (t4 = 60, else 60+28=88; no
- * attribute byte; t3 after the data24 mfc2). Three-vertex body with wider
+ * attribute int8_t; t3 after the data24 mfc2). Three-vertex body with wider
  * per-vertex data: v1 = gte[6] @a0+24 + gte[0]/[1] @a0+36/+40 + cmd 0x1B,
  * swc2 gte[12]/[13]/[14]->out+8/+16/+24, gte[22]->out+4; v2 = gte[6] @a0+28
  * + gte[0]/[1] @a0+44/+48 + cmd 0x1B, FIXED OT link at a1, gte[22]->out+12;
@@ -9754,7 +9746,7 @@ block_801894F8:
 
 /* prim_nclip_emit_80b — NCLIP-gated GTE emitter, input record stride 128
  * (0x80), second variant (sibling of prim_nclip_emit_80 at 0x801891A4).
- * Same gate (t4 = 56, else 56+36=92; no attribute byte; t3 after the
+ * Same gate (t4 = 56, else 56+36=92; no attribute int8_t; t3 after the
  * data24 mfc2). Quirky body: mfc2 gpr[8] = gte_data[12] FIRST (before any
  * loads — reads the previous AVSZ-class result), then lwc2 gte[0]/[1]
  * @a0+24/+28, gte cmd 0x0180001, and a PLAIN sw of gpr[8] -> out+8 (not
@@ -9850,7 +9842,7 @@ block_801895F0:
 /* ======== 0x801895f8 ======== */
 
 /* prim_nclip_emit_98 — NCLIP-gated GTE emitter, input record stride 152
- * (0x98). Same gate (t4 = 80, else 80+36=116; no attribute byte; t3 after
+ * (0x98). Same gate (t4 = 80, else 80+36=116; no attribute int8_t; t3 after
  * the data24 mfc2). Body leads with swc2 gte[12]->out+8 BEFORE any loads,
  * then a four-stage vertex transform: v1 = lwc2 gte[0]/[1] @a0+24/+28 +
  * gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1B, swc2 gte[12]/[13]/[14]
@@ -10039,7 +10031,7 @@ block_801897A8:
  * a2 = out-delta select (0 -> t4=28, else t4=28+28=56), a3 = signed
  * count (<=0 -> return cursor unchanged).
  *
- * Same NCLIP prologue; raw xyz stored at out+8/+16/+24 (8-byte spacing);
+ * Same NCLIP prologue; raw xyz stored at out+8/+16/+24 (8-int8_t spacing);
  * vertex ptrs at a0+16/+20/+24. MAC0<=0 skips. Otherwise a THREE-VERTEX
  * RTPS body: v1 gets lwc2 gte[6] = a0+12 then (lhu x @v+0, lhu y @v+2 ->
  * data9/10, lwc2 data11 = v+4); v2/v3 reuse the same format with ptrs
@@ -10224,8 +10216,8 @@ block_80189954:
  * select (0 -> t4=24, else t4=24+40=64), a3 = signed count
  * (<=0 -> return cursor unchanged).
  *
- * Same NCLIP prologue; raw xyz stored at out+8/+20/+32 (12-byte
- * spacing); lbu attr byte read BEFORE the data24 mfc2, attr constant
+ * Same NCLIP prologue; raw xyz stored at out+8/+20/+32 (12-int8_t
+ * spacing); lbu attr int8_t read BEFORE the data24 mfc2, attr constant
  * lui in the blez DELAY SLOT. Vertex ptrs at a0+12/+16/+20. MAC0<=0
  * skips. Otherwise a THREE-VERTEX RTPS body: v1's (lhu x @v+0, lhu y
  * @v+2 -> data9/10, lwc2 data11 = v+4) is set up first, then each
@@ -10528,7 +10520,7 @@ block_80189C44:
  * in v0), a1 = OT base, a2 = out-delta select (0 -> t4=24, else
  * t4=24+24=48), a3 = signed count (<=0 -> return cursor unchanged).
  *
- * Same NCLIP prologue; raw xyz stored at out+8/+12/+16 (4-byte
+ * Same NCLIP prologue; raw xyz stored at out+8/+12/+16 (4-int8_t
  * spacing). MAC0<=0 skips. Otherwise ONE RTPS vertex: attr word =
  * lwc2 gte[6] DIRECT from a0+16; companion raw word t0 = lw(*t9) with
  * t9 = lw(a0+12) stored plain-sw at out+20; position ptr t2 = lw(a0+20)
@@ -10616,7 +10608,7 @@ block_80189D00:
  * a1 = OT base, a2 = out-delta select (0 -> t4=36, else t4=36+36=72),
  * a3 = signed count (<=0 -> return cursor unchanged).
  *
- * Same NCLIP prologue; raw xyz stored at out+8/+16/+24 (8-byte
+ * Same NCLIP prologue; raw xyz stored at out+8/+16/+24 (8-int8_t
  * spacing); companion t9 = lw(a0+12) fetched BEFORE the data24 mfc2,
  * *t9 stored plain-sw at out+32 inside the body. MAC0<=0 skips.
  * Otherwise a FOUR-VERTEX RTPS body with a SINGLE flat attribute:
@@ -10738,8 +10730,8 @@ block_80189E24:
  * a1 = OT base, a2 = out-delta select (0 -> t4=32, else t4=32+52=84),
  * a3 = signed count (<=0 -> return cursor unchanged).
  *
- * Same NCLIP prologue; raw xyz stored at out+8/+20/+32 (24-byte
- * spacing); lbu attr byte = lbu(out+7) read BEFORE the data24 mfc2,
+ * Same NCLIP prologue; raw xyz stored at out+8/+20/+32 (24-int8_t
+ * spacing); lbu attr int8_t = lbu(out+7) read BEFORE the data24 mfc2,
  * attr constant lui 0x0080 in the blez DELAY SLOT. Vertex ptrs at
  * a0+16/+20/+24/+28; companion t9 = lw(a0+12), *t9 = lw stored
  * plain-sw at out+44. FOUR RTPS vertices (lhu x @+0 / lhu y @+2 ->
@@ -12639,11 +12631,11 @@ block_8018B730:
 
 /* prim_xform3_task_run — dual-buffer primitive-list transform + task
  * runner (guest 0x8018B100, 264B, 12 CPS blocks — clean CPS coroutine;
- * all 12 addrs registered in clean_cps.map). Walks `count` 0x28-byte
+ * all 12 addrs registered in clean_cps.map). Walks `count` 0x28-int8_t
  * records at a0; per record with lh(rec+0xC)==0 and lw(rec)!=0 it runs
  * gte_xform3_t_ip twice around GTE cmd 0x0480012, stashing live
  * t4-t8 + MAC1-3 into scratchpad 0x1F8003C0..0x3DC, then jalr's the
- * record's 16-byte task entries (count at [s2], entries at s2+4 stride
+ * record's 16-int8_t task entries (count at [s2], entries at s2+4 stride
  * 16: a3=ent[1], a0=ent[2], fn=ent[3]). Caller s0-s6+ra saved to
  * scratchpad 0x1F8003E0..0x3FC and restored on exit; $v0 = final record
  * pointer (a0 + 0x28*count), or a0 when count <= 0.
