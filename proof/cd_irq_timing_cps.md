@@ -304,3 +304,30 @@ br2_call_generated / psx_dispatch_call sites. Verdict: zero reachable
 generated-bypass sites; 20 literal self-delegates remain but are
 shadowed dead code (all targets now route to cpst_/clean-C via
 clean_cps.map before fnmap wrappers are consulted).
+
+## Batch 11 (orch/w5/e05) — untimed-cps_ residual sweep: LAST live path closed
+
+Sweep result: zero untimed `cps_` map rows exist at >=0x80180000 (all
+4512 remaining untimed rows live in 0x8012-0x8017 game-logic, deliberately
+untimed — no device deadlines). BUT one live untimed EXECUTION path
+remained outside the map: game/gfx_emit_p08.c's nine GPU packet-command
+wrappers (gpu_pkt_cmd_f22c..f608) called `cps_8018ef6c()` — the UNTIMED
+transliteration of the sprintf/GPU-packet interpreter — directly, bypassing
+cpst_8018ef6c. That body is hot (GPU packet dispatch every frame) and its
+untimed run had exactly the intra-piece cycle-loss the --timing mode fixes.
+
+Fix: extern + all 9 call sites switched cps_8018ef6c -> cpst_8018ef6c
+(identical void(void) contract; cpst_ has every _cont case the untimed
+body had, verified incl. 0x8018F504). The untimed body is now fully dead
+(still defined in cps_clean.c, zero callers).
+
+Peer check: gfx_emit_p05.c's printf_cps_body is a separate HAND-VERIFIED
+timed transliteration of printf_core (163 psx_cyc_/psx_check_interrupts
+calls) — already timed, correctly left alone. w3_e09.c cps_ defs are
+0x8016/0x8017 game-logic — out of region.
+
+Audit re-check (proof/generated_zero_audit.md): no new generated-dispatch
+sites introduced; conclusions unchanged.
+
+Verified: clean build EU+USA; headless :4889 frames 32698 -> 61246+
+attract CD streaming, no wedge.
