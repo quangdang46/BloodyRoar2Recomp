@@ -4509,13 +4509,13 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 extern int str_len(char *);
 void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(battle_g);
+  uint8_t *b = (uint8_t *)guest_at(battle_g);
   /* guest sprintf/draw buffer is a stack slot: $sp+0x18 post-prologue
    * (frame -0x40) = entry_sp-0x28; str_len/hud_text_blk_alt re-read it
    * through nested frames, so the write->draw span runs inside a
    * reserved guest frame (sp+0x18 -> frm+0x18). */
   uint8_t *buf;
-  int32_t cnt, a2, a3;
+  int32_t cnt, txt_w, txt_y;
   uint32_t dc = *(uint32_t *)guest_at(0x1f8000dc);
   if (((dc >> 4) & 3) == 0) return;
   if (dc & 0x40) return;
@@ -4530,18 +4530,18 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
     buf = (uint8_t *)guest_at(cwa_frm + 0x18);
     if (cnt == 1) {
       sprintf_core((char *)buf,(const char *)guest_at(0x8012089c));
-      a2 = 0xe;
+      txt_w = 0xe;
     } else {
       sprintf_core((char *)buf,(const char *)guest_at(0x801208ac),cnt);
-      a2 = str_len((char *)buf);
+      txt_w = str_len((char *)buf);
     }
     if (player != 0) {
-      a3 = (int16_t)(*(int16_t *)(s0 + 0x20) - (a2 * 3 + 0x50));
+      txt_y = (int16_t)(*(int16_t *)(b + 0x20) - (txt_w * 3 + 0x50));
     } else {
-      a3 = (int16_t)(0x50 - a2 * 3);
+      txt_y = (int16_t)(0x50 - txt_w * 3);
     }
-    hud_text_blk_alt(*(uint32_t *)(s0 + 8),*(uint32_t *)(s0 + 0xc),
-                 (const void *)buf,a3,0x20,1);
+    hud_text_blk_alt(*(uint32_t *)(b + 8),*(uint32_t *)(b + 0xc),
+                 (const void *)buf,txt_y,0x20,1);
     br2_guest_frame_free();
   }
 }
@@ -5238,19 +5238,19 @@ int32_t results_record_build(int32_t idx, int32_t val)
  * results_record_build(a0, 3, lh v1+6). a0 = guest battle base. */
 void battle_subrecord_reset(uint32_t battle_g)
 {
-  uint32_t v1 = MB32(battle_g + 0xcc);
-  uint8_t *p = (uint8_t *)guest_at(v1);
-  MW16(v1 + 0,    2);
-  MW16(v1 + 2,    0);
-  MW16(v1 + 4,    0);
-  MW16(v1 + 8,    0);
-  MW16(v1 + 6,    0);
-  MW16(v1 + 0xa,  0);
-  MW16(v1 + 0xc,  0);
-  MW16(v1 + 0xe,  0);
-  memcpy(p + 0x18,  guest_at(0x801e1b3c), 0x21c0);
-  memcpy(p + 0x21d8, guest_at(0x801e0f6c), 0xbd0);
-  results_record_build(3, (int32_t)(int16_t)*(int16_t *)(p + 6));
+  uint32_t sub = MB32(battle_g + 0xcc);
+  uint8_t *hrec = (uint8_t *)guest_at(sub);
+  MW16(sub + 0,    2);
+  MW16(sub + 2,    0);
+  MW16(sub + 4,    0);
+  MW16(sub + 8,    0);
+  MW16(sub + 6,    0);
+  MW16(sub + 0xa,  0);
+  MW16(sub + 0xc,  0);
+  MW16(sub + 0xe,  0);
+  memcpy(hrec + 0x18,  guest_at(0x801e1b3c), 0x21c0);
+  memcpy(hrec + 0x21d8, guest_at(0x801e0f6c), 0xbd0);
+  results_record_build(3, (int32_t)(int16_t)*(int16_t *)(hrec + 6));
 }
 
 /* battle_subrecord_set1 — *(u16*)(*(u32*)(a0+0xcc)) = 1. */
@@ -5301,30 +5301,30 @@ L_tail:
  * 0xb,0). Returns whether the s16 value changed. */
 int u16_counter_step_pad_a(uint32_t ctr_g, int32_t max, int32_t sfx)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(ctr_g);
-  int16_t  s4 = *(int16_t *)s0;
-  uint32_t s5 = (uint32_t)max;
+  uint8_t *ctr = (uint8_t *)guest_at(ctr_g);
+  int16_t  old = *(int16_t *)ctr;
+  uint32_t lim = (uint32_t)max;
   uint32_t pad = MB16(0x1f80007e);
 
   if (pad == 0x2000) {
-    uint16_t v1;
+    uint16_t nv;
     if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
-    v1 = (uint16_t)(*(uint16_t *)s0 + 1);
-    *(uint16_t *)s0 = v1;
-    if ((int32_t)((uint32_t)max << 16) < (int32_t)(v1 << 16))
-      *(uint16_t *)s0 = 0;
+    nv = (uint16_t)(*(uint16_t *)ctr + 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)((uint32_t)max << 16) < (int32_t)(nv << 16))
+      *(uint16_t *)ctr = 0;
   }
   if (MB16(0x1f80007e) == 0x8000) {
-    uint16_t v0;
+    uint16_t nv;
     if (sfx != 0) deferred_cmd_post(0x400,0xb,0);
-    v0 = (uint16_t)(*(uint16_t *)s0 - 1);
-    *(uint16_t *)s0 = v0;
-    /* sh $s5,(s0) sits in the bgez delay slot and both branch
+    nv = (uint16_t)(*(uint16_t *)ctr - 1);
+    *(uint16_t *)ctr = nv;
+    /* sh $lim,(ctr) sits in the bgez delay slot and both branch
      * outcomes converge: the reload is UNCONDITIONAL. */
-    *(uint16_t *)s0 = (uint16_t)s5;
-    (void)v0;
+    *(uint16_t *)ctr = (uint16_t)lim;
+    (void)nv;
   }
-  return (int)(*(int16_t *)s0 != s4);
+  return (int)(*(int16_t *)ctr != old);
 }
 
 /* u16_counter_step_pad_b — same counter shape as u16_counter_step_pad_a but different
@@ -5336,17 +5336,17 @@ int u16_counter_step_pad_b(uint32_t ctr_addr, int32_t clamp)
   int16_t  old = *(int16_t *)ctr;
 
   if (MB16(0x1f80007e) == 0x2000) {
-    uint16_t v1 = (uint16_t)(*(uint16_t *)ctr + 1);
-    *(uint16_t *)ctr = v1;
-    if ((int32_t)((uint32_t)clamp << 16) < (int32_t)(v1 << 16))
+    uint16_t nv = (uint16_t)(*(uint16_t *)ctr + 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)((uint32_t)clamp << 16) < (int32_t)(nv << 16))
       *(uint16_t *)ctr = (uint16_t)clamp;   /* j delay: sh $a1 */
     else
       deferred_cmd_post(0x400,0xb,0);
   }
   if (MB16(0x1f80007e) == 0x8000) {
-    uint16_t v0 = (uint16_t)(*(uint16_t *)ctr - 1);
-    *(uint16_t *)ctr = v0;
-    if ((int32_t)(v0 << 16) < 0)
+    uint16_t nv = (uint16_t)(*(uint16_t *)ctr - 1);
+    *(uint16_t *)ctr = nv;
+    if ((int32_t)(nv << 16) < 0)
       *(uint16_t *)ctr = 0;                    /* j delay: sh zero */
     else
       deferred_cmd_post(0x400,0xb,0);
