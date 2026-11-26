@@ -9384,3 +9384,568 @@ block_801890D4:
   cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
   return cpu->gpr[2];
 }
+
+/* ======== 0x801891a4 ======== */
+
+/* prim_nclip_emit_80 — NCLIP-gated GTE emitter, input record stride 128
+ * (0x80). Sibling of prim_nclip_emit_60 (0x8018902C): a0 = record cursor
+ * (advances by 128 per element, returned in v0), a1 = OT base, a2 =
+ * out-size select (0 -> t4=48, else t4=48+40=88), a3 = signed count
+ * (<=0 -> return cursor unchanged).
+ *
+ * Per record: six-word prologue lwc2 gte[0..5] @a0+0..20 (direct gte_data[]
+ * for regs 0/2/4, gte_write_data for 1/3/5); a3--; t3 = a0+t4 (out) BEFORE
+ * the GTE ops; gte cmd 0x30; attribute byte = lbu(out+7)<<24 | 0x00808080
+ * built in gpr[24]/gpr[25] and written DIRECT to gte_data[6]; cfc2;
+ * NCLIP (0x1400006); lwc2 gte[0] @a0+24 (DIRECT); MAC0 (data24)<=0 skips.
+ * Otherwise: lwc2 gte[1..5] @a0+28..44; gte cmd 0x118043F; swc2
+ * gte[12]/[13]/[14] -> out+8/+20/+32; FIXED OT link at a1 (lw *a1, swl
+ * pair); swc2 gte[20]/[21]/[22] -> out+4/+16/+28.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_801891A4. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_801891A4:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_80189264;   /* blez a3 */
+
+block_801891AC:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 48;                               /* delay slot: t4=48 */
+    if (_bc) goto block_801891B8; else goto block_801891B4; }
+
+block_801891B4:
+  cpu->gpr[12] = cpu->gpr[12] + 40;                   /* t4 = 88 */
+  /* fall through */
+
+block_801891B8:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[24] = br2_ld8(cpu->gpr[11] + 7);           /* lbu t8,7(t3) */
+  cpu->gpr[25] = 0x00800000u;                         /* lui t9,0x80 */
+  cpu->gpr[25] = cpu->gpr[25] | 0x8080u;              /* ori t9,0x8080 */
+  cpu->gpr[24] = cpu->gpr[24] << 24;                  /* attr << 24 */
+  cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[25];         /* | 0x00808080 */
+  cpu->gte_data[6] = cpu->gpr[24];                    /* mtc2 gte[6] attr */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24); /* lwc2 gte[0] */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_8018925C; else goto block_80189210; }
+
+block_80189210:
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28)); /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44)); /* lwc2 gte[5] */
+  gte_execute(cpu, 0x118043Fu);                       /* gte cmd 0x3F */
+  br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 8, 12);
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 13);
+  br2_st32(cpu->gpr[11] + 32, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 32, 14);
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[20]);     /* swc2 gte[20] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 20);
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[21]);     /* swc2 gte[21] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 21);
+  br2_st32(cpu->gpr[11] + 28, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 28, 22);
+  /* fall through */
+
+block_8018925C:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 128;                  /* delay slot: a0 += 0x80 */
+    if (_bc) goto block_801891B8; else goto block_80189264; }
+
+block_80189264:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}
+
+/* ======== 0x8018926c ======== */
+
+/* prim_nclip_emit_a8 — NCLIP-gated GTE emitter, input record stride 168
+ * (0xa8). Same gated prologue as prim_nclip_emit_80 (a2==0 -> t4=64, else
+ * t4=64+52=116; attr byte -> gte_data[6]; NCLIP gate on data24). The body
+ * is a multi-stage transform: lwc2 gte[1] @a0+28 then swc2 gte[12]->out+8
+ * BEFORE gte cmd 0x01; lwc2 gte[2..5] @a0+40..52; swc2 gte[14]->out+44;
+ * lwc2 gte[0]/[1] @a0+32/+36; gte cmd 0x118043F; swc2 gte[12]/[13]->
+ * out+20/+32 and gte[20]->out+4; lwc2 gte[0]/[1] @a0+56/+60; gte cmd
+ * 0x108041B; FIXED OT link at a1; swc2 gte[22]/[20]/[21] -> out+40/+16/+28.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018926C. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_8018926C:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_80189358;   /* blez a3 */
+
+block_80189274:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 64;                               /* delay slot: t4=64 */
+    if (_bc) goto block_80189280; else goto block_8018927C; }
+
+block_8018927C:
+  cpu->gpr[12] = cpu->gpr[12] + 52;                   /* t4 = 116 */
+  /* fall through */
+
+block_80189280:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[24] = br2_ld8(cpu->gpr[11] + 7);           /* lbu t8,7(t3) */
+  cpu->gpr[25] = 0x00800000u;                         /* lui t9,0x80 */
+  cpu->gpr[25] = cpu->gpr[25] | 0x8080u;              /* ori t9,0x8080 */
+  cpu->gpr[24] = cpu->gpr[24] << 24;                  /* attr << 24 */
+  cpu->gpr[24] = cpu->gpr[24] | cpu->gpr[25];         /* | 0x00808080 */
+  cpu->gte_data[6] = cpu->gpr[24];                    /* mtc2 gte[6] attr */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24); /* lwc2 gte[0] */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_80189350; else goto block_801892D8; }
+
+block_801892D8:
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28)); /* lwc2 gte[1] */
+  br2_st32(cpu->gpr[11] + 8, cpu->gte_data[12]);      /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 8, 12);
+  gte_execute(cpu, 0x0180001u);                       /* gte cmd 0x01 */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);      /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52)); /* lwc2 gte[5] */
+  br2_st32(cpu->gpr[11] + 44, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 44, 14);
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x118043Fu);                       /* gte cmd 0x3F */
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 12);
+  br2_st32(cpu->gpr[11] + 32, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 32, 13);
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[20]);     /* swc2 gte[20] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 20);
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 60)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 40, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 40, 22);
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[20]);     /* swc2 gte[20] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 20);
+  br2_st32(cpu->gpr[11] + 28, cpu->gte_data[21]);     /* swc2 gte[21] */
+  gte_precision_store_word(cpu->gpr[11] + 28, 21);
+  /* fall through */
+
+block_80189350:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 168;                  /* delay slot: a0 += 0xa8 */
+    if (_bc) goto block_80189280; else goto block_80189358; }
+
+block_80189358:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}
+
+/* ======== 0x80189360 ======== */
+
+/* prim_nclip_emit_64 — NCLIP-gated GTE emitter, input record stride 100
+ * (0x64). Same six-word prologue and NCLIP gate as the family but NO
+ * attribute byte: out-delta t4 = 44 (a2==0) else 44+28=72; t3 = a0+t4 is
+ * computed AFTER the data24 mfc2. MAC0<=0 skips. Otherwise a three-vertex
+ * RTPS-style body: vertex 1 gets lwc2 gte[6] @a0+24 (DIRECT), gte[0]/[1]
+ * @a0+36/+40, gte cmd 0x108041B, swc2 gte[12]/[13]/[14]->out+8/+16/+24 and
+ * gte[22]->out+4; vertex 2 gets gte[6] @a0+28, gte cmd 0x108041B, the FIXED
+ * OT link at a1, swc2 gte[22]->out+12; vertex 3 gets gte[6] @a0+32, gte cmd
+ * 0x108041B, swc2 gte[22]->out+20. a0 += 100 per element.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189360. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_80189360:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_80189420;   /* blez a3 */
+
+block_80189368:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 44;                               /* delay slot: t4=44 */
+    if (_bc) goto block_80189374; else goto block_80189370; }
+
+block_80189370:
+  cpu->gpr[12] = cpu->gpr[12] + 28;                   /* t4 = 72 */
+  /* fall through */
+
+block_80189374:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_80189418; else goto block_801893B4; }
+
+block_801893B4:
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 8, 12);
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 13);
+  br2_st32(cpu->gpr[11] + 24, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 24, 14);
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);      /* lwc2 gte[6] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 12, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[6] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 22);
+  /* fall through */
+
+block_80189418:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 100;                  /* delay slot: a0 += 0x64 */
+    if (_bc) goto block_80189374; else goto block_80189420; }
+
+block_80189420:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}
+
+/* ======== 0x80189428 ======== */
+
+/* prim_nclip_emit_74 — NCLIP-gated GTE emitter, input record stride 116
+ * (0x74). Same gate as prim_nclip_emit_64 (t4 = 60, else 60+28=88; no
+ * attribute byte; t3 after the data24 mfc2). Three-vertex body with wider
+ * per-vertex data: v1 = gte[6] @a0+24 + gte[0]/[1] @a0+36/+40 + cmd 0x1B,
+ * swc2 gte[12]/[13]/[14]->out+8/+16/+24, gte[22]->out+4; v2 = gte[6] @a0+28
+ * + gte[0]/[1] @a0+44/+48 + cmd 0x1B, FIXED OT link at a1, gte[22]->out+12;
+ * v3 = gte[6] @a0+32 + gte[0]/[1] @a0+52/+56 + cmd 0x1B, gte[22]->out+20.
+ * a0 += 116 per element.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189428. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_80189428:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_801894F8;   /* blez a3 */
+
+block_80189430:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 60;                               /* delay slot: t4=60 */
+    if (_bc) goto block_8018943C; else goto block_80189438; }
+
+block_80189438:
+  cpu->gpr[12] = cpu->gpr[12] + 28;                   /* t4 = 88 */
+  /* fall through */
+
+block_8018943C:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_801894F0; else goto block_8018947C; }
+
+block_8018947C:
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 8, 12);
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 13);
+  br2_st32(cpu->gpr[11] + 24, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 24, 14);
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 12, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 22);
+  /* fall through */
+
+block_801894F0:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 116;                  /* delay slot: a0 += 0x74 */
+    if (_bc) goto block_8018943C; else goto block_801894F8; }
+
+block_801894F8:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}
+
+/* ======== 0x80189500 ======== */
+
+/* prim_nclip_emit_80b — NCLIP-gated GTE emitter, input record stride 128
+ * (0x80), second variant (sibling of prim_nclip_emit_80 at 0x801891A4).
+ * Same gate (t4 = 56, else 56+36=92; no attribute byte; t3 after the
+ * data24 mfc2). Quirky body: mfc2 gpr[8] = gte_data[12] FIRST (before any
+ * loads — reads the previous AVSZ-class result), then lwc2 gte[0]/[1]
+ * @a0+24/+28, gte cmd 0x0180001, and a PLAIN sw of gpr[8] -> out+8 (not
+ * swc2 — no precision side-call); swc2 gte[14]->out+32. Then three
+ * vertex stages: v2 = gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1B,
+ * swc2 gte[12]/[13]->out+16/+24, gte[22]->out+4; v3 = gte[6] @a0+36 + cmd
+ * 0x1B, FIXED OT link at a1, gte[22]->out+12; v4 = gte[6] @a0+40 + cmd 0x1B,
+ * gte[22]->out+20; v5 = gte[6] @a0+44 + cmd 0x1B, gte[22]->out+28.
+ * a0 += 128 per element.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189500. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_80189500:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_801895F0;   /* blez a3 */
+
+block_80189508:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 56;                               /* delay slot: t4=56 */
+    if (_bc) goto block_80189514; else goto block_80189510; }
+
+block_80189510:
+  cpu->gpr[12] = cpu->gpr[12] + 36;                   /* t4 = 92 */
+  /* fall through */
+
+block_80189514:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_801895E8; else goto block_80189554; }
+
+block_80189554:
+  cpu->gpr[8]  = cpu->gte_data[12];                  /* mfc2 t0, data12 */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x0180001u);                       /* gte cmd 0x01 */
+  br2_st32(cpu->gpr[11] + 8, cpu->gpr[8]);            /* sw t0,8(t3) */
+  br2_st32(cpu->gpr[11] + 32, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 32, 14);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 12);
+  br2_st32(cpu->gpr[11] + 24, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 24, 13);
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);      /* lwc2 gte[6] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 12, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);      /* lwc2 gte[6] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);      /* lwc2 gte[6] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 28, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 28, 22);
+  /* fall through */
+
+block_801895E8:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 128;                  /* delay slot: a0 += 0x80 */
+    if (_bc) goto block_80189514; else goto block_801895F0; }
+
+block_801895F0:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}
+
+/* ======== 0x801895f8 ======== */
+
+/* prim_nclip_emit_98 — NCLIP-gated GTE emitter, input record stride 152
+ * (0x98). Same gate (t4 = 80, else 80+36=116; no attribute byte; t3 after
+ * the data24 mfc2). Body leads with swc2 gte[12]->out+8 BEFORE any loads,
+ * then a four-stage vertex transform: v1 = lwc2 gte[0]/[1] @a0+24/+28 +
+ * gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1B, swc2 gte[12]/[13]/[14]
+ * ->out+16/+24/+32, gte[22]->out+4; v2 = gte[6] @a0+36 + gte[0]/[1]
+ * @a0+56/+60 + cmd 0x1B, FIXED OT link at a1, gte[22]->out+12; v3 =
+ * gte[6] @a0+40 + gte[0]/[1] @a0+64/+68 + cmd 0x1B, gte[22]->out+20; v4 =
+ * gte[6] @a0+44 + gte[0]/[1] @a0+72/+76 + cmd 0x1B, gte[22]->out+28.
+ * a0 += 152 per element.
+ * Disasm generated/SLES_017.22_full_40.c br2eu_func_801895F8. */
+extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
+
+uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
+{
+  CPUState *cpu = clean_cpu_state();
+  (void)a0; (void)a1; (void)a2; (void)a3;
+
+block_801895F8:
+  if ((int32_t)cpu->gpr[7] <= 0) goto block_801896FC;   /* blez a3 */
+
+block_80189600:
+  { int _bc = (cpu->gpr[6] == cpu->gpr[0]);            /* beq a2,zero */
+    cpu->gpr[12] = 80;                               /* delay slot: t4=80 */
+    if (_bc) goto block_8018960C; else goto block_80189608; }
+
+block_80189608:
+  cpu->gpr[12] = cpu->gpr[12] + 36;                   /* t4 = 116 */
+  /* fall through */
+
+block_8018960C:
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4]);           /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 4));  /* lwc2 gte[1] */
+  cpu->gte_data[2] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 8);       /* lwc2 gte[2] */
+  gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 12)); /* lwc2 gte[3] */
+  cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 16);      /* lwc2 gte[4] */
+  gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
+  cpu->gpr[7]  = cpu->gpr[7] + 0xFFFFFFFFu;           /* a3-- */
+  gte_execute(cpu, 0x0280030u);                       /* gte cmd 0x30 */
+  cpu->gpr[2]  = gte_read_ctrl(cpu, 31);              /* cfc2 v0,ctrl31 */
+  gte_execute(cpu, 0x1400006u);                       /* NCLIP */
+  cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
+  cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];          /* t3 = a0+t4 (out) */
+  { int _bc = ((int32_t)cpu->gpr[8] <= 0);            /* blez t0 */
+    if (_bc) goto block_801896F4; else goto block_8018964C; }
+
+block_8018964C:
+  br2_st32(cpu->gpr[11] + 8, cpu->gte_data[12]);      /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 8, 12);
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x0180001u);                       /* gte cmd 0x01 */
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 16, cpu->gte_data[12]);     /* swc2 gte[12] */
+  gte_precision_store_word(cpu->gpr[11] + 16, 12);
+  br2_st32(cpu->gpr[11] + 24, cpu->gte_data[13]);     /* swc2 gte[13] */
+  gte_precision_store_word(cpu->gpr[11] + 24, 13);
+  br2_st32(cpu->gpr[11] + 32, cpu->gte_data[14]);     /* swc2 gte[14] */
+  gte_precision_store_word(cpu->gpr[11] + 32, 14);
+  br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 4, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 60)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);               /* old = *a1 (OT) */
+  cpu->gpr[9]  = cpu->gpr[11] << 8;                   /* out << 8 */
+  swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);            /* swl a1+2 */
+  cpu->gpr[8]  = cpu->gpr[8] << 8;                    /* old << 8 */
+  swl_guest(cpu->gpr[11] + 2, cpu->gpr[8]);           /* swl out+2 */
+  br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 12, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 64);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 68)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 20, 22);
+  cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);      /* lwc2 gte[6] */
+  cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 72);      /* lwc2 gte[0] */
+  gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 76)); /* lwc2 gte[1] */
+  gte_execute(cpu, 0x108041Bu);                       /* gte cmd 0x1B */
+  br2_st32(cpu->gpr[11] + 28, cpu->gte_data[22]);     /* swc2 gte[22] */
+  gte_precision_store_word(cpu->gpr[11] + 28, 22);
+  /* fall through */
+
+block_801896F4:
+  { int _bc = ((int32_t)cpu->gpr[7] > 0);             /* bgtz a3 */
+    cpu->gpr[4] = cpu->gpr[4] + 152;                  /* delay slot: a0 += 0x98 */
+    if (_bc) goto block_8018960C; else goto block_801896FC; }
+
+block_801896FC:
+  cpu->gpr[2] = cpu->gpr[4];                          /* move v0,a0 */
+  return cpu->gpr[2];
+}

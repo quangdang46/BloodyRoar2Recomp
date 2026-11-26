@@ -1940,4 +1940,10 @@
 80188e88 prim_nclip_emit_6c
 80188f40 prim_nclip_emit_8c
 8018902c prim_nclip_emit_60
+801891a4 prim_nclip_emit_80
+8018926c prim_nclip_emit_a8
+80189360 prim_nclip_emit_64
+80189428 prim_nclip_emit_74
+80189500 prim_nclip_emit_80b
+801895f8 prim_nclip_emit_98
 80189e2c prim_poly_emit_64_vs
