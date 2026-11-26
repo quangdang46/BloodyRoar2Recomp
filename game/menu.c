@@ -11225,25 +11225,24 @@ uint32_t desc_cursor_select(uint32_t unused,uint32_t st,uint32_t desc)
  * deferred_cmd_post(0x400,0xb,0); MB8(s0)++; if ((s16)param_2 <
  * (s8)new) MB8(s0)=0. If flag==0x8000: same call; MB8(s0)--; if
  * ((s8)new < 0) MB8(s0)=param_2. Return changed!=0. */
-int32_t u8_wrap_counter_step(uint32_t param_1,int32_t param_2)
+int32_t u8_wrap_counter_step(uint32_t ctr,int32_t wrap)
 {
-  uint32_t s0 = param_1;
-  int32_t s3 = MBS8(s0);
-  int32_t nv;
+  int32_t old = MBS8(ctr);
+  int32_t v;
   if (MB16(0x1f80007eu) == 0x2000u) {
     deferred_cmd_post(0x400, 0xb, 0);
-    nv = MB8(s0) + 1;
-    MW8(s0, (uint32_t)nv);
-    nv = (int32_t)(int8_t)nv;
-    if ((int32_t)(int16_t)param_2 < nv) MW8(s0, 0);
+    v = MB8(ctr) + 1;
+    MW8(ctr, (uint32_t)v);
+    v = (int32_t)(int8_t)v;
+    if ((int32_t)(int16_t)wrap < v) MW8(ctr, 0);
   }
   if (MB16(0x1f80007eu) == 0x8000u) {
     deferred_cmd_post(0x400, 0xb, 0);
-    nv = MB8(s0) - 1;
-    MW8(s0, (uint32_t)nv);
-    if ((int32_t)(int8_t)nv < 0) MW8(s0, (uint8_t)param_2);
+    v = MB8(ctr) - 1;
+    MW8(ctr, (uint32_t)v);
+    if ((int32_t)(int8_t)v < 0) MW8(ctr, (uint8_t)wrap);
   }
-  return ((int32_t)MBS8(s0) ^ s3) != 0;
+  return ((int32_t)MBS8(ctr) ^ old) != 0;
 }
 
 /* quad_redraw_flag — quad redraw + flag @0x8014c0e0 (61 insns):
@@ -11272,29 +11271,29 @@ void quad_redraw_flag(void)
  * Per 0x18-stride entry: MB16(s1)+=s6; MB16(s0-0x12)+=s5;
  * MB16(s0-6)+=s3; MB16(s0-8)+=s4; gpu_load_image_cmd(s1, a1+MB32(s0-0xc)*4);
  * gpu_load_image_cmd(s1+0xc, a2+MB32(s0)*4). */
-void dual_entry_attr_bump(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6)
+void dual_entry_attr_bump(uint32_t rec,uint32_t im0,uint32_t im1,
+                  uint32_t cnt,uint32_t amt0,uint32_t amt1)
 {
-  uint32_t s1 = param_1;
-  uint32_t s0 = param_1 + 0x14;
-  uint32_t s7 = param_2, fp = param_3;
-  int32_t s2 = (int32_t)param_4;
-  uint32_t s6 = (param_5 << 6) & 0x3ffu;
-  uint32_t s5 = (param_5 << 4) & 0x100u;
-  uint32_t s4 = (param_6 << 4) & 0x3ffu;
-  uint32_t s3 = ((int32_t)param_6 >> 6) & 0x1ffu;
-  if (s2 == 0) return;
+  uint32_t walk = rec;
+  uint32_t rec14 = rec + 0x14;
+  uint32_t im0a = im0, im1a = im1;
+  int32_t n = (int32_t)cnt;
+  uint32_t inc0 = (amt0 << 6) & 0x3ffu;
+  uint32_t inc1 = (amt0 << 4) & 0x100u;
+  uint32_t inc2 = (amt1 << 4) & 0x3ffu;
+  uint32_t inc3 = ((int32_t)amt1 >> 6) & 0x1ffu;
+  if (n == 0) return;
   do {
-    MW16(s1, MB16(s1) + s6);
-    MW16(s0 - 0x12, MB16(s0 - 0x12) + s5);
-    MW16(s0 - 6,    MB16(s0 - 6)    + s3);
-    MW16(s0 - 8,    MB16(s0 - 8)    + s4);
-    gpu_load_image_cmd(s1, s7 + MB32(s0 - 0xc) * 4u);
-    gpu_load_image_cmd(s1 + 0xc, fp + MB32(s0) * 4u);
-    s0 += 0x18;
-    s1 += 0x18;
-    s2--;
-  } while (s2 != 0);
+    MW16(walk, MB16(walk) + inc0);
+    MW16(rec14 - 0x12, MB16(rec14 - 0x12) + inc1);
+    MW16(rec14 - 6,    MB16(rec14 - 6)    + inc3);
+    MW16(rec14 - 8,    MB16(rec14 - 8)    + inc2);
+    gpu_load_image_cmd(walk, im0a + MB32(rec14 - 0xc) * 4u);
+    gpu_load_image_cmd(walk + 0xc, im1a + MB32(rec14) * 4u);
+    rec14 += 0x18;
+    walk += 0x18;
+    n--;
+  } while (n != 0);
 }
 
 /* ======== batch44 ======== */
@@ -11309,37 +11308,37 @@ extern void task_slot_step(void);
  * incremented (&0xff, wraps to 0 at >=8). dst = 0x801f10c8 +
  * idx*640 + 4 + MB32(rec+0xc)*320. Eight sprite_rect_set_c quads at
  * +0x00/+0x28/+0x50/+0x78/+0xa0/+0xc8/+0xf0/+0x118. */
-void gpu_prim8_emit(uint32_t param_1,int32_t param_2,int32_t param_3,
-                  int32_t param_4,int32_t param_5)
+void gpu_prim8_emit(uint32_t rec,int32_t x0,int32_t y0,
+                  int32_t w0,int32_t h0)
 {
-  int32_t s6 = param_2, s4 = param_3, s1 = param_4, s2 = param_5;
-  int32_t s7, s3, s5, s1m2, s4p1, s2m2;
-  uint32_t s0, idx;
-  if (param_4 < 0) { s6 = param_2 + param_4; s1 = -param_4; }
-  if (param_5 < 0) { s4 = param_3 + param_5; s2 = -param_5; }
-  idx = MB8(0x801f10c8u);
-  idx = (idx + 1) & 0xffu;
-  MW8(0x801f10c8u, idx);
-  if (idx >= 8) MW8(0x801f10c8u, 0);
-  s6 = (int16_t)s6;
-  s4 = (int16_t)s4;
-  s0 = 0x801f10c8u + idx * 640u + 4u + MB32(param_1 + 0xc) * 320u;
-  sprite_rect_set_c(s0, s6, s4, 8, 8);
-  s1 = (int16_t)s1;
-  s7 = s6 + s1 - 8;
-  sprite_rect_set_c(s0 + 0x28, s7, s4, 8, 8);
-  s2 = (int16_t)s2;
-  s3 = s4 + s2 - 8;
-  sprite_rect_set_c(s0 + 0x50, s6, s3, 8, 8);
-  sprite_rect_set_c(s0 + 0x78, s7, s3, 8, 8);
-  s5 = s6 + 1;
-  s1m2 = s1 - 2;
-  sprite_rect_set_c(s0 + 0xa0, s5, s4, s1m2, 8);
-  sprite_rect_set_c(s0 + 0xc8, s5, s3, s1m2, 8);
-  s4p1 = s4 + 1;
-  s2m2 = s2 - 2;
-  sprite_rect_set_c(s0 + 0xf0, s7, s4p1, 8, s2m2);
-  sprite_rect_set_c(s0 + 0x118, s6, s4p1, 8, s2m2);
+  int32_t x = x0, y = y0, w = w0, h = h0;
+  int32_t x1, y1, x2, wi, yi, hi;
+  uint32_t dst, slot;
+  if (w0 < 0) { x = x0 + w0; w = -w0; }
+  if (h0 < 0) { y = y0 + h0; h = -h0; }
+  slot = MB8(0x801f10c8u);
+  slot = (slot + 1) & 0xffu;
+  MW8(0x801f10c8u, slot);
+  if (slot >= 8) MW8(0x801f10c8u, 0);
+  x = (int16_t)x;
+  y = (int16_t)y;
+  dst = 0x801f10c8u + slot * 640u + 4u + MB32(rec + 0xc) * 320u;
+  sprite_rect_set_c(dst, x, y, 8, 8);
+  w = (int16_t)w;
+  x1 = x + w - 8;
+  sprite_rect_set_c(dst + 0x28, x1, y, 8, 8);
+  h = (int16_t)h;
+  y1 = y + h - 8;
+  sprite_rect_set_c(dst + 0x50, x, y1, 8, 8);
+  sprite_rect_set_c(dst + 0x78, x1, y1, 8, 8);
+  x2 = x + 1;
+  wi = w - 2;
+  sprite_rect_set_c(dst + 0xa0, x2, y, wi, 8);
+  sprite_rect_set_c(dst + 0xc8, x2, y1, wi, 8);
+  yi = y + 1;
+  hi = h - 2;
+  sprite_rect_set_c(dst + 0xf0, x1, yi, 8, hi);
+  sprite_rect_set_c(dst + 0x118, x, yi, 8, hi);
 }
 
 /* sprite_blit_center_a — centred sprite blit A @0x80147cdc (65 insns, 6
@@ -11349,25 +11348,25 @@ void gpu_prim8_emit(uint32_t param_1,int32_t param_2,int32_t param_3,
  * prim slots at 0x801f10c8+idx*640+4+MB32(rec+0xc)*320 (+0x28
  * stride): sh s0 @+0xe, link-or 0x90000000 store, backlink =
  * slot&0xffffff -> MB32(MB32(rec+8)+0x2040). */
-void sprite_blit_center_a(uint32_t param_1,int32_t param_2,int32_t param_3,
-                  int32_t param_4,int32_t param_5,int32_t param_6)
+void sprite_blit_center_a(uint32_t rec,int32_t attr,int32_t cx,int32_t cy,
+                  int32_t w,int32_t h)
 {
-  int32_t v1 = (int16_t)param_6;
-  int32_t t0 = (int16_t)param_5;
-  int32_t a1, a2, i;
-  uint32_t s0, a0, v0;
-  a1 = param_3 - ((t0 + ((t0 < 0) ? 1 : 0)) >> 1);
-  a2 = param_4 - ((v1 + ((v1 < 0) ? 1 : 0)) >> 1);
-  gpu_prim8_emit(param_1, (int16_t)a1, (int16_t)a2, t0, v1);
-  s0 = (((param_2 + 0x1e0) & 0x1ff) << 6) + 0x1e;
-  a0 = 0x801f10c8u + MB8(0x801f10c8u) * 640u + 4u
-       + MB32(param_1 + 0xc) * 320u;
+  int32_t sh = (int16_t)h;
+  int32_t sw = (int16_t)w;
+  int32_t x, y, i;
+  uint32_t tag, dst, link;
+  x = cx - ((sw + ((sw < 0) ? 1 : 0)) >> 1);
+  y = cy - ((sh + ((sh < 0) ? 1 : 0)) >> 1);
+  gpu_prim8_emit(rec, (int16_t)x, (int16_t)y, sw, sh);
+  tag = (((attr + 0x1e0) & 0x1ff) << 6) + 0x1e;
+  dst = 0x801f10c8u + MB8(0x801f10c8u) * 640u + 4u
+       + MB32(rec + 0xc) * 320u;
   for (i = 0; i < 8; i++) {
-    MW16(a0 + 0xe, (uint16_t)s0);
-    v0 = MB32(MB32(param_1 + 8) + 0x2040);
-    MW32(a0, v0 | 0x90000000u);
-    MW32(MB32(param_1 + 8) + 0x2040, a0 & 0xffffffu);
-    a0 += 0x28;
+    MW16(dst + 0xe, (uint16_t)tag);
+    link = MB32(MB32(rec + 8) + 0x2040);
+    MW32(dst, link | 0x90000000u);
+    MW32(MB32(rec + 8) + 0x2040, dst & 0xffffffu);
+    dst += 0x28;
   }
 }
 
@@ -11376,28 +11375,27 @@ void sprite_blit_center_a(uint32_t param_1,int32_t param_2,int32_t param_3,
  * y-centre swapped roles: gpu_prim8_emit(rec, sx16(a3)-trunc2(sx16(p6)),
  * sx16(p5)-trunc2(sx16(p7)), sx16(p6), sx16(p7)); backlink target
  * MB32(sx16(p2)*4 + MB32(rec+8)). */
-void sprite_blit_center_b(uint32_t param_1,int32_t param_2,int32_t param_3,
-                  int32_t param_4,int32_t param_5,int32_t param_6,
-                  int32_t param_7)
+void sprite_blit_center_b(uint32_t rec,int32_t slot,int32_t attr,int32_t cx,
+                  int32_t cy,int32_t w,int32_t h)
 {
-  int32_t v1 = (int16_t)param_7;
-  int32_t t0 = (int16_t)param_6;
-  int32_t s1 = ((int16_t)param_2) * 4;
-  int32_t a1, a2, i;
-  uint32_t s0, a0;
-  a1 = param_4 - ((t0 + ((t0 < 0) ? 1 : 0)) >> 1);
-  a2 = param_5 - ((v1 + ((v1 < 0) ? 1 : 0)) >> 1);
-  gpu_prim8_emit(param_1, (int16_t)a1, (int16_t)a2, t0, v1);
-  s0 = (((param_3 + 0x1e0) & 0x1ff) << 6) + 0x1e;
-  a0 = 0x801f10c8u + MB8(0x801f10c8u) * 640u + 4u
-       + MB32(param_1 + 0xc) * 320u;
+  int32_t sh = (int16_t)h;
+  int32_t sw = (int16_t)w;
+  int32_t off = ((int16_t)slot) * 4;
+  int32_t x, y, i;
+  uint32_t tag, dst;
+  x = cx - ((sw + ((sw < 0) ? 1 : 0)) >> 1);
+  y = cy - ((sh + ((sh < 0) ? 1 : 0)) >> 1);
+  gpu_prim8_emit(rec, (int16_t)x, (int16_t)y, sw, sh);
+  tag = (((attr + 0x1e0) & 0x1ff) << 6) + 0x1e;
+  dst = 0x801f10c8u + MB8(0x801f10c8u) * 640u + 4u
+       + MB32(rec + 0xc) * 320u;
   for (i = 0; i < 8; i++) {
     uint32_t link;
-    MW16(a0 + 0xe, (uint16_t)s0);
-    link = s1 + MB32(param_1 + 8);
-    MW32(a0, MB32(link) | 0x90000000u);
-    MW32(link, a0 & 0xffffffu);
-    a0 += 0x28;
+    MW16(dst + 0xe, (uint16_t)tag);
+    link = off + MB32(rec + 8);
+    MW32(dst, MB32(link) | 0x90000000u);
+    MW32(link, dst & 0xffffffu);
+    dst += 0x28;
   }
 }
 
@@ -11409,36 +11407,36 @@ void sprite_blit_center_b(uint32_t param_1,int32_t param_2,int32_t param_3,
  * MB16(t1+4)>>7; else +8=+0xa=a3. +0x1c = MB32(0x801f26e0+
  * MB16(t0)*4); +0x3a=MB16(t0+4); +0x3c=MB16(t0+6);
  * cd_reg_window_update(0x801f2650). */
-void voice_desc_fill(uint32_t param_1,uint32_t param_2,int32_t param_3,
-                  int32_t param_4)
+void voice_desc_fill(uint32_t id,uint32_t sel,int32_t kind,
+                  int32_t vol)
 {
-  uint32_t t0 = 0x801f2be0u + param_2 * 8u;
-  uint32_t v1 = MB32(0x801f35e0u + ((int32_t)param_2 >> 6) * 4u);
-  uint32_t t1 = v1 + (param_2 & 0x3fu) * 6u;
-  uint32_t P = 0x801f2650u;
-  uint32_t e, a0h;
-  if (param_3 < 0) {
-    MW32(P + 4, 0x600e3u);
-    MW16(P + 0x16, 0);
-    MW16(P + 0x18, MB16(t0 + 2));
+  uint32_t ent = 0x801f2be0u + sel * 8u;
+  uint32_t bank = MB32(0x801f35e0u + ((int32_t)sel >> 6) * 4u);
+  uint32_t sub = bank + (sel & 0x3fu) * 6u;
+  uint32_t win = 0x801f2650u;
+  uint32_t ev, av;
+  if (kind < 0) {
+    MW32(win + 4, 0x600e3u);
+    MW16(win + 0x16, 0);
+    MW16(win + 0x18, MB16(ent + 2));
   } else {
-    MW32(P + 4, 0x60093u);
-    MW16(P + 0x14, (uint16_t)param_3);
+    MW32(win + 4, 0x60093u);
+    MW16(win + 0x14, (uint16_t)kind);
   }
-  MW32(P, param_1);
-  if (param_4 == 0) {
-    e = MB16(0x801b33bcu + (MB8(t1 + 1) >> 4) * 2u);
-    a0h = MB16(t1 + 4);
-    MW16(P + 8,  (uint16_t)((int32_t)(uint32_t)(a0h * (e >> 8)) >> 7));
-    MW16(P + 0xa, (uint16_t)((int32_t)(uint32_t)(a0h * (e & 0xffu)) >> 7));
+  MW32(win, id);
+  if (vol == 0) {
+    ev = MB16(0x801b33bcu + (MB8(sub + 1) >> 4) * 2u);
+    av = MB16(sub + 4);
+    MW16(win + 8,  (uint16_t)((int32_t)(uint32_t)(av * (ev >> 8)) >> 7));
+    MW16(win + 0xa, (uint16_t)((int32_t)(uint32_t)(av * (ev & 0xffu)) >> 7));
   } else {
-    MW16(P + 0xa, (uint16_t)param_4);
-    MW16(P + 8,   (uint16_t)param_4);
+    MW16(win + 0xa, (uint16_t)vol);
+    MW16(win + 8,   (uint16_t)vol);
   }
-  MW32(P + 0x1c, MB32(0x801f26e0u + MB16(t0) * 4u));
-  MW16(P + 0x3a, MB16(t0 + 4));
-  MW16(P + 0x3c, MB16(t0 + 6));
-  cd_reg_window_update((uint8_t *)guest_at(P));
+  MW32(win + 0x1c, MB32(0x801f26e0u + MB16(ent) * 4u));
+  MW16(win + 0x3a, MB16(ent + 4));
+  MW16(win + 0x3c, MB16(ent + 6));
+  cd_reg_window_update((uint8_t *)guest_at(win));
 }
 
 /* print_mode_dispatch — print-mode dispatch @0x8012ce30 (76 insns, 9
@@ -11447,15 +11445,15 @@ void voice_desc_fill(uint32_t param_1,uint32_t param_2,int32_t param_3,
  * frame -0x130 = entry_sp-0x108), init the
  * 0x1f80038c GPU block and text_render_simple(MB32(0x1f800008),
  * MB16(0x1f80000c), 0x1f80038c); else return. */
-void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
+void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t param_3,
                   uint32_t param_4,uint32_t param_5,uint32_t param_6,
                   uint32_t param_7,uint32_t param_8,uint32_t param_9)
 {
-  uint32_t v1 = MB32(0x1f800384u);
-  if (v1 == 1) {
-    text_win_printf((int32_t)param_1, param_2, param_3, param_4,
+  uint32_t mode = MB32(0x1f800384u);
+  if (mode == 1) {
+    text_win_printf((int32_t)win, fmt, param_3, param_4,
                  param_5, param_6, param_7, param_8, param_9);
-  } else if (v1 == 2) {
+  } else if (mode == 2) {
     /* sprintf buf = guest $sp+0x28 (frame -0x130) = entry_sp-0x108;
      * text_render_simple re-reads it through the 0x1f80038c block
      * pointer, so reserve the guest frame window (sp+0x28 -> frm+0x28)
@@ -11464,26 +11462,26 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
     extern void br2_guest_frame_free(void);
     uint32_t pmd_frm = br2_guest_frame(0x130);
     uint8_t *buf = (uint8_t *)guest_at(pmd_frm + 0x28);
-    uint32_t B = 0x1f80038cu;
-    sprintf_core((char *)buf, (char *)guest_at(param_2),
+    uint32_t blk = 0x1f80038cu;
+    sprintf_core((char *)buf, (char *)guest_at(fmt),
                  param_3, param_4, param_5, param_6, param_7,
                  param_8, param_9);
-    MW16(B + 6,  0x1000u);
-    MW16(B + 8,  0x1000u);
-    MW16(B + 0xe, 0xffffu);
-    MW16(B,     0);
-    MW16(B + 2, 0);
-    MW16(B + 4, 0);
-    MW16(B + 0xa, 8);
-    MW16(B + 0xc, 8);
-    MW16(B + 0x10, 8);
-    MW16(B + 0x12, 0);
-    MW16(B + 0x14, 0);
-    MW16(B + 0x16, 0x78dfu);
-    MW32(B + 0x1c, pmd_frm + 0x28);
-    MW16(B + 0x18, 0);
+    MW16(blk + 6,  0x1000u);
+    MW16(blk + 8,  0x1000u);
+    MW16(blk + 0xe, 0xffffu);
+    MW16(blk,     0);
+    MW16(blk + 2, 0);
+    MW16(blk + 4, 0);
+    MW16(blk + 0xa, 8);
+    MW16(blk + 0xc, 8);
+    MW16(blk + 0x10, 8);
+    MW16(blk + 0x12, 0);
+    MW16(blk + 0x14, 0);
+    MW16(blk + 0x16, 0x78dfu);
+    MW32(blk + 0x1c, pmd_frm + 0x28);
+    MW16(blk + 0x18, 0);
     text_render_simple((uint32_t *)guest_at(MB32(0x1f800008u)),
-                 MB16(0x1f80000cu), (int32_t)B);
+                 MB16(0x1f80000cu), (int32_t)blk);
     br2_guest_frame_free();
   }
 }
@@ -11497,35 +11495,34 @@ void print_mode_dispatch(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * lh(s2+0x23f0), lh(s2+0x23f0)) and link slot into
  * MB32(MB32(0x1f800008)+0x40)|0x90000000 with backlink slot&0xffffff.
  * Tail: MB16(param_1+0x24b8)-- ; if sx16<0 task_slot_step(). */
-void scroll_attr_100_update(uint32_t param_1)
+void scroll_attr_100_update(uint32_t base)
 {
-  uint32_t s4 = param_1;
-  uint32_t s1 = param_1 + MB32(0x1f80000cu) * 4000u;
-  uint32_t s0 = param_1, s2 = param_1;
+  uint32_t slot = base + MB32(0x1f80000cu) * 4000u;
+  uint32_t r4 = base, r2 = base;
   int32_t i;
   uint32_t v0;
   for (i = 0; i < 100; i++) {
-    if (MB32(s0 + 0x2260) != 0) {
+    if (MB32(r4 + 0x2260) != 0) {
       uint32_t a2;
-      MW16(s0 + 0x1f40, MB16(s0 + 0x1f40) + MB16(s0 + 0x20d0));
-      a2 = MB16(s0 + 0x1f42) + MB16(s0 + 0x20d2);
-      MW16(s0 + 0x1f42, a2);
+      MW16(r4 + 0x1f40, MB16(r4 + 0x1f40) + MB16(r4 + 0x20d0));
+      a2 = MB16(r4 + 0x1f42) + MB16(r4 + 0x20d2);
+      MW16(r4 + 0x1f42, a2);
       a2 = (uint32_t)(int32_t)(int16_t)a2;
       {
-        int32_t a3 = (int32_t)MBS16(s2 + 0x23f0);
-        sprite_rect_set_c(s1, (int32_t)MBS16(s0 + 0x1f40), (int32_t)a2,
+        int32_t a3 = (int32_t)MBS16(r2 + 0x23f0);
+        sprite_rect_set_c(slot, (int32_t)MBS16(r4 + 0x1f40), (int32_t)a2,
                      a3, a3);
       }
       v0 = MB32(MB32(0x1f800008u) + 0x40);
-      MW32(s1, v0 | 0x90000000u);
-      MW32(MB32(0x1f800008u) + 0x40, s1 & 0xffffffu);
+      MW32(slot, v0 | 0x90000000u);
+      MW32(MB32(0x1f800008u) + 0x40, slot & 0xffffffu);
     }
-    s1 += 0x28;
-    s2 += 2;
-    s0 += 4;
+    slot += 0x28;
+    r2 += 2;
+    r4 += 4;
   }
-  v0 = MB16(s4 + 0x24b8) - 1u;
-  MW16(s4 + 0x24b8, v0);
+  v0 = MB16(base + 0x24b8) - 1u;
+  MW16(base + 0x24b8, v0);
   if ((int32_t)(int16_t)v0 < 0) task_slot_step();
 }
 
@@ -11543,39 +11540,39 @@ extern void spr_draw_pair(uint32_t,uint32_t,uint32_t,uint32_t,
  * 0x801e40b6, tagarg, 0); head cell: b[0]=(*head)|0x05000000,
  * *head=g&0xffffff, b[6]=(g&0xffffff)|0x02000000,
  * *head=(g+0x18)&0xffffff. */
-uint32_t spr_attr_alloc_c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                      int32_t param_7)
+uint32_t spr_attr_alloc_c(uint32_t head_addr,uint32_t x0,uint32_t y0,
+                      uint32_t w,uint32_t h,uint32_t tag,
+                      int32_t cnt)
 {
-  uint8_t *b;
+  uint8_t *rec;
   uint32_t *head;
   uint32_t g;
-  int32_t iVar3;
-  b = (uint8_t *)spr_pool_a_alloc();
-  if (b == (uint8_t *)0) return 0xffffffffu;
-  *(int16_t *)(b + 8)  = (int16_t)param_2;
-  *(int16_t *)(b + 10) = (int16_t)param_3;
-  *(int16_t *)(b + 12) = (int16_t)(param_2 + param_4);
-  *(int16_t *)(b + 14) = (int16_t)param_3;
-  *(int16_t *)(b + 16) = (int16_t)param_2;
-  *(int16_t *)(b + 20) = (int16_t)(param_2 + param_4);
-  *(int16_t *)(b + 18) = (int16_t)(param_3 + param_5);
-  *(int16_t *)(b + 22) = (int16_t)(param_3 + param_5);
-  if (param_7 != 0) {
-    *(uint32_t *)(b + 4) = param_6 | 0x2a000000u;
-    iVar3 = (param_7 - 1) * 0x20;
+  int32_t tex;
+  rec = (uint8_t *)spr_pool_a_alloc();
+  if (rec == (uint8_t *)0) return 0xffffffffu;
+  *(int16_t *)(rec + 8)  = (int16_t)x0;
+  *(int16_t *)(rec + 10) = (int16_t)y0;
+  *(int16_t *)(rec + 12) = (int16_t)(x0 + w);
+  *(int16_t *)(rec + 14) = (int16_t)y0;
+  *(int16_t *)(rec + 16) = (int16_t)x0;
+  *(int16_t *)(rec + 20) = (int16_t)(x0 + w);
+  *(int16_t *)(rec + 18) = (int16_t)(y0 + h);
+  *(int16_t *)(rec + 22) = (int16_t)(y0 + h);
+  if (cnt != 0) {
+    *(uint32_t *)(rec + 4) = tag | 0x2a000000u;
+    tex = (cnt - 1) * 0x20;
   } else {
-    *(uint32_t *)(b + 4) = param_6 | 0x28000000u;
-    iVar3 = 0;
+    *(uint32_t *)(rec + 4) = tag | 0x28000000u;
+    tex = 0;
   }
-  prim_packet_init_tex((int)(uintptr_t)guest_of(b + 0x18),
-               MB8(0x801e40b7u), MB8(0x801e40b6u), (uint32_t)iVar3,
+  prim_packet_init_tex((int)(uintptr_t)guest_of(rec + 0x18),
+               MB8(0x801e40b7u), MB8(0x801e40b6u), (uint32_t)tex,
                (void *)0);
-  head = (uint32_t *)guest_at(param_1);
-  g = guest_of(b);
-  *(uint32_t *)b = *head | 0x05000000u;
+  head = (uint32_t *)guest_at(head_addr);
+  g = guest_of(rec);
+  *(uint32_t *)rec = *head | 0x05000000u;
   *head = g & 0xffffffu;
-  *(uint32_t *)(b + 0x18) = (g & 0xffffffu) | 0x02000000u;
+  *(uint32_t *)(rec + 0x18) = (g & 0xffffffu) | 0x02000000u;
   *head = (g + 0x18) & 0xffffffu;
   return 0;
 }
