@@ -17,7 +17,6 @@
 #include "cpu_state.h"
 
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
-#define CONCAT12(hi,lo) (((uint32_t)(uint8_t)(hi) << 16) | (uint16_t)(lo))
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -52,7 +51,6 @@ extern uint8_t  *g_DAT_801b460c;
 extern uint8_t  *g_DAT_801b4610;
 extern uint8_t  *g_DAT_801b4614;
 extern uint8_t  *g_DAT_801b55d0;
-extern uint8_t  *g_DAT_801bdde0;
 extern uint8_t  *g_DAT_801bef60;
 extern uint8_t  *g_DAT_801bef64;
 extern uint8_t  *g_DAT_801bef67;
@@ -78,12 +76,9 @@ extern uint8_t  *g_DAT_801c11f4;
 extern uint8_t  *g_DAT_801c1264;
 extern uint8_t  *g_DAT_801c1304;
 extern uint8_t  *g_DAT_801c13a4;
-extern uint8_t  *g_DAT_801c15f0;
 extern uint8_t  *g_DAT_801c4580;
 extern uint8_t  *g_DAT_801e83aa;
 extern uint8_t  *g_DAT_801e83b0;
-extern uint8_t  *g_DAT_801e8400;
-extern uint8_t  *g_DAT_801f09b;
 extern uint8_t  *g_DAT_801f24d0;
 extern uint8_t  *g_DAT_801f24d1;
 extern uint8_t  *g_DAT_801f35f4;
@@ -119,12 +114,6 @@ extern uint8_t  *g__DAT_801f2668;
 extern uint8_t  *g__DAT_801f266c;
 extern uint8_t  *g__DAT_801f268a;
 extern uint8_t  *g__DAT_801f268c;
-extern uint8_t  *g__DAT_801f2690;
-extern uint8_t  *g__DAT_801f2694;
-extern uint8_t  *g__DAT_801f2696;
-extern uint8_t  *g__DAT_801f26a0;
-extern uint8_t  *g__DAT_801f26a2;
-extern uint8_t  *g__DAT_801f26a8;
 extern uint8_t  *g__DAT_801f36c0;
 extern char *s_1_BLOCK_IS_REQUIRED_TO_SAVE__80121824;
 extern char *s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8;
@@ -178,7 +167,6 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801b4610   (*(uint32_t *)g_DAT_801b4610)
 #define DAT_801b4614   (*(uint32_t *)g_DAT_801b4614)
 #define DAT_801b55d0   (*(uint8_t *)g_DAT_801b55d0)
-#define DAT_801bdde0   (*(uint32_t *)g_DAT_801bdde0)
 #define DAT_801bef60   (*(uint8_t *)g_DAT_801bef60)
 #define DAT_801bef64   (*(uint8_t *)g_DAT_801bef64) /* guest lbu @0x801bef64 (0x80157a00) */
 #define DAT_801bef67   (*(uint8_t *)g_DAT_801bef67)
@@ -204,12 +192,9 @@ extern uint8_t  *g_DAT_801b43f0;
 #define DAT_801c1264   (*(uint8_t *)g_DAT_801c1264)
 #define DAT_801c1304   (*(uint8_t *)g_DAT_801c1304)
 #define DAT_801c13a4   (*(uint8_t *)g_DAT_801c13a4)
-#define DAT_801c15f0   (*(uint32_t *)g_DAT_801c15f0)
 #define DAT_801c4580   (*(uint8_t *)g_DAT_801c4580)
 #define DAT_801e83aa   (*(uint8_t *)g_DAT_801e83aa)
 #define DAT_801e83b0   (*(uint8_t *)g_DAT_801e83b0)
-#define DAT_801e8400   (*(uint8_t *)g_DAT_801e8400)
-#define DAT_801f09b   (*(uint8_t *)g_DAT_801f09b)
 #define DAT_801f24d0   (*(uint8_t *)g_DAT_801f24d0)
 #define DAT_801f24d1   (*(uint8_t *)g_DAT_801f24d1)
 #define DAT_801f35f4   (*(uint32_t *)g_DAT_801f35f4)
@@ -266,12 +251,6 @@ extern uint8_t  *g_DAT_801b43f0;
 #define _DAT_801f266c   (*(uint32_t *)g__DAT_801f266c)
 #define _DAT_801f268a   (*(uint16_t *)g__DAT_801f268a)
 #define _DAT_801f268c   (*(uint16_t *)g__DAT_801f268c)
-#define _DAT_801f2690   (*(uint32_t *)g__DAT_801f2690)
-#define _DAT_801f2694   (*(uint16_t *)g__DAT_801f2694)
-#define _DAT_801f2696   (*(uint16_t *)g__DAT_801f2696)
-#define _DAT_801f26a0   (*(uint16_t *)g__DAT_801f26a0)
-#define _DAT_801f26a2   (*(uint16_t *)g__DAT_801f26a2)
-#define _DAT_801f26a8   (*(uint32_t *)g__DAT_801f26a8)
 #define _DAT_801f36c0   (*(uint16_t *)g__DAT_801f36c0) /* guest sh @0x801f36c0 (0x801561c8) */
 #define PTR_s___BloodyRoar2__byRAIZINGver1_60_801b43f0 ((uint8_t *)guest_at(*(uint32_t *)g_DAT_801b43f0))
 #define SLOTSTR(i) ((char *)guest_at(g_PTR_u32_801b4160[i]))
@@ -1648,7 +1627,6 @@ uint32_t attr_word_decode(uint8_t *a0)
 
 /* ---- batch30: memcard/PAD helpers ---- */
 #define SB8(a)   (*(uint8_t  *)guest_at(a))
-#define SB16(a)  (*(uint16_t *)guest_at(a))
 #define SB32(a)  (*(uint32_t *)guest_at(a))
 extern uint8_t *_g_pad_buffer;
 extern int slot_display_pos(uint8_t *,uint32_t);
@@ -6061,7 +6039,6 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
      {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
-#define BR2_W16(a,v)   (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))
 
@@ -8021,7 +7998,6 @@ void *op_wrap_8dac0_b(int16_t *a0,uint32_t a1)
  * lw $r,8($ctx)    -> ctx->table (guest addr); indexed by sign-extended s16. */
 #define BR2_GPC   (*(uint32_t *)guest_at(0x801bef28))
 #define BR2_GPF(o)   (*(uint32_t *)guest_at(BR2_GPC + (uint32_t)(o)))
-#define BR2_GPS(o)   ((uint8_t *)guest_at(BR2_GPC + (uint32_t)(o)))
 #define BR2_GP50 (*(uint32_t *)guest_at(0x801bef2c))
 
 extern int prim_group_build();
