@@ -169,7 +169,7 @@ extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
 #define DAT_1f8003c0 (*g_DAT_1f8003c0)
 typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern evhandler_t *PTR_FUN_801b4e68[];
-extern void FUN_801851d8(void);
+extern void anim_vec3_normalize(void);
 extern int trig_cos(int);
 extern int trig_sin(uint);
 extern void gte_mat_vec_swap(void*,void*,void*);
@@ -228,7 +228,7 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 extern void motion_blend_frame(byte*,byte*);
 extern int  atan2_lut(int,int);
 extern void gte_op_a00428(int*,int*);
-extern int32_t FUN_80194500(uint32_t);
+extern uint32_t fixed_rsqrt_q12(uint32_t);
 undefined2 *euler_rotmat(uint,uint,uint,undefined2*);
 void hitrec_table_clear(int);
 void table_1f0ae0_clear(int);
@@ -2179,7 +2179,7 @@ void action_commit(byte *ctrl, byte *motion)
     gte_op_a00428(dvec,dvec);
     delta = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
     tv = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
-    res = FUN_80194500(dvec[0] + dvec[2]);
+    res = fixed_rsqrt_q12(dvec[0] + dvec[2]);
     tv = atan2_lut(res,delta - tv);
     delta = atan2_lut((int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3a),
                          (int)*(short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x3c));
@@ -3340,12 +3340,12 @@ void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 ang
   _DAT_1f8003f4 = s1;
   _DAT_1f8003f8 = s0;
   _DAT_1f8003fc = ra;
-  FUN_801851d8();
+  anim_vec3_normalize();
   t1 = 0x1000 - ey;
   m0 = 0;
   t2 = ex;
   t3 = ez;
-  FUN_801851d8();
+  anim_vec3_normalize();
   t = -t3 * t2;
   setCopReg(2,0x4800,-t3);
   setCopReg(2,0x5000,t2);
