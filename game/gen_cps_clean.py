@@ -263,8 +263,50 @@ static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
     }
     cpu->write_word(aligned, word);
 }
+
+/* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
+#define zero cpu->gpr[0]
+#define at   cpu->gpr[1]
+#define v0   cpu->gpr[2]
+#define v1   cpu->gpr[3]
+#define a0   cpu->gpr[4]
+#define a1   cpu->gpr[5]
+#define a2   cpu->gpr[6]
+#define a3   cpu->gpr[7]
+#define t0   cpu->gpr[8]
+#define t1   cpu->gpr[9]
+#define t2   cpu->gpr[10]
+#define t3   cpu->gpr[11]
+#define t4   cpu->gpr[12]
+#define t5   cpu->gpr[13]
+#define t6   cpu->gpr[14]
+#define t7   cpu->gpr[15]
+#define s0   cpu->gpr[16]
+#define s1   cpu->gpr[17]
+#define s2   cpu->gpr[18]
+#define s3   cpu->gpr[19]
+#define s4   cpu->gpr[20]
+#define s5   cpu->gpr[21]
+#define s6   cpu->gpr[22]
+#define s7   cpu->gpr[23]
+#define t8   cpu->gpr[24]
+#define t9   cpu->gpr[25]
+#define k0   cpu->gpr[26]
+#define k1   cpu->gpr[27]
+#define gp   cpu->gpr[28]
+#define sp   cpu->gpr[29]
+#define fp   cpu->gpr[30]
+#define ra   cpu->gpr[31]
 '''
 
+
+GPR_NAMES = ['zero','at','v0','v1','a0','a1','a2','a3','t0','t1','t2','t3','t4',
+             't5','t6','t7','s0','s1','s2','s3','s4','s5','s6','s7','t8','t9',
+             'k0','k1','gp','sp','fp','ra']
+_GPR_RE = re.compile(r'cpu->gpr\[(\d+)\]')
+
+def _gpr_names(m):
+    return GPR_NAMES[int(m.group(1))]
 
 def emit_fn(addr):
     found = find_body(addr)
@@ -273,7 +315,7 @@ def emit_fn(addr):
         return None
     name, body, path = found
     sym = f'cps_{addr:08x}'
-    core = transform(body)
+    core = _GPR_RE.sub(_gpr_names, transform(body))
     hdr = (f'\n/* {sym} — clean CPS transliteration of {name} (guest {addr:#x})\n'
            f' * from {os.path.basename(path)}. */\n')
     return hdr + f'void {sym}(void)\n{{\n  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n' + core + '\n}\n'
