@@ -354,6 +354,9 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                             *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 1;
                           }
                           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x4000;
+                          /* neutral stance: cat nibble (ctrl+0x7c
+                           * &0xf000) selects stand/walk action;
+                           * cat2 (+0x82 nibble) selects alt actions. */
                           if (cat == 0x6000) {
                             act = 0xd;
                           }
@@ -507,6 +510,8 @@ LAB_80177940:
                     }
                   }
                   else if (0x800 < f68) {
+                    /* f68 = f58&0x2800 direction class: 0x800/0x2000/
+                     * 0x2800 each gate the same press-edge flag set. */
                     if (f68 == 0x2000) {
                       if (((((*(ushort *)(ctrl + 0x7c) & 0x800) != 0) &&
                            ((f60 & 0x1000000) == 0)) && ((f5c & 0x1400) == 0x1000)) &&
@@ -523,6 +528,9 @@ LAB_80177940:
                 }
               }
             }
+            /* special request path (f58&0x30000 set, f60&0x20
+             * clear): juggle-pin bounds clamp vs _DAT_801f04a4,
+             * else directional action decode below. */
             else {
               if ((f58 & 0x8000000) != 0) {
                 if ((f5c & 0x80080) != 0x80080) {
@@ -606,6 +614,9 @@ LAB_80177940:
                 }
                 return 0x6f;
               }
+              /* direction-nibble -> action table: cat/cat2
+               * (+0xc0 countdown variant) map to 0x6b-0x84 ids;
+               * ctrl+0x70 turn rate picks weak/strong variant. */
               *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x8000;
               cat2 = *(ushort *)(ctrl + 0xc0);
               if (*(short *)(ctrl + 0xc0) < 1) {
