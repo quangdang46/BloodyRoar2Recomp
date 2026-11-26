@@ -5585,7 +5585,7 @@ extern void palette_attr_record_write(uint32_t,uint32_t,int32_t,uint32_t);
 extern void sprite_place_centered(uint32_t,uint32_t,int32_t,int32_t,int32_t,int32_t);
 extern void ko_count_announce(uint32_t,uint32_t);
 extern void victory_jingle_schedule(uint32_t,uint32_t);
-int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
+int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
 {
   /* guest sp-0x168..sp frame image (frame 0x168). Reserve the window on
    * the live guest sp (br2_guest_frame mirrors it into cpu->gpr[29]) so
@@ -5608,18 +5608,18 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
   uint32_t p13c  = 0;                   /* sp+0x13c: record offset B */
   int32_t  s6    = 0;
-  uint8_t *p1 = param_2, *p2 = param_3;
+  uint8_t *p1 = side_a, *p2 = side_b;
 
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(44,param_1,(uint32_t)p1[3],(uint32_t)p2[3],0); }
+    decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
   for (;;) {
     int32_t s1;
     if (s6 == 0) {
       /* ---------- state 0 ---------- */
       int32_t r, r1, r2;
-      r = battle_bringup_a(param_1,(uint32_t)p1[3],(uint32_t)p2[3],
+      r = battle_bringup_a(battle,(uint32_t)p1[3],(uint32_t)p2[3],
                        auStack_18 + 0x100);
       if (r == 0) goto L_tail;
       rgb_triple_store(0,0,0);
@@ -5628,7 +5628,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
       MW32(0x801f10c0,r1);              /* jal delay slot */
       r2 = task_pool_alloc(1,2,0xbe0);
       MW32(0x801f10c4,r2);              /* jal delay slot */
-      record_init_sweep(param_1,0);          /* a1 indeterminate in asm */
+      record_init_sweep(battle,0);          /* a1 indeterminate in asm */
 
       s1 = 0;
       do {
@@ -5642,11 +5642,11 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         for (s2 = 0; s2 < 2; s2++) {
           uint32_t base = MB32(0x801f10c0 + (uint32_t)s2 * 4);
           int32_t stk5, stk6;
-          palette_attr_record_write(param_1,base + s6o,s1,fp);
+          palette_attr_record_write(battle,base + s6o,s1,fp);
           stk5 = MBS16(s4);     stk6 = MBS16(s4 + 2);
-          sprite_place_centered(base + s6o,param_1,MBS16(p134),0x180,stk5,stk6);
+          sprite_place_centered(base + s6o,battle,MBS16(p134),0x180,stk5,stk6);
           stk5 = MBS16(s3 + 4); stk6 = MBS16(s3 + 6);
-          sprite_place_centered(base + s7 + 0xaf0,param_1,MBS16(s3),0x180,
+          sprite_place_centered(base + s7 + 0xaf0,battle,MBS16(s3),0x180,
                        stk5,stk6);
           if (s1 == 0) MW16(base + 0xafe,0x7d1e);
           else         MW16(s7 + base + 0xafe,0x7e5e);
@@ -5654,7 +5654,7 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         p134 += 4; p138 += 0x28; p13c += 0x28; s1++;
       } while (s1 < 2);
 
-      if (MB8(param_1 + 0x9c) == 3) {
+      if (MB8(battle + 0x9c) == 3) {
         /* pull 4 corner u16s (-0x18) of each side record: per outer
          * iter (t1 = 0x801f10c0+4*i) two rounds over three offset
          * groups {0xa0,0xa50,0xaf0}+0x28, then one +0xf0 group. */
@@ -5710,54 +5710,54 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         uint32_t uo = 0xaf0 + (uint32_t)i * 0x28;
         uint32_t ic, ib, baseA, arrC, arrA;
         /* record A: idx T+4, OR-slot literal 0xa0, mask off ao */
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         arrA = MB32(baseA + ib);
         MW32(a1o + arrC + 0xa0, arrA | 0x09000000u);
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         MW32(baseA + ib, (arrC + ao) & 0x00ffffffu);
         if (i == 1) {
           /* trailing 0xf0 record (third slot, fixed offsets) */
-          ic   = MB32(param_1 + 0xc);
+          ic   = MB32(battle + 0xc);
           ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
-          baseA= MB32(param_1 + 8);
+          baseA= MB32(battle + 8);
           arrC = MB32(0x801f10c0 + ic * 4);
           arrA = MB32(baseA + ib);
           MW32(arrC + 0xf0, arrA | 0x09000000u);  /* sw 0xf0(v1), no a1 */
-          ic   = MB32(param_1 + 0xc);
+          ic   = MB32(battle + 0xc);
           ib   = (uint32_t)((int32_t)MBS16(T + 4) << 2);
-          baseA= MB32(param_1 + 8);
+          baseA= MB32(battle + 8);
           arrC = MB32(0x801f10c0 + ic * 4);
           MW32(baseA + ib, (arrC + 0xf0) & 0x00ffffffu);
         }
         /* record B: idx T+0xa, OR-slot literal 0xa50, mask off to */
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         arrA = MB32(baseA + ib);
         MW32(a1o + arrC + 0xa50, arrA | 0x09000000u);
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         MW32(baseA + ib, (arrC + to) & 0x00ffffffu);
         /* record C: idx T+0xa, OR-slot literal 0xaf0, mask off uo */
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         arrA = MB32(baseA + ib);
         MW32(a1o + arrC + 0xaf0, arrA | 0x09000000u);
         a1o += 0x28;                        /* jal-free delay ordering */
-        ic   = MB32(param_1 + 0xc);
+        ic   = MB32(battle + 0xc);
         ib   = (uint32_t)((int32_t)MBS16(T + 0xa) << 2);
-        baseA= MB32(param_1 + 8);
+        baseA= MB32(battle + 8);
         arrC = MB32(0x801f10c0 + ic * 4);
         MW32(baseA + ib, (arrC + uo) & 0x00ffffffu);
       }
@@ -5768,15 +5768,15 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
         int32_t  j;
         for (j = 0; j < 16; j++) {
           uint32_t ic,id,baseA,arrC,arrA;
-          ic    = MB32(param_1 + 0xc);
+          ic    = MB32(battle + 0xc);
           id    = (uint32_t)((int32_t)MBS16(T + 0x10) << 2);
-          baseA = MB32(param_1 + 8);
+          baseA = MB32(battle + 8);
           arrC  = MB32(0x801f10c0 + ic * 4);
           arrA  = MB32(baseA + id);
           MW32((uint32_t)j * 0x28 + arrC + 0x578, arrA | 0x09000000u);
-          ic    = MB32(param_1 + 0xc);
+          ic    = MB32(battle + 0xc);
           id    = (uint32_t)((int32_t)MBS16(T + 0x10) << 2);
-          baseA = MB32(param_1 + 8);
+          baseA = MB32(battle + 8);
           arrC  = MB32(0x801f10c0 + ic * 4);
           MW32(baseA + id, (arrC + a2o) & 0x00ffffffu);
           a2o += 0x28;
@@ -5785,22 +5785,22 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
       /* trailer record: idx T+0x12, fixed 0xb68 offsets */
       {
         uint32_t ic,id,baseA,arrC,arrA;
-        ic    = MB32(param_1 + 0xc);
+        ic    = MB32(battle + 0xc);
         id    = (uint32_t)((int32_t)MBS16(T + 0x12) << 2);
-        baseA = MB32(param_1 + 8);
+        baseA = MB32(battle + 8);
         arrC  = MB32(0x801f10c0 + ic * 4);
         arrA  = MB32(baseA + id);
         MW32(arrC + 0xb68, arrA | 0x09000000u);
-        ic    = MB32(param_1 + 0xc);
+        ic    = MB32(battle + 0xc);
         id    = (uint32_t)((int32_t)MBS16(T + 0x12) << 2);
-        baseA = MB32(param_1 + 8);
+        baseA = MB32(battle + 8);
         arrC  = MB32(0x801f10c0 + ic * 4);
         MW32(baseA + id, (arrC + 0xb68) & 0x00ffffffu);
-        ko_count_announce(param_1, baseA + id);
+        ko_count_announce(battle, baseA + id);
       }
 
-      if (MB8(param_1 + 0x9c) == 3) {
-        int32_t v1 = MBS16(param_1 + 0xa2);
+      if (MB8(battle + 0x9c) == 3) {
+        int32_t v1 = MBS16(battle + 0xa2);
         int32_t s0v, s2v;
         if (v1 < 9) { s0v = 0;     s2v = v1; }
         else        { s0v = v1-8; s2v = 8; }
@@ -5812,15 +5812,15 @@ int battle_init(uint32_t param_1, uint8_t *param_2, uint8_t *param_3)
             int64_t  pr = (int64_t)s0v * (int64_t)(int32_t)0x2e8ba2e9;
             int32_t  q  = (int32_t)((int32_t)(pr >> 32) >> 1) - (s0v >> 31);
             int32_t  rem = s0v - q * 11;
-            uint32_t b   = MB8(MB32(param_1 + 0xa8) + (uint32_t)rem);
-            uint32_t a0g = MB32(param_1 + 8) + 4;
+            uint32_t b   = MB8(MB32(battle + 0xa8) + (uint32_t)rem);
+            uint32_t a0g = MB32(battle + 8) + 4;
             uint32_t a3v = ((b + 0x1e0) & 0x1ff) << 22;
             a3v |= ((((b >> 2) << 6) + 1) & 0xff) << 8;
             a3v |= (b & 3) << 6;
             spr_slot_pkt_submit((uint *)guest_at(a0g),
                          0x180000u | (s3v & 0xffff),0x3e379d,a3v);
             if (i2 < s2v) {
-              announce_param_block_init(MB32(param_1 + 8),MB32(param_1 + 0xc),
+              announce_param_block_init(MB32(battle + 8),MB32(battle + 0xc),
                            (const void *)guest_at(0x80126e8),
                            (uint32_t)((int32_t)s4v >> 16),0x198,0);
             }
@@ -5838,7 +5838,7 @@ L_e7c:
       s1 = 0;                               /* unused: straight to tail */
     }
 L_tail:
-    frame_tick((intptr_t)param_1);
+    frame_tick((intptr_t)battle);
     if (s6 == 0xff) break;
   }
   br2_guest_frame_free();
