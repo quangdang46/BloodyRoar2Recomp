@@ -252,14 +252,9 @@
 80198824 cps_801985c4
 
 # --- CD readers + mc_file_cmd (clean CPS transform) ---
-# cd_status_raw (guest 0x80195be0) — 1 CPS addrs
-80195be0 cps_80195be0
-
-# cd_mode_byte_read (guest 0x80195bf0) — 1 CPS addrs
-80195bf0 cps_80195bf0
-
-# cd_param_buf_get (guest 0x80195c10) — 1 CPS addrs
-80195c10 cps_80195c10
+# cd_status_raw / cd_mode_byte_read / cd_param_buf_get removed: they are
+# leaf byte/pointer loads with correct clean bodies in cd.c; the CPS override
+# was a stale transform artifact (these ARE function entries, not continuations).
 
 # cd_mc_file_cmd (guest 0x8019fb9c) — 36 CPS addrs
 8019fb9c cps_8019fb9c
