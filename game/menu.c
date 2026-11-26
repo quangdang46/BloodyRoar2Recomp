@@ -3187,8 +3187,8 @@ extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
   uint8_t next_state;
-  int32_t iVar2, iVar3, iVar4, iVar9, iVar10;
-  uint32_t uVar5, uVar8, uVar11;
+  int32_t iVar2, iVar3, iVar4, draw_slot, aux_val;
+  uint32_t uVar5, uVar8, pidx_b;
   uint8_t *rec;
   uint32_t *spr_tab;
   uint32_t attr_idx;
@@ -3333,32 +3333,32 @@ code_r0x8014f6c0:
           int16_t *t44 = (int16_t *)guest_at(0x801b3244);
           int16_t *t46 = (int16_t *)guest_at(0x801b3246);
           if (local_34 != 0) {
-            iVar10 = 0xe9;
-            if (local_34 == 1) iVar10 = 0xb9;
+            aux_val = 0xe9;
+            if (local_34 == 1) aux_val = 0xb9;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[local_a8[3] * 2] + 0xf) << 16) |
                          ((uint32_t)(t44[local_a8[3] * 2] + 0x24) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar4 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar4 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc040);
+                         ((uint32_t)aux_val << 16) | 0xc040);
           }
           if (local_30 != 0) {
-            iVar10 = 0xe9;
-            if (local_30 == 1) iVar10 = 0xd1;
+            aux_val = 0xe9;
+            if (local_30 == 1) aux_val = 0xd1;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[iVar3 * 2] + 0x31) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x12) & 0xffff),0x151d000e,
-                         (uint32_t)((iVar10 << 8) | 0x7adc00b1));
-            iVar10 = 0x7adc;
-            if (local_94[0xc] < 1) iVar10 = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+                         (uint32_t)((aux_val << 8) | 0x7adc00b1));
+            aux_val = 0x7adc;
+            if (local_94[0xc] < 1) aux_val = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[iVar3 * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[iVar3 * 2] + 0x1c) & 0xffff),0x3e37000e,
-                         ((uint32_t)iVar10 << 16) | 0xc078);
+                         ((uint32_t)aux_val << 16) | 0xc078);
           }
           attr_idx = 0;
           spr_tab = (uint32_t *)guest_at(0x801b3244);
@@ -3402,7 +3402,7 @@ code_r0x8014f6c0:
           if (entry_mode < 4 && 1 < entry_mode) {
             uVar8 = (uint32_t)local_94[10];
             if (local_a8[0] == 0) uVar8 = (uint32_t)local_a8[3];
-            uVar11 = (uint32_t)(local_a8[0] != 0);
+            pidx_b = (uint32_t)(local_a8[0] != 0);
             if (entry_mode == 2) {
               iVar3 = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3427,7 +3427,7 @@ code_r0x8014f6c0:
               }
             } else {
               iVar4 = 0;
-              if (uVar11 != 0) iVar4 = 0x140;
+              if (pidx_b != 0) iVar4 = 0x140;
               iVar3 = ((int16_t)_DAT_1f800022 * 3) / 5;
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[uVar8 * 2]),
                            (int32_t)(((uint32_t)(t270[uVar8 * 2] + iVar4)) * 0x10000) >> 16,
@@ -3442,13 +3442,13 @@ code_r0x8014f6c0:
             iVar3 = iVar2 + -8;
             {
               uint8_t *hh = (uint8_t *)guest_at(0x801b3288);
-              iVar10 = 0x140 - hh[uVar8];
+              aux_val = 0x140 - hh[uVar8];
             }
-            if (local_94[uVar11 * 0xc + 2] == 0) iVar4 = 0x7996;
-            else { local_94[uVar11 * 0xc + 2]--; iVar4 = 0x7b56; }
-            iVar9 = (int32_t)(uVar8 + 0xb);
-            if (uVar8 == 8) iVar9 = 0x16;
-            spr_draw_off(iVar9 * 0x8014 + -0x7fff0000,0x280,0,1);
+            if (local_94[pidx_b * 0xc + 2] == 0) iVar4 = 0x7996;
+            else { local_94[pidx_b * 0xc + 2]--; iVar4 = 0x7b56; }
+            draw_slot = (int32_t)(uVar8 + 0xb);
+            if (uVar8 == 8) draw_slot = 0x16;
+            spr_draw_off(draw_slot * 0x8014 + -0x7fff0000,0x280,0,1);
             iVar4 <<= 16;
             attr_idx = 200;
             spr_attr_alloc_b(_DAT_1f800008 + 4,(uint32_t)((iVar2 + -0x107) * 0x10000 | 0x13f),
@@ -3456,24 +3456,24 @@ code_r0x8014f6c0:
             spr_draw_off(uVar8 * 0x8014 + -0x7fff0000,0x200,0,1);
             iVar2 = -200;
             if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
-            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((iVar10 + (int32_t)attr_idx) & 0xffff));
+            uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
               uint32_t uVar5l = 0xfefe0008;
               int32_t iVar2l = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
-            iVar10 = ((int16_t)_DAT_1f800022 * 3) / 5;
+            aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
             if (local_34 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar4 * 2]),
                            (int32_t)((uint32_t)t270[iVar4 * 2] + 0), /* (&DAT_801b3270)[iVar4*2] u32? */
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x48,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar4 * 2]),
                            (int32_t)((uint32_t)t271[iVar4 * 2] + 0),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar4 + 0x10U) & 0x1f) & 1) != 0) {
                 iVar2 = (int32_t)(int16_t)_DAT_1f800022;
                 if (iVar2 < 0) iVar2 += 7;
@@ -3484,26 +3484,26 @@ LAB_80150558:
             if (local_30 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[iVar3 * 2]),
                            (int32_t)((uint32_t)t270[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x34) * 0x10000 >> 16,5);
+                           (aux_val + -0x34) * 0x10000 >> 16,5);
               hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206b4),0x188,
-                           (iVar10 + -0x24) * 0x10000 >> 16,0);
+                           (aux_val + -0x24) * 0x10000 >> 16,0);
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47f0[iVar3 * 2]),
                            (int32_t)((uint32_t)t271[iVar3 * 2] + 0x140),
-                           (iVar10 + -0x1b) * 0x10000 >> 16,5);
+                           (aux_val + -0x1b) * 0x10000 >> 16,5);
               if ((*(uint32_t *)(_g_system_config_ptr + 0x60) >> ((iVar3 + 0x10U) & 0x1f) & 1) != 0) {
-                iVar10 = (int32_t)(int16_t)_DAT_1f800022;
-                if (iVar10 < 0) iVar10 += 7;
+                aux_val = (int32_t)(int16_t)_DAT_1f800022;
+                if (aux_val < 0) aux_val += 7;
                 hud_text_d(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x801206bc),
-                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,iVar10 >> 3,3);
+                             (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,aux_val >> 3,3);
               }
             }
             if (local_34 != 0) {
-              if (local_94[2] == 0) iVar10 = 0x7996;
-              else { iVar10 = 0x7b56; local_94[2]--; }
+              if (local_94[2] == 0) aux_val = 0x7996;
+              else { aux_val = 0x7b56; local_94[2]--; }
               spr_draw_off(iVar4 * 0x8014 + -0x7fff0000,0x200,0,1);
               if (iVar4 == 8) uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
               else uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
-              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(iVar10 << 16),0,
+              spr_attr_alloc_b(_DAT_1f800008 + 4,uVar8,0xfefe0008,(uint32_t)(aux_val << 16),0,
                            (int16_t)_DAT_1f800022 + -200);
             }
             if (local_30 != 0) {
@@ -3512,16 +3512,16 @@ LAB_80150558:
               spr_draw_off(iVar3 * 0x8014 + -0x7fff0000,0x240,0,1);
               if (iVar3 == 8) {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((iVar10 - 0xffU) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | ((aux_val - 0xffU) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               } else {
                 uVar5 = 0xfefe0009; iVar4 <<= 16; iVar2 = _DAT_1f800008 + 4;
-                iVar10 = (int32_t)(int16_t)_DAT_1f800020;
-                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((iVar10 - 200U) & 0xffff);
+                aux_val = (int32_t)(int16_t)_DAT_1f800020;
+                uVar8 = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | ((aux_val - 200U) & 0xffff);
                 iVar3 = (int16_t)_DAT_1f800022 + -200;
               }
-              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,iVar10,iVar3);
+              spr_attr_alloc_b((uint32_t)iVar2,uVar8,uVar5,(uint32_t)iVar4,aux_val,iVar3);
             }
           }
         }
