@@ -368,3 +368,29 @@ cd_ctx_set_28_34(0x801A24C0) — all 1-block timed cpst_ bodies.
 
 clean_table: 8637 wrappers, 0 skipped. Verified: clean build EU+USA;
 headless :4901 frames 30684 -> 45772+ attract CD streaming, no wedge.
+
+## Batch 12 (orch/w5/e05) — dead cps_ body sweep + cps_clean.c slim
+
+Residual sweep result: ZERO untimed cps_ map rows >= 0x80180000; the only
+cps_ defs left in clean_cps.map are 0x8012-0x8017 game-logic (deliberately
+untimed). cps_clean.c carried 543 dead cps_ bodies in 0x8018-0x801B with
+no clean_cps.map rows — leftovers from earlier coverage passes where a
+body was emitted then its map rows were reassigned to cpst_/peer ports.
+
+Regeneration was REJECTED: ~19 addrs in 0x801261xx-0x801267xx (game-logic
+band) have hand-written/readability-pass bodies in cps_clean.c that the
+mechanical transformer cannot reproduce (e.g. embedded entries in later
+blocks of split pieces — _truncate_embedded_entry only handles first-block
+entries). A full regen would have lost those hand edits.
+
+Instead: surgical removal of the 543 dead defs (prototype + body) via
+script, verified symbol-exact: remaining defs = exactly the 740 syms that
+have clean_cps.map rows; no live def lost, no extra defs added.
+File: 115528 -> 67056 lines.
+
+Verified: clean build EU + USA targets; headless :4907 frames
+24143 -> 30733+ attract CD streaming, no wedge.
+
+Frontier status: every clean_cps.map row in 0x8018-0x801B resolves to a
+timed cpst_ body or a peer hand-port. Remaining generated execution is
+unconverted parent piece-groups (~1300) — mechanical --timing candidates.
