@@ -1287,6 +1287,7 @@ void player_name_entry_alt(void)
     }
     /* Address: 0x80164EA4, Size: 2660 bytes, Blocks: 152 */
 
+    /* Phase 1 — prologue: save regs, init name-entry state. */
 block_80164EA4:
     sp = sp + -144;
     t0 = 0x1F80 << 16;  /* 0x1F800000 */
@@ -1560,6 +1561,9 @@ block_80165044:
     psx_check_interrupts_at(cpu, 0x801658B4u);
     goto block_801658B4;  /* j */
 
+    /* Phase 2 — frame/UI init: frame_divisor_get,
+     * intro_movie_state, sprite_desc_table_init, print_mode_dispatch_b,
+     * menu_sprite_load_sm — set up the name-entry screen. */
 block_8016504C:
     ra = 0x80165054u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -1620,6 +1624,7 @@ block_80165084:
     cpu->write_byte(s2 + 1, (uint8_t)t3);
     /* fall through to block_80165090 */
 
+    /* menu_sprite_load_sm — load name-entry sprites. */
 block_80165090:
     t0 = 1;
     cpu->write_word(sp + 16, t0);
@@ -1774,6 +1779,9 @@ block_801651A4:
     psx_check_interrupts_at(cpu, 0x801651ECu);
     goto block_801651EC;  /* j */
 
+    /* Phase 3 — name-record logic: rec_find_lt_f8 /
+     * rec_find_ge_e locate the save slot; name_rec_insert writes the
+     * new name; hud_name_fixup patches display fields. */
 block_801651AC:
     t3 = cpu->read_word(sp + 76);
     a0 = cpu->read_word(sp + 88);
@@ -1869,6 +1877,7 @@ block_80165234:
     a0 = 41;
     /* fall through to block_80165238 */
 
+    /* mc_confirm_dispatch — memory-card confirm dialog. */
 block_80165238:
     ra = 0x80165240u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2162,6 +2171,7 @@ block_80165410:
     psx_check_interrupts_at(cpu, 0x80156EF4u);
     cpu->pc = 0x80156EF4u; return;  /* CPS jal -> 0x80156EF4 */
 
+    /* hud_name_fixup — apply name record to HUD fields. */
 block_8016541C:
     a0 = cpu->read_word(sp + 96);
     v0 = 32;
@@ -2238,6 +2248,7 @@ block_801654BC:
     s7 = 32;
     /* fall through to block_801654C0 */
 
+    /* scroll_offset_set — position the name text. */
 block_801654C0:
     a0 = s7;
     ra = 0x801654CCu;  /* jal link before delay slot */
@@ -2253,6 +2264,7 @@ block_801654CC:
     s5 = v0 + 16980;
     /* fall through to block_801654DC */
 
+    /* sprintf_core_guest — format name/score string. */
 block_801654DC:
     a1 = 0x8012 << 16;  /* 0x80120000 */
     a1 = a1 + 8160;
@@ -2330,6 +2342,8 @@ block_80165560:
     s0 = 21;
     /* fall through to block_80165564 */
 
+    /* jal -> hud_time_score_draw (0x80163E38): the
+     * name-entry screen also renders the in-game HUD. */
 block_80165564:
     a2 = s7 + 64;
     a0 = cpu->read_word(s2 + 8);
@@ -2412,6 +2426,8 @@ block_801655AC:
         goto block_801655C4;  /* not taken */
     }
 
+    /* Phase 4 — text/glyph emit: announce_param_block_init
+     * (0x8012E6A8/0x8012E58C) batches + scroll_offset_accumulate. */
 block_801655C4:
     a0 = cpu->read_word(s2 + 8);
     t2 = cpu->read_word(sp + 96);
@@ -2606,6 +2622,7 @@ block_80165708:
     psx_check_interrupts_at(cpu, 0x8012E58Cu);
     cpu->pc = 0x8012E58Cu; return;  /* CPS jal -> 0x8012E58C */
 
+    /* banner_stripe_scroll + hud_gauge_render — chrome. */
 block_8016572C:
     a0 = zero;
     a1 = a0;
@@ -2665,6 +2682,9 @@ block_80165780:
     a0 = 40;
     /* fall through to block_80165784 */
 
+    /* Phase 5 — per-frame tail: mc_confirm_dispatch,
+     * rec_timer_pair_clear, name_rec_gate, status_flag_cond_set,
+     * frame_present, scroll_cfg_set, rgb_triple_store. */
 block_80165784:
     ra = 0x8016578Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2773,6 +2793,7 @@ block_80165828:
     psx_check_interrupts_at(cpu, 0x801654C0u);
     goto block_801654C0;  /* j */
 
+    /* rec_timer_pair_clear — reset per-frame timers. */
 block_80165830:
     ra = 0x80165838u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2864,6 +2885,7 @@ block_801658AC:
     psx_check_interrupts_at(cpu, 0x801658BCu);
     goto block_801658BC;  /* j */
 
+    /* frame_tick — advance frame counter. */
 block_801658B4:
     ra = 0x801658BCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -2886,6 +2908,7 @@ block_801658BC:
         goto block_801658D0;  /* not taken */
     }
 
+    /* Epilogue — restore regs, return. */
 block_801658D0:
     ra = cpu->read_word(sp + 140);
     fp = cpu->read_word(sp + 136);
