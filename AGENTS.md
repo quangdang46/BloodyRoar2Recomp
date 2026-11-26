@@ -939,7 +939,12 @@ Converted the entire `br2_call_generated` call surface in `game/*.c`:
 **Result: `game/*.c` has ZERO `br2_call_generated` call sites.** Every
 guest call now routes clean-first (`br2_call_clean`/`call_guest`/`call_guest4`/
 `gpu_invoke`/`svc_call`) with generated only as identical fallback.
-`generated/` load is now purely the clean_try_dispatch miss path — reached
-only for genuinely-uncovered targets, which dispatch coverage says is none
-at piece-entry level. Verified: clean build, 44k+ frames, 4.1M dispatches,
-zero errors.
+
+**Runtime proof (`dispatch_stats`):** `static_hits=4,135,916`,
+`miss_total=0`, `miss_unique=0` — every game-code dispatch hits the clean
+table; `generated/` game code is never reached. `clean_trace` shows game
+fns (0x80126178/88) running clean when called from BIOS. The only
+generated dispatches left are `0x1FC0xxxx`/`0xBFC0xxxx` = the recompiled
+BIOS (phys≥0x1FC00000 = BIOS ROM), which is legitimately generated per
+psxrecomp architecture (BIOS = recomp target #1). **Game-side `generated/`
+is dead code at runtime.** Verified: 44k+ frames, zero errors.
