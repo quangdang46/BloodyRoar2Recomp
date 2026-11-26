@@ -1022,10 +1022,12 @@ static uint32_t bind_gte_vec3_mag2(CPUState *c)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* guest 0x801851D8 = anim_vec3_normalize (renames.map). */
 void FUN_801851d8(void) { anim_vec3_normalize(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* guest 0x80194500 = fixed_rsqrt_q12 (renames.map). */
 int32_t FUN_80194500(uint32_t val) { return (int32_t)fixed_rsqrt_q12(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
@@ -1507,10 +1509,12 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* guest 0x80194478 = gte_screen_init_defer (renames.map). */
 void FUN_80194478(void) { gte_screen_init_defer(); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* guest 0x80195290 = gte_ofs_set (renames.map). */
 void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -3011,6 +3015,7 @@ __attribute__((weak))
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* guest 0x801948C0 = fixed_recip_lut (renames.map). */
 int32_t FUN_801948c0(uint32_t val) { return (int32_t)fixed_recip_lut(val); }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
