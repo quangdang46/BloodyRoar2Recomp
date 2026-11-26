@@ -4730,3 +4730,14 @@
 80181ef0 ani_cat_tail_v2
 80181f10 ani_cat_tail_nine
 80181f18 ani_cat_tail_ret
+80152248 battle_state_gate_tail
+80152258 battle_state_gate_tail
+80152698 mc_slot_action_case0
+80153730 battle_config_eval_b0
+80155678 post_battle_dispatch_sel
+80155708 post_battle_dispatch_sel
+80156784 page_table_ptr_set_sel
+80156800 page_table_ptr_set_sel
+80156818 page_table_ptr_set_sel
+80156824 page_table_ptr_set_sel
+80156830 page_table_ptr_set_sel
