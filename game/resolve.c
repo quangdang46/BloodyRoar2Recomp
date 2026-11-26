@@ -2497,8 +2497,8 @@ void motion_blend_frame(byte *ctrl,byte *motion)
   undefined2 *jsrc;
   int dy;
   int t;
-  int v;
-  int g;
+  int dx;
+  int obj_g;
   if (*(int *)(motion + 0xb0) == 0) goto LAB_8018604c;
   if (*(short *)(motion + 0xce) == 0) {
 LAB_80186010:
@@ -2536,55 +2536,55 @@ LAB_8018604c:
   skeleton_pose_step((byte *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x50,
                (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x1c),
                (byte *)((char *)guest_at(*(uint32_t *)(ctrl + 0x48)) + 0x20),0x12);
-  g = *(int *)(ctrl + 0x20);
+  obj_g = *(int *)(ctrl + 0x20);
   t = -(int)*(short *)(motion + 0xe4);
   if (t != 0) {
-    v = (int)*(short *)(motion + 0xd4) - *(int *)((char *)guest_at((uint32_t)g) + 0x34);
-    dy = (int)*(short *)(motion + 0xd8) - *(int *)((char *)guest_at((uint32_t)g) + 0x3c);
+    dx = (int)*(short *)(motion + 0xd4) - *(int *)((char *)guest_at((uint32_t)obj_g) + 0x34);
+    dy = (int)*(short *)(motion + 0xd8) - *(int *)((char *)guest_at((uint32_t)obj_g) + 0x3c);
     sn = lut_sin_q12(t);
     cs = lut_cos_q12(t);
     *(short *)(motion + 0xd4) =
-         *(short *)((char *)guest_at((uint32_t)g) + 0x34) + (short)((dy * sn + v * cs) >> 0xc);
+         *(short *)((char *)guest_at((uint32_t)obj_g) + 0x34) + (short)((dy * sn + dx * cs) >> 0xc);
     sn = lut_cos_q12(t);
     t = lut_sin_q12(t);
-    pz = *(short *)((char *)guest_at((uint32_t)g) + 0x3c);
+    pz = *(short *)((char *)guest_at((uint32_t)obj_g) + 0x3c);
     yaw = *(short *)(motion + 0xe4);
     *(undefined2 *)(motion + 0xe4) = 0;
     *(short *)(motion + 0xd0) = (short)((*(short *)(motion + 0xd0) + yaw) * 0x10) >> 4;
-    *(short *)(motion + 0xd8) = pz + (short)((dy * sn - v * t) >> 0xc);
+    *(short *)(motion + 0xd8) = pz + (short)((dy * sn - dx * t) >> 0xc);
   }
   t = ((int)*(short *)(motion + 0xd0) + (int)*(short *)(motion + 0xd2) +
           (int)*(short *)(motion + 0xe4)) * 0x100000;
   *(short *)(ctrl + 0x4e) = (short)(t >> 0x14);
   euler_rotmat((int)*(short *)(ctrl + 0x4c),-(t >> 0x14),(int)*(short *)(ctrl + 0x50),
-               (undefined2 *)((char *)guest_at((uint32_t)g) + 4));
+               (undefined2 *)((char *)guest_at((uint32_t)obj_g) + 4));
   t = *(int *)(ctrl + 0x20);
   if ((*(uint *)(ctrl + 0x54) & 8) == 0) {
-    g = *(int *)(ctrl + 0x2c);
-    if ((*(uint *)((char *)guest_at((uint32_t)g) + 0x54) & 8) == 0) {
+    obj_g = *(int *)(ctrl + 0x2c);
+    if ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x54) & 8) == 0) {
       if ((*(uint *)(ctrl + 0x54) & 0x10) == 0) {
-        if ((*(uint *)((char *)guest_at((uint32_t)g) + 0x54) & 0x10) == 0) {
+        if ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x54) & 0x10) == 0) {
           return;
         }
         if (((*(uint *)(ctrl + 0x58) & 0x40100000) == 0) &&
-           ((*(uint *)((char *)guest_at((uint32_t)g) + 0x58) & 0x40100000) == 0)) {
+           ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x58) & 0x40100000) == 0)) {
           return;
         }
       }
-      g = *(short *)((char *)guest_at((uint32_t)t) + 0x6a) * 7;
-      if (g < 0) {
-        g = g + 7;
+      obj_g = *(short *)((char *)guest_at((uint32_t)t) + 0x6a) * 7;
+      if (obj_g < 0) {
+        obj_g = obj_g + 7;
       }
-      *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(g >> 3);
+      *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(obj_g >> 3);
       return;
     }
     if (((*(uint *)(ctrl + 0x58) & 0x40100000) == 0) &&
-       ((*(uint *)((char *)guest_at((uint32_t)g) + 0x58) & 0x40100000) == 0)) {
+       ((*(uint *)((char *)guest_at((uint32_t)obj_g) + 0x58) & 0x40100000) == 0)) {
       return;
     }
   }
-  g = (uint)*(ushort *)((char *)guest_at((uint32_t)t) + 0x6a) << 0x10;
-  *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(((g >> 0x10) - (g >> 0x1f)) >> 1);
+  obj_g = (uint)*(ushort *)((char *)guest_at((uint32_t)t) + 0x6a) << 0x10;
+  *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(((obj_g >> 0x10) - (obj_g >> 0x1f)) >> 1);
   return;
 
 }
