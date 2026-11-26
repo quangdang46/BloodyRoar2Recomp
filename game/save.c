@@ -2613,22 +2613,22 @@ uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 extern void u16_tbl_copy(uint32_t,uint32_t);
 void fighter_link_init(uint32_t a0,uint32_t a1,uint8_t *a2,uint32_t a3)
 {
-  uint8_t *t1 = (uint8_t *)guest_at(a0);
-  uint8_t *t0 = (uint8_t *)guest_at(a1);
-  uint8_t *g = (uint8_t *)guest_at(a3);
-  uint32_t s0 = 0x801b3f78;
-  if (a2 == NULL || t1 == NULL || t0 == NULL || g == NULL) return;
+  uint8_t *pa = (uint8_t *)guest_at(a0);
+  uint8_t *pb = (uint8_t *)guest_at(a1);
+  uint8_t *rules = (uint8_t *)guest_at(a3);
+  uint32_t tbl = 0x801b3f78;
+  if (a2 == NULL || pa == NULL || pb == NULL || rules == NULL) return;
   *(uint16_t *)(a2 + 0x94) = 0xffff;
-  t0[0xde] = 0x4b;
-  t1[0xde] = 0x4b;
-  *(uint32_t *)(t1 + 0x54) = g[0x19] & 3;
-  *(uint16_t *)(t0 + 0x86) = 0x10;
-  *(uint32_t *)(t0 + 0x54) = g[0x1a] & 3;
-  *(uint16_t *)(t1 + 0x86) = 0x10;
+  pb[0xde] = 0x4b;
+  pa[0xde] = 0x4b;
+  *(uint32_t *)(pa + 0x54) = rules[0x19] & 3;
+  *(uint16_t *)(pb + 0x86) = 0x10;
+  *(uint32_t *)(pb + 0x54) = rules[0x1a] & 3;
+  *(uint16_t *)(pa + 0x86) = 0x10;
   *(uint8_t *)guest_at(0x801f04c8) = 7;
   *(uint16_t *)(a2 + 0x96) = 3;
-  u16_tbl_copy(0,s0);
-  u16_tbl_copy(1,s0);
+  u16_tbl_copy(0,tbl);
+  u16_tbl_copy(1,tbl);
 }
 
 /* block_copy_ret_len — s0=*(u32*)(a1+8); guest_memcpy(a0,a1+0xc,s0);
@@ -2637,14 +2637,14 @@ extern uint32_t guest_memcpy(uint32_t,uint32_t,uint32_t);
 uint32_t block_copy_ret_len(uint32_t a0,uint32_t a1)
 {
   uint8_t *b = (uint8_t *)guest_at(a1);
-  uint32_t s0;
+  uint32_t len;
   if (b == NULL) return 0;
-  s0 = *(uint32_t *)(b + 8);
-  decomp_trace_record(1,a0,a1,0,s0);
+  len = *(uint32_t *)(b + 8);
+  decomp_trace_record(1,a0,a1,0,len);
   /* guest_memcpy takes guest addresses; b+0xc is host, so pass the
    * guest address a1+0xc directly (b = guest_at(a1)). */
-  guest_memcpy(a0,a1 + 0xc,s0);
-  return s0;
+  guest_memcpy(a0,a1 + 0xc,len);
+  return len;
 }
 
 extern int32_t rec_sorted_lookup(uint8_t *,uint32_t,int32_t);
@@ -2656,20 +2656,20 @@ extern int32_t mc_chan_job_stable_poll(uint32_t,const void *,const void *,const 
  * then scan string-pointer table @0x801b4250 backwards (a2 from 0x15,
  * t0 -=4 per miss) for a 3-char prefix match; on match write "HUD",
  * return 1; exhausted -> 0. Disasm 0x80163d7c-0x80163e34. */
-int hud_name_fixup(char *t1)
+int hud_name_fixup(char *name)
 {
   int i, a1, a2;
   uint32_t t0 = 0x801b4250;
   for (i = 0; i < 3; i++)
-    if ((uint8_t)t1[i] == 0x3c || (uint8_t)t1[i] == 0x7f) t1[i] = 0x20;
+    if ((uint8_t)name[i] == 0x3c || (uint8_t)name[i] == 0x7f) name[i] = 0x20;
   a2 = 0x15;
   for (;;) {
     uint8_t *s = (uint8_t *)guest_at(*(uint32_t *)guest_at(t0));
     for (a1 = 2; a1 >= 0; a1--)
-      if (s[a1] != (uint8_t)t1[a1]) break;
+      if (s[a1] != (uint8_t)name[a1]) break;
     a2--;
     if (a1 < 0) {
-      t1[0] = 'H'; t1[1] = 'U'; t1[2] = 'D';
+      name[0] = 'H'; name[1] = 'U'; name[2] = 'D';
       return 1;
     }
     if (a2 < 0) return 0;
@@ -10862,15 +10862,15 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
 int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
 {
   extern int br2_bail_pending(void);
-  uint8_t *s = (uint8_t *)a0_ctx;
-  uint32_t buf = *(uint32_t *)(s + 0x3c);
+  uint8_t *ctx = (uint8_t *)a0_ctx;
+  uint32_t buf = *(uint32_t *)(ctx + 0x3c);
   uint32_t dev, ctrl;
-  uint32_t s1, cmd, b44;
-  int32_t s2;
+  uint32_t cmd_id, cmd_sel, idx;
+  int32_t resp;
 
-  /* nibble test: buf[0]>>4 == 8 && ctx[0x44] >= 9 -> cmd id 34 else 136 */
-  s1 = (((uint32_t)(int32_t)br2_ld8(buf) >> 4) == 8u &&
-        (uint32_t)*(uint8_t *)(s + 0x44) >= 9u) ? 34u : 136u;
+  /* nibble test: buf[0]>>4 == 8 && ctx[0x44] >= 9 -> cmd_sel id 34 else 136 */
+  cmd_id = (((uint32_t)(int32_t)br2_ld8(buf) >> 4) == 8u &&
+        (uint32_t)*(uint8_t *)(ctx + 0x44) >= 9u) ? 34u : 136u;
 
   /* SIO status bit1 wait (identical poll to 0x801A248C) */
   dev = br2_ld32(0x801be7e4u);
@@ -10880,12 +10880,12 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
   }
   fifo_space_sample(400u);
 
-  /* response byte + command select; s2 is captured unconditionally */
+  /* response byte + command select; resp is captured unconditionally */
   dev = br2_ld32(0x801be7e4u);
-  s2 = (int32_t)(br2_ld8(dev) & 0xffu);
-  b44 = (uint32_t)*(uint8_t *)(s + 0x44);
-  cmd = (b44 != 0u) ? s1 : (((uint32_t)s2 >> 4) == 8u ? 34u : s1);
-  br2_st16(dev + 14u, (uint16_t)cmd);
+  resp = (int32_t)(br2_ld8(dev) & 0xffu);
+  idx = (uint32_t)*(uint8_t *)(ctx + 0x44);
+  cmd_sel = (idx != 0u) ? cmd_id : (((uint32_t)resp >> 4) == 8u ? 34u : cmd_id);
+  br2_st16(dev + 14u, (uint16_t)cmd_sel);
 
   /* FIFO-space / ctrl-bit7 wait; exhausted -> v0 = -2 */
   ctrl = br2_ld32(0x801be7e0u);
@@ -10898,7 +10898,7 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
     }
   }
 
-  if ((uint32_t)*(uint8_t *)(s + 0xe8) != 8u &&
+  if ((uint32_t)*(uint8_t *)(ctx + 0xe8) != 8u &&
       br2_ld32(0x801be7c4u) == 2u) {
     fifo_space_sample(60u);
     while (fifo_space_check() == 0) {
@@ -10910,7 +10910,7 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
   /* command byte out, then the conditional commit tail */
   dev = br2_ld32(0x801be7e4u);
   br2_st8(dev, (uint8_t)a1_byte);
-  if (br2_ld32(0x801be7c4u) == 3u && s2 == 128) {
+  if (br2_ld32(0x801be7c4u) == 3u && resp == 128) {
     ctrl = br2_ld32(0x801be7e0u);
     br2_st32(ctrl, 0xffffff7fu);
     dev = br2_ld32(0x801be7e4u);
@@ -10919,11 +10919,11 @@ int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
 
   /* ring-buffer bookkeeping: ctx[0x45] seq++, buf[ctx[0x44]] = reply,
    * ctx[0x44] index++ (skipped at the 255 wrap). */
-  *(uint8_t *)(s + 0x45) = (uint8_t)(*(uint8_t *)(s + 0x45) + 1u);
-  b44 = (uint32_t)*(uint8_t *)(s + 0x44);
-  if (b44 != 255u) br2_st8(buf + b44, (uint8_t)s2);
-  *(uint8_t *)(s + 0x44) = (uint8_t)(b44 + 1u);
-  return s2;
+  *(uint8_t *)(ctx + 0x45) = (uint8_t)(*(uint8_t *)(ctx + 0x45) + 1u);
+  idx = (uint32_t)*(uint8_t *)(ctx + 0x44);
+  if (idx != 255u) br2_st8(buf + idx, (uint8_t)resp);
+  *(uint8_t *)(ctx + 0x44) = (uint8_t)(idx + 1u);
+  return resp;
 }
 
 /* ======================================================================
