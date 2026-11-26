@@ -28,7 +28,7 @@ extern uint32_t guest_sp(void);
 extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                                 uint8_t mode, uint32_t len);
-void gauge_scale_fixed(short a0,short a1);
+void gauge_scale_fixed(int16_t a0,int16_t a1);
 void brightness_commit(uint16_t a0);
 
 
@@ -347,7 +347,7 @@ void memcard_tick(void)
     if ((int)((uint32_t)tick_dec << 0x10) < 0) {
       DAT_801bef76 = 0;
     }
-    brightness_packet_send((int)(short)DAT_801bef76);
+    brightness_packet_send((int)(int16_t)DAT_801bef76);
     if (!(DAT_801bef76)) {
       mc_state_init();
       return;
@@ -662,17 +662,17 @@ bb_80157c80:
       return;
     }
     DAT_801bef6c = (int8_t)dir_n;
-    if ((int)(dir_n & 0xff) < (int)(short)DAT_801bef72) {
+    if ((int)(dir_n & 0xff) < (int)(int16_t)DAT_801bef72) {
       /* guest div @0x80157E2C + mfhi: signed div HI = nm % dv;
        * dv==0 -> HI = dividend (recompiler no-trap semantics). */
       int32_t _dv = (int32_t)(dir_n & 0xff);
-      int32_t _nm = (int32_t)(short)DAT_801bef72;
+      int32_t _nm = (int32_t)(int16_t)DAT_801bef72;
       DAT_801bef72 = (uint16_t)(_dv == 0 ? _nm : _nm % _dv);
     }
     if (!(DAT_801bef72)) {
       DAT_801bef72 = (uint16_t)DAT_801bef6c;
     }
-    DAT_801bef84 = cd_stamp_to_sector(&DAT_801bef8c + (short)DAT_801bef72 * 4);
+    DAT_801bef84 = cd_stamp_to_sector(&DAT_801bef8c + (int16_t)DAT_801bef72 * 4);
 case_30_80157ebc:
     DAT_801bef6d = 0x10;
   }
@@ -1215,7 +1215,7 @@ bb_80160558:
 void memcard_slot_poll(void)
 
 {
-  short age;
+  int16_t age;
   int ent_off;
   uint8_t *rec;
   char *slot_flag;
@@ -1244,12 +1244,12 @@ void memcard_slot_poll(void)
         cd_reg_window_update(&DAT_801f2650);
       }
       else {
-        age = *(short *)(rec + 0xb);
-        *(short *)(rec + 0xb) = age + 1;
-        if ((short)(age + 1) == 2) {
+        age = *(int16_t *)(rec + 0xb);
+        *(int16_t *)(rec + 0xb) = age + 1;
+        if ((int16_t)(age + 1) == 2) {
           cd_reg_window_u16(0,*(uint32_t *)(rec + 7));
         }
-        if ((status_buf[slot_i] == 0) && (0x14 < *(short *)(rec + 0xb))) {
+        if ((status_buf[slot_i] == 0) && (0x14 < *(int16_t *)(rec + 0xb))) {
           *slot_flag = 0;
           *rec = 0;
         }
@@ -1273,7 +1273,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
   bool cls300_seen;
   bool cls400_seen;
   uint16_t cmdcls;
-  short *rec_s;
+  int16_t *rec_s;
   uint16_t *rec_u;
   int slot_i;
   
@@ -1281,7 +1281,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
   cls400_seen = false;
   rec_u = (uint16_t *)&DAT_801f3600;
   slot_i = 0;
-  rec_s = (short *)&DAT_801f3602;
+  rec_s = (int16_t *)&DAT_801f3602;
   do {
     cmdw = *rec_u;
     if (*rec_u) {
@@ -2478,7 +2478,7 @@ void se_value_select(uint32_t a0)
 {
   static const uint16_t tab[8] = {0,0x4fff,0,0,0x4fff,0x3fff,0x5fff,0x3fff};
   uint32_t a1 = 0;
-  gauge_scale_fixed(0,(short)a0);
+  gauge_scale_fixed(0,(int16_t)a0);
   deferred_cmd_post(0x405,0,4);
   if (a0 < 8) a1 = tab[a0];
   blk_1f26c0_init_c(2,a1);
@@ -3066,7 +3066,7 @@ extern int32_t FUN_801a0220(uint32_t,uint32_t,uint32_t);
 extern void FUN_801a0250(int32_t);
 extern uint32_t cd_xchg_fec24(uint32_t);
 extern int32_t fifo_space_check(void);
-extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,short,uint16_t,uint32_t,uint32_t);
+extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,int16_t,uint16_t,uint32_t,uint32_t);
 extern int *node_lazy_attach(int,int,int,int);
 extern int cd_file_load_sm(int32_t,uint32_t);
 extern int sprite_quad_emit(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -7054,8 +7054,8 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
       *(uint16_t *)guest_at(*(uint32_t *)(g + 0xc8)) = c0[0x1d];
       dbg_marker_mode_set(c0[0x24]);
       xv = (uint32_t)c0[0xf] << 3;
-      gauge_scale_fixed((short)c0[0xe],
-                   (short)(int32_t)(((xv * (uint64_t)0x66666667u) >> 32) >> 2));
+      gauge_scale_fixed((int16_t)c0[0xe],
+                   (int16_t)(int32_t)(((xv * (uint64_t)0x66666667u) >> 32) >> 2));
       brightness_commit((uint16_t)(c0[0xc] ^ 1));
       *(uint16_t *)(st + 0x18) = c0[7];
       *(uint16_t *)(st + 0x1a) = c0[8];
@@ -8501,7 +8501,7 @@ void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 
 extern void text_win_printf();
 extern int *task_node_alloc(int,uint32_t,uint32_t,int,int,int);
-extern void tween_apply(short *,int,int);
+extern void tween_apply(int16_t *,int,int);
 extern void gp_20_store_default(void);
 extern int prim_group_build();
 
@@ -8608,7 +8608,7 @@ void op_ctx_validate_call(uint8_t *a0)
     if (qg != 0 &&
         *(int16_t *)(q + 0xe) == (int32_t)*(uint32_t *)(q + 0x30) &&
         *(int16_t *)(q + 0xa) == (int32_t)*(uint32_t *)(q + 0x2c)) {
-      tween_apply((short *)q,0,0);
+      tween_apply((int16_t *)q,0,0);
     }
   }
   return;
@@ -10080,7 +10080,7 @@ int op_anim_delta_walk(uint32_t a0,int32_t a1)
       {
         int32_t q2 = target << 12;
         if (q2 < 0) q2 += 0xfff;
-        tween_apply((short *)seq,a1c,q2 >> 12);
+        tween_apply((int16_t *)seq,a1c,q2 >> 12);
       }
       break;                                   /* -> 0x801A9990 pass++ */
     }
