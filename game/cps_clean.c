@@ -94968,7 +94968,12 @@ block_8019FF30:
 }
 
 /* cps_801a0008 — clean CPS transliteration of br2eu_func_801A0008 (guest 0x801a0008)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * cd_batch_submit_flush: guard cell @0x801FEF00 must be nonzero (else
+ * printf diag + return -1). Fills 128-byte stack buf with 0xFF, then loops
+ * s0=0..14: cd_pending_args_pump(0x801A0E90) + cd_svc_50(0x801A0610) +
+ * cd_svc_4e(s1=arg, s0=slot, sp+16) + cd_queue_b_status(0x801A1070); on
+ * nonzero status restarts the slot, max 15 rounds, returns 1. */
 void cps_801a0008(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96006,7 +96011,10 @@ block_801A0DAC:
 }
 
 /* cps_801a0ddc — clean CPS transliteration of br2eu_func_801A0DDC (guest 0x801a0ddc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * cd_hw_chan_release: cpu_critical_enter, then eight calls to 0x801A11C0
+ * on the buffer ptrs stored at @0x801FEF70..0x801FEF8C by cd_hw_chan_init;
+ * conditional cpu_critical_exit when first result != 1. */
 void cps_801a0ddc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96223,7 +96231,11 @@ block_801A12D4:
 }
 
 /* cps_801a14a0 — clean CPS transliteration of br2eu_func_801A14A0 (guest 0x801a14a0)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_byte_get_a: resolves record via fn-ptr cell @0x801BE858 (jalr),
+ * bounds-checks a1 against count byte @rec+233; entry = rec[1] + a1*5;
+ * sub-select a2-1 <5 jumps through 5-way table @0x80125FB8 reading
+ * entry bytes [0..4]. Returns 0 on OOB. */
 void cps_801a14a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -96377,7 +96389,9 @@ block_801A1560:
 }
 
 /* cps_801a1574 — clean CPS transliteration of br2eu_func_801A1574 (guest 0x801a1574)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * rec_byte_get_b: same record prologue (@0x801BE858), count byte @rec+234;
+ * entry = rec[2] + a1*8; inner count byte @entry, then byte @(*(entry+4)+a2). */
 void cps_801a1574(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -97115,7 +97129,11 @@ block_801A1CAC:
 }
 
 /* cps_801a1ccc — clean CPS transliteration of br2eu_func_801A1CCC (guest 0x801a1ccc)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * stream_chan_kick: sets bit4 in half @v1+10, waits while bit9 (@v1+4&0x200)
+ * via fifo_space_check(0x801A4230,2000); writes flag byte 1 through cell
+ * @0x801BE858, then calls 0x801A4210(1)/0x801A23FC/0x801A248C/0x801A4210(430)
+ * and tails into 0x801A1D5C. */
 void cps_801a1ccc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100733,7 +100751,11 @@ block_801A4810:
 }
 
 /* cps_801a4830 — clean CPS transliteration of br2eu_func_801A4830 (guest 0x801a4830)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * anim_node_detach: record = index*72 + table @0x801FE3F8; s0=node @rec+64.
+ * Marks byte@node+24, runs optional fn ptr @(node+12), unlinks node from
+ * both directions (s0[0]/s0[1] neighbor fixups), pushes onto free slot
+ * indexed @rec+68, then jal 0x801A4FD0(node). */
 void cps_801a4830(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100880,7 +100902,11 @@ block_801A48E8:
 }
 
 /* cps_801a4b34 — clean CPS transliteration of br2eu_func_801A4B34 (guest 0x801a4b34)
- * from SLES_017.22_full_50.c. */
+ * from SLES_017.22_full_50.c.
+ * anim_node_attach_init: record = a0*72 + @0x801FE3F8, slot a1<16; node =
+ * rec_words[a1] (@rec+0); stores a0→gp+28, slot→rec+68, node→rec+64; walks
+ * node chain calling 0x801A482C or fn ptr @(node+8) per element by flags
+ * @node+23/+24. */
 void cps_801a4b34(void)
 {
   CPUState *cpu = clean_cpu_state();
