@@ -46128,7 +46128,10 @@ block_80145964:
 }
 
 /* cps_801468ec — clean CPS transliteration of br2eu_func_801468EC (guest 0x801468ec)
- * from SLES_017.22_full_13.c. */
+ * from SLES_017.22_full_13.c.
+ * record_field_walk: 67-block walker over record fields @s4+12/16/20/
+ * 44 with GTE op + half/byte reads; calls only empty_leaf stubs —
+ * self-contained record processor. */
 void cps_801468ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -60518,7 +60521,9 @@ void cps_8017b664(void)
 }
 
 /* cps_8017b668 — clean CPS transliteration of br2eu_func_8017B668 (guest 0x8017b668)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * jt_dispatch_11_a: bounds-check v1<11 then v1*4 into table
+ * @0x8012279C — 38-block indexed dispatch (script op family). */
 void cps_8017b668(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -61047,7 +61052,9 @@ void cps_8017b8d0(void)
 }
 
 /* cps_8017b8d4 — clean CPS transliteration of br2eu_func_8017B8D4 (guest 0x8017b8d4)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * jt_dispatch_11_b: same <11 table @0x801227FC shape with muldiv math —
+ * indexed dispatch variant B. */
 void cps_8017b8d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -61460,7 +61467,9 @@ void cps_8017bad0(void)
 }
 
 /* cps_8017bad4 — clean CPS transliteration of br2eu_func_8017BAD4 (guest 0x8017bad4)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * desc_flagbit_dispatch (renames.map): decodes u16@a2>>8 &0x3F (<35)
+ * flag bits into a 42-block dispatch — descriptor flag-bit handler. */
 void cps_8017bad4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62024,7 +62033,9 @@ void cps_8017c3bc(void)
 }
 
 /* cps_8017c3d0 — clean CPS transliteration of br2eu_func_8017C3D0 (guest 0x8017c3d0)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * desc_nibble_dispatch: u16@a2>>8 &0xF indexed dispatch with muldiv —
+ * nibble-field handler sibling of bad4. */
 void cps_8017c3d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -63141,7 +63152,10 @@ void cps_8017caec(void)
 }
 
 /* cps_8017caf4 — clean CPS transliteration of br2eu_func_8017CAF4 (guest 0x8017caf4)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * fighter_reset_seq: fighter_reset_fx + hit_chain_clear +
+ * pending_hit_a/b_clear + deferred_cmd_post + slot_apply_guest —
+ * full fighter reset/hit-state clear sequence (55 blocks). */
 void cps_8017caf4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64014,7 +64028,8 @@ void cps_8017d258(void)
 }
 
 /* cps_8017d25c — clean CPS transliteration of br2eu_func_8017D25C (guest 0x8017d25c)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * jt_dispatch_7: v1<7 table @0x801229CC indexed dispatch. */
 void cps_8017d25c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64357,7 +64372,8 @@ void cps_8017d5dc(void)
 }
 
 /* cps_8017d5e0 — clean CPS transliteration of br2eu_func_8017D5E0 (guest 0x8017d5e0)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * jt_dispatch_9: v1<9 table @0x80122A2C indexed dispatch. */
 void cps_8017d5e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64711,7 +64727,8 @@ void cps_8017d754(void)
 }
 
 /* cps_8017d758 — clean CPS transliteration of br2eu_func_8017D758 (guest 0x8017d758)
- * from SLES_017.22_full_35.c. */
+ * from SLES_017.22_full_35.c.
+ * jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch. */
 void cps_8017d758(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -112912,7 +112929,9 @@ block_801B0088:
 }
 
 /* cps_801b00a0 — clean CPS transliteration of br2eu_func_801B00A0 (guest 0x801b00a0)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * gte_half_euler_a: reads cell @0x801BF0C0, s16 idx @a0+2, GTE cmds +
+ * muldiv + traps — half-angle euler→matrix kernel variant A. */
 void cps_801b00a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113118,7 +113137,9 @@ block_801B03D8:
 }
 
 /* cps_801b03f0 — clean CPS transliteration of br2eu_func_801B03F0 (guest 0x801b03f0)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * gte_half_euler_b: same shape as b00a0 reading s16 @+6/+10 — euler
+ * kernel variant B. */
 void cps_801b03f0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113307,7 +113328,9 @@ block_801B057C:
 }
 
 /* cps_801b07d8 — clean CPS transliteration of br2eu_func_801B07D8 (guest 0x801b07d8)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * sp_record_step: half-word countdown at sp+4+112 loop — small record
+ * step helper. */
 void cps_801b07d8(void)
 {
   CPUState *cpu = clean_cpu_state();
