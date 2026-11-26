@@ -5227,6 +5227,7 @@
 80183224 scriptop_bra_cps
 80183228 scriptop_bra_cps
 8018322c scriptop_bra_cps
+# scriptop_bsr_cps (game/w2_e04.c) — faithful CPS body of generated
 80183280 scriptop_bsr_cps
 8018329c scriptop_bsr_cps
 801832b8 scriptop_bsr_cps
