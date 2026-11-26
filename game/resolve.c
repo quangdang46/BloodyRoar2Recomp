@@ -2583,6 +2583,7 @@ void motion_blend_frame(byte *ctrl,byte *motion)
   if (*(int *)(motion + 0xb0) == 0) goto pose_copy;
   if (*(short *)(motion + 0xce) == 0) {
 blend_apply:
+apply_blend_point:
     keyframe_blend_apply(ctrl,motion);
   }
   else {

@@ -2959,7 +2959,8 @@ uint pad_state_refresh(intptr_t pad)
 {
   char cnt;
   uint btns;
-  intptr_t tmp;
+  intptr_t btns_b;
+  intptr_t cur_w;
   uint pressed;
   intptr_t rec;
   int i;
@@ -2968,34 +2969,34 @@ uint pad_state_refresh(intptr_t pad)
   if ((DAT_801befa8 != '\0') || (btns = attr_word_decode(&DAT_801befa8), (int)btns < 0)) {
     btns = 0;
   }
-  if ((DAT_801befca != '\0') || (tmp = attr_word_decode(&DAT_801befca), tmp < 0)) {
-    tmp = 0;
+  if ((DAT_801befca != '\0') || (btns_b = attr_word_decode(&DAT_801befca), btns_b < 0)) {
+    btns_b = 0;
   }
   i = 0;
-  btns = tmp << 0x10 | btns;
+  btns = btns_b << 0x10 | btns;
   btns_old = *(uint *)(pad + 0x6c);
   *(uint *)(pad + 0x6c) = btns;
   pressed = (btns ^ btns_old) & btns;
   *(uint *)(pad + 0x70) = btns_old;
   *(uint *)(pad + 0x68) = pressed;
   *(uint *)(pad + 0x74) = pressed;
-  tmp = pad;
+  cur_w = pad;
   rec = pad;
   do {
-    if ((*(short *)(tmp + 0x6c) == 0) || (*(short *)(tmp + 0x6c) != *(short *)(tmp + 0x70))) {
+    if ((*(short *)(cur_w + 0x6c) == 0) || (*(short *)(cur_w + 0x6c) != *(short *)(cur_w + 0x70))) {
       *(undefined1 *)(rec + 0x78) = 0x10;
     }
     else {
       cnt = *(char *)(rec + 0x78) + -1;
       *(char *)(rec + 0x78) = cnt;
       if (cnt == '\0') {
-        *(undefined2 *)(tmp + 0x74) = *(undefined2 *)(tmp + 0x6c);
+        *(undefined2 *)(cur_w + 0x74) = *(undefined2 *)(cur_w + 0x6c);
         *(undefined1 *)(rec + 0x78) = 2;
       }
     }
     rec = rec + 1;
     i = i + 1;
-    tmp = tmp + 2;
+    cur_w = cur_w + 2;
   } while (i < 2);
   *(ushort *)(pad + 0x80) = *(ushort *)(pad + 0x6c) | *(ushort *)(pad + 0x6e);
   *(ushort *)(pad + 0x7c) = *(ushort *)(pad + 0x68) | *(ushort *)(pad + 0x6a);
