@@ -122,7 +122,8 @@ extern int fighter_anim_table_init();
 extern int action_enter_fwd();
 extern void fighter_frame(byte *,uint8_t *);
 #define FUN_801787dc fighter_frame
-extern int FUN_8018b100();
+extern int prim_xform3_task_run();
+#define FUN_8018b100 prim_xform3_task_run
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
 extern int spr_slot_pkt_submit();
@@ -524,7 +525,7 @@ void unlock_progress_scene_entry(void)
     *(uint *)(_g_system_config_ptr + 0x4c) = char_idx;
     break;
   default:
-    goto switchD_801678c4_caseD_1;
+    goto L_done;
   case 4:
     *(uint *)(_g_system_config_ptr + 0x60) =
          *(uint *)(_g_system_config_ptr + 0x60) | 1 << (char_idx & 0x1f);
@@ -544,7 +545,7 @@ void unlock_progress_scene_entry(void)
   }
   *(uint *)(_g_system_config_ptr + 0x28) = char_idx;
   _DAT_801c15f0 = 1;
-switchD_801678c4_caseD_1:
+L_done:
   return;
 }
 
@@ -693,7 +694,7 @@ joined_r0x8016fd30:
       if (DAT_1f800001 == '\0') {
 LAB_8016ffd8:
         DAT_1f800001 = '\x02';
-switchD_8016fd64_caseD_2:
+L_dat1_2:
         deferred_cmd_post(0x204,0,0);
         hud_sprite_desc_init();
         rgb_triple_store(0,0,0);
@@ -705,7 +706,7 @@ switchD_8016fd64_caseD_2:
         DAT_1f800001 = '\x03';
         { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
           decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
-switchD_8016fd64_caseD_3:
+L_dat1_3:
         tmp = frame_divisor_get();
         if (tmp == 0) {
           if (battle_ran) {
@@ -729,9 +730,9 @@ switchD_8016fd64_caseD_3:
     }
     break;
   case '\x02':
-    goto switchD_8016fd64_caseD_2;
+    goto L_dat1_2;
   case '\x03':
-    goto switchD_8016fd64_caseD_3;
+    goto L_dat1_3;
   case '\x04':
     { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
       decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
@@ -749,10 +750,10 @@ switchD_8016fd64_caseD_3:
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
     { extern int br2_bail_pending(void);
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto switchD_8016fd64_caseD_5;
+    if ((tmp2 != 0) && (_DAT_1f800090 == 0)) goto L_dat1_5;
     break;
   case '\x05':
-switchD_8016fd64_caseD_5:
+L_dat1_5:
     se_value_select((int)(char)DAT_1f800098);
     confirm_code_select(0x1f800000);
     battle_struct_init(_DAT_1f8000bc,0x1f800000);
@@ -783,11 +784,11 @@ switchD_8016fd64_caseD_5:
     clear_f0300_records();
     frame_tick(0x1f800000);
     DAT_1f800001 = '\a';
-switchD_8016fd64_caseD_7:
+L_dat1_7:
     tmp2 = frame_divisor_get();
     if (tmp2 == 0) {
       DAT_1f800001 = '\b';
-switchD_8016fd64_caseD_8:
+L_dat1_8:
       { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
         decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
       if (DAT_1f80009b == '\x04') {
@@ -943,9 +944,9 @@ LAB_80170714:
     }
     break;
   case '\a':
-    goto switchD_8016fd64_caseD_7;
+    goto L_dat1_7;
   case '\b':
-    goto switchD_8016fd64_caseD_8;
+    goto L_dat1_8;
   case '\t':
     frame_present(0x1f800000);
     hud_sprite_desc_init();
@@ -1371,7 +1372,7 @@ void results_scoreboard(int mode)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t rsb_frm = br2_guest_frame(0x88);
-  undefined1 *auStack_70 = (undefined1 *)guest_at(rsb_frm + 0x20);
+  undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
   int local_60 [6];
   int local_48;
   int local_44;
@@ -1471,8 +1472,8 @@ LAB_80164a2c:
             tmp2 = (row_off + 0x30) * 2;
           }
           if (-1 < *(int *)((char *)local_60 + rec_off)) {
-            sprintf_core((char *)auStack_70,&DAT_80121fe0,tmp + 1);
-            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
+            sprintf_core((char *)num_buf,&DAT_80121fe0,tmp + 1);
+            announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
                          (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
@@ -1525,8 +1526,8 @@ LAB_80164c38:
           else {
             row_off = (tmp + 0x30) * 2;
           }
-          sprintf_core((char *)auStack_70,&DAT_80121fe0,rec_off + 1);
-          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,auStack_70,
+          sprintf_core((char *)num_buf,&DAT_80121fe0,rec_off + 1);
+          announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
                        (local_3c + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),
                        (local_3c + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
@@ -1639,7 +1640,7 @@ void player_name_entry(void)
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t pne_frm = br2_guest_frame(0x90);
-  undefined1 *auStack_58 = (undefined1 *)guest_at(pne_frm + 0x38);
+  undefined1 *num_buf = (undefined1 *)guest_at(pne_frm + 0x38);
   uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
 #define local_78   (*(uint32_t *)pne_slots)
 #define local_70   pne_slots[8]
@@ -1684,7 +1685,7 @@ void player_name_entry(void)
   _DAT_1f80008c = 0;
   if (DAT_1f800001 != 0xff) {
     name_ptr = &local_78;
-    fmt_buf = auStack_58;
+    fmt_buf = num_buf;
     do {
       if (DAT_1f800001 == 3) {
 LAB_801652bc:
@@ -3208,18 +3209,18 @@ int32_t select_screen_tick(int32_t entry_mode)
   uint32_t sst_frm = br2_guest_frame(0xf8);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address. */
-  uint8_t *auStack_e0 = (uint8_t *)guest_at(sst_frm + 0x20);
-  /* auStack_b8 = two 0x30-byte player records at sp+0x40 (s7);
+  uint8_t *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
+  /* player_recs = two 0x30-byte player records at sp+0x40 (s7);
    * local_a8/local_94 are Ghidra aliases into that same guest record
    * array (+0x10 / +0x24), not separate host storage. */
-  uint8_t *auStack_b8 = (uint8_t *)guest_at(sst_frm + 0x48);
+  uint8_t *player_recs = (uint8_t *)guest_at(sst_frm + 0x48);
   int32_t *local_a8 = (int32_t *)guest_at(sst_frm + 0x58);
   int32_t *local_94 = (int32_t *)guest_at(sst_frm + 0x6c);
   int32_t local_38 = 0;
   int32_t local_34, local_30, local_2c = 0;
   uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *local_3c = (uint8_t *)guest_at(0x1f8001f0);
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_e0);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   local_a8[3] = 0;
   local_94[10] = 0;
   hud_sprite_desc_init();
@@ -3229,11 +3230,11 @@ int32_t select_screen_tick(int32_t entry_mode)
   DAT_1f800001 = 0;
   do {
     if (DAT_1f800001 == 6) {
-      fighter_spawn_setup(0x1f800000,local_40,local_3c,auStack_e0,1);
+      fighter_spawn_setup(0x1f800000,local_40,local_3c,arg_blk,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
         uVar8 = 0;
-        rec = auStack_b8;
+        rec = player_recs;
         do {
           iVar4 = *(int32_t *)(rec + 0x24);
           if (iVar4 == 1) {
@@ -3241,7 +3242,7 @@ int32_t select_screen_tick(int32_t entry_mode)
               if (*(int32_t *)(rec + 0x2c) == 0) {
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 0) {
                   iVar4 = local_94[(uVar8 ^ 1) * 0xc];
-                  goto code_r0x8014f6c0;
+                  goto L_promote_chk;
                 }
                 if (local_a8[(uVar8 ^ 1) * 0xc] == 1) {
                   *(uint32_t *)(rec + 0x24) = 2;
@@ -3250,7 +3251,7 @@ int32_t select_screen_tick(int32_t entry_mode)
             }
             else if (*(int32_t *)(rec + 0x10) == 1) {
               iVar4 = local_94[(uVar8 ^ 1) * 0xc];
-code_r0x8014f6c0:
+L_promote_chk:
               if (0 < iVar4) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
@@ -3296,7 +3297,7 @@ code_r0x8014f6c0:
         } while ((int32_t)uVar8 < 2);
         if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
           iVar4 = 0;
-          rec = auStack_b8;
+          rec = player_recs;
           do {
             if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
             if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
@@ -3458,10 +3459,10 @@ code_r0x8014f6c0:
             if (uVar8 == 8) { attr_idx = 0xff; iVar2 = -0xff; }
             uVar8 = (uint32_t)((iVar3 + iVar2) * 0x10000 | ((aux_val + (int32_t)attr_idx) & 0xffff));
             {
-              uint32_t uVar5l = 0xfefe0008;
-              int32_t iVar2l = _DAT_1f800008 + 4;
+              uint32_t attr_code = 0xfefe0008;
+              int32_t ot_ptr = _DAT_1f800008 + 4;
 LAB_80150558:
-              spr_attr_alloc_b((uint32_t)iVar2l,uVar8,uVar5l,(uint32_t)iVar4,aux_val,iVar3);
+              spr_attr_alloc_b((uint32_t)ot_ptr,uVar8,attr_code,(uint32_t)iVar4,aux_val,iVar3);
             }
           } else {
             aux_val = ((int16_t)_DAT_1f800022 * 3) / 5;
@@ -3550,7 +3551,7 @@ LAB_80150558:
             print_mode_dispatch_b(2,0,0);
             battle_config_eval(local_40,0x1f800000,1);
             battle_config_eval(local_3c,0x1f800000,1);
-            post_confirm_config_build(0x1f800000,auStack_e0,1);
+            post_confirm_config_build(0x1f800000,arg_blk,1);
             *(uint32_t *)g__DAT_801e8508 = 0;
             *(uint32_t *)g__DAT_801e8518 = 0x28;
             if (*(int32_t *)(_g_system_config_ptr + 0x40) < 0) local_c8 = 9;
@@ -5602,7 +5603,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   uint32_t sst_frm = br2_guest_frame(0x168);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address aliasing the same bytes. */
-  uint8_t  *auStack_18 = (uint8_t *)guest_at(sst_frm + 0x20);
+  uint8_t  *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
   uint32_t cnt   = 0;                   /* sp+0x130 */
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
@@ -5610,7 +5611,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   int32_t  s6    = 0;
   uint8_t *p1 = side_a, *p2 = side_b;
 
-  *(uint32_t *)guest_at(0x801f10bc) = guest_of(auStack_18);
+  *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
@@ -5620,7 +5621,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
       /* ---------- state 0 ---------- */
       int32_t r, r1, r2;
       r = battle_bringup_a(battle,(uint32_t)p1[3],(uint32_t)p2[3],
-                       auStack_18 + 0x100);
+                       arg_blk + 0x100);
       if (r == 0) goto L_tail;
       rgb_triple_store(0,0,0);
       task_pool_init(1,2,0x6400,0x801d01ec);
@@ -9815,7 +9816,7 @@ void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
- * insns). Inlines leaf FUN_8012a4dc @0x8012a4dc (9 insns):
+ * insns). Inlines leaf cmd_queue_slot_next @0x8012a4dc (9 insns):
  * nxt = MBS16(0x1f8000d0) + 1; slot = nxt < 9 (signed) ? nxt : 0.
  * slot 0 -> return. Else entry = 0x801c4530 + slot*8 receives the
  * four args as u16s, 0x1f8000d0 = slot, and the 5th (stack) arg
@@ -11045,8 +11046,10 @@ extern int pending_hit_a_clear();
 extern int pending_hit_b_clear();
 extern int options_menu_alloc();
 extern int atan2_lut(int32_t,int32_t);
-extern int FUN_80195370(uint32_t *,uint32_t *);
-extern int FUN_801948c0(uint32_t);
+extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);
+extern int fixed_recip_lut(uint32_t);
+#define FUN_80195370 gte_sqr_vec3_b
+#define FUN_801948c0 fixed_recip_lut
 extern undefined2 *vec2_rot(uint32_t,uint32_t,undefined2 *);
 extern uint *angle_gte_vec(uint32_t,uint32_t,uint *);
 extern int state_pair_init();
@@ -11097,8 +11100,8 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 /* dual_axis_coord_xform — dual-axis coord transform @0x8012eaa8 (50
  * insns): o = MB32(a3+0x20); sp = {MB32(o+0x174),
  * MB32(o+0x178)+0xa00, MB32(o+0x17c)}; s1 = atan2_lut(sp[2],
- * sp[0]); FUN_80195370(&sp[0],&sp[0]) (ret discarded); r =
- * atan2_lut(-sp[1], FUN_801948c0(sp[0]+sp[2]));
+ * sp[0]); gte_sqr_vec3_b(&sp[0],&sp[0]) (ret discarded); r =
+ * atan2_lut(-sp[1], fixed_recip_lut(sp[0]+sp[2]));
  * s0=(s16)r, s1=(s16)s1; vec2_rot(s0,s1,a2+6);
  * angle_gte_vec(s0,s1,a2+0x20).
  * Generated reads the object through $a3 (gpr[7]) and the output base
