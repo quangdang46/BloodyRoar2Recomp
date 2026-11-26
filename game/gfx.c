@@ -7526,7 +7526,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
@@ -7534,7 +7534,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
 
     /* sy0 is computed in the sx-branch DELAY SLOT — live whenever the
      * branch is not taken. */
@@ -7543,7 +7543,7 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sy_ok += (((uint32_t)((int32_t)sxy2 >> 16)) < 480u) ? 1u : 0u;
     DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT —
                           * unconditional once sx_ok > 0. */
-    if (sy_ok == 0) goto next;
+    if (sy_ok != 0) {
 
     out = base + out_stride; DB32(out) = sxy1;
     out += out_stride;      DB32(out) = sxy2;
@@ -7553,8 +7553,9 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
     cur += in_stride;                           /* delay-slot a0 += s7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
@@ -7614,18 +7615,18 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) != 0) goto next;
+    if ((flag & 0x7FC40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
-    if (sx_ok == 0) goto next;
+    if (sx_ok != 0) {
 
     sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
     sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
     DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT. */
-    if (sy_ok == 0) goto next;
+    if (sy_ok != 0) {
 
     DB32(base + 4) = sxy1;                       /* t3 += t8(4); sw */
 
@@ -7633,8 +7634,9 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
     old = DB32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
-
-  next:
+    }
+    }
+    }
     cur += 48;                                   /* delay-slot a0 += s7 */
   } while (cnt > 0);                             /* bgtz a3 -> loop */
   return cur;                                   /* move v0,a0 */
