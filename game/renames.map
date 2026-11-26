@@ -1736,8 +1736,16 @@
 801838e8 scriptop_wait_fragment_801838e8
 80183920 scriptop_wait_fragment_80183920
 80183948 scriptop_wait_fragment_80183948
+80183964 scriptop_wait_cps_80183964
+8018397c scriptop_wait_cps_8018397c
+80183988 scriptop_wait_cps_80183988
+80183a48 scriptop_wait_cps_80183a48
+80183a74 scriptop_wait_cps_80183a74
+80183aa4 scriptop_wait_cps_80183aa4
 80183bd0 scriptop_sflag
 80183c30 scriptop_chk
+80183ce4 scriptop_chk_cps_80183ce4
+80183cf0 scriptop_chk_cps_80183cf0
 80183d0c scriptop_chk_state_bits
 80184378 scriptop_cmp
 8018444c scriptop_move
