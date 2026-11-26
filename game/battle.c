@@ -13176,142 +13176,142 @@ LAB_80136b18:
 
 void radial_glow_draw(int *rec)
 {
-  undefined4 uVar1;
+  undefined4 xy;
   undefined4 in_zero;
   undefined4 in_at;
-  short sVar2;
-  short sVar3;
-  short sVar4;
-  int iVar5;
-  int iVar6;
-  short sVar8;
-  undefined2 uVar9;
-  int iVar10;
-  int *piVar11;
-  int iVar12;
+  short ox;
+  short cy;
+  short oy;
+  int tmp;
+  int cs;
+  short cx;
+  undefined2 cl;
+  int tmp2;
+  int *rc;
+  int i;
   short local_48;
   short sStack_46;
   short local_38;
   short local_36;
-  uint uVar7;
+  uint r;
   setCopReg(2,in_zero,rec[0xd]);
   setCopReg(2,in_at,rec[0xe]);
   copFunction(2,0x180001);
-  uVar1 = getCopReg(2,0xe);
-  local_48 = (short)uVar1;
-  sStack_46 = (short)((uint)uVar1 >> 0x10);
+  xy = getCopReg(2,0xe);
+  local_48 = (short)xy;
+  sStack_46 = (short)((uint)xy >> 0x10);
   angle_vec_build(((int)local_48 + (int)sStack_46) * 2,&DAT_1f8003e0);
-  iVar5 = isqrt(((0xff - local_48) * (0xff - local_48) +
+  tmp = isqrt(((0xff - local_48) * (0xff - local_48) +
                        (0xff - sStack_46) * (0xff - sStack_46)) * 0x1000);
-  iVar5 = iVar5 >> 0xc;
-  iVar12 = 0;
+  tmp = tmp >> 0xc;
+  i = 0;
   if ((ushort)(local_48 + 0x32U) < 0x265) {
-    iVar10 = (int)sStack_46;
-    if ((-0x33 < iVar10) && (iVar10 < 0x233)) {
-      iVar12 = iVar5;
-      if (iVar5 < 0) {
-        iVar12 = iVar5 + 7;
+    tmp2 = (int)sStack_46;
+    if ((-0x33 < tmp2) && (tmp2 < 0x233)) {
+      i = tmp;
+      if (tmp < 0) {
+        i = tmp + 7;
       }
-      iVar10 = angle_from_xy(0xff - local_48,0xff - iVar10);
-      iVar6 = lut_cos_q12(iVar10 + -0x400);
-      sVar2 = (short)((iVar12 >> 3) * iVar6 >> 0xc);
-      iVar10 = lut_sin_q12(iVar10 + -0x400);
-      sVar8 = (short)((local_48 + -0x100) / 2) + 0xf0;
-      sVar3 = (short)((sStack_46 + -0x100) / 2) + 0xf0;
-      sVar4 = (short)((iVar12 >> 3) * iVar10 >> 0xc);
-      uVar7 = rand_lcg();
-      if ((uVar7 & 3) != 0) {
-        rect_prim_spawn((int)sVar8,(int)sVar3,0x1f,0x1f,0xc0,0x20,0x39,0x78d9,1);
+      tmp2 = angle_from_xy(0xff - local_48,0xff - tmp2);
+      cs = lut_cos_q12(tmp2 + -0x400);
+      ox = (short)((i >> 3) * cs >> 0xc);
+      tmp2 = lut_sin_q12(tmp2 + -0x400);
+      cx = (short)((local_48 + -0x100) / 2) + 0xf0;
+      cy = (short)((sStack_46 + -0x100) / 2) + 0xf0;
+      oy = (short)((i >> 3) * tmp2 >> 0xc);
+      r = rand_lcg();
+      if ((r & 3) != 0) {
+        rect_prim_spawn((int)cx,(int)cy,0x1f,0x1f,0xc0,0x20,0x39,0x78d9,1);
       }
-      rect_prim_spawn(((int)sVar8 - (int)sVar2) + -0x10,((int)sVar3 - (int)sVar4) + -0x10,0x3f,0x3f,
+      rect_prim_spawn(((int)cx - (int)ox) + -0x10,((int)cy - (int)oy) + -0x10,0x3f,0x3f,
                    0xc0,0x40,0x39,0x78d9,1);
       local_38 = 0xf0;
       local_36 = 0xf0;
-      if (iVar5 < 0x96) {
-        uVar7 = rand_lcg();
-        if ((uVar7 & 7) != 0) {
+      if (tmp < 0x96) {
+        r = rand_lcg();
+        if ((r & 7) != 0) {
           rect_prim_spawn(0xe0,0xe0,0x40,0x40,0xc0,0x40,0x39,0x78d9,1);
         }
-        iVar12 = 0;
+        i = 0;
         do {
-          local_38 = local_38 + sVar2;
-          local_36 = local_36 + sVar4;
-          uVar7 = rand_lcg();
-          if ((uVar7 & 3) != 0) {
+          local_38 = local_38 + ox;
+          local_36 = local_36 + oy;
+          r = rand_lcg();
+          if ((r & 3) != 0) {
             rect_prim_spawn((int)local_38,(int)local_36,0x1f,0x1f,0xc0,0x20,0x39,0x78d9,1);
           }
-          iVar12 = iVar12 + 1;
-        } while (iVar12 < 2);
+          i = i + 1;
+        } while (i < 2);
       }
-      iVar12 = 0;
-      piVar11 = rec;
+      i = 0;
+      rc = rec;
       do {
-        iVar10 = *piVar11;
-        piVar11 = piVar11 + 1;
-        iVar12 = iVar12 + 1;
-        obj_flag34_set(iVar10);
-      } while (iVar12 < 3);
-      piVar11 = rec + 3;
+        tmp2 = *rc;
+        rc = rc + 1;
+        i = i + 1;
+        obj_flag34_set(tmp2);
+      } while (i < 3);
+      rc = rec + 3;
       do {
-        uVar7 = rand_lcg();
-        if ((uVar7 & 3) == 0) {
-          obj_flag34_clear(*piVar11);
+        r = rand_lcg();
+        if ((r & 3) == 0) {
+          obj_flag34_clear(*rc);
         }
         else {
-          obj_flag34_set(*piVar11);
+          obj_flag34_set(*rc);
         }
-        piVar11 = piVar11 + 1;
-      } while ((intptr_t)piVar11 < (intptr_t)(rec + 5));
-      iVar10 = iVar5 * 0x10 + -0x200;
-      iVar12 = (0x1000 - iVar10) / 2 + 0x800;
-      iVar5 = iVar12;
-      if (iVar12 < 0) {
-        iVar5 = 0;
+        rc = rc + 1;
+      } while ((intptr_t)rc < (intptr_t)(rec + 5));
+      tmp2 = tmp * 0x10 + -0x200;
+      i = (0x1000 - tmp2) / 2 + 0x800;
+      tmp = i;
+      if (i < 0) {
+        tmp = 0;
       }
-      uVar9 = (undefined2)iVar5;
-      if (0xfff < iVar12) {
-        uVar9 = 0xfff;
+      cl = (undefined2)tmp;
+      if (0xfff < i) {
+        cl = 0xfff;
       }
-      iVar5 = 1;
-      *(undefined2 *)(rec + 5) = uVar9;
-      *(undefined2 *)(rec + 7) = uVar9;
-      *(undefined2 *)(rec + 9) = uVar9;
-      piVar11 = rec;
+      tmp = 1;
+      *(undefined2 *)(rec + 5) = cl;
+      *(undefined2 *)(rec + 7) = cl;
+      *(undefined2 *)(rec + 9) = cl;
+      rc = rec;
       do {
-        piVar11 = piVar11 + 1;
-        iVar5 = iVar5 + 1;
-        tween_seek(*piVar11,iVar10);
-      } while (iVar5 < 5);
-      iVar5 = 0;
-      piVar11 = rec;
+        rc = rc + 1;
+        tmp = tmp + 1;
+        tween_seek(*rc,tmp2);
+      } while (tmp < 5);
+      tmp = 0;
+      rc = rec;
       do {
-        if (*piVar11 != 0) {
-          if (iVar5 == 0) {
+        if (*rc != 0) {
+          if (tmp == 0) {
             gte_rtps_xform3((undefined4 *)(uintptr_t)&DAT_801f0760,(ushort *)(uintptr_t)&DAT_1f8003e0,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*rec))));
           }
-          else if (iVar5 == 1) {
+          else if (tmp == 1) {
             gte_rtps_xform3((undefined4 *)(rec + 5),(ushort *)(uintptr_t)&DAT_801f0760,(uint *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(rec[1]))));
           }
           else {
-            *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*piVar11 )))= _DAT_801f0760;
-            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar11 ))+ 4) ))= _DAT_801f0764;
-            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar11 ))+ 8) ))= _DAT_801f0768;
-            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar11 ))+ 0xc) ))= _DAT_801f076c;
-            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*piVar11 ))+ 0x10) ))= _DAT_801f0770;
+            *(undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(*rc )))= _DAT_801f0760;
+            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*rc ))+ 4) ))= _DAT_801f0764;
+            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*rc ))+ 8) ))= _DAT_801f0768;
+            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*rc ))+ 0xc) ))= _DAT_801f076c;
+            *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(*rc ))+ 0x10) ))= _DAT_801f0770;
           }
         }
-        piVar11 = piVar11 + 1;
-        iVar5 = iVar5 + 1;
-      } while (iVar5 < 5);
+        rc = rc + 1;
+        tmp = tmp + 1;
+      } while (tmp < 5);
       return;
     }
   }
   do {
-    iVar5 = *rec;
+    tmp = *rec;
     rec = rec + 1;
-    iVar12 = iVar12 + 1;
-    obj_flag34_clear(iVar5);
-  } while (iVar12 < 5);
+    i = i + 1;
+    obj_flag34_clear(tmp);
+  } while (i < 5);
   return;
 
 }
