@@ -6228,6 +6228,7 @@ extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
 /* ======== 0x8019f02c ======== */
 
+/* cd_job_sm5 — job SM state 5 (cb 0x8019F02C): init->wait FUN_801A0230/240 pumps->0x1e; on queue status retry<=3 then map status, ret 1 done. */
 int cd_job_sm5(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6278,6 +6279,7 @@ int cd_job_sm5(uint32_t a0)
 
 /* ======== 0x8019f220 ======== */
 
+/* cd_job_sm6 — job SM state 6 (cb 0x8019F220): same skeleton via bios_tramp_b035 instead of FUN_801A0240. */
 int cd_job_sm6(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6433,6 +6435,7 @@ int cd_job_submit6(uint32_t a0)
 
 /* ======== 0x80191ee0 ======== */
 
+/* cd_vcall_38 — indirect vtable call: fn=*(a0+0x38); call_guest(fn,a0,a1); return sign bit (>>31). */
 uint32_t cd_vcall_38(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 0x38);
@@ -6441,6 +6444,7 @@ uint32_t cd_vcall_38(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a688 ======== */
 
+/* cd_vcall_c — vtable slot 0xC: call_guest(*(a0+0xC),a0,a1). */
 uint32_t cd_vcall_c(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 0xc);
@@ -6449,6 +6453,7 @@ uint32_t cd_vcall_c(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a6b8 ======== */
 
+/* cd_vcall_8 — vtable slot 8. */
 uint32_t cd_vcall_8(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 8);
@@ -6457,6 +6462,7 @@ uint32_t cd_vcall_8(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a6e8 ======== */
 
+/* cd_vcall_4 — vtable slot 4. */
 uint32_t cd_vcall_4(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 4);
@@ -6465,6 +6471,7 @@ uint32_t cd_vcall_4(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a74c ======== */
 
+/* cd_vcall_14 — vtable slot 0x14. */
 uint32_t cd_vcall_14(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 0x14);
@@ -6473,6 +6480,7 @@ uint32_t cd_vcall_14(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a77c ======== */
 
+/* cd_vcall_10 — vtable slot 0x10. */
 uint32_t cd_vcall_10(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 0x10);
@@ -6481,6 +6489,7 @@ uint32_t cd_vcall_10(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a7ac ======== */
 
+/* cd_vcall_18 — vtable slot 0x18. */
 uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 {
   uint32_t fn = *(uint32_t *)guest_at(a0 + 0x18);
@@ -6523,6 +6532,7 @@ int cd_file_open_seq(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80191184 ======== */
 
+/* cd_gpu_call_3c — if a1>=2 call_guest(DB32G(0x801B831C),0x801254B4,a0); then call tbl+0x3C fn(a0,0). */
 int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
@@ -6538,6 +6548,7 @@ int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a24c ======== */
 
+/* cd_hdr_clear — clear u16 @a0+0xA, dead countdown loop (fidelity). */
 void cd_hdr_clear(uint32_t a0)
 {
   volatile int i;
@@ -6549,6 +6560,7 @@ void cd_hdr_clear(uint32_t a0)
 
 /* ======== 0x80191778 ======== */
 
+/* cd_gpu_call_8b — if a1>=2 call_guest(DB32G(0x801B831C),0x80125558,a0); then call tbl+8 fn(tbl+0x18,a0). */
 void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
@@ -6576,6 +6588,7 @@ void cd_dma_chan_init(uint32_t a0)
 
 /* ======== 0x80199100 ======== */
 
+/* cd_dir_entry_store — store dir entry (stride 0x20 by a0): tag=2, unaligned u32->0x801FEB00, extent->0x801FEB04, feb00_note, fire cb @0x801FEB10, clear 0x801FC69C. */
 void cd_dir_entry_store(uint32_t a0,uint32_t a1)
 {
   uint8_t *e = (uint8_t *)guest_at(a1 + ((uint32_t)a0 << 5));
@@ -6630,6 +6643,7 @@ void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2
 
 /* ======== 0x80191670 ======== */
 
+/* cd_gpu_call_2c — if a2>=2 call_guest(DB32G(0x801B831C),0x80125540,a0); then call tbl fn(a0,a1). */
 void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   if (a2 >= 2) {
