@@ -1029,6 +1029,7 @@ extern void mdec_pump_b(void);
 extern void mdec_stat_wait_a(void);
 extern void mdec_stat_wait_b(void);
 extern void mdec_status_read(void);
+extern void mem_move(void);
 extern void memcard_block_verify(void);
 extern void memcard_err_sentinel(void);
 extern void memcard_file_flow(void);
@@ -1638,6 +1639,8 @@ extern void state_word_set_ffff(void);
 extern void status_flag_cond_set(void);
 extern void status_text_display(void);
 extern void status_text_dump(void);
+extern void str_len(void);
+extern void strchr_bounded(void);
 extern void stream_block_decode(void);
 extern void string_pair_emit(void);
 extern void subrecord_u16_rw(void);
@@ -1702,6 +1705,8 @@ extern void trig_vel_flat(void);
 extern void trig_vel_up(void);
 extern void triple_track_spawn(void);
 extern void tween_apply(void);
+extern void tween_chan_alloc(void);
+extern void tween_dur_spread(void);
 extern void tween_ensure(void);
 extern void tween_seek(void);
 extern void tween_seq_alloc(void);
@@ -2794,6 +2799,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e490, (void *)guest_memcpy },
   { 0x8018e4d0, (void *)rand_lcg },
   { 0x8018e500, (void *)rand_seed },
+  { 0x8018e510, (void *)str_len },
   { 0x8018e550, (void *)printf_forward_guest },
   { 0x8018e590, (void *)printf_core },
   { 0x8018e63c, (void *)printf_cps_8018e63c },
@@ -2823,6 +2829,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018ebd4, (void *)printf_core_piece_ebd4 },
   { 0x8018ec30, (void *)ctype_adj_m32 },
   { 0x8018ec64, (void *)ctype_adj_p32 },
+  { 0x8018eca0, (void *)strchr_bounded },
   { 0x8018ecf0, (void *)console_emit },
   { 0x8018edec, (void *)console_pct },
   { 0x8018edf4, (void *)debug_line_flush },
@@ -2840,6 +2847,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018f4f0, (void *)gpu_pkt_cmd_f4f0 },
   { 0x8018f4fc, (void *)gpu_pkt_cmd_f4fc },
   { 0x8018f608, (void *)gpu_pkt_cmd_f608 },
+  { 0x8018f7e0, (void *)mem_move },
   { 0x8018f850, (void *)cd_fileop_reset },
   { 0x8018f884, (void *)mdec_parambuf_restore },
   { 0x8018f910, (void *)mdec_parambuf_commit },
@@ -3353,6 +3361,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801a6bd0, (void *)prim_group_build },
   { 0x801a6f44, (void *)tween_ensure },
   { 0x801a7038, (void *)anim_node_alloc },
+  { 0x801a72a0, (void *)tween_chan_alloc },
+  { 0x801a73e4, (void *)tween_dur_spread },
   { 0x801a7444, (void *)slot_field_clear },
   { 0x801a7498, (void *)obj_flag34_set },
   { 0x801a74f0, (void *)obj_flag34_clear },
