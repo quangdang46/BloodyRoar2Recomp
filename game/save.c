@@ -141,7 +141,6 @@ extern char *s_SAVING_TO_MEMORY_CARD__s__801217f0;
 extern char *s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994;
 extern char *s_TO_SAVE__801219d8;
 extern char *s_UNFORMATTED_MEMORY_CARD___80121a08;
-extern char *s_VSync__timeout_80125b38;
 extern char *s__s____80121864;
 extern uint32_t *g_PTR_u32_801b4160;
 extern uint8_t  *g_DAT_801b43f0;
