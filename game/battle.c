@@ -14017,32 +14017,32 @@ uint rand_lcg(void)
 
 int isqrt(int n)
 {
-  int iVar1;
-  uint uVar2;
+  int r;
+  uint sh;
   if (n == 0) {
-    iVar1 = 0;
+    r = 0;
   }
   else {
-    iVar1 = cop2_clz(n);
-    uVar2 = (8 - iVar1) >> 1;
-    if (8 - iVar1 < 0) {
-      uVar2 = uVar2 + 1;
-      n = n << (uVar2 * -2 & 0x1f);
+    r = cop2_clz(n);
+    sh = (8 - r) >> 1;
+    if (8 - r < 0) {
+      sh = sh + 1;
+      n = n << (sh * -2 & 0x1f);
     }
     else {
-      n = n >> ((uVar2 & 0xf) << 1);
+      n = n >> ((sh & 0xf) << 1);
     }
-    uVar2 = uVar2 - 6;
-    if ((int)uVar2 < 0) {
-      iVar1 = isqrt_refine(n);
-      iVar1 = iVar1 >> (-uVar2 & 0x1f);
+    sh = sh - 6;
+    if ((int)sh < 0) {
+      r = isqrt_refine(n);
+      r = r >> (-sh & 0x1f);
     }
     else {
-      iVar1 = isqrt_refine(n);
-      iVar1 = iVar1 << (uVar2 & 0x1f);
+      r = isqrt_refine(n);
+      r = r << (sh & 0x1f);
     }
   }
-  return iVar1;
+  return r;
 
 }
 
@@ -14141,7 +14141,7 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *n,undefined4 *a1,undefined4 *a2)
 int * node_lazy_attach(int n,int a1,int a2,int a3)
 {
   char cVar1;
-  undefined1 uVar2;
+  undefined1 sh;
   int *piVar3;
   int *piVar4;
   cVar1 = *(char *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
@@ -14166,11 +14166,11 @@ int * node_lazy_attach(int n,int a1,int a2,int a3)
     piVar3[3] = a2;
     *(undefined1 *)(piVar3 + 5) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x14)));
     *(undefined1 *)((intptr_t)piVar3 + 0x15) = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x15)));
-    uVar2 = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x16)));
+    sh = *(undefined1 *)guest_at((uint32_t)(uintptr_t)((n + 0x16)));
     *(undefined1 *)((intptr_t)piVar3 + 0x17) = 1;
     piVar3[4] = (int)guest_of((char *)(piVar3 + 7));
     *(undefined1 *)(piVar3 + 6) = 0;
-    *(undefined1 *)((intptr_t)piVar3 + 0x16) = uVar2;
+    *(undefined1 *)((intptr_t)piVar3 + 0x16) = sh;
   }
   return (int *)(uintptr_t)guest_of(piVar3);
 
@@ -17138,13 +17138,13 @@ int file_state_bit24_query(int a0)
  * Returns -1 when atan2_lut(dx,dy) < current h2a (h2a always rewritten). */
 int node_distance_check(int na,int nb,int rng)
 {
-  int iVar1;
-  short sVar2;
-  iVar1 = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)nb) - *(int *)guest_at((uint32_t)(uintptr_t)na),
+  int ang;
+  short lim;
+  ang = atan2_lut(*(int *)guest_at((uint32_t)(uintptr_t)nb) - *(int *)guest_at((uint32_t)(uintptr_t)na),
                        *(int *)guest_at((uint32_t)(uintptr_t)(nb + 8)) - *(int *)guest_at((uint32_t)(uintptr_t)(na + 8)));
-  sVar2 = *(short *)guest_at((uint32_t)(uintptr_t)(rng + 0x2a));
-  *(short *)guest_at((uint32_t)(uintptr_t)(rng + 0x2a)) = sVar2;
-  if (iVar1 < sVar2) {
+  lim = *(short *)guest_at((uint32_t)(uintptr_t)(rng + 0x2a));
+  *(short *)guest_at((uint32_t)(uintptr_t)(rng + 0x2a)) = lim;
+  if (ang < lim) {
     return -1;
   }
   return 0;
@@ -17261,26 +17261,26 @@ void vec3_midpoint_angles(int a0,int a1,int a2)
  * flag load precedes the frame). Returns node ptr or the flag byte. */
 int task_node_alloc_init(int kind,int cnt,int sz)
 {
-  int iVar1;
-  int *piVar2;
-  int iVar3;
-  iVar3 = (int)DAT_1f8000b1;
-  if (iVar3 != 0) {
-    return iVar3;
+  int node;
+  int *rec;
+  int out;
+  out = (int)DAT_1f8000b1;
+  if (out != 0) {
+    return out;
   }
-  iVar1 = (int)(intptr_t)task_node_alloc(1,2,8,0x8013f648,0,0xc);
-  if (iVar1 == 0) {
+  node = (int)(intptr_t)task_node_alloc(1,2,8,0x8013f648,0,0xc);
+  if (node == 0) {
     return 0;
   }
-  iVar3 = *(int *)guest_at((uint32_t)(uintptr_t)(iVar1 + 0x10));
-  piVar2 = (int *)guest_at((uint32_t)(uintptr_t)iVar3);
-  piVar2[0] = kind;
-  piVar2[1] = cnt;
+  out = *(int *)guest_at((uint32_t)(uintptr_t)(node + 0x10));
+  rec = (int *)guest_at((uint32_t)(uintptr_t)out);
+  rec[0] = kind;
+  rec[1] = cnt;
   if (sz < 0) {
     sz = 0;
   }
-  *(short *)(piVar2 + 2) = (short)sz;
-  return iVar3;
+  *(short *)(rec + 2) = (short)sz;
+  return out;
 }
 
 /* guest task_cb_voice_line @0x8013f648 — task callback: voice/line table lookup +
