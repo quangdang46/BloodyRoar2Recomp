@@ -181,6 +181,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     ctrl[0xce] = 0;
     ctrl[0xcf] = 0;
   }
+  /* juggle/launch pin: zero x-vel, force hop velocity, pick juggle
+   * action (0x6b-0x70) by turn rate sign/magnitude. */
   if ((f6c & 0x100000) != 0) {
     if (*(short *)(motion_p + 0xd6) < 0x100) {
       *(undefined2 *)(motion_p + 0xd6) = 0;
@@ -241,6 +243,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     }
     goto LAB_80176d24;
   }
+  /* pending-hit window: return stored follow-up action from
+   * motion_p+0x24 after clearing hit records. */
   if ((f6c & 0x400000) != 0) {
     *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xffbfffff;
     sv = *(short *)(motion_p + 0x24);
@@ -250,6 +254,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     hit_chain_clear(ctrl);
     return sv + 0x90;
   }
+  /* launched/hitstun: decay timer, reset or clear hits, return
+   * action from the motion_p+4 table indexed by +0x2c. */
   if ((f6c & 0x800000) != 0) {
     ctrl[0xd4] = 0;
     ctrl[0xd5] = 0;
@@ -266,6 +272,8 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
     *(undefined2 *)(&DAT_801f4d76 + (uint)ctrl[2] * 0xbc) = 0xfff6;
     return *(short *)guest_at((uint32_t)(*(short *)(motion_p + 0x2c) * 2 + *(int *)(motion_p + 4) + -0x1a0)) + 0x90;
   }
+  /* main dispatch: f58 request-flag word (sign clear = normal
+   * path; the nested tree maps flag combos to action ids). */
   if ((f58 & 0x40000000) == 0) {
     if ((f58 & 0x100000) == 0) {
       if ((f5c & 0x4000000) != 0) goto LAB_801766e8;
@@ -430,7 +438,7 @@ int32_t action_resolve(byte *ctrl, uint8_t *motion)
                           *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 2;
                         }
                         f68 = *(uint *)(ctrl + 0x5c);
-                        goto code_r0x80177a7c;
+                        goto LAB_80177a7c;
                       }
                     }
                   }
@@ -817,9 +825,11 @@ LAB_80177350:
           }
         }
       }
+      /* f58 sign bit set: forced/priority state - just set the
+       * request-ack bit and fall through to the tail. */
       else if ((int)f58 < 0) {
         f68 = *(uint *)(ctrl + 0x5c) & 0xfdfffffb;
-code_r0x80177a7c:
+LAB_80177a7c:
         *(uint *)(ctrl + 0x5c) = f68 | 1;
       }
       else {
@@ -1203,6 +1213,8 @@ LAB_80178120:
         (&DAT_801f596d)[(uint)ctrl[2] * 2] = 0x3c;
         (&DAT_801f5971)[(uint)ctrl[2] * 2] = 1;
       }
+      /* attack/cancel selection tail: act2<0 keeps act, else
+       * returns act2+0x90 (extended action range). */
 LAB_8017862c:
       if (act2 < 0) {
         return act;
@@ -1225,6 +1237,8 @@ LAB_8017862c:
     }
     if ((f6c & 0x80000) == 0) goto LAB_801766c8;
   }
+  /* f58 high bit set: special-state tail - juggle timer, then
+   * get-up path or -1. */
   else {
     if ((f6c & 0x4000000) != 0) {
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfbffffff;
@@ -1239,6 +1253,9 @@ LAB_801766c8:
         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
         return -1;
       }
+      /* get-up/knockdown path: clear flags, mark slot, reset or
+       * clear hits, then pick directional get-up action (0x30-0x5b
+       * range) from f68/f58 nibble combos. */
 LAB_801766e8:
       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfff7efff;
