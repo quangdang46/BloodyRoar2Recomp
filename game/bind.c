@@ -1378,7 +1378,7 @@ static void bind_globals_3(void)
     g_PTR_DAT_801b5b94 = (uint32_t *)guest_for("g_PTR_DAT_801b5b94");
 }
 
-/* _start guest symbols (entry_0x80126178) — standalone u32s;
+/* _start guest symbols (guest_start) — standalone u32s;
  * in the runtime these alias guest RAM 0x801beef0/0x801bxxxx. */
 uint32_t uRam801beef0, iRam80126228, iRam801be720;
 void halt_baddata(void) { for(;;) { } }

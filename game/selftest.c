@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 extern void *guest_at(uint32_t);
-extern void entry_0x80126234(void);
+extern void guest_main(void);
 extern void display_mode_setup(uint32_t);
 extern int match_end_check(intptr_t);
 extern int memcard_poll_frame(void);

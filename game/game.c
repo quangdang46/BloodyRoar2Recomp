@@ -6,8 +6,8 @@
  * convention; globals via the g_DAT arena bindings in bind.c.
  *
  * Decoded architecture (live + static verified):
- *   entry_0x80126178  _start: BSS clear -> entry_0x80126234
- *   entry_0x80126234  main(): boot(boot) -> settings ->
+ *   guest_start  _start: BSS clear -> guest_main
+ *   guest_main  main(): boot(boot) -> settings ->
  *                     g_game_state SM (0-13) via switchD_80126370
  *   boot      boot: ~25 subsystem inits + CD file pump
  *                     cd_file_pump until state 0x120 -> -1
@@ -353,7 +353,7 @@ int cd_init_session();
 int cd_read_poll();
 int cd_read_issue();
 void cursor_sprite_anim(uint8_t *);
-extern void entry_0x80126234(void);
+extern void guest_main(void);
 
 
 /* ---- callee externs (ported in later batches; weak-bound meanwhile) ---- */
@@ -492,11 +492,11 @@ extern uint32_t memcard_file_flow(int);
 extern void guest_bzero(uint32_t,int);
 
 /* ==================================================================
- * entry_0x80126178 — _start: BSS clear + main call.
+ * guest_start — _start: BSS clear + main call.
  * BSS 0x801ceef0..0x801ff650 zeroed; guest_bzero = memset;
- * then entry_0x80126234 (main); trap(1) on return.
+ * then guest_main (main); trap(1) on return.
  * ================================================================== */
-static void entry_0x80126178(void)
+static void guest_start(void)
 {
     /* Faithful _start (disasm 0x80126178-0x8012621c, delay slots incl.):
      *   BSS clear 0x801CEEF0..0x801FF650 (sw $zero loop, bss_end exclusive)
@@ -516,7 +516,7 @@ static void entry_0x80126178(void)
     v1   = *(uint32_t *)guest_at(0x801be720);
     size = (lit - v1) - 0x1ff650u;            /* guest subu wraps identically */
     guest_bzero(0x801ff654, size);
-    entry_0x80126234();
+    guest_main();
     /* main() returned early on a bail unwind — propagate it to _start's
      * dispatch frame instead of running the guest trap(1) epilogue. */
     { extern int br2_bail_pending(void);
@@ -565,7 +565,7 @@ static void apply_saved_settings_or_defaults(uint32_t *sys_cfg)
 }
 
 /* ==================================================================
- * entry_0x80126234 — main(): boot + g_game_state machine.
+ * guest_main — main(): boot + g_game_state machine.
  * State map (switchD_80126370 @0x8011e800, 14 entries):
  *   0 -> init sync, ->1      1 -> mode set + load, ->2
  *   2 -> ->3                 3 -> stage select, ->4
@@ -575,7 +575,7 @@ static void apply_saved_settings_or_defaults(uint32_t *sys_cfg)
  *   9 -> unlock_progress_scene_entry menus  10,12,13 -> nop ->5
  *   11-> system_config_menu_a/5b9a0 save mgr ->5
  * ================================================================== */
-void entry_0x80126234(void)
+void guest_main(void)
 {
     bool state_lt_14;
     uint8_t ret_state;

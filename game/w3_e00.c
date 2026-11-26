@@ -10,7 +10,7 @@
  *
  *   0x80122170  pointer-table data addr (NOT code) — the generated body is a
  *               fail-closed psx_unknown_dispatch stub; reproduced faithfully.
- *   0x80126344  alternate entry into main() (entry_0x80126234): reloads the
+ *   0x80126344  alternate entry into main() (guest_main): reloads the
  *               state byte lbu v1,0(s1) and falls into the g_game_state
  *               dispatch chain at 0x80126348 (cps_80126348, already clean).
  *   0x80127100..0x80127148  display_mode_setup switch-case trampolines:
