@@ -9184,25 +9184,25 @@ L_store:                                      /* 0x8014813c */
  * to first digit, buf+4 max), 1 = space-padded, 2 = zero-padded,
  * other = buf unchanged. The guest returns the digit pointer in v0;
  * the sole caller treats it as void so the value is dropped here. */
-void width3_num_format(void *a0,int32_t a1,int32_t a2)
+void width3_num_format(void *out,int32_t val,int32_t mode)
 {
-  uint8_t *buf = (uint8_t *)a0;
-  int32_t v = a1;
+  uint8_t *buf = (uint8_t *)out;
+  int32_t v = val;
   int32_t q, i;
 
-  /* a1 %= 1000 via mult 0x10624dd3, hi>>6 - sign */
+  /* val %= 1000 via mult 0x10624dd3, hi>>6 - sign */
   {
     int32_t hi = (int32_t)(((int64_t)v * 0x10624dd3LL) >> 32);
     int32_t d = (hi >> 6) - (v >> 31);
     v -= d * 1000;
   }
 
-  if (a2 == 1) goto L_mode1;
-  if (a2 < 2) {
-    if (a2 == 0) goto L_mode0;
-    return;                                   /* dead: a2==1 handled */
+  if (mode == 1) goto L_mode1;
+  if (mode < 2) {
+    if (mode == 0) goto L_mode0;
+    return;                                   /* dead: mode==1 handled */
   }
-  if (a2 == 2) goto L_mode2;
+  if (mode == 2) goto L_mode2;
   return;                                     /* v0 = buf */
 
 L_mode0:                                      /* 0x80148d1c */
@@ -9255,21 +9255,21 @@ L_mode2:                                      /* 0x80148e00 */
 }
 
 /* width3_num_space_pad — CPS-split continuation of width3_num_format
- * @0x80148d80 (mode a2==1, space-padded 3-digit field). Reached in the
+ * @0x80148d80 (mode mode==1, space-padded 3-digit field). Reached in the
  * guest by a `j` from 0x80148cf0 with the reduced value already in
- * $a1 and the output buffer moved to $a3; $a0/$a2 are dead on entry
- * ($a2 is reloaded with the loop count 2). value==0 emits "  0" style
+ * $val and the output buffer moved to $a3; $out/$mode are dead on entry
+ * ($mode is reloaded with the loop count 2). value==0 emits "  0" style
  * (0x20,0x20,'0'); otherwise digits fill buf[2..0] right-to-left and
  * leading positions that outlive the value become 0x20. NUL at buf[3]
  * comes from the shared 0x80148e60 tail in the guest. */
-void width3_num_space_pad(int32_t param_1,int32_t param_2,int32_t param_3,
-                    uint8_t *param_4)
+void width3_num_space_pad(int32_t unused_a,int32_t val,int32_t unused_b,
+                    uint8_t *out)
 {
-  uint8_t *buf = param_4;
-  int32_t v = param_2;
+  uint8_t *buf = out;
+  int32_t v = val;
   int32_t q, i;
-  (void)param_1;
-  (void)param_3;
+  (void)unused_a;
+  (void)unused_b;
 
   if (v == 0) {
     buf[0] = 0x20; buf[1] = 0x20; buf[2] = '0';
@@ -9294,14 +9294,14 @@ void width3_num_space_pad(int32_t param_1,int32_t param_2,int32_t param_3,
  * as width3_num_space_pad (value in $a1, buf in $a3). buf[0..2] are
  * pre-filled with '0' so positions that outlive the value stay zero;
  * NUL at buf[3] via the shared 0x80148e60 tail. */
-void width3_num_zero_pad(int32_t param_1,int32_t param_2,int32_t param_3,
-                   uint8_t *param_4)
+void width3_num_zero_pad(int32_t unused_a,int32_t val,int32_t unused_b,
+                   uint8_t *out)
 {
-  uint8_t *buf = param_4;
-  int32_t v = param_2;
+  uint8_t *buf = out;
+  int32_t v = val;
   int32_t q, i;
-  (void)param_1;
-  (void)param_3;
+  (void)unused_a;
+  (void)unused_b;
 
   buf[0] = '0'; buf[1] = '0'; buf[2] = '0';
   for (i = 2; i >= 0; i--) {
@@ -9318,52 +9318,52 @@ void width3_num_zero_pad(int32_t param_1,int32_t param_2,int32_t param_3,
 /* packed_field_store — packed-field writer @0x80148f30 (9 insns).
  * 0x801f10b8 = ((a0 & 0x3ff) << 3); the store is the beqz delay
  * slot so it always runs, then (a0 & 0x400) rewrites it |4. */
-void packed_field_store(uint32_t a0)
+void packed_field_store(uint32_t val)
 {
-  uint32_t v0 = (a0 & 0x3ffu) << 3;
+  uint32_t v0 = (val & 0x3ffu) << 3;
   MW32(0x801f10b8,v0);
-  if (a0 & 0x400u) MW32(0x801f10b8,v0 | 4u);
+  if (val & 0x400u) MW32(0x801f10b8,v0 | 4u);
 }
 
 /* side_flag_merge — per-side flag merge @0x8014a5bc (58 insns).
- * a0 = guest battle base, a1 = host ctx. Two passes (i=0,1) over
+ * val = guest battle base, a1 = host ctx. Two passes (i=0,1) over
  * ctx+0x28+i*0x30; the +0x9b!=0 arm sets BOTH fixed slots +0x28/+0x58
  * (not the per-i slot). Otherwise bit 0x40 is set on the per-i slot
  * unless select_phase_gate/gate_read_ec/phase checks say the side is live:
  * set when (53484==0 && (92&0xf00)!=0x300) or the chain yields 0. */
-void side_flag_merge(uint32_t a0,void *a1)
+void side_flag_merge(uint32_t battle,void *ctxp)
 {
-  uint8_t *ctx = (uint8_t *)a1;
+  uint8_t *ctx = (uint8_t *)ctxp;
   int i;
   for (i = 0; i < 2; i++) {
     uint32_t *slot = (uint32_t *)(ctx + 0x28 + i * 0x30);
     int32_t t;
-    if (MB8(a0 + 0x9b) != 0) {
+    if (MB8(battle + 0x9b) != 0) {
       *(uint32_t *)(ctx + 0x28) |= 0x40u;
       *(uint32_t *)(ctx + 0x58) |= 0x40u;
       continue;
     }
-    if (select_phase_gate(a0,(uint32_t)i) != 0) {
-      t = gate_read_ec(a0,(uint32_t)(i ^ 1));
+    if (select_phase_gate(battle,(uint32_t)i) != 0) {
+      t = gate_read_ec(battle,(uint32_t)(i ^ 1));
       if (t == 0) *slot |= 0x40u;
-    } else if ((MB16(a0 + 0x92) & 0xf00u) != 0x300u) {
+    } else if ((MB16(battle + 0x92) & 0xf00u) != 0x300u) {
       *slot |= 0x40u;
     } else {
-      t = (int32_t)(MB16(a0 + 2 * i + 0xb4) & 0x1000u);
+      t = (int32_t)(MB16(battle + 2 * i + 0xb4) & 0x1000u);
       if (t == 0) *slot |= 0x40u;
     }
   }
 }
 
 /* ctx_flag_set — ctx flag setter @0x8014a6a8 (23 insns, leaf).
- * a0 unused. ctx+0x14 = 0x1387; for i=0,1 if the CROSS slot
+ * battle unused. ctx+0x14 = 0x1387; for i=0,1 if the CROSS slot
  * ctx+(i^1)*0x30+0x38 == 1 then ctx+0x28+i*0x30 |= 0x18. */
-void ctx_flag_set(uint32_t a0,void *a1)
+void ctx_flag_set(uint32_t unused,void *ctxp)
 {
-  uint8_t *ctx = (uint8_t *)a1;
+  uint8_t *ctx = (uint8_t *)ctxp;
   uint32_t off = 0x28;
   int i;
-  (void)a0;
+  (void)unused;
   *(uint32_t *)(ctx + 0x14) = 0x1387u;
   for (i = 0; i < 2; i++) {
     if (*(uint32_t *)(ctx + (uint32_t)(i ^ 1) * 0x30 + 0x38) == 1)
@@ -9373,20 +9373,20 @@ void ctx_flag_set(uint32_t a0,void *a1)
 }
 
 /* engine_record_pair_update — paired engine-record updater @0x8014a708 (62 insns).
- * a0 = guest battle base (passthrough to palette_attr_record_write), a1 = host ctx.
+ * unused = guest battle base (passthrough to palette_attr_record_write), ctxp = host ctx.
  * Two iterations: palette_attr_record_write on engine[i]+0xa50/+0xa78 with the
  * ctx+0x44/+0x74 u32 args, then packed_u16_expand on engine0/1 + i*0x28
  * and +0x50+i*0x28 with ctx+i*0x30+0x44. */
-void engine_record_pair_update(uint32_t a0,void *a1)
+void engine_record_pair_update(uint32_t battle,void *ctxp)
 {
-  uint8_t *ctx = (uint8_t *)a1;
+  uint8_t *ctx = (uint8_t *)ctxp;
   int i;
   for (i = 0; i < 2; i++) {
     uint32_t eng = MB32(0x801f10c0 + (uint32_t)i * 4u);
     uint32_t a2v;
-    palette_attr_record_write(a0,eng + 0xa50,0,
+    palette_attr_record_write(battle,eng + 0xa50,0,
                  *(uint32_t *)(ctx + 0x44));
-    palette_attr_record_write(a0,eng + 0xa78,1,
+    palette_attr_record_write(battle,eng + 0xa78,1,
                  *(uint32_t *)(ctx + 0x74));
     a2v = *(uint32_t *)(ctx + (uint32_t)i * 0x30 + 0x44);
     packed_u16_expand(MB32(0x801f10c0) + (uint32_t)i * 0x28,
@@ -9397,73 +9397,72 @@ void engine_record_pair_update(uint32_t a0,void *a1)
 }
 
 /* gpu_side_packet_emit — GPU-packet emitter @0x8014a918 (113 insns).
- * a0 = guest record ptr, a1 = side index, a2 = mode. Always sets
- * u32 @MB32(0x801f10bc)+a1*0x30+0x54 = 1 first (beq delay slot).
+ * battle = guest record ptr, ctxp = side index, a2 = mode. Always sets
+ * u32 @MB32(0x801f10bc)+ctxp*0x30+0x54 = 1 first (beq delay slot).
  * mode 0/1 emit cmd_queue_push packets (record+8 word added when
  * rec+4 bit3 set, then +0x14); modes 2..5 emit spr_draw_pair with
  * halfword pairs from table 0x801b253c indexed by a2-2. */
-void gpu_side_packet_emit(uint32_t a0,int32_t a1,int32_t a2)
+void gpu_side_packet_emit(uint32_t rec,int32_t side,int32_t mode)
 {
-  uint32_t s0 = a0;
-  uint32_t v1 = MB32(0x801f10bc) + (uint32_t)a1 * 3u * 0x10u;
+  uint32_t v1 = MB32(0x801f10bc) + (uint32_t)side * 3u * 0x10u;
   MW32(v1 + 0x54,1);                           /* unconditional */
 
-  if (a2 == 1) goto L_mode1;
-  if (a2 < 2) {
-    if (a2 == 0) goto L_mode0;
+  if (mode == 1) goto L_mode1;
+  if (mode < 2) {
+    if (mode == 0) goto L_mode0;
     return;
   }
-  if (a2 < 6) goto L_modeMid;
+  if (mode < 6) goto L_modeMid;
   return;
 
 L_mode0:                                      /* 0x8014a97c */
-  if ((MB32(s0 + 4) & 8u) == 0) return;
+  if ((MB32(rec + 4) & 8u) == 0) return;
   {
-    uint32_t v1s = s0 + 0x14;
-    s0 += MB32(s0 + 8) + 0x14;
-    if (a1 == 0)
+    uint32_t v1s = rec + 0x14;
+    rec += MB32(rec + 8) + 0x14;
+    if (side == 0)
       cmd_queue_push(0,0x1f5,0x100,1,v1s);
     else
       cmd_queue_push(0,0x1f6,0x100,1,v1s);
-    cmd_queue_push(a1 == 0 ? 0x200 : 0x260,0,0x60,0x100,s0);
+    cmd_queue_push(side == 0 ? 0x200 : 0x260,0,0x60,0x100,rec);
   }
   return;
 
 L_mode1:                                      /* 0x8014a9fc */
-  if ((MB32(s0 + 4) & 8u) != 0) s0 += MB32(s0 + 8);
-  s0 += 0x14;
-  cmd_queue_push(a1 == 0 ? 0x340 : 0x360,0,0x18,0x60,s0);
+  if ((MB32(rec + 4) & 8u) != 0) rec += MB32(rec + 8);
+  rec += 0x14;
+  cmd_queue_push(side == 0 ? 0x340 : 0x360,0,0x18,0x60,rec);
   return;
 
-L_modeMid:                                    /* 0x8014aa50, a2 in 2..5 */
+L_modeMid:                                    /* 0x8014aa50, mode in 2..5 */
   {
-    int32_t idx = a2 - 2;
+    int32_t idx = mode - 2;
     int32_t h1 = MBS16(0x801b253c + (uint32_t)idx * 4);
     int32_t h2 = MBS16(0x801b253c + (uint32_t)idx * 4 + 2);
-    spr_draw_pair(s0,(uint32_t)h1,(uint32_t)h2,1,
-                 a1 == 0 ? 0x300u : 0x320u,0,1);
+    spr_draw_pair(rec,(uint32_t)h1,(uint32_t)h2,1,
+                 side == 0 ? 0x300u : 0x320u,0,1);
   }
   return;
 }
 
 /* record_flag_byte_clear — record byte clear @0x801a4c60 (4 insns).
- * if (a0) *(u8*)(a0+0x17) = 0. a0 is a guest ptr. */
-void record_flag_byte_clear(uint32_t a0)
+ * if (rec) *(u8*)(rec+0x17) = 0. rec is a guest ptr. */
+void record_flag_byte_clear(uint32_t rec)
 {
-  if (a0 != 0) MW8(a0 + 0x17,0);
+  if (rec != 0) MW8(rec + 0x17,0);
 }
 
 /* record_flag_byte_set — record byte set @0x801a4c74 (4 insns).
  * v0=1 is the beqz delay slot so it returns 1 either way; the sole
  * caller ignores it, matching the void extern. */
-void record_flag_byte_set(uint32_t a0)
+void record_flag_byte_set(uint32_t rec)
 {
-  if (a0 != 0) MW8(a0 + 0x17,1);
+  if (rec != 0) MW8(rec + 0x17,1);
 }
 
 /* vs_confirm_a — versus-confirm phase stepper @0x80153ab0 (207
  * insns through jr $ra @0x80153de4; the 0x80153dec tail is the
- * already-ported battle_side_flag_prop). a0/a1 = host side blocks,
+ * already-ported battle_side_flag_prop). rec/a1 = host side blocks,
  * a2 = guest battle state s0, a3 = flag. Dispatch on
  * MB8(MB32(s0+0xcc)+0xa) via table @0x80120a30 (0->return,
  * 1->0x80153b0c, 2->0x80153b34, 3->0x80153b70, 4->0x80153c7c,
@@ -9471,17 +9470,17 @@ void record_flag_byte_set(uint32_t a0)
  * +0xc counts via lhu-store / lh-compare, +0xa/+0xe are u16
  * counters. Shared tails: 0x80153d74 = rec.a++ only;
  * 0x80153c5c = rec.a++ + s0+0x9e=0 (reached with rec.c already 0). */
-void vs_confirm_a(uint8_t *param_1,uint8_t *param_2,uint32_t param_3,
-                  uint32_t param_4)
+void vs_confirm_a(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
+                  uint32_t flag)
 {
-  uint8_t *s1 = param_1;
-  uint8_t *s2 = param_2;
-  uint32_t s0 = param_3;
-  uint32_t s3 = param_4;
+  uint8_t *s1 = blk_a;
+  uint8_t *s2 = blk_b;
+  uint32_t s0 = battle;
+  uint32_t s3 = flag;
   uint32_t rec, v0;
   int32_t ret;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(49,(uint32_t)(uintptr_t)param_1,(uint32_t)(uintptr_t)param_2,s0,param_4); }
+    decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,s0,flag); }
 
   rec = MB32(s0 + 0xcc);
   v0 = MB8(rec + 0xa);
@@ -9593,13 +9592,13 @@ static void side_scale_ac(uint8_t *side,uint32_t s1)
   if (*(int16_t *)(side + 0xac) < 0) *(int16_t *)(side + 0xac) = 0;
 }
 
-void vs_confirm_b(uint32_t s1,uint8_t *s2,uint8_t *s3,int32_t a3)
+void vs_confirm_b(uint32_t battle,uint8_t *blk_a,uint8_t *blk_b,int32_t flag)
 {
   uint32_t v1;
   int32_t ac, b0;
   uint32_t b0u;
 
-  v1 = MB8(s1 + 0x9c);
+  v1 = MB8(battle + 0x9c);
   if (v1 >= 6) goto L_ecc;
   switch (v1) {
   case 0: goto L_case0;
@@ -9611,83 +9610,83 @@ void vs_confirm_b(uint32_t s1,uint8_t *s2,uint8_t *s3,int32_t a3)
   return;
 
 L_case0:                                      /* 0x80152c30 */
-  v1 = MB16(s1 + 0x92) & 0xf00u;
+  v1 = MB16(battle + 0x92) & 0xf00u;
   if (v1 == 0x200u) {
-    if (a3 != 0) goto L_ecc;
-    if ((int32_t)MBS16(s1 + 0xa4) <
-        (int32_t)MB8(MB32(s1 + 0xc0) + 0x10)) goto L_ecc;
+    if (flag != 0) goto L_ecc;
+    if ((int32_t)MBS16(battle + 0xa4) <
+        (int32_t)MB8(MB32(battle + 0xc0) + 0x10)) goto L_ecc;
     goto L_3058;
   }
   if (v1 < 0x201u) {
     if (v1 != 0x100u) goto L_ecc;
-    if (a3 == 0) goto L_ecc;
-    if ((int32_t)MBS16(s1 + 0xa4) <
-        (int32_t)MB8(MB32(s1 + 0xc0) + 0x10)) goto L_ecc;
+    if (flag == 0) goto L_ecc;
+    if ((int32_t)MBS16(battle + 0xa4) <
+        (int32_t)MB8(MB32(battle + 0xc0) + 0x10)) goto L_ecc;
     goto L_2f38;
   }
   goto L_ecc;
 
 L_case5:                                      /* 0x80152cb0 */
-  if (MB8(s1 + 0x9b) != 0) goto L_d10;
-  v1 = MB16(s1 + 0x92) & 0xf00u;
-  if ((v1 == 0x100u && a3 != 0) || (v1 == 0x200u && a3 == 0)) {
-    MW8(s1 + 1,9);
-    MW8(s1 + 0,0xb);
-    MW8(s1 + 2,4);
+  if (MB8(battle + 0x9b) != 0) goto L_d10;
+  v1 = MB16(battle + 0x92) & 0xf00u;
+  if ((v1 == 0x100u && flag != 0) || (v1 == 0x200u && flag == 0)) {
+    MW8(battle + 1,9);
+    MW8(battle + 0,0xb);
+    MW8(battle + 2,4);
     return;                                   /* j 0x801531d0 */
   }
   goto L_ecc;
 
 L_d10:                                        /* 0x80152d10 (cases 1/2,
                                                * case5 9b!=0) */
-  status_flag_cond_set(guest_of(s2),0);           /* a2=0x801209ac unused */
-  status_flag_cond_set(guest_of(s3),0);
-  if (MBS16(s1 + 0xb4) != 0)
-    MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0x100u));
-  if (MBS16(s1 + 0xb6) != 0)
-    MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0x100u));
+  status_flag_cond_set(guest_of(blk_a),0);           /* a2=0x801209ac unused */
+  status_flag_cond_set(guest_of(blk_b),0);
+  if (MBS16(battle + 0xb4) != 0)
+    MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0x100u));
+  if (MBS16(battle + 0xb6) != 0)
+    MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0x100u));
   deferred_cmd_post(0x204,0,0);
-  frame_present(s1);
+  frame_present(battle);
   scroll_cfg_set(2,8);
-  v1 = MB32(s1 + 0xc0);
+  v1 = MB32(battle + 0xc0);
   MW8(v1 + 0x19,(uint8_t)(MB8(v1 + 0x19) & 3));
   MW8(v1 + 0x1a,(uint8_t)(MB8(v1 + 0x1a) & 3));
-  if ((MB16(s1 + 0x80) & 0xfu) != 0) {
-    confirm_bookkeeping(s1);
-    battle_state_init(s2,s3,s1);
+  if ((MB16(battle + 0x80) & 0xfu) != 0) {
+    confirm_bookkeeping(battle);
+    battle_state_init(blk_a,blk_b,battle);
     scratchpad_pair_init();
-    MW8(s1 + 0x9e,0);                         /* j delay slot */
-    MW8(s1 + 1,5);
+    MW8(battle + 0x9e,0);                         /* j delay slot */
+    MW8(battle + 1,5);
   } else {
-    MW8(s1 + 1,1);
+    MW8(battle + 1,1);
   }
   return;
 
 L_case3:                                      /* 0x80152df8 */
-  v1 = MB16(s1 + 0x92) & 0xf00u;
+  v1 = MB16(battle + 0x92) & 0xf00u;
   if (v1 == 0x200u) {
-    if (a3 == 0) goto L_3058;
+    if (flag == 0) goto L_3058;
     goto L_ecc;
   }
   if (v1 >= 0x201u) goto L_ecc;
   if (v1 != 0x100u) goto L_ecc;
-  if (a3 == 0) goto L_ecc;
+  if (flag == 0) goto L_ecc;
   goto L_2f38;
 
 L_case4:                                      /* 0x80152e40 */
-  if (MBS16(s1 + 0xb4) != 0)
-    MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0x100u));
-  if (MBS16(s1 + 0xb6) != 0)
-    MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0x100u));
+  if (MBS16(battle + 0xb4) != 0)
+    MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0x100u));
+  if (MBS16(battle + 0xb6) != 0)
+    MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0x100u));
   deferred_cmd_post(0x204,0,0);
-  frame_present(s1);
+  frame_present(battle);
   scroll_cfg_set(2,8);
-  MW8(s1 + 1,0xb);                            /* j 0x801531cc, v0=0xb */
+  MW8(battle + 1,0xb);                            /* j 0x801531cc, v0=0xb */
   return;
 
 L_ecc:                                        /* 0x80152ecc shared tail */
-  if (MB8(s1 + 0x9b) != 0) return;
-  v1 = MB16(s1 + 0x92) & 0xf00u;
+  if (MB8(battle + 0x9b) != 0) return;
+  v1 = MB16(battle + 0x92) & 0xf00u;
   if (v1 == 0x200u) goto L_3040;
   if (v1 < 0x201u) {
     if (v1 != 0x100u) return;
@@ -9697,85 +9696,85 @@ L_ecc:                                        /* 0x80152ecc shared tail */
   return;
 
 L_2f20:                                       /* phase 0x100 arm */
-  if (a3 != 0) goto L_3014;
-  if (MBS16(s1 + 0xa4) < 0) goto L_2f38;      /* bgez -> L_2f74 w/ v0=3 */
+  if (flag != 0) goto L_3014;
+  if (MBS16(battle + 0xa4) < 0) goto L_2f38;      /* bgez -> L_2f74 w/ v0=3 */
   goto L_2f74;
 
 L_2f74:                                       /* 0x80152f74: state==3 arm */
-  if (MB8(s1 + 0x9c) == 3) {
-    ac = *(int16_t *)(s2 + 0xac);
-    b0 = *(int16_t *)(s2 + 0xb0);
-    b0u = *(uint16_t *)(s2 + 0xb0);
+  if (MB8(battle + 0x9c) == 3) {
+    ac = *(int16_t *)(blk_a + 0xac);
+    b0 = *(int16_t *)(blk_a + 0xb0);
+    b0u = *(uint16_t *)(blk_a + 0xb0);
     if (ac >= b0 || ac < 0)
-      *(int16_t *)(s2 + 0xac) = (int16_t)(b0u - 1);
-    side_scale_ac(s2,s1);
+      *(int16_t *)(blk_a + 0xac) = (int16_t)(b0u - 1);
+    side_scale_ac(blk_a,battle);
   }
-  MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0x100u));
+  MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0x100u));
   goto L_31ac;
 
 L_3014:                                       /* 0x80153014: b4 0x600 arm */
-  MW16(s1 + 0x8c,0);
-  MW16(s1 + 0xb2,0);
-  MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0x600u));
-  MW16(s1 + 0x92,(uint16_t)((MB16(s1 + 0x92) & 0xff00u) | 0xfu));
+  MW16(battle + 0x8c,0);
+  MW16(battle + 0xb2,0);
+  MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0x600u));
+  MW16(battle + 0x92,(uint16_t)((MB16(battle + 0x92) & 0xff00u) | 0xfu));
   return;
 
 L_3040:                                       /* phase 0x200 arm */
-  if (a3 == 0) goto L_3140;
-  if (MBS16(s1 + 0xa4) < 0) goto L_3058;
+  if (flag == 0) goto L_3140;
+  if (MBS16(battle + 0xa4) < 0) goto L_3058;
   goto L_3094;
 
 L_3094:                                       /* 0x80153094: state==3 arm */
-  if (MB8(s1 + 0x9c) == 3) {
-    ac = *(int16_t *)(s2 + 0xac);
-    b0 = *(int16_t *)(s2 + 0xb0);
-    b0u = *(uint16_t *)(s2 + 0xb0);
-    if (ac >= b0 || *(int16_t *)(s3 + 0xac) < 0)
-      *(int16_t *)(s2 + 0xac) = (int16_t)(b0u - 1);
-    side_scale_ac(s3,s1);
+  if (MB8(battle + 0x9c) == 3) {
+    ac = *(int16_t *)(blk_a + 0xac);
+    b0 = *(int16_t *)(blk_a + 0xb0);
+    b0u = *(uint16_t *)(blk_a + 0xb0);
+    if (ac >= b0 || *(int16_t *)(blk_b + 0xac) < 0)
+      *(int16_t *)(blk_a + 0xac) = (int16_t)(b0u - 1);
+    side_scale_ac(blk_b,battle);
   }
-  MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0x100u));
+  MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0x100u));
   goto L_31ac;
 
 L_3140:                                       /* 0x80153140: b6 0x600 arm */
-  MW16(s1 + 0x8c,0);
-  MW16(s1 + 0xb2,0);
-  MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0x600u));
-  MW16(s1 + 0x92,(uint16_t)((MB16(s1 + 0x92) & 0xff00u) | 0xfu));
+  MW16(battle + 0x8c,0);
+  MW16(battle + 0xb2,0);
+  MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0x600u));
+  MW16(battle + 0x92,(uint16_t)((MB16(battle + 0x92) & 0xff00u) | 0xfu));
   return;
 
 L_316c:                                       /* phase 0x300 arm */
-  if (a3 == 0)
-    MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0x100u));
+  if (flag == 0)
+    MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0x100u));
   else
-    MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0x100u));
+    MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0x100u));
   goto L_31ac;
 
 L_2f38:                                       /* 0x80152f38: b4 reset */
-  MW8(s1 + 0,9);
-  MW8(s1 + 1,9);
-  MW16(s1 + 0x8c,0);
-  MW16(s1 + 0x8e,0);
-  MW16(s1 + 0x90,0);
-  MW16(s1 + 0xb4,(uint16_t)((MB16(s1 + 0xb4) & 0xf000u) | 0xa00u));
-  MW16(s1 + 0x92,(uint16_t)((MB16(s1 + 0x92) & 0xff00u) | 0x10u));
+  MW8(battle + 0,9);
+  MW8(battle + 1,9);
+  MW16(battle + 0x8c,0);
+  MW16(battle + 0x8e,0);
+  MW16(battle + 0x90,0);
+  MW16(battle + 0xb4,(uint16_t)((MB16(battle + 0xb4) & 0xf000u) | 0xa00u));
+  MW16(battle + 0x92,(uint16_t)((MB16(battle + 0x92) & 0xff00u) | 0x10u));
   return;
 
 L_3058:                                       /* 0x80153058: b6 reset */
-  MW8(s1 + 0,9);
-  MW8(s1 + 1,9);
-  MW16(s1 + 0x8c,0);
-  MW16(s1 + 0x8e,0);
-  MW16(s1 + 0x90,0);
-  MW16(s1 + 0xb6,(uint16_t)((MB16(s1 + 0xb6) & 0xf000u) | 0xa00u));
-  MW16(s1 + 0x92,(uint16_t)((MB16(s1 + 0x92) & 0xff00u) | 0x10u));
+  MW8(battle + 0,9);
+  MW8(battle + 1,9);
+  MW16(battle + 0x8c,0);
+  MW16(battle + 0x8e,0);
+  MW16(battle + 0x90,0);
+  MW16(battle + 0xb6,(uint16_t)((MB16(battle + 0xb6) & 0xf000u) | 0xa00u));
+  MW16(battle + 0x92,(uint16_t)((MB16(battle + 0x92) & 0xff00u) | 0x10u));
   return;
 
 L_31ac:                                       /* 0x801531ac shared tail */
   deferred_cmd_post(0x204,0,0);
-  frame_present(s1);
+  frame_present(battle);
   scroll_cfg_set(2,8);
-  MW8(s1 + 1,2);                              /* v0=2 -> 0x801531cc */
+  MW8(battle + 1,2);                              /* v0=2 -> 0x801531cc */
   return;
 }
 
