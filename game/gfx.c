@@ -1477,19 +1477,19 @@ void *spr_pool_a_alloc(void)
  * 0x801f5ed8, counter DAT_801b55dc. Same sentinel protocol. */
 void *spr_pool_b_alloc(void)
 {
-  int32_t iVar3;
-  uint32_t *puVar4;
-  int32_t iVar2;
+  int32_t owner;
+  uint32_t *slot;
+  int32_t next;
   int32_t v1 = DAT_801b55dc;
   uint32_t sent = _DAT_1f8000dc;
-  puVar4 = (uint32_t *)guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c);
-  iVar3 = (int32_t)*puVar4;
-  if (iVar3 == (int32_t)sent || iVar3 == (int32_t)(sent - 1))
+  slot = (uint32_t *)guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c);
+  owner = (int32_t)*slot;
+  if (owner == (int32_t)sent || owner == (int32_t)(sent - 1))
     return (void *)0;
-  iVar2 = v1 + 1;
-  if (0x1f < iVar2) iVar2 = 0;
-  DAT_801b55dc = iVar2;
-  *puVar4 = sent;
+  next = v1 + 1;
+  if (0x1f < next) next = 0;
+  DAT_801b55dc = next;
+  *slot = sent;
   return guest_at(0x801f5ed8 + (uint32_t)v1 * 0x2c + 4);
 }
 
@@ -1510,276 +1510,274 @@ extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
 extern uint8_t DAT_801b6701[];
-uint32_t printf_core(uint32_t param_1,const uint8_t *param_2,const uint32_t *param_3)
+uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
 {
-  uint8_t bVar1, bVar2;
-  char cVar3;
-  int bVar4, bVar5, bVar6, bVar7;
-  int32_t iVar8;
-  uint32_t uVar9, uVar10, uVar16, uVar22;
-  uint32_t *puVar12, *puVar13;
-  const uint32_t *puVar11_;
-  char *pcVar15;
-  uint32_t *puVar17, *puVar18, *puVar19;
-  const uint8_t *pbVar20;
-  int32_t iVar21;
-  intptr_t local_40, local_3c, local_38, local_34;
-  char local_68[40];
-  intptr_t puVar17i;
-  char *pcVar15w;
-  (void)param_1;
-  if (param_2 == 0) return 0;
-  const char *local_30 = s_0123456789abcdef_80124fe8;
-  local_40 = 0;
+  uint8_t c1, c2;
+  char dig;
+  int pfx, lng, sht, alt;
+  uint32_t v, base, flags, quo;
+  uint32_t *apn, *ap;
+  char *txt;
+  uint32_t *need, *fldw, *left;
+  const uint8_t *fp;
+  int32_t sign;
+  intptr_t count, prec, zpad, width;
+  char dbuf[40];
+  intptr_t prec_raw;
+  char *dcur;
+  (void)chan;
+  if (fmt == 0) return 0;
+  const char *digits = s_0123456789abcdef_80124fe8;
+  count = 0;
 LAB_8018e5e0:
-  uVar9 = (uint32_t)*param_2;
-  if (uVar9 != 0) {
-    uVar16 = 0;
-    bVar4 = 0; bVar7 = 0; bVar6 = 0; bVar5 = 0;
-    if (uVar9 == 0x25) {
-      puVar17i = -1;
-      iVar21 = 0;
-      local_3c = 0;
-      local_38 = 0;
-      local_34 = 0;
-      puVar13 = (uint32_t *)param_3;
-      pbVar20 = param_2;
+  v = (uint32_t)*fmt;
+  if (v != 0) {
+    flags = 0;
+    pfx = 0; alt = 0; sht = 0; lng = 0;
+    if (v == 0x25) {
+      prec_raw = -1;
+      sign = 0;
+      prec = 0;
+      zpad = 0;
+      width = 0;
+      ap = (uint32_t *)args;
+      fp = fmt;
 LAB_8018e60c:
-      param_2 = pbVar20 + 1;
-      puVar12 = puVar13;
-      switch (*param_2) {
+      fmt = fp + 1;
+      apn = ap;
+      switch (*fmt) {
       case 0:
         goto switchD_8018e634_caseD_0;
       default:
-        uVar9 = (uint32_t)(char)*param_2;
-        local_40 = local_40 + 1;
-        param_3 = (const uint32_t *)puVar13;
+        v = (uint32_t)(char)*fmt;
+        count = count + 1;
+        args = (const uint32_t *)ap;
         break;
       case 0x20:
-        pbVar20 = param_2;
-        if (iVar21 == 0) iVar21 = 0x20;
+        fp = fmt;
+        if (sign == 0) sign = 0x20;
         goto LAB_8018e60c;
       case 0x23:
-        bVar7 = 1;
-        pbVar20 = param_2;
+        alt = 1;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x2a:
-        puVar12 = puVar13 + 1;
-        local_34 = (intptr_t)*puVar13;
-        puVar13 = puVar12;
-        pbVar20 = param_2;
-        if (-1 < (int)local_34) goto LAB_8018e60c;
-        local_34 = -local_34;
+        apn = ap + 1;
+        width = (intptr_t)*ap;
+        ap = apn;
+        fp = fmt;
+        if (-1 < (int)width) goto LAB_8018e60c;
+        width = -width;
         /* fallthrough */
       case 0x2d:
-        uVar16 |= 0x10;
-        puVar13 = puVar12;
-        pbVar20 = param_2;
+        flags |= 0x10;
+        ap = apn;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x2b:
-        iVar21 = 0x2b;
-        pbVar20 = param_2;
+        sign = 0x2b;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x2e:
-        pbVar20 = pbVar20 + 2;
-        bVar1 = *pbVar20;
-        if (bVar1 == 0x2a) {
-          puVar17i = (intptr_t)*puVar13;
-          puVar13 = puVar13 + 1;
+        fp = fp + 2;
+        c1 = *fp;
+        if (c1 == 0x2a) {
+          prec_raw = (intptr_t)*ap;
+          ap = ap + 1;
         } else {
-          puVar17i = 0;
-          while (bVar1 < 0x80 && (bVar2 = *pbVar20, (DAT_801b6701[bVar2] & 4) != 0)) {
-            pbVar20 = pbVar20 + 1;
-            bVar1 = *pbVar20;
-            puVar17i = (intptr_t)((intptr_t)puVar17i * 10 + -0x30 + (uint32_t)bVar2);
+          prec_raw = 0;
+          while (c1 < 0x80 && (c2 = *fp, (DAT_801b6701[c2] & 4) != 0)) {
+            fp = fp + 1;
+            c1 = *fp;
+            prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
           }
-          pbVar20 = pbVar20 - 1;
+          fp = fp - 1;
         }
-        if ((int)puVar17i < 0) puVar17i = -1;
+        if ((int)prec_raw < 0) prec_raw = -1;
         goto LAB_8018e60c;
       case 0x30:
-        uVar16 |= 0x20;
-        pbVar20 = param_2;
+        flags |= 0x20;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x31: case 0x32: case 0x33: case 0x34:
       case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
-        local_34 = 0;
+        width = 0;
         do {
-          pbVar20 = param_2;
-          param_2 = pbVar20 + 1;
-          local_34 = (intptr_t)((intptr_t)local_34 * 10 + -0x30 + (uint32_t)*pbVar20);
-          if (0x7f < *param_2) break;
-        } while ((DAT_801b6701[*param_2] & 4) != 0);
+          fp = fmt;
+          fmt = fp + 1;
+          width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
+          if (0x7f < *fmt) break;
+        } while ((DAT_801b6701[*fmt] & 4) != 0);
         goto LAB_8018e60c;
       case 0x44:
-        bVar5 = 1;
+        lng = 1;
         /* fallthrough */
       case 100:
       case 0x69:
-        if (bVar5 || !bVar6) uVar9 = *puVar13;
-        else uVar9 = (uint32_t)(int16_t)*puVar13;
-        uVar10 = 10;
-        if ((int32_t)uVar9 < 0) { uVar9 = -uVar9; iVar21 = 0x2d; }
+        if (lng || !sht) v = *ap;
+        else v = (uint32_t)(int16_t)*ap;
+        base = 10;
+        if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
         goto LAB_8018e95c_d;
       case 0x4c:
-        pbVar20 = param_2;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x4f:
-        bVar5 = 1;
+        lng = 1;
         /* fallthrough */
       case 0x6f:
-        if (bVar5 || (uVar10 = 8, !bVar6)) {
-          uVar9 = *puVar13;
-          uVar10 = 8;
+        if (lng || (base = 8, !sht)) {
+          v = *ap;
+          base = 8;
           goto LAB_8018e958_d;
         }
-        uVar9 = (uint32_t)(int16_t)*puVar13;
-        iVar21 = 0;
+        v = (uint32_t)(int16_t)*ap;
+        sign = 0;
         goto LAB_8018e95c_d;
       case 0x55:
-        bVar5 = 1;
+        lng = 1;
         /* fallthrough */
       case 0x75:
-        if (bVar5 || (uVar10 = 10, !bVar6)) {
-          uVar9 = *puVar13;
-          uVar10 = 10;
+        if (lng || (base = 10, !sht)) {
+          v = *ap;
+          base = 10;
           goto LAB_8018e958_d;
         }
-        uVar9 = (uint32_t)(int16_t)*puVar13;
-        iVar21 = 0;
+        v = (uint32_t)(int16_t)*ap;
+        sign = 0;
         goto LAB_8018e95c_d;
       case 0x58:
-        local_30 = s_0123456789ABCDEF_80125004;
+        digits = s_0123456789ABCDEF_80125004;
         /* fallthrough */
       case 0x78:
-        if (bVar5 || !bVar6) uVar9 = *puVar13;
-        else uVar9 = (uint32_t)(int16_t)*puVar13;
-        uVar10 = 0x10;
-        iVar21 = 0;
-        if (bVar7 && uVar9 != 0) { bVar4 = 1; goto LAB_8018e958_d; }
+        if (lng || !sht) v = *ap;
+        else v = (uint32_t)(int16_t)*ap;
+        base = 0x10;
+        sign = 0;
+        if (alt && v != 0) { pfx = 1; goto LAB_8018e958_d; }
         goto LAB_8018e95c_d;
       case 99:
-        pcVar15 = (char *)local_68;
-        puVar19 = (uint32_t *)1;
-        iVar21 = 0;
-        local_68[0] = (char)*puVar13;
+        txt = (char *)dbuf;
+        left = (uint32_t *)1;
+        sign = 0;
+        dbuf[0] = (char)*ap;
         goto LAB_8018e9fc_d;
       case 0x68:
-        bVar6 = 1;
-        pbVar20 = param_2;
+        sht = 1;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x6c:
-        bVar5 = 1;
-        pbVar20 = param_2;
+        lng = 1;
+        fp = fmt;
         goto LAB_8018e60c;
       case 0x6e:
-        if (bVar5 || !bVar6) {
-          param_3 = (const uint32_t *)(puVar13 + 1);
-          *(uint32_t *)guest_at(*puVar13) = (uint32_t)local_40;
+        if (lng || !sht) {
+          args = (const uint32_t *)(ap + 1);
+          *(uint32_t *)guest_at(*ap) = (uint32_t)count;
         } else {
-          param_3 = (const uint32_t *)(puVar13 + 1);
-          *(uint16_t *)guest_at(*puVar13) = (uint16_t)local_40;
+          args = (const uint32_t *)(ap + 1);
+          *(uint16_t *)guest_at(*ap) = (uint16_t)count;
         }
         goto LAB_8018ebec_d;
       case 0x70:
-        uVar9 = *puVar13;
-        uVar10 = 0x10;
+        v = *ap;
+        base = 0x10;
         goto LAB_8018e958_d;
       case 0x73:
-        pcVar15 = *puVar13 == 0 ? (char *)s__null__80124ffc
-                                : (char *)guest_at(*puVar13);
-        if ((int)puVar17i < 0) {
-          puVar17i = str_len(pcVar15);
+        txt = *ap == 0 ? (char *)s__null__80124ffc
+                                : (char *)guest_at(*ap);
+        if ((int)prec_raw < 0) {
+          prec_raw = str_len(txt);
         } else {
-          char *pcVar8 = strchr_bounded(pcVar15,0,(int)puVar17i);
-          if (pcVar8 != 0 &&
-              (iVar21 = 0, puVar19 = (uint32_t *)(intptr_t)(pcVar8 - pcVar15),
-               pcVar8 - pcVar15 <= (intptr_t)puVar17i))
+          char *hit = strchr_bounded(txt,0,(int)prec_raw);
+          if (hit != 0 &&
+              (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
+               hit - txt <= (intptr_t)prec_raw))
             goto LAB_8018e9fc_d;
         }
-        iVar21 = 0;
-        puVar19 = (uint32_t *)puVar17i;
+        sign = 0;
+        left = (uint32_t *)prec_raw;
         goto LAB_8018e9fc_d;
       }
-      console_emit(uVar9);
+      console_emit(v);
       goto LAB_8018ebec_d;
     }
 switchD_8018e634_caseD_0:
     console_pct();
   }
-  return (uint32_t)local_40;
+  return (uint32_t)count;
 LAB_8018e958_d:
-  iVar21 = 0;
+  sign = 0;
 LAB_8018e95c_d:
-  local_3c = (intptr_t)puVar17i;
-  if (-1 < (int)puVar17i) uVar16 &= ~0x20;
+  prec = (intptr_t)prec_raw;
+  if (-1 < (int)prec_raw) flags &= ~0x20;
   {
-    /* Guest digit scratch = sp+0x10..0x37, i.e. local_68[40]; the cursor
-     * s2 starts one past the top (sp+0x38, adjacent to the local_40 char
+    /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
+     * s2 starts one past the top (sp+0x38, adjacent to the count char
      * counter) and walks down storing digits. The emitted string starts
      * at the final cursor and its length is top - cursor. Ghidra split
-     * the scratch into &local_40/local_68 scalars and emitted pointer
-     * arithmetic that wrote digits below the pcVar15w variable itself and
-     * never assigned pcVar15 — rebuild it as one real buffer. */
-    pcVar15w = local_68 + sizeof(local_68);
-    if (uVar9 != 0 || puVar17i != 0)
+     * the scratch into &count/dbuf scalars and emitted pointer
+     * arithmetic that wrote digits below the dcur variable itself and
+     * never assigned txt — rebuild it as one real buffer. */
+    dcur = dbuf + sizeof(dbuf);
+    if (v != 0 || prec_raw != 0)
       goto LAB_8018e984_d;
-    pcVar15 = pcVar15w;
-    puVar19 = (uint32_t *)0;
+    txt = dcur;
+    left = (uint32_t *)0;
     goto LAB_8018e9fc_d;
   }
 LAB_8018e984_d:
   do {
-    uVar22 = uVar9 / uVar10;
-    if (uVar10 == 0) { /* guest break 7 — div-by-zero */ }
-    cVar3 = local_30[uVar9 % uVar10];
-    pcVar15w = pcVar15w - 1;
-    *pcVar15w = cVar3;
-    uVar9 = uVar22;
-  } while (uVar22 != 0);
-  local_30 = s_0123456789abcdef_80124fe8;
-  if (bVar7 && uVar10 == 8 && cVar3 != '0') {
-    pcVar15w = pcVar15w - 1;
-    *pcVar15w = '0';
+    quo = v / base;
+    if (base == 0) { /* guest break 7 — div-by-zero */ }
+    dig = digits[v % base];
+    dcur = dcur - 1;
+    *dcur = dig;
+    v = quo;
+  } while (quo != 0);
+  digits = s_0123456789abcdef_80124fe8;
+  if (alt && base == 8 && dig != '0') {
+    dcur = dcur - 1;
+    *dcur = '0';
   }
-  pcVar15 = pcVar15w;
-  puVar19 = (uint32_t *)(uintptr_t)((local_68 + sizeof(local_68)) - pcVar15w);
+  txt = dcur;
+  left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
 LAB_8018e9fc_d:
-  param_3 = (const uint32_t *)((const uint32_t *)puVar13 + 1);
-  puVar17 = (uint32_t *)((intptr_t)puVar19 + local_38);
-  if (iVar21 != 0) puVar17 = (uint32_t *)((intptr_t)puVar17 + 1);
-  if (bVar4) puVar17 = (uint32_t *)((intptr_t)puVar17 + 2);
-  puVar18 = (uint32_t *)local_3c;
-  if (local_3c < (intptr_t)puVar17) puVar18 = puVar17;
-  if (uVar16 == 0 && local_34 != 0 && (intptr_t)puVar18 < local_34) {
-    intptr_t puVar11 = (intptr_t)puVar18;
-    do { console_emit(0x20); puVar11++; } while (puVar11 < local_34);
+  args = (const uint32_t *)((const uint32_t *)ap + 1);
+  need = (uint32_t *)((intptr_t)left + zpad);
+  if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
+  if (pfx) need = (uint32_t *)((intptr_t)need + 2);
+  fldw = (uint32_t *)prec;
+  if (prec < (intptr_t)need) fldw = need;
+  if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
+    intptr_t pad = (intptr_t)fldw;
+    do { console_emit(0x20); pad++; } while (pad < width);
   }
-  if (iVar21 != 0) console_emit((uint32_t)iVar21);
-  if (bVar4) { console_emit(0x30); console_emit((uint32_t)(char)*param_2); }
-  if (uVar16 == 0x20 && (intptr_t)puVar18 < local_34) {
-    intptr_t puVar11 = (intptr_t)puVar18;
-    do { console_emit(0x30); puVar11++; } while (puVar11 < local_34);
+  if (sign != 0) console_emit((uint32_t)sign);
+  if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
+  if (flags == 0x20 && (intptr_t)fldw < width) {
+    intptr_t pad = (intptr_t)fldw;
+    do { console_emit(0x30); pad++; } while (pad < width);
   }
-  if ((intptr_t)puVar17 < local_3c) {
-    do { console_emit(0x30); puVar17 = (uint32_t *)((intptr_t)puVar17 + 1); }
-    while ((intptr_t)puVar17 < local_3c);
+  if ((intptr_t)need < prec) {
+    do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
+    while ((intptr_t)need < prec);
   }
-  while ((puVar19 = (uint32_t *)((intptr_t)puVar19 - 1)), (intptr_t)puVar19 >= 0) {
-    cVar3 = *pcVar15;
-    pcVar15 = (char *)((intptr_t)pcVar15 + 1);
-    console_emit((uint32_t)cVar3);
+  while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
+    dig = *txt;
+    txt = (char *)((intptr_t)txt + 1);
+    console_emit((uint32_t)dig);
   }
-  while ((local_38 = local_38 - 1), local_38 >= 0) console_emit(0x30);
-  if ((uVar16 & 0x10) != 0 && (intptr_t)puVar18 < local_34) {
-    intptr_t puVar17b = (intptr_t)puVar18;
-    do { console_emit(0x20); puVar17b++; } while (puVar17b < local_34);
+  while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
+  if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
+    intptr_t puVar17b = (intptr_t)fldw;
+    do { console_emit(0x20); puVar17b++; } while (puVar17b < width);
   }
-  puVar17 = (uint32_t *)local_34;
-  if (local_34 < (intptr_t)puVar18) puVar17 = puVar18;
-  local_40 = local_40 + (intptr_t)puVar17;
+  need = (uint32_t *)width;
+  if (width < (intptr_t)fldw) need = fldw;
+  count = count + (intptr_t)need;
 LAB_8018ebec_d:
-  param_2 = param_2 + 1;
+  fmt = fmt + 1;
   goto LAB_8018e5e0;
 }
 
