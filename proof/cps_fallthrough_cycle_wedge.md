@@ -83,3 +83,17 @@ region restriction is the correct conservative boundary: cps_ is valid for
 pure game-logic (`0x8012`–`0x8017`) but not for CD/IRQ/kernel (`0x8018`–`0x801B`).
 Gameplay (versus/arcade) should be re-verified — boot→title is proven, deeper
 CD-heavy paths (asset streaming, FMV) exercise the generated fallback.
+
+## Gameplay verification (post-fix)
+
+- **Versus (P1-only):** reached `gs=8` FIGHT at t=4s and sustained **125+s of
+  continuous combat** — `ph` cycling round phases (`0808→0804→0803→0800→0808`),
+  `b4b6` advancing battle substates, fighter ctrl blocks (`0x1f8000e8`/`0x1f8001f0`)
+  mutating every sample (live positions/anim, state flag toggling). Real fight,
+  not a livelock.
+- **Arcade (P1-only):** reached `gs=9` fight states and cycled fight phases
+  (`0904→0901→0900`) — running, not wedged. (The driver tool's "left fight"
+  prints are its versus-centric `gs==8` check misfiring on arcade's `gs==9`.)
+
+Boot wedge fix holds under real CD/asset load — the generated fallback for the
+`0x8018`–`0x801B` region is faithful.
