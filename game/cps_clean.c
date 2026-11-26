@@ -82231,6 +82231,7 @@ void cps_80191a78(void)
         }
     }
     /* Address: 0x80191A78, Size: 44 bytes, Blocks: 2 */
+    /* note: record field compare: s16 at s1+4 vs sign-extended v0, then s1+6 vs a0+6; mismatch exits via 0x80191AA4 */
 
 block_80191A78:
     v1 = (int32_t)(int16_t)cpu->read_half(s1 + 4);
@@ -82510,6 +82511,7 @@ void cps_80191b80(void)
         }
     }
     /* Address: 0x80191B80, Size: 16 bytes, Blocks: 2 */
+    /* note: indirect call wrapper: jalr v0(a0=s0), on return tags record byte s1+18 = 8 */
 
 block_80191B80:
     uint32_t _jt_80191B80 = v0;  /* latch indirect target before delay slot */
@@ -82543,6 +82545,7 @@ void cps_80191b90(void)
         }
     }
     /* Address: 0x80191B90, Size: 116 bytes, Blocks: 5 */
+    /* note: match record s1 fields (+8,+10,+12,+14 s16) against default rect table at 0x801C0000-31852, then require byte s1+18 == 8 */
 
 block_80191B90:
     a0 = 0x801C0000u;  /* 0x801C0000 */
@@ -82629,6 +82632,7 @@ void cps_80191c04(void)
   if (!cpu) return;
 
     /* Address: 0x80191C04, Size: 4 bytes, Blocks: 1 */
+    /* note: delay-slot landing pad (nop) shared by 0x80191BFC branch */
 
 block_80191C04:
     /* nop */  /* 0x80191C04: 0x00000000 */
@@ -82659,6 +82663,7 @@ void cps_80191c08(void)
         }
     }
     /* Address: 0x80191C08, Size: 128 bytes, Blocks: 11 */
+    /* note: init element: call 0x8019B1E4 -> v0, store byte v0&0xFF at s1+18; pick width offset s0 = half(s1+10) + (19 or 16); bucket index a2 from half(s1+4) thresholds 281/353/401/561; tail-lookup byte in table 0x801C0000-31716+a2 -> 0x80191C88 */
 
 block_80191C08:
     ra = 0x80191C10u;  /* jal link before delay slot */
@@ -82789,6 +82794,7 @@ void cps_80191c88(void)
         }
     }
     /* Address: 0x80191C88, Size: 132 bytes, Blocks: 6 */
+    /* note: scale element offset: mul v1*v0 (lo), index per-type table by byte s1+18 (*20-byte stride), add half(s1+12)-scaled value; clamp result a0 into [540,3220] -> a1, tail 0x80191D0C */
 
 block_80191C88:
     /* nop */  /* 0x80191C88: 0x00000000 */
@@ -82897,6 +82903,7 @@ void cps_80191d0c(void)
         }
     }
     /* Address: 0x80191D0C, Size: 116 bytes, Blocks: 10 */
+    /* note: clamp pair: lookup byte table 0x801C0000-31716+a2, bound v1 vs a0+byte*4 and s0 vs 19/3260 -> s0; bound s2 vs s0+2/306 -> result, tail 0x80191E18 */
 
 block_80191D0C:
     v0 = 0x801C0000u;  /* 0x801C0000 */
@@ -83010,6 +83017,7 @@ void cps_80191d80(void)
         }
     }
     /* Address: 0x80191D80, Size: 16 bytes, Blocks: 2 */
+    /* note: clamp low: if a0 < 500 -> a1=500 path; elif a0 >= 3251 -> a1=3250; else a1=a0 (min/max clamp) */
 
 block_80191D80:
     v0 = ((int32_t)a0 < 500) ? 1 : 0;  /* 0x80191D80: 0x288201F4 */
@@ -83044,6 +83052,7 @@ void cps_80191d90(void)
         }
     }
     /* Address: 0x80191D90, Size: 12 bytes, Blocks: 2 */
+    /* note: clamp high continuation: a0 >= 3251 selects a1=3250, else a1=a0 */
 
 block_80191D90:
     int _bc_80191D90 = (v0 == zero);  /* save branch cond before delay slot */
@@ -83085,6 +83094,7 @@ void cps_80191d9c(void)
         }
     }
     /* Address: 0x80191D9C, Size: 112 bytes, Blocks: 10 */
+    /* note: clamp pair B: byte-table lookup, clamp v1 into [a0+byte*4, 3290] and s0 into [16,258] step +2 -> s0 */
 
 block_80191D9C:
     v0 = 0x801C0000u;  /* 0x801C0000 */
@@ -83189,6 +83199,7 @@ void cps_80191e0c(void)
   if (!cpu) return;
 
     /* Address: 0x80191E0C, Size: 8 bytes, Blocks: 1 */
+    /* note: branch on v0==0 -> 0x80191E18 else 0x80191E14 (a1=s2) */
 
 block_80191E0C:
     int _bc_80191E0C = (v0 == zero);  /* save branch cond before delay slot */
@@ -83212,6 +83223,7 @@ void cps_80191e14(void)
   if (!cpu) return;
 
     /* Address: 0x80191E14, Size: 4 bytes, Blocks: 1 */
+    /* note: mov a1 = s2; fall into 0x80191E18 */
 
 block_80191E14:
     a1 = s2;
@@ -83233,6 +83245,7 @@ void cps_80191e18(void)
         }
     }
     /* Address: 0x80191E18, Size: 92 bytes, Blocks: 2 */
+    /* note: emit two GPU packets: pack (v1&0xFFF)<<12 | (a0&0xFFF)|0x06000000 and (s2&0x3FF)<<10 | (s0&0x3FF)|0x07000000 via table ptr at 0x801C0000-31976+16; jalr each */
 
 block_80191E18:
     s2 = a1;
@@ -83285,6 +83298,7 @@ void cps_80191e74(void)
         }
     }
     /* Address: 0x80191E74, Size: 48 bytes, Blocks: 2 */
+    /* note: call 0x8018E490(a0=0x801C0000-31860, a1=s1, a2=20) — insert/submit 20-byte record; epilogue restores s0-s2,ra, sp+=32 */
 
 block_80191E74:
     a0 = 0x801C0000u;  /* 0x801C0000 */
@@ -84239,6 +84253,7 @@ void cps_80192e24(void)
   if (!cpu) return;
 
     /* Address: 0x80192E24, Size: 20 bytes, Blocks: 1 */
+    /* note: return byte at 0x80200000-21144+a0 (per-index LUT byte) */
 
 block_80192E24:
     v0 = 0x8020 << 16;  /* 0x80200000 */
@@ -84268,6 +84283,7 @@ void cps_80192e38(void)
         }
     }
     /* Address: 0x80192E38, Size: 64 bytes, Blocks: 4 */
+    /* note: write tag word 0x04000000 to *v1(=word[0x801C0000-31704]); copy a2 words from a0 to word[0x801C0000-31708]; return 0 */
 
 block_80192E38:
     a2 = a1 + -1;
@@ -84322,6 +84338,7 @@ void cps_80194470(void)
   if (!cpu) return;
 
     /* Address: 0x80194470, Size: 8 bytes, Blocks: 1 */
+    /* note: 2-insn piece: mfhi t6; falls into gte_screen_init_defer (0x80194478) */
 
 block_80194470:
     t6 = cpu->hi;
@@ -84430,6 +84447,7 @@ void cps_80194614(void)
   if (!cpu) return;
 
     /* Address: 0x80194614, Size: 8 bytes, Blocks: 1 */
+    /* note: shared error tail: v0 = -1; jr ra (reached from fixed_rsqrt LZCR guards) */
 
 block_80194614:
     uint32_t _jt_80194614 = ra;  /* latch indirect target before delay slot */
@@ -84483,6 +84501,7 @@ void cps_80194940(void)
   if (!cpu) return;
 
     /* Address: 0x80194940, Size: 12 bytes, Blocks: 1 */
+    /* note: fixed_recip_lut negative-exponent tail: t1=-t1; v0=t5>>(t1&31); jr ra */
 
 block_80194940:
     t1 = zero - t1;
@@ -84518,6 +84537,7 @@ void cps_80195a90(void)
   if (!cpu) return;
 
     /* Address: 0x80195A90, Size: 8 bytes, Blocks: 1 */
+    /* note: jal 0x80195B10 (cd_ready_probe) wrapper piece */
 
 block_80195A90:
     ra = 0x80195A98u;  /* jal link before delay slot */
@@ -84542,6 +84562,7 @@ void cps_80195a98(void)
         }
     }
     /* Address: 0x80195A98, Size: 68 bytes, Blocks: 2 */
+    /* note: CD probe init: if v0!=1 skip; else store three fn ptrs 0x80195B64/0x80195B8C/0x80195BB4 and zero word at 0x801C0000-14412 -> j 0x80195B00 */
 
 block_80195A98:
     v1 = 1;
@@ -84584,6 +84605,7 @@ void cps_80195adc(void)
   if (!cpu) return;
 
     /* Address: 0x80195ADC, Size: 4 bytes, Blocks: 1 */
+    /* note: store zero word at 0x801C0000-14412; fall into 0x80195AE0 */
 
 block_80195ADC:
     cpu->write_word(at + -14412, zero);
@@ -84606,6 +84628,7 @@ void cps_80195ae0(void)
         }
     }
     /* Address: 0x80195AE0, Size: 32 bytes, Blocks: 3 */
+    /* note: CD reset seq: s0 countdown loop -> jal 0x8018E550(a0=0x80122000+22072=0x801256A8); v0=0 -> 0x80195B00 */
 
 block_80195AE0:
     s0 = s0 + -1;
@@ -84642,6 +84665,7 @@ void cps_80195b00(void)
   if (!cpu) return;
 
     /* Address: 0x80195B00, Size: 16 bytes, Blocks: 1 */
+    /* note: epilogue: restore ra,s0; sp+=24; jr ra */
 
 block_80195B00:
     ra = cpu->read_word(sp + 20);
@@ -84671,6 +84695,7 @@ void cps_80195b20(void)
         }
     }
     /* Address: 0x80195B20, Size: 44 bytes, Blocks: 5 */
+    /* note: if v0!=0 -> v0=0 ret; else jal 0x8019737C then v0 = (v0<1); epilogue sp+=24 */
 
 block_80195B20:
     int _bc_80195B20 = (v0 != zero);  /* save branch cond before delay slot */
@@ -84719,6 +84744,7 @@ void cps_80195b64(void)
   if (!cpu) return;
 
     /* Address: 0x80195B64, Size: 16 bytes, Blocks: 1 */
+    /* note: epilogue: restore ra; sp+=24; jr ra */
 
 block_80195B64:
     ra = cpu->read_word(sp + 16);
@@ -84738,6 +84764,7 @@ void cps_80195bb8(void)
   if (!cpu) return;
 
     /* Address: 0x80195BB8, Size: 12 bytes, Blocks: 1 */
+    /* note: epilogue piece: sp+=24; jr ra (delay nop) */
 
 block_80195BB8:
     sp = sp + 24;
@@ -84756,6 +84783,7 @@ void cps_80195be0(void)
   if (!cpu) return;
 
     /* Address: 0x80195BE0, Size: 16 bytes, Blocks: 1 */
+    /* note: return byte at 0x801C0000-14252 (cd_status_raw) */
 
 block_80195BE0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -84775,6 +84803,7 @@ void cps_80195bf0(void)
   if (!cpu) return;
 
     /* Address: 0x80195BF0, Size: 12 bytes, Blocks: 1 */
+    /* note: return byte at 0x801C0000-14236 (cd_mode_byte_read) */
 
 block_80195BF0:
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -84794,6 +84823,7 @@ void cps_80195bfc(void)
   if (!cpu) return;
 
     /* Address: 0x80195BFC, Size: 4 bytes, Blocks: 1 */
+    /* note: nop delay-slot pad -> 0x80195C00 */
 
 block_80195BFC:
     /* nop */  /* 0x80195BFC: 0x00000000 */
@@ -84827,6 +84857,7 @@ void cps_80195c10(void)
   if (!cpu) return;
 
     /* Address: 0x80195C10, Size: 12 bytes, Blocks: 1 */
+    /* note: v0 = 0x801C0000-14240 (cd_param_buf_get base); jr ra */
 
 block_80195C10:
     v0 = 0x801C << 16;  /* 0x801C0000 */
@@ -84845,6 +84876,7 @@ void cps_80195c40(void)
   if (!cpu) return;
 
     /* Address: 0x80195C40, Size: 4 bytes, Blocks: 1 */
+    /* note: v0 = 1; fall into 0x80195C44 */
 
 block_80195C40:
     v0 = 1;
@@ -84955,6 +84987,7 @@ void cps_80195c84(void)
   if (!cpu) return;
 
     /* Address: 0x80195C84, Size: 4 bytes, Blocks: 1 */
+    /* note: epilogue piece: sp+=24; fall into 0x80195C88 */
 
 block_80195C84:
     sp = sp + 24;
@@ -84976,6 +85009,7 @@ void cps_80195c88(void)
         }
     }
     /* Address: 0x80195C88, Size: 32 bytes, Blocks: 2 */
+    /* note: cd_cmd_reset_wrap piece */
 
 block_80195C88:
     sp = sp + -24;
@@ -86728,6 +86762,7 @@ void cps_801979ec(void)
   if (!cpu) return;
 
     /* Address: 0x801979EC, Size: 12 bytes, Blocks: 1 */
+    /* note: store a0 word at 0x801C0000-13584; jr ra */
 
 block_801979EC:
     at = 0x801C << 16;  /* 0x801C0000 */
