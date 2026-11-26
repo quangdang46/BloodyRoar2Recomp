@@ -12519,93 +12519,90 @@ extern void keyframe_advance(byte*,byte*);
  * 5: cc += lh(a3+0xc2)*16;
  * 6: cc += lh(a3+0xbe)*16;
  * 7: ca+=lh(a2+2)*16; c2+=same; c8+=same. */
-uint32_t stat_field_dispatch(uint32_t param_1,uint32_t param_2,
-                      uint32_t param_3)
+uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,
+                      uint32_t desc)
 {
-  uint32_t s0 = param_3;
-  uint32_t a1 = param_2;
-  uint32_t a3 = param_1;
-  int32_t idx = (int32_t)(int8_t)(MB16(s0) >> 8);
+  int32_t idx = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t t;
   uint32_t v0, v1;
-  if ((uint32_t)idx >= 8u) return s0 + 4;
+  if ((uint32_t)idx >= 8u) return desc + 4;
   switch (idx) {
   case 0:
-    t = MBS16(s0 + 2);
+    t = MBS16(desc + 2);
     if (t < 2) {
-      v1 = MB16(a3 + 0x88) - MB16(a1 + 0xca);
-      MW16(a1 + 0xc2, MB16(a1 + 0xc2) + v1);
-      MW16(a1 + 0xc8, MB16(a3 + 0x88));
-      MW16(a1 + 0xca, MB16(a3 + 0x88));
+      v1 = MB16(src + 0x88) - MB16(dst + 0xca);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + v1);
+      MW16(dst + 0xc8, MB16(src + 0x88));
+      MW16(dst + 0xca, MB16(src + 0x88));
     } else {
       t <<= 4;
-      v1 = MB16(a1 + 0xca);
-      MW16(a1 + 0xc8, (uint16_t)t);
-      MW16(a1 + 0xca, (uint16_t)t);
-      MW16(a1 + 0xc2, MB16(a1 + 0xc2) + (uint16_t)(t - v1));
+      v1 = MB16(dst + 0xca);
+      MW16(dst + 0xc8, (uint16_t)t);
+      MW16(dst + 0xca, (uint16_t)t);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - v1));
     }
     break;
   case 1: {
-    uint32_t c6 = MB16(s0 + 2);
-    uint32_t e = MB32(a1 + 0xb4) + (uint32_t)(int32_t)(int16_t)c6 * 4u;
-    MW16(a1 + 0xc6, (uint16_t)c6);
+    uint32_t c6 = MB16(desc + 2);
+    uint32_t e = MB32(dst + 0xb4) + (uint32_t)(int32_t)(int16_t)c6 * 4u;
+    MW16(dst + 0xc6, (uint16_t)c6);
     t = MBS16(e + 2);
     if (t < 2) {
-      v1 = MB16(a3 + 0x88) - MB16(a1 + 0xcc);
-      MW16(a1 + 0xc2, MB16(a1 + 0xc2) + v1);
-      MW16(a1 + 0xcc, MB16(a3 + 0x88));
+      v1 = MB16(src + 0x88) - MB16(dst + 0xcc);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + v1);
+      MW16(dst + 0xcc, MB16(src + 0x88));
     } else {
       t <<= 4;
-      v1 = MB16(a1 + 0xcc);
-      MW16(a1 + 0xcc, (uint16_t)t);
-      MW16(a1 + 0xc2, MB16(a1 + 0xc2) + (uint16_t)(t - v1));
+      v1 = MB16(dst + 0xcc);
+      MW16(dst + 0xcc, (uint16_t)t);
+      MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)(t - v1));
     }
-    MW16(a1 + 0xc6, MB16(a1 + 0xc6) + 1);
-    keyframe_advance((byte *)guest_at(a3),(byte *)guest_at(a1));
+    MW16(dst + 0xc6, MB16(dst + 0xc6) + 1);
+    keyframe_advance((byte *)guest_at(src),(byte *)guest_at(dst));
     break;
   }
   case 2:
-    t = MBS16(a3 + 0xbe);
-    v0 = t < 2 ? MB16(a3 + 0x88) : (uint32_t)(t << 4);
-    MW16(a1 + 0xc8, (uint16_t)v0);
-    MW16(a1 + 0xca, (uint16_t)v0);
+    t = MBS16(src + 0xbe);
+    v0 = t < 2 ? MB16(src + 0x88) : (uint32_t)(t << 4);
+    MW16(dst + 0xc8, (uint16_t)v0);
+    MW16(dst + 0xca, (uint16_t)v0);
     break;
   case 3:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(s0 + 2) * 16);
-    MW16(a1 + 0xcc, MB16(a1 + 0xcc) + (uint16_t)v0);
-    MW16(a1 + 0xc2, MB16(a1 + 0xc2) + (uint16_t)v0);
+    v0 = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
+    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)v0);
     break;
   case 4: {
-    int32_t b = MBS16(a3 + 0xb2);
+    int32_t b = MBS16(src + 0xb2);
     if (b < 0) b += 0x1ff;
-    t = (b >> 9) + MBS16(s0 + 2);
+    t = (b >> 9) + MBS16(desc + 2);
     if (t >= 0x10) t = 0xf;
     if (t < 2) {
-      MW16(a1 + 0xc8, MB16(a3 + 0x88));
-      MW16(a1 + 0xca, MB16(a3 + 0x88));
+      MW16(dst + 0xc8, MB16(src + 0x88));
+      MW16(dst + 0xca, MB16(src + 0x88));
     } else {
       v0 = (uint32_t)(t * 16);
-      MW16(a1 + 0xc8, (uint16_t)v0);
-      MW16(a1 + 0xca, (uint16_t)v0);
+      MW16(dst + 0xc8, (uint16_t)v0);
+      MW16(dst + 0xca, (uint16_t)v0);
     }
     break;
   }
   case 5:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(a3 + 0xc2) * 16);
-    MW16(a1 + 0xcc, MB16(a1 + 0xcc) + (uint16_t)v0);
+    v0 = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xc2) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
     break;
   case 6:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(a3 + 0xbe) * 16);
-    MW16(a1 + 0xcc, MB16(a1 + 0xcc) + (uint16_t)v0);
+    v0 = (uint32_t)(int32_t)(int16_t)(MB16(src + 0xbe) * 16);
+    MW16(dst + 0xcc, MB16(dst + 0xcc) + (uint16_t)v0);
     break;
   case 7:
-    v0 = (uint32_t)(int32_t)(int16_t)(MB16(s0 + 2) * 16);
-    MW16(a1 + 0xca, MB16(a1 + 0xca) + (uint16_t)v0);
-    MW16(a1 + 0xc2, MB16(a1 + 0xc2) + (uint16_t)v0);
-    MW16(a1 + 0xc8, MB16(a1 + 0xc8) + (uint16_t)v0);
+    v0 = (uint32_t)(int32_t)(int16_t)(MB16(desc + 2) * 16);
+    MW16(dst + 0xca, MB16(dst + 0xca) + (uint16_t)v0);
+    MW16(dst + 0xc2, MB16(dst + 0xc2) + (uint16_t)v0);
+    MW16(dst + 0xc8, MB16(dst + 0xc8) + (uint16_t)v0);
     break;
   }
-  return s0 + 4;
+  return desc + 4;
 }
 
 /* ======== batch59 ======== */
@@ -12623,102 +12620,103 @@ uint32_t quad_strip_emit_a(uint32_t dst, uint32_t src, uint32_t tb,
                       uint32_t ta, uint32_t count, uint32_t dx,
                       uint32_t dy)
 {
-  uint32_t t1 = dst, t2 = src;
-  uint32_t oa = dst + 0x66, os = src + 0x16;
+  uint32_t dw = dst, srw = src;
+  uint32_t wa = dst + 0x66, sa = src + 0x16;
   int32_t n = (int32_t)count;
-  uint32_t v, e;
-  if (n == 0) return t1;
+  uint32_t v, ti;
+  if (n == 0) return dw;
   for (; n != 0; n--) {
-    MW8(oa - 0x33, 9); MW8(oa - 0x2f, 0x34);
-    MW8(oa - 0xb, 9);  MW8(oa - 7, 0x34);
-    v = MB32(t2);
-    MW32(oa - 2, v); MW32(oa - 0x2a, v);
-    v = MB32(os - 0x12);
-    MW32(oa + 0xa, v); MW32(oa - 0x1e, v);
-    v = MB32(os - 0xe);
-    MW32(oa + 0x16, v); MW32(oa - 0x12, v);
-    e = ta + (uint32_t)MBS16(os - 0xa) * 8u;
-    MW16(oa - 0x4e, MB16(e));
-    MW16(oa - 0x4c, MB16(e + 2));
-    MW16(oa - 0x4a, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os - 8) * 8u;
-    MW32(t1, MB32(e)); MW32(t1 + 4, MB32(e + 4));
-    e = ta + (uint32_t)MBS16(os - 6) * 8u;
-    MW16(oa - 0x46, MB16(e));
-    MW16(oa - 0x44, MB16(e + 2));
-    MW16(oa - 0x42, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os - 4) * 8u;
-    MW32(oa - 0x5e, MB32(e)); MW32(oa - 0x5a, MB32(e + 4));
-    e = ta + (uint32_t)MBS16(os - 2) * 8u;
-    MW16(oa - 0x3e, MB16(e));
-    MW16(oa - 0x3c, MB16(e + 2));
-    MW16(oa - 0x3a, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os + 0) * 8u;
-    MW32(oa - 0x56, MB32(e)); MW32(oa - 0x52, MB32(e + 4));
-    MW16(oa - 0x1c, MB16(oa - 0x1c) + dx);
-    MW16(oa - 0x28, MB16(oa - 0x28) + dy);
-    MW16(oa + 0xc, MB16(oa + 0xc) + dx);
-    MW16(oa + 0, MB16(oa + 0) + dy);
-    oa += 0x80; os += 0x18; t1 += 0x80; t2 += 0x18;
+    MW8(wa - 0x33, 9); MW8(wa - 0x2f, 0x34);
+    MW8(wa - 0xb, 9);  MW8(wa - 7, 0x34);
+    v = MB32(srw);
+    MW32(wa - 2, v); MW32(wa - 0x2a, v);
+    v = MB32(sa - 0x12);
+    MW32(wa + 0xa, v); MW32(wa - 0x1e, v);
+    v = MB32(sa - 0xe);
+    MW32(wa + 0x16, v); MW32(wa - 0x12, v);
+    ti = ta + (uint32_t)MBS16(sa - 0xa) * 8u;
+    MW16(wa - 0x4e, MB16(ti));
+    MW16(wa - 0x4c, MB16(ti + 2));
+    MW16(wa - 0x4a, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa - 8) * 8u;
+    MW32(dw, MB32(ti)); MW32(dw + 4, MB32(ti + 4));
+    ti = ta + (uint32_t)MBS16(sa - 6) * 8u;
+    MW16(wa - 0x46, MB16(ti));
+    MW16(wa - 0x44, MB16(ti + 2));
+    MW16(wa - 0x42, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa - 4) * 8u;
+    MW32(wa - 0x5e, MB32(ti)); MW32(wa - 0x5a, MB32(ti + 4));
+    ti = ta + (uint32_t)MBS16(sa - 2) * 8u;
+    MW16(wa - 0x3e, MB16(ti));
+    MW16(wa - 0x3c, MB16(ti + 2));
+    MW16(wa - 0x3a, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa + 0) * 8u;
+    MW32(wa - 0x56, MB32(ti)); MW32(wa - 0x52, MB32(ti + 4));
+    MW16(wa - 0x1c, MB16(wa - 0x1c) + dx);
+    MW16(wa - 0x28, MB16(wa - 0x28) + dy);
+    MW16(wa + 0xc, MB16(wa + 0xc) + dx);
+    MW16(wa + 0, MB16(wa + 0) + dy);
+    wa += 0x80; sa += 0x18; dw += 0x80; srw += 0x18;
   }
-  return t1;
+  return dw;
 }
 
 /* quad_strip_emit_b — quad-strip emitter variant @0x8016951c (~181
  * insns). dst stride 0xa8, src stride 0x1c, AO=0x82/A1=0x1a,
  * attr bytes 0xc/0x3c, four palette triples, four texel copies.
  * Returns dst + count*0xa8. */
+
 uint32_t quad_strip_emit_b(uint32_t dst, uint32_t src, uint32_t tb,
                       uint32_t ta, uint32_t count, uint32_t dx,
                       uint32_t dy)
 {
-  uint32_t t1 = dst, t2 = src;
-  uint32_t oa = dst + 0x82, os = src + 0x1a;
+  uint32_t dw = dst, srw = src;
+  uint32_t wa = dst + 0x82, sa = src + 0x1a;
   int32_t n = (int32_t)count;
-  uint32_t v, e;
-  if (n == 0) return t1;
+  uint32_t v, ti;
+  if (n == 0) return dw;
   for (; n != 0; n--) {
-    MW8(oa - 0x3f, 0xc); MW8(oa - 0x3b, 0x3c);
-    MW8(oa - 0xb, 0xc);  MW8(oa - 7, 0x3c);
-    v = MB32(t2);
-    MW32(oa - 2, v); MW32(oa - 0x36, v);
-    v = MB32(os - 0x16);
-    MW32(oa + 0xa, v); MW32(oa - 0x2a, v);
-    v = MB32(os - 0x12);
-    MW32(oa + 0x16, v); MW32(oa - 0x1e, v);
-    v = MB32(os - 0xe);
-    MW32(oa + 0x22, v); MW32(oa - 0x12, v);
-    e = ta + (uint32_t)MBS16(os - 0x10) * 8u;
-    MW16(oa - 0x62, MB16(e));
-    MW16(oa - 0x60, MB16(e + 2));
-    MW16(oa - 0x5e, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os - 0xc) * 8u;
-    MW32(t1, MB32(e)); MW32(t1 + 4, MB32(e + 4));
-    e = ta + (uint32_t)MBS16(os - 0xa) * 8u;
-    MW16(oa - 0x5a, MB16(e));
-    MW16(oa - 0x58, MB16(e + 2));
-    MW16(oa - 0x56, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os - 8) * 8u;
-    MW32(oa - 0x7a, MB32(e)); MW32(oa - 0x76, MB32(e + 4));
-    e = ta + (uint32_t)MBS16(os - 6) * 8u;
-    MW16(oa - 0x52, MB16(e));
-    MW16(oa - 0x50, MB16(e + 2));
-    MW16(oa - 0x4e, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os - 4) * 8u;
-    MW32(oa - 0x72, MB32(e)); MW32(oa - 0x6e, MB32(e + 4));
-    e = ta + (uint32_t)MBS16(os - 2) * 8u;
-    MW16(oa - 0x4a, MB16(e));
-    MW16(oa - 0x48, MB16(e + 2));
-    MW16(oa - 0x46, MB16(e + 4));
-    e = tb + (uint32_t)MBS16(os + 0) * 8u;
-    MW32(oa - 0x6a, MB32(e)); MW32(oa - 0x66, MB32(e + 4));
-    MW16(oa - 0x28, MB16(oa - 0x28) + dx);
-    MW16(oa - 0x34, MB16(oa - 0x34) + dy);
-    MW16(oa + 0xc, MB16(oa + 0xc) + dx);
-    MW16(oa + 0, MB16(oa + 0) + dy);
-    oa += 0xa8; os += 0x1c; t1 += 0xa8; t2 += 0x1c;
+    MW8(wa - 0x3f, 0xc); MW8(wa - 0x3b, 0x3c);
+    MW8(wa - 0xb, 0xc);  MW8(wa - 7, 0x3c);
+    v = MB32(srw);
+    MW32(wa - 2, v); MW32(wa - 0x36, v);
+    v = MB32(sa - 0x16);
+    MW32(wa + 0xa, v); MW32(wa - 0x2a, v);
+    v = MB32(sa - 0x12);
+    MW32(wa + 0x16, v); MW32(wa - 0x1e, v);
+    v = MB32(sa - 0xe);
+    MW32(wa + 0x22, v); MW32(wa - 0x12, v);
+    ti = ta + (uint32_t)MBS16(sa - 0x10) * 8u;
+    MW16(wa - 0x62, MB16(ti));
+    MW16(wa - 0x60, MB16(ti + 2));
+    MW16(wa - 0x5e, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa - 0xc) * 8u;
+    MW32(dw, MB32(ti)); MW32(dw + 4, MB32(ti + 4));
+    ti = ta + (uint32_t)MBS16(sa - 0xa) * 8u;
+    MW16(wa - 0x5a, MB16(ti));
+    MW16(wa - 0x58, MB16(ti + 2));
+    MW16(wa - 0x56, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa - 8) * 8u;
+    MW32(wa - 0x7a, MB32(ti)); MW32(wa - 0x76, MB32(ti + 4));
+    ti = ta + (uint32_t)MBS16(sa - 6) * 8u;
+    MW16(wa - 0x52, MB16(ti));
+    MW16(wa - 0x50, MB16(ti + 2));
+    MW16(wa - 0x4e, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa - 4) * 8u;
+    MW32(wa - 0x72, MB32(ti)); MW32(wa - 0x6e, MB32(ti + 4));
+    ti = ta + (uint32_t)MBS16(sa - 2) * 8u;
+    MW16(wa - 0x4a, MB16(ti));
+    MW16(wa - 0x48, MB16(ti + 2));
+    MW16(wa - 0x46, MB16(ti + 4));
+    ti = tb + (uint32_t)MBS16(sa + 0) * 8u;
+    MW32(wa - 0x6a, MB32(ti)); MW32(wa - 0x66, MB32(ti + 4));
+    MW16(wa - 0x28, MB16(wa - 0x28) + dx);
+    MW16(wa - 0x34, MB16(wa - 0x34) + dy);
+    MW16(wa + 0xc, MB16(wa + 0xc) + dx);
+    MW16(wa + 0, MB16(wa + 0) + dy);
+    wa += 0xa8; sa += 0x1c; dw += 0xa8; srw += 0x1c;
   }
-  return t1;
+  return dw;
 }
 
 /* ======== batch60 ======== */
