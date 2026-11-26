@@ -32,6 +32,38 @@
 80197a9c cd_response_pump
 80197aa4 cd_response_pump
 
+# draw_env_timing CPS continuations. Each entry resumes the corresponding
+# block in the same guest frame, or tail-dispatches to the next CPS piece.
+80191c08 draw_env_timing_status_store
+80191c10 draw_env_timing_status_store
+80191c24 draw_env_timing_status_store
+80191c28 draw_env_timing_status_store
+80191c38 draw_env_timing_status_store
+80191c3c draw_env_timing_status_store
+80191c50 draw_env_timing_status_store
+80191c5c draw_env_timing_status_store
+80191c68 draw_env_timing_status_store
+80191c74 draw_env_timing_status_store
+80191c78 draw_env_timing_status_store
+80191c88 draw_env_timing_interpolate
+80191cd4 draw_env_timing_interpolate
+80191ce0 draw_env_timing_interpolate
+80191cf4 draw_env_timing_interpolate
+80191cfc draw_env_timing_interpolate
+80191d08 draw_env_timing_interpolate
+80191d0c draw_env_timing_span_clamp
+80191d30 draw_env_timing_span_clamp
+80191d3c draw_env_timing_span_clamp
+80191d40 draw_env_timing_span_clamp
+80191d44 draw_env_timing_span_clamp
+80191d4c draw_env_timing_span_clamp
+80191d58 draw_env_timing_span_clamp
+80191d60 draw_env_timing_span_clamp
+80191d64 draw_env_timing_span_clamp
+80191d78 draw_env_timing_span_clamp
+80191d80 draw_env_timing_axis_limit
+80191d8c draw_env_timing_axis_limit
+
 
 # --- CD readers + mc_file_cmd (clean CPS transform) ---
 # cd_status_raw / cd_mode_byte_read / cd_param_buf_get removed: they are

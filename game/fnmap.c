@@ -611,6 +611,10 @@ extern void display_page_commit_b(void);
 extern void display_pair_invalidate(void);
 extern void draw_env_field_compare_fragment(void);
 extern void draw_env_timing(void);
+extern void draw_env_timing_axis_limit(void);
+extern void draw_env_timing_interpolate(void);
+extern void draw_env_timing_span_clamp(void);
+extern void draw_env_timing_status_store(void);
 extern void dual_axis_coord_xform(void);
 extern void dual_entry_attr_bump(void);
 extern void dual_mode_announce(void);
@@ -2897,6 +2901,10 @@ const Br2FnEnt fn_table[] = {
   { 0x80191b80, (void *)gpu_callback_dispatch },
   { 0x80191b90, (void *)gpu_callback_descriptor_match },
   { 0x80191c04, (void *)gpu_callback_resume_next },
+  { 0x80191c08, (void *)draw_env_timing_status_store },
+  { 0x80191c88, (void *)draw_env_timing_interpolate },
+  { 0x80191d0c, (void *)draw_env_timing_span_clamp },
+  { 0x80191d80, (void *)draw_env_timing_axis_limit },
   { 0x80191ea4, (void *)cd_blk14_copy },
   { 0x80191ed8, (void *)gpu_stat_sign },
   { 0x80191ee0, (void *)cd_vcall_38 },
