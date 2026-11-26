@@ -95512,7 +95512,11 @@ block_8019FF30:
 }
 
 /* cps_801a0008 — clean CPS transliteration of br2eu_func_801A0008 (guest 0x801a0008)
- * from SLES_017.22_full_48.c. */
+ * from SLES_017.22_full_48.c.
+ * Large CPS coroutine body (39 blocks) at the head of the CD-command
+ * layer: calls into 0x801A0610 / 0x801A0E90 / 0x801A1070 with a0 = 0.
+ * Continuation entries share this body via cpu->pc.
+ */
 void cps_801a0008(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -95670,7 +95674,11 @@ block_801A00A8:
 }
 
 /* cps_801a041c — clean CPS transliteration of br2eu_func_801A041C (guest 0x801a041c)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Mid-size coroutine body (37 blocks): writes s0+52, reads globals in
+ * the 0x801BEA80 region (0x801C0000-5056), multiple a0 setups — CD
+ * command processing continuation.
+ */
 void cps_801a041c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -95842,7 +95850,11 @@ block_801A04F8:
 }
 
 /* cps_801a0660 — clean CPS transliteration of br2eu_func_801A0660 (guest 0x801a0660)
- * from SLES_017.22_full_49.c. */
+ * from SLES_017.22_full_49.c.
+ * Largest coroutine body in the band (64 blocks): calls 0x801A09B0 /
+ * 0x801A0600 / 0x801A0610 family with command codes incl. 126 and 0;
+ * CD command/state machine driver. Continuations share this body.
+ */
 void cps_801a0660(void)
 {
   CPUState *cpu = clean_cpu_state();
