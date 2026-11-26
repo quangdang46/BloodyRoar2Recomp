@@ -436,13 +436,13 @@ bool cd_read_setup(undefined4 count,undefined4 pos,uint mode)
   if (CD_RD_DONE != 0) {
     t1 = cd_timer_read(0xffffffff);
     do {
-      if (CD_RD_DONE == 0) goto LAB_80198d0c;
+      if (CD_RD_DONE == 0) goto L_80198d0c;
       t2 = cd_timer_read(0xffffffff);
     } while ((uint)(t2 - t1) < 0x79);
     mc_session(CD_RD_SESS_A);
     CD_RD_DONE = 0;
   }
-LAB_80198d0c:
+L_80198d0c:
   if ((a2 & 0x30) == 0) {
     CD_RD_SECTSZ = 0x200;
   }

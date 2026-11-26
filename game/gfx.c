@@ -516,10 +516,11 @@ uint32_t gpu_graph_reset(uint32_t arg)
   v = arg & 7;
   if (v == 0 || v == 3 || v == 5) {
     /* v==0/3 print the banner; v==5 enters at the memset (no print). */
-    if (v != 5) {
       printf_forward(s_ResetGraph_jtb__08x_env__08x_80125410,
                    (uint32_t *)0x801b82d8,(uint32_t *)0x801b8320);
     }
+L_80190e4c:
+L_80190e68:
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
     bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
@@ -532,6 +533,9 @@ uint32_t gpu_graph_reset(uint32_t arg)
     v = (uint32_t)gpu_mode;
   }
   else {
+    if (v < 4) {
+    }
+    else if (v == 5) goto L_80190e68;
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
@@ -618,6 +622,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   }
   if (!(((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
        ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
+   goto L_80191e74;
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
   tc = (int)(short)env[5] + 0x13;
@@ -668,6 +673,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     clamp_tot = ((int)tc <= (int)tot);
     if (clamp_tot) {
       tc = 0x102;
+      goto L_80191e0c;
     }
   }
   else {
@@ -693,6 +699,10 @@ uint32_t draw_env_timing(uint32_t env_g)
     clamp_tot = ((int)(td + 2) <= (int)tot);
     if (clamp_tot) {
       tc = 0x131;
+L_80191e0c:
+      if (narrow) {
+        tc = tot;
+      }
     }
   }
   if (clamp_tot && narrow) {
@@ -701,6 +711,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
   }
+L_80191e74:
   guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
   return env_g;
 }
@@ -1315,6 +1326,9 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
   uint8_t *st = (uint8_t *)guest_at(st_g);
   attr = *(uint32_t *)(st + 0xc);
   switch (variant & 0xf) {
+  default:
+    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
+    goto L_8012c4f8;
   case 1:
     col_d = 0; col_c = 0x1000; col_a = 0x3000; col_b = 0x3000;
     v = 1;
@@ -1349,25 +1363,18 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
     break;
   case 9:
     col_d = 0x800000; col_c = 0; col_a = 0x80; col_b = 0x20;
-    v = 0;
-    break;
   default:
-    col_d = 0xc; col_c = 0x20; col_a = 0x30; col_b = 0x40;
-    v = 0;
   }
   variant = variant & 0xf0;
   if (variant == 0x20 || variant == 0x00) {
-    if (variant == 0x00) {
       cell = head_g + 4;
       hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
       spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xd8,0xf0f001e,0x7a16d830);
-      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xe8,0xf0f001e,0x7a16d820);
-      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0xf8,0xf0f001e,0x7a16d810);
       hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
-                   (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x38) * 0x10000) >> 0x10,0);
-      spr_slot_pkt_submit((uint32_t *)guest_at(cell),((uint32_t)(*(int16_t *)(st + 0x22) + -0x3c) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
-    }
+    goto L_8012c4f8;
+L_8012c4f8:
+L_8012c64c:
     cell = head_g + 4;
     spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
@@ -1385,7 +1392,6 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
     v = (int32_t)*(int16_t *)(st + 0x22);
     cell = 0;
   } else if (variant == 0x30) {
-    cell = head_g + 4;
     spr_attr_alloc_b(cell,0x280000,0x177e001e,0x7ad68080,0x80,0x48);
     spr_attr_alloc_b(cell,0x280080,0x177e001e,0x7a968080,0x100,0x48);
     spr_attr_alloc_b(cell,0x280100,0x177e001e,0x7a568080,0x180,0x48);
@@ -1395,14 +1401,13 @@ void hud_gauge_render(uint32_t st_g,uint32_t head_g,uint32_t variant)
                  ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
     sprite_node_emit_a(cell,0,*(int16_t *)(st + 0x22) + -0x40,(int32_t)*(int16_t *)(st + 0x20),0x18,
                  col_a,0,col_a,0,2);
-    x = *(int16_t *)(st + 0x20);
-    v = (int32_t)*(int16_t *)(st + 0x22);
-    cell = 0;
-  } else if (variant == 0x10 || variant == 0x40) {
     if (variant == 0x10) {
       hud_text_d(head_g + 4,attr,guest_at(0x8011f110),0x120,
                    (int32_t)(((uint32_t)*(uint16_t *)(st + 0x22) - 0x30) * 0x10000) >> 0x10,0);
-      spr_slot_pkt_submit((uint32_t *)guest_at(head_g + 4),((uint32_t)(*(int16_t *)(st + 0x22) + -0x34) * 0x10000) | 0x148,0xf0f001e,0x7a16d800);
+L_8012cb64:
+        hud_text_d(cell,attr,guest_at(0x8011f10c),0xc0,
+        hud_text_d(cell,attr,guest_at(0x8011f110),0x120,
+        goto L_8012c64c;
     }
     v = head_g + 4;
     hud_text_d(v,attr,guest_at(0x8011f10c),0xc0,
@@ -1518,11 +1523,10 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   count = 0;
   /* Outer format loop (0x8018E5E0): plain chars go straight to
    * console_emit; '%' enters the flag/width/precision scan. Every path
-   * reconverges at fmt++ (0x8018EBEC). End-of-string and a dangling '%'
-   * both flush the line buffer via console_pct and return. */
   for (;;) {
     v = (uint32_t)*fmt;
     if (v == 0) break;
+L_8018e5e0:
     flags = 0;
     pfx = 0; alt = 0; sht = 0; lng = 0;
     if (v != 0x25) {
@@ -1545,235 +1549,87 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         switch (*fmt) {
         case 0:
           goto spec_flush;                      /* dangling '%' -> flush+ret */
-        case 0x20:
           fp = fmt;
           if (sign == 0) sign = 0x20;
           break;
-        case 0x23:
           alt = 1;
-          fp = fmt;
-          break;
-        case 0x2a:
-          apn = ap + 1;
           width = (intptr_t)*ap;
           ap = apn;
-          fp = fmt;
-          if (-1 < (int)width) break;
-          width = -width;
           /* fallthrough */
-        case 0x2d:
           flags |= 0x10;
-          ap = apn;
-          fp = fmt;
-          break;
-        case 0x2b:
           sign = 0x2b;
-          fp = fmt;
-          break;
-        case 0x2e:
-          fp = fp + 2;
           c1 = *fp;
-          if (c1 == 0x2a) {
             prec_raw = (intptr_t)*ap;
-            ap = ap + 1;
           } else {
-            prec_raw = 0;
             while (c1 < 0x80 && (c2 = *fp, (ctype_bitmap_801b6701[c2] & 4) != 0)) {
-              fp = fp + 1;
-              c1 = *fp;
-              prec_raw = (intptr_t)((intptr_t)prec_raw * 10 + -0x30 + (uint32_t)c2);
-            }
-            fp = fp - 1;
-          }
-          if ((int)prec_raw < 0) prec_raw = -1;
-          break;
-        case 0x30:
-          flags |= 0x20;
-          fp = fmt;
-          break;
-        case 0x31: case 0x32: case 0x33: case 0x34:
-        case 0x35: case 0x36: case 0x37: case 0x38: case 0x39:
-          width = 0;
           do {
-            fp = fmt;
-            fmt = fp + 1;
-            width = (intptr_t)((intptr_t)width * 10 + -0x30 + (uint32_t)*fp);
-            if (0x7f < *fmt) break;
-          } while ((ctype_bitmap_801b6701[*fmt] & 4) != 0);
-          break;
-        case 0x44:
           lng = 1;
-          /* fallthrough */
-        case 100:
-        case 0x69:
-          if (lng || !sht) v = *ap;
           else v = (uint32_t)(int16_t)*ap;
           base = 10;
-          if ((int32_t)v < 0) { v = -v; sign = 0x2d; }
           emit_kind = 2;
-          break;
-        case 0x4c:
-          fp = fmt;
-          break;
-        case 0x4f:
-          lng = 1;
-          /* fallthrough */
-        case 0x6f:
-          if (lng || !sht) v = *ap;
-          else v = (uint32_t)(int16_t)*ap;
-          base = 8;
-          sign = 0;
-          emit_kind = 2;
-          break;
-        case 0x55:
-          lng = 1;
-          /* fallthrough */
-        case 0x75:
-          if (lng || !sht) v = *ap;
-          else v = (uint32_t)(int16_t)*ap;
-          base = 10;
-          sign = 0;
-          emit_kind = 2;
-          break;
-        case 0x58:
           digits = s_0123456789ABCDEF_80125004;
-          /* fallthrough */
-        case 0x78:
-          if (lng || !sht) v = *ap;
-          else v = (uint32_t)(int16_t)*ap;
-          base = 0x10;
-          sign = 0;
-          if (alt && v != 0) pfx = 1;
-          emit_kind = 2;
-          break;
-        case 99:
           txt = (char *)dbuf;
           left = (uint32_t *)1;
-          sign = 0;
           dbuf[0] = (char)*ap;
-          emit_kind = 1;
-          break;
-        case 0x68:
           sht = 1;
-          fp = fmt;
-          break;
-        case 0x6c:
-          lng = 1;
-          fp = fmt;
-          break;
-        case 0x6e:
           args = (const uint32_t *)(ap + 1);
-          if (lng || !sht) *(uint32_t *)guest_at(*ap) = (uint32_t)count;
-          else *(uint16_t *)guest_at(*ap) = (uint16_t)count;
-          emit_kind = 0;
-          break;
-        case 0x70:
           v = *ap;
-          base = 0x10;
-          sign = 0;
-          emit_kind = 2;
-          break;
-        case 0x73:
-          txt = *ap == 0 ? (char *)s__null__80124ffc
                                 : (char *)guest_at(*ap);
-          if ((int)prec_raw < 0) {
-            prec_raw = str_len(txt);
-          } else {
             char *hit = strchr_bounded(txt,0,(int)prec_raw);
-            if (hit != 0 &&
                 (sign = 0, left = (uint32_t *)(intptr_t)(hit - txt),
                  hit - txt <= (intptr_t)prec_raw)) {
-              emit_kind = 1;
-              break;
-            }
-          }
-          sign = 0;
-          left = (uint32_t *)prec_raw;
-          emit_kind = 1;
-          break;
         default:
-          v = (uint32_t)(char)*fmt;
           count = count + 1;
-          args = (const uint32_t *)ap;
           console_emit(v);
-          emit_kind = 0;
-          break;
-        }
-        if (emit_kind >= 0) break;
-      }
-      if (emit_kind == 2) {
-        /* numeric: precision setup + digit generation (0x8018E95C/984) */
         prec = (intptr_t)prec_raw;
-        if (-1 < (int)prec_raw) flags &= ~0x20;
-        /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
          * s2 starts one past the top and walks down storing digits. The
-         * emitted string starts at the final cursor; its length is
-         * top - cursor. */
         dcur = dbuf + sizeof(dbuf);
-        if (v != 0 || prec_raw != 0) {
-          do {
             quo = v / base;
-            if (base == 0) { /* guest break 7 — div-by-zero */ }
             dig = digits[v % base];
-            dcur = dcur - 1;
             *dcur = dig;
-            v = quo;
-          } while (quo != 0);
-          digits = s_0123456789abcdef_80124fe8;
-          if (alt && base == 8 && dig != '0') {
-            dcur = dcur - 1;
-            *dcur = '0';
-          }
-          txt = dcur;
-          left = (uint32_t *)(uintptr_t)((dbuf + sizeof(dbuf)) - dcur);
-        } else {
-          txt = dcur;
-          left = (uint32_t *)0;
-        }
-        emit_kind = 1;
-      }
-      if (emit_kind == 1) {
-        /* shared string emit + padding (0x8018E9FC) */
-        args = (const uint32_t *)((const uint32_t *)ap + 1);
         need = (uint32_t *)((intptr_t)left + zpad);
-        if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
-        if (pfx) need = (uint32_t *)((intptr_t)need + 2);
         fldw = (uint32_t *)prec;
-        if (prec < (intptr_t)need) fldw = need;
-        if (flags == 0 && width != 0 && (intptr_t)fldw < width) {
           intptr_t pad = (intptr_t)fldw;
-          do { console_emit(0x20); pad++; } while (pad < width);
-        }
-        if (sign != 0) console_emit((uint32_t)sign);
-        if (pfx) { console_emit(0x30); console_emit((uint32_t)(char)*fmt); }
-        if (flags == 0x20 && (intptr_t)fldw < width) {
-          intptr_t pad = (intptr_t)fldw;
-          do { console_emit(0x30); pad++; } while (pad < width);
-        }
-        if ((intptr_t)need < prec) {
-          do { console_emit(0x30); need = (uint32_t *)((intptr_t)need + 1); }
-          while ((intptr_t)need < prec);
-        }
-        while ((left = (uint32_t *)((intptr_t)left - 1)), (intptr_t)left >= 0) {
-          dig = *txt;
-          txt = (char *)((intptr_t)txt + 1);
           console_emit((uint32_t)dig);
-        }
-        while ((zpad = zpad - 1), zpad >= 0) console_emit(0x30);
-        if ((flags & 0x10) != 0 && (intptr_t)fldw < width) {
-          intptr_t pad = (intptr_t)fldw;
-          do { console_emit(0x20); pad++; } while (pad < width);
-        }
-        need = (uint32_t *)width;
-        if (width < (intptr_t)fldw) need = fldw;
-        count = count + (intptr_t)need;
-      }
-    }
-    fmt = fmt + 1;                                /* LAB_8018ebec_d */
+L_8018e60c:
+          *(uint32_t *)guest_at(*ap) = (uint32_t)count;
+          *(uint16_t *)guest_at(*ap) = (uint16_t)count;
+L_8018e634_case0:
+    console_pct();
   }
 spec_flush:                                        /* 0x8018EBC0 */
   console_pct();
   return (uint32_t)count;
+L_8018e958_d:
+  sign = 0;
+L_8018e95c_d:
+  prec = (intptr_t)prec_raw;
+  if (-1 < (int)prec_raw) flags &= ~0x20;
+  {
+    /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
+     * s2 starts one past the top (sp+0x38, adjacent to the count char
+    dcur = dbuf + sizeof(dbuf);
+      goto L_8018e984_d;
+    txt = dcur;
+    left = (uint32_t *)0;
+  }
+L_8018e984_d:
+  do {
+    quo = v / base;
+    dig = digits[v % base];
+    *dcur = dig;
+    v = quo;
+  digits = s_0123456789abcdef_80124fe8;
+L_8018e9fc_d:
+  args = (const uint32_t *)((const uint32_t *)ap + 1);
+  need = (uint32_t *)((intptr_t)left + zpad);
+  fldw = (uint32_t *)prec;
+    intptr_t pad = (intptr_t)fldw;
+    while ((intptr_t)need < prec);
+    console_emit((uint32_t)dig);
+  count = count + (intptr_t)need;
+L_8018ebec_d:
+  fmt = fmt + 1;
 }
 
 /* ======== debug console emit layer ========
