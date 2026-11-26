@@ -13922,24 +13922,24 @@ void iris_wipe_update(int *rec)
 
 }
 
-undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
+undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int ctx,undefined4 a3)
 {
-  byte bVar1;
-  short sVar2;
-  int iVar3;
-  int iVar4;
-  iVar4 = 0;
+  byte op;
+  short rc;
+  int n;
+  int i;
+  i = 0;
   do {
-    bVar1 = *(byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((a2 + 0x24))));
-    if (*(short *)guest_at((uint32_t)(uintptr_t)((a2 + 0x6e) ))!= 0) {
-      if ((*(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))+ -0x7c) - a2 < 0xbc) {
-        /* guest: a0 = *(u32*)(s0+0x78) guest cursor addr; a2 = guest
-         * string-table entry @0x801b5574[bVar1] (guest addr -> host). */
-        iVar3 = sprintf_core((char *)guest_at((uint32_t)*(int *)guest_at(a2 + 0x78)),
+    op = *(byte *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((ctx + 0x24))));
+    if (*(short *)guest_at((uint32_t)(uintptr_t)((ctx + 0x6e) ))!= 0) {
+      if ((*(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))+ -0x7c) - ctx < 0xbc) {
+        /* guest: a0 = *(u32*)(s0+0x78) guest cursor addr; ctx = guest
+         * string-table entry @0x801b5574[op] (guest addr -> host). */
+        n = sprintf_core((char *)guest_at((uint32_t)*(int *)guest_at(ctx + 0x78)),
                              &DAT_801237e0,
-                             (char *)guest_at(*(uint32_t *)guest_at(0x801b5574 + (uint32_t)bVar1 * 4)),
+                             (char *)guest_at(*(uint32_t *)guest_at(0x801b5574 + (uint32_t)op * 4)),
                              a3);
-        *(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))= *(int *)guest_at((uint32_t)(uintptr_t)((a2 + 0x78) ))+ iVar3;
+        *(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))= *(int *)guest_at((uint32_t)(uintptr_t)((ctx + 0x78) ))+ n;
       }
     }
     /* PTR_entry_0x80182f3c_801b5528 is the guest opcode-handler jump table
@@ -13947,64 +13947,64 @@ undefined4 script_op_dispatch(undefined4 a0,undefined4 a1,int a2,undefined4 a3)
      * populated with host pointers, so indexing it called address 0. Dispatch
      * through the real guest table via br2_call_generated — the same jalr the
      * original performs — returning the handler's $v0 as the s16 result. */
-    sVar2 = (short)br2_call_clean(
-        *(uint32_t *)guest_at(0x801b5528u + (uint32_t)bVar1 * 4u),
-        a0, a1, (uint32_t)a2, a3);
-    iVar4 = iVar4 + 1;
-  } while ((sVar2 != 0) && (iVar4 * 0x10000 >> 0x10 < 0x32));
+    rc = (short)br2_call_clean(
+        *(uint32_t *)guest_at(0x801b5528u + (uint32_t)op * 4u),
+        a0, a1, (uint32_t)ctx, a3);
+    i = i + 1;
+  } while ((rc != 0) && (i * 0x10000 >> 0x10 < 0x32));
   return 0;
 
 }
 
 int trig_sin_lookup(uint ang)
 {
-  uint uVar1;
-  int iVar2;
-  uVar1 = ang & 0x3ff;
+  uint fa;
+  int v;
+  fa = ang & 0x3ff;
   if ((ang & 0x400) != 0) {
-    uVar1 = (ang & 0x400) - uVar1;
+    fa = (ang & 0x400) - fa;
   }
-  if ((int)(uVar1 - 0x3af) < 0) {
-    iVar2 = (int)*(short *)(&DAT_80124048 + uVar1 * 2);
+  if ((int)(fa - 0x3af) < 0) {
+    v = (int)*(short *)(&DAT_80124048 + fa * 2);
   }
   else {
-    iVar2 = 0x7fff;
+    v = 0x7fff;
   }
   if ((ang & 0x400) != 0) {
-    return -iVar2;
+    return -v;
   }
-  return iVar2;
+  return v;
 
 }
 
-uint * angle_vec_build(uint ang,uint *a1)
+uint * angle_vec_build(uint ang,uint *out)
 {
-  int iVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  *(undefined2 *)(a1 + 4) = 0x1000;
-  iVar1 = (ang & 0x3ff) * 2;
-  iVar4 = (ang & 0x3ff) * -2 + 0x800;
-  iVar2 = iVar1;
+  int i0;
+  int sel;
+  uint s;
+  int i1;
+  uint c;
+  *(undefined2 *)(out + 4) = 0x1000;
+  i0 = (ang & 0x3ff) * 2;
+  i1 = (ang & 0x3ff) * -2 + 0x800;
+  sel = i0;
   if ((ang & 0x400) != 0) {
-    iVar2 = iVar4;
-    iVar4 = iVar1;
+    sel = i1;
+    i1 = i0;
   }
-  uVar3 = (uint)*(ushort *)(&DAT_801247a8 + iVar2);
+  s = (uint)*(ushort *)(&DAT_801247a8 + sel);
   if ((ang & 0x800) != 0) {
-    uVar3 = -uVar3;
+    s = -s;
   }
-  uVar5 = (uint)*(ushort *)(&DAT_801247a8 + iVar4);
+  c = (uint)*(ushort *)(&DAT_801247a8 + i1);
   if ((ang + 0x400 & 0x800) != 0) {
-    uVar5 = -uVar5 & 0xffff;
+    c = -c & 0xffff;
   }
-  *a1 = uVar5 | uVar3 * -0x10000;
-  a1[1] = uVar3 * 0x10000;
-  a1[2] = uVar5;
-  a1[3] = 0;
-  return a1;
+  *out = c | s * -0x10000;
+  out[1] = s * 0x10000;
+  out[2] = c;
+  out[3] = 0;
+  return out;
 
 }
 
