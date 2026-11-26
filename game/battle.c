@@ -7819,318 +7819,318 @@ uint * rotmat2_pair_build(uint a,uint b,uint *out)
 
 int sprintf_core(char *dst,char *fmt,...)
 {
-  char cVar1;
-  char *pcVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  byte *pbVar6;
-  int *piVar7;
-  int iVar8;
-  char *local_res4;
+  char ch;
+  char *nx;
+  uint num;
+  int fc;
+  uint nd;
+  byte *wp;
+  int *np;
+  int n;
+  char *fp;
   va_list ap;
   /* Guest: one 0x200-byte digit scratch at sp+0x10..0x20f; the byte
    * cursor starts at sp+0x210 (one past the top, adjacent to the
-   * local_38 flags word) and walks down. %c stores its byte at the
+   * fl flags word) and walks down. %c stores its byte at the
    * scratch top-1 (sp+0x20f == old local_39). Ghidra split the scratch
-   * into &local_38/&local_39 scalars, so digits written pbVar6-1 ran
+   * into &fl/&local_39 scalars, so digits written wp-1 ran
    * off into unrelated host stack — keep it one array. */
   byte sc_buf[0x200];
 #define local_39 sc_buf[0x1ff]
-  undefined4 local_38;
-  uint local_34;
-  uint local_30;
+  undefined4 fl;
+  uint wid;
+  uint prc;
   va_start(ap,fmt);
-  cVar1 = *fmt;
-  iVar8 = 0;
-  local_res4 = fmt;
+  ch = *fmt;
+  n = 0;
+  fp = fmt;
 joined_r0x8018efa8:
-  iVar4 = (int)cVar1;
-  if (iVar4 != 0) {
-    if (iVar4 == 0x25) {
-      local_38 = DAT_801b67a0;
-      local_34 = DAT_801b67a4;
-      local_30 = DAT_801b67a8;
+  fc = (int)ch;
+  if (fc != 0) {
+    if (fc == 0x25) {
+      fl = DAT_801b67a0;
+      wid = DAT_801b67a4;
+      prc = DAT_801b67a8;
       while( true ) {
         while( true ) {
           while( true ) {
             while( true ) {
               while( true ) {
-                pcVar2 = local_res4 + 1;
-                iVar4 = (int)local_res4[1];
-                if (iVar4 != 0x2d) break;
-                local_38 = local_38 | 1;
-                local_res4 = pcVar2;
+                nx = fp + 1;
+                fc = (int)fp[1];
+                if (fc != 0x2d) break;
+                fl = fl | 1;
+                fp = nx;
               }
-              if (iVar4 != 0x2b) break;
-              local_38 = local_38 | 2;
-              local_res4 = pcVar2;
+              if (fc != 0x2b) break;
+              fl = fl | 2;
+              fp = nx;
             }
-            if (iVar4 != 0x20) break;
-            local_38 = (local_38 & 0xffff0000) | CONCAT11(local_res4[1],(byte)local_38);
-            local_res4 = pcVar2;
+            if (fc != 0x20) break;
+            fl = (fl & 0xffff0000) | CONCAT11(fp[1],(byte)fl);
+            fp = nx;
           }
-          if (iVar4 != 0x23) break;
-          local_38 = local_38 | 4;
-          local_res4 = pcVar2;
+          if (fc != 0x23) break;
+          fl = fl | 4;
+          fp = nx;
         }
-        if (iVar4 != 0x30) break;
-        local_38 = local_38 | 8;
-        local_res4 = pcVar2;
+        if (fc != 0x30) break;
+        fl = fl | 8;
+        fp = nx;
       }
-      if (iVar4 == 0x2a) {
-        local_34 = va_arg(ap,uint32_t);
+      if (fc == 0x2a) {
+        wid = va_arg(ap,uint32_t);
 
-        if ((int)local_34 < 0) {
-          local_34 = -local_34;
-          local_38 = local_38 | 1;
+        if ((int)wid < 0) {
+          wid = -wid;
+          fl = fl | 1;
         }
-        iVar4 = (int)local_res4[2];
-        local_res4 = local_res4 + 2;
+        fc = (int)fp[2];
+        fp = fp + 2;
       }
       else {
-        while (local_res4 = pcVar2, iVar4 - 0x30U < 10) {
-          local_34 = local_34 * 10 + -0x30 + iVar4;
-          pcVar2 = local_res4 + 1;
-          iVar4 = (int)local_res4[1];
+        while (fp = nx, fc - 0x30U < 10) {
+          wid = wid * 10 + -0x30 + fc;
+          nx = fp + 1;
+          fc = (int)fp[1];
         }
       }
-      if (iVar4 == 0x2e) {
-        iVar4 = (int)local_res4[1];
-        pcVar2 = local_res4;
-        if (iVar4 == 0x2a) {
-          local_30 = va_arg(ap,uint32_t);
+      if (fc == 0x2e) {
+        fc = (int)fp[1];
+        nx = fp;
+        if (fc == 0x2a) {
+          prc = va_arg(ap,uint32_t);
 
-          iVar4 = (int)local_res4[2];
-          local_res4 = local_res4 + 2;
+          fc = (int)fp[2];
+          fp = fp + 2;
         }
         else {
-          while (local_res4 = pcVar2 + 1, iVar4 - 0x30U < 10) {
-            local_30 = local_30 * 10 + -0x30 + iVar4;
-            iVar4 = (int)pcVar2[2];
-            pcVar2 = local_res4;
+          while (fp = nx + 1, fc - 0x30U < 10) {
+            prc = prc * 10 + -0x30 + fc;
+            fc = (int)nx[2];
+            nx = fp;
           }
         }
-        if (-1 < (int)local_30) {
-          local_38 = local_38 | 0x10;
+        if (-1 < (int)prc) {
+          fl = fl | 0x10;
         }
       }
-      pbVar6 = sc_buf + sizeof(sc_buf);
-      if ((local_38 & 1) != 0) {
-        local_38 = local_38 & 0xfffffff7;
+      wp = sc_buf + sizeof(sc_buf);
+      if ((fl & 1) != 0) {
+        fl = fl & 0xfffffff7;
       }
       do {
-        switch(iVar4) {
+        switch(fc) {
         case 0x4c:
-          local_38 = local_38 | 0x80;
+          fl = fl | 0x80;
           break;
         default:
           goto switchD_8018f218_caseD_4d;
         case 99:
-          pbVar6 = &local_39;
-          uVar5 = 1;
+          wp = &local_39;
+          nd = 1;
           local_39 = (byte)va_arg(ap,uint32_t);
 
           goto LAB_8018f700;
         case 100:
         case 0x69:
-          uVar3 = va_arg(ap,uint32_t);
-          if ((local_38 >> 5 & 1) != 0) {
-            uVar3 = (uint)(short)uVar3;
+          num = va_arg(ap,uint32_t);
+          if ((fl >> 5 & 1) != 0) {
+            num = (uint)(short)num;
           }
-          if ((int)uVar3 < 0) {
-            uVar3 = -uVar3;
-            local_38 = (local_38 & 0xffff0000) | CONCAT11(0x2d,(byte)local_38);
+          if ((int)num < 0) {
+            num = -num;
+            fl = (fl & 0xffff0000) | CONCAT11(0x2d,(byte)fl);
           }
-          else if ((local_38 >> 1 & 1) != 0) {
-            local_38 = (local_38 & 0xffff0000) | CONCAT11(0x2b,(byte)local_38);
+          else if ((fl >> 1 & 1) != 0) {
+            fl = (fl & 0xffff0000) | CONCAT11(0x2b,(byte)fl);
           }
           goto LAB_8018f2f0;
         case 0x68:
-          local_38 = local_38 | 0x20;
+          fl = fl | 0x20;
           break;
         case 0x6c:
-          local_38 = local_38 | 0x40;
+          fl = fl | 0x40;
           break;
         case 0x6e:
           {
             uintptr_t nv = va_arg(ap,uintptr_t);
             uint32_t ng = guest_of((const void *)nv);
-            piVar7 = (int *)(ng ? guest_at(ng)
+            np = (int *)(ng ? guest_at(ng)
                         : ((uint32_t)nv < 0x20000000u || (uint32_t)nv >= 0x80000000u
                            ? guest_at((uint32_t)nv) : (void *)(uintptr_t)nv));
           }
 
-          if ((local_38 >> 5 & 1) == 0) {
-            *piVar7 = iVar8;
+          if ((fl >> 5 & 1) == 0) {
+            *np = n;
           }
           else {
-            *(short *)piVar7 = (short)iVar8;
+            *(short *)np = (short)n;
           }
           goto LAB_8018f78c;
         case 0x6f:
-          uVar3 = va_arg(ap,uint32_t);
+          num = va_arg(ap,uint32_t);
 
-          if ((local_38 >> 5 & 1) != 0) {
-            uVar3 = uVar3 & 0xffff;
+          if ((fl >> 5 & 1) != 0) {
+            num = num & 0xffff;
           }
-          if ((local_38 >> 4 & 1) == 0) {
-            if ((local_38 >> 3 & 1) != 0) {
-              local_30 = local_34;
+          if ((fl >> 4 & 1) == 0) {
+            if ((fl >> 3 & 1) != 0) {
+              prc = wid;
             }
-            if ((int)local_30 < 1) {
-              local_30 = 1;
+            if ((int)prc < 1) {
+              prc = 1;
             }
           }
-          uVar5 = 0;
-          for (; uVar3 != 0; uVar3 = uVar3 >> 3) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = ((byte)uVar3 & 7) + 0x30;
-            uVar5 = uVar5 + 1;
+          nd = 0;
+          for (; num != 0; num = num >> 3) {
+            wp = wp + -1;
+            *wp = ((byte)num & 7) + 0x30;
+            nd = nd + 1;
           }
-          if ((((local_38 >> 2 & 1) != 0) && (uVar5 != 0)) && (*pbVar6 != 0x30)) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = 0x30;
-            uVar5 = uVar5 + 1;
+          if ((((fl >> 2 & 1) != 0) && (nd != 0)) && (*wp != 0x30)) {
+            wp = wp + -1;
+            *wp = 0x30;
+            nd = nd + 1;
           }
-          for (; (int)uVar5 < (int)local_30; uVar5 = uVar5 + 1) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = 0x30;
+          for (; (int)nd < (int)prc; nd = nd + 1) {
+            wp = wp + -1;
+            *wp = 0x30;
           }
           goto LAB_8018f700;
         case 0x70:
-          local_30 = 8;
-          local_38 = local_38 | 0x50;
+          prc = 8;
+          fl = fl | 0x50;
         case 0x58:
-          pcVar2 = s_0123456789ABCDEF_80125208;
+          nx = s_0123456789ABCDEF_80125208;
           goto LAB_8018f504;
         case 0x73:
           {
             uintptr_t sv = va_arg(ap,uintptr_t);
             uint32_t sg = guest_of((const void *)sv);
-            pbVar6 = sg ? (byte *)guest_at(sg)
+            wp = sg ? (byte *)guest_at(sg)
                         : ((uint32_t)sv < 0x20000000u || (uint32_t)sv >= 0x80000000u
                            ? (byte *)guest_at((uint32_t)sv) : (byte *)sv);
           }
 
-          if ((local_38 >> 2 & 1) == 0) {
-            if ((local_38 >> 4 & 1) == 0) {
-              uVar5 = str_len(pbVar6);
+          if ((fl >> 2 & 1) == 0) {
+            if ((fl >> 4 & 1) == 0) {
+              nd = str_len(wp);
             }
             else {
-              iVar4 = (int)(intptr_t)strchr_bounded((char *)(uintptr_t)pbVar6,0,local_30);
-              uVar5 = iVar4 - (intptr_t)pbVar6;
-              if (iVar4 == 0) {
-                uVar5 = local_30;
+              fc = (int)(intptr_t)strchr_bounded((char *)(uintptr_t)wp,0,prc);
+              nd = fc - (intptr_t)wp;
+              if (fc == 0) {
+                nd = prc;
               }
             }
           }
           else {
-            uVar5 = (uint)*pbVar6;
-            pbVar6 = pbVar6 + 1;
-            if (((local_38 >> 4 & 1) != 0) && ((int)local_30 < (int)uVar5)) {
-              uVar5 = local_30;
+            nd = (uint)*wp;
+            wp = wp + 1;
+            if (((fl >> 4 & 1) != 0) && ((int)prc < (int)nd)) {
+              nd = prc;
             }
           }
           goto LAB_8018f700;
         case 0x75:
-          uVar3 = va_arg(ap,uint32_t);
-          if ((local_38 >> 5 & 1) != 0) {
-            uVar3 = uVar3 & 0xffff;
+          num = va_arg(ap,uint32_t);
+          if ((fl >> 5 & 1) != 0) {
+            num = num & 0xffff;
           }
-          local_38 = (local_38 & 0xffff0000) | (uint16_t)(byte)local_38;
+          fl = (fl & 0xffff0000) | (uint16_t)(byte)fl;
 LAB_8018f2f0:
 
-          if ((local_38 >> 4 & 1) == 0) {
-            if (((local_38 >> 3 & 1) != 0) && (local_30 = local_34, ((local_38 >> 8) & 0xff) != 0)) {
-              local_30 = local_34 - 1;
+          if ((fl >> 4 & 1) == 0) {
+            if (((fl >> 3 & 1) != 0) && (prc = wid, ((fl >> 8) & 0xff) != 0)) {
+              prc = wid - 1;
             }
-            if ((int)local_30 < 1) {
-              local_30 = 1;
+            if ((int)prc < 1) {
+              prc = 1;
             }
           }
-          uVar5 = 0;
-          while (uVar3 != 0) {
-            pbVar6 = pbVar6 + -1;
-            uVar5 = uVar5 + 1;
-            *pbVar6 = (char)uVar3 + (char)(uVar3 / 10) * -10 + 0x30;
-            uVar3 = uVar3 / 10;
+          nd = 0;
+          while (num != 0) {
+            wp = wp + -1;
+            nd = nd + 1;
+            *wp = (char)num + (char)(num / 10) * -10 + 0x30;
+            num = num / 10;
           }
-          for (; (int)uVar5 < (int)local_30; uVar5 = uVar5 + 1) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = 0x30;
+          for (; (int)nd < (int)prc; nd = nd + 1) {
+            wp = wp + -1;
+            *wp = 0x30;
           }
-          if (((local_38 >> 8) & 0xff) != 0) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = (char)((local_38 >> 8) & 0xff);
-            uVar5 = uVar5 + 1;
+          if (((fl >> 8) & 0xff) != 0) {
+            wp = wp + -1;
+            *wp = (char)((fl >> 8) & 0xff);
+            nd = nd + 1;
           }
           goto LAB_8018f700;
         case 0x78:
-          pcVar2 = s_0123456789abcdef_8012521c;
+          nx = s_0123456789abcdef_8012521c;
 LAB_8018f504:
-          uVar3 = va_arg(ap,uint32_t);
+          num = va_arg(ap,uint32_t);
 
-          if ((local_38 >> 5 & 1) != 0) {
-            uVar3 = uVar3 & 0xffff;
+          if ((fl >> 5 & 1) != 0) {
+            num = num & 0xffff;
           }
-          if ((local_38 >> 4 & 1) == 0) {
-            if (((local_38 >> 3 & 1) != 0) && (local_30 = local_34, (local_38 >> 2 & 1) != 0)) {
-              local_30 = local_34 - 2;
+          if ((fl >> 4 & 1) == 0) {
+            if (((fl >> 3 & 1) != 0) && (prc = wid, (fl >> 2 & 1) != 0)) {
+              prc = wid - 2;
             }
-            if ((int)local_30 < 1) {
-              local_30 = 1;
+            if ((int)prc < 1) {
+              prc = 1;
             }
           }
-          uVar5 = 0;
-          for (; uVar3 != 0; uVar3 = uVar3 >> 4) {
-            pbVar6 = pbVar6 + -1;
-            uVar5 = uVar5 + 1;
-            *pbVar6 = pcVar2[uVar3 & 0xf];
+          nd = 0;
+          for (; num != 0; num = num >> 4) {
+            wp = wp + -1;
+            nd = nd + 1;
+            *wp = nx[num & 0xf];
           }
-          for (; (int)uVar5 < (int)local_30; uVar5 = uVar5 + 1) {
-            pbVar6 = pbVar6 + -1;
-            *pbVar6 = 0x30;
+          for (; (int)nd < (int)prc; nd = nd + 1) {
+            wp = wp + -1;
+            *wp = 0x30;
           }
-          if ((local_38 >> 2 & 1) != 0) {
-            pbVar6[-1] = (byte)iVar4;
-            pbVar6 = pbVar6 + -2;
-            *pbVar6 = 0x30;
-            uVar5 = uVar5 + 2;
+          if ((fl >> 2 & 1) != 0) {
+            wp[-1] = (byte)fc;
+            wp = wp + -2;
+            *wp = 0x30;
+            nd = nd + 2;
           }
 LAB_8018f700:
-          if (((int)uVar5 < (int)local_34) && ((local_38 & 1) == 0)) {
+          if (((int)nd < (int)wid) && ((fl & 1) == 0)) {
             do {
-              *(undefined1 *)(dst + iVar8)= 0x20;
-              local_34 = local_34 - 1;
-              iVar8 = iVar8 + 1;
-            } while ((int)uVar5 < (int)local_34);
+              *(undefined1 *)(dst + n)= 0x20;
+              wid = wid - 1;
+              n = n + 1;
+            } while ((int)nd < (int)wid);
           }
-          mem_move((undefined1 *)(dst + iVar8),pbVar6,uVar5);
-          iVar8 = iVar8 + uVar5;
-          for (; (int)uVar5 < (int)local_34; uVar5 = uVar5 + 1) {
-            *(undefined1 *)(dst + iVar8)= 0x20;
-            iVar8 = iVar8 + 1;
+          mem_move((undefined1 *)(dst + n),wp,nd);
+          n = n + nd;
+          for (; (int)nd < (int)wid; nd = nd + 1) {
+            *(undefined1 *)(dst + n)= 0x20;
+            n = n + 1;
           }
           goto LAB_8018f78c;
         }
-        iVar4 = (int)local_res4[1];
-        local_res4 = local_res4 + 1;
+        fc = (int)fp[1];
+        fp = fp + 1;
       } while( true );
     }
     goto LAB_8018f6f4;
   }
 LAB_8018f7ac:
-  *(undefined1 *)(dst + iVar8)= 0;
-  return iVar8;
+  *(undefined1 *)(dst + n)= 0;
+  return n;
 switchD_8018f218_caseD_4d:
-  if (iVar4 != 0x25) goto LAB_8018f7ac;
+  if (fc != 0x25) goto LAB_8018f7ac;
 LAB_8018f6f4:
-  *(char *)(dst + iVar8) = (char)iVar4;
-  iVar8 = iVar8 + 1;
+  *(char *)(dst + n) = (char)fc;
+  n = n + 1;
 LAB_8018f78c:
-  cVar1 = local_res4[1];
-  local_res4 = local_res4 + 1;
+  ch = fp[1];
+  fp = fp + 1;
   goto joined_r0x8018efa8;
 
 }
