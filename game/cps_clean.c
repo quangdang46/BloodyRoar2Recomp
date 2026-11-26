@@ -1379,6 +1379,7 @@ void cps_8019a8ec(void);
  * from SLES_017.22_full_00.c. */
 void cps_80126178(void)
 {
+/* scene-thunk fragment: continues at 0x80126188 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1395,6 +1396,7 @@ block_80126178:
  * from SLES_017.22_full_00.c. */
 void cps_80126188(void)
 {
+/* scene-thunk fragment: continues at 0x80126194 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1410,6 +1412,7 @@ void cps_80126188(void)
  * from SLES_017.22_full_00.c. */
 void cps_80126194(void)
 {
+/* scene-thunk fragment: continues at 0x80126198 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1429,6 +1432,7 @@ void cps_80126194(void)
  * from SLES_017.22_full_00.c. */
 void cps_80126198(void)
 {
+/* scene-thunk fragment: continues at 0x8012619c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1442,6 +1446,7 @@ void cps_80126198(void)
  * from SLES_017.22_full_00.c. */
 void cps_8012619c(void)
 {
+/* scene-thunk fragment: continues at 0x801261c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1460,6 +1465,7 @@ void cps_8012619c(void)
  * from SLES_017.22_full_00.c. */
 void cps_801261c4(void)
 {
+/* scene-thunk fragment: continues at 0x801261d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1475,6 +1481,7 @@ block_801261C4:
  * from SLES_017.22_full_00.c. */
 void cps_801261d8(void)
 {
+/* scene-thunk fragment: continues at 0x801261f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1493,6 +1500,7 @@ void cps_801261d8(void)
  * from SLES_017.22_full_00.c. */
 void cps_801261f8(void)
 {
+/* scene/mode thunk -> guest_bzero -> self */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1525,6 +1533,7 @@ block_8012620C:
  * from SLES_017.22_full_00.c. */
 void cps_8012621c(void)
 {
+/* scene-thunk fragment: continues at 0x80126220 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1538,6 +1547,7 @@ void cps_8012621c(void)
  * from SLES_017.22_full_00.c. */
 void cps_80126220(void)
 {
+/* scene-thunk fragment: continues at 0x80126228 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1551,6 +1561,7 @@ void cps_80126220(void)
  * from SLES_017.22_full_00.c. */
 void cps_80126228(void)
 {
+/* scene-thunk fragment: continues at 0x80126234 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1564,6 +1575,7 @@ void cps_80126228(void)
  * from SLES_017.22_full_00.c. */
 void cps_80126234(void)
 {
+/* scene/mode thunk -> empty_leaf -> boot */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1600,6 +1612,7 @@ block_80126258:
  * from SLES_017.22_full_00.c. */
 void cps_8012625c(void)
 {
+/* scene-thunk fragment: continues at 0x80126260 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1614,6 +1627,7 @@ block_8012625C:
  * from SLES_017.22_full_00.c. */
 void cps_80126260(void)
 {
+/* scene-thunk fragment: continues at 0x80126290 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1640,6 +1654,7 @@ block_80126260:
  * versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126290(void)
 {
+/* scene/mode thunk -> memcard_info_query -> versus_state_init */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1700,6 +1715,7 @@ block_801262BC:
  * from SLES_017.22_full_00.c. */
 void cps_801262c0(void)
 {
+/* scene-thunk fragment: continues at 0x801262c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1718,6 +1734,7 @@ block_801262C0:
  * from SLES_017.22_full_00.c. */
 void cps_801262c4(void)
 {
+/* scene/mode thunk -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1759,6 +1776,7 @@ block_801262E4:
  * from SLES_017.22_full_00.c. */
 void cps_801262f4(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> brightness_commit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1805,6 +1823,7 @@ block_80126314:
  * from SLES_017.22_full_00.c. */
 void cps_80126324(void)
 {
+/* scene-thunk fragment: continues at 0x80126328 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1819,6 +1838,7 @@ block_80126324:
  * from SLES_017.22_full_00.c. */
 void cps_80126328(void)
 {
+/* scene/mode thunk -> frame_advance_helper -> ? */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1861,6 +1881,7 @@ block_80126338:
  * from SLES_017.22_full_00.c. */
 void cps_80126348(void)
 {
+/* scene-thunk fragment: continues at 0x80126350 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1880,6 +1901,7 @@ block_80126348:
  * from SLES_017.22_full_00.c. */
 void cps_80126350(void)
 {
+/* scene-thunk fragment: continues at 0x80126358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1906,6 +1928,7 @@ block_80126350:
  * from SLES_017.22_full_00.c. */
 void cps_80126358(void)
 {
+/* scene/mode thunk -> match_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1955,6 +1978,7 @@ block_80126380:
  * display_transition_wrap: display_mode_setup + frame_advance_helper + transition_screen_flow. */
 void cps_80126388(void)
 {
+/* scene/mode thunk -> display_mode_setup -> frame_advance_helper -> transition_screen_flow */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2017,6 +2041,7 @@ block_801263B0:
  * from SLES_017.22_full_00.c. */
 void cps_801263bc(void)
 {
+/* scene-thunk fragment: continues at 0x801263c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2032,6 +2057,7 @@ block_801263BC:
  * byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801263c0(void)
 {
+/* scene-thunk fragment: continues at 0x801263ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2089,6 +2115,7 @@ block_801263E0:
  * match_mode_set — display init then mode set. */
 void cps_801263ec(void)
 {
+/* scene/mode thunk -> match_mode_set -> display_mode_setup -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2155,6 +2182,7 @@ block_80126418:
  * transition_flow_wrap: transition_screen_flow caller. */
 void cps_80126420(void)
 {
+/* scene/mode thunk -> transition_screen_flow -> transition_screen_flow */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2219,6 +2247,7 @@ block_8012644C:
  * frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126450(void)
 {
+/* scene/mode thunk -> match_mode_set -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2283,6 +2312,7 @@ block_80126478:
  * from SLES_017.22_full_00.c. */
 void cps_80126484(void)
 {
+/* scene-thunk fragment: continues at 0x801264b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2313,6 +2343,7 @@ block_80126484:
  * from SLES_017.22_full_00.c. */
 void cps_801264b4(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> scene_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2370,6 +2401,7 @@ block_801264E0:
  * from SLES_017.22_full_00.c. */
 void cps_801264e8(void)
 {
+/* scene-thunk fragment: continues at 0x801264ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2384,6 +2416,7 @@ block_801264E8:
  * from SLES_017.22_full_00.c. */
 void cps_801264ec(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2417,6 +2450,7 @@ block_801264EC:
  * from SLES_017.22_full_00.c. */
 void cps_80126518(void)
 {
+/* scene-thunk fragment: continues at 0x8012651c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2431,6 +2465,7 @@ block_80126518:
  * from SLES_017.22_full_00.c. */
 void cps_8012651c(void)
 {
+/* scene-thunk fragment: continues at 0x8012652c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2459,6 +2494,7 @@ block_8012651C:
  * from SLES_017.22_full_00.c. */
 void cps_8012652c(void)
 {
+/* scene-thunk fragment: continues at 0x80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2502,6 +2538,7 @@ block_80126534:
  * from SLES_017.22_full_00.c. */
 void cps_80126548(void)
 {
+/* scene-thunk fragment: continues at 0x8012654c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2516,6 +2553,7 @@ block_80126548:
  * from SLES_017.22_full_00.c. */
 void cps_8012654c(void)
 {
+/* scene-thunk fragment: continues at 0x80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2531,6 +2569,7 @@ block_8012654C:
  * display_tick_mode: display_mode_setup + frame_advance_helper + frame_tick + match_mode_set. */
 void cps_80126550(void)
 {
+/* scene/mode thunk -> match_mode_set -> display_mode_setup -> frame_tick -> frame_advance_helper */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2587,6 +2626,7 @@ block_80126574:
  * per-frame match loop with memcard poll. */
 void cps_8012657c(void)
 {
+/* scene/mode thunk -> frame_tick -> memcard_poll_frame -> match_loop */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2651,6 +2691,7 @@ block_801265A4:
  * from SLES_017.22_full_00.c. */
 void cps_801265ac(void)
 {
+/* scene-thunk fragment: continues at 0x801265b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2687,6 +2728,7 @@ block_801265B4:
  * from SLES_017.22_full_00.c. */
 void cps_801265b8(void)
 {
+/* scene-thunk fragment: continues at 0x801265c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2706,6 +2748,7 @@ block_801265B8:
  * from SLES_017.22_full_00.c. */
 void cps_801265c0(void)
 {
+/* scene-thunk fragment: continues at 0x80126344 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2749,6 +2792,7 @@ block_801265C8:
  * from SLES_017.22_full_00.c. */
 void cps_801265dc(void)
 {
+/* scene-thunk fragment: continues at 0x801265e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2763,6 +2807,7 @@ block_801265DC:
  * from SLES_017.22_full_00.c. */
 void cps_801265e0(void)
 {
+/* scene-thunk fragment: continues at 0x801265e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2779,6 +2824,7 @@ block_801265E0:
  * battle_intro_flow — results screen entry sequence. */
 void cps_801265e4(void)
 {
+/* scene/mode thunk -> match_mode_set -> battle_intro_flow -> results_scoreboard */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2842,6 +2888,7 @@ block_8012660C:
  * from SLES_017.22_full_00.c. */
 void cps_80126610(void)
 {
+/* scene-thunk fragment: continues at 0x8012661c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2869,6 +2916,7 @@ block_80126610:
  * from SLES_017.22_full_00.c. */
 void cps_8012661c(void)
 {
+/* scene-thunk fragment: continues at 0x80126640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2918,6 +2966,7 @@ block_8012663C:
  * enters a battle mode and starts the flow FSM. */
 void cps_80126640(void)
 {
+/* scene/mode thunk -> match_mode_set -> match_mode_set -> battle_flow_state_machine */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2988,6 +3037,7 @@ block_8012666C:
  * from SLES_017.22_full_00.c. */
 void cps_80126670(void)
 {
+/* scene-thunk fragment: continues at 0x80126674 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3006,6 +3056,7 @@ block_80126670:
  * unlocks a progress scene then sets match mode. */
 void cps_80126674(void)
 {
+/* scene/mode thunk -> match_mode_set -> unlock_progress_scene_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3076,6 +3127,7 @@ block_8012669C:
  * from SLES_017.22_full_00.c. */
 void cps_801266a0(void)
 {
+/* scene-thunk fragment: continues at 0x801266a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3090,6 +3142,7 @@ block_801266A0:
  * from SLES_017.22_full_00.c. */
 void cps_801266a4(void)
 {
+/* scene/mode thunk -> player_name_entry */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3123,6 +3176,7 @@ block_801266AC:
  * from SLES_017.22_full_00.c. */
 void cps_801266b4(void)
 {
+/* scene/mode thunk -> match_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3173,6 +3227,7 @@ block_801266C8:
  * from SLES_017.22_full_00.c. */
 void cps_801266d4(void)
 {
+/* scene-thunk fragment: continues at 0x801266d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3189,6 +3244,7 @@ block_801266D4:
  * from SLES_017.22_full_00.c. */
 void cps_801266d8(void)
 {
+/* scene/mode thunk -> system_config_menu_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3235,6 +3291,7 @@ block_801266E8:
  * from SLES_017.22_full_00.c. */
 void cps_801266f0(void)
 {
+/* scene/mode thunk -> system_config_menu_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3254,6 +3311,7 @@ block_801266F0:
  * from SLES_017.22_full_00.c. */
 void cps_801266f8(void)
 {
+/* scene-thunk fragment: continues at 0x80126344 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3292,6 +3350,8 @@ block_80126700:
  * from SLES_017.22_full_00.c. */
 void cps_80126704(void)
 {
+/* scratchpad/RAM byte store: writes s2 to *s1 and 13/255 to
+ * 0x1F800000+13 — low-level state byte init. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3317,6 +3377,7 @@ block_80126704:
  * from SLES_017.22_full_00.c. */
 void cps_80126734(void)
 {
+/* scene-thunk fragment: continues at 0x80126740 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3336,6 +3397,7 @@ block_80126734:
  * from SLES_017.22_full_00.c. */
 void cps_80126740(void)
 {
+/* scene-thunk fragment: continues at 0x80126764 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3363,6 +3425,7 @@ block_80126740:
  * save_block_init + dbg_marker_mode_set — save-system init sequence. */
 void cps_80126764(void)
 {
+/* scene/mode thunk -> save_defaults_fill -> save_block_init -> save_tables_commit -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3429,6 +3492,7 @@ block_80126788:
  * from SLES_017.22_full_00.c. */
 void cps_80126794(void)
 {
+/* scene/mode thunk -> gauge_scale_fixed -> brightness_commit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3476,6 +3540,7 @@ block_801267C0:
  * from SLES_017.22_full_00.c. */
 void cps_801267c8(void)
 {
+/* scene-thunk fragment: continues at 0x801267cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3490,6 +3555,7 @@ block_801267C8:
  * from SLES_017.22_full_00.c. */
 void cps_801267cc(void)
 {
+/* leaf epilogue piece: restore s0/ra, sp += 24, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3511,6 +3577,7 @@ block_801267CC:
  * from SLES_017.22_full_00.c. */
 void cps_801267f8(void)
 {
+/* scene-thunk fragment: continues at 0x801267fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3527,6 +3594,7 @@ block_801267F8:
  * from SLES_017.22_full_00.c. */
 void cps_801267fc(void)
 {
+/* scene/mode thunk -> dbg_marker_mode_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3563,6 +3631,7 @@ block_80126804:
  * from SLES_017.22_full_00.c. */
 void cps_80126814(void)
 {
+/* scene-thunk fragment: continues at 0x80126828 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3581,6 +3650,7 @@ block_80126814:
  * from SLES_017.22_full_00.c. */
 void cps_80126828(void)
 {
+/* counter-increment leaf: *(a0) += 1 and *a1 += 1. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3604,6 +3674,7 @@ block_80126828:
  * from SLES_017.22_full_00.c. */
 void cps_80126840(void)
 {
+/* empty leaf: immediate jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3623,6 +3694,7 @@ block_80126840:
  * from SLES_017.22_full_00.c. */
 void cps_80126854(void)
 {
+/* scene-thunk fragment: continues at 0x80126858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3637,6 +3709,7 @@ block_80126854:
  * from SLES_017.22_full_00.c. */
 void cps_80126858(void)
 {
+/* scene-thunk fragment: continues at 0x80126854 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3679,6 +3752,7 @@ block_80126868:
  * ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126888(void)
 {
+/* small multi-block piece in the 0x80126 thunk cluster. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3767,6 +3841,7 @@ block_801268B4:
  * from SLES_017.22_full_00.c. */
 void cps_801268b8(void)
 {
+/* scene-thunk fragment: continues at 0x801268bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3781,6 +3856,7 @@ block_801268B8:
  * from SLES_017.22_full_00.c. */
 void cps_801268bc(void)
 {
+/* scene-thunk fragment: continues at 0x801268c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3798,6 +3874,7 @@ block_801268BC:
  * from SLES_017.22_full_00.c. */
 void cps_801268c4(void)
 {
+/* scene/mode thunk -> cd_file_load_sm */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3832,6 +3909,7 @@ block_801268D0:
  * from SLES_017.22_full_00.c. */
 void cps_801268e8(void)
 {
+/* scene-thunk fragment: continues at 0x80126918 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3857,6 +3935,7 @@ block_801268E8:
  * from SLES_017.22_full_00.c. */
 void cps_80126918(void)
 {
+/* scene-thunk fragment: continues at 0x8012691c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3872,6 +3951,7 @@ block_80126918:
  * tag_table_load: scratch_013_set + tag_table_get + cd_file_load_sm — tag-table load from CD. */
 void cps_8012691c(void)
 {
+/* scene/mode thunk -> tag_table_get -> cd_file_load_sm -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3927,6 +4007,7 @@ block_80126938:
  * from SLES_017.22_full_00.c. */
 void cps_80126948(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3972,6 +4053,7 @@ block_80126960:
  * from SLES_017.22_full_00.c. */
 void cps_80126978(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4019,6 +4101,7 @@ block_8012699C:
  * from SLES_017.22_full_00.c. */
 void cps_801269a8(void)
 {
+/* scene/mode thunk -> spr_draw_off -> tag_table_get -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4068,6 +4151,7 @@ block_801269C8:
  * from SLES_017.22_full_00.c. */
 void cps_801269d8(void)
 {
+/* scene/mode thunk -> spr_draw_off -> tag_table_get */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4115,6 +4199,7 @@ block_80126A04:
  * from SLES_017.22_full_00.c. */
 void cps_80126a08(void)
 {
+/* scene/mode thunk -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4165,6 +4250,7 @@ block_80126A2C:
  * stream block and draws its sprites (title/streaming path). */
 void cps_80126a38(void)
 {
+/* scene/mode thunk -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_pair -> tag_table_get -> stream_block_decode -> spr_draw_off -> tag_table_get -> stream_block_decode -> spr_draw_off -> cd_timer_read -> cd_timer_read -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4813,6 +4899,7 @@ block_80126EA0:
  * cd_file_load_sm — loads fighter record and page table from CD. */
 void cps_80126ea8(void)
 {
+/* scene/mode thunk -> cd_file_load_sm -> fighter_record_apply -> page_table_ptr_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4876,6 +4963,7 @@ block_80126ED8:
  * from SLES_017.22_full_00.c. */
 void cps_80126ee0(void)
 {
+/* scene-thunk fragment: continues at 0x80126ee8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4893,6 +4981,7 @@ block_80126EE0:
  * from SLES_017.22_full_00.c. */
 void cps_80126ee8(void)
 {
+/* scene-thunk fragment: continues at 0x80126eec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4907,6 +4996,7 @@ block_80126EE8:
  * from SLES_017.22_full_00.c. */
 void cps_80126eec(void)
 {
+/* leaf epilogue piece: restore s0-s2/ra, sp += 48, jr ra. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
