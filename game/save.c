@@ -1483,18 +1483,18 @@ void mode_flag_pair_set(undefined1 a0)
 void perm_table_load(void)
 
 {
-  undefined1 *puVar1;
-  int iVar2;
-  int iVar3;
+  undefined1 *dst;
+  int i;
+  int j;
   
-  puVar1 = (undefined1 *)guest_at(0x801e8400);
-  iVar2 = 0;
+  dst = (undefined1 *)guest_at(0x801e8400);
+  i = 0;
   do {
-    iVar3 = iVar2 + 1;
-    *puVar1 = (&DAT_8011ec40)[iVar2];
-    puVar1 = (undefined1 *)guest_at((uint32_t)(iVar2 + -0x7fe17bff));
-    iVar2 = iVar3;
-  } while (iVar3 < 0x100);
+    j = i + 1;
+    *dst = (&DAT_8011ec40)[i];
+    dst = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17bff));
+    i = j;
+  } while (j < 0x100);
   return;
 }
 
@@ -1503,21 +1503,21 @@ void perm_table_load(void)
 void perm_table_apply(uint a0)
 
 {
-  byte bVar1;
-  undefined1 uVar2;
-  undefined1 *puVar3;
-  int iVar4;
+  byte perm_idx;
+  undefined1 swap_tmp;
+  undefined1 *cell;
+  int i;
   
-  iVar4 = 0;
+  i = 0;
   do {
-    puVar3 = (undefined1 *)guest_at((uint32_t)(iVar4 + -0x7fe17c00));
-    bVar1 = (&DAT_8011ec40)[a0 & 0xff];
-    uVar2 = *puVar3;
-    iVar4 = iVar4 + 1;
-    *puVar3 = *(undefined1 *)guest_at((uint32_t)(bVar1 + 0x801e8400));
-    *(undefined1 *)guest_at((uint32_t)(bVar1 + 0x801e8400)) = uVar2;
+    cell = (undefined1 *)guest_at((uint32_t)(i + -0x7fe17c00));
+    perm_idx = (&DAT_8011ec40)[a0 & 0xff];
+    swap_tmp = *cell;
+    i = i + 1;
+    *cell = *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400));
+    *(undefined1 *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
     a0 = a0 + 1;
-  } while (iVar4 < 0x100);
+  } while (i < 0x100);
   return;
 }
 
@@ -1552,31 +1552,31 @@ void scroll_cfg_set(undefined1 a0,int a1)
 void flow_cfg_init(undefined1 a0)
 
 {
-  int iVar1;
-  int iVar2;
+  int idx;
+  int i;
   
-  uint32_t *p84;
+  uint32_t *cfg;
   empty_ret();
   _DAT_1f800082 = 0;
-  p84 = (uint32_t *)guest_at(_DAT_1f800084);
-  *p84 = 0;
-  p84[1] = 0;
-  p84[2] = 0;
-  iVar2 = 0;
-  p84[4] = a0;
+  cfg = (uint32_t *)guest_at(_DAT_1f800084);
+  *cfg = 0;
+  cfg[1] = 0;
+  cfg[2] = 0;
+  i = 0;
+  cfg[4] = a0;
   do {
-    iVar1 = iVar2 * 2;
-    iVar2 = iVar2 + 1;
-    *(undefined2 *)((char *)p84 + (iVar1 + 6) * 4) = 0;
-  } while (iVar2 < 8);
+    idx = i * 2;
+    i = i + 1;
+    *(undefined2 *)((char *)cfg + (idx + 6) * 4) = 0;
+  } while (i < 8);
   if (_DAT_1f8000b8 == 0) {
-    p84[3] = 3;
+    cfg[3] = 3;
   }
   else {
-    p84[3] = 4;
+    cfg[3] = 4;
   }
   if (DAT_1f80009b == '\x04') {
-    p84[3] = 7;
+    cfg[3] = 7;
   }
   return;
 }
@@ -1598,40 +1598,40 @@ void guest_bzero(uint32_t addr,uint32_t size)
 uint attr_word_decode(uint8_t *a0)
 
 {
-  byte bVar1;
-  uint uVar2;
+  byte attr_hi;
+  uint attr_word;
   
-  bVar1 = *(byte *)(a0 + 1) & 0xf0;
-  if (bVar1 == 0x40) {
-    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+  attr_hi = *(byte *)(a0 + 1) & 0xf0;
+  if (attr_hi == 0x40) {
+    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
   }
-  else if ((bVar1 < 0x41) || (bVar1 == 0x60)) {
-    uVar2 = 0xffffffff;
+  else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
+    attr_word = 0xffffffff;
   }
   else {
-    if (bVar1 < 0x61) {
-      if (bVar1 != 0x50) {
+    if (attr_hi < 0x61) {
+      if (attr_hi != 0x50) {
         return 0xffffffff;
       }
     }
-    else if (bVar1 != 0x70) {
+    else if (attr_hi != 0x70) {
       return 0xffffffff;
     }
-    uVar2 = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
+    attr_word = ~(uint)CONCAT11(*(undefined1 *)(a0 + 2),*(undefined1 *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
-      uVar2 = uVar2 | 0x8000;
+      attr_word = attr_word | 0x8000;
     }
     else if (0xc0 < *(uint8_t *)(a0 + 6)) {
-      uVar2 = uVar2 | 0x2000;
+      attr_word = attr_word | 0x2000;
     }
     if (*(uint8_t *)(a0 + 7) < 0x40) {
-      uVar2 = uVar2 | 0x1000;
+      attr_word = attr_word | 0x1000;
     }
     else if (0xc0 < *(uint8_t *)(a0 + 7)) {
-      uVar2 = uVar2 | 0x4000;
+      attr_word = attr_word | 0x4000;
     }
   }
-  return uVar2;
+  return attr_word;
 }
 
 /* ---- batch30: memcard/PAD helpers ---- */
@@ -1677,12 +1677,12 @@ void mc_confirm_dispatch(int32_t a0,uint32_t a1)
 void mc_init_reset(void)
 {
   extern int br2_bail_pending(void);
-  int iVar1;
+  int rc;
   brightness_packet_send(0);
   do {
     if (br2_bail_pending()) return;
-    iVar1 = cd_cmd_issue_sync(9,0,0);
-  } while (iVar1 == 0);
+    rc = cd_cmd_issue_sync(9,0,0);
+  } while (rc == 0);
   chan_sweep_flag100();
   chan_sweep_flag200();
   SB8(0x801bef6e) = 2;
@@ -1697,16 +1697,16 @@ void mc_init_reset(void)
 void save_slot_state_fixup(uint32_t a0,uint32_t a1)
 {
   uint8_t *p = (uint8_t *)guest_at(a0);
-  int32_t iVar1;
+  int32_t disp_rc;
   (void)a1;
-  iVar1 = frame_divisor_get();
-  if (iVar1 == 0) {
-    iVar1 = slot_display_pos(p,a1);
-    if (0 <= iVar1) {
+  disp_rc = frame_divisor_get();
+  if (disp_rc == 0) {
+    disp_rc = slot_display_pos(p,a1);
+    if (0 <= disp_rc) {
       p[0] = 5;
       p[1] = 0xf0;
     }
-    if ((iVar1 == -99) && ((*(uint16_t *)(p + 0x7c) & 0x840) != 0)) {
+    if ((disp_rc == -99) && ((*(uint16_t *)(p + 0x7c) & 0x840) != 0)) {
       deferred_cmd_post(0x400,0xc,0);
       p[0] = 5;
       p[1] = 0xf0;
@@ -1725,38 +1725,38 @@ extern int32_t ret_zero_b(uint32_t);
 extern void mc_slot_action(uint8_t *,int32_t);
 uint32_t mc_pad_button_handler(uint8_t *a0)
 {
-  int32_t iVar1;
-  uint32_t uVar2;
-  uint32_t uVar3 = 0;
+  int32_t chk_rc;
+  uint32_t snd_id;
+  uint32_t handled = 0;
   a0[0xb4] = 0; a0[0xb5] = 0; a0[0xb6] = 0; a0[0xb7] = 0;
   if (a0[0x9b] == 0) {
     if (((*(uint16_t *)(a0 + 0x68) & 0x840) != 0) &&
-        (iVar1 = ret_zero_b(0), 0 <= iVar1)) {
-      uVar2 = (*a0 == 5) ? 0x80 : 0xc;
-      deferred_cmd_post(0x400,uVar2,0);
+        (chk_rc = ret_zero_b(0), 0 <= chk_rc)) {
+      snd_id = (*a0 == 5) ? 0x80 : 0xc;
+      deferred_cmd_post(0x400,snd_id,0);
       mc_slot_action(a0,0);
-      uVar3 = 1;
+      handled = 1;
     }
-    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return uVar3;
-    iVar1 = ret_zero_b(1);
-    if (iVar1 < 0) return uVar3;
-    if (*a0 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
+    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return handled;
+    chk_rc = ret_zero_b(1);
+    if (chk_rc < 0) return handled;
+    if (*a0 == 5) { snd_id = 0x80; goto LAB_801533b0; }
   } else {
     if (3 < a0[0x9b]) return 0;
     if ((*(uint16_t *)(a0 + 0x68) & 0x840) != 0) {
-      uVar2 = (*a0 == 5) ? 0x80 : 0xc;
-      deferred_cmd_post(0x400,uVar2,0);
+      snd_id = (*a0 == 5) ? 0x80 : 0xc;
+      deferred_cmd_post(0x400,snd_id,0);
       mc_slot_action(a0,0);
-      uVar3 = 1;
+      handled = 1;
     }
-    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return uVar3;
-    if (*a0 == 5) { uVar2 = 0x80; goto LAB_801533b0; }
+    if ((*(uint16_t *)(a0 + 0x6a) & 0x840) == 0) return handled;
+    if (*a0 == 5) { snd_id = 0x80; goto LAB_801533b0; }
   }
-  uVar2 = 0xc;
+  snd_id = 0xc;
 LAB_801533b0:
-  deferred_cmd_post(0x400,uVar2,0);
+  deferred_cmd_post(0x400,snd_id,0);
   mc_slot_action(a0,1);
-  return uVar3 | 2;
+  return handled | 2;
 }
 
 /* save_rec_table_copy — 16-byte record copy between caller buffer and one
@@ -1766,76 +1766,76 @@ LAB_801533b0:
  * a2 = record count. */
 void save_rec_table_copy(uint32_t *a0,uint32_t a1,int32_t a2)
 {
-  int32_t iVar1;
-  uint32_t *puVar2, *puVar3;
-  uint32_t uVar4, uVar5, uVar6;
-  puVar2 = (uint32_t *)g_DAT_801c1264;
-  puVar3 = (uint32_t *)g_DAT_801c1304;
+  int32_t i;
+  uint32_t *tab_a, *tab_b;
+  uint32_t w1, w2, w3;
+  tab_a = (uint32_t *)g_DAT_801c1264;
+  tab_b = (uint32_t *)g_DAT_801c1304;
   switch (a1) {
   case 0:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
-      puVar2 = (uint32_t *)guest_at(0x801b427c);
+      tab_a = (uint32_t *)guest_at(0x801b427c);
       do {
-        uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
-        a0 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < a2);
+        w1 = tab_a[1]; w2 = tab_a[2]; w3 = tab_a[3];
+        a0[0] = tab_a[0]; a0[1] = w1; a0[2] = w2; a0[3] = w3;
+        a0 += 4; i++; tab_a += 4;
+      } while (i < a2);
     }
     break;
   case 1:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
       do {
-        uVar4 = a0[1]; uVar5 = a0[2]; uVar6 = a0[3];
-        puVar2[0] = a0[0]; puVar2[1] = uVar4; puVar2[2] = uVar5; puVar2[3] = uVar6;
-        puVar2 += 4; iVar1++; a0 += 4;
-      } while (iVar1 < a2);
+        w1 = a0[1]; w2 = a0[2]; w3 = a0[3];
+        tab_a[0] = a0[0]; tab_a[1] = w1; tab_a[2] = w2; tab_a[3] = w3;
+        tab_a += 4; i++; a0 += 4;
+      } while (i < a2);
       return;
     }
     break;
   case 2:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
       do {
-        uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
-        a0 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < a2);
+        w1 = tab_a[1]; w2 = tab_a[2]; w3 = tab_a[3];
+        a0[0] = tab_a[0]; a0[1] = w1; a0[2] = w2; a0[3] = w3;
+        a0 += 4; i++; tab_a += 4;
+      } while (i < a2);
       return;
     }
     break;
   case 3:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
       do {
-        uVar4 = a0[1]; uVar5 = a0[2]; uVar6 = a0[3];
-        puVar3[0] = a0[0]; puVar3[1] = uVar4; puVar3[2] = uVar5; puVar3[3] = uVar6;
-        puVar3 += 4; iVar1++; a0 += 4;
-      } while (iVar1 < a2);
+        w1 = a0[1]; w2 = a0[2]; w3 = a0[3];
+        tab_b[0] = a0[0]; tab_b[1] = w1; tab_b[2] = w2; tab_b[3] = w3;
+        tab_b += 4; i++; a0 += 4;
+      } while (i < a2);
       return;
     }
     break;
   case 4:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
       do {
-        uVar4 = puVar3[1]; uVar5 = puVar3[2]; uVar6 = puVar3[3];
-        a0[0] = puVar3[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
-        a0 += 4; iVar1++; puVar3 += 4;
-      } while (iVar1 < a2);
+        w1 = tab_b[1]; w2 = tab_b[2]; w3 = tab_b[3];
+        a0[0] = tab_b[0]; a0[1] = w1; a0[2] = w2; a0[3] = w3;
+        a0 += 4; i++; tab_b += 4;
+      } while (i < a2);
       return;
     }
     break;
   case 5:
-    iVar1 = 0;
+    i = 0;
     if (0 < a2) {
-      puVar2 = (uint32_t *)guest_at(0x801b431c);
+      tab_a = (uint32_t *)guest_at(0x801b431c);
       do {
-        uVar4 = puVar2[1]; uVar5 = puVar2[2]; uVar6 = puVar2[3];
-        a0[0] = puVar2[0]; a0[1] = uVar4; a0[2] = uVar5; a0[3] = uVar6;
-        a0 += 4; iVar1++; puVar2 += 4;
-      } while (iVar1 < a2);
+        w1 = tab_a[1]; w2 = tab_a[2]; w3 = tab_a[3];
+        a0[0] = tab_a[0]; a0[1] = w1; a0[2] = w2; a0[3] = w3;
+        a0 += 4; i++; tab_a += 4;
+      } while (i < a2);
       return;
     }
   }
@@ -1905,12 +1905,12 @@ void chan_blocks_reset(uint32_t a0,uint32_t a1,int32_t a2)
 int slot_icon_nibble_resolve(uint8_t *a0)
 {
   uint8_t *p = (uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0));
-  uint32_t uVar1 = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(a0 + 0xa4) +
+  uint32_t tbl_addr = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(a0 + 0xa4) +
                    ((uint32_t)p[7] << 4);
-  int32_t iVar1 = *(uint8_t *)guest_at(uVar1);
-  iVar1 = iVar1 << 4;
-  *(int16_t *)(a0 + 0xa0) = (int16_t)iVar1;
-  return iVar1;
+  int32_t icon_val = *(uint8_t *)guest_at(tbl_addr);
+  icon_val = icon_val << 4;
+  *(int16_t *)(a0 + 0xa0) = (int16_t)icon_val;
+  return icon_val;
 }
 
 /* picker_table_shuffle — shuffle the two 11-byte picker tables at guest
@@ -1921,69 +1921,69 @@ int slot_icon_nibble_resolve(uint8_t *a0)
  * anything else -> just the slot_icon_nibble_resolve icon resolve + +0xa4 clear. */
 void picker_table_shuffle(uint8_t *a0)
 {
-  uint8_t *puVar1 = (uint8_t *)guest_at(0x801f47a0);
-  uint8_t *puVar2 = (uint8_t *)guest_at(0x801f4770);
-  uint8_t *puVar3;
-  uint8_t bVar4, bVar5, bVar6;
-  int32_t iVar1;
-  int32_t iVar2;
-  int32_t iVar3;
+  uint8_t *tab_a = (uint8_t *)guest_at(0x801f47a0);
+  uint8_t *tab_b = (uint8_t *)guest_at(0x801f4770);
+  uint8_t *cur;
+  uint8_t tmp, bVar5, bVar6;
+  int32_t n;
+  int32_t i;
+  int32_t j;
 
-  for (iVar1 = 0; iVar1 < 0xb; iVar1 = iVar1 + 1) {
-    puVar1[iVar1] = (uint8_t)iVar1;
-    puVar2[iVar1] = (uint8_t)(iVar1 % 9);
+  for (n = 0; n < 0xb; n = n + 1) {
+    tab_a[n] = (uint8_t)n;
+    tab_b[n] = (uint8_t)(n % 9);
   }
   *(int16_t *)(a0 + 0xa4) = 0;
   slot_icon_nibble_resolve(a0);
-  iVar1 = a0[0x9c];
-  if (iVar1 == 0) {
-    puVar3 = puVar1;
-    for (iVar2 = 0; iVar2 < 9; iVar2 = iVar2 + 1) {
-      iVar3 = (int32_t)table_byte_next_a() % 9;
-      bVar4 = puVar3[iVar2];
-      puVar3[iVar2] = puVar3[iVar3];
-      puVar3[iVar3] = bVar4;
+  n = a0[0x9c];
+  if (n == 0) {
+    cur = tab_a;
+    for (i = 0; i < 9; i = i + 1) {
+      j = (int32_t)table_byte_next_a() % 9;
+      tmp = cur[i];
+      cur[i] = cur[j];
+      cur[j] = tmp;
     }
     /* disasm-verified 4-rotate @0x8015a09c-0xa0cc:
      * new[7]=old[9], new[8]=old[10], new[9]=old[7], new[10]=old[8]. */
     {
-      uint8_t o7 = puVar1[7], o8 = puVar1[8];
-      uint8_t o9 = puVar1[9], o10 = puVar1[10];
-      puVar1[9] = o7;
-      puVar1[10] = o8;
-      puVar1[7] = o9;
-      puVar1[8] = o10;
+      uint8_t o7 = tab_a[7], o8 = tab_a[8];
+      uint8_t o9 = tab_a[9], o10 = tab_a[10];
+      tab_a[9] = o7;
+      tab_a[10] = o8;
+      tab_a[7] = o9;
+      tab_a[8] = o10;
     }
-    bVar4 = puVar2[4];
-    puVar2[4] = puVar2[5];
-    puVar2[5] = bVar4;
-    puVar3 = puVar2;
-    for (iVar2 = 0; iVar2 < 5; iVar2 = iVar2 + 1) {
-      iVar3 = (int32_t)table_byte_next_a() % 5;
-      bVar4 = puVar3[iVar2];
-      puVar3[iVar2] = puVar3[iVar3];
-      puVar3[iVar3] = bVar4;
+    tmp = tab_b[4];
+    tab_b[4] = tab_b[5];
+    tab_b[5] = tmp;
+    cur = tab_b;
+    for (i = 0; i < 5; i = i + 1) {
+      j = (int32_t)table_byte_next_a() % 5;
+      tmp = cur[i];
+      cur[i] = cur[j];
+      cur[j] = tmp;
     }
     return;
   }
-  if (6 <= iVar1) {
+  if (6 <= n) {
     return;
   }
-  puVar3 = puVar1;
-  for (iVar2 = 0; iVar2 < 9; iVar2 = iVar2 + 1) {
-    iVar3 = (int32_t)table_byte_next_a() % 9;
-    bVar4 = puVar3[iVar2];
-    puVar3[iVar2] = puVar3[iVar3];
-    puVar3[iVar3] = bVar4;
+  cur = tab_a;
+  for (i = 0; i < 9; i = i + 1) {
+    j = (int32_t)table_byte_next_a() % 9;
+    tmp = cur[i];
+    cur[i] = cur[j];
+    cur[j] = tmp;
   }
-  puVar3 = puVar2;
-  for (iVar2 = 0; iVar2 < 0xb; iVar2 = iVar2 + 1) {
+  cur = tab_b;
+  for (i = 0; i < 0xb; i = i + 1) {
     /* guest: v1 = rand; v0 = (v1 < 0) ? v1 + 7 : v1;
      * m = v1 - ((v0 >> 3) << 3)  (signed mod-8 via shifts) */
-    iVar3 = (int32_t)table_byte_next_a();
-    iVar1 = (iVar3 < 0) ? iVar3 + 7 : iVar3;
-    iVar1 = iVar3 - ((iVar1 >> 3) << 3);
-    puVar3[iVar2] = (uint8_t)iVar1;
+    j = (int32_t)table_byte_next_a();
+    n = (j < 0) ? j + 7 : j;
+    n = j - ((n >> 3) << 3);
+    cur[i] = (uint8_t)n;
   }
 }
 
@@ -1999,7 +1999,7 @@ void mc_slot_action(uint8_t *a0,int32_t a1)
   uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8);
   uint8_t *s2 = (uint8_t *)guest_at(0x1f8001f0);
   uint8_t *q;
-  int32_t iVar1;
+  int32_t state;
 
   q = (uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0));
   if ((*(uint16_t *)(a0 + ((uint32_t)a1 << 1) + 0x6c) & 0xf) == 0xf) {
@@ -2008,9 +2008,9 @@ void mc_slot_action(uint8_t *a0,int32_t a1)
   else {
     q[0x21] = 0;
   }
-  iVar1 = a0[0x9b];
-  if (iVar1 < 5) {
-    switch (iVar1) {
+  state = a0[0x9b];
+  if (state < 5) {
+    switch (state) {
     case 0:
       *(uint16_t *)(a0 + ((uint32_t)a1 << 1) + 0xb4) = 0x100;
       break;
@@ -2047,16 +2047,16 @@ void mc_slot_action(uint8_t *a0,int32_t a1)
  * the live counter at 0x801f35f4 is decremented. */
 void chan_sweep_flag200(void)
 {
-  uint16_t *puVar1 = (uint16_t *)g_DAT_801f3600;
-  int32_t iVar1 = 0;
+  uint16_t *ent = (uint16_t *)g_DAT_801f3600;
+  int32_t i = 0;
   do {
-    if ((*puVar1 & 0xf00) == 0x200) {
-      *puVar1 = 0;
+    if ((*ent & 0xf00) == 0x200) {
+      *ent = 0;
       DAT_801f35f4 = DAT_801f35f4 - 1;
     }
-    iVar1 = iVar1 + 1;
-    puVar1 = puVar1 + 3;
-  } while (iVar1 < 0x20);
+    i = i + 1;
+    ent = ent + 3;
+  } while (i < 0x20);
 }
 
 /* chan_sweep_flag100 — same sweep as chan_sweep_flag200 but only entries whose
@@ -2064,17 +2064,17 @@ void chan_sweep_flag200(void)
  * skip 0x200, skip >=0x201, require 0x100). */
 void chan_sweep_flag100(void)
 {
-  uint16_t *puVar1 = (uint16_t *)g_DAT_801f3600;
-  int32_t iVar1 = 0;
+  uint16_t *ent = (uint16_t *)g_DAT_801f3600;
+  int32_t i = 0;
   do {
-    uint16_t uVar1 = *puVar1 & 0xf00;
-    if ((uVar1 != 0x200) && (uVar1 < 0x201) && (uVar1 == 0x100)) {
-      *puVar1 = 0;
+    uint16_t cls = *ent & 0xf00;
+    if ((cls != 0x200) && (cls < 0x201) && (cls == 0x100)) {
+      *ent = 0;
       DAT_801f35f4 = DAT_801f35f4 - 1;
     }
-    iVar1 = iVar1 + 1;
-    puVar1 = puVar1 + 3;
-  } while (iVar1 < 0x20);
+    i = i + 1;
+    ent = ent + 3;
+  } while (i < 0x20);
 }
 
 /* datetime_confirm_a — date/time dialog confirm path A. a0 = packed
@@ -2085,9 +2085,9 @@ void chan_sweep_flag100(void)
 void datetime_confirm_a(int32_t a0,uint32_t a1)
 {
   uint8_t *s0 = g_DAT_801bef60;
-  int32_t iVar1;
-  uint8_t bVar2;
-  const uint8_t *puVar3;
+  int32_t tmp;
+  uint8_t flags;
+  const uint8_t *str_tbl;
 
   /* disasm: guest stores are sb (byte) at +0x12 — 0x801575D0/0x801575F8/
    * 0x80157614 `A6020012`/`A6040012`; reads are lh — 0x801575FC `86020012`,
@@ -2096,11 +2096,11 @@ void datetime_confirm_a(int32_t a0,uint32_t a1)
   s0[0x12] = (uint8_t)a0;
   /* guest compares against sign-extended a0 in-register (sll/sra at
    * 0x801575D4/0x801575DC), not a reload of the halfword. */
-  iVar1 = (int32_t)(int16_t)a0;
-  if (s0[0xc] < iVar1) {
-    /* guest div @0x801575EC + mfhi: HI = iVar1 % s0[0xc];
+  tmp = (int32_t)(int16_t)a0;
+  if (s0[0xc] < tmp) {
+    /* guest div @0x801575EC + mfhi: HI = tmp % s0[0xc];
      * divisor 0 -> HI = dividend (no trap). */
-    s0[0x12] = (uint8_t)(s0[0xc] == 0 ? iVar1 : iVar1 % s0[0xc]);
+    s0[0x12] = (uint8_t)(s0[0xc] == 0 ? tmp : tmp % s0[0xc]);
   }
   if (*(int16_t *)(s0 + 0x12) == 0) {
     s0[0x12] = s0[0xc];
@@ -2108,17 +2108,17 @@ void datetime_confirm_a(int32_t a0,uint32_t a1)
   if ((int32_t)a1 >= 0) {
     mc_dialog_bit4((int32_t)a1);
   }
-  iVar1 = *(int16_t *)(s0 + 0x12);
+  tmp = *(int16_t *)(s0 + 0x12);
   s0[0xd] = 0x10;
-  bVar2 = s0[0xe];
+  flags = s0[0xe];
   s0[0x16] = 0;
   s0[0x14] = 0;
   s0[0xf] = 0;
-  puVar3 = s0 + 0x2c + iVar1 * 4;
-  s0[0xe] = (uint8_t)((bVar2 & 0xf0) | 1);
-  iVar1 = cd_stamp_to_sector(puVar3);
-  *(uint32_t *)(s0 + 0x24) = (uint32_t)iVar1;
-  *(uint32_t *)(s0 + 0x20) = (uint32_t)iVar1;
+  str_tbl = s0 + 0x2c + tmp * 4;
+  s0[0xe] = (uint8_t)((flags & 0xf0) | 1);
+  tmp = cd_stamp_to_sector(str_tbl);
+  *(uint32_t *)(s0 + 0x24) = (uint32_t)tmp;
+  *(uint32_t *)(s0 + 0x20) = (uint32_t)tmp;
   *(uint32_t *)(s0 + 0x28) = 0xffffffffu;
   *(uint32_t *)(s0 + 0x18) = 0;
   s0[0x10] = 0x7f;
@@ -2134,47 +2134,47 @@ void datetime_confirm_b(int32_t a0,uint32_t a1)
 {
   extern int br2_bail_pending(void);
   uint8_t *s1 = g_DAT_801bef60;
-  uint8_t *s3;
-  int32_t iVar1;
-  int32_t iVar2;
-  int32_t iVar3;
-  int32_t iVar4;
-  uint8_t bVar4;
+  uint8_t *date_str;
+  int32_t day_idx;
+  int32_t wday;
+  int32_t tmp;
+  int32_t a0_adj;
+  uint8_t flags;
 
-  iVar4 = a0;
+  a0_adj = a0;
   if (a0 < 0) {
-    iVar4 = a0 + 7;
+    a0_adj = a0 + 7;
   }
-  iVar1 = iVar4 >> 3;
-  iVar2 = a0 - iVar1 * 8;
-  s3 = (uint8_t *)guest_at(g_PTR_DAT_801b5b94[iVar1]);
+  day_idx = a0_adj >> 3;
+  wday = a0 - day_idx * 8;
+  date_str = (uint8_t *)guest_at(g_PTR_DAT_801b5b94[day_idx]);
   *(int16_t *)(s1 + 0x12) = (int16_t)a0;
   mc_state_init();
-  iVar3 = cd_stamp_to_sector(s3);
-  iVar3 = iVar3 + cd_stamp_to_sector((const void *)guest_at(
+  tmp = cd_stamp_to_sector(date_str);
+  tmp = tmp + cd_stamp_to_sector((const void *)guest_at(
       0x801b3310u + (uint32_t)*(uint16_t *)(s1 + 0x12) * 4)) * 2;
-  *(uint32_t *)(s1 + 0x28) = (uint32_t)iVar3;
+  *(uint32_t *)(s1 + 0x28) = (uint32_t)tmp;
   s1[0] = 1;
-  s1[1] = (uint8_t)iVar2;
+  s1[1] = (uint8_t)wday;
   do {
     if (br2_bail_pending()) return;
-    iVar3 = cd_cmd_issue_sync(0xd,(int)guest_of(s1),0);
-  } while (iVar3 == 0);
+    tmp = cd_cmd_issue_sync(0xd,(int)guest_of(s1),0);
+  } while (tmp == 0);
   if ((int32_t)a1 >= 0) {
     mc_dialog_bit4((int32_t)a1);
   }
   /* disasm: +0x16/+0x14/+0x10 are sb — 0x80157764/0x80157768/0x80157794;
    * +0x12 is sh — 0x801576E4 `A6240012`; +0x12 read is lhu — 0x80157704
    * `86230012`, so the index read must be unsigned. */
-  bVar4 = s1[0xe];
+  flags = s1[0xe];
   s1[0x16] = 0;
   s1[0x14] = 0;
   s1[0xf] = 0;
   s1[0xd] = 0x10;
-  s1[0xe] = (uint8_t)((bVar4 & 0xf0) | 2);
-  iVar3 = cd_stamp_to_sector(s3);
-  *(uint32_t *)(s1 + 0x24) = (uint32_t)iVar3;
-  *(uint32_t *)(s1 + 0x20) = (uint32_t)iVar3;
+  s1[0xe] = (uint8_t)((flags & 0xf0) | 2);
+  tmp = cd_stamp_to_sector(date_str);
+  *(uint32_t *)(s1 + 0x24) = (uint32_t)tmp;
+  *(uint32_t *)(s1 + 0x20) = (uint32_t)tmp;
   *(uint32_t *)(s1 + 0x18) = 0;
   s1[0x10] = 0x7f;
 }
@@ -2188,39 +2188,39 @@ void datetime_confirm_b(int32_t a0,uint32_t a1)
  * Returns -0x63 (-99) on gate/selector failure. */
 int slot_display_pos(uint8_t *a0,uint32_t a1)
 {
-  uint32_t uVar1 = SB32(0x1f8000dc);
-  int32_t iVar1;
-  int32_t iVar2;
-  int32_t iVar3;
+  uint32_t flags = SB32(0x1f8000dc);
+  int32_t y;
+  int32_t x_raw;
+  int32_t x;
 
-  if (((uVar1 >> 4) & 3) == 0) {
+  if (((flags >> 4) & 3) == 0) {
     return -0x63;
   }
-  if ((uVar1 & 0x40) == 0) {
+  if ((flags & 0x40) == 0) {
     return -0x63;
   }
   if (a1 == 0) {
-    iVar1 = *(int16_t *)(a0 + 0x22) * 3;
-    if (iVar1 < 0) {
-      iVar1 = iVar1 + 3;
+    y = *(int16_t *)(a0 + 0x22) * 3;
+    if (y < 0) {
+      y = y + 3;
     }
-    iVar2 = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
-    iVar3 = (int16_t)((iVar2 / 2) - 0x45);
+    x_raw = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
+    x = (int16_t)((x_raw / 2) - 0x45);
     hud_text_blk_alt(*(uint32_t *)(a0 + 8),*(uint32_t *)(a0 + 0xc),
-                (const void *)guest_at(0x80121e3c),iVar3,
-                (int32_t)((uint32_t)iVar1 << 14) >> 16,4);
+                (const void *)guest_at(0x80121e3c),x,
+                (int32_t)((uint32_t)y << 14) >> 16,4);
     return 0;
   }
   if (a1 == 1) {
-    iVar1 = *(int16_t *)(a0 + 0x22) * 7;
-    if (iVar1 < 0) {
-      iVar1 = iVar1 + 7;
+    y = *(int16_t *)(a0 + 0x22) * 7;
+    if (y < 0) {
+      y = y + 7;
     }
-    iVar2 = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
-    iVar3 = (int16_t)((iVar2 / 2) - 0x45);
+    x_raw = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
+    x = (int16_t)((x_raw / 2) - 0x45);
     hud_text_blk_alt(*(uint32_t *)(a0 + 8),*(uint32_t *)(a0 + 0xc),
-                (const void *)guest_at(0x80121e3c),iVar3,
-                (int32_t)((uint32_t)iVar1 << 13) >> 16,4);
+                (const void *)guest_at(0x80121e3c),x,
+                (int32_t)((uint32_t)y << 13) >> 16,4);
     return -0x63;   /* disasm 0x80163618: v0=-99 on all paths */
   }
   return -0x63;
