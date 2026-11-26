@@ -13491,6 +13491,8 @@ void cps_8012b44c(void)
 
     /* Address: 0x8012B44C, Size: 32 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s4, ra (sp += 40), jr ra */
+
 block_8012B44C:
     ra = cpu->read_word(sp + 36);
     s4 = cpu->read_word(sp + 32);
@@ -13598,6 +13600,10 @@ void cps_8012b5d4(void)
         }
     }
     /* Address: 0x8012B5D4, Size: 48 bytes, Blocks: 2 */
+
+    /* channel reset + wait: word[s0+132] rec -> byte[+1]=
+       byte[+2]=0, half[+6]=0; jal 0x80156EF4(513,0,0); ->
+       0x8012B7A4. CPS-blocked. */
 
 block_8012B5D4:
     v0 = cpu->read_word(s0 + 132);
@@ -14003,6 +14009,10 @@ void cps_8012b778(void)
     }
     /* Address: 0x8012B778, Size: 44 bytes, Blocks: 2 */
 
+    /* channel reset variant: byte[rec+1]=byte[rec+2]=0,
+       half[s0+130]=1; jal 0x80156EF4(1,0,0); v0=0 -> 0x8012B7F0.
+       CPS-blocked. */
+
 block_8012B778:
     v0 = cpu->read_word(s0 + 132);
     a1 = zero;
@@ -14114,6 +14124,8 @@ void cps_8012b7f0(void)
 
     /* Address: 0x8012B7F0, Size: 20 bytes, Blocks: 1 */
 
+    /* epilogue: pop s0-s1, ra (sp += 32), jr ra */
+
 block_8012B7F0:
     ra = cpu->read_word(sp + 24);
     s1 = cpu->read_word(sp + 20);
@@ -14133,6 +14145,10 @@ void cps_8012b804(void)
   if (!cpu) return;
 
     /* Address: 0x8012B804, Size: 48 bytes, Blocks: 1 */
+
+    /* halfword attr pair writer: half[a0+8/10]=a1/a2,
+       [+16/18]=a1+a3/a2, [+24]=a1, [+32]=a1+a3, [+26/34]=a2+
+       word[sp+16]; jr ra. CPS-blocked. */
 
 block_8012B804:
     cpu->write_half(a0 + 8, (uint16_t)a1);
@@ -14161,6 +14177,9 @@ void cps_8012b834(void)
 
     /* Address: 0x8012B834, Size: 28 bytes, Blocks: 1 */
 
+    /* byte attr pair writer (part 1): byte[a0+12/13]=a1/a2,
+       [+20/21]=a1+a3/a2, [+28]=a1; -> 0x8012B850. CPS-blocked. */
+
 block_8012B834:
     v0 = cpu->read_word(sp + 16);
     a3 = a1 + a3;
@@ -14180,6 +14199,9 @@ void cps_8012b850(void)
   if (!cpu) return;
 
     /* Address: 0x8012B850, Size: 20 bytes, Blocks: 1 */
+
+    /* byte attr pair writer (part 2): byte[a0+36]=a1+a3,
+       [+29/37]=a2+word[sp+16]; jr ra. CPS-blocked. */
 
 block_8012B850:
     cpu->write_byte(a0 + 36, (uint8_t)a3);
@@ -15453,6 +15475,10 @@ void cps_8012be94(void)
 
     /* Address: 0x8012BE94, Size: 80 bytes, Blocks: 1 */
 
+    /* GPU packet emit: halfword pairs at t0+8..34
+       (a3/t2/v1/t2+t6), word[t0]=word[t8]|0x09000000, word[t8]=
+       t0<<8>>8; half[t1+4]++; -> 0x8012BEE4. CPS-blocked. */
+
 block_8012BE94:
     v0 = t2 + t6;
     cpu->write_half(t0 + 8, (uint16_t)a3);
@@ -15503,6 +15529,9 @@ void cps_8012bef4(void)
 
     /* Address: 0x8012BEF4, Size: 16 bytes, Blocks: 1 */
 
+    /* counter step: v1=half[t1]+8; half[t1]=v1; v0=0; ->
+       0x8012BF04. CPS-blocked. */
+
 block_8012BEF4:
     v1 = cpu->read_half(t1);
     v0 = zero;
@@ -15546,6 +15575,11 @@ void cps_8012bf58(void)
         }
     }
     /* Address: 0x8012BF58, Size: 176 bytes, Blocks: 5 */
+
+    /* fade/lerp driver: word[a0]-=a2; s2=word[v1]; if
+       word[a0] < -s2: add s2 to word[a1+t0+i] until >= -s2; then
+       table lookups 0x801E8508/0x801F0000-31464 by t1<<2 vs
+       half[0x1F800020]; -> 0x8012C008. CPS-blocked. */
 
 block_8012BF58:
     cpu->write_word(sp + 28, s1);
@@ -15691,6 +15725,9 @@ void cps_8012c048(void)
   if (!cpu) return;
 
     /* Address: 0x8012C048, Size: 36 bytes, Blocks: 1 */
+
+    /* fade loop step: s0+=s2<<16; while s1 < half[s4+32]
+       loop 0x8012C008 else 0x8012C06C; v0=7. CPS-blocked. */
 
 block_8012C048:
     v0 = s2 << 16;
@@ -16324,6 +16361,8 @@ void cps_8012c358(void)
   if (!cpu) return;
 
     /* Address: 0x8012C358, Size: 28 bytes, Blocks: 1 */
+
+    /* epilogue: pop s0-s3, ra (sp += 40), jr ra */
 
 block_8012C358:
     ra = cpu->read_word(sp + 32);
