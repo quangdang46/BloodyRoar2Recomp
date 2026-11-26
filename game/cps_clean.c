@@ -15687,6 +15687,7 @@ block_8012BFE4:
  * from SLES_017.22_full_02.c. */
 void cps_8012c008(void)
 {
+/* hud/sprite thunk -> announce_param_block_init */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15744,6 +15745,7 @@ block_8012C040:
  * from SLES_017.22_full_02.c. */
 void cps_8012c048(void)
 {
+/* hud/sprite fragment: continues at 0x8012c06c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15774,6 +15776,7 @@ block_8012C048:
  * from SLES_017.22_full_02.c. */
 void cps_8012c06c(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15807,6 +15810,7 @@ block_8012C06C:
  * from SLES_017.22_full_02.c. */
 void cps_8012c138(void)
 {
+/* hud/sprite fragment: continues at 0x8012c168 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15833,6 +15837,7 @@ block_8012C138:
  * from SLES_017.22_full_02.c. */
 void cps_8012c168(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> scratch_013_set -> stream_block_decode -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16009,6 +16014,7 @@ block_8012C224:
  * from SLES_017.22_full_02.c. */
 void cps_8012c228(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16085,6 +16091,7 @@ block_8012C268:
  * from SLES_017.22_full_02.c. */
 void cps_8012c270(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> stream_block_decode */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16161,6 +16168,7 @@ block_8012C2B0:
  * from SLES_017.22_full_02.c. */
 void cps_8012c2b8(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> fighter_record_apply -> page_table_ptr_set -> cd_timer_read */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16230,6 +16238,7 @@ block_8012C2F0:
  * from SLES_017.22_full_02.c. */
 void cps_8012c2f4(void)
 {
+/* hud/sprite thunk -> cd_file_load_sm -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16283,6 +16292,7 @@ block_8012C318:
  * from SLES_017.22_full_02.c. */
 void cps_8012c320(void)
 {
+/* hud/sprite thunk -> spr_draw_off */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16312,6 +16322,7 @@ block_8012C32C:
  * from SLES_017.22_full_02.c. */
 void cps_8012c330(void)
 {
+/* hud/sprite thunk -> cd_timer_read -> scratch_013_set */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16352,6 +16363,7 @@ block_8012C340:
  * from SLES_017.22_full_02.c. */
 void cps_8012c350(void)
 {
+/* hud/sprite fragment: continues at 0x8012c354 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16367,6 +16379,7 @@ block_8012C350:
  * from SLES_017.22_full_02.c. */
 void cps_8012c354(void)
 {
+/* hud/sprite fragment: continues at 0x8012c358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16382,6 +16395,7 @@ block_8012C354:
  * from SLES_017.22_full_02.c. */
 void cps_8012c358(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16404,6 +16418,7 @@ block_8012C358:
  * from SLES_017.22_full_02.c. */
 void cps_8012c418(void)
 {
+/* hud/sprite fragment: continues at 0x8012c4f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16509,6 +16524,7 @@ block_8012C4E8:
  * from SLES_017.22_full_02.c. */
 void cps_8012c4f8(void)
 {
+/* hud/sprite fragment: continues at 0x8012c4fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16524,6 +16540,7 @@ block_8012C4F8:
  * from SLES_017.22_full_02.c. */
 void cps_8012c4fc(void)
 {
+/* hud/sprite fragment: continues at 0x8012C514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16567,6 +16584,7 @@ block_8012C50C:
  * from SLES_017.22_full_02.c. */
 void cps_8012c510(void)
 {
+/* hud/sprite fragment: continues at 0x8012c514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16582,6 +16600,7 @@ block_8012C510:
  * from SLES_017.22_full_02.c. */
 void cps_8012c514(void)
 {
+/* hud/sprite fragment: continues at 0x8012CB90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16630,6 +16649,7 @@ block_8012C524:
  * from SLES_017.22_full_02.c. */
 void cps_8012c52c(void)
 {
+/* hud/sprite fragment: continues at 0x8012CB90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16678,6 +16698,7 @@ block_8012C53C:
  * from SLES_017.22_full_02.c. */
 void cps_8012c544(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> hud_text_d -> spr_slot_pkt_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16795,6 +16816,7 @@ block_8012C624:
  * from SLES_017.22_full_02.c. */
 void cps_8012c64c(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_slot_pkt_submit -> sprite_node_emit_a -> sprite_node_emit_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16951,6 +16973,7 @@ block_8012C7BC:
  * from SLES_017.22_full_02.c. */
 void cps_8012c7c4(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17006,6 +17029,7 @@ block_8012C820:
  * from SLES_017.22_full_02.c. */
 void cps_8012c824(void)
 {
+/* hud/sprite thunk -> hud_text_d -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_slot_pkt_submit -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_a -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17220,6 +17244,7 @@ block_8012CA04:
  * from SLES_017.22_full_02.c. */
 void cps_8012ca34(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17265,6 +17290,7 @@ block_8012CA68:
  * from SLES_017.22_full_02.c. */
 void cps_8012ca84(void)
 {
+/* hud/sprite thunk -> spr_attr_alloc_b -> spr_attr_alloc_b -> spr_attr_alloc_b */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17329,6 +17355,7 @@ block_8012CAEC:
  * from SLES_017.22_full_02.c. */
 void cps_8012caf0(void)
 {
+/* hud/sprite thunk -> spr_slot_pkt_submit -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17389,6 +17416,7 @@ block_8012CB60:
  * from SLES_017.22_full_02.c. */
 void cps_8012cb64(void)
 {
+/* hud/sprite fragment: continues at 0x8012cb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17412,6 +17440,7 @@ block_8012CB64:
  * from SLES_017.22_full_02.c. */
 void cps_8012cb88(void)
 {
+/* hud/sprite thunk -> sprite_node_emit_a */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17429,6 +17458,7 @@ block_8012CB88:
  * from SLES_017.22_full_02.c. */
 void cps_8012cb90(void)
 {
+/* hud/sprite leaf/terminal piece. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17456,6 +17486,7 @@ block_8012CB90:
  * from SLES_017.22_full_02.c. */
 void cps_8012ce10(void)
 {
+/* hud/sprite thunk -> print_dispatch_guest */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
