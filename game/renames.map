@@ -1965,3 +1965,9 @@
 8018a6d4 prim_persp_cull_emit_58
 8018a844 prim_depth_shade_emit_40
 8018a9c8 prim_depth_shade_emit_50
+8018ad80 prim_depth_shade_emit_70
+8018aee8 prim_depth_shade_emit_88
+8018b100 prim_xform3_task_run
+8018b380 prim_nclip_cull_emit_48
+8018b4b8 prim_rtps_cull_emit_58
+8018b628 prim_avsz3_cull_emit_58

@@ -289,6 +289,18 @@
 80158d78 cps_801587c0
 
 # fn 0x8018b100 — 12 CPS addrs
+8018b100 prim_xform3_task_run
+8018b108 prim_xform3_task_run
+8018b13c prim_xform3_task_run
+8018b14c prim_xform3_task_run
+8018b154 prim_xform3_task_run
+8018b15c prim_xform3_task_run
+8018b198 prim_xform3_task_run
+8018b1b0 prim_xform3_task_run
+8018b1c4 prim_xform3_task_run
+8018b1cc prim_xform3_task_run
+8018b1d8 prim_xform3_task_run
+8018b200 prim_xform3_task_run
 
 # fn 0x80161630 — 74 CPS addrs
 80161630 cps_80161630

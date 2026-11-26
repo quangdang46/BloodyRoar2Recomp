@@ -1137,6 +1137,7 @@ extern void post_battle_side_commit(void);
 extern void post_confirm_config_build(void);
 extern void prim_attr_repack(void);
 extern void prim_attr_word_set(void);
+extern void prim_avsz3_cull_emit_58(void);
 extern void prim_batch_emit(void);
 extern void prim_cull2_emit_30(void);
 extern void prim_cull3_emit_40(void);
@@ -1147,6 +1148,8 @@ extern void prim_cull3_emit_68(void);
 extern void prim_depth_shade_emit(void);
 extern void prim_depth_shade_emit_40(void);
 extern void prim_depth_shade_emit_50(void);
+extern void prim_depth_shade_emit_70(void);
+extern void prim_depth_shade_emit_88(void);
 extern void prim_emit_3c(void);
 extern void prim_emit_4c(void);
 extern void prim_emit_5c(void);
@@ -1175,6 +1178,7 @@ extern void prim_group_build(void);
 extern void prim_group_gc(void);
 extern void prim_list_gte_invoke(void);
 extern void prim_list_persp_step(void);
+extern void prim_nclip_cull_emit_48(void);
 extern void prim_nclip_emit_4c(void);
 extern void prim_nclip_emit_50(void);
 extern void prim_nclip_emit_5c(void);
@@ -1211,10 +1215,12 @@ extern void prim_poly_emit_78(void);
 extern void prim_poly_emit_78b(void);
 extern void prim_poly_emit_88(void);
 extern void prim_poly_emit_88b(void);
+extern void prim_rtps_cull_emit_58(void);
 extern void prim_tag_set(void);
 extern void prim_task_run(void);
 extern void prim_tri_batch_rtpt(void);
 extern void prim_vert3_ot_emit_40(void);
+extern void prim_xform3_task_run(void);
 extern void prim_xform_emit(void);
 extern void prim_xform_emit_64(void);
 extern void print_dispatch_guest(void);
@@ -2361,9 +2367,15 @@ const Br2FnEnt fn_table[] = {
   { 0x8018ac74, (void *)prim_cull3_emit_50 },
   { 0x8018ac84, (void *)prim_cull3_emit_58 },
   { 0x8018ac94, (void *)prim_cull3_emit_68 },
+  { 0x8018ad80, (void *)prim_depth_shade_emit_70 },
+  { 0x8018aee8, (void *)prim_depth_shade_emit_88 },
   { 0x8018b050, (void *)vec2_rot },
   { 0x8018b0a0, (void *)angle_gte_vec },
+  { 0x8018b100, (void *)prim_xform3_task_run },
   { 0x8018b208, (void *)prim_list_persp_step },
+  { 0x8018b380, (void *)prim_nclip_cull_emit_48 },
+  { 0x8018b4b8, (void *)prim_rtps_cull_emit_58 },
+  { 0x8018b628, (void *)prim_avsz3_cull_emit_58 },
   { 0x8018b76c, (void *)prim_persp_ot_emit },
   { 0x8018b884, (void *)prim_emit_tail_advance },
   { 0x8018b98c, (void *)prim_persp_ot_emit_112 },
