@@ -34509,6 +34509,7 @@ block_8013937C:
  * from SLES_017.22_full_08.c. */
 void cps_801393b8(void)
 {
+/* impact_fx_update thunk -> impact_fx_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35074,6 +35075,7 @@ block_80139830:
  * from SLES_017.22_full_08.c. */
 void cps_80139834(void)
 {
+/* impact_fx_type_alias piece: continues at 0x80139954 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35189,6 +35191,7 @@ block_80139874:
  * from SLES_017.22_full_08.c. */
 void cps_80139954(void)
 {
+/* impact_fx_type_alias piece: continues at 0x80139a0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35294,6 +35297,7 @@ block_80139A08:
  * from SLES_017.22_full_08.c. */
 void cps_80139a0c(void)
 {
+/* impact_fx_type_alias thunk -> lut_cos_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 -> lut_cos_q12 -> lut_cos_q12 -> lut_sin_q12 -> lut_sin_q12 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35678,6 +35682,7 @@ block_80139D68:
  * from SLES_017.22_full_08.c. */
 void cps_80139d98(void)
 {
+/* impact_fx_type_alias piece: continues at return */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35722,6 +35727,7 @@ block_80139D98:
  * from SLES_017.22_full_08.c. */
 void cps_80139f1c(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f20 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35737,6 +35743,7 @@ block_80139F1C:
  * from SLES_017.22_full_08.c. */
 void cps_80139f20(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f28 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35754,6 +35761,7 @@ block_80139F20:
  * from SLES_017.22_full_08.c. */
 void cps_80139f28(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139F90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35802,6 +35810,7 @@ block_80139F38:
  * from SLES_017.22_full_08.c. */
 void cps_80139f40(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35823,6 +35832,7 @@ block_80139F40:
  * from SLES_017.22_full_08.c. */
 void cps_80139f58(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35842,6 +35852,7 @@ block_80139F58:
  * from SLES_017.22_full_08.c. */
 void cps_80139f68(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35861,6 +35872,7 @@ block_80139F68:
  * from SLES_017.22_full_08.c. */
 void cps_80139f78(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35880,6 +35892,7 @@ block_80139F78:
  * from SLES_017.22_full_08.c. */
 void cps_80139f8c(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139f90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35895,6 +35908,7 @@ block_80139F8C:
  * from SLES_017.22_full_08.c. */
 void cps_80139f90(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x80139fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35937,6 +35951,7 @@ block_80139F9C:
  * from SLES_017.22_full_08.c. */
 void cps_80139fb0(void)
 {
+/* impact_fx_emit_tick thunk -> impact_fx_spawn */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -35954,6 +35969,7 @@ block_80139FB0:
  * from SLES_017.22_full_08.c. */
 void cps_80139fb8(void)
 {
+/* impact_fx_emit_tick piece: continues at 0x8013a4e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
