@@ -125,3 +125,23 @@ shows positive execution: 0x801968CC = 10 hits, 0x8019E39C = 1 hit;
 0x801A0BE0/0x801A1A40/0x80196B4C = 0 (fire on init/versus paths not
 reached in attract — faithful-by-construction, same transform as proven
 bodies).
+
+## Batch 5 (orch/w5/e05) — CD read/command/INTC path delegates -> timed cpst_
+
+Five more game/cd.c §4-path functions upgraded to timed cpst_ bodies
+(entry + all block addrs in clean_cps.map, 166 rows). self-delegate
+count 38 -> 33.
+
+| guest entry | fnmap name | blocks | role |
+|---|---|---|---|
+| 0x80198C90 | cd_read_setup | 25 | CD read setup |
+| 0x80198AF0 | cd_init_session | 29 | CD session init |
+| 0x801985C4 | cd_read_step_cb | 39 | read-step callback |
+| 0x80196E14 | cd_cmd_issue | 53 | CD command issue — HOT |
+| 0x8019A8EC | cd_intc_dispatch | 20 | CD interrupt dispatch |
+
+Verification: clean build EU+USA; headless :4843 frames advanced past
+67K in attract CD streaming, no wedge. clean_stats: 0x80196E14 = 15
+hits (cd_cmd_issue actively dispatching through the timed body);
+others 0 in attract window (init/callback paths — faithful-by-
+construction).
