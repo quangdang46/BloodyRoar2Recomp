@@ -111132,7 +111132,10 @@ block_801AF2CC:
 }
 
 /* cps_801af314 — clean CPS transliteration of br2eu_func_801AF314 (guest 0x801af314)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * anim_field_init wrapper: index = s16[a0+2] into table *(v0+8); calls
+ * anim_node_alloc(0x801A7038) with (a0=a1, a1=*entry); stores result v0
+ * into (*(gp+76))+20 — node field slot 20. */
 void cps_801af314(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111175,7 +111178,9 @@ block_801AF338:
 }
 
 /* cps_801af38c — clean CPS transliteration of br2eu_func_801AF38C (guest 0x801af38c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * anim_field_init sibling: same s16[a0+2] index resolution, but calls
+ * tween_chan_alloc(0x801A72A0); stores result into (*(gp+76))+20. */
 void cps_801af38c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111218,7 +111223,9 @@ block_801AF3B0:
 }
 
 /* cps_801af428 — clean CPS transliteration of br2eu_func_801AF428 (guest 0x801af428)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * op_anim_delta_walk wrapper: s16[a0+2] indexes *(v0+8), passes s16[entry]
+ * as a1 with a0=a1(orig); tail-jals op_anim_delta_walk(0x801A984C). */
 void cps_801af428(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111258,7 +111265,9 @@ block_801AF44C:
 }
 
 /* cps_801af460 — clean CPS transliteration of br2eu_func_801AF460 (guest 0x801af460)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * tween_seek wrapper: identical index prologue, tail-jals tween_seek
+ * (0x801A99E0) with (a0=a1, a1=s16[entry]). */
 void cps_801af460(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111367,7 +111376,10 @@ block_801AF668:
 }
 
 /* cps_801af6d4 — clean CPS transliteration of br2eu_func_801AF6D4 (guest 0x801af6d4)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * op_ctx_node_attach wrapper: resolves s16[a0+2] entry via *(v0+8),
+ * jal op_ctx_node_attach(0x801AAD24) with (a0=s0=orig a1, a1=*entry);
+ * stores result v0 at s0+72. */
 void cps_801af6d4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111479,7 +111491,10 @@ block_801AF938:
 }
 
 /* cps_801af93c — clean CPS transliteration of br2eu_func_801AF93C (guest 0x801af93c)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * dual-field transform op: resolves s16[a0+2] and s16[a0+4] into two
+ * entries of *(v0+8); calls gte_rtps_xform3(0x80194960) with
+ * (a0=a1, a1=*entry1, a2=*entry2). */
 void cps_801af93c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111537,7 +111552,9 @@ block_801AF97C:
 }
 
 /* cps_801af980 — clean CPS transliteration of br2eu_func_801AF980 (guest 0x801af980)
- * from SLES_017.22_full_53.c. */
+ * from SLES_017.22_full_53.c.
+ * dual-field transform op twin: same prologue, calls gte_rtps_xform3_t
+ * (0x80194C50) with (a0=a1, a1=*entry1, a2=*entry2). */
 void cps_801af980(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111595,7 +111612,9 @@ block_801AF9C0:
 }
 
 /* cps_801af9c4 — clean CPS transliteration of br2eu_func_801AF9C4 (guest 0x801af9c4)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * lut_sin_q12 wrapper: offset = s16[a0]+s16[a0+2] into *(v0+8) table;
+ * jal lut_sin_q12(0x8018D29C); stores result word at resolved ptr. */
 void cps_801af9c4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111650,7 +111669,9 @@ block_801AF9F8:
 }
 
 /* cps_801af9fc — clean CPS transliteration of br2eu_func_801AF9FC (guest 0x801af9fc)
- * from SLES_017.22_full_54.c. */
+ * from SLES_017.22_full_54.c.
+ * lut_cos_q12 wrapper: same offset prologue, jal lut_cos_q12(0x8018D298);
+ * stores result word at resolved ptr. */
 void cps_801af9fc(void)
 {
   CPUState *cpu = clean_cpu_state();
