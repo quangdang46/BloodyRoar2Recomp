@@ -12982,8 +12982,8 @@ void system_tick_frame(void)
       idx = MB32(io + 0xc);
       slot = 0x801f0660u + idx * 104u;
       if (MBS16(slot + 0xe) > 0 && MB8(io + 0x9e) == 0) {
-        uint32_t v1 = 0x801e40a0u + idx * 8528u;
-        MW16(slot + 0xa, MB16(v1 + 2));
+        uint32_t src_rec = 0x801e40a0u + idx * 8528u;
+        MW16(slot + 0xa, MB16(src_rec + 2));
         gpu_clear_image_cmd(slot + 8, MB8(slot + 4), MB8(slot + 5), MB8(slot + 6));
       }
       gpu_draw_otag(env + 0x20ecu);
@@ -12992,8 +12992,8 @@ void system_tick_frame(void)
       idx = MB32(io + 0xc) ^ 1u;
       slot = 0x801f0660u + idx * 104u;
       if (MBS16(slot + 0xe) > 0 && MB8(io + 0x9e) == 0) {
-        uint32_t v1 = 0x801e40a0u + idx * 8528u;
-        MW16(slot + 0xa, MB16(v1 + 2));
+        uint32_t src_rec = 0x801e40a0u + idx * 8528u;
+        MW16(slot + 0xa, MB16(src_rec + 2));
         gpu_clear_image_cmd(slot + 8, MB8(slot + 4), MB8(slot + 5), MB8(slot + 6));
       }
       gpu_draw_otag(env == 0x801e40a0u ? 0x801e82dcu : 0x801e618cu);
@@ -15087,19 +15087,19 @@ void heap_ptr_fixup(uint32_t blk)
   cur = blk + 0x10u;
   if (n > 0) {
     do {
-      uint32_t v0 = MB32(cur);
-      if (v0 != 0) {
-        uint32_t a1;
-        MW32(cur, blk + v0 * 4u);
-        a1 = blk + v0 * 4u;
-        while ((int32_t)MB32(a1 + 8u) < 0) {   /* & 0x80000000 */
-          uint32_t v;
-          v = MB32(a1);
-          if (v != 0xffffffffu) MW32(a1, blk + v * 4u);
-          MW32(a1 + 4u, blk + MB32(a1 + 4u) * 4u);
-          MW32(a1 + 8u, MB32(a1 + 8u) & 0x7fffffffu);
-          a1 = MB32(a1);
-          if ((int32_t)a1 == -1) break;
+      uint32_t off = MB32(cur);
+      if (off != 0) {
+        uint32_t cur_ent;
+        MW32(cur, blk + off * 4u);
+        cur_ent = blk + off * 4u;
+        while ((int32_t)MB32(cur_ent + 8u) < 0) {   /* & 0x80000000 */
+          uint32_t next;
+          next = MB32(cur_ent);
+          if (next != 0xffffffffu) MW32(cur_ent, blk + next * 4u);
+          MW32(cur_ent + 4u, blk + MB32(cur_ent + 4u) * 4u);
+          MW32(cur_ent + 8u, MB32(cur_ent + 8u) & 0x7fffffffu);
+          cur_ent = MB32(cur_ent);
+          if ((int32_t)cur_ent == -1) break;
         }
       }
       n--;
