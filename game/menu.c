@@ -10186,11 +10186,11 @@ int32_t byte2_probe_commit(uint32_t param_1,uint32_t param_2,uint32_t param_3)
 /* desc_cursor_advance — cursor advance @0x8017e46c (23 insns): s0 =
  * MB16(a2) >> 8; if (table_byte_next_a() < s0 signed) return a2+4, else
  * return MB16(a2+2) + MB32(a0+0x30). a1 dead. */
-uint32_t desc_cursor_advance(uint32_t param_1,uint32_t param_2,uint32_t param_3)
+uint32_t desc_cursor_advance(uint32_t ctx,uint32_t unused,uint32_t cur)
 {
-  uint32_t s0 = MB16(param_3) >> 8;
-  if ((int32_t)table_byte_next_a() < (int32_t)s0) return param_3 + 4u;
-  return MB16(param_3 + 2) + MB32(param_1 + 0x30);
+  uint32_t s0 = MB16(cur) >> 8;
+  if ((int32_t)table_byte_next_a() < (int32_t)s0) return cur + 4u;
+  return MB16(cur + 2) + MB32(ctx + 0x30);
 }
 
 /* chan_reset_clear — channel reset + 0x400-entry u16 clear @0x80158358
@@ -10268,14 +10268,13 @@ void task_spawn_flag(void)
  * idx*40 + 0x7f8; arg5 = MB32(0x801b2e2c + idx*4);
  * task_object_spawn(0, MB32(0x801f10c0)+off, MB32(0x801f10c4)+off,
  * 0x801b2d68, arg5); then (*s0)++. */
-void indexed_desc_dispatch(uint32_t param_1)
+void indexed_desc_dispatch(uint32_t ctr)
 {
-  uint32_t s0 = param_1;
-  uint32_t idx = MB32(s0);
+  uint32_t idx = MB32(ctr);
   uint32_t off = idx * 40u + 0x7f8u;
   task_object_spawn(0, MB32(0x801f10c0u) + off, MB32(0x801f10c4u) + off,
                0x801b2d68u, MB32(0x801b2e2cu + idx * 4u));
-  MW32(s0, idx + 1u);
+  MW32(ctr, idx + 1u);
 }
 
 /* task_object_spawn — task/object spawn @0x8014b744 (50 insns):
@@ -10283,24 +10282,24 @@ void indexed_desc_dispatch(uint32_t param_1)
  * return 0. v0 = MB32(blk+0x10); stores a0..a3 at +0x14/+0/+4/+8,
  * five u16 zeros at +0x18..+0x20 (odd offsets), arg5 at +0xc,
  * a3-4 at +0x10, u16 0x400 @+0x22, u16 0x10 @+0x24; v0 = blk. */
-uint32_t task_object_spawn(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                      uint32_t param_4,uint32_t param_5)
+uint32_t task_object_spawn(uint32_t w14,uint32_t w00,uint32_t w04,
+                      uint32_t w08,uint32_t wc)
 {
   uint32_t blk = task_node_alloc(2, 2, 0, 0x8014b37cu, 0x8014b73cu, 0x28);
   uint32_t v0;
   if (blk == 0) return 0;
   v0 = MB32(blk + 0x10);
-  MW32(v0 + 0x14, param_1);
-  MW32(v0 + 0x0,  param_2);
-  MW32(v0 + 0x4,  param_3);
-  MW32(v0 + 0x8,  param_4);
+  MW32(v0 + 0x14, w14);
+  MW32(v0 + 0x0,  w00);
+  MW32(v0 + 0x4,  w04);
+  MW32(v0 + 0x8,  w08);
   MW16(v0 + 0x1e, 0);
   MW16(v0 + 0x18, 0);
   MW16(v0 + 0x1c, 0);
   MW16(v0 + 0x1a, 0);
   MW16(v0 + 0x20, 0);
-  MW32(v0 + 0xc,  param_5);
-  MW32(v0 + 0x10, param_4 - 4u);
+  MW32(v0 + 0xc,  wc);
+  MW32(v0 + 0x10, w08 - 4u);
   MW16(v0 + 0x22, 0x400);
   MW16(v0 + 0x24, 0x10);
   return blk;
@@ -10330,11 +10329,11 @@ static void hud_msg_draw(uint32_t a0,uint32_t a1)
  * param block @0x1f80038c: +0x1c=a2, +6=a3, +0xc=+0x10=0x10,
  * +0xa=+0xe=8, +0x12=0, +0x14=+0x18=1, +0/+2/+4=0,
  * +8=stk1, +0x16=((stk2+0x1e0)&0x1ff)*0x40+0x1f. */
-void descblk_variant_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6)
+void descblk_variant_a(uint32_t ctx,uint32_t ctx2,uint32_t str,
+                  uint32_t f6,uint32_t f8,uint32_t attr)
 {
-  MW32(0x1f8003a8u, param_3);
-  MW16(0x1f800392u, param_4);
+  MW32(0x1f8003a8u, str);
+  MW16(0x1f800392u, f6);
   MW16(0x1f800398u, 0x10);
   MW16(0x1f80039cu, 0x10);
   MW16(0x1f80038cu, 0);
@@ -10345,19 +10344,19 @@ void descblk_variant_a(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   MW16(0x1f80039eu, 0);
   MW16(0x1f8003a0u, 1);
   MW16(0x1f8003a4u, 1);
-  MW16(0x1f800394u, param_5);
+  MW16(0x1f800394u, f8);
   MW16(0x1f8003a2u,
-       (uint16_t)(((param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x1fu));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)(((attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x1fu));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* descblk_variant_d — descriptor variant @0x8012e85c (34 insns):
  * +0x1c=a2, +0xa=+0xc=+0xe=+0x10=8, +0x12=+0x14=1, +0/+2/+4=0,
  * +6=a3, +0x18=5, +8=stk1, +0x16=((stk2+0x1e0)&0x1ff)*0x40+0x16. */
-void descblk_variant_d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6)
+void descblk_variant_d(uint32_t ctx,uint32_t ctx2,uint32_t str,
+                  uint32_t f6,uint32_t f8,uint32_t attr)
 {
-  MW32(0x1f8003a8u, param_3);
+  MW32(0x1f8003a8u, str);
   MW16(0x1f800396u, 8);
   MW16(0x1f800398u, 8);
   MW16(0x1f80039au, 8);
@@ -10367,12 +10366,12 @@ void descblk_variant_d(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   MW16(0x1f80038cu, 0);
   MW16(0x1f80038eu, 0);
   MW16(0x1f800390u, 0);
-  MW16(0x1f800392u, param_4);
+  MW16(0x1f800392u, f6);
   MW16(0x1f8003a4u, 5);
-  MW16(0x1f800394u, param_5);
+  MW16(0x1f800394u, f8);
   MW16(0x1f8003a2u,
-       (uint16_t)(((param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x16u));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)(((attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x16u));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* job_wait_pump — job-wait pump @0x80168720 (34 insns): outer loop
@@ -10413,17 +10412,16 @@ void job_wait_pump_b(uint32_t param_1,uint32_t param_2,uint32_t param_3)
  * is nonzero or a0 != 1, return. Else: fx_record_alloc(obj+0x124, 6,
  * 0x8000000e, 0x83, 0x801b1d48); quad_fx_spawn(s0, 0x12, obj+0x124,
  * 0x420, 0x3000, 2, 2); triple_track_spawn(MB8(s0+2), 0x30, 0). */
-void cond_triple_spawn(uint32_t param_1,uint32_t param_2)
+void cond_triple_spawn(uint32_t sel,uint32_t rec)
 {
-  uint32_t s0 = param_2;
   uint32_t obj;
   if (MBS8(0x1f8000b1u) != 0) return;
-  if (param_1 != 1) return;
-  obj = MB32(s0 + 0x20);
+  if (sel != 1) return;
+  obj = MB32(rec + 0x20);
   fx_record_alloc(obj + 0x124, 6, 0x8000000eu, 0x83, 0x801b1d48u);
-  quad_fx_spawn((int32_t)s0, 0x12, MB32(s0 + 0x20) + 0x124, 0x420, 0x3000,
+  quad_fx_spawn((int32_t)rec, 0x12, MB32(rec + 0x20) + 0x124, 0x420, 0x3000,
                2, 2);
-  triple_track_spawn(MB8(s0 + 2), 0x30, 0);
+  triple_track_spawn(MB8(rec + 2), 0x30, 0);
 }
 
 /* dual_sprite_attr_emit — dual sprite/attr emit @0x801672a0 (35 insns):
@@ -10443,12 +10441,12 @@ void dual_sprite_attr_emit(uint32_t param_1,uint32_t param_2,uint32_t param_3,
  * +0x1c=a2, +6=a3, +0xa=8, +0xe=-1, +0/+2/+4=0, +0xc=+0x10=0x10,
  * +0x14=+0x18=1, +8=stk1, +0x12=stk3, +0x16=((stk2+0x1e0)&0x1ff)
  * *0x40+0x1f. */
-void descblk_variant_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6,
-                  uint32_t param_7)
+void descblk_variant_b(uint32_t ctx,uint32_t ctx2,uint32_t str,
+                  uint32_t f6,uint32_t f8,uint32_t attr,
+                  uint32_t fe)
 {
-  MW32(0x1f8003a8u, param_3);
-  MW16(0x1f800392u, param_4);
+  MW32(0x1f8003a8u, str);
+  MW16(0x1f800392u, f6);
   MW16(0x1f800396u, 8);
   MW16(0x1f80039au, 0xffffu);
   MW16(0x1f80038cu, 0);
@@ -10458,22 +10456,22 @@ void descblk_variant_b(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   MW16(0x1f80039cu, 0x10);
   MW16(0x1f8003a0u, 1);
   MW16(0x1f8003a4u, 1);
-  MW16(0x1f800394u, param_5);
-  MW16(0x1f80039eu, param_7);
+  MW16(0x1f800394u, f8);
+  MW16(0x1f80039eu, fe);
   MW16(0x1f8003a2u,
-       (uint16_t)(((param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x1fu));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)(((attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x1fu));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* descblk_variant_c — descriptor variant @0x8012e45c (37 insns):
  * +0x1c=a2, +6=a3, +0xa=0x18, +0xe=-1, +0x12=-6, +0x14=2,
  * +0/+2/+4=0, +0xc=+0x10=0x20, +0x18=3, +8=stk1,
  * +0x16=((stk2+0x1e0)&0x1ff)*0x40+0x1e. */
-void descblk_variant_c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
-                  uint32_t param_4,uint32_t param_5,uint32_t param_6)
+void descblk_variant_c(uint32_t ctx,uint32_t ctx2,uint32_t str,
+                  uint32_t f6,uint32_t f8,uint32_t attr)
 {
-  MW32(0x1f8003a8u, param_3);
-  MW16(0x1f800392u, param_4);
+  MW32(0x1f8003a8u, str);
+  MW16(0x1f800392u, f6);
   MW16(0x1f800396u, 0x18);
   MW16(0x1f80039au, 0xffffu);
   MW16(0x1f80039eu, 0xfffau);
@@ -10484,10 +10482,10 @@ void descblk_variant_c(uint32_t param_1,uint32_t param_2,uint32_t param_3,
   MW16(0x1f800398u, 0x20);
   MW16(0x1f80039cu, 0x20);
   MW16(0x1f8003a4u, 3);
-  MW16(0x1f800394u, param_5);
+  MW16(0x1f800394u, f8);
   MW16(0x1f8003a2u,
-       (uint16_t)(((param_6 + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
-  hud_msg_draw(param_1, param_2);
+       (uint16_t)(((attr + 0x1e0u) & 0x1ffu) * 0x40u + 0x1eu));
+  hud_msg_draw(ctx, ctx2);
 }
 
 /* chan_reset_register — channel reset + callback register @0x801582c0
