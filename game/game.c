@@ -200,6 +200,7 @@ extern uint8_t  *g_DAT_801b12e0;
 extern uint8_t  *g_DAT_801b12e6;
 extern uint8_t  *g_DAT_801b3ed8;   /* stage param table (0x1c stride) */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_st8(uint32_t a, uint8_t v);
 extern uint32_t *g_PTR_DAT_801b5b94; /* file ptr table */
@@ -1757,7 +1758,7 @@ int cd_file_load_sm(int param_1,uint32_t param_2)
       /* len field carries the generated caller's $ra (post-jal addr) so the
        * file_load provenance names which function aimed file_id at dst. */
       decomp_trace_record(10,param_2,(uint32_t)param_1,0,clean_caller_ra());} }
-  return (int)br2_call_generated(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
+  return (int)br2_call_clean(0x8018cfdc,(uint32_t)param_1,param_2,0,0);
 }
 
 /* ======== 0x8012b23c ======== */

@@ -2244,6 +2244,7 @@ int32_t mc_dialog_bit4(int32_t param_1)
  * Disasm 0x80159a14-0x80159aac. */
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
@@ -2589,7 +2590,7 @@ uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   /* BISECT: temporarily re-delegated to isolate menu regression — the
    * seek-completion wait loop needs live-gpr coroutine resume. */
-  return br2_call_generated(0x801565ec, a0, a1, a2, 0);
+  return br2_call_clean(0x801565ec, a0, a1, a2, 0);
 }
 
 /* fighter_link_init — fighter link init: a2[0x94]=-1, a3 guest ptr,
@@ -9215,14 +9216,14 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     else {
       /* Guest jalr: a0=node, a1=fp-cell addr, a2=lh value (sign-extended),
        * a3=base — all four regs explicit. */
-      r = br2_call_generated(fp,node,a1,(uint32_t)a2v,a3);
+      r = br2_call_clean(fp,node,a1,(uint32_t)a2v,a3);
     }
     *(uint32_t *)guest_at(s0) = r;
   } else if (fn != (void *)0x0) {
     ((void (*)(uint32_t))fn)(node);
   }
   else {
-    br2_call_generated(fp,node,a1,(uint32_t)a2v,a3);
+    br2_call_clean(fp,node,a1,(uint32_t)a2v,a3);
   }
   return;
 }
@@ -9243,14 +9244,14 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     }
     else {
       /* Guest jalr: a0=n0, a1=n1, a2=lh value, a3=base. */
-      r = br2_call_generated(fp,n0,n1,(uint32_t)a2v,a3);
+      r = br2_call_clean(fp,n0,n1,(uint32_t)a2v,a3);
     }
     *(uint32_t *)guest_at(s0) = r;
   } else if (fn != (void *)0x0) {
     ((void (*)(uint32_t,uint32_t))fn)(n0,n1);
   }
   else {
-    br2_call_generated(fp,n0,n1,(uint32_t)a2v,a3);
+    br2_call_clean(fp,n0,n1,(uint32_t)a2v,a3);
   }
   return;
 }
@@ -9431,7 +9432,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     }
     else {
       /* Guest jalr: a0-a3 = the four node values (a0[2..5] entries). */
-      r = br2_call_generated(fp,n0,n1,n2,n3);
+      r = br2_call_clean(fp,n0,n1,n2,n3);
     }
     *(uint32_t *)guest_at(s0) = r;
   } else if (fn != (void *)0x0) {
@@ -9442,7 +9443,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4));
   }
   else {
-    br2_call_generated(fp,
+    br2_call_clean(fp,
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4),
@@ -10417,7 +10418,7 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a1c34u;              /* jalr return PC */
-      br2_call_generated(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       cnt = (uint32_t)(int32_t)
           br2_ld32(0x801be7d8u + (br2_ld32(0x801be7c0u) << 2));
@@ -10432,12 +10433,12 @@ uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
   fn = br2_ld32(0x801be7a0u);
   saved_ra = c->gpr[31];
   c->gpr[31] = 0x801a1c98u;
-  br2_call_generated(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
+  br2_call_clean(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
   c->gpr[31] = saved_ra;
   fn = br2_ld32(0x801be7a4u);
   saved_ra = c->gpr[31];
   c->gpr[31] = 0x801a1cacu;
-  br2_call_generated(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
+  br2_call_clean(fn, rec, c->gpr[5], c->gpr[6], c->gpr[7]);
   c->gpr[31] = saved_ra;
 
 L_send:
@@ -10533,7 +10534,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
     fn = br2_ld32(0x801be78cu);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a3394u;
-    br2_call_generated(fn, ctx, c->gpr[5], c->gpr[6], c->gpr[7]);
+    br2_call_clean(fn, ctx, c->gpr[5], c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
   }
   s4 = br2_ld32(0x801be804u);
@@ -10553,14 +10554,14 @@ uint32_t dev_cmd_process(uint32_t ctx)
         fn = br2_ld32(0x801be78cu);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a33e8u;
-        br2_call_generated(fn, a, c->gpr[5], c->gpr[6], c->gpr[7]);
+        br2_call_clean(fn, a, c->gpr[5], c->gpr[6], c->gpr[7]);
         c->gpr[31] = saved_ra;
       }
       /* 0x801A33E8: cb788(ctx,1) then byte_xfer(ctx, ret&0xff). */
       fn = br2_ld32(0x801be788u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3400u;
-      r = br2_call_generated(fn, s1, 1u, c->gpr[6], c->gpr[7]);
+      r = br2_call_clean(fn, s1, 1u, c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
                                   (int32_t)(r & 0xffu));
@@ -10599,7 +10600,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a34c8u;
-      br2_call_generated(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, arg, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
     }
     /* 0x801A34C8: reload state, dispatch on value. */
@@ -10609,7 +10610,7 @@ uint32_t dev_cmd_process(uint32_t ctx)
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3524u;
-      br2_call_generated(fn, s0 - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, s0 - 0xf0u, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 1u);
       goto L_commitA;
@@ -10620,12 +10621,12 @@ uint32_t dev_cmd_process(uint32_t ctx)
       fn = br2_ld32(0x801be7a0u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3550u;
-      br2_call_generated(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       fn = br2_ld32(0x801be7a4u);
       saved_ra = c->gpr[31];
       c->gpr[31] = 0x801a3564u;
-      br2_call_generated(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
+      br2_call_clean(fn, s0, c->gpr[5], c->gpr[6], c->gpr[7]);
       c->gpr[31] = saved_ra;
       br2_st32(s2, 0xffffffffu);
       goto L_commitA;
@@ -10640,7 +10641,7 @@ L_commitA:
     fn = br2_ld32(0x801be788u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a3584u;
-    r = br2_call_generated(fn, s1, s4, c->gpr[6], c->gpr[7]);
+    r = br2_call_clean(fn, s1, s4, c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
     r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
                                 (int32_t)(r & 0xffu));
@@ -10668,7 +10669,7 @@ L_collect:
         fn = br2_ld32(0x801be788u);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a3614u;
-        r = br2_call_generated(fn, s1, s4, c->gpr[6], c->gpr[7]);
+        r = br2_call_clean(fn, s1, s4, c->gpr[6], c->gpr[7]);
         c->gpr[31] = saved_ra;
         r = (uint32_t)dev_byte_xfer((uint8_t *)guest_at(s1),
                                     (int32_t)(r & 0xffu));
@@ -10701,7 +10702,7 @@ L_collect:
     fn = br2_ld32(0x801be780u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a36bcu;
-    br2_call_generated(fn, 0u, c->gpr[5], c->gpr[6], c->gpr[7]);
+    br2_call_clean(fn, 0u, c->gpr[5], c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
   }
   return 0;
@@ -10757,7 +10758,7 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
   /* jalr table[idx] — ra = 0x801A1EC0 continuation. */
   saved_ra = c->gpr[31];
   c->gpr[31] = 0x801a1ec0u;
-  r = br2_call_generated(fn, ctx, 0x801be7c4u, a2, a3);
+  r = br2_call_clean(fn, ctx, 0x801be7c4u, a2, a3);
   c->gpr[31] = saved_ra;
 
   if ((int32_t)r < 0) {
@@ -10766,7 +10767,7 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
     fn = br2_ld32(0x801be780u);
     saved_ra = c->gpr[31];
     c->gpr[31] = 0x801a1f64u;
-    r = br2_call_generated(fn, r, c->gpr[5], c->gpr[6], c->gpr[7]);
+    r = br2_call_clean(fn, r, c->gpr[5], c->gpr[6], c->gpr[7]);
     c->gpr[31] = saved_ra;
     return r;
   }
@@ -10799,7 +10800,7 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
         fn = br2_ld32(0x801be780u);
         saved_ra = c->gpr[31];
         c->gpr[31] = 0x801a1f2cu;
-        br2_call_generated(fn, 0xfffffffdu,
+        br2_call_clean(fn, 0xfffffffdu,
                            c->gpr[5], c->gpr[6], c->gpr[7]);
         c->gpr[31] = saved_ra;
       }

@@ -948,6 +948,7 @@ int32_t pending_action_gate(uint32_t motion, uint8_t *ctrl,
  * build uses clean_bridge's version, which also mirrors the reservation
  * into cpu->gpr[29]. */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void br2_guest_frame_free(void);
 void br2_st32(uint32_t a, uint32_t v);
@@ -1917,7 +1918,7 @@ int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t a2,const void *a3,int32_t a4)
         uint32_t fr0 = br2_guest_frame(0x20);
         int r;
         br2_st32(fr0 + 0x10, (uint32_t)a4);
-        r = (int)br2_call_generated(0x801468ecu,a0,a1,a2,guest_of(a3));
+        r = (int)br2_call_clean(0x801468ecu,a0,a1,a2,guest_of(a3));
         br2_guest_frame_free();
         return r;
     }
@@ -2152,7 +2153,7 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
         int r;
         br2_st32(fr + 0x10, a4);
         br2_st32(fr + 0x14, a5);
-        r = (int)br2_call_generated(0x8018b100u,a0,a1,a2,a3);
+        r = (int)br2_call_clean(0x8018b100u,a0,a1,a2,a3);
         br2_guest_frame_free();
         return r;
     }
@@ -2217,7 +2218,7 @@ int FUN_8018b100(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
                     c->gpr[7] = a3v;
                     c->gpr[8] = fn;             /* $t0 = jalr target */
                     c->gpr[4] = a0v;
-                    br2_call_generated(fn, a0v, c->gpr[5], c->gpr[6], a3v);
+                    br2_call_clean(fn, a0v, c->gpr[5], c->gpr[6], a3v);
                     n--;
                     ep += 16;
                 } while (n > 0);
@@ -2728,7 +2729,7 @@ int ret_zero_e(int32_t a0)
     uint32_t fr;
     int ret;
     if (!c) {
-        return (int)br2_call_generated(0x80161630u,(uint32_t)a0,0,0,0);
+        return (int)br2_call_clean(0x80161630u,(uint32_t)a0,0,0,0);
     }
     c->gpr[4] = (uint32_t)a0;
     fr = br2_guest_frame(0xa0);
@@ -3041,7 +3042,7 @@ void FUN_8019a0ddc(void)
     CPUState *c = clean_cpu_state();
     uint32_t saved;
     int i;
-    if (!c) { br2_call_generated(0x801a0ddcu,0,0,0,0); return; }
+    if (!c) { br2_call_clean(0x801a0ddcu,0,0,0,0); return; }
     FUN_8018e300();
     saved = c->gpr[2];
     for (i = 0; i < 8; i++) {

@@ -22,6 +22,7 @@ extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern uint32_t br2_guest_frame(uint32_t);
@@ -605,7 +606,7 @@ void camera_state_cache(uint param_1,int param_2)
       /* Unported jalr target: run the generated body with the same guest
        * args — a0=0x1F8002F8, a1=0x801F0228 (guest addrs, not host ptrs),
        * a2=param_2. */
-      br2_call_generated(fn_g,0x1f8002f8u,0x801f0228u,(uint32_t)param_2,0);
+      br2_call_clean(fn_g,0x1f8002f8u,0x801f0228u,(uint32_t)param_2,0);
     }
   }
   return;
@@ -649,7 +650,7 @@ void player_light_apply(byte *param_1,int param_2)
     else {
       /* Unported jalr target: guest args a0=0x1F8002F8, a1=0x801F0228,
        * a2=0x1F80033C, a3=param_1's guest address. */
-      br2_call_generated(fn_g,0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(param_1));
+      br2_call_clean(fn_g,0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(param_1));
     }
   }
   gte_light_load(&DAT_801f0250);
@@ -4826,7 +4827,7 @@ void fighter_attach_run(int param_1)
         else {
           /* Unported jalr target: run the generated body with the same
            * guest args. */
-          br2_call_generated(fn_g,(uint32_t)param_1,(uint32_t)iVar4,(uint32_t)iVar1,(uint32_t)iVar2);
+          br2_call_clean(fn_g,(uint32_t)param_1,(uint32_t)iVar4,(uint32_t)iVar1,(uint32_t)iVar2);
         }
       }
       iVar1 = iVar1 + 0x1c;
@@ -10611,7 +10612,7 @@ LAB_80135630:
           if (_tf != 0) {
             uint32_t _fr = br2_guest_frame(0x20);
             br2_st32(_fr + 0x10, br2_gaddr(param_1));
-            br2_call_generated(_tf,(uint32_t)iVar10,uVar11,0x801f04a8u,(uint32_t)param_4);
+            br2_call_clean(_tf,(uint32_t)iVar10,uVar11,0x801f04a8u,(uint32_t)param_4);
             br2_guest_frame_free();
           }
         }
@@ -13946,7 +13947,7 @@ undefined4 script_op_dispatch(undefined4 param_1,undefined4 param_2,int param_3,
      * populated with host pointers, so indexing it called address 0. Dispatch
      * through the real guest table via br2_call_generated — the same jalr the
      * original performs — returning the handler's $v0 as the s16 result. */
-    sVar2 = (short)br2_call_generated(
+    sVar2 = (short)br2_call_clean(
         *(uint32_t *)guest_at(0x801b5528u + (uint32_t)bVar1 * 4u),
         param_1, param_2, (uint32_t)param_3, param_4);
     iVar4 = iVar4 + 1;
@@ -16865,7 +16866,7 @@ LAB_80137c14:
                 }
                 else {
                   /* Unported jalr target: a0 = param_1[0] (guest addr or 0). */
-                  br2_call_generated(fn_g,(uint32_t)param_1[0],0,0,0);
+                  br2_call_clean(fn_g,(uint32_t)param_1[0],0,0,0);
                 }
               }
               psVar3 = (short *)guest_at((uint32_t)*piVar6);

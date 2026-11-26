@@ -555,6 +555,55 @@ uint32_t br2_call_generated(uint32_t fn, uint32_t a0, uint32_t a1,
     return cpu->gpr[2];
 }
 
+/* br2_call_clean — clean-first variant of br2_call_generated for dynamic
+ * (jalr/table) call sites. Identical register contract: saves/restores
+ * ra/sp/pc/s0-s3, forwards a0-a3, leaves them callee-clobbered on return
+ * (faithful jalr — callers that chain c->gpr[5..7] into the next call see
+ * the same values br2_call_generated would leave), honors g_psx_call_bail
+ * drop/unwind exactly. Differences vs br2_call_generated:
+ *   - tries clean_try_dispatch first so covered targets run clean C
+ *     (cps_/hand-port) instead of forced generated;
+ *   - sets $t0 = fn, reproducing the guest `jalr $ra,$t0` link-target
+ *     observable some emit entries rely on.
+ * Use this — NOT call_guest4 — for sites that forward live arg registers
+ * or manually manage $ra, where call_guest4's arg-reg restore would break
+ * the chaining contract. */
+uint32_t br2_call_clean(uint32_t fn, uint32_t a0, uint32_t a1,
+                        uint32_t a2, uint32_t a3)
+{
+    CPUState *cpu = g_clean_cpu;
+    uint32_t ra, pc, sp, s0, s1, s2, s3;
+    if (!cpu || fn == 0) return 0;
+    if (g_psx_call_bail) {
+        g_br2_bail_drops++;
+        g_br2_bail_last_fn = fn;
+        g_br2_bail_last_ra = cpu->gpr[31];
+        return cpu->gpr[2];
+    }
+    ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+    s0 = cpu->gpr[16]; s1 = cpu->gpr[17]; s2 = cpu->gpr[18]; s3 = cpu->gpr[19];
+    cpu->gpr[4] = a0; cpu->gpr[5] = a1;
+    cpu->gpr[6] = a2; cpu->gpr[7] = a3;
+    cpu->gpr[8] = fn;
+    if (!clean_try_dispatch(cpu, fn)) {
+        if (ra != 0) {
+            cpu->gpr[31] = ra;
+            psx_dispatch_call(cpu, fn, ra);
+        } else {
+            cpu->gpr[31] = BR2_NESTED_RA;
+            psx_dispatch_call(cpu, fn, 0);
+        }
+    }
+    if (g_psx_call_bail) {
+        g_br2_bail_unwinds++;
+        return cpu->gpr[2];
+    }
+    cpu->gpr[31] = ra; cpu->gpr[29] = sp; cpu->pc = pc;
+    cpu->gpr[16] = s0; cpu->gpr[17] = s1;
+    cpu->gpr[18] = s2; cpu->gpr[19] = s3;
+    return cpu->gpr[2];
+}
+
 /* gpu_invoke — libgpu syscall gateway. gfx.c/cd.c resolve entries in the
  * game's GPU function table (guest addrs of the libgpu impls: DrawOTag,
  * LoadImage, ClearImage, ...) and hand them here with a0-a3. This is a

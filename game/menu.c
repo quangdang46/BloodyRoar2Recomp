@@ -16274,6 +16274,7 @@ next_block:
  * via br2_guest_frame + br2_st32, same pattern as game/bind.c.
  * All args are guest u32 values (no host pointers -> no guest_of). */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
 extern void br2_st32(uint32_t,uint32_t);
@@ -16282,14 +16283,14 @@ extern void br2_st32(uint32_t,uint32_t);
 uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e) \
 { uint32_t fr = br2_guest_frame(0x20); uint32_t r; \
   br2_st32(fr + 0x10, e); \
-  r = br2_call_generated(AD,a,b,c,d); \
+  r = br2_call_clean(AD,a,b,c,d); \
   br2_guest_frame_free(); return r; }
 #define BR2_TAG7(NM,AD) \
 uint32_t NM(uint32_t a,uint32_t b,uint32_t c,uint32_t d,uint32_t e, \
              uint32_t f,uint32_t g) \
 { uint32_t fr = br2_guest_frame(0x20); uint32_t r; \
   br2_st32(fr + 0x10, e); br2_st32(fr + 0x14, f); br2_st32(fr + 0x18, g); \
-  r = br2_call_generated(AD,a,b,c,d); \
+  r = br2_call_clean(AD,a,b,c,d); \
   br2_guest_frame_free(); return r; }
 
 /* Faithful clean ports of the heap_serialize_tag_* serializers
