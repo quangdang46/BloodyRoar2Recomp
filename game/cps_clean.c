@@ -29424,6 +29424,13 @@ void cps_80136294(void)
     }
     /* Address: 0x80136294, Size: 248 bytes, Blocks: 14 */
 
+    /* vertex ring-buffer fill (variant A): per s2<half[s7+20]
+       records at 52B stride (s3 cursor): s1=half[s5+6]*2/(half
+       [s7+20]+1) step; writes half pairs at s0=s3+40 (+4=1024,
+       +6=-1024, +8 scaled), negated fixed-point triples at
+       s0-16/-12/-8 via jal 0x80129F78 rounding, half[s0-4/-2/0]
+       scaled deltas; half[s3]=16. CPS-blocked. */
+
 block_80136294:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 6);
     a0 = (int32_t)(int16_t)cpu->read_half(s7 + 20);
@@ -29602,6 +29609,11 @@ void cps_8013638c(void)
     }
     /* Address: 0x8013638C, Size: 252 bytes, Blocks: 13 */
 
+    /* vertex ring-buffer fill (variant B): same loop shape;
+       writes half[s0+4]=1024, half[s0+6]=0, half[s0+8]=scaled;
+       fixed-point identity rows 4096/0 at s0-36..-16; ->
+       0x80136578. CPS-blocked. */
+
 block_8013638C:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 4);
     a0 = (int32_t)(int16_t)cpu->read_half(s7 + 20);
@@ -29775,6 +29787,9 @@ void cps_80136488(void)
         }
     }
     /* Address: 0x80136488, Size: 240 bytes, Blocks: 13 */
+
+    /* vertex ring-buffer fill (variant C): same 52B-stride loop,
+       sibling of 0x8013638C. CPS-blocked. */
 
 block_80136488:
     s1 = (int32_t)(int16_t)cpu->read_half(s5 + 4);
@@ -43853,6 +43868,14 @@ void cps_8013e874(void)
         }
     }
     /* Address: 0x8013E874, Size: 608 bytes, Blocks: 12 */
+
+    /* 4-point rotated-vertex emit: fp*0x5556 hi -> sp+16 scale;
+       per s7=0..3: lut_cos/lut_sin_q12(s2) scaled by fp and
+       fp+s5 accumulate into half[s3..s4+/-] pairs (4 verts x
+       3 comps); s5 wraps via a0>>3; s2 += half[s1+494]. Then
+       3x unaligned lwl/lwr copy from 0x1F8003D0 scratchpad into
+       GPU packet slots s6/s6+40 (tag |0x09000000, back-ptr
+       <<8>>8). -> 0x8013EAD4. CPS-blocked. */
 
 block_8013E874:
     v0 = v0 | 0x5556;
