@@ -2582,29 +2582,29 @@ void deferred_cmd_post(uint param_1,int param_2,short param_3)
 
 }
 
-int range_circle_test(int param_1,int param_2,uint *param_3,int param_4)
+int range_circle_test(int x,int y,uint *box,int radius)
 {
-  uint uVar1;
-  uVar1 = param_3[1];
-  if (param_4 < 10) {
-    if ((*param_3 & 0xffff) == 0) {
-      if (param_2 < 0) {
-        param_2 = -param_2;
+  uint packed;
+  packed = box[1];
+  if (radius < 10) {
+    if ((*box & 0xffff) == 0) {
+      if (y < 0) {
+        y = -y;
       }
-      if (param_2 <= (int)(uVar1 >> 0x10)) {
-        if (param_1 < 0) {
-          param_1 = -param_1;
+      if (y <= (int)(packed >> 0x10)) {
+        if (x < 0) {
+          x = -x;
         }
-        if (param_1 <= (int)(uVar1 & 0xffff)) {
+        if (x <= (int)(packed & 0xffff)) {
           return 0;
         }
       }
     }
-    else if (-1 < (int)((uVar1 - param_1 * param_1) - param_2 * param_2)) {
+    else if (-1 < (int)((packed - x * x) - y * y)) {
       return 0;
     }
   }
-  return (int)*param_3 >> 0x10;
+  return (int)*box >> 0x10;
 
 }
 
@@ -2645,70 +2645,70 @@ int atan2_lut(int param_1,int param_2)
 }
 
 
-void hitrec_table_clear(int param_1)
+void hitrec_table_clear(int slot)
 {
-  int iVar1;
-  iVar1 = 0;
-  param_1 = param_1 << 8;
+  int i;
+  i = 0;
+  slot = slot << 8;
   do {
-    iVar1 = iVar1 + 1;
-    *(undefined2 *)(&DAT_801f0db0 + param_1) = 0;
-    *(undefined2 *)((char *)guest_at((uint32_t)param_1 + 0x801f0db2)) = 0;
-    *(undefined2 *)(&DAT_801f0db4 + param_1) = 0;
-    *(undefined2 *)((char *)guest_at((uint32_t)param_1 + 0x801f0db6)) = 0;
-    param_1 = param_1 + 8;
-  } while (iVar1 < 0x20);
+    i = i + 1;
+    *(undefined2 *)(&DAT_801f0db0 + slot) = 0;
+    *(undefined2 *)((char *)guest_at((uint32_t)slot + 0x801f0db2)) = 0;
+    *(undefined2 *)(&DAT_801f0db4 + slot) = 0;
+    *(undefined2 *)((char *)guest_at((uint32_t)slot + 0x801f0db6)) = 0;
+    slot = slot + 8;
+  } while (i < 0x20);
   return;
 
 }
 
 
-void slot_mark2_set(int param_1)
+void slot_mark2_set(int slot)
 {
-  (&DAT_801f0ad8)[param_1] = 2;
+  (&DAT_801f0ad8)[slot] = 2;
   return;
 
 }
 
-void fighter_reset_fx(int param_1,byte *param_2)
+void fighter_reset_fx(int reset,byte *ctrl)
 {
-  if ((DAT_1f8000b1 == '\0') && (param_1 == 1)) {
-    fx_record_alloc(*(int *)(param_2 + 0x20) + 0x124,6,0x8000000e,0x83,&DAT_801b1d48);
-    quad_fx_spawn((int)guest_of(param_2),0x12,(undefined4 *)guest_at((uint32_t)(*(int *)(param_2 + 0x20) + 0x124)),0x420,0x3000,2,2);
-    triple_track_spawn(*(undefined1 *)(param_2 + 2),0x30,0);
+  if ((DAT_1f8000b1 == '\0') && (reset == 1)) {
+    fx_record_alloc(*(int *)(ctrl + 0x20) + 0x124,6,0x8000000e,0x83,&DAT_801b1d48);
+    quad_fx_spawn((int)guest_of(ctrl),0x12,(undefined4 *)guest_at((uint32_t)(*(int *)(ctrl + 0x20) + 0x124)),0x420,0x3000,2,2);
+    triple_track_spawn(*(undefined1 *)(ctrl + 2),0x30,0);
   }
   return;
 
 }
-int lut_cos_q12(int param_1)
+int lut_cos_q12(int angle)
 {
-  int iVar1;
-  uint uVar2;
+  int idx;
+  uint q;
   
-  uVar2 = param_1 + 0x400;
-  iVar1 = (uVar2 & 0x3ff) * 2;
-  if ((uVar2 & 0x400) != 0) {
-    iVar1 = (uVar2 & 0x3ff) * -2 + 0x800;
+  q = angle + 0x400;
+  idx = (q & 0x3ff) * 2;
+  if ((q & 0x400) != 0) {
+    idx = (q & 0x3ff) * -2 + 0x800;
   }
-  if ((uVar2 & 0x800) != 0) {
-    return -(int)*(short *)(&DAT_801247a8 + iVar1);
+  if ((q & 0x800) != 0) {
+    return -(int)*(short *)(&DAT_801247a8 + idx);
   }
-  return (int)*(short *)(&DAT_801247a8 + iVar1);
+  return (int)*(short *)(&DAT_801247a8 + idx);
 
 }
 
-int lut_sin_q12(uint param_1)
+int lut_sin_q12(uint angle)
 {
-  int iVar1;
+  int idx;
   
-  iVar1 = (param_1 & 0x3ff) * 2;
-  if ((param_1 & 0x400) != 0) {
-    iVar1 = (param_1 & 0x3ff) * -2 + 0x800;
+  idx = (angle & 0x3ff) * 2;
+  if ((angle & 0x400) != 0) {
+    idx = (angle & 0x3ff) * -2 + 0x800;
   }
-  if ((param_1 & 0x800) != 0) {
-    return -(int)*(short *)(&DAT_801247a8 + iVar1);
+  if ((angle & 0x800) != 0) {
+    return -(int)*(short *)(&DAT_801247a8 + idx);
   }
-  return (int)*(short *)(&DAT_801247a8 + iVar1);
+  return (int)*(short *)(&DAT_801247a8 + idx);
 
 }
 
