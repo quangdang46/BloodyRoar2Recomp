@@ -4163,55 +4163,55 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
 void countdown_display_sm(uint32_t a0)
 {
   extern int br2_bail_pending(void);
-  uint8_t *s2 = (uint8_t *)guest_at(0x1f800000);
-  uint8_t *t1;
-  int32_t s0;
-  int32_t s1 = 0;
-  int32_t s3 = 0;
-  int32_t s4 = 0;
-  int32_t s5 = 0;
-  int32_t s6 = 0x59;
-  int32_t fp = -1;
-  int32_t v1 = 0;
+  uint8_t *ctx = (uint8_t *)guest_at(0x1f800000);
+  uint8_t *sel_rec;
+  int32_t which;
+  int32_t cur_val = 0;
+  int32_t cnt2 = 0;
+  int32_t fade_cnt = 0;
+  int32_t sm_state = 0;
+  int32_t cd_num = 0x59;
+  int32_t icon_mark = -1;
+  int32_t bright = 0;
   (void)a0;
 
-  s0 = ((*(uint16_t *)(s2 + 0x92) & 0xf00) ^ 0x100) != 0;
+  which = ((*(uint16_t *)(ctx + 0x92) & 0xf00) ^ 0x100) != 0;
   hud_sprite_desc_init();
   rgb_triple_store(0,0,0);
-  t1 = (uint8_t *)guest_at(0x1f800000 + (uint32_t)s0 * 2);
+  sel_rec = (uint8_t *)guest_at(0x1f800000 + (uint32_t)which * 2);
   for (;;) {
     if (br2_bail_pending()) return;
     int32_t st;
-    if (s5 == 1) goto body;
-    if (s5 < 2) {
-      if (s5 == 0) {
+    if (sm_state == 1) goto body;
+    if (sm_state < 2) {
+      if (sm_state == 0) {
         if (frame_divisor_get() != 0) goto poll;
         display_cur_invalidate();
         display_pair_invalidate();
-        *(int16_t *)(s2 + 0x8c) = 0;
-        s4 = 0;
-        s3 = s4;
-        s5 = 1;
+        *(int16_t *)(ctx + 0x8c) = 0;
+        fade_cnt = 0;
+        cnt2 = fade_cnt;
+        sm_state = 1;
         goto body;
       }
       goto poll;
     }
-    if (s5 == 0xf0) {
+    if (sm_state == 0xf0) {
       deferred_cmd_post(0x203,0,0);
-      s5 = 0xff;
+      sm_state = 0xff;
       goto poll;
     }
-    if (s5 == 0xf1) {
-      s5 = 0xff;
+    if (sm_state == 0xf1) {
+      sm_state = 0xff;
       goto poll;
     }
     goto poll;
 body:
-    if (s3 != 0) goto countdown;
-    if (*(int16_t *)(s2 + 0x8c) < 0) goto check_draw;
-    s1 = (int32_t)(int16_t)s6;
+    if (cnt2 != 0) goto countdown;
+    if (*(int16_t *)(ctx + 0x8c) < 0) goto check_draw;
+    cur_val = (int32_t)(int16_t)cd_num;
     {
-      int32_t idx = s1 - 1;
+      int32_t idx = cur_val - 1;
       int32_t q = (idx < 0) ? (idx + 0x1e) : idx;
       int32_t bit;
       uint8_t *bp;
@@ -4219,94 +4219,94 @@ body:
       uint32_t w;
       q >>= 5;
       bit = idx - (q << 5);
-      bp = (uint8_t *)guest_at(*(uint32_t *)(s2 + 0xc0));
+      bp = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xc0));
       cell = bp ? (uint32_t *)(bp + (uint32_t)q * 4) : NULL;
       w = cell ? *cell : 0;
       if (display_page_commit_a(idx) != 0) {
-        fp = s6;
+        icon_mark = cd_num;
         if (!((w >> bit) & 1)) {
           w |= (uint32_t)1 << bit;
           *cell = w;
           *(uint32_t *)guest_at(0x801c15f0) = 1;
         }
-        s4 = (s1 == 0x59) ? 0x64 : 0x32;
+        fade_cnt = (cur_val == 0x59) ? 0x64 : 0x32;
       }
     }
-    if (s4 == 0) goto icon;
-    if (s6 == 0x59) {
-      v1 = (int32_t)((int32_t)(s4 * 255) / 100);
+    if (fade_cnt == 0) goto icon;
+    if (cd_num == 0x59) {
+      bright = (int32_t)((int32_t)(fade_cnt * 255) / 100);
     } else {
-      v1 = (int32_t)((int32_t)(s6 - s4) / 50);
+      bright = (int32_t)((int32_t)(cd_num - fade_cnt) / 50);
     }
-    s4--;
+    fade_cnt--;
     goto draw;
 countdown:
-    if (s6 == 0x5c) {
-      v1 = (int32_t)((int32_t)(s3 * 255) / 100);
+    if (cd_num == 0x5c) {
+      bright = (int32_t)((int32_t)(cnt2 * 255) / 100);
     } else {
-      v1 = (int32_t)((int32_t)(s6 - s3) / 50);
+      bright = (int32_t)((int32_t)(cd_num - cnt2) / 50);
     }
-    s3--;
-    v1 = 0xff - v1;
-    if (s3 == 0) {
-      fp = 0;
-      if ((int16_t)s6 >= 0x5c) s5 = 0xf0;
+    cnt2--;
+    bright = 0xff - bright;
+    if (cnt2 == 0) {
+      icon_mark = 0;
+      if ((int16_t)cd_num >= 0x5c) sm_state = 0xf0;
     }
     goto draw;
 check_draw:
-    if (s4 == 0) goto icon;
-    if (s6 == 0x59) {
-      v1 = (int32_t)((int32_t)(s4 * 255) / 100);
+    if (fade_cnt == 0) goto icon;
+    if (cd_num == 0x59) {
+      bright = (int32_t)((int32_t)(fade_cnt * 255) / 100);
     } else {
-      v1 = (int32_t)((int32_t)(s6 - s4) / 50);
+      bright = (int32_t)((int32_t)(cd_num - fade_cnt) / 50);
     }
-    s4--;
+    fade_cnt--;
 draw:
-    spr_attr_alloc_a(*(uint32_t *)(s2 + 8),0,0,
-                  (int16_t)*(uint16_t *)(s2 + 0x20),
-                  (int16_t)*(uint16_t *)(s2 + 0x22),
-                  (uint32_t)(v1 * 0x10101),3);
+    spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
+                  (int16_t)*(uint16_t *)(ctx + 0x20),
+                  (int16_t)*(uint16_t *)(ctx + 0x22),
+                  (uint32_t)(bright * 0x10101),3);
 icon:
-    if ((int32_t)fp > 0) {
-      spr_attr_alloc_b(*(uint32_t *)(s2 + 8) + 4,0,0xeffe0088,0x7fc00000,
-                    (int32_t)*(int16_t *)(s2 + 0x20),
-                    (int32_t)*(int16_t *)(s2 + 0x22));
+    if ((int32_t)icon_mark > 0) {
+      spr_attr_alloc_b(*(uint32_t *)(ctx + 8) + 4,0,0xeffe0088,0x7fc00000,
+                    (int32_t)*(int16_t *)(ctx + 0x20),
+                    (int32_t)*(int16_t *)(ctx + 0x22));
     }
-    if (*(int16_t *)(s2 + 0x8c) < 0 && s4 == 0 && s3 == 0) {
-      if ((*(uint16_t *)(t1 + 0x6c) & 0xf) == 0) {
+    if (*(int16_t *)(ctx + 0x8c) < 0 && fade_cnt == 0 && cnt2 == 0) {
+      if ((*(uint16_t *)(sel_rec + 0x6c) & 0xf) == 0) {
         if ((g32(0x1f8000dc) & 0x30) != 0) {
-          int32_t xv = (int32_t)(int16_t)*(uint16_t *)(s2 + 0x22);
-          int32_t yv = (int32_t)(int16_t)*(uint16_t *)(s2 + 0x20) - 0x18;
+          int32_t xv = (int32_t)(int16_t)*(uint16_t *)(ctx + 0x22);
+          int32_t yv = (int32_t)(int16_t)*(uint16_t *)(ctx + 0x20) - 0x18;
           int32_t q = xv * 3;
           int32_t xs;
           if (q < 0) q += 3;
           xs = ((q >> 2) + 0x48);
           xs = (int16_t)xs;
-          announce_param_block_init(*(uint32_t *)(s2 + 8),*(uint32_t *)(s2 + 0xc),
+          announce_param_block_init(*(uint32_t *)(ctx + 8),*(uint32_t *)(ctx + 0xc),
                         (const void *)guest_at(0x801222a4),
                         (uint32_t)(int32_t)(int16_t)yv,
                         (uint32_t)xs,0);
         }
         {
-          uint16_t m = *(uint16_t *)(t1 + 0x68);
+          uint16_t m = *(uint16_t *)(sel_rec + 0x68);
           if (m & 0x800) {
-            s5 = 0xf0;
+            sm_state = 0xf0;
           } else if (m & 0xe0) {
             deferred_cmd_post(0x400,0xc,0);
-            s6 = (int16_t)(s6 + 1);
-            s3 = (s6 == 0x5c) ? 0x64 : 0x32;
-            *(int16_t *)(s2 + 0x8c) = 0;
+            cd_num = (int16_t)(cd_num + 1);
+            cnt2 = (cd_num == 0x5c) ? 0x64 : 0x32;
+            *(int16_t *)(ctx + 0x8c) = 0;
           }
         }
       }
     }
 poll:
-    /* guest a0 = s2 = 0x1f800000 — pass the guest address, not host ptr. */
+    /* guest a0 = ctx = 0x1f800000 — pass the guest address, not host ptr. */
     frame_tick(0x1f800000);
-    if (s5 != 0xff) continue;
+    if (sm_state != 0xff) continue;
     break;
   }
-  (void)s1;
+  (void)cur_val;
 }
 
 /* ---- menu_res_load_sm @0x801709fc (206 insns) ---- */
