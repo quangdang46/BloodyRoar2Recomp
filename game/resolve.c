@@ -2263,70 +2263,70 @@ void trig_vel_diag(uint32_t ctrl_g, byte *mo)
   return;
 
 }
-void launch_vel_update(byte *param_1,byte *param_2)
+void launch_vel_update(byte *mo,byte *aux)
 {
-  ushort uVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  undefined2 uVar5;
-  iVar3 = (int)*(short *)(param_1 + 0x90);
-  iVar4 = (int)*(short *)(param_1 + 0x92);
-  iVar2 = *(int *)((char *)guest_at(*(uint32_t *)(param_1 + 0x20)) + 0x38);
-  uVar5 = 0;
-  if ((*(int *)(param_1 + 0x5c) < 0) && (iVar2 < *(short *)(param_1 + 0x94))) {
-    iVar4 = 0xa0;
-    *(undefined2 *)(param_1 + 0x92) = 0xa0;
+  ushort acc;
+  int state;
+  int vx;
+  int vy;
+  int rem;
+  vx = (int)*(short *)(mo + 0x90);
+  vy = (int)*(short *)(mo + 0x92);
+  state = *(int *)((char *)guest_at(*(uint32_t *)(mo + 0x20)) + 0x38);
+  rem = 0;
+  if ((*(int *)(mo + 0x5c) < 0) && (state < *(short *)(mo + 0x94))) {
+    vy = 0xa0;
+    *(undefined2 *)(mo + 0x92) = 0xa0;
   }
-  if ((iVar2 == *(short *)(param_1 + 0x94)) && (iVar3 == 0 && iVar4 == 0)) {
-    *(undefined2 *)(param_1 + 0x9c) = 0;
-    *(undefined2 *)(param_1 + 0xa4) = 0;
+  if ((state == *(short *)(mo + 0x94)) && (vx == 0 && vy == 0)) {
+    *(undefined2 *)(mo + 0x9c) = 0;
+    *(undefined2 *)(mo + 0xa4) = 0;
     return;
   }
-  if (((*(uint *)(param_1 + 0x60) & 0x2000) == 0) && (iVar3 != 0 || iVar4 != 0)) {
-    dir_rotate_acc((int)*(short *)(param_2 + 0xd0) + (int)*(short *)(param_2 + 0xe4) +
-                 (int)*(short *)(param_1 + 0x96),(int)*(short *)(param_1 + 0x98),param_1 + 0xa2,
-                 param_1 + 0x9a);
-    if (*(short *)(param_1 + 0x98) < 1) {
-      if ((*(short *)(param_1 + 0x98) < 0) &&
-         (uVar1 = *(short *)(param_1 + 0x98) + *(short *)(param_1 + 0x8e),
-         *(ushort *)(param_1 + 0x98) = uVar1, 0 < (int)((uint)uVar1 << 0x10))) {
-        *(undefined2 *)(param_1 + 0x8e) = 0;
+  if (((*(uint *)(mo + 0x60) & 0x2000) == 0) && (vx != 0 || vy != 0)) {
+    dir_rotate_acc((int)*(short *)(aux + 0xd0) + (int)*(short *)(aux + 0xe4) +
+                 (int)*(short *)(mo + 0x96),(int)*(short *)(mo + 0x98),mo + 0xa2,
+                 mo + 0x9a);
+    if (*(short *)(mo + 0x98) < 1) {
+      if ((*(short *)(mo + 0x98) < 0) &&
+         (acc = *(short *)(mo + 0x98) + *(short *)(mo + 0x8e),
+         *(ushort *)(mo + 0x98) = acc, 0 < (int)((uint)acc << 0x10))) {
+        *(undefined2 *)(mo + 0x8e) = 0;
         goto LAB_8017957c;
       }
     }
     else {
-      uVar1 = *(short *)(param_1 + 0x98) + *(short *)(param_1 + 0x8e);
-      *(ushort *)(param_1 + 0x98) = uVar1;
-      if ((int)((uint)uVar1 << 0x10) < 0) {
-        *(undefined2 *)(param_1 + 0x8e) = 0;
+      acc = *(short *)(mo + 0x98) + *(short *)(mo + 0x8e);
+      *(ushort *)(mo + 0x98) = acc;
+      if ((int)((uint)acc << 0x10) < 0) {
+        *(undefined2 *)(mo + 0x8e) = 0;
 LAB_8017957c:
-        *(undefined2 *)(param_1 + 0x98) = 0;
+        *(undefined2 *)(mo + 0x98) = 0;
       }
     }
   }
-  if (((*(uint *)(param_1 + 0x60) & 0x800) == 0) && (iVar3 < 1)) {
-    iVar4 = iVar4 * *(short *)(param_1 + 0x88);
-    if (iVar4 < 0) {
-      iVar4 = iVar4 + 0xf;
+  if (((*(uint *)(mo + 0x60) & 0x800) == 0) && (vx < 1)) {
+    vy = vy * *(short *)(mo + 0x88);
+    if (vy < 0) {
+      vy = vy + 0xf;
     }
-    iVar4 = iVar3 + (iVar4 >> 4);
+    vy = vx + (vy >> 4);
   }
   else {
-    if (((*(uint *)(param_1 + 0x60) & 0x1000) != 0) || (iVar3 < 1)) goto LAB_80179618;
-    iVar4 = iVar4 * *(short *)(param_1 + 0x88);
-    if (iVar4 < 0) {
-      iVar4 = iVar4 + 0xf;
+    if (((*(uint *)(mo + 0x60) & 0x1000) != 0) || (vx < 1)) goto LAB_80179618;
+    vy = vy * *(short *)(mo + 0x88);
+    if (vy < 0) {
+      vy = vy + 0xf;
     }
-    iVar4 = iVar3 + (iVar4 >> 4);
-    if (iVar4 < -0x8000) {
-      iVar4 = -0x8000;
+    vy = vx + (vy >> 4);
+    if (vy < -0x8000) {
+      vy = -0x8000;
     }
   }
-  *(short *)(param_1 + 0x90) = (short)iVar4;
-  uVar5 = (short)(iVar3 >> 7);
+  *(short *)(mo + 0x90) = (short)vy;
+  rem = (short)(vx >> 7);
 LAB_80179618:
-  *(undefined2 *)(param_1 + 0x9c) = uVar5;
+  *(undefined2 *)(mo + 0x9c) = rem;
   return;
 
 }
