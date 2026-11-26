@@ -143,6 +143,12 @@ static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
 #define fp   cpu->gpr[30]
 #define ra   cpu->gpr[31]
 
+/*  hud_time_score_draw (guest body 0x80163E38, renames.map) — HUD */
+/*  time+score draw routine. This file carries its CPS piece/alias */
+/*  entries (clean_cps.map 0x80163F04..0x80164638); all blocks route */
+/*  here via cpu->pc. Named GPR aliases (v0/a0../sp/fp/ra) mirror the */
+/*  generated transliteration 1:1. */
+
 void hud_score_draw_alt(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -1093,6 +1099,10 @@ block_80164638:
     cpu->pc = _jt_80164660; return;  /* CPS: jr $ra */
 }
 
+
+/*  player_name_entry (guest body 0x80164EA4, renames.map) — player name */
+/*  entry UI coroutine. CPS piece/alias entries 0x80164F7C+ all share */
+/*  this body; 152 basic blocks, continuation dispatch via cpu->pc. */
 
 void player_name_entry_alt(void)
 {
@@ -2878,6 +2888,9 @@ block_801658D0:
 }
 
 
+/*  mc_op_result_poll (guest body 0x80168424, renames.map) — memory-card */
+/*  op result poll. CPS piece/alias entries; small 11-block body. */
+
 void mc_op_result_poll_alt(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -3014,6 +3027,10 @@ block_801684B0:
 }
 
 
+/*  mc_file_cmd_stable_poll (guest body 0x801685B4, renames.map) — */
+/*  memory-card file-command stable poll. CPS piece/alias entries; */
+/*  6-block body. */
+
 void mc_file_cmd_stable_poll_alt(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -3108,6 +3125,11 @@ block_80168624:
     cpu->pc = _jt_80168640; return;  /* CPS: jr $ra */
 }
 
+
+/*  battle_flow_state_machine (guest body ~0x8016FCC4, renames.map) — */
+/*  battle flow state machine. Largest body in this file (~2450 lines, */
+/*  piece entries 0x8016FD38..0x801709C8); continuation dispatch via */
+/*  cpu->pc. */
 
 void battle_flow_state_machine_alt(void)
 {
