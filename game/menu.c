@@ -16281,40 +16281,40 @@ uint32_t heap_serialize_tag_08(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
   (void)unused6; (void)unused7;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 10;
   do {
     MW8(a0 + 23, 4);  MW8(a0 + 27, 32);
     MW8(a0 + 43, 4);  MW8(a0 + 47, 32);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 12;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 12;
     v0 = (uint32_t)MBS16(a1 - 6) << 3;
     v0 += a3;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;
     v1 -= 1;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(cur + 0, plo);  MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;
-    t0 += 76;
+    cur += 76;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;
     a1 += 12;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
     a0 += 76;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0a @0x801697f4 (74 insns, 5 args): dst stride
@@ -16329,41 +16329,41 @@ uint32_t heap_serialize_tag_0a(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 18;
   do {
     MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
     MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 14));
     MW32(a0 + 16, MB32(a1 - 10));
-    t1 += 20;
+    src_cur += 20;
     v0 = (uint32_t)MBS16(a1 - 6) << 3;
     v0 += a3;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;
     v1 -= 1;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4);  MW32(t0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(cur + 0, plo);  MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;
-    t0 += 100;
+    cur += 100;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4);  MW32(a0 - 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo);  MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;
     a1 += 20;
     v0 += a2;
-    t4 = MB32(v0);     t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4);  MW32(a0 + 4, t5);
+    plo = MB32(v0);     phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo);  MW32(a0 + 4, phi);
     a0 += 100;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0c @0x80168c20 (92 insns, 5 args): dst stride
@@ -16379,39 +16379,39 @@ uint32_t heap_serialize_tag_0c(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 14;
   do {
     MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
     MW8(a0 + 67, 6);  MW8(a0 + 71, 48);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 16;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 16;
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
-    t0 += 108;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
+    cur += 108;
     a0 += 108;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_10 @0x80168ae0 (80 insns, 5 args): dst stride
@@ -16426,35 +16426,35 @@ uint32_t heap_serialize_tag_10(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 12;
   do {
     MW8(a0 + 23, 5);  MW8(a0 + 27, 40);
     MW8(a0 + 47, 5);  MW8(a0 + 51, 40);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 16;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 16;
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 92; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 92; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 16; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 92;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_14 @0x80168d90 (116 insns, 5 args): dst stride
@@ -16470,44 +16470,44 @@ uint32_t heap_serialize_tag_14(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 18;
   do {
     MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
     MW8(a0 + 83, 8);  MW8(a0 + 87, 56);
-    MW32(a0 + 8, MB32(t1));
-    t1 += 20;
+    MW32(a0 + 8, MB32(src_cur));
+    src_cur += 20;
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 12, t4); MW32(a0 + 16, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 12, plo); MW32(a0 + 16, phi);
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 140; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 140; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 20; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 140;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_12 @0x80169aa4 (89 insns, 5 args): dst stride
@@ -16522,38 +16522,38 @@ uint32_t heap_serialize_tag_12(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 24;
   do {
     MW8(a0 + 35, 8);  MW8(a0 + 39, 56);
     MW8(a0 + 71, 8);  MW8(a0 + 75, 56);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 20));
     MW32(a0 + 16, MB32(a1 - 16));
     MW32(a0 + 20, MB32(a1 - 12));
-    t1 += 28;
+    src_cur += 28;
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 128; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 128; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 128;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_16 @0x80169c08 (125 insns, 5 args): dst stride
@@ -16569,47 +16569,47 @@ uint32_t heap_serialize_tag_16(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 30;
   do {
     MW8(a0 + 59, 8);  MW8(a0 + 63, 56);
     MW8(a0 + 95, 8);  MW8(a0 + 99, 56);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 26));
     MW32(a0 + 16, MB32(a1 - 22));
     MW32(a0 + 20, MB32(a1 - 18));
-    t1 += 32;
+    src_cur += 32;
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 24, t4); MW32(a0 + 28, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 24, plo); MW32(a0 + 28, phi);
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 32, t4); MW32(a0 + 36, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 32, plo); MW32(a0 + 36, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 16, t4); MW32(a0 - 12, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 40, t4); MW32(a0 + 44, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 40, plo); MW32(a0 + 44, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 152; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 48, t4); MW32(a0 + 52, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 152; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 48, plo); MW32(a0 + 52, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 32; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 152;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0e @0x8016991c (98 insns, 5 args): dst stride
@@ -16625,40 +16625,40 @@ uint32_t heap_serialize_tag_0e(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
-  uint32_t t1 = a1;
-  uint32_t v0, t4, t5;
-  if (v1 == 0) return t0;
+  uint32_t src_cur = a1;
+  uint32_t v0, plo, phi;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 22;
   do {
     MW8(a0 + 47, 6);  MW8(a0 + 51, 48);
     MW8(a0 + 75, 6);  MW8(a0 + 79, 48);
-    MW32(a0 + 8,  MB32(t1));
+    MW32(a0 + 8,  MB32(src_cur));
     MW32(a0 + 12, MB32(a1 - 18));
     MW32(a0 + 16, MB32(a1 - 14));
-    t1 += 24;
+    src_cur += 24;
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 20, t4); MW32(a0 + 24, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 20, plo); MW32(a0 + 24, phi);
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(t0 + 0, t4); MW32(t0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 28, t4); MW32(a0 + 32, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 28, plo); MW32(a0 + 32, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v1 -= 1; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 - 8, t4); MW32(a0 - 4, t5);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t0 += 116; v0 += a3;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 36, t4); MW32(a0 + 40, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  cur += 116; v0 += a3;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 36, plo); MW32(a0 + 40, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 24; v0 += a2;
-    t4 = MB32(v0); t5 = MB32(v0 + 4);
-    MW32(a0 + 0, t4); MW32(a0 + 4, t5);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 116;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_40048 @0x80169dfc (57 insns, 5 args): dst
@@ -16674,31 +16674,31 @@ uint32_t heap_serialize_tag_40048(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 8;
   do {
     MW8(a0 + 11, 4);  MW8(a0 + 15, 32);
     MW8(a0 + 31, 4);  MW8(a0 + 35, 32);
-    v0 = MB32(t0); t0 += 12;
+    v0 = MB32(src_cur); src_cur += 12;
     MW32(a0 + 32, v0); MW32(a0 + 12, v0);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    a3 += 64;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    cur += 64;
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 64;
   } while (v1 != 0);
-  return a3;
+  return cur;
 }
 
 /* heap_serialize_tag_4004c @0x80169ee0 (65 insns, 5 args): dst
@@ -16714,33 +16714,33 @@ uint32_t heap_serialize_tag_4004c(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (v1 == 0) return cur;
   a0 += 16; a1 += 16;
   do {
     MW8(a0 + 11, 6);  MW8(a0 + 15, 48);
     MW8(a0 + 39, 6);  MW8(a0 + 43, 48);
-    v0 = MB32(t0); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
+    v0 = MB32(src_cur); MW32(a0 + 40, v0); MW32(a0 + 12, v0);
     v0 = MB32(a1 - 12); MW32(a0 + 48, v0); MW32(a0 + 20, v0);
-    v0 = MB32(a1 - 8);  t0 += 20;
+    v0 = MB32(a1 - 8);  src_cur += 20;
     MW32(a0 + 56, v0); MW32(a0 + 28, v0);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
-    a3 += 80;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    cur += 80;
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 80;
   } while (v1 != 0);
-  return a3;
+  return cur;
 }
 
 /* heap_serialize_tag_40050 @0x80169fe4 (69 insns, 5 args): dst
@@ -16755,33 +16755,33 @@ uint32_t heap_serialize_tag_40050(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 10;
   do {
     MW8(a0 + 11, 5);  MW8(a0 + 15, 40);
     MW8(a0 + 35, 5);  MW8(a0 + 39, 40);
-    v0 = MB32(t0); t0 += 12;
+    v0 = MB32(src_cur); src_cur += 12;
     MW32(a0 + 36, v0); MW32(a0 + 12, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 80; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 80; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 12; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 80;
   } while (v1 != 0);
-  return a3;
+  return cur;
 }
 
 /* heap_serialize_tag_40054 @0x8016a0f8 (81 insns, 5 args): dst
@@ -16797,36 +16797,36 @@ uint32_t heap_serialize_tag_40054(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t a3 = a0;
-  uint32_t t0 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
-  uint32_t v0, t3, t4;
+  uint32_t v0, plo, phi;
   (void)unused4;
-  if (v1 == 0) return a3;
+  if (v1 == 0) return cur;
   a0 += 24; a1 += 22;
   do {
     MW8(a0 + 11, 8);  MW8(a0 + 15, 56);
     MW8(a0 + 47, 8);  MW8(a0 + 51, 56);
-    v0 = MB32(t0);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
+    v0 = MB32(src_cur);      MW32(a0 + 48, v0); MW32(a0 + 12, v0);
     v0 = MB32(a1 - 18); MW32(a0 + 56, v0); MW32(a0 + 20, v0);
     v0 = MB32(a1 - 14); MW32(a0 + 64, v0); MW32(a0 + 28, v0);
-    v0 = MB32(a1 - 10); t0 += 24;
+    v0 = MB32(a1 - 10); src_cur += 24;
     MW32(a0 + 72, v0); MW32(a0 + 36, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a3 + 0, t3); MW32(a3 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 16, t3); MW32(a0 - 12, t4);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; a3 += 104; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 - 8, t3); MW32(a0 - 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 16, plo); MW32(a0 - 12, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 8, plo); MW32(a0 - 4, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
-    t3 = MB32(v0); t4 = MB32(v0 + 4);
-    MW32(a0 + 0, t3); MW32(a0 + 4, t4);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 + 0, plo); MW32(a0 + 4, phi);
     a0 += 104;
   } while (v1 != 0);
-  return a3;
+  return cur;
 }
 
 /* heap_serialize_tag_40049 @0x8016a23c (82 insns, 7 args): dst
@@ -16845,41 +16845,41 @@ uint32_t heap_serialize_tag_40049(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 70; a1 += 18;
   do {
     MW8(a0 - 43, 7);  MW8(a0 - 39, 36);
     MW8(a0 - 11, 7);  MW8(a0 - 7, 36);
-    v0 = MB32(t1); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur); MW32(a0 - 42, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 6, v0);
-    v0 = MB16(a1 - 6);  t1 += 20;
+    v0 = MB16(a1 - 6);  src_cur += 20;
     MW32(a0 - 18, v0); MW32(a0 + 14, v0);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 88; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 88; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 54, t6); MW32(a0 - 50, t7);
-    v0 = MB16(a0 - 24); v2 = MB16(a0 - 32);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 54, plo); MW32(a0 - 50, phi);
+    v0 = MB16(a0 - 24); cv = MB16(a0 - 32);
     v0 += t5; MW16(a0 - 24, v0);
-    v0 = MB16(a0 + 8);  v2 += t4; MW16(a0 - 32, v2);
-    v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 8, v0);  MW16(a0 + 0, v2);
+    v0 = MB16(a0 + 8);  cv += t4; MW16(a0 - 32, cv);
+    cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 8, v0);  MW16(a0 + 0, cv);
     a0 += 88;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_4004d @0x8016a50c (90 insns, 7 args): dst
@@ -16897,43 +16897,43 @@ uint32_t heap_serialize_tag_4004d(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 78; a1 += 26;
   do {
     MW8(a0 - 51, 9);  MW8(a0 - 47, 52);
     MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
-    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 22); MW32(a0 - 38, v0); MW32(a0 + 2, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 10, v0);
-    v0 = MB16(a1 - 6);  t1 += 28;
+    v0 = MB16(a1 - 6);  src_cur += 28;
     MW32(a0 - 18, v0); MW32(a0 + 22, v0);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 104; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 104; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 28; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
-    v0 = MB16(a0 - 28); v2 = MB16(a0 - 40);
-    v0 += t5; v2 += t4;
-    MW16(a0 - 28, v0); MW16(a0 - 40, v2);
-    v0 = MB16(a0 + 12); v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
+    v0 = MB16(a0 - 28); cv = MB16(a0 - 40);
+    v0 += t5; cv += t4;
+    MW16(a0 - 28, v0); MW16(a0 - 40, cv);
+    v0 = MB16(a0 + 12); cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
     a0 += 104;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_40051 @0x8016a384 (98 insns, 7 args): dst
@@ -16951,45 +16951,45 @@ uint32_t heap_serialize_tag_40051(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 86; a1 += 22;
   do {
     MW8(a0 - 51, 9);  MW8(a0 - 47, 44);
     MW8(a0 - 11, 9);  MW8(a0 - 7, 44);
-    v0 = MB32(t1);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 50, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 34, v0); MW32(a0 + 6, v0);
     v0 = MB16(a1 - 10); MW32(a0 - 26, v0); MW32(a0 + 14, v0);
-    v0 = MB16(a1 - 6);  t1 += 24;
+    v0 = MB16(a1 - 6);  src_cur += 24;
     MW32(a0 - 18, v0); MW32(a0 + 22, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 78, t6); MW32(a0 - 74, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 112; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 70, t6); MW32(a0 - 66, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 78, plo); MW32(a0 - 74, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 112; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 70, plo); MW32(a0 - 66, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 62, t6); MW32(a0 - 58, t7);
-    v0 = MB16(a0 - 32); v2 = MB16(a0 - 40);
-    v0 += t5; v2 += t4;
-    MW16(a0 - 32, v0); MW16(a0 - 40, v2);
-    v0 = MB16(a0 + 8);  v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 8, v0);   MW16(a0 + 0, v2);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 62, plo); MW32(a0 - 58, phi);
+    v0 = MB16(a0 - 32); cv = MB16(a0 - 40);
+    v0 += t5; cv += t4;
+    MW16(a0 - 32, v0); MW16(a0 - 40, cv);
+    v0 = MB16(a0 + 8);  cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 8, v0);   MW16(a0 + 0, cv);
     a0 += 112;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_40055 @0x8016a674 (110 insns, 7 args): dst
@@ -17008,48 +17008,48 @@ uint32_t heap_serialize_tag_40055(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
+  uint32_t cur = a0;
 
 
 
-  uint32_t t1 = a1;
-  uint32_t v0, v2, t6, t7;
+  uint32_t src_cur = a1;
+  uint32_t v0, cv, plo, phi;
   (void)unused4;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 98; a1 += 34;
   do {
     MW8(a0 - 63, 12);  MW8(a0 - 59, 60);
     MW8(a0 - 11, 12);  MW8(a0 - 7, 60);
-    v0 = MB32(t1);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
+    v0 = MB32(src_cur);      MW32(a0 - 62, v0); MW32(a0 - 10, v0);
     v0 = MB32(a1 - 30); MW32(a0 - 50, v0); MW32(a0 + 2, v0);
     v0 = MB32(a1 - 26); MW32(a0 - 38, v0); MW32(a0 + 14, v0);
     v0 = MB32(a1 - 22); MW32(a0 - 26, v0); MW32(a0 + 26, v0);
     v0 = MB32(a1 - 18); MW32(a0 - 54, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 14); MW32(a0 - 42, v0); MW32(a0 + 10, v0);
     v0 = MB16(a1 - 10); MW32(a0 - 30, v0); MW32(a0 + 22, v0);
-    v0 = MB16(a1 - 6);  t1 += 36;
+    v0 = MB16(a1 - 6);  src_cur += 36;
     MW32(a0 - 18, v0); MW32(a0 + 34, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(t0 + 0, t6); MW32(t0 + 4, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(cur + 0, plo); MW32(cur + 4, phi);
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v1 -= 1; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 90, t6); MW32(a0 - 86, t7);
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t0 += 136; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 82, t6); MW32(a0 - 78, t7);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 90, plo); MW32(a0 - 86, phi);
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; cur += 136; v0 += a2;
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 82, plo); MW32(a0 - 78, phi);
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 36; v0 += a2;
-    t6 = MB32(v0); t7 = MB32(v0 + 4);
-    MW32(a0 - 74, t6); MW32(a0 - 70, t7);
-    v0 = MB16(a0 - 40); v2 = MB16(a0 - 52);
+    plo = MB32(v0); phi = MB32(v0 + 4);
+    MW32(a0 - 74, plo); MW32(a0 - 70, phi);
+    v0 = MB16(a0 - 40); cv = MB16(a0 - 52);
     v0 += t5; MW16(a0 - 40, v0);
-    v0 = MB16(a0 + 12); v2 += t4; MW16(a0 - 52, v2);
-    v2 = MB16(a0 + 0);
-    v0 += t5; v2 += t4;
-    MW16(a0 + 12, v0); MW16(a0 + 0, v2);
+    v0 = MB16(a0 + 12); cv += t4; MW16(a0 - 52, cv);
+    cv = MB16(a0 + 0);
+    v0 += t5; cv += t4;
+    MW16(a0 + 12, v0); MW16(a0 + 0, cv);
     a0 += 136;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000008 @0x8016a8ec (48 insns, 5 args): dst
@@ -17065,28 +17065,28 @@ uint32_t heap_serialize_tag_01000008(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 8; a1 += 10;
   do {
     MW8(a0 + 15, 4);  MW8(a0 + 19, 32);
     MW8(a0 + 35, 4);  MW8(a0 + 39, 32);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 12; v0 += a2;
+    MW32(cur + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 12; v0 += a2;
     v1 -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 60; a1 += 12; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 60; a1 += 12; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 60;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0100000c @0x8016a9ac (62 insns, 5 args): dst
@@ -17102,32 +17102,32 @@ uint32_t heap_serialize_tag_0100000c(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 63; a1 += 14;
   do {
-    MW32(a0 - 51, MB32(t1));
+    MW32(a0 - 51, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 - 47, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
     MW32(a0 - 43, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 59, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 16; v0 += a3;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 16; v0 += a3;
     v1 -= 1;
     MW32(a0 - 39, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 84; a1 += 16; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 84; a1 += 16; v0 += a2;
     MW32(a0 - 55, MB32(v0));
     MW8(a0 - 32, 6);  MW8(a0 - 28, 48);
     MW8(a0 - 4, 6);   MW8(a0 + 0, 48);
     a0 += 84;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0100000a @0x8016ad04 (54 insns, 5 args): dst
@@ -17143,30 +17143,30 @@ uint32_t heap_serialize_tag_0100000a(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 8; a1 += 18;
   do {
     MW8(a0 + 23, 6);  MW8(a0 + 27, 48);
     MW8(a0 + 51, 6);  MW8(a0 + 55, 48);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 14));
     MW32(a0 + 12, MB32(a1 - 10));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 20; v0 += a2;
+    MW32(cur + 0, MB32(v0));
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 20; v0 += a2;
     v1 -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 84; a1 += 20; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 84; a1 += 20; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 84;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_0100000e @0x8016addc (68 insns, 5 args): dst
@@ -17182,34 +17182,34 @@ uint32_t heap_serialize_tag_0100000e(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 8; a1 += 22;
   do {
     MW8(a0 + 31, 6);  MW8(a0 + 35, 48);
     MW8(a0 + 59, 6);  MW8(a0 + 63, 48);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 18));
     MW32(a0 + 12, MB32(a1 - 14));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 24; v0 += a3;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 24; v0 += a3;
     v1 -= 1;
     MW32(a0 + 24, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 92; a1 += 24; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 92; a1 += 24; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 92;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000010 @0x8016aeec (55 insns, 5 args): dst
@@ -17225,30 +17225,30 @@ uint32_t heap_serialize_tag_01000010(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 12; a1 += 12;
   do {
     MW8(a0 + 15, 5);  MW8(a0 + 19, 40);
     MW8(a0 + 39, 5);  MW8(a0 + 43, 40);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 16; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 16; v0 += a2;
     v1 -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 72; a1 += 16; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 72; a1 += 16; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 72;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000014 @0x8016afc8 (76 insns, 5 args): dst
@@ -17264,20 +17264,20 @@ uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 12; a1 += 18;
   do {
     MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
     MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4, MB32(t1));
+    MW32(a0 + 4, MB32(src_cur));
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
     MW32(a0 + 8, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 12, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
@@ -17286,14 +17286,14 @@ uint32_t heap_serialize_tag_01000014(uint32_t a0,uint32_t a1,uint32_t a2,
     MW32(a0 + 16, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 20; v0 += a3;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 20; v0 += a3;
     v1 -= 1;
     MW32(a0 + 20, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 108; a1 += 20; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 108; a1 += 20; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 108;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000012 @0x8016b3c4 (64 insns, 5 args): dst
@@ -17309,33 +17309,33 @@ uint32_t heap_serialize_tag_01000012(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 12; a1 += 24;
   do {
     MW8(a0 + 27, 8);  MW8(a0 + 31, 56);
     MW8(a0 + 63, 8);  MW8(a0 + 67, 56);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 20));
     MW32(a0 + 12, MB32(a1 - 16));
     MW32(a0 + 16, MB32(a1 - 12));
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     MW32(a0 - 8, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3; t1 += 28; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3; src_cur += 28; v0 += a2;
     v1 -= 1;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3; t0 += 108; a1 += 28; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3; cur += 108; a1 += 28; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 108;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000016 @0x8016b4c4 (85 insns, 5 args): dst
@@ -17351,23 +17351,23 @@ uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t0 = a0;
-  uint32_t t1 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
   uint32_t v0;
-  if (v1 == 0) return t0;
+  if (v1 == 0) return cur;
   a0 += 12; a1 += 30;
   do {
     MW8(a0 + 39, 8);  MW8(a0 + 43, 56);
     MW8(a0 + 75, 8);  MW8(a0 + 79, 56);
-    MW32(a0 + 4,  MB32(t1));
+    MW32(a0 + 4,  MB32(src_cur));
     MW32(a0 + 8,  MB32(a1 - 26));
     MW32(a0 + 12, MB32(a1 - 22));
     MW32(a0 + 16, MB32(a1 - 18));
     v0 = (uint32_t)MBS16(a1 - 14) << 3; v0 += a3;
     MW32(a0 + 20, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
-    MW32(t0 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
     MW32(a0 + 24, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
@@ -17376,14 +17376,14 @@ uint32_t heap_serialize_tag_01000016(uint32_t a0,uint32_t a1,uint32_t a2,
     MW32(a0 + 28, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     MW32(a0 - 4, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 - 2) << 3;  t1 += 32; v0 += a3;
+    v0 = (uint32_t)MBS16(a1 - 2) << 3;  src_cur += 32; v0 += a3;
     v1 -= 1;
     MW32(a0 + 32, MB32(v0));
-    v0 = (uint32_t)MBS16(a1 + 0) << 3;  t0 += 120; a1 += 32; v0 += a2;
+    v0 = (uint32_t)MBS16(a1 + 0) << 3;  cur += 120; a1 += 32; v0 += a2;
     MW32(a0 + 0, MB32(v0));
     a0 += 120;
   } while (v1 != 0);
-  return t0;
+  return cur;
 }
 
 /* heap_serialize_tag_01000009 @0x8016aaa4 (68 insns, 7 args): dst
@@ -17401,42 +17401,42 @@ uint32_t heap_serialize_tag_01000009(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t2 = a0;
-  uint32_t t3 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = a0 + 62;
+  uint32_t cur2 = a0 + 62;
   uint32_t v0;
-  if (v1 == 0) return t2;
+  if (v1 == 0) return cur;
   a1 += 18;
   do {
-    MW8(t0 - 43, 7);  MW8(t0 - 39, 36);
-    MW8(t0 - 11, 7);  MW8(t0 - 7, 36);
-    v0 = MB32(t3); MW32(t0 - 34, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 6, v0);
-    v0 = MB32(a1 - 10); t3 += 20;
-    MW32(t0 - 18, v0); MW32(t0 + 14, v0);
+    MW8(cur2 - 43, 7);  MW8(cur2 - 39, 36);
+    MW8(cur2 - 11, 7);  MW8(cur2 - 7, 36);
+    v0 = MB32(src_cur); MW32(cur2 - 34, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(a1 - 10); src_cur += 20;
+    MW32(cur2 - 18, v0); MW32(cur2 + 14, v0);
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a3;
-    MW32(t0 - 50, MB32(v0));
+    MW32(cur2 - 50, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
-    MW32(t2 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
     v1 -= 1;
-    t2 += 80;
-    MW32(t0 - 58, MB32(v0));
+    cur += 80;
+    MW32(cur2 - 58, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 20; v0 += a2;
     a0 = MB32(v0);
-    MW32(t0 - 54, a0);
-    { uint32_t c0 = MB16(t0 - 32), c1 = MB16(t0 - 24);
-      c0 += t6; MW16(t0 - 32, c0);
-      c1 += t7; MW16(t0 - 24, c1);
-      c0 = MB16(t0 + 0);  c1 = MB16(t0 + 8);
+    MW32(cur2 - 54, a0);
+    { uint32_t c0 = MB16(cur2 - 32), c1 = MB16(cur2 - 24);
+      c0 += t6; MW16(cur2 - 32, c0);
+      c1 += t7; MW16(cur2 - 24, c1);
+      c0 = MB16(cur2 + 0);  c1 = MB16(cur2 + 8);
       c0 += t6; c1 += t7;
-      MW16(t0 + 0, c0);   MW16(t0 + 8, c1); }
-    t0 += 80;
+      MW16(cur2 + 0, c0);   MW16(cur2 + 8, c1); }
+    cur2 += 80;
   } while (v1 != 0);
-  return t2;
+  return cur;
 }
 
 /* heap_serialize_tag_0100000d @0x8016abb4 (84 insns, 7 args): dst
@@ -17455,19 +17455,19 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t1 = a0;
-  uint32_t t2 = a1;
+  uint32_t cur = a0;
+  uint32_t src_cur = a1;
 
 
 
   uint32_t v0, v1;
-  if (t0 == 0) return t1;
+  if (t0 == 0) return cur;
   a0 += 78; a1 += 8;
   do {
     v0 = (uint32_t)MBS16(a1 + 4) << 3;  v0 += a3;
     MW32(a0 - 66, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 6) << 3;  v0 += a2;
-    MW32(t1 + 0, MB32(v0));
+    MW32(cur + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 8) << 3;  v0 += a3;
     MW32(a0 - 62, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 10) << 3; v0 += a2;
@@ -17477,7 +17477,7 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
     v0 = (uint32_t)MBS16(a1 + 14) << 3; v0 += a2;
     t0 -= 1;
     MW32(a0 - 70, MB32(v0));
-    v0 = MB32(t2); t1 += 104; t2 += 24;
+    v0 = MB32(src_cur); cur += 104; src_cur += 24;
     MW32(a0 - 42, v0); MW32(a0 - 2, v0);
     v0 = MB32(a1 - 4); v1 = MB16(a0 - 40);
     MW32(a0 - 30, v0); MW32(a0 + 10, v0);
@@ -17492,7 +17492,7 @@ uint32_t heap_serialize_tag_0100000d(uint32_t a0,uint32_t a1,uint32_t a2,
     MW8(a0 - 11, 9);  MW8(a0 - 7, 52);
     a0 += 104;
   } while (t0 != 0);
-  return t1;
+  return cur;
 }
 
 /* heap_serialize_tag_01000011 @0x8016b0f8 (79 insns, 7 args): dst
@@ -17511,42 +17511,42 @@ uint32_t heap_serialize_tag_01000011(uint32_t t2,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t3 = a1;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = t2 + 74;
+  uint32_t cur2 = t2 + 74;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 22;
   do {
-    MW8(t0 - 51, 9);  MW8(t0 - 47, 44);
-    MW8(t0 - 11, 9);  MW8(t0 - 7, 44);
-    v0 = MB32(t3); MW32(t0 - 42, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 18); MW32(t0 - 34, v0); MW32(t0 + 6, v0);
-    v0 = MB32(a1 - 14); MW32(t0 - 26, v0); MW32(t0 + 14, v0);
-    v0 = MB32(a1 - 10); t3 += 24;
-    MW32(t0 - 18, v0); MW32(t0 + 22, v0);
+    MW8(cur2 - 51, 9);  MW8(cur2 - 47, 44);
+    MW8(cur2 - 11, 9);  MW8(cur2 - 7, 44);
+    v0 = MB32(src_cur); MW32(cur2 - 42, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 18); MW32(cur2 - 34, v0); MW32(cur2 + 6, v0);
+    v0 = MB32(a1 - 14); MW32(cur2 - 26, v0); MW32(cur2 + 14, v0);
+    v0 = MB32(a1 - 10); src_cur += 24;
+    MW32(cur2 - 18, v0); MW32(cur2 + 22, v0);
     v0 = (uint32_t)MBS16(a1 - 8) << 3; v0 += a3;
-    MW32(t0 - 58, MB32(v0));
+    MW32(cur2 - 58, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3; v0 += a2;
     MW32(t2 + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3; v0 += a2;
     t1 -= 1;
-    MW32(t0 - 70, MB32(v0));
+    MW32(cur2 - 70, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3; v0 += a2;
     t2 += 100;
-    MW32(t0 - 66, MB32(v0));
+    MW32(cur2 - 66, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3; a1 += 24; v0 += a2;
     { uint32_t r = MB32(v0);
-      { uint32_t c0 = MB16(t0 - 40), c1 = MB16(t0 - 32);
-        c1 += t7; MW16(t0 - 32, c1);
-        MW32(t0 - 62, r);
-        c0 += t6; MW16(t0 - 40, c0);
-        c0 = MB16(t0 + 8);  c1 = MB16(t0 + 0);
+      { uint32_t c0 = MB16(cur2 - 40), c1 = MB16(cur2 - 32);
+        c1 += t7; MW16(cur2 - 32, c1);
+        MW32(cur2 - 62, r);
+        c0 += t6; MW16(cur2 - 40, c0);
+        c0 = MB16(cur2 + 8);  c1 = MB16(cur2 + 0);
         c0 += t7; c1 += t6;
-        MW16(t0 + 8, c0);   MW16(t0 + 0, c1); } }
-    t0 += 100;
+        MW16(cur2 + 8, c0);   MW16(cur2 + 0, c1); } }
+    cur2 += 100;
   } while (t1 != 0);
   return t2;
 }
@@ -17567,48 +17567,48 @@ uint32_t heap_serialize_tag_01000015(uint32_t t2,uint32_t a1,uint32_t a2,
 
 
 
-  uint32_t t3 = a1;
+  uint32_t src_cur = a1;
 
 
 
-  uint32_t t0 = t2 + 98;
+  uint32_t cur2 = t2 + 98;
   uint32_t v0;
   if (t1 == 0) return t2;
   a1 += 26;
   do {
-    MW8(t0 - 63, 12);  MW8(t0 - 59, 60);
-    MW8(t0 - 11, 12);  MW8(t0 - 7, 60);
-    v0 = MB32(t3);      MW32(t0 - 54, v0); MW32(t0 - 2, v0);
-    v0 = MB32(a1 - 22); MW32(t0 - 42, v0); MW32(t0 + 10, v0);
-    v0 = MB32(a1 - 18); MW32(t0 - 30, v0); MW32(t0 + 22, v0);
-    v0 = MB32(a1 - 14); t3 += 28;
-    MW32(t0 - 18, v0); MW32(t0 + 34, v0);
+    MW8(cur2 - 63, 12);  MW8(cur2 - 59, 60);
+    MW8(cur2 - 11, 12);  MW8(cur2 - 7, 60);
+    v0 = MB32(src_cur);      MW32(cur2 - 54, v0); MW32(cur2 - 2, v0);
+    v0 = MB32(a1 - 22); MW32(cur2 - 42, v0); MW32(cur2 + 10, v0);
+    v0 = MB32(a1 - 18); MW32(cur2 - 30, v0); MW32(cur2 + 22, v0);
+    v0 = MB32(a1 - 14); src_cur += 28;
+    MW32(cur2 - 18, v0); MW32(cur2 + 34, v0);
     v0 = (uint32_t)MBS16(a1 - 16) << 3; v0 += a3;
-    MW32(t0 - 82, MB32(v0));
+    MW32(cur2 - 82, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 12) << 3; v0 += a2;
     MW32(t2 + 0, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 10) << 3; v0 += a3;
-    MW32(t0 - 78, MB32(v0));
+    MW32(cur2 - 78, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 8) << 3;  v0 += a2;
-    MW32(t0 - 94, MB32(v0));
+    MW32(cur2 - 94, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 6) << 3;  v0 += a3;
-    MW32(t0 - 74, MB32(v0));
+    MW32(cur2 - 74, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 4) << 3;  v0 += a2;
     t1 -= 1;
-    MW32(t0 - 90, MB32(v0));
+    MW32(cur2 - 90, MB32(v0));
     v0 = (uint32_t)MBS16(a1 - 2) << 3;  v0 += a3;
     t2 += 136;
-    MW32(t0 - 70, MB32(v0));
+    MW32(cur2 - 70, MB32(v0));
     v0 = (uint32_t)MBS16(a1 + 0) << 3;  a1 += 28; v0 += a2;
     { uint32_t r = MB32(v0);
-      { uint32_t cy = MB16(t0 - 52), cx = MB16(t0 - 40);
-        cy += t6; MW16(t0 - 52, cy);
-        MW32(t0 - 86, r);
-        cx += t7; MW16(t0 - 40, cx);
-        cy = MB16(t0 + 0); cx = MB16(t0 + 12);
+      { uint32_t cy = MB16(cur2 - 52), cx = MB16(cur2 - 40);
+        cy += t6; MW16(cur2 - 52, cy);
+        MW32(cur2 - 86, r);
+        cx += t7; MW16(cur2 - 40, cx);
+        cy = MB16(cur2 + 0); cx = MB16(cur2 + 12);
         cx += t7; cy += t6;
-        MW16(t0 + 12, cx); MW16(t0 + 0, cy); } }
-    t0 += 136;
+        MW16(cur2 + 12, cx); MW16(cur2 + 0, cy); } }
+    cur2 += 136;
   } while (t1 != 0);
   return t2;
 }
