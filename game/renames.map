@@ -2156,3 +2156,12 @@
 8018e708 printf_cps_8018e708
 8018e710 printf_cps_8018e710
 8018e76c printf_cps_8018e76c
+8018e86c printf_core_piece_e86c
+8018e8cc printf_core_piece_e8cc
+8018e8d0 printf_core_piece_e8d0
+8018e904 printf_core_piece_e904
+8018e910 printf_core_piece_e910
+8018ebc0 printf_core_piece_ebc0
+8018ebd4 printf_core_piece_ebd4
+8018ef6c sprintf_core_engine
+8018f220 sprintf_core_engine_piece_f220
