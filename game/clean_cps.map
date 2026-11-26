@@ -4595,3 +4595,17 @@
 8012a93c cps_8012a92c
 801298f8 cps_801298f8
 801268b8 cps_801268b8
+
+# scriptop_wait (guest 0x80183664) alias piece-entries — six mid-function
+# CPS re-entry addrs inside the shared wait-op body (game/w2_e07.c).
+80183964 scriptop_wait_cps_80183964
+8018397c scriptop_wait_cps_8018397c
+80183988 scriptop_wait_cps_80183988
+80183a48 scriptop_wait_cps_80183a48
+80183a74 scriptop_wait_cps_80183a74
+80183aa4 scriptop_wait_cps_80183aa4
+
+# scriptop_chk (guest 0x80183C30) continuation PCs — two mid-function
+# CPS re-entry addrs inside the shared chk-op body (game/w2_e07.c).
+80183ce4 scriptop_chk_cps_80183ce4
+80183cf0 scriptop_chk_cps_80183cf0
