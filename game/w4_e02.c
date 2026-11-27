@@ -36,36 +36,9 @@
  * so they get no clean_cps.map entries here.
  */
 #include <stdint.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
-
-extern void *guest_at(uint32_t addr);
-extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint8_t  br2_ld8(uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern void     br2_st8(uint32_t a, uint8_t v);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
-extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 extern void     psx_muldiv_stall(CPUState *cpu);
 extern void     psx_gte_stall(CPUState *cpu);
@@ -74,9 +47,6 @@ extern void     gte_execute(CPUState *cpu, uint32_t cmd);
 extern uint32_t gte_read_data(CPUState *cpu, uint8_t reg);
 extern void     gte_write_data(CPUState *cpu, uint8_t reg, uint32_t val);
 extern void     gte_precision_store_word(uint32_t addr, uint8_t reg);
-
-#define DB16(a) (*(uint16_t *)guest_at(a))
-#define DB32(a) (*(uint32_t *)guest_at(a))
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability),
  * same convention as game/cps_clean.c. */
@@ -112,28 +82,6 @@ extern void     gte_precision_store_word(uint32_t addr, uint8_t reg);
 #define sp   cpu->gpr[29]
 #define fp   cpu->gpr[30]
 #define ra   cpu->gpr[31]
-
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-}
-
-static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
-{
-  uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
-}
-
 
 /* ======== 0x80188200 ======== */
 void prim_poly_emit_54a(void)
@@ -319,7 +267,6 @@ block_80188300:
     psx_check_interrupts_at(cpu, _jt_80188300);
     cpu->pc = _jt_80188300; return;  /* CPS: jr $ra */
 }
-
 
 /* ======== 0x80188308 ======== */
 void prim_poly_emit_5ca(void)
@@ -515,7 +462,6 @@ block_8018842C:
     cpu->pc = _jt_8018842C; return;  /* CPS: jr $ra */
 }
 
-
 /* ======== 0x80188434 ======== */
 void prim_point_emit_48a(void)
 {
@@ -685,7 +631,6 @@ block_80194470:
     cpu->pc = 0x80194478u; return;  /* fallthrough to split piece */
     cpu->pc = 0x80194478u; return;/* fallthrough to next function */
 }
-
 
 /* ======== 0x80194614 ======== */
 void fixed_point_ret_neg1(void)
