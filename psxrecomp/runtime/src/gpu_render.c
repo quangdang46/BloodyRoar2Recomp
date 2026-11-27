@@ -147,6 +147,7 @@ static const GpuRenderBackend NULL_BACKEND = {
     .wide_dump_full                = sw_wide_dump_full,
 };
 
+/* Cached PSX_NULL_RASTER=1 env check (redirects any backend to null). */
 static int null_raster_env(void) {
     static int cached = -1;
     if (cached < 0) {
@@ -198,6 +199,7 @@ void gr_set_backend(GrBackend backend) {
     g_effective = GR_BACKEND_SOFTWARE;
 }
 
+/* Currently selected backend enum (software/opengl/vulkan/null). */
 GrBackend gr_backend(void) { return g_effective; }
 
 /* ---- Dispatch wrappers (one line each; forward to the active backend) ---- */
