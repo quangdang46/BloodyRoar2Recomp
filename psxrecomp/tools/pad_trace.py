@@ -92,6 +92,7 @@ def fold_skew(samples, run):
 
 
 def describe_run(samples, name, run):
+    """Describe one pad-state run (deflection/fold detection).."""
     i0, i1 = run
     a, b = samples[i0], samples[i1]
     folded = any(stick_deflected(samples[i]["sticks"]) for i in range(i0, i1 + 1))
@@ -168,19 +169,23 @@ class Link:
     """
 
     def __init__(self, host, port):
+        """Link ctor: host/port for the debug server.."""
         self.host, self.port = host, port
         self.sock = None
         self.persistent = True
         self.reconnects = 0
 
     def _connect(self):
+        """(Re)connect the socket via debug_client.."""
         import debug_client
         self.sock = debug_client.connect(self.host, self.port)
 
     def cmd(self, name):
+        """Send a named debug command.."""
         return self.cmd_with({"cmd": name})
 
     def cmd_with(self, obj):
+        """Send a raw command dict with reconnect retry.."""
         import debug_client
         for attempt in (0, 1):
             try:
@@ -201,6 +206,7 @@ class Link:
         return None
 
     def close(self):
+        """Close the socket.."""
         if self.sock is not None:
             try:
                 self.sock.close()
@@ -236,6 +242,7 @@ def capture(host, port, seconds, min_interval=0.0):
 
 
 def main():
+    """Pad trace CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")

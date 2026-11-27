@@ -72,6 +72,7 @@ BIOS_SYNTHETIC_SEEDS = [
 
 
 def fetch(rom, addr):
+    """Read one instruction word at guest addr (None if OOB).."""
     off = addr - IMAGE_BASE
     if off < 0 or off + 4 > ROM_SIZE:
         return None
@@ -212,6 +213,7 @@ def instr_writes_to_gpr(raw):
 # simplified inline copy. Kept independent so this scan stays self-
 # contained.
 def branch_target(addr, raw):
+    """Compute the branch target addr for a control-flow insn.."""
     op = (raw >> 26) & 0x3F
     if op in (0x04, 0x05, 0x06, 0x07):
         simm = raw & 0xFFFF
@@ -248,10 +250,12 @@ def branch_target(addr, raw):
 
 
 def walk(rom, entry, hard_cap):
+    """Walk a function body collecting branch-delay hazards.."""
     visited = {}
     work = [entry]
 
     def visit_delay_slot(addr):
+        """Visit one delay-slot insn during the walk.."""
         if addr in visited:
             return
         if addr < entry or addr >= hard_cap or addr > IMAGE_END:
@@ -301,6 +305,7 @@ def walk(rom, entry, hard_cap):
 
 
 def main():
+    """Branch-delay hazard scan CLI entry point.."""
     global ROOT, BIOS_PATH, STARTS_PATH, OUT_PATH, IMAGE_BASE, IMAGE_END, ROM_SIZE
     cfg = audit_config.from_argv(sys.argv)
     ROOT = str(cfg.project_root)
@@ -578,6 +583,7 @@ def verify_translator_uses_snapshots():
 
 
 def _bail(msg):
+    """Print error and return exit code 7.."""
     print(f"ERROR: {msg}", file=sys.stderr)
     return 7
 

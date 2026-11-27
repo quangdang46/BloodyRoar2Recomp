@@ -82,6 +82,7 @@ class CONTEXT64(ctypes.Structure):
 
 
 def thread_ids(pid):
+    """List thread IDs for a pid via Toolhelp snapshot.."""
     snap = k32.CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0)
     te = THREADENTRY32()
     te.dwSize = ctypes.sizeof(THREADENTRY32)
@@ -97,6 +98,7 @@ def thread_ids(pid):
 
 
 def thread_name(h):
+    """Query a thread's description name (Win10+).."""
     GetThreadDescription = getattr(k32, "GetThreadDescription", None)
     if not GetThreadDescription:
         return ""
@@ -109,6 +111,7 @@ def thread_name(h):
 
 
 def main_module_range(hproc):
+    """Get the main module base+size for a process handle.."""
     mods = (ctypes.c_void_p * 1024)()
     needed = wt.DWORD()
     if not psapi.EnumProcessModules(hproc, mods, ctypes.sizeof(mods),
@@ -133,6 +136,7 @@ def main_module_range(hproc):
 
 
 def read_mem(hproc, addr, size):
+    """Read `size` bytes from a process address via ReadProcessMemory.."""
     buf = ctypes.create_string_buffer(size)
     got = ctypes.c_size_t()
     if not k32.ReadProcessMemory(hproc, ctypes.c_void_p(addr), buf, size,
@@ -161,6 +165,7 @@ def addr2line(exe, image_base, addrs, link_base=0x140000000):
 
 
 def main():
+    """Host thread probe CLI entry point.."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--pid", type=int, required=True)
     ap.add_argument("--exe", default="", help="exe path for addr2line")

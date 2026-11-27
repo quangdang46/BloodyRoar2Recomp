@@ -83,6 +83,7 @@ REG_NAMES = [
 # ---------------------------------------------------------------------------
 
 def connect(host=DEFAULT_HOST, port=NATIVE_PORT, timeout=10.0):
+    """Open a TCP connection to a debug server.."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(timeout)
     s.connect((host, port))
@@ -90,6 +91,7 @@ def connect(host=DEFAULT_HOST, port=NATIVE_PORT, timeout=10.0):
 
 
 def send_cmd(sock, cmd_dict):
+    """Send one JSON command line and read the reply.."""
     line = json.dumps(cmd_dict) + "\n"
     sock.sendall(line.encode())
     # One complete JSON object = one response. Track brace balance
@@ -157,6 +159,7 @@ def query(host, port, cmd_dict):
 # ---------------------------------------------------------------------------
 
 def pretty_regs(resp):
+    """Format a get_registers reply readably.."""
     if not resp.get("ok"):
         return json.dumps(resp, indent=2)
     lines = [f"  PC: {resp.get('pc','?')}  HI: {resp.get('hi','?')}  LO: {resp.get('lo','?')}"]
@@ -183,6 +186,7 @@ def pretty_regs(resp):
 
 
 def pretty_json(resp):
+    """Pretty-print a JSON reply.."""
     return json.dumps(resp, indent=2)
 
 
@@ -672,6 +676,7 @@ def run_command(sock, args, host=DEFAULT_HOST):
 # ---------------------------------------------------------------------------
 
 def repl(host, port):
+    """Interactive REPL against a debug server.."""
     try:
         sock = connect(host, port)
     except ConnectionRefusedError:
@@ -739,6 +744,7 @@ def repl(host, port):
 # ---------------------------------------------------------------------------
 
 def main():
+    """Unified debug client CLI entry point.."""
     parser = argparse.ArgumentParser(
         description="Unified TCP debug client for PSX recomp + DuckStation",
         add_help=False,
