@@ -760,3 +760,16 @@ clean_table: 9028 wrappers (+29), 5 legit skips unchanged.
 Remaining filtered pool ~117 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :5039 frames 8454 -> 12064+
 attract CD streaming, no wedge.
+
+## Batch 36 (orch/w5/e05) — 14 leaves + 20 _cont rows
+
+14 leaves -> cpst_ (801afa34, 801afa84, 801afad4, 8019aed4,
+801a7544, 801a1bec, 801ae9c8, 80195a98, 801ae96c, 80191a78,
+8019e430, 801a352c, 801a1bc4, 801a1654). 20 _cont cases -> resume
+rows, no fnmap conflicts. Skips dropped 5 -> 4: one new row covered
+a former self-delegate addr.
+
+clean_table: 9062 wrappers (+34), 4 legit skips.
+Remaining filtered pool ~103 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :5043 frames 7826 -> 11278+
+attract CD streaming, no wedge.
