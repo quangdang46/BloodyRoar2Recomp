@@ -518,8 +518,7 @@ void memcard_tick(void)
       cd_cmd_issue_async(2,(int)mct_buf);
       br2_guest_frame_free();
       DAT_801bef6d++;
-    }
-    else if (cd_rc == 5) {
+    } else if (cd_rc == 5) {
       DAT_801bef6d = 0x20;
     }
     break;
@@ -529,8 +528,7 @@ void memcard_tick(void)
       brightness_packet_send(0xffffffffu);
       cd_cmd_issue_async(3,0);
       DAT_801bef6d++;
-    }
-    else if (cd_rc == 5) {
+    } else if (cd_rc == 5) {
       DAT_801bef6d = 0x20;
     }
     break;
@@ -538,8 +536,7 @@ void memcard_tick(void)
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d++;
-    }
-    else if (cd_rc == 5) {
+    } else if (cd_rc == 5) {
       DAT_801bef6d = 0x20;
     }
     break;
@@ -571,8 +568,7 @@ bb_80157c80:
       DAT_801bef6d = 0;
       DAT_801bef6f = -1;
       DAT_801bef80 = DAT_801bef84;
-    }
-    else {
+    } else {
       DAT_801bef6d = 0x10;
       DAT_801bef78++;
       DAT_801bef80 = DAT_801bef84;
@@ -582,8 +578,7 @@ bb_80157c80:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       DAT_801bef6d--;
-    }
-    else if (cd_rc == 5) {
+    } else if (cd_rc == 5) {
       DAT_801bef6d = 0x20;
     }
     break;
@@ -592,8 +587,7 @@ bb_80157c80:
     DAT_801bef74++;
     if ((DAT_801bef64 & 0x10) == 0) {
       DAT_801bef6d = 0x23;
-    }
-    else {
+    } else {
       DAT_801bef6d++;
     }
     break;
@@ -606,12 +600,10 @@ bb_80157c80:
     if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d++;
-      }
-      else {
+      } else {
         DAT_801bef6d--;
       }
-    }
-    else if (cd_rc == 5) {
+    } else if (cd_rc == 5) {
       DAT_801bef6d--;
     }
     break;
@@ -803,8 +795,7 @@ int memcard_file_flow(int a0)
       }
       if (sm_state == 0xf0) {
         deferred_cmd_post(0x203,0,0);
-      }
-      else if (sm_state != 0xf1) goto bb_80160550;
+      } else if (sm_state != 0xf1) goto bb_80160550;
       sm_state = 0xff;
       goto bb_80160558;
     }
@@ -839,8 +830,7 @@ bb_8015f8c0:
 bb_8015fbfc:
           local_bd = 0x12;
         }
-      }
-      else if (local_b8 == 3) {
+      } else if (local_b8 == 3) {
         slot_no = (int)local_a8;
         dlg_type = 4;
         goto bb_8015fbfc;
@@ -905,8 +895,7 @@ case_0_8015fbc4:
             ow_flag = 1;
           }
         }
-      }
-      else {
+      } else {
         deferred_cmd_post(0x400,0xd,0);
 bb_8015fc08:
         local_bd = 0x20;
@@ -952,8 +941,7 @@ dflt_8015fc3c:
     case 0x14:
       if (!(slot_no)) {
         op_sel = 0;
-      }
-      else if (slot_no == 1) {
+      } else if (slot_no == 1) {
         op_sel = 0x10;
       }
       switch (dlg_type) {
@@ -1028,12 +1016,10 @@ dflt_8015ffe4:
       if (op_rc == 4) {
         if (!(dlg_type)) {
           fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
-        }
-        else {
+        } else {
           fmt_str = s_UNFORMATTED_MEMORY_CARD___80121a08;
         }
-      }
-      else if (op_rc < 5) {
+      } else if (op_rc < 5) {
         if (op_rc != 1) {
           if (op_rc < 2) {
             if (op_rc) goto bb_801603ec;
@@ -1058,8 +1044,7 @@ dflt_8015ffe4:
                   if (local_b8 < 3) {
                     if (local_b8 == 1) goto bb_8016026c;
                     local_bd = 0x11;
-                  }
-                  else {
+                  } else {
                     if (local_b8 == 3) {
                       dlg_type = 1;
                       slot_no = (int)local_a8;
@@ -1071,8 +1056,7 @@ dflt_8015ffe4:
                 }
                 slot_no = (int)local_aa;
                 dlg_type = 0;
-              }
-              else {
+              } else {
 bb_8016026c:
                 dlg_type = 1;
                 slot_no = 0;
@@ -1084,17 +1068,14 @@ bb_8016028c:
               dlg_type = 1;
               goto bb_80160464;
             }
-          }
-          else if (op_rc == 2) {
+          } else if (op_rc == 2) {
             announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DATA_ERROR____80121a24,0x10,0x1000,2);
-          }
-          else {
+          } else {
             if (op_rc != 3) goto bb_801603ec;
             ow_flag = 1;
             if (dlg_type == 4) {
               dlg_type = 1;
-            }
-            else {
+            } else {
               dlg_type = 5;
             }
             local_bd = 0x11;
@@ -1105,22 +1086,19 @@ bb_8016028c:
                      0x1000,2);
         sprintf_core(msg_buf,s_MEMORY_CARD__s___80121980,SLOTSTR(slot_no));
         fmt_str = msg_arg;
-      }
-      else if (op_rc == 7) {
+      } else if (op_rc == 7) {
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_THERE_IS_INSUFFICIENT_MEMORY_CAR_80121994,0x10,
                      0x1000,2);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_BLOCKS_AND_1_BLOCK_IS_REQUIRED_801219b8,0x10,
                      0x1000,2);
         fmt_str = s_TO_SAVE__801219d8;
-      }
-      else {
+      } else {
         if (op_rc < 8) {
           if (op_rc == 5) {
             fmt_str = s_NO_BLOODY_ROAR_2_DATA_DETECTED___801219e4;
             goto bb_801603fc;
           }
-        }
-        else if (op_rc == 0xf) {
+        } else if (op_rc == 0xf) {
           dlg_type = 3;
 bb_80160488:
           ow_flag = 1;
@@ -1242,8 +1220,7 @@ void memcard_slot_poll(void)
         _DAT_801f268a = *(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d41c));
         _DAT_801f268c = *(uint16_t *)guest_at((uint32_t)(ent_off - 0x7fe0d41a));
         cd_reg_window_update(&DAT_801f2650);
-      }
-      else {
+      } else {
         age = *(int16_t *)(rec + 0xb);
         *(int16_t *)(rec + 0xb) = age + 1;
         if ((int16_t)(age + 1) == 2) {
@@ -1290,18 +1267,15 @@ void deferred_cmd_drain(uint32_t a0,int a1)
         cmdcls = cmdw & 0xf00;
         if (cmdcls == 0x200) {
           a1 = mc_action_dispatch_b(cmdw & 0xff,(int)*rec_s);
-        }
-        else if (cmdcls < 0x201) {
+        } else if (cmdcls < 0x201) {
           if (cmdcls == 0x100) {
             a1 = mc_action_dispatch(cmdw & 0xff,(int)*rec_s);
           }
-        }
-        else if (cmdcls == 0x300) {
+        } else if (cmdcls == 0x300) {
           if (cls300_seen) goto bb_80156ebc;
           cls300_seen = true;
           a1 = ret_one(cmdw & 0xff,(int)*rec_s);
-        }
-        else if (cmdcls == 0x400) {
+        } else if (cmdcls == 0x400) {
           if (cls400_seen) goto bb_80156ebc;
           cls400_seen = true;
           a1 = deferred_cmd_exec(cmdw & 0xff,(int)*rec_s);
@@ -1310,8 +1284,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
           *rec_u = 0;
           _DAT_801f35f4--;
         }
-      }
-      else {
+      } else {
         rec_s[1]--;
       }
     }
@@ -1436,8 +1409,7 @@ bb_8018bb4c:
       DAT_801b55d0 = (char)a0;
       return;
     }
-  }
-  else {
+  } else {
     if (a0 == 2) goto bb_8018bb4c;
     if (a0 == 3) {
       DAT_801b55d0 = 1;
@@ -1588,8 +1560,7 @@ void flow_cfg_init(uint8_t a0)
   } while (i < 8);
   if (!(_DAT_1f8000b8)) {
     cfg[3] = 3;
-  }
-  else {
+  } else {
     cfg[3] = 4;
   }
   if (DAT_1f80009b == 0x04) {
@@ -1621,30 +1592,25 @@ uint32_t attr_word_decode(uint8_t *a0)
   attr_hi = *(int8_t *)(a0 + 1) & 0xf0;
   if (attr_hi == 0x40) {
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
-  }
-  else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
+  } else if ((attr_hi < 0x41) || (attr_hi == 0x60)) {
     attr_word = 0xffffffffu;
-  }
-  else {
+  } else {
     if (attr_hi < 0x61) {
       if (attr_hi != 0x50) {
         return 0xffffffffu;
       }
-    }
-    else if (attr_hi != 0x70) {
+    } else if (attr_hi != 0x70) {
       return 0xffffffffu;
     }
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
       attr_word |= 0x8000;
-    }
-    else if (0xc0 < *(uint8_t *)(a0 + 6)) {
+    } else if (0xc0 < *(uint8_t *)(a0 + 6)) {
       attr_word |= 0x2000;
     }
     if (*(uint8_t *)(a0 + 7) < 0x40) {
       attr_word |= 0x1000;
-    }
-    else if (0xc0 < *(uint8_t *)(a0 + 7)) {
+    } else if (0xc0 < *(uint8_t *)(a0 + 7)) {
       attr_word |= 0x4000;
     }
   }
@@ -2016,8 +1982,7 @@ void mc_slot_action(uint8_t *a0,int32_t a1)
   q = (uint8_t *)guest_at(*(uint32_t *)(a0 + 0xc0));
   if ((*(uint16_t *)(a0 + ((uint32_t)a1 * 2) + 0x6c) & 0xf) == 0xf) {
     q[0x21] = 1;
-  }
-  else {
+  } else {
     q[0x21] = 0;
   }
   state = a0[0x9b];
@@ -7926,8 +7891,7 @@ void op_wrap_acb08(int16_t *a0,uint32_t a1)
   void *fn = fn_lookup(0x801acb08);
   if (fn != NULL) {
     ((void (*)(uint32_t,int,int))fn)(a1,a0[1],a0[2]);
-  }
-  else {
+  } else {
     /* Unported callee: reproduce the jal — a0=a1, a1/a2 = lh a0[1]/a0[2]
      * (sign-extended), a3 = caller's live $a3. */
     extern CPUState *clean_cpu_state(void);
@@ -8067,8 +8031,7 @@ void ctx_fn_send(uint8_t *a0)
   uint32_t r = 0;
   if (fn != NULL) {
     r = ((uint32_t (*)(uint32_t))fn)(guest_of(a0));
-  }
-  else {
+  } else {
     /* Guest jalr is unconditional: a0 = desc guest addr, a1 = caller's
      * live $a1 (jalr passthrough), a2/a3 likewise untouched. */
     CPUState *cpu = clean_cpu_state();
@@ -8109,8 +8072,7 @@ void op_list_head_reset(uint32_t *a0)
         void *fn = fn_lookup(0x801b0db8);
         if (fn != NULL) {
           ((void (*)(uint32_t))fn)(guest_of(a0));
-        }
-        else {
+        } else {
           CPUState *cpu = clean_cpu_state();
           call_guest(0x801b0db8u,guest_of(a0),cpu != NULL ? cpu->gpr[5] : 0u);
         }
@@ -8132,8 +8094,7 @@ void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
     void *fn = fn_lookup(0x801b0db8);
     if (fn != NULL) {
       ((void (*)(uint32_t))fn)(BR2_GPC);
-    }
-    else {
+    } else {
       call_guest(0x801b0db8u,BR2_GPC,guest_of(a1));
     }
   }
@@ -8430,8 +8391,7 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
       uint32_t r = 0;
       if (fn != NULL) {
         r = ((uint32_t (*)(uint32_t))fn)(a0);
-      }
-      else {
+      } else {
         /* Guest jalr: a0/a1 = incoming regs (a0 raw, a1 = fnaddr-cell addr),
          * a2/a3 passthrough — call_guest leaves gpr[6]/gpr[7] live. */
         r = call_guest(fnaddr,a0,a1);
@@ -8439,8 +8399,7 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
       *(uint32_t *)guest_at(slot) = r;
     } else if (fn != NULL) {
       ((void (*)(uint32_t))fn)(a0);
-    }
-    else {
+    } else {
       call_guest(fnaddr,a0,a1);
     }
   }
@@ -8509,8 +8468,7 @@ int op_state_dispatch(uint8_t *a0)
     void *fn = fn_lookup(fp);
     if (fn != NULL) {
       ((void (*)(void))fn)();
-    }
-    else {
+    } else {
       /* Guest jalr is unconditional on this path: a0 = desc guest addr,
        * a1 = caller's live $a1. */
       CPUState *cpu = clean_cpu_state();
@@ -9183,8 +9141,7 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     uint32_t r = 0;
     if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t))fn)(node);
-    }
-    else {
+    } else {
       /* Guest jalr: a0=node, a1=fnaddr-cell addr, a2=lh value (sign-extended),
        * a3=base — all four regs explicit. */
       r = br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
@@ -9192,8 +9149,7 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     *(uint32_t *)guest_at(slot) = r;
   } else if (fn != NULL) {
     ((void (*)(uint32_t))fn)(node);
-  }
-  else {
+  } else {
     br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
   }
   return;
@@ -9212,16 +9168,14 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     uint32_t r = 0;
     if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t,uint32_t))fn)(n0,n1);
-    }
-    else {
+    } else {
       /* Guest jalr: a0=n0, a1=n1, a2=lh value, a3=base. */
       r = br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
     }
     *(uint32_t *)guest_at(slot) = r;
   } else if (fn != NULL) {
     ((void (*)(uint32_t,uint32_t))fn)(n0,n1);
-  }
-  else {
+  } else {
     br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
   }
   return;
@@ -9362,8 +9316,7 @@ void op_frame_advance(uint8_t *ctx)
           void *fn = fn_lookup(fnaddr);
           if (fn != NULL) {
             ((void (*)(uint32_t))fn)((uint32_t)guest_of(ctx));
-          }
-          else {
+          } else {
             /* Guest jalr: a0 = ctx guest addr (delay-slot move), a1 =
              * caller's live $a1. */
             CPUState *cpu = clean_cpu_state();
@@ -9403,8 +9356,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     uint32_t n3 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4);
     if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(n0,n1,n2,n3);
-    }
-    else {
+    } else {
       /* Guest jalr: a0-a3 = the four node values (a0[2..5] entries). */
       r = br2_call_clean(fnaddr,n0,n1,n2,n3);
     }
@@ -9415,8 +9367,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4));
-  }
-  else {
+  } else {
     br2_call_clean(fnaddr,
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
