@@ -198,10 +198,12 @@ def overlay_config_hash(recompiler: str, game_toml: str) -> int:
 _TARGET_OS = None
 
 def set_target_os(target_os: str | None) -> None:
+    """Set the target OS for platform checks.."""
     global _TARGET_OS
     _TARGET_OS = target_os
 
 def is_windows() -> bool:
+    """True if the target OS is Windows.."""
     if _TARGET_OS == 'win':
         return True
     if _TARGET_OS in ('linux', 'macos'):
@@ -273,6 +275,7 @@ def cache_arch_abi() -> str:
 # and main() exits non-zero when any shard that SHOULD have built failed.
 class ShardStats:
     def __init__(self):
+        """ShardStats ctor: ok/skip/fail tallies under a lock.."""
         self._lock = threading.Lock()
         self.ok = 0
         self.skipped = 0
@@ -281,14 +284,17 @@ class ShardStats:
         self.failures = []          # [(label, cls, detail), ...] (detail truncated)
 
     def add_ok(self, n=1):
+        """Increment the ok counter.."""
         with self._lock:
             self.ok += n
 
     def add_skip(self, n=1):
+        """Increment the skipped counter.."""
         with self._lock:
             self.skipped += n
 
     def add_capacity_fastpath(self, n=1):
+        """Increment the capacity-fastpath counter.."""
         with self._lock:
             self.capacity_fastpath += n
 
@@ -304,10 +310,12 @@ class ShardStats:
             self.failures.append((label, cls, d))
 
     def total_fail(self):
+        """Total failures across all fail classes.."""
         with self._lock:
             return sum(self.fail_by_class.values())
 
     def print_summary(self):
+        """Print the shard build summary.."""
         with self._lock:
             fail = sum(self.fail_by_class.values())
             print('\n=== SHARD BUILD SUMMARY ===')
@@ -648,12 +656,14 @@ def reconcile_bios_resident_marker(dll_path: str, cap: dict,
 
 
 def _parse_addr(value) -> int:
+    """Parse an address value (int or hex string).."""
     if isinstance(value, int):
         return value
     return int(str(value), 16)
 
 
 def _parse_addr_list(values) -> set[int]:
+    """Parse a list of address values into a set.."""
     out = set()
     for v in values or []:
         try:
@@ -718,6 +728,7 @@ def optional_enrichment_fallback_capture(cap: dict) -> dict | None:
 
 
 def _word_at(data: bytes, load_addr: int, addr: int):
+    """Read a 32-bit word at addr from overlay data.."""
     off = addr - load_addr
     if off < 0 or off + 4 > len(data):
         return None
@@ -725,10 +736,12 @@ def _word_at(data: bytes, load_addr: int, addr: int):
 
 
 def _is_jr_ra(word) -> bool:
+    """True if word is `jr ra` (function return).."""
     return word == 0x03E00008
 
 
 def _is_addiu_sp_neg(word) -> bool:
+    """True if word is `addiu sp, sp, -N` (frame alloc).."""
     if word is None:
         return False
     return ((word >> 26) & 0x3F) == 0x09 \
@@ -738,6 +751,7 @@ def _is_addiu_sp_neg(word) -> bool:
 
 
 def _is_control_flow(word) -> bool:
+    """True if word is a control-flow instruction.."""
     if word is None:
         return False
     op = (word >> 26) & 0x3F
@@ -749,6 +763,7 @@ def _is_control_flow(word) -> bool:
 
 
 def _is_valid_mips_word(word) -> bool:
+    """True if word looks like a valid MIPS instruction.."""
     if word is None or word in (0xFFFFFFFF, 0xFFFFFFFD):
         return False
 
@@ -780,10 +795,12 @@ def _is_valid_mips_word(word) -> bool:
 
 
 def _jump_target(pc: int, word: int) -> int:
+    """Compute the target of a `j`/`jal` word.."""
     return ((pc + 4) & 0xF0000000) | ((word & 0x03FFFFFF) << 2)
 
 
 def _branch_target(pc: int, word: int) -> int:
+    """Compute the target of a beq-family branch word.."""
     imm = word & 0xFFFF
     if imm & 0x8000:
         imm -= 0x10000
@@ -791,6 +808,7 @@ def _branch_target(pc: int, word: int) -> int:
 
 
 def _classify_cf(pc: int, word: int) -> tuple[str, int]:
+    """Classify a control-flow word (kind and target).."""
     op = (word >> 26) & 0x3F
     fn = word & 0x3F
     rs = (word >> 21) & 0x1F
@@ -927,6 +945,7 @@ def _find_jump_table_targets(data: bytes, load_addr: int, size: int,
         return set()
 
     def nearest_writer(reg: int, before: int):
+        """Find the nearest preceding write to a register.."""
         for pc in range(before - 4, max(entry, before - 0x80) - 1, -4):
             word = _word_at(data, load_addr, pc)
             if word is None:
@@ -1078,6 +1097,7 @@ def _callable_direct_jal_target(data: bytes, load_addr: int, addr: int) -> bool:
 
 
 def _instruction_writes_gpr(word: int, reg: int) -> bool:
+    """True if insn word writes the given GPR.."""
     if not reg:
         return False
     op = (word >> 26) & 0x3F
@@ -1182,9 +1202,11 @@ def plausible_callable_target(data: bytes, load_addr: int, size: int,
     bad = False
 
     def inside(addr: int) -> bool:
+        """True if addr is inside the validated code range.."""
         return target <= addr < cap and (addr & 3) == 0
 
     def add_delay(pc: int) -> None:
+        """Validate a delay-slot pc against the range.."""
         nonlocal bad
         delay = pc + 4
         if not inside(delay):
@@ -1243,6 +1265,7 @@ def _walk_overlay_function(data: bytes, load_addr: int, size: int,
                            entry: int, hard_cap: int,
                            producer_ranges=(),
                            allow_cross_producer_calls=True) -> dict:
+    """Walk an overlay function's CFG from an entry.."""
     lo = load_addr
     hi = load_addr + size
 
@@ -1259,6 +1282,7 @@ def _walk_overlay_function(data: bytes, load_addr: int, size: int,
     accepted_cross_producer_calls = set()
 
     def producer_for(addr: int):
+        """Return the producer range containing addr.."""
         for range_lo, range_hi in producer_ranges:
             if range_lo <= addr < range_hi:
                 return range_lo, range_hi
@@ -1267,6 +1291,7 @@ def _walk_overlay_function(data: bytes, load_addr: int, size: int,
     entry_producer = producer_for(entry)
 
     def in_function(addr: int) -> bool:
+        """True if addr is a valid in-function code address.."""
         return (lo <= addr < hi and entry <= addr < hard_cap and
                 (addr & 3) == 0 and
                 (not producer_ranges or
@@ -1274,6 +1299,7 @@ def _walk_overlay_function(data: bytes, load_addr: int, size: int,
                   producer_for(addr) == entry_producer)))
 
     def callable_transfer_target(source: int, target: int) -> bool:
+        """Validate a computed call/jump target.."""
         if _dense_local_pointer_table(data, load_addr, target):
             rejected_cross_producer_calls.add(target)
             return False
@@ -1436,6 +1462,7 @@ def _masked_region_crc(data: bytes, load_addr: int, ignore) -> int:
 
 def _collect_toml_overlay_entries(toml_doc: dict, load_addr: int, crc32: int,
                                   data: bytes = b'') -> set[int]:
+    """Collect overlay entries declared in game.toml.."""
     entries = set()
     for ov in toml_doc.get('overlays', []) or []:
         if not isinstance(ov, dict):
@@ -1467,6 +1494,7 @@ def _collect_toml_overlay_entries(toml_doc: dict, load_addr: int, crc32: int,
 
 def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
                            crc32: int, toml_doc: dict) -> tuple[list[str], dict]:
+    """Classify seed addresses within an overlay region.."""
     lo = load_addr
     hi = load_addr + size
     region = lambda a: lo <= a < hi and (a & 3) == 0
@@ -1490,6 +1518,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
         raise RuntimeError('producer_ranges overlap')
 
     def capture_producer_for(addr: int):
+        """Return the capture producer covering addr.."""
         for producer_lo, producer_hi in producer_ranges:
             if producer_lo <= addr < producer_hi:
                 return producer_lo, producer_hi
@@ -1574,6 +1603,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
         jump_table_targets.update(walk['jump_table_targets'])
 
     def impossible_entry_start(addr: int) -> bool:
+        """True if addr cannot start a function.."""
         word = _word_at(data, load_addr, addr)
         if word is None:
             return True
@@ -1587,6 +1617,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
         return False
 
     def include(addr: int, reason: str):
+        """Mark addr included in the seed set, or excluded with reason.."""
         if not region(addr):
             excluded[addr] = 'UNKNOWN'
             return
@@ -1945,6 +1976,7 @@ def classify_overlay_seeds(cap: dict, data: bytes, load_addr: int, size: int,
 
 
 def print_seed_audit(audit: dict) -> None:
+    """Print the overlay seed audit report.."""
     print(f'Overlay {audit["load_addr"]:08X}_{audit["crc32"]:08X}')
     print(f'Region: {audit["lo"]:08X}..{audit["hi"] - 1:08X}')
     print(f'executed_pcs: {len(audit["executed_pcs"])}')
@@ -1993,6 +2025,7 @@ def walk_root_seed_entries(seeds: list[str]) -> set[int]:
 
 
 def _game_text_range(toml_doc: dict) -> tuple[int, int]:
+    """Game text load range from the toml doc.."""
     game = toml_doc.get('game', {})
     load = game.get('load_address')
     size = game.get('text_size')
@@ -2005,6 +2038,7 @@ def _game_text_range(toml_doc: dict) -> tuple[int, int]:
 
 def _classify_target(addr: int, load_addr: int, size: int,
                      game_text: tuple[int, int]) -> str:
+    """Classify a target address vs overlay/game ranges.."""
     phys = addr & 0x1FFFFFFF
     ov_lo = load_addr & 0x1FFFFFFF
     ov_hi = ov_lo + size
@@ -2020,6 +2054,7 @@ def _classify_target(addr: int, load_addr: int, size: int,
 
 def audit_generated_c(src: str, load_addr: int, size: int,
                       crc32: int, toml_doc: dict) -> dict:
+    """Audit generated C func defs against expected entries.."""
     defs = {int(x, 16) for x in re.findall(
         r'^void func_([0-9A-Fa-f]{8})\(CPUState\* cpu\)$', src, re.MULTILINE)}
     decls = {int(x, 16) for x in re.findall(
@@ -2036,6 +2071,7 @@ def audit_generated_c(src: str, load_addr: int, size: int,
     ov_hi = ov_lo + size
 
     def in_overlay(addr: int) -> bool:
+        """True if addr phys is inside the overlay region.."""
         phys = addr & 0x1FFFFFFF
         return ov_lo <= phys < ov_hi
 
@@ -2085,6 +2121,7 @@ def audit_generated_c(src: str, load_addr: int, size: int,
 
 def print_generated_c_audit(load_addr: int, size: int, crc32: int,
                             report: dict) -> None:
+    """Print the generated-C audit report.."""
     print(f'Overlay {load_addr:08X}_{crc32:08X}')
     print(f'Region: {load_addr:08X}..{load_addr + size - 1:08X}')
     print(f'Function definitions: {len(report["defs"])}')
@@ -2153,6 +2190,7 @@ def patch_generated_c(src: str, load_addr: int, size: int) -> str:
     ov_hi = ov_lo + size
 
     def in_overlay(addr: int) -> bool:
+        """True if addr phys is inside the overlay region.."""
         phys = addr & 0x1FFFFFFF
         return ov_lo <= phys < ov_hi
 
@@ -2167,6 +2205,7 @@ def patch_generated_c(src: str, load_addr: int, size: int) -> str:
 
     # 2. Remove out-of-range forward declarations
     def drop_extern(m):
+        """Drop extern decls for addrs outside the overlay.."""
         addr = int(m.group(1), 16)
         return '' if not in_overlay(addr) else m.group(0)
     src = re.sub(r'^void func_([0-9A-Fa-f]{8})\(CPUState\* cpu\);\n',
@@ -2174,6 +2213,7 @@ def patch_generated_c(src: str, load_addr: int, size: int) -> str:
 
     # 3. Replace out-of-range direct calls with call_by_address
     def fix_call(m):
+        """Fix call targets inside the overlay range.."""
         addr = int(m.group(1), 16)
         if in_overlay(addr):
             return m.group(0)
@@ -2185,6 +2225,7 @@ def patch_generated_c(src: str, load_addr: int, size: int) -> str:
     #    psxrecomp-game emits "void func_XXXXXXXX(CPUState* cpu)" on one line
     #    with "{" on the NEXT line — match the signature line alone (no ";" = definition).
     def add_export(m):
+        """Add an export entry for in-overlay addresses.."""
         addr = int(m.group(1), 16)
         if not in_overlay(addr):
             return m.group(0)
@@ -2224,6 +2265,7 @@ def patch_generated_c_static(src: str, load_addr: int, size: int) -> tuple:
     ov_hi = ov_lo + size
 
     def in_overlay(addr: int) -> bool:
+        """True if addr phys is inside the overlay region.."""
         return ov_lo <= (addr & 0x1FFFFFFF) < ov_hi
 
     # 1. Insert preamble after last #include
@@ -2237,6 +2279,7 @@ def patch_generated_c_static(src: str, load_addr: int, size: int) -> tuple:
 
     # 2. Remove out-of-range forward declarations
     def drop_extern(m):
+        """Drop extern decls for addrs outside the overlay.."""
         addr = int(m.group(1), 16)
         return '' if not in_overlay(addr) else m.group(0)
     src = re.sub(r'^void func_([0-9A-Fa-f]{8})\(CPUState\* cpu\);\n',
@@ -2244,6 +2287,7 @@ def patch_generated_c_static(src: str, load_addr: int, size: int) -> tuple:
 
     # 3. Replace out-of-range direct calls with call_by_address
     def fix_call(m):
+        """Fix call targets inside the overlay range.."""
         addr = int(m.group(1), 16)
         if in_overlay(addr):
             return m.group(0)
@@ -2253,6 +2297,7 @@ def patch_generated_c_static(src: str, load_addr: int, size: int) -> tuple:
     # 4. Collect in-overlay function definition addresses (no export annotation needed)
     func_virt_addrs = []
     def collect_fn(m):
+        """Collect func_virt_addrs inside the overlay.."""
         addr = int(m.group(1), 16)
         if in_overlay(addr):
             func_virt_addrs.append(0x80000000 | (addr & 0x1FFFFFFF))
@@ -2280,6 +2325,7 @@ def namespace_generated_static(src: str, namespace: str,
         src = re.sub(rf'\b{helper}\b', f'{namespace}_{helper}', src)
 
     def rename_func(m):
+        """Rename func_ symbols inside the overlay.."""
         addr = (int(m.group(1), 16) & 0x1FFFFFFF) | 0x80000000
         if addr not in func_set:
             return m.group(0)
@@ -2288,6 +2334,7 @@ def namespace_generated_static(src: str, namespace: str,
     src = re.sub(r'\bfunc_([0-9A-Fa-f]{8})\b', rename_func, src)
 
     def rename_alias(m):
+        """Rename alias symbols inside the overlay.."""
         addr = (int(m.group(1), 16) & 0x1FFFFFFF) | 0x80000000
         if addr not in func_set:
             return m.group(0)
@@ -2542,6 +2589,7 @@ def generate_overlay_dispatch(variants: list) -> str:
         flat_variants.extend(by_addr[addr])
 
     def emit_table(name, values, per_line=8):
+        """Emit a C `static const uint32_t` table.."""
         out = [f'static const uint32_t {name}[{size}] = {{']
         for i in range(0, size, per_line):
             chunk = ', '.join(f'0x{v:08X}u' for v in values[i:i + per_line])
@@ -2719,6 +2767,7 @@ def parse_overlay_func_ids(src_path: str, data: bytes, load_addr: int,
     ov_hi = ov_lo + size
 
     def in_ov(a: int) -> bool:
+        """True if addr's phys page is inside the overlay.."""
         return ov_lo <= (a & 0x1FFFFFFF) < ov_hi
 
     # Parse the recompiler manifest into [(entry, [(lo, len), ...]), ...].
@@ -2809,6 +2858,7 @@ def audit_func_id_delay_slots(func_ids: list, data: bytes,
             continue
 
         def contains_word(addr: int) -> bool:
+            """True if any normalized range contains the word.."""
             return any(lo <= addr and addr + 4 <= hi
                        for lo, hi in normalized)
 
@@ -2964,6 +3014,7 @@ def parse_runtime_shard_manifest(manifest: str,
                                  ) -> tuple[int | None, list]:
     """Parse only identities representable by the runtime manifest contract."""
     def hex_field(token: str, max_digits: int) -> int:
+        """Validate and parse a hex field token.."""
         if not re.fullmatch(rf'[0-9A-Fa-f]{{1,{max_digits}}}', token):
             raise ValueError(f'invalid manifest hex field: {token!r}')
         return int(token, 16)
@@ -3265,6 +3316,7 @@ def interior_fail_memo_action(entry: int, job: dict, force: bool) -> str:
 
 
 def load_interior_fail_memo(cache_dir: str) -> dict:
+    """Load the interior-fail memo cache.."""
     memo = {}
     try:
         with open(os.path.join(cache_dir, INTERIOR_FAIL_MEMO)) as f:
@@ -3280,6 +3332,7 @@ def load_interior_fail_memo(cache_dir: str) -> dict:
 
 
 def append_interior_fail_memo(cache_dir: str, key: str, reason: str) -> None:
+    """Append an entry to the interior-fail memo.."""
     try:
         os.makedirs(cache_dir, exist_ok=True)
         with open(os.path.join(cache_dir, INTERIOR_FAIL_MEMO), 'a') as f:
@@ -3692,10 +3745,12 @@ def merge_fragment_jobs_by_recipe(jobs: list[dict],
 
 
 def _canonical_guest_addr(addr: int) -> int:
+    """Canonicalize addr to 0x8....... guest form.."""
     return (addr & 0x1FFFFFFF) | 0x80000000
 
 
 def _normalized_func_identity(func_id) -> tuple:
+    """Normalize a func identity tuple for comparison.."""
     entry, code_crc, ranges = func_id
     return (_canonical_guest_addr(entry), code_crc & 0xFFFFFFFF,
             tuple((_canonical_guest_addr(start), length)
@@ -3910,6 +3965,7 @@ def select_fragment_orphans(candidates: set[int], executed: set[int],
                             current_variant_ranges: list) -> list[int]:
     """Select exact demands that the relevant current artifacts cannot serve."""
     def current_region_contains(addr):
+        """True if addr is in the current variant regions.."""
         phys = addr & 0x1FFFFFFF
         return any(start <= phys < end for start, end in current_variant_ranges)
 
@@ -4039,6 +4095,7 @@ def compile_batched_hosted_aliases(hosted: dict, compile_one, on_success,
     attempts = 0
 
     def run(group_batch):
+        """Compile-attempt loop body with retry/attempt counting.."""
         nonlocal attempts
         if stop_requested():
             return 0
@@ -4504,6 +4561,7 @@ static inline unsigned psx_tcc_ctz(unsigned value) {
 '''
 
 def _bom_free_incdir(d: str) -> str:
+    """Return a BOM-free include dir (cached).."""
     d = os.path.abspath(d)
     if d in _TCC_BOMFREE_INC:
         return _TCC_BOMFREE_INC[d]
@@ -4558,6 +4616,7 @@ def _compile_dll_tcc(c_path: str, out_dll: str, include_dirs, flavor: int,
 def _compile_dll_direct(c_path: str, out_dll: str, include_dirs: list[str],
                         gcc: str = 'gcc', flavor: int = 0,
                         compiler: str = 'gcc', tcc: str = 'tcc') -> bool:
+    """Direct native compile path for a shard DLL.."""
     import platform
     # Absolute paths (interpreter flavor) for EVERY path the native compiler
     # touches — see native_path's docstring for the two rules and the
@@ -4725,6 +4784,7 @@ def compile_dll(c_path: str, out_dll: str, include_dirs: list[str],
 
 
 def _shard_pair_paths(dll_path: str) -> tuple[str, str, str, str]:
+    """Compute dll/ranges/lock/journal paths for a shard.."""
     dll_path = os.path.abspath(dll_path)
     ranges_path = os.path.splitext(dll_path)[0] + '.ranges'
     return (dll_path, ranges_path,
@@ -4732,6 +4792,7 @@ def _shard_pair_paths(dll_path: str) -> tuple[str, str, str, str]:
 
 
 def _unlink_if_present(path: str) -> None:
+    """Unlink a path if it exists.."""
     try:
         os.unlink(path)
     except FileNotFoundError:
@@ -4747,6 +4808,7 @@ def _best_effort_unlink(path: str) -> None:
 
 
 def _file_sha256(path: str) -> str | None:
+    """SHA256 hex digest of a file.."""
     try:
         digest = hashlib.sha256()
         with open(path, 'rb') as source:
@@ -4758,6 +4820,7 @@ def _file_sha256(path: str) -> str | None:
 
 
 def _write_json_atomic(path: str, value: dict) -> None:
+    """Write JSON via temp file + atomic rename.."""
     directory = os.path.dirname(path)
     fd, staged = tempfile.mkstemp(prefix=f'.{os.path.basename(path)}.',
                                   suffix='.tmp', dir=directory)
@@ -4901,6 +4964,7 @@ class CandidateInventory(dict):
     """
 
     def __init__(self):
+        """Counters ctor: ok/skip/fail tallies under a lock.."""
         super().__init__()
         self.identities = {}
         self.raw_counts = {}
@@ -4955,6 +5019,7 @@ def _normalized_runtime_manifest_identity(manifest: str, pair_id: int | None,
 
 
 def _candidate_group_identity(cache_dir: str, manifest_identity):
+    """Candidate cache group identity path.."""
     if manifest_identity is None:
         return None
     return os.path.normcase(os.path.abspath(cache_dir)), manifest_identity
@@ -4985,6 +5050,7 @@ def _candidate_file_fingerprint(path: str):
 
 
 def _candidate_cached_abi_matches(dll: str, expected_abi: int) -> bool:
+    """True if cached DLL ABI matches expected.."""
     path = os.path.normcase(os.path.abspath(dll))
     fingerprint = (
         expected_abi, _dll_abi_matches,
@@ -5010,6 +5076,7 @@ def _load_candidate_inventory_record(dll: str,
     path = os.path.normcase(os.path.abspath(dll))
 
     def fingerprint():
+        """Cache fingerprint tuple for invalidation.."""
         return (
             expected_abi, _dll_runtime_exports_match,
             _candidate_file_fingerprint(dll),
@@ -5301,11 +5368,13 @@ def preflight_shard_candidate_capacity(
 
 
 def _cleanup_old_pair_debris(dll_path: str) -> None:
+    """Remove stale .pair-txn debris files.."""
     for path in glob.glob(os.path.abspath(dll_path) + '.pair-txn.*.old-*'):
         _best_effort_unlink(path)
 
 
 def _recover_shard_pair_locked(dll_path: str) -> None:
+    """Recover a locked shard pair from its journal.."""
     dll, ranges, _lock, journal_path = _shard_pair_paths(dll_path)
     if not os.path.isfile(journal_path):
         _cleanup_old_pair_debris(dll)
@@ -5342,6 +5411,7 @@ def _recover_shard_pair_locked(dll_path: str) -> None:
         return
 
     def restore(path: str, backup: str, expected_hash: str | None) -> None:
+        """Restore a file if its hash no longer matches.."""
         current_hash = _file_sha256(path)
         if expected_hash is None:
             if current_hash is not None:
@@ -5675,6 +5745,7 @@ def static_capture_job(cap: dict, args, toml: dict, forced_interiors: set,
 
 
 def _static_capture_job(cap, args, toml, forced_interiors, static_out, result):
+    """Decode a static capture job spec.."""
     load_addr = int(cap['load_addr'], 16)
     size      = int(cap['size'])
     data      = base64.b64decode(cap['bytes_b64'])
@@ -5688,6 +5759,7 @@ def _static_capture_job(cap, args, toml, forced_interiors, static_out, result):
     guard_bytes = capture_guard_bytes(cap, size, _label)
 
     def fail(cls, detail):
+        """Record a fail outcome on the job result.."""
         result['outcome'] = 'fail'
         result['fail'] = (cls, detail)
 
@@ -5948,6 +6020,7 @@ def write_static_outputs(static_out: str, parts: list, variants: list,
 
 
 def main():
+    """compile_overlays CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--captures',        default=None,
@@ -6184,6 +6257,7 @@ def main():
     # or passed per-region (region_coverage_cache / interior_frag_jobs), so a
     # worker owning a region owns every mutable it touches.
     def _do_capture(cap, region_coverage_cache, interior_frag_jobs, stats):
+        """Execute a static capture job.."""
         load_addr = int(cap['load_addr'], 16)
         size      = int(cap['size'])
         data      = base64.b64decode(cap['bytes_b64'])
@@ -6565,6 +6639,7 @@ def main():
     # interior PC (recovers no host). Isolated => a bad fragment fails alone and
     # never poisons a region's trusted DLL.
     def _do_frags(interior_frag_jobs, stats):
+        """Fragment compile subcommand handler.."""
         frag_env = dict(os.environ)
         if args.cps:
             frag_env['PSX_CPS'] = '1'
@@ -6726,6 +6801,7 @@ def main():
                     continue
 
             def compile_strong_batch(entries):
+                """Compile a strong batch via compile_fragment_batch.."""
                 return compile_fragment_batch(
                     entries, data, load_addr, size, phys_addr, cache_dir,
                     args, frag_env, toml, job['producer_ranges'],
@@ -6733,6 +6809,7 @@ def main():
                     guard_bytes=job['guard_bytes'])
 
             def strong_batch_success(entries, frag_ids, status):
+                """Handle a successful strong batch.."""
                 strong_handled.update(entries)
                 if status == 'cached':
                     stats.add_skip()
@@ -6754,6 +6831,7 @@ def main():
                         fragment_dll, job['resident_cap'], status == 'built')
 
             def strong_singleton_failure(entry, status):
+                """Handle a failed strong singleton compile.."""
                 nonlocal candidate_capacity_exhausted
                 strong_handled.add(entry)
                 if status.startswith('candidate-capacity:'):
@@ -6783,6 +6861,7 @@ def main():
                     append_interior_fail_memo(cache_dir, key, status)
 
             def strong_batch_failure(entries, status):
+                """Handle a failed strong batch compile.."""
                 nonlocal candidate_capacity_exhausted
                 if status.startswith('candidate-capacity:'):
                     strong_handled.update(entries)
@@ -6933,6 +7012,7 @@ def main():
 
             def record_fragment_success(frag_ids, status,
                                         provenance=None):
+                """Record a successful fragment compile.."""
                 if status == 'cached':
                     stats.add_skip()
                 else:
@@ -6954,6 +7034,7 @@ def main():
                         fragment_dll, job['resident_cap'], status == 'built')
 
             def record_fragment_failure(entry, status):
+                """Record a failed fragment compile.."""
                 nonlocal candidate_capacity_exhausted
                 if status.startswith('candidate-capacity:'):
                     if status.startswith('candidate-capacity: full'):
@@ -7006,6 +7087,7 @@ def main():
                     donor_index_drops
 
             def compile_hosted_batch(specs):
+                """Compile a hosted batch via compile_fragment_batch.."""
                 return compile_fragment_batch(
                     specs, data, load_addr, size, phys_addr, cache_dir,
                     args, frag_env, toml, job['producer_ranges'],
@@ -7016,6 +7098,7 @@ def main():
             hosted_published = False
 
             def hosted_success(batch, frag_ids, status):
+                """Handle a successful hosted batch.."""
                 nonlocal hosted_published
                 record_fragment_success(
                     frag_ids, status, HOSTED_MANIFEST_PROVENANCE)
@@ -7033,6 +7116,7 @@ def main():
                 return set(batch) - set(missing)
 
             def hosted_singleton_failure(entry, status):
+                """Handle a failed hosted singleton.."""
                 nonlocal candidate_capacity_exhausted
                 print(f'  hosted interior 0x{entry:08X} rejected safely: '
                       f'{status}')
@@ -7054,6 +7138,7 @@ def main():
                         'hosted_fragment', status)
 
             def hosted_batch_failure(batch, status):
+                """Handle a failed hosted batch.."""
                 nonlocal candidate_capacity_exhausted
                 if status.startswith('candidate-capacity: full'):
                     candidate_capacity_exhausted = True
@@ -7330,6 +7415,7 @@ def main():
         synthesized = 0
 
         def synthesize_all_resume_wrappers(parts):
+            """Synthesize resume wrappers for all parts.."""
             nonlocal synthesized
             for part in parts:
                 done = part.setdefault('resume_entries', set())
