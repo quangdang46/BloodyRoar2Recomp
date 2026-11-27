@@ -211,7 +211,6 @@ void cd_stream_mode_init(undefined4 stptr);
 extern uint8_t  *g_DAT_1f800001;
 extern uint8_t  *g_DAT_1f800010;
 extern uint8_t  *g_DAT_1f800015;
-extern uint8_t  *g_DAT_1f800019;
 extern uint8_t  *g_DAT_1f800068;
 extern uint8_t  *g_DAT_1f800074;
 extern uint8_t  *g_DAT_1f800098;
@@ -358,7 +357,6 @@ extern char *s_time_out_in_decoding___80120e90;
 
 /* ---- macros ---- */
 #define DAT_1f800001   (*(uint8_t *)g_DAT_1f800001)
-#define DAT_1f800019   (*(uint8_t *)g_DAT_1f800019)
 #define DAT_1f800010   (*(uint8_t *)g_DAT_1f800010)
 #define DAT_1f800015   (*(uint8_t *)g_DAT_1f800015)
 #define DAT_1f800068   (*(uint8_t *)g_DAT_1f800068)
