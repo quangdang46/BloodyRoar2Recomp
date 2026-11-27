@@ -125,7 +125,6 @@ block_80183008:
         goto block_80183024;  /* taken: cmp<=0 -> else operand */
     } else {
         psx_check_interrupts_at(cpu, 0x80183018u);
-        goto block_80183018;  /* not taken: cmp>0 -> then operand */
     }
 
 block_80183018:
@@ -153,7 +152,6 @@ block_80183034:
         goto block_80183218;  /* taken: sel!=0 -> base+sel */
     } else {
         psx_check_interrupts_at(cpu, 0x80183044u);
-        goto block_80183044;  /* not taken: sel==0 -> pc+8 */
     }
 
 block_80183044:
@@ -175,7 +173,6 @@ block_8018304C:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x8018305Cu);
-        goto block_8018305C;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_8018305C:
@@ -197,7 +194,6 @@ block_8018306C:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x8018307Cu);
-        goto block_8018307C;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_8018307C:
@@ -219,7 +215,6 @@ block_8018308C:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x8018309Cu);
-        goto block_8018309C;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_8018309C:
@@ -241,7 +236,6 @@ block_801830AC:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x801830BCu);
-        goto block_801830BC;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_801830BC:
@@ -263,7 +257,6 @@ block_801830CC:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x801830DCu);
-        goto block_801830DC;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_801830DC:
@@ -285,7 +278,6 @@ block_801830EC:
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
         psx_check_interrupts_at(cpu, 0x801830FCu);
-        goto block_801830FC;  /* not taken -> base+lhu(pc+2) */
     }
 
 block_801830FC:
@@ -311,7 +303,6 @@ block_8018310C:
         goto block_80183148;  /* taken: n==0 -> skip weight table build */
     } else {
         psx_check_interrupts_at(cpu, 0x80183124u);
-        goto block_80183124;  /* not taken -> build weight table */
     }
 
 block_80183124:
@@ -332,7 +323,6 @@ block_80183128:
         goto block_80183128;  /* taken: loop */
     } else {
         psx_check_interrupts_at(cpu, 0x80183148u);
-        goto block_80183148;  /* not taken: table built */
     }
 
 block_80183148:
@@ -360,7 +350,6 @@ block_80183148:
         goto block_801831A4;  /* taken: X<0 -> pick stays 0 */
     } else {
         psx_check_interrupts_at(cpu, 0x80183188u);
-        goto block_80183188;  /* not taken -> subtract loop */
     }
 
 block_80183188:
@@ -380,7 +369,6 @@ block_8018318C:
         goto block_8018318C;  /* taken: loop */
     } else {
         psx_check_interrupts_at(cpu, 0x801831A4u);
-        goto block_801831A4;  /* not taken: X<0 -> pick final */
     }
 
 block_801831A4:
@@ -399,7 +387,6 @@ block_801831A4:
         goto block_80183218;  /* taken: sel!=0 -> base+sel */
     } else {
         psx_check_interrupts_at(cpu, 0x801831C8u);
-        goto block_801831C8;  /* not taken: sel==0 -> pc+((3n+4)&0x7fe) */
     }
 
 block_801831C8:

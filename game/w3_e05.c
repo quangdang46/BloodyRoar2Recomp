@@ -83,7 +83,6 @@ block_80156894:
 
 dispatch_801568E4:
   psx_check_interrupts_at(cpu, 0x801568E4u);
-  goto block_801568E4;
 
 block_801568E4:
   cpu->gpr[3] = 0x801F0000u;                     /* lui v1,0x801F */
@@ -161,7 +160,6 @@ block_80157940:
 
 dispatch_80157964:
   psx_check_interrupts_at(cpu, 0x80157964u);
-  goto block_80157964;
 
 block_80157964:
   cpu->gpr[5] = cpu->gpr[5] + 20;                /* delay: addiu a1,a1,0x14 */

@@ -309,7 +309,6 @@ block_801802CC:
         goto block_80180564;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801802E0u);
-        goto block_801802E0;  /* not taken */
     }
 
 block_801802E0:

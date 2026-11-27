@@ -62,7 +62,6 @@ block_80191AAC:
       goto block_80191AC4;
     }
     psx_check_interrupts_at(cpu, 0x80191AC0u);
-    goto block_80191AC0;
   }
 
 block_80191AC0:
@@ -78,7 +77,6 @@ block_80191AC4:
       goto block_80191AD8;
     }
     psx_check_interrupts_at(cpu, 0x80191AD4u);
-    goto block_80191AD4;
   }
 
 block_80191AD4:
@@ -94,7 +92,6 @@ block_80191AD8:
       goto block_80191AEC;
     }
     psx_check_interrupts_at(cpu, 0x80191AE8u);
-    goto block_80191AE8;
   }
 
 block_80191AE8:
@@ -111,7 +108,6 @@ block_80191AEC:
       goto block_80191B04;
     }
     psx_check_interrupts_at(cpu, 0x80191B00u);
-    goto block_80191B00;
   }
 
 block_80191B00:
@@ -131,7 +127,6 @@ block_80191B04:
       goto block_80191B4C;
     }
     psx_check_interrupts_at(cpu, 0x80191B18u);
-    goto block_80191B18;
   }
 
 block_80191B18:
@@ -144,7 +139,6 @@ block_80191B18:
       goto block_80191B28;
     }
     psx_check_interrupts_at(cpu, 0x80191B20u);
-    goto block_80191B20;
   }
 
 block_80191B20:
@@ -163,7 +157,6 @@ block_80191B28:
       goto block_80191B38;
     }
     psx_check_interrupts_at(cpu, 0x80191B30u);
-    goto block_80191B30;
   }
 
 block_80191B30:
@@ -180,7 +173,6 @@ block_80191B38:
       goto block_80191B48;
     }
     psx_check_interrupts_at(cpu, 0x80191B40u);
-    goto block_80191B40;
   }
 
 block_80191B40:
@@ -206,7 +198,6 @@ block_80191B4C:
       goto block_80191B60;
     }
     psx_check_interrupts_at(cpu, 0x80191B5Cu);
-    goto block_80191B5C;
   }
 
 block_80191B5C:
@@ -221,7 +212,6 @@ block_80191B60:
       goto block_80191B6C;
     }
     psx_check_interrupts_at(cpu, 0x80191B68u);
-    goto block_80191B68;
   }
 
 block_80191B68:
@@ -307,7 +297,6 @@ block_80191B90:
       return cpu->gpr[2];
     }
     psx_check_interrupts_at(cpu, 0x80191BB0u);
-    goto block_80191BB0;
   }
 
 block_80191BB0:
@@ -323,7 +312,6 @@ block_80191BB0:
       return cpu->gpr[2];
     }
     psx_check_interrupts_at(cpu, 0x80191BC8u);
-    goto block_80191BC8;
   }
 
 block_80191BC8:
@@ -339,7 +327,6 @@ block_80191BC8:
       return cpu->gpr[2];
     }
     psx_check_interrupts_at(cpu, 0x80191BE0u);
-    goto block_80191BE0;
   }
 
 block_80191BE0:
@@ -357,7 +344,6 @@ block_80191BE0:
       return cpu->gpr[2];
     }
     psx_check_interrupts_at(cpu, 0x80191BF8u);
-    goto block_80191BF8;
   }
 
 block_80191BF8:

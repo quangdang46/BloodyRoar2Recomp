@@ -128,7 +128,6 @@ block_80150F04:
         goto block_80151128;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80150F30u);
-        goto block_80150F30;  /* not taken */
     }
 
 block_80150F30:
@@ -154,7 +153,6 @@ block_80150F50:
         goto block_80150FA0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80150F5Cu);
-        goto block_80150F5C;  /* not taken */
     }
 
 block_80150F5C:
@@ -173,7 +171,6 @@ block_80150F5C:
         goto block_80150F84;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80150F80u);
-        goto block_80150F80;  /* not taken */
     }
 
 block_80150F80:
@@ -205,7 +202,6 @@ block_80150FA0:
         goto block_80151004;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80150FBCu);
-        goto block_80150FBC;  /* not taken */
     }
 
 block_80150FBC:
@@ -225,7 +221,6 @@ block_80150FBC:
         goto block_80150FE8;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80150FE4u);
-        goto block_80150FE4;  /* not taken */
     }
 
 block_80150FE4:
@@ -265,7 +260,6 @@ block_80151014:
         goto block_80151074;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151030u);
-        goto block_80151030;  /* not taken */
     }
 
 block_80151030:
@@ -284,7 +278,6 @@ block_80151030:
         goto block_80151058;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151054u);
-        goto block_80151054;  /* not taken */
     }
 
 block_80151054:
@@ -313,7 +306,6 @@ block_80151074:
         goto block_801510CC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151084u);
-        goto block_80151084;  /* not taken */
     }
 
 block_80151084:
@@ -333,7 +325,6 @@ block_80151084:
         goto block_801510B0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801510ACu);
-        goto block_801510AC;  /* not taken */
     }
 
 block_801510AC:
@@ -382,7 +373,6 @@ block_801510E0:
         goto block_80151104;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151100u);
-        goto block_80151100;  /* not taken */
     }
 
 block_80151100:
@@ -504,7 +494,6 @@ block_80151180:
         goto block_80151270;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151194u);
-        goto block_80151194;  /* not taken */
     }
 
 block_80151194:;
@@ -516,7 +505,6 @@ block_80151194:;
         goto block_80151270;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015119Cu);
-        goto block_8015119C;  /* not taken */
     }
 
 block_8015119C:;
@@ -528,7 +516,6 @@ block_8015119C:;
         goto block_801511D4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801511A4u);
-        goto block_801511A4;  /* not taken */
     }
 
 block_801511A4:;
@@ -540,7 +527,6 @@ block_801511A4:;
         goto block_80151200;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801511ACu);
-        goto block_801511AC;  /* not taken */
     }
 
 block_801511AC:
@@ -566,7 +552,6 @@ block_801511D4:;
         goto block_80151220;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801511DCu);
-        goto block_801511DC;  /* not taken */
     }
 
 block_801511DC:
@@ -633,7 +618,6 @@ block_80151270:
         goto block_801512D0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015127Cu);
-        goto block_8015127C;  /* not taken */
     }
 
 block_8015127C:
@@ -650,7 +634,6 @@ block_8015127C:
         goto block_801512AC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151298u);
-        goto block_80151298;  /* not taken */
     }
 
 block_80151298:
@@ -672,7 +655,6 @@ block_801512AC:
         goto block_801512D0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801512BCu);
-        goto block_801512BC;  /* not taken */
     }
 
 block_801512BC:
@@ -695,7 +677,6 @@ block_801512D0:
         goto block_8015130C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801512E4u);
-        goto block_801512E4;  /* not taken */
     }
 
 block_801512E4:
@@ -831,7 +812,6 @@ block_8015143C:
         goto block_80151CBC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151470u);
-        goto block_80151470;  /* not taken */
     }
 
 block_80151470:;
@@ -843,7 +823,6 @@ block_80151470:;
         goto block_80151CBC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151478u);
-        goto block_80151478;  /* not taken */
     }
 
 block_80151478:
@@ -916,7 +895,6 @@ block_801514FC:
         goto block_80151540;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015153Cu);
-        goto block_8015153C;  /* not taken */
     }
 
 block_8015153C:
@@ -958,7 +936,6 @@ block_80151560:
         goto block_801515A4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801515A0u);
-        goto block_801515A0;  /* not taken */
     }
 
 block_801515A0:
@@ -1000,7 +977,6 @@ block_801515C4:
         goto block_80151608;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151604u);
-        goto block_80151604;  /* not taken */
     }
 
 block_80151604:
@@ -1044,7 +1020,6 @@ block_80151640:
         goto block_8015165C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151658u);
-        goto block_80151658;  /* not taken */
     }
 
 block_80151658:
@@ -1085,7 +1060,6 @@ block_80151678:
         goto block_801516BC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801516B8u);
-        goto block_801516B8;  /* not taken */
     }
 
 block_801516B8:
@@ -1127,7 +1101,6 @@ block_801516DC:
         goto block_80151720;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015171Cu);
-        goto block_8015171C;  /* not taken */
     }
 
 block_8015171C:
@@ -1379,7 +1352,6 @@ block_80151A10:
         goto block_80151A2C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151A28u);
-        goto block_80151A28;  /* not taken */
     }
 
 block_80151A28:
@@ -1397,7 +1369,6 @@ block_80151A2C:
         goto block_80151A40;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151A3Cu);
-        goto block_80151A3C;  /* not taken */
     }
 
 block_80151A3C:
@@ -1563,7 +1534,6 @@ block_80151BEC:
         goto block_80151C24;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80151C20u);
-        goto block_80151C20;  /* not taken */
     }
 
 block_80151C20:

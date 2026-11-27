@@ -95,7 +95,6 @@ block_80183DC8:
         goto block_80183DE4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183DD8u);
-        goto block_80183DD8;  /* not taken */
     }
 
 block_80183DD8:
@@ -110,7 +109,6 @@ block_80183DE4:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -162,7 +160,6 @@ block_80183DF4:
         goto block_80183E10;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183E04u);
-        goto block_80183E04;  /* not taken */
     }
 
 block_80183E04:
@@ -177,7 +174,6 @@ block_80183E10:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -232,7 +228,6 @@ block_80183E20:
         goto block_80183E4C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183E30u);
-        goto block_80183E30;  /* not taken */
     }
 
 block_80183E30:
@@ -246,7 +241,6 @@ block_80183E30:
         goto block_80183E50;  /* taken — atkwin2 != 0 -> res 0 */
     } else {
         psx_check_interrupts_at(cpu, 0x80183E40u);
-        goto block_80183E40;  /* not taken */
     }
 
 block_80183E40:
@@ -264,7 +258,6 @@ block_80183E50:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -318,7 +311,6 @@ block_80183E5C:
         goto block_80183E88;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183E6Cu);
-        goto block_80183E6C;  /* not taken */
     }
 
 block_80183E6C:
@@ -332,7 +324,6 @@ block_80183E6C:
         goto block_80183E8C;  /* taken — atkwin2 != 0 -> res 0 */
     } else {
         psx_check_interrupts_at(cpu, 0x80183E7Cu);
-        goto block_80183E7C;  /* not taken */
     }
 
 block_80183E7C:
@@ -350,7 +341,6 @@ block_80183E8C:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -402,7 +392,6 @@ block_80183E98:
         goto block_80183EB4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183EA8u);
-        goto block_80183EA8;  /* not taken */
     }
 
 block_80183EA8:
@@ -417,7 +406,6 @@ block_80183EB4:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -468,7 +456,6 @@ block_80183EC4:
         goto block_80183EE0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80183ED4u);
-        goto block_80183ED4;  /* not taken */
     }
 
 block_80183ED4:
@@ -483,7 +470,6 @@ block_80183EE0:
     /* delay slot (always executes) */
     v1 = s1 + 2;  /* addiu v1,s1,2 — pc advance */
     psx_check_interrupts_at(cpu, 0x80184354u);
-    goto block_80184354;  /* j */
 
 block_80184354:
     cpu->write_word(s2 + 36, v1);  /* sw v1,0x24(s2) — ctx+0x24 pc */
@@ -529,7 +515,6 @@ block_80183EF0:
     /* delay slot (always executes) */
     v0 = 1;  /* li v0,1 — mask + return value */
     psx_check_interrupts_at(cpu, 0x80183FDCu);
-    goto block_80183FDC;  /* j */
 
 block_80183FDC:
     a0 = s1 + 2;  /* addiu a0,s1,2 — pc advance */
@@ -541,7 +526,6 @@ block_80183FE4:
     /* delay slot (always executes) */
     cpu->write_word(s2 + 56, v1);  /* sw v1,0x38(s2) — ctx+0x38 result */
     psx_check_interrupts_at(cpu, 0x80184358u);
-    goto block_80184358;  /* j */
 
 block_80184358:
     ra = cpu->read_word(sp + 36);  /* lw ra,0x24(sp) */
@@ -581,7 +565,6 @@ block_80183EFC:
     /* delay slot (always executes) */
     v0 = 1;  /* li v0,1 — mask + return value */
     psx_check_interrupts_at(cpu, 0x80183FDCu);
-    goto block_80183FDC;  /* j */
 
 block_80183FDC:
     a0 = s1 + 2;  /* addiu a0,s1,2 — pc advance */
@@ -593,7 +576,6 @@ block_80183FE4:
     /* delay slot (always executes) */
     cpu->write_word(s2 + 56, v1);  /* sw v1,0x38(s2) — ctx+0x38 result */
     psx_check_interrupts_at(cpu, 0x80184358u);
-    goto block_80184358;  /* j */
 
 block_80184358:
     ra = cpu->read_word(sp + 36);  /* lw ra,0x24(sp) */

@@ -51,7 +51,6 @@ block_80152248:
       cpu->pc = 0x80152264u; return;          /* CPS taken: split -> jr-ra stub */
     } else {
       psx_check_interrupts_at(cpu, 0x80152258u);
-      goto block_80152258;                    /* not taken */
     } }
 
 block_80152258:

@@ -34,7 +34,6 @@ uint32_t vec3_s32_h_normalize_store_tail(void)
   case 0x80194678u:
     goto block_80194678;
   default:
-    goto block_8019466C;
   }
 
 block_8019466C:

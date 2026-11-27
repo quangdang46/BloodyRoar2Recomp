@@ -193,7 +193,6 @@ block_80183FE4:
     /* delay slot (always executes) */
     cpu->write_word(s2 + 56, v1);
     psx_check_interrupts_at(cpu, 0x80184358u);
-    goto block_80184358;  /* j */
 
 block_80184358:
     ra = cpu->read_word(sp + 36);

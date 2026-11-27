@@ -1728,7 +1728,6 @@ block_801421C4:
     if (cond_v0_eq_zero) {
         goto block_80142240;  /* taken */
     } else {
-        goto block_80142238;  /* not taken */
     }
 block_80142238:
     /* early-out: flag uint8_t @0x1F8000B1 set -> next = stream+6, jump to epilogue */
@@ -1746,7 +1745,6 @@ block_80142240:
     if (cond_v0_eq_zero_2) {
         goto block_80142270;  /* taken */
     } else {
-        goto block_80142258;  /* not taken */
     }
 block_80142258:
     ;
@@ -1755,7 +1753,6 @@ block_80142258:
     if (cond_v0_eq_zero_3) {
         goto block_80142270;  /* taken */
     } else {
-        goto block_80142260;  /* not taken */
     }
 block_80142260:
     { cpu->gpr[3] = cpu->gpr[3] + 6156;
@@ -1777,7 +1774,6 @@ block_80142270:
     if (cond_v1_eq_v0) {
         goto block_80142884;  /* taken */
     } else {
-        goto block_80142288;  /* not taken */
     }
 block_80142288:
     cpu->gpr[2] = ((int32_t)cpu->gpr[2] < (int32_t)cpu->gpr[3]) ? 1 : 0;  /* 0x80142288: 0x0043102A */
@@ -1787,7 +1783,6 @@ block_80142288:
     if (cond_v0_ne_zero) {
         goto block_801422F8;  /* taken */
     } else {
-        goto block_80142294;  /* not taken */
     }
 block_80142294:
     { cpu->gpr[2] = 12288;
@@ -1797,7 +1792,6 @@ block_80142294:
     if (cond_v1_eq_v0_2) {
         goto block_80142434;  /* taken */
     } else {
-        goto block_801422A0;  /* not taken */
     }
 block_801422A0:
     ;
@@ -1807,7 +1801,6 @@ block_801422A0:
     if (cond_v0_eq_zero_4) {
         goto block_801422C0;  /* taken */
     } else {
-        goto block_801422A8;  /* not taken */
     }
 block_801422A8:
     ;
@@ -1817,7 +1810,6 @@ block_801422A8:
     if (cond_v1_eq_v0_3) {
         goto block_80142358;  /* taken */
     } else {
-        goto block_801422B0;  /* not taken */
     }
 block_801422B0:
     ;
@@ -1827,7 +1819,6 @@ block_801422B0:
     if (cond_v1_eq_v0_4) {
         goto block_801423A8;  /* taken */
     } else {
-        goto block_801422B8;  /* not taken */
     }
 block_801422B8:
     goto block_80142B00;
@@ -1839,7 +1830,6 @@ block_801422C0:
     if (cond_v1_eq_v0_5) {
         goto block_801424DC;  /* taken */
     } else {
-        goto block_801422CC;  /* not taken */
     }
 block_801422CC:
     ;
@@ -1849,7 +1839,6 @@ block_801422CC:
     if (cond_v0_eq_zero_5) {
         goto block_801422E4;  /* taken */
     } else {
-        goto block_801422D4;  /* not taken */
     }
 block_801422D4:
     ;
@@ -1859,7 +1848,6 @@ block_801422D4:
     if (cond_v1_eq_v0_6) {
         goto block_80142484;  /* taken */
     } else {
-        goto block_801422DC;  /* not taken */
     }
 block_801422DC:
     goto block_80142B00;
@@ -1872,7 +1860,6 @@ block_801422E4:
     if (cond_v1_eq_v0_7) {
         goto block_8014256C;  /* taken */
     } else {
-        goto block_801422F0;  /* not taken */
     }
 block_801422F0:
     goto block_80142B00;
@@ -1883,7 +1870,6 @@ block_801422F8:
     if (cond_v1_eq_v0_8) {
         goto block_8014269C;  /* taken */
     } else {
-        goto block_80142300;  /* not taken */
     }
 block_80142300:
     ;
@@ -1893,7 +1879,6 @@ block_80142300:
     if (cond_v0_ne_zero_2) {
         goto block_80142324;  /* taken */
     } else {
-        goto block_80142308;  /* not taken */
     }
 block_80142308:
     { cpu->gpr[2] = 0x9000;
@@ -1904,7 +1889,6 @@ block_80142308:
     if (cond_v1_eq_v0_9) {
         goto block_801427FC;  /* taken */
     } else {
-        goto block_80142314;  /* not taken */
     }
 block_80142314:
     ;
@@ -1913,7 +1897,6 @@ block_80142314:
     if (cond_v1_eq_v0_10) {
         goto block_8014263C;  /* taken */
     } else {
-        goto block_8014231C;  /* not taken */
     }
 block_8014231C:
     goto block_80142B00;
@@ -1924,7 +1907,6 @@ block_80142324:
     if (cond_v1_eq_v0_11) {
         goto block_801426F8;  /* taken */
     } else {
-        goto block_8014232C;  /* not taken */
     }
 block_8014232C:
     ;
@@ -1934,7 +1916,6 @@ block_8014232C:
     if (cond_v0_ne_zero_3) {
         goto block_80142348;  /* taken */
     } else {
-        goto block_80142334;  /* not taken */
     }
 block_80142334:
     { cpu->gpr[2] = 0xC000;
@@ -1943,7 +1924,6 @@ block_80142334:
     if (cond_v1_eq_v0_12) {
         goto block_801428A0;  /* taken */
     } else {
-        goto block_80142340;  /* not taken */
     }
 block_80142340:
     goto block_80142B00;
@@ -1954,7 +1934,6 @@ block_80142348:
     if (cond_v1_eq_v0_13) {
         goto block_80142734;  /* taken */
     } else {
-        goto block_80142350;  /* not taken */
     }
 block_80142350:
     goto block_80142B00;
@@ -1993,7 +1972,6 @@ block_80142358:
     }  /* 0x8014239C: 0x24C60034 */
     cpu->gpr[2] = br2_jal(0x80141814u, 0x801423A0u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801423A0;
 block_801423A0:
     goto block_80142B00;
 block_801423A8:
@@ -2005,7 +1983,6 @@ block_801423A8:
     }  /* 0x801423B4: 0x2407000B */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x801423B8u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801423B8;
 block_801423B8:
     { cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x801423B8: 0x00408021 */
@@ -2013,14 +1990,12 @@ block_801423B8:
     if (cond_s0_eq_zero) {
         goto block_80142B00;
     } else {
-        goto block_801423C4;  /* not taken */
     }
 block_801423C4:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x801423C8: 0x02002021 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x801423CCu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801423CC;
 block_801423CC:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x801423CC: 0x02002021 */
@@ -2033,7 +2008,6 @@ block_801423CC:
     }  /* 0x801423E0: 0x00408021 */
     cpu->gpr[2] = br2_jal(0x801AD224u, 0x801423E4u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801423E4;
 block_801423E4:
     { cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
     }  /* 0x801423E4: 0x00141603 */
@@ -2107,7 +2081,6 @@ block_80142434:
     }  /* 0x80142478: 0x24C60034 */
     cpu->gpr[2] = br2_jal(0x80142108u, 0x8014247Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014247C;
 block_8014247C:
     goto block_80142B00;
 block_80142484:
@@ -2119,7 +2092,6 @@ block_80142484:
     }  /* 0x80142490: 0x2407000D */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142494u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142494;
 block_80142494:
     { cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x80142494: 0x00408021 */
@@ -2127,14 +2099,12 @@ block_80142494:
     if (cond_s0_eq_zero_2) {
         goto block_80142B00;
     } else {
-        goto block_801424A0;  /* not taken */
     }
 block_801424A0:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x801424A4: 0x02002021 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x801424A8u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801424A8;
 block_801424A8:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x801424A8: 0x02002021 */
@@ -2147,7 +2117,6 @@ block_801424A8:
     }  /* 0x801424BC: 0x00408021 */
     cpu->gpr[2] = br2_jal(0x801AD224u, 0x801424C0u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801424C0;
 block_801424C0:
     { cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
     }  /* 0x801424C0: 0x00141603 */
@@ -2172,7 +2141,6 @@ block_801424DC:
     }  /* 0x801424EC: 0x2407000E */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x801424F0u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801424F0;
 block_801424F0:
     { cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x801424F0: 0x00408021 */
@@ -2180,14 +2148,12 @@ block_801424F0:
     if (cond_s0_eq_zero_3) {
         goto block_80142B00;
     } else {
-        goto block_801424FC;  /* not taken */
     }
 block_801424FC:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x80142500: 0x02002021 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x80142504u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142504;
 block_80142504:
     { cpu->gpr[4] = cpu->gpr[16];  /* move */
     }  /* 0x80142504: 0x02002021 */
@@ -2200,7 +2166,6 @@ block_80142504:
     }  /* 0x80142518: 0x00408021 */
     cpu->gpr[2] = br2_jal(0x801AD224u, 0x8014251Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014251C;
 block_8014251C:
     { cpu->gpr[2] = (int32_t)cpu->gpr[20] >> 24;
     }  /* 0x8014251C: 0x00141603 */
@@ -2250,21 +2215,18 @@ block_8014256C:
     }  /* 0x80142578: 0x2407000A */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x8014257Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014257C;
 block_8014257C:
     ;
     int cond_v0_eq_zero_6 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     if (cond_v0_eq_zero_6) {
         goto block_80142B00;
     } else {
-        goto block_80142584;  /* not taken */
     }
 block_80142584:
     { cpu->gpr[4] = cpu->gpr[2];  /* move */
     }  /* 0x80142588: 0x00402021 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x8014258Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014258C;
 block_8014258C:
     { cpu->gpr[5] = cpu->gpr[2];  /* move */
     }  /* 0x8014258C: 0x00402821 */
@@ -2325,7 +2287,6 @@ block_8014258C:
     if (cond_v0_eq_zero_7) {
         goto block_80142634;  /* taken */
     } else {
-        goto block_80142614;  /* not taken */
     }
 block_80142614:
     { cpu->gpr[10] = br2_ld32(cpu->gpr[29] + 96);
@@ -2339,7 +2300,6 @@ block_80142614:
     if (cond_v0_eq_zero_8) {
         goto block_80142634;  /* taken */
     } else {
-        goto block_80142630;  /* not taken */
     }
 block_80142630:
     { cpu->gpr[3] = cpu->gpr[2] - cpu->gpr[3];
@@ -2374,14 +2334,12 @@ block_8014263C:
     }  /* 0x8014266C: 0x24840034 */
     cpu->gpr[2] = br2_jal(0x80139FD0u, 0x80142670u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142670;
 block_80142670:
     ;
     int cond_s0_ne_zero = (cpu->gpr[16] != cpu->gpr[0]);  /* save branch cond before delay slot */
     if (cond_s0_ne_zero) {
         goto block_80142B00;
     } else {
-        goto block_80142678;  /* not taken */
     }
 block_80142678:
     { cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
@@ -2392,7 +2350,6 @@ block_80142678:
     if (cond_v0_eq_zero_9) {
         goto block_801427D4;  /* taken */
     } else {
-        goto block_8014268C;  /* not taken */
     }
 block_8014268C:
     { cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
@@ -2439,7 +2396,6 @@ block_8014269C:
     }  /* 0x801426EC: 0xAFA20010 */
     cpu->gpr[2] = br2_jal(0x8013B088u, 0x801426F0u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801426F0;
 block_801426F0:
     goto block_80142B00;
 block_801426F8:
@@ -2465,7 +2421,6 @@ block_801426F8:
     }  /* 0x80142728: 0x00073E02 */
     cpu->gpr[2] = br2_jal(0x801401C8u, 0x8014272Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014272C;
 block_8014272C:
     goto block_80142B00;
 block_80142734:
@@ -2525,7 +2480,6 @@ block_80142734:
     }  /* 0x801427AC: 0x00A22821 */
     cpu->gpr[2] = br2_jal(0x8013EE40u, 0x801427B0u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801427B0;
 block_801427B0:
     { cpu->gpr[2] = br2_ld32(cpu->gpr[18] + 88);
     }  /* 0x801427B0: 0x8E420058 */
@@ -2535,7 +2489,6 @@ block_801427B0:
     if (cond_v0_eq_zero_10) {
         goto block_801427D4;  /* taken */
     } else {
-        goto block_801427C4;  /* not taken */
     }
 block_801427C4:
     { cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
@@ -2624,7 +2577,6 @@ block_801427FC:
     }  /* 0x80142878: 0xAFA00014 */
     cpu->gpr[2] = br2_jal(0x8013D6B0u, 0x8014287Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_8014287C;
 block_8014287C:
     goto block_80142B00;
 block_80142884:
@@ -2637,7 +2589,6 @@ block_80142884:
     }  /* 0x80142894: 0x00063403 */
     cpu->gpr[2] = br2_jal(0x8013F714u, 0x80142898u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142898;
 block_80142898:
     goto block_80142B00;
 block_801428A0:
@@ -2651,7 +2602,6 @@ block_801428A0:
     if (cond_v0_eq_zero_11) {
         goto block_80142B00;
     } else {
-        goto block_801428B8;  /* not taken */
     }
 block_801428B8:
     { cpu->gpr[2] = cpu->gpr[2] + 552;
@@ -2688,7 +2638,6 @@ block_801428D4:
     }  /* 0x801428E8: 0x8C640000 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x801428F4u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801428F4;
 block_801428F4:
     { cpu->gpr[4] = cpu->gpr[2];  /* move */
     }  /* 0x801428F4: 0x00402021 */
@@ -2700,7 +2649,6 @@ block_801428F4:
     if (cond_v1_eq_v0_14) {
         goto block_8014294C;  /* taken */
     } else {
-        goto block_80142908;  /* not taken */
     }
 block_80142908:
     ;
@@ -2710,7 +2658,6 @@ block_80142908:
     if (cond_v0_eq_zero_12) {
         goto block_80142920;  /* taken */
     } else {
-        goto block_80142910;  /* not taken */
     }
 block_80142910:
     ;
@@ -2720,7 +2667,6 @@ block_80142910:
     if (cond_v1_eq_zero) {
         goto block_80142930;  /* taken */
     } else {
-        goto block_80142918;  /* not taken */
     }
 block_80142918:
     goto block_80142B00;
@@ -2732,7 +2678,6 @@ block_80142920:
     if (cond_v1_eq_v0_15) {
         goto block_80142944;  /* taken */
     } else {
-        goto block_80142928;  /* not taken */
     }
 block_80142928:
     goto block_80142B00;
@@ -2762,7 +2707,6 @@ block_80142954:
     if (cond_v1_eq_zero_2) {
         goto block_80142970;  /* taken */
     } else {
-        goto block_80142960;  /* not taken */
     }
 block_80142960:
     ;
@@ -2772,7 +2716,6 @@ block_80142960:
     if (cond_v1_eq_v0_16) {
         goto block_801429C4;  /* taken */
     } else {
-        goto block_80142968;  /* not taken */
     }
 block_80142968:
     goto block_80142B00;
@@ -2789,21 +2732,18 @@ block_80142970:
     }  /* 0x80142984: 0x00C43021 */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142988u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142988;
 block_80142988:
     ;
     int cond_v0_eq_zero_13 = (cpu->gpr[2] == cpu->gpr[0]);  /* save branch cond before delay slot */
     if (cond_v0_eq_zero_13) {
         goto block_80142B00;
     } else {
-        goto block_80142990;  /* not taken */
     }
 block_80142990:
     { cpu->gpr[4] = cpu->gpr[2];  /* move */
     }  /* 0x80142994: 0x00402021 */
     cpu->gpr[2] = br2_jal(0x801AD284u, 0x80142998u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142998;
 block_80142998:
     { cpu->gpr[3] = br2_ld8(cpu->gpr[18] + 2);
     }  /* 0x80142998: 0x92430002 */
@@ -2845,7 +2785,6 @@ block_801429C4:
     }  /* 0x801429E8: 0x24A50034 */
     cpu->gpr[2] = br2_jal(0x8013E0F0u, 0x801429ECu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_801429EC;
 block_801429EC:
     goto block_80142B00;
 block_801429F4:
@@ -2856,7 +2795,6 @@ block_801429F4:
     if (cond_v0_ne_zero_4) {
         goto block_80142B00;
     } else {
-        goto block_80142A00;  /* not taken */
     }
 block_80142A00:
     { cpu->gpr[3] = cpu->gpr[3] | 0x00E8;
@@ -2887,7 +2825,6 @@ block_80142A00:
     }  /* 0x80142A38: 0x00E33821 */
     cpu->gpr[2] = br2_jal(0x8013C9CCu, 0x80142A3Cu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142A3C;
 block_80142A3C:
     goto block_80142B00;
 block_80142A40:
@@ -2900,7 +2837,6 @@ block_80142A44:
     if (cond_v0_eq_zero_14) {
         goto block_80142B00;  /* taken */
     } else {
-        goto block_80142A54;  /* not taken */
     }
 block_80142A54:
     ;
@@ -2910,7 +2846,6 @@ block_80142A54:
     if (cond_s1_lt_0) {
         goto block_80142B00;  /* taken */
     } else {
-        goto block_80142A5C;  /* not taken */
     }
 block_80142A5C:
     { cpu->gpr[5] = cpu->gpr[4];  /* move */
@@ -2925,7 +2860,6 @@ block_80142A5C:
     }  /* 0x80142A70: 0x00C43021 */
     cpu->gpr[2] = br2_jal(0x801AD38Cu, 0x80142A74u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142A74;
 block_80142A74:
     { cpu->gpr[16] = cpu->gpr[2];  /* move */
     }  /* 0x80142A74: 0x00408021 */
@@ -2935,7 +2869,6 @@ block_80142A74:
     if (cond_s0_eq_zero_4) {
         goto block_80142B00;  /* taken */
     } else {
-        goto block_80142A80;  /* not taken */
     }
 block_80142A80:
     { cpu->gpr[5] = cpu->gpr[18];  /* move */
@@ -2959,7 +2892,6 @@ block_80142A80:
     }  /* 0x80142AA8: 0x24E70034 */
     cpu->gpr[2] = br2_jal(0x801AD240u, 0x80142AACu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142AAC;
 block_80142AAC:
     ;
     int cond_s1_ne_zero = (cpu->gpr[17] != cpu->gpr[0]);  /* save branch cond before delay slot */
@@ -2968,14 +2900,12 @@ block_80142AAC:
     if (cond_s1_ne_zero) {
         goto block_80142B00;  /* taken */
     } else {
-        goto block_80142AB4;  /* not taken */
     }
 block_80142AB4:
     { cpu->gpr[5] = 2;
     }  /* 0x80142AB8: 0x24050002 */
     cpu->gpr[2] = br2_jal(0x801A46C8u, 0x80142ABCu);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142ABC;
 block_80142ABC:
     goto block_80142B00;  /* j */
 block_80142AC4:
@@ -2986,7 +2916,6 @@ block_80142AC4:
     if (cond_v0_ne_zero_5) {
         goto block_80142B00;  /* taken */
     } else {
-        goto block_80142AD0;  /* not taken */
     }
 block_80142AD0:
     /* param pack: stream uint8_t -> x*32+x scaled pairs -> jal 0x8013F7A0 */
@@ -3013,7 +2942,6 @@ block_80142AD0:
     }  /* 0x80142AFC: 0x00A32821 */
     cpu->gpr[2] = br2_jal(0x8013F7A0u, 0x80142B00u);
     if (br2_bail_pending()) return cpu->gpr[2];
-    goto block_80142B00;
 block_80142B00:
     /* shared epilogue: reload saved s0-s6/ra, sp+=88, jr ra */
     { cpu->gpr[10] = br2_ld32(cpu->gpr[29] + 96);

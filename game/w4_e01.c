@@ -164,7 +164,6 @@ block_80184694:
   /* j 0x801846AC — delay slot */
   /* nop */  /* 0x801846A0: 0x00000000 */
   psx_check_interrupts_at(cpu, 0x801846ACu);
-  goto block_801846AC;
 
 block_801846AC:
   a1 = (int32_t)(int16_t)cpu->read_half(s4 + 176);  /* 0x801846AC: lh a1,0xb0(s4) */
