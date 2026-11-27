@@ -463,6 +463,7 @@
 801692d8 quad_strip_emit_a
 8016951c quad_strip_emit_b
 80156048 gauge_scale_fixed
+8015607c cd_chan_attr_issue
 80129218 stage_char_data_load
 8014afc0 event_record_walk
 8012aae4 system_tick_frame
