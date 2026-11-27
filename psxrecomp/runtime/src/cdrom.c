@@ -84,6 +84,7 @@ static int s_lid_irq_pending;
  * BIOS (SCPH1001, NTSC-U). */
 static uint8_t disc_scex[4] = { 'S', 'C', 'E', 'A' };
 
+/* Set the disc area-code bytes (SCEA/SCEA...) reported by the CD subsystem. */
 void cdrom_set_disc_scex(const char scex[4]) {
     memcpy(disc_scex, scex, 4);
 }
@@ -252,6 +253,7 @@ static void note_sector_drop(int old_lba, int new_lba, int slot) {
 
 
 #define RB_ (s_sector_ring[s_ring_read])
+/* True if the sector ring buffer has a readable slot (tripwire for starvation). */
 static int rb_available(void) { return RB_.size > 0 && RB_.pos < RB_.size; }
 
 /* Regression tripwire. The ring once stranded a sector in a slot nothing
@@ -260,6 +262,7 @@ static int rb_available(void) { return RB_.size > 0 && RB_.pos < RB_.size; }
  * slot exhausted while the writer had already moved on. */
 static uint64_t s_ring_starved;
 
+/* Count a ring starvation event when BFRD is requested but no data ready. */
 static void ring_note_starved(void) {
     if (!rb_available() && s_ring_read != s_ring_write) s_ring_starved++;
 }
@@ -329,6 +332,7 @@ static uint64_t s_cd_probe_seek_count, s_cd_probe_seek_cycles;
 static uint64_t s_cd_probe_motor_count, s_cd_probe_motor_cycles;
 static uint64_t s_cd_probe_stop_count, s_cd_probe_stop_cycles;
 
+/* Note INTC delivery on the IRQ timing record. */
 static void cd_timing_note_intc(void);
 static uint8_t filter_file;
 static uint8_t filter_channel;
@@ -402,6 +406,7 @@ void cdrom_notify_game_started(void) {
     g_disc_speed_divisor = g_game_divisor;
 }
 
+/* Return the LBA most recently requested via SetLoc. */
 int cdrom_get_setloc_lba(void) { return s_setloc_lba; }
 
 /* The sector most recently DELIVERED into the data buffer -- as opposed to
@@ -409,6 +414,7 @@ int cdrom_get_setloc_lba(void) { return s_setloc_lba; }
  * differ, and attributing a DMA to the SetLoc stamp alone is how a transfer
  * carrying sector 125113's bytes was read as "the game asked for 125113"
  * when the open question was precisely WHICH sector's data it drained. */
+/* Return the LBA most recently DELIVERED into the data buffer. */
 int cdrom_get_delivered_lba(void) { return last_sector_lba; }
 
 /* Frontend XA-stream probe (FMV auto-skip / turbo-load gating in main.cpp). */
@@ -426,6 +432,7 @@ int cdrom_fmv_stream_pending(void)
     return 0;
 }
 
+/* Re-anchor CD timing deadlines after a savestate restore. */
 void cdrom_resync_deadlines_after_restore(void)
 {
     if (reading && read_delay > 0)
@@ -509,6 +516,7 @@ static uint64_t s_warm_route_sectors;
 static uint64_t s_warm_route_consumer_waits;
 static uint64_t s_warm_route_consumer_wait_cycles;
 
+/* Register a warm-route allowlist of LBAs to prefetch. */
 void cdrom_register_warm_route(int arm_lba, const int* lbas, int count,
                                int instant_max_per_frame) {
     if (!lbas || count < 1 || count > CDROM_WARM_ROUTE_MAX || arm_lba < 0 ||
@@ -530,6 +538,7 @@ void cdrom_register_warm_route(int arm_lba, const int* lbas, int count,
     s_warm_route_last_lba = -1;
 }
 
+/* Enable/disable the warm-route prefetcher. */
 void cdrom_warm_route_set_enabled(int enabled) {
     s_warm_route_enabled = enabled ? 1 : 0;
     if (!s_warm_route_enabled) {
@@ -548,6 +557,7 @@ static const CDROMWarmRoute* warm_route_current(void) {
     return &s_warm_routes[s_warm_route_active_index];
 }
 
+/* Emit warm-route stats as JSON. */
 void cdrom_warm_route_stats_json(char* out, int cap) {
     if (!out || cap <= 0) return;
     int state_index = s_warm_route_active ? s_warm_route_active_index : -1;
@@ -573,6 +583,7 @@ void cdrom_warm_route_stats_json(char* out, int cap) {
              (unsigned long long)s_warm_route_consumer_wait_cycles);
 }
 
+/* Kick warm-route prefetch when the game issues SetLoc. */
 static void warm_route_on_setloc(int lba) {
     if (!s_warm_route_configured || !s_warm_route_enabled) return;
 
@@ -633,18 +644,22 @@ static void warm_route_on_setloc(int lba) {
     s_warm_route_mismatches++;
 }
 
+/* Set the max sectors/frame for instant-load mode. */
 void cdrom_set_instant_rate(int per_frame) {
     if (per_frame < 1)    per_frame = 1;
     if (per_frame > 4096) per_frame = 4096;
     g_instant_max_per_frame = per_frame;
 }
+/* Get the max sectors/frame for instant-load mode. */
 int cdrom_get_instant_rate(void) { return g_instant_max_per_frame; }
 
+/* Compute the cycle period between instant-load sector deliveries. */
 static int instant_period(void) {
     int p = VBLANK_CYCLES_NTSC / g_instant_max_per_frame;
     return p < CDROM_MIN_DELAY ? CDROM_MIN_DELAY : p;
 }
 
+/* Compute the delivery period for the active warm route. */
 static int warm_route_period(void) {
     const CDROMWarmRoute *route = warm_route_current();
     int rate = route ? route->rate : CDROM_INSTANT_MAX_PER_FRAME_DEFAULT;
@@ -652,6 +667,7 @@ static int warm_route_period(void) {
     return p < CDROM_MIN_DELAY ? CDROM_MIN_DELAY : p;
 }
 
+/* Apply double/single-speed mode to sector timing. */
 static int apply_speed(int delay) {
     /* XA streaming (FMV / CDDA background music): preserve authentic timing.
      * FMVs interleave XA audio + MDEC video — speeding up sector delivery
@@ -662,6 +678,7 @@ static int apply_speed(int delay) {
     return d < CDROM_MIN_DELAY ? CDROM_MIN_DELAY : d;
 }
 
+/* Apply read-speed mode (authentic vs accelerated) for data reads. */
 static int apply_read_speed(int delay) {
     /* A route is an explicit DATA-read allowlist, never a blanket drive-speed
      * change. Keep FMV/STR authentic once the drive is explicitly in XA/filter
@@ -695,6 +712,7 @@ static uint64_t host_ms(void) {
 #endif
 }
 
+/* Record a burst-read sector event with frame/ms timestamps. */
 static void burst_note_sector(void) {
     uint32_t f  = (uint32_t)s_frame_count;
     uint64_t ms = host_ms();
@@ -725,8 +743,10 @@ int cdrom_get_bursts(void *out, int max) {
     }
     return n;
 }
+/* Total burst-read sectors recorded. */
 uint32_t cdrom_get_burst_total(void) { return s_burst_count; }
 
+/* Cycle delay between sectors at current speed mode. */
 static int sector_delay_cycles(void) {
     /* PS1 CPU is 33.8688 MHz. CD-ROM sectors arrive at 75 Hz in 1x
      * mode, or twice that rate when SetMode bit 7 enables double speed. */
@@ -736,6 +756,7 @@ static int sector_delay_cycles(void) {
     return apply_read_speed(base);
 }
 
+/* Extra read-start latency after ReadN/ReadS (Beetle/PCSX model). */
 static int initial_read_delay_cycles(void) {
     /* Beetle/PCSX model an additional read-start latency after ReadN/ReadS.
      * In double-speed mode the first sector still waits one 1x sector period;
@@ -746,6 +767,7 @@ static int initial_read_delay_cycles(void) {
     return apply_read_speed(base);
 }
 
+/* Seek-complete latency for far SetLoc/Seek (Rocky-model). */
 static int seek_complete_delay_cycles(void) {
     /* PCSX carries a far-SetLoc seek state and explicitly calls out Rockman X5:
      * far SeekL/SeekP completes after roughly four 1x sector periods, while a
@@ -766,21 +788,25 @@ typedef struct {
 } PendingCmd;
 static PendingCmd pending;
 
+/* Cycles remaining until a deadline (0 if past due). */
 static int cycles_until_due(uint64_t due_cyc) {
     if (due_cyc == 0 || psx_cycle_count >= due_cyc) return 0;
     uint64_t rem = due_cyc - psx_cycle_count;
     return rem > 0x7FFFFFFFull ? 0x7FFFFFFF : (int)rem;
 }
 
+/* Cycles remaining on the pending command deadline. */
 static int pending_rem_cycles(void) {
     if (!pending.pending) return 0;
     return cycles_until_due(pending.due_cyc);
 }
 
+/* Cycles remaining until the pending IRQ presentation. */
 static int irq_present_rem_cycles(void) {
     return cycles_until_due(cdrom_irq_present_due);
 }
 
+/* True if PSX_CDDBG debug logging is enabled (env-gated, cached). */
 static int cd_dbg_enabled(void) {
     static int v = -1;
     if (v < 0) { const char *e = getenv("PSX_CDDBG"); v = (e && e[0] && e[0] != '0') ? 1 : 0; }
@@ -788,6 +814,7 @@ static int cd_dbg_enabled(void) {
 }
 #define CDDBG(...) do { if (cd_dbg_enabled()) fprintf(stderr, __VA_ARGS__); } while (0)
 
+/* Arm the pending-command deadline. */
 static void pending_arm(uint8_t cmd, int latency_cycles, int phase) {
     if (latency_cycles < 0) latency_cycles = 0;
     pending.cmd = cmd;
@@ -799,6 +826,7 @@ static void pending_arm(uint8_t cmd, int latency_cycles, int phase) {
           (unsigned long long)pending.due_cyc, latency_cycles, irq_flag);
 }
 
+/* Set remaining cycles on the pending command. */
 static void pending_set_remaining(int rem) {
     if (!pending.pending) {
         pending.due_cyc = 0;
@@ -808,6 +836,7 @@ static void pending_set_remaining(int rem) {
     pending.due_cyc = psx_cycle_count + (uint64_t)rem;
 }
 
+/* Set remaining cycles until IRQ presentation. */
 static void irq_present_set_remaining(int rem) {
     if (rem <= 0) {
         cdrom_irq_present_due = 0;
@@ -825,6 +854,7 @@ typedef struct {
 } QueuedCmd;
 static QueuedCmd queued_cmd;
 
+/* Execute a CD command byte (the command dispatcher). */
 static void exec_command(uint8_t cmd);
 
 /* ISO reader */
@@ -833,6 +863,7 @@ static uint8_t last_valid_subq[12];
 static int last_valid_subq_available;
 static int subq_replacements_active;
 
+/* Update the last-valid subcode-Q cache entry. */
 static void update_last_valid_subq(uint32_t lba) {
     uint8_t subq[12];
     int valid = 0;
@@ -845,6 +876,7 @@ static void update_last_valid_subq(uint32_t lba) {
 static CDROMTraceEntry cdrom_trace[CDROM_TRACE_CAP];
 static uint64_t cdrom_trace_seq;
 
+/* Record a CD register access into the trace ring. */
 static void trace_cdrom(uint8_t kind, uint32_t addr, uint32_t val, uint8_t width) {
     CDROMTraceEntry *e = &cdrom_trace[cdrom_trace_seq % CDROM_TRACE_CAP];
     e->seq = cdrom_trace_seq++;
@@ -876,6 +908,7 @@ static void trace_cdrom(uint8_t kind, uint32_t addr, uint32_t val, uint8_t width
     e->read_delay = read_delay;
 }
 
+/* Record a CD command into the command-history ring. */
 static void record_command_history(uint8_t kind, uint8_t cmd,
                                    const uint8_t* params, int count) {
     CDROMCommandHistoryEntry *e =
@@ -914,6 +947,7 @@ static void record_command_history(uint8_t kind, uint8_t cmd,
     e->queued_pending = (uint8_t)(queued_cmd.pending ? 1 : 0);
 }
 
+/* True if a raw sector is realtime XA audio (Mode2+audio). */
 static int xa_is_audio_realtime(const CDROMSectorDelivery *d) {
     return d &&
            d->raw_mode == CDROM_SECTOR_MODE2 &&
@@ -921,6 +955,7 @@ static int xa_is_audio_realtime(const CDROMSectorDelivery *d) {
             (XA_SUBMODE_AUDIO | XA_SUBMODE_REALTIME));
 }
 
+/* Classify a raw sector into CDROMSectorDelivery (mode/subheader). */
 static CDROMSectorDelivery classify_raw_sector(const uint8_t *raw_data, int have_raw) {
     CDROMSectorDelivery d;
     memset(&d, 0, sizeof(d));
@@ -936,6 +971,7 @@ static CDROMSectorDelivery classify_raw_sector(const uint8_t *raw_data, int have
     return d;
 }
 
+/* Record a delivered sector into the sector-history ring. */
 static void record_sector_history(int lba, int size, uint8_t mode, int have_raw,
                                   const uint8_t *bytes,
                                   const CDROMSectorDelivery *delivery) {
@@ -966,6 +1002,7 @@ static void record_sector_history(int lba, int size, uint8_t mode, int have_raw,
     }
 }
 
+/* True if media is present and lid is closed. */
 static int has_disc(void) {
     return cdrom_lid_media_ready(&s_lid, iso_handle != NULL);
 }
@@ -987,17 +1024,20 @@ static int has_disc(void) {
 #define CDIRQ_DATA_END    4
 #define CDIRQ_ERROR       5
 
+/* Clear the response FIFO. */
 static void response_clear(void) {
     response_read = 0;
     response_count = 0;
 }
 
+/* Push a byte into the response FIFO (drop if full). */
 static void response_push(uint8_t val) {
     if (response_count < RESPONSE_FIFO_SIZE) {
         response_fifo[response_count++] = val;
     }
 }
 
+/* Set the CD interrupt flag and log it. */
 static void set_irq(int type) {
     irq_flag = (uint8_t)type;
     CDDBG("[cdpend] SET_IRQ type=%d cyc=%llu\n", type, (unsigned long long)psx_cycle_count);
@@ -1033,8 +1073,10 @@ static void set_irq(int type) {
 }
 
 static void fire_cdrom_irq(void);
+/* Stop the data read stream. */
 static void stop_read_stream(void);
 
+/* Raise the lid-open IRQ if pending and no IRQ in flight. */
 static void present_lid_open_irq_if_ready(void)
 {
     if (!s_lid_irq_pending || irq_flag != 0)
@@ -1048,6 +1090,7 @@ static void present_lid_open_irq_if_ready(void)
     s_lid_irq_pending = 0;
 }
 
+/* Advance lid open/close state machine and pending IRQs. */
 static void process_lid_state(void)
 {
     present_lid_open_irq_if_ready();
@@ -1071,6 +1114,7 @@ static void process_lid_state(void)
  * traced — refresh runs every cdrom_advance, so tracing it would flood the CD
  * trace ring and evict useful history. Suppression is implicit (no 'F' fires
  * between an ack and the next set_irq). */
+/* Present the CD IRQ after its processing-delay deadline. */
 static void present_cdrom_irq(void) {
     /* Presentation latency: hold off raising i_stat until the response's
      * processing delay has elapsed (decremented in cdrom_advance). This is what
@@ -1124,18 +1168,22 @@ static void fire_cdrom_irq(void) {
     present_cdrom_irq();
 }
 
+/* Re-evaluate and present the CD IRQ line. */
 static void refresh_cdrom_irq_line(void) {
     present_cdrom_irq();
 }
 
+/* Convert BCD byte to binary. */
 static int bcd_to_bin(uint8_t bcd) {
     return (bcd >> 4) * 10 + (bcd & 0x0F);
 }
 
+/* Convert MSF (min:sec:frame) to LBA (75fps, 150-sector pregap). */
 static int msf_to_lba(int m, int s, int f) {
     return (m * 60 + s) * 75 + f - 150;
 }
 
+/* Look up a CD timing record by sequence number. */
 static CdTimingRecord *cd_timing_lookup(uint64_t seq) {
     if (seq == UINT64_MAX || seq >= s_cd_timing_total ||
         s_cd_timing_total - seq > CD_TIMING_CAP) return NULL;
@@ -1143,6 +1191,7 @@ static CdTimingRecord *cd_timing_lookup(uint64_t seq) {
     return r->seq == seq ? r : NULL;
 }
 
+/* Begin a new sector timing record. */
 static uint64_t cd_timing_begin_sector(int lba) {
     uint64_t seq = s_cd_timing_total++;
     CdTimingRecord *r = &s_cd_timing[seq & (CD_TIMING_CAP - 1u)];
@@ -1155,11 +1204,13 @@ static uint64_t cd_timing_begin_sector(int lba) {
     return seq;
 }
 
+/* OR flags into a timing record. */
 static void cd_timing_flag(uint64_t seq, uint8_t flags) {
     CdTimingRecord *r = cd_timing_lookup(seq);
     if (r) r->flags |= flags;
 }
 
+/* Arm IRQ timing on a timing record. */
 static void cd_timing_arm_irq(uint64_t seq) {
     CdTimingRecord *r = cd_timing_lookup(seq);
     if (!r) return;
@@ -1175,6 +1226,7 @@ static void cd_timing_note_intc(void) {
     r->intc_cycle = psx_cycle_count;
 }
 
+/* Reset the CD timing record window. */
 void cdrom_timing_reset(void) {
     s_cd_timing_reset_seq = s_cd_timing_total;
     s_cd_timing_stream_starts = 0;
@@ -1186,8 +1238,10 @@ void cdrom_timing_reset(void) {
     s_cd_probe_stop_count = s_cd_probe_stop_cycles = 0;
 }
 
+/* Total timing records since last reset. */
 uint64_t cdrom_timing_total(void) { return s_cd_timing_total; }
 
+/* Fetch a timing record by seq into out (0 if invalid). */
 int cdrom_timing_record(uint64_t seq, CdTimingPub *out) {
     CdTimingRecord *r = cd_timing_lookup(seq);
     if (!r || !out) return 0;
@@ -1202,6 +1256,7 @@ int cdrom_timing_record(uint64_t seq, CdTimingPub *out) {
     return 1;
 }
 
+/* Emit CD timing stats as JSON. */
 void cdrom_timing_stats_json(char *out, int cap) {
     if (!out || cap <= 0) return;
     uint64_t start = s_cd_timing_reset_seq;
@@ -1304,10 +1359,12 @@ void cdrom_timing_stats_json(char *out, int cap) {
                                   s_cd_probe_stop_cycles));
 }
 
+/* Convert binary value to BCD byte. */
 static uint8_t bin_to_bcd(int val) {
     return (uint8_t)(((val / 10) << 4) | (val % 10));
 }
 
+/* Convert LBA to MSF with a 150-sector pregap offset. */
 static void lba_to_msf(int lba, int pregap, int* m, int* s, int* f) {
     int frames = lba + pregap;
     if (frames < 0) frames = 0;
@@ -1317,12 +1374,14 @@ static void lba_to_msf(int lba, int pregap, int* m, int* s, int* f) {
     *f = frames % 75;
 }
 
+/* Clamp an int to int16 range. */
 static int16_t clamp16_cd(int32_t v) {
     if (v > 32767) return 32767;
     if (v < -32768) return -32768;
     return (int16_t)v;
 }
 
+/* Reset the XA ADPCM decode history. */
 static void xa_reset_decode(void) {
     xa_hist_l[0] = xa_hist_l[1] = 0;
     xa_hist_r[0] = xa_hist_r[1] = 0;
@@ -1342,6 +1401,7 @@ static void xa_reset_decode(void) {
 static uint8_t cd_pending_vol[2][2] = { { 0x80, 0x00 }, { 0x00, 0x80 } };
 static uint8_t cd_decode_vol[2][2]  = { { 0x80, 0x00 }, { 0x00, 0x80 } };
 
+/* Apply the decode-volume matrix (fast path for identity). */
 static void cd_apply_decode_volume(int16_t *stereo, int frames) {
     /* Fast path: identity matrix (the reset state). */
     if (cd_decode_vol[0][0] == 0x80 && cd_decode_vol[1][1] == 0x80 &&
@@ -1357,6 +1417,7 @@ static void cd_apply_decode_volume(int16_t *stereo, int frames) {
     }
 }
 
+/* Decode a 4-bit ADPCM XA sector to stereo PCM. */
 static int xa_decode_sector_4bit_stereo(const uint8_t* data, int16_t* out) {
     static const int k0[5] = { 0, 60, 115, 98, 122 };
     static const int k1[5] = { 0, 0, -52, -55, -60 };
@@ -1402,6 +1463,7 @@ static int xa_decode_sector_4bit_stereo(const uint8_t* data, int16_t* out) {
     return pair;
 }
 
+/* Decode a 4-bit ADPCM XA sector to mono PCM. */
 static int xa_decode_sector_4bit_mono(const uint8_t* data, int16_t* out) {
     static const int k0[5] = { 0, 60, 115, 98, 122 };
     static const int k1[5] = { 0, 0, -52, -55, -60 };
@@ -1440,6 +1502,7 @@ static int xa_decode_sector_4bit_mono(const uint8_t* data, int16_t* out) {
     return pair;
 }
 
+/* Resample decoded XA PCM to 44.1kHz. */
 static int xa_resample_to_44100(const int16_t* in, int in_frames,
                                 int sample_rate, int16_t* out, int max_frames) {
     if (!in || !out || in_frames <= 0 || sample_rate <= 0 || max_frames <= 0) return 0;
@@ -1472,6 +1535,7 @@ static int xa_resample_to_44100(const int16_t* in, int in_frames,
  * a run here localizes corruption to a pipeline stage (stage 0 = straight
  * out of the ADPCM decoder at native rate, stage 1 = after resample +
  * decode-volume, i.e. exactly what spu_cd_audio_push receives). */
+/* Scan an XA sector for leading zero blocks (silence detect). */
 static void xa_zero_scan(const int16_t *stereo, int frames, int lba,
                          int stage) {
     int run = 0, start = 0;
@@ -1491,6 +1555,7 @@ static void xa_zero_scan(const int16_t *stereo, int frames, int lba,
     }
 }
 
+/* Deliver decoded XA audio if mode_reg requests it. */
 static int maybe_deliver_xa_audio(const uint8_t* raw_data, int lba,
                                   const CDROMSectorDelivery *delivery) {
     if (!(mode_reg & 0x40u) || !raw_data || !delivery || cd_muted) return 0;
@@ -1546,6 +1611,7 @@ static int maybe_deliver_xa_audio(const uint8_t* raw_data, int lba,
     return 1;
 }
 
+/* Read and deliver the sector at MSF position. */
 static int read_sector_at(int min, int sec, int sect) {
     int lba = msf_to_lba(min, sec, sect);
     uint8_t user_data[SECTOR_SIZE];
@@ -1673,12 +1739,14 @@ static int read_sector_at(int min, int sec, int sect) {
     return delivery.data_delivered ? 1 : 0;
 }
 
+/* Increment MSF position by one frame (75fps rollover). */
 static void advance_msf(int* m, int* s, int* f) {
     (*f)++;
     if (*f >= 75) { *f = 0; (*s)++; }
     if (*s >= 60) { *s = 0; (*m)++; }
 }
 
+/* Clear all sector ring buffer slots. */
 static void clear_sector_buffer(void) {
     for (int i = 0; i < CDROM_NUM_SECTOR_BUFFERS; i++) {
         s_sector_ring[i].size = 0;
@@ -1750,6 +1818,7 @@ static void cdrom_clear_pending_dataready(void) {
  *
  * The drive is left running and the command is ACKed, exactly as when it is
  * accepted -- the guest sees the same INT3, just without the restart. */
+/* True if a read stream is active and positioned. */
 static int read_continues_current_stream(void) {
     if (!reading) return 0;
     /* Next sector the stream will deliver. */
@@ -1761,6 +1830,7 @@ static int read_continues_current_stream(void) {
     return 1;
 }
 
+/* Start a data read stream (clears CDDA state). */
 static void start_read_stream(uint8_t cmd) {
     cdda_playing = 0;
     cdda_track = 0;
@@ -1823,6 +1893,7 @@ static void stop_read_stream(void) {
     cdrom_clear_pending_dataready();
 }
 
+/* Stop CDDA playback. */
 static void stop_cdda_playback(void) {
     cdda_playing = 0;
     cdda_track = 0;
@@ -1831,6 +1902,7 @@ static void stop_cdda_playback(void) {
     stat_reg &= (uint8_t)~CDSTAT_PLAY;
 }
 
+/* Deliver pending CDDA data-end IRQ. */
 static void deliver_cdda_data_end(void) {
     if (!cdda_data_end_pending || irq_flag != 0) return;
     cdda_data_end_pending = 0;
@@ -1840,6 +1912,7 @@ static void deliver_cdda_data_end(void) {
     fire_cdrom_irq();
 }
 
+/* Deliver pending XA data-end IRQ. */
 static void deliver_xa_data_end(void) {
     if (!xa_data_end_pending || irq_flag != 0) return;
     xa_data_end_pending = 0;
@@ -1857,6 +1930,7 @@ static void deliver_xa_data_end(void) {
  * PSX, kept 0), measured pre-mute — the controller keeps processing audio
  * while muted. A report colliding with an unacknowledged IRQ is dropped;
  * the controller does not queue reports. */
+/* Deliver a CDDA subcode-Q report (track/time). */
 static void deliver_cdda_report(const int16_t* pcm) {
     int am, as, af;
     lba_to_msf((int)cdda_lba, 150, &am, &as, &af);
@@ -1897,6 +1971,7 @@ static void deliver_cdda_report(const int16_t* pcm) {
     fire_cdrom_irq();
 }
 
+/* Find the CDDA track containing an LBA. */
 static int cdda_track_for_lba(uint32_t lba) {
     int count = iso_handle ? iso_track_count(iso_handle) : 0;
     int found = 0;
@@ -1907,6 +1982,7 @@ static int cdda_track_for_lba(uint32_t lba) {
     return found;
 }
 
+/* Return the end LBA of a CDDA track. */
 static uint32_t cdda_track_end_lba(int track) {
     int count = iso_handle ? iso_track_count(iso_handle) : 0;
     if (track > 0 && track < count)
@@ -1914,6 +1990,7 @@ static uint32_t cdda_track_end_lba(int track) {
     return iso_handle ? iso_sector_count(iso_handle) : 0;
 }
 
+/* Start CDDA playback from an LBA/track. */
 static int start_cdda_playback(int requested_track) {
     uint32_t lba;
     int track;
@@ -1945,6 +2022,7 @@ static int start_cdda_playback(int requested_track) {
     return 1;
 }
 
+/* Advance CDDA playback: deliver sectors + data-end. */
 static void process_cdda_stream(uint32_t cycles) {
     if (!cdda_playing) {
         deliver_cdda_data_end();
@@ -2003,6 +2081,7 @@ static void process_cdda_stream(uint32_t cycles) {
     deliver_cdda_data_end();
 }
 
+/* True if the data FIFO can accept a sector (BFRD handling). */
 static int data_fifo_ready(void) {
     if (request_reg & CDROM_REQUEST_BFRD) ring_note_starved();
     return (request_reg & CDROM_REQUEST_BFRD) && rb_available();
@@ -2046,6 +2125,7 @@ static int deliver_read_sector(void) {
  * survived long enough to confuse three later experiments.
  *
  * Do not re-split this without a cd_verify run showing int1_lost stays 0. */
+/* Deliver one read sector without raising IRQ. */
 static int deliver_read_sector_without_irq(void) {
     int delivered = read_sector_at(read_min, read_sec, read_sect);
     advance_msf(&read_min, &read_sec, &read_sect);
@@ -2156,6 +2236,7 @@ static uint64_t cmd_ack_delay(uint8_t cmd) {
     return has_disc() ? 25000 : 15000;
 }
 
+/* Execute a queued command if its delay elapsed. */
 static void try_execute_queued_command(void) {
     if (!queued_cmd.pending || irq_flag != 0) return;
     if (psx_cycle_count < queued_cmd.exec_due) return;
@@ -2176,6 +2257,7 @@ static void try_execute_queued_command(void) {
     exec_command(cmd);
 }
 
+/* Queue a command with ack delay, or exec immediately if idle. */
 static void queue_or_exec_command(uint8_t cmd) {
     /* Always defer: the CD sub-CPU does not execute (or ACK) a command until
      * cmd_ack_delay() cycles after the command-byte store. Route every command
@@ -2212,6 +2294,7 @@ static void queue_or_exec_command(uint8_t cmd) {
  * async CD queue never pumping the next file). Hence also NO apply_speed():
  * disc-speed divisors / 'instant' mode must never compress this latency back
  * into the race window. Call BEFORE stop_read_stream()/CDSTAT_READ clear. */
+/* Delay before Pause-complete status is reported. */
 static int pause_complete_delay_cycles(void) {
     if (!reading && !(stat_reg & (CDSTAT_READ | CDSTAT_PLAY)))
         return 5000;
@@ -2701,6 +2784,7 @@ static void exec_command(uint8_t cmd) {
     cd_bisect_cmd_log("ISSUE", cmd, cmd_params, cmd_param_count);
 }
 
+/* Process pending command/state each advance tick. */
 static void process_pending(uint32_t cycles) {
     uint8_t done_cmd;
     (void)cycles;
@@ -2861,11 +2945,13 @@ static uint64_t s_accel_consumer_waits;
 static uint64_t s_accel_consumer_wait_cycles;
 static int      s_accel_block_accum;
 
+/* Cycle period per sector at current speed (authentic timing). */
 static int authentic_sector_period(void) {
     return (mode_reg & 0x80) ? (CDROM_SINGLE_SPEED_SECTOR_CYCLES / 2)
                              : CDROM_SINGLE_SPEED_SECTOR_CYCLES;
 }
 
+/* True if accelerated (non-authentic) read timing is active. */
 static int accelerated_read_active(void) {
     if (xa_stream_active || (mode_reg & 0x68u)) return 0;
     return g_disc_speed_divisor != 1;   /* 0 = instant, >1 = divided */
@@ -2878,6 +2964,7 @@ static int accelerated_consumer_blocked(void) {
     return 0;
 }
 
+/* Advance the data read stream (warm-route aware). */
 static void process_read_stream(uint32_t cycles) {
     if (!reading) return;
 
@@ -2978,6 +3065,7 @@ static void present_pending_dataready(void) {
     s_dataready_fires++;
 }
 
+/* Initialize CDROM subsystem state (buffers, FIFOs, registers). */
 void cdrom_init(const char* cue_path) {
     memset(param_fifo, 0, sizeof(param_fifo));
     memset(response_fifo, 0, sizeof(response_fifo));
@@ -3076,10 +3164,12 @@ void cdrom_init(const char* cue_path) {
     trace_cdrom('N', 0, has_disc() ? 1u : 0u, 0);
 }
 
+/* Public: true if a disc is loaded and ready. */
 int cdrom_has_disc(void) {
     return has_disc();
 }
 
+/* MMIO read handler for CD registers. */
 uint32_t cdrom_read(uint32_t addr) {
     uint32_t ret = 0;
     switch (addr) {
@@ -3130,6 +3220,7 @@ uint32_t cdrom_read(uint32_t addr) {
     return ret;
 }
 
+/* MMIO write handler for CD registers. */
 void cdrom_write(uint32_t addr, uint32_t value) {
     uint8_t val = (uint8_t)value;
     trace_cdrom('W', addr, val, 1);
@@ -3221,6 +3312,7 @@ void cdrom_write(uint32_t addr, uint32_t value) {
  * nearest in-flight countdown that leads to an i_stat bit2 raise — the
  * presentation delay of an already-armed response, a pending second response,
  * or the next sector data-ready. See PRECISE_IRQ_SLICE.md. */
+/* Cycles until the next CD IRQ (masked-aware). */
 uint32_t cdrom_cycles_to_irq(uint32_t i_mask) {
     if (!(i_mask & (1u << 2))) return 0xFFFFFFFFu;   /* IRQ_CDROM masked */
     uint32_t best = 0xFFFFFFFFu;
@@ -3279,6 +3371,7 @@ uint32_t cdrom_cycles_to_irq(uint32_t i_mask) {
     return best;
 }
 
+/* Advance CDROM state by N cycles (deadlines, streams, IRQs). */
 void cdrom_advance(uint32_t cycles) {
     /* Presentation hold is absolute (cdrom_irq_present_due); refresh checks
      * it. Note: do NOT freeze CD during rollback Replay. MotK FMV skip resim
@@ -3302,10 +3395,12 @@ void cdrom_advance(uint32_t cycles) {
     refresh_cdrom_irq_line();
 }
 
+/* Per-frame CDROM tick (33868 cycles ≈ 1ms). */
 void cdrom_tick(void) {
     cdrom_advance(33868u);
 }
 
+/* Read a word via CD DMA channel. */
 uint32_t cdrom_dma_read(void) {
     uint32_t val = 0;
     int got = 0;
@@ -3330,12 +3425,14 @@ uint32_t cdrom_dma_read(void) {
     return val;
 }
 
+/* True if CD DMA can accept a sector (BFRD handling). */
 int cdrom_dma_ready(void) {
     if (request_reg & CDROM_REQUEST_BFRD) ring_note_starved();
     return (request_reg & CDROM_REQUEST_BFRD) && rb_available() &&
            (RB_.pos + 4 <= RB_.size);
 }
 
+/* Word count for the next CD DMA sector transfer. */
 uint32_t cdrom_dma_sector_word_count(void) {
     int size = RB_.size;
 
@@ -3349,6 +3446,7 @@ uint32_t cdrom_dma_sector_word_count(void) {
     return (uint32_t)((size + 3) / 4);
 }
 
+/* Fill a debug snapshot of CDROM state. */
 void cdrom_debug_snapshot(CDROMDebugState* out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
@@ -3409,46 +3507,55 @@ void cdrom_debug_snapshot(CDROMDebugState* out) {
     out->last_sector_have_raw = last_sector_have_raw;
 }
 
+/* Return the CD trace ring + count. */
 uint64_t cdrom_debug_get_trace(const CDROMTraceEntry** out_entries) {
     if (out_entries) *out_entries = cdrom_trace;
     return cdrom_trace_seq;
 }
 
+/* Clear the CD trace ring. */
 void cdrom_debug_clear_trace(void) {
     memset(cdrom_trace, 0, sizeof(cdrom_trace));
     cdrom_trace_seq = 0;
 }
 
+/* Return the command-history ring + count. */
 uint64_t cdrom_debug_get_command_history(const CDROMCommandHistoryEntry** out_entries) {
     if (out_entries) *out_entries = command_history;
     return command_history_seq;
 }
 
+/* Clear the command-history ring. */
 void cdrom_debug_clear_command_history(void) {
     memset(command_history, 0, sizeof(command_history));
     command_history_seq = 0;
 }
 
+/* Return the sector-history ring + count. */
 uint64_t cdrom_debug_get_sector_history(const CDROMSectorHistoryEntry** out_entries) {
     if (out_entries) *out_entries = sector_history;
     return sector_history_seq;
 }
 
+/* Clear the sector-history ring. */
 void cdrom_debug_clear_sector_history(void) {
     memset(sector_history, 0, sizeof(sector_history));
     sector_history_seq = 0;
 }
 
+/* Return the drop-history ring + count. */
 uint64_t cdrom_debug_get_drop_history(const CDROMDropEntry** out_entries) {
     if (out_entries) *out_entries = s_drop_history;
     return s_drop_history_seq;
 }
 
+/* Clear the drop-history ring. */
 void cdrom_debug_clear_drop_history(void) {
     memset(s_drop_history, 0, sizeof(s_drop_history));
     s_drop_history_seq = 0;
 }
 
+/* Copy the last-delivered sector bytes + state. */
 uint32_t cdrom_debug_copy_last_sector(uint32_t offset, uint32_t len,
                                       uint8_t* out,
                                       CDROMSectorDebugState* state) {
@@ -3478,6 +3585,7 @@ uint32_t cdrom_debug_copy_last_sector(uint32_t offset, uint32_t len,
  * the burst-gap window (bridges the per-file Setloc/seek gaps inside one
  * logical load). XA streaming (FMV / CD audio) is NEVER a load — its pacing
  * must stay authentic. */
+/* True if a load/read is still in progress. */
 int cdrom_load_in_progress(void) {
     if (xa_stream_active) return 0;
     if (reading) return 1;
@@ -3489,6 +3597,7 @@ int cdrom_load_in_progress(void) {
     return 0;
 }
 
+/* True if a data (non-XA) read stream is active. */
 int cdrom_data_read_active(void) {
     return reading && !xa_stream_active;
 }
@@ -3527,6 +3636,7 @@ static void cdrom_apply_savestate_delay_caps(int log_clamps) {
         irq_present_set_remaining(CDROM_SAVESTATE_DELAY_CAP);
 }
 
+/* Post-savestate CD acceleration probe (PSX_POST_LOAD_PROBE). */
 void cdrom_accelerate_after_savestate(void) {
     const char *probe = getenv("PSX_POST_LOAD_PROBE");
     const int log_probe = (probe && probe[0] == '1');
@@ -3538,6 +3648,7 @@ void cdrom_accelerate_after_savestate(void) {
                 CDROM_SAVESTATE_BOOST_VBLANKS, CDROM_SAVESTATE_DELAY_CAP);
 }
 
+/* Apply savestate-load CD timing boost for N vblanks. */
 void cdrom_savestate_boost_vblank(void) {
     if (s_savestate_cd_boost_vblanks <= 0) return;
     cdrom_apply_savestate_delay_caps(/*log_clamps*/0);
@@ -3551,6 +3662,7 @@ int cdrom_savestate_cd_wait_active(void) {
     return 0;
 }
 
+/* Vblanks of savestate CD boost remaining. */
 int cdrom_savestate_boost_vblanks_remaining(void) {
     return s_savestate_cd_boost_vblanks;
 }
@@ -3623,6 +3735,7 @@ static int cdrom_snap_emit(PstW *w) {
     return 1;
 }
 
+/* Parse a CDROM snapshot byte stream. */
 static int cdrom_snap_parse(PstR *r) {
     uint8_t b;
     int32_t i;
@@ -3701,18 +3814,21 @@ static int cdrom_snap_parse(PstR *r) {
     return 1;
 }
 
+/* Size of the CDROM snapshot blob. */
 uint32_t cdrom_snapshot_bytes(void) {
     PstW w;
     pst_w_init(&w, NULL, 0);
     (void)cdrom_snap_emit(&w);
     return (uint32_t)w.written;
 }
+/* Serialize CDROM state into a snapshot. */
 void cdrom_snapshot_write(uint8_t *p) {
     PstW w;
     uint32_t n = cdrom_snapshot_bytes();
     pst_w_init(&w, p, n);
     (void)cdrom_snap_emit(&w);
 }
+/* Deserialize CDROM state from a snapshot. */
 int cdrom_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     if (len != cdrom_snapshot_bytes()) return 0;
@@ -3734,6 +3850,7 @@ int cdrom_snapshot_read(const uint8_t *p, uint32_t len) {
     return 1;
 }
 
+/* Debug: force a CD reinsert (tray open/close cycle). */
 void debug_force_cd_reinsert(void) {
     /* Stop the old transfer before exposing a physical tray-open event. */
     stop_read_stream();
