@@ -1,21 +1,15 @@
 /* cd.c — CD/file services: async read pump, status pollers,
  * command issuer with retry (verbatim Ghidra, decomp/batch_sm3.txt).
  *
- * Guest globals via g_* arena bindings. The undefinedN / byte / uint
- * typedefs below mirror Ghidra's decompile types so signatures stay
- * visually comparable to generated/SLES_017.22_full_*.c — they are
- * stdint aliases, not distinct types. */
+ * Guest globals via g_* arena bindings. Signatures use plain stdint
+ * types; compare against generated/SLES_017.22_full_*.c for the
+ * original Ghidra decompile types. */
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include "cpu_state.h"
-
-typedef uint8_t  uint8_t;
-#ifndef bool
-#define bool int
-#endif
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_sp(void);
