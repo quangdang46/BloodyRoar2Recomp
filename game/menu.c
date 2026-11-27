@@ -3071,7 +3071,7 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
     MB32S(0x801e8508 + chan * 4) = (uint32_t)row;
   }
   int32_t y = MB32S(0x801e8508 + chan * 4);
-  uint32_t aux_u32 = MB32(0x801e8518 + chan * 4);
+  uint32_t auxw = MB32(0x801e8518 + chan * 4);
   if (y < (int32_t)MB16(0x1f800020)) {
     int32_t y_q16 = y << 0x10;
     do {
@@ -3086,7 +3086,7 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
       y = y + stride;
       announce_param_block_init((uint32_t)dst,(uint32_t)MB32(0x1f80000c),
                    str,(uint32_t)(y_q16 >> 0x10),
-                   (int32_t)(int16_t)aux_u32,(int32_t)aux);
+                   (int32_t)(int16_t)auxw,(int32_t)aux);
       y_q16 = y_q16 + stride * 0x10000;
     } while (y < (int32_t)MB16(0x1f800020));
   }
@@ -9823,10 +9823,10 @@ uint32_t offset_table_lookup(uint32_t tbl,int32_t idx)
 void packed_u16_expand(uint32_t rec_a,uint32_t rec_b,uint32_t idx)
 {
   uint32_t tbl = 0x801b2580u + idx * 4u;
-  uint32_t val = ((uint32_t)MB16(tbl) & 0x3ffu) >> 4;
-  val += ((uint32_t)MB16(tbl + 2) & 0x1ffu) << 6;
-  MW16(rec_a + 0xe, val);
-  MW16(rec_b + 0xe, val);
+  uint32_t pkv = ((uint32_t)MB16(tbl) & 0x3ffu) >> 4;
+  pkv += ((uint32_t)MB16(tbl + 2) & 0x1ffu) << 6;
+  MW16(rec_a + 0xe, pkv);
+  MW16(rec_b + 0xe, pkv);
 }
 
 /* cmd_queue_push — 8-entry u16 command-queue push @0x8012a5b8 (38
@@ -10705,13 +10705,13 @@ void entry_attr_bump_loop(uint32_t rec,uint32_t img,
  * a2' = sx16(a2v) - ((sx16(v1v)+sb16(v1v)) sra 1);
  * a3' = sx16(p5); stack5 = sx16(v1v);
  * sprite_rect_set_a(p1, (short)a1', a2', a3', stack5). */
-uint32_t centered_sprite_emit(uint32_t ctx,uint32_t fl,uint32_t x,
+uint32_t centered_sprite_emit(uint32_t ctx,uint32_t frec,uint32_t x,
                       uint32_t w,uint32_t hgt,uint32_t vht)
 {
 
   uint32_t hw = w, vsz, scr;
   int32_t sx_v1, sx_t2, half_t2, half_v1;
-  if (MB8(fl + 0x15) == 0) {
+  if (MB8(frec + 0x15) == 0) {
     scr = (uint32_t)((int32_t)(int16_t)w
                    + (int32_t)((w >> 15) & 1u));
     hw = scr >> 1;
