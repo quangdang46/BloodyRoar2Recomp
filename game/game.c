@@ -348,11 +348,11 @@ extern uint32_t guest_of(const void *p);
 extern uint32_t guest_sp(void);
 extern void *fn_lookup(uint32_t addr);
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
-int mc_init_reset();
-int cd_mode_flag_set();
-int cd_init_session();
-int cd_read_poll();
-int cd_read_issue();
+void mc_init_reset(void);
+uint32_t cd_mode_flag_set(int8_t,int,uint32_t);
+void cd_init_session(void);
+int cd_read_poll(int,uint32_t);
+uint32_t cd_read_issue(uint32_t,uint32_t,uint32_t);
 void cursor_sprite_anim(uint8_t *);
 extern void guest_main(void);
 

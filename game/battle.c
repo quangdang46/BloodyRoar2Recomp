@@ -10399,7 +10399,7 @@ void camera_track_shot(int cam,int f_a,int f_b)
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x5e) ))= 0xfc00;
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x5c) ))= 0xfc00;
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x28) ))= pit;
-    pair_depth_set((short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_a + 0x20) ))+ 0x174),(short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_b + 0x20) ))+ 0x174),(int)(uintptr_t)cam);
+    pair_depth_set((short *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_a + 0x20) ))+ 0x174)),(short *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_b + 0x20) ))+ 0x174)),(int)(uintptr_t)cam);
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x5c) ))= *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 100)));
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x5e) ))= *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x66)));
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x60) ))= *(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x68)));
@@ -10425,7 +10425,7 @@ void camera_track_shot(int cam,int f_a,int f_b)
     *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))=
          *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))+ (short)((uint32_t)(delta[2] * t) >> 0x10);
   }
-  pair_depth_set((short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_a + 0x20) ))+ 0x174),(short *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_b + 0x20) ))+ 0x174),(int)(uintptr_t)cam);
+  pair_depth_set((short *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_a + 0x20) ))+ 0x174)),(short *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((f_b + 0x20) ))+ 0x174)),(int)(uintptr_t)cam);
   prev = *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x68) ))+ -0x100;
   *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x68) ))= prev;
   t = (int)*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x60) ))- (int)prev;
@@ -16273,7 +16273,7 @@ void spark_trail_task_update(int *rec)
     if (t < 0) {
       t = t + 0xf;
     }
-    impact_fx_spawn((uint32_t *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ *(short *)((intptr_t)rec + 10) * 0x50 + 0x34),0x80000005,
+    impact_fx_spawn((uint32_t *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((*rec + 0x20) ))+ *(short *)((intptr_t)rec + 10) * 0x50 + 0x34)),0x80000005,
                  (int)(short)rec[4] + (int)*(short *)guest_at((uint32_t)(uintptr_t)((*rec + 0x4e))),(int)(short)rec[5],
                  (uint32_t)(sp << 0x10 | t >> 4));
     *(short *)(rec + 4) = (short)rec[4] + *(short *)((intptr_t)rec + 0x12);
@@ -16719,7 +16719,7 @@ LAB_80140624:
         if (0 < rec[1]) {
           do {
             if (*(short *)guest_at((uint32_t)(uintptr_t)((ctx[1] + 6) ))== 0) {
-              impact_fx_spawn((uint32_t *)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((ctx[2] + 0x20) ))+ op * 0x50 + 0x34),0x80000003,
+              impact_fx_spawn((uint32_t *)guest_at((uint32_t)(uintptr_t)(*(int *)guest_at((uint32_t)(uintptr_t)((ctx[2] + 0x20) ))+ op * 0x50 + 0x34)),0x80000003,
                            (int)*(short *)((intptr_t)ctx + 0x12),0,0);
             }
             i = i + 1;
