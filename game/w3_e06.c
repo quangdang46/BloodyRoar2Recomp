@@ -22,52 +22,7 @@
 
 extern CPUState *clean_cpu_state(void);
 extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
-extern int  psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
-extern void psx_restore_state_escape(void);
 extern void psx_muldiv_stall(CPUState *cpu);
-
-/* MIPS unaligned word accessors — faithful to psx_lwl/lwr/swl/swr on the
- * MMIO-aware cpu read/write accessor path (no per-access cycle charge). */
-static inline uint32_t br2_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t word = cpu->read_word(addr & ~3u);
-    switch (addr & 3u) {
-        case 0: return (rt_value & 0x00FFFFFFu) | (word << 24);
-        case 1: return (rt_value & 0x0000FFFFu) | (word << 16);
-        case 2: return (rt_value & 0x000000FFu) | (word << 8);
-        default: return word;
-    }
-}
-static inline uint32_t br2_lwr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t word = cpu->read_word(addr & ~3u);
-    switch (addr & 3u) {
-        case 0: return word;
-        case 1: return (rt_value & 0xFF000000u) | (word >> 8);
-        case 2: return (rt_value & 0xFFFF0000u) | (word >> 16);
-        default: return (rt_value & 0xFFFFFF00u) | (word >> 24);
-    }
-}
-static inline void br2_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t aligned = addr & ~3u;
-    uint32_t word = cpu->read_word(aligned);
-    switch (addr & 3u) {
-        case 0: word = (word & 0xFFFFFF00u) | (rt_value >> 24); break;
-        case 1: word = (word & 0xFFFF0000u) | (rt_value >> 16); break;
-        case 2: word = (word & 0xFF000000u) | (rt_value >> 8); break;
-        default: word = rt_value; break;
-    }
-    cpu->write_word(aligned, word);
-}
-static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t aligned = addr & ~3u;
-    uint32_t word = cpu->read_word(aligned);
-    switch (addr & 3u) {
-        case 0: word = rt_value; break;
-        case 1: word = (word & 0x000000FFu) | (rt_value << 8); break;
-        case 2: word = (word & 0x0000FFFFu) | (rt_value << 16); break;
-        default: word = (word & 0x00FFFFFFu) | (rt_value << 24); break;
-    }
-    cpu->write_word(aligned, word);
-}
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
@@ -752,7 +707,7 @@ block_80157C64:
     psx_check_interrupts_at(cpu, 0x80158230u);
     goto block_80158230;  /* j */
 
-block_80157C6C:
+block_80157C6C:;
     int cond_80157C6C = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 5;
@@ -785,7 +740,7 @@ block_80157C88:
     psx_check_interrupts_at(cpu, 0x801580F4u);
     goto block_801580F4;  /* j */
 
-block_80157C90:
+block_80157C90:;
     int cond_80157C90 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
@@ -953,7 +908,7 @@ block_80157D64:
     psx_check_interrupts_at(cpu, 0x8015822Cu);
     goto block_8015822C;  /* j */
 
-block_80157D70:
+block_80157D70:;
     int cond_80157D70 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80157D74: 0x00000000 */
@@ -1009,7 +964,7 @@ block_80157DA8:
         goto block_80157DB8;  /* not taken */
     }
 
-block_80157DB8:
+block_80157DB8:;
     int cond_80157DB8 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
@@ -1154,7 +1109,7 @@ block_80157E78:
     psx_check_interrupts_at(cpu, 0x8015822Cu);
     goto block_8015822C;  /* j */
 
-block_80157E84:
+block_80157E84:;
     int cond_80157E84 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
@@ -1456,7 +1411,7 @@ block_8015803C:
     psx_check_interrupts_at(cpu, 0x8015822Cu);
     goto block_8015822C;  /* j */
 
-block_80158048:
+block_80158048:;
     int cond_80158048 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
@@ -1608,7 +1563,7 @@ block_80158120:
     psx_check_interrupts_at(cpu, 0x8015822Cu);
     goto block_8015822C;  /* j */
 
-block_8015812C:
+block_8015812C:;
     int cond_8015812C = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
@@ -1728,7 +1683,7 @@ block_801581C4:
     psx_check_interrupts_at(cpu, 0x8015822Cu);
     goto block_8015822C;  /* j */
 
-block_801581D0:
+block_801581D0:;
     int cond_801581D0 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801581D4: 0x00000000 */
@@ -1784,7 +1739,7 @@ block_80158208:
         goto block_80158218;  /* not taken */
     }
 
-block_80158218:
+block_80158218:;
     int cond_80158218 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 32;
