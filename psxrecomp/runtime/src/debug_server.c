@@ -69,6 +69,7 @@
    typedef SOCKET sock_t;
 #  define SOCK_INVALID INVALID_SOCKET
 #  define sock_close closesocket
+   /* Sock error. */
    static int sock_error(void) { return WSAGetLastError(); }
 #else
 #  include <sys/socket.h>
@@ -139,6 +140,7 @@ void debug_server_set_fmv_quiet(int quiet)
     s_fmv_quiet = enabled && quiet;
 }
 
+/* Debug server: fmv quiet. */
 int debug_server_fmv_quiet(void)
 {
     return s_fmv_quiet ? 1 : 0;
@@ -223,6 +225,7 @@ static inline void fp_record_mmio(uint32_t addr, uint32_t val, uint32_t pc)
     g_fp_mmio_count++;
 }
 
+/* Fp snapshot. */
 static void fp_snapshot(uint32_t frame)
 {
     FpEntry *e = &s_fp_ring[s_fp_head];
@@ -289,6 +292,7 @@ typedef struct {
 static RwPcEntry s_rwpc[RWPC_RING_CAP];
 static uint32_t  s_rwpc_head = 0, s_rwpc_total = 0;
 
+/* Debug server: rwatchpc note. */
 void debug_server_rwatchpc_note(uint32_t phys, uint32_t val, uint32_t rt, CPUState *cpu)
 {
     if (!g_rwatchpc_active) return;
@@ -318,6 +322,7 @@ static inline void rec_event(uint8_t kind, uint32_t addr, uint32_t val,
     { extern uint64_t psx_get_cycle_count(void); e->cyc = psx_get_cycle_count(); }
 }
 
+/* Debug server: trace ram read watch. */
 void debug_server_trace_ram_read_watch(uint32_t phys, uint32_t val)
 {
     if (phys >= s_rwatch_lo && phys < s_rwatch_hi)
@@ -720,6 +725,7 @@ typedef struct {
 static PSX_BSS ProbeTraceEntry s_probe_trace[PROBE_TRACE_CAP];
 static uint64_t s_probe_trace_seq = 0;
 
+/* Debug server: log probe. */
 void debug_server_log_probe(uint32_t pc, CPUState *cpu)
 {
 #ifdef PSX_NO_DEBUG_TOOLS
@@ -786,6 +792,7 @@ void debug_server_log_restore_event(uint32_t kind, uint32_t target_pc, uint32_t 
 }
 
 extern uint16_t psx_read_half(uint32_t addr);
+/* Trace read word. */
 static uint32_t trace_read_word(CPUState *cpu, uint32_t addr)
 {
     (void)cpu;
@@ -803,6 +810,7 @@ static uint32_t trace_read_word(CPUState *cpu, uint32_t addr)
     return v;
 }
 
+/* Trace read half. */
 static uint32_t trace_read_half(CPUState *cpu, uint32_t addr)
 {
     (void)cpu;
@@ -817,6 +825,7 @@ static uint32_t trace_read_half(CPUState *cpu, uint32_t addr)
     return v;
 }
 
+/* Sreg trace focus func. */
 static int sreg_trace_focus_func(uint32_t func)
 {
     switch (func) {
@@ -838,6 +847,7 @@ static int sreg_trace_focus_func(uint32_t func)
     }
 }
 
+/* Sreg last slot. */
 static SregLastEntry *sreg_last_slot(uint32_t tcb)
 {
     int free_idx = -1;
@@ -858,6 +868,7 @@ static SregLastEntry *sreg_last_slot(uint32_t tcb)
     return &s_sreg_last[free_idx];
 }
 
+/* Sreg trace record. */
 static void sreg_trace_record(uint32_t func_addr)
 {
     CPUState *cpu = debug_cpu_ptr;
@@ -933,6 +944,7 @@ static void sreg_trace_record(uint32_t func_addr)
     memcpy(last->s, cur, sizeof(cur));
 }
 
+/* Debug server: log thread event. */
 void debug_server_log_thread_event(uint32_t kind, CPUState *cpu,
                                    uint32_t current_tcb,
                                    uint32_t target_tcb,
@@ -991,6 +1003,7 @@ void debug_server_log_thread_event(uint32_t kind, CPUState *cpu,
     e->in_exception    = (uint8_t)psx_get_in_exception();
 }
 
+/* Debug server: log sio ctrl regs. */
 static void debug_server_log_sio_ctrl_regs(uint32_t value, uint8_t width,
                                            uint32_t byte_seq) {
     SioCtrlRegTraceEntry *e =
@@ -1019,6 +1032,7 @@ static void debug_server_log_sio_ctrl_regs(uint32_t value, uint8_t width,
     e->counter_7514 = psx_read_byte(0x7514);
 }
 
+/* Debug server: log sio write. */
 void debug_server_log_sio_write(uint32_t addr, uint32_t value, uint8_t width) {
 #ifdef PSX_NO_DEBUG_TOOLS
     (void)addr; (void)value; (void)width;
@@ -1068,6 +1082,7 @@ static uint64_t s_unknown_seq = 0;
 UnknownDispatchEntry crash_trace_unknown_get(uint64_t seq) {
     return s_unknown_ring[seq & (UNKNOWN_DISPATCH_CAP - 1u)];
 }
+/* Crash trace unknown seq get. */
 uint64_t crash_trace_unknown_seq_get(void) { return s_unknown_seq; }
 /* Per-target hit count — bounded set, ~N unique targets typically. */
 #define UNKNOWN_UNIQUE_CAP 1024
@@ -1075,6 +1090,7 @@ typedef struct { uint32_t phys; uint64_t count; } UnknownUniqueEntry;
 static PSX_BSS UnknownUniqueEntry s_unknown_unique[UNKNOWN_UNIQUE_CAP];
 static int s_unknown_unique_count = 0;
 
+/* Psx unknown dispatch record. */
 void psx_unknown_dispatch_record(uint32_t addr, uint32_t phys,
                                   uint32_t ra, uint32_t a0, uint32_t a1)
 {
@@ -1109,6 +1125,7 @@ void psx_unknown_dispatch_record(uint32_t addr, uint32_t phys,
 uint32_t crash_trace_dispatch_ring_get(int idx) {
     return s_dispatch_ring[idx & (DISPATCH_TRACE_CAP - 1)];
 }
+/* Crash trace dispatch seq get. */
 uint64_t crash_trace_dispatch_seq_get(void) { return s_dispatch_seq; }
 
 /* Unique dispatch set — tracks every unique function address ever dispatched.
@@ -1117,6 +1134,7 @@ uint64_t crash_trace_dispatch_seq_get(void) { return s_dispatch_seq; }
 static PSX_BSS uint32_t s_dispatch_unique[DISPATCH_UNIQUE_CAP];
 static int s_dispatch_unique_count = 0;
 
+/* Dispatch unique add. */
 static void dispatch_unique_add(uint32_t addr) {
     uint32_t idx = (addr >> 2) % DISPATCH_UNIQUE_CAP;
     for (int i = 0; i < DISPATCH_UNIQUE_CAP; i++) {
@@ -1130,6 +1148,7 @@ static void dispatch_unique_add(uint32_t addr) {
     }
 }
 
+/* Dispatch trace contains. */
 static int dispatch_trace_contains(uint32_t target) {
     uint32_t idx = (target >> 2) % DISPATCH_UNIQUE_CAP;
     for (int i = 0; i < DISPATCH_UNIQUE_CAP; i++) {
@@ -1461,11 +1480,13 @@ static uint64_t s_fn_direct_seen = 0;
 static uint64_t s_fn_direct_no_cpu = 0;
 static uint64_t s_fn_direct_filtered = 0;
 
+/* Fn trace in filter. */
 static int fn_trace_in_filter(uint32_t phys) {
     if (!s_fn_trace_active) return 0;
     return phys >= s_fn_trace_filter_lo && phys < s_fn_trace_filter_hi;
 }
 
+/* Fn trace filter from env. */
 static void fn_trace_filter_from_env(const char *env_name) {
     const char *spec = getenv(env_name);
     if (!spec || !*spec) return;
@@ -1488,6 +1509,7 @@ static void fn_trace_filter_from_env(const char *env_name) {
     s_fn_trace_active = 1;
 }
 
+/* Card mgr trace target. */
 static int card_mgr_trace_target(uint32_t phys) {
     phys &= 0x1FFFFFFFu;
     /* ROM card driver + bu-device layer: 0xBFC08600 (validators 0x884C/0x89C0,
@@ -1508,6 +1530,7 @@ static int card_mgr_trace_target(uint32_t phys) {
     return 0;
 }
 
+/* Card mgr trace record. */
 static void card_mgr_trace_record(uint32_t func_addr, uint8_t source) {
     if (!debug_cpu_ptr) return;
     uint32_t phys = func_addr & 0x1FFFFFFFu;
@@ -1587,6 +1610,7 @@ static void card_mgr_trace_record(uint32_t func_addr, uint8_t source) {
     e->source    = source;
 }
 
+/* Call focus target. */
 static int call_focus_target(uint32_t func)
 {
     switch (func) {
@@ -1635,12 +1659,14 @@ static int call_focus_target(uint32_t func)
     }
 }
 
+/* Dbg read u16 phys. */
 static uint32_t dbg_read_u16_phys(uint32_t phys)
 {
     return (uint32_t)psx_read_byte(phys)
         | ((uint32_t)psx_read_byte(phys + 1u) << 8);
 }
 
+/* Call focus object ptr. */
 static uint32_t call_focus_object_ptr(uint32_t func, CPUState *cpu)
 {
     if (!cpu) return 0;
@@ -1677,6 +1703,7 @@ static uint32_t call_focus_object_ptr(uint32_t func, CPUState *cpu)
     }
 }
 
+/* Call focus record. */
 static void call_focus_record(uint32_t func_addr)
 {
     CPUState *cpu = debug_cpu_ptr;
@@ -1802,6 +1829,7 @@ static void fn_record_exit(FnStackFrame *f) {
  *
  * Distinguishing TAIL CALL from NEW CALL via $ra-change is what keeps the
  * shadow stack bounded under heavy code that uses fall-through dispatch. */
+/* Function trace record. */
 static void function_trace_record(uint32_t target) {
     /* EvCB walk ring: ALWAYS-ON (ring-buffer model — never arm-gated).
      * Capture on DeliverEvent entry; record the matching EXIT snapshot when
@@ -1911,6 +1939,7 @@ static void function_trace_record(uint32_t target) {
     s_fn_prev_ra = cur_ra;
 }
 
+/* Is chain state entry. */
 static int is_chain_state_entry(uint32_t phys) {
     static const uint32_t entries[] = {
         /* Read chain (table at 0x6c98) */
@@ -2031,6 +2060,7 @@ int ce_profile_json(char *out, int cap) {
 }
 
 #ifdef PSX_STACK_GUARD
+/* Psx native stack guard. */
 static void psx_native_stack_guard(uint32_t func_addr) {
     char probe;
     uintptr_t sp      = (uintptr_t)&probe;
@@ -2079,6 +2109,7 @@ static void psx_native_stack_guard(uint32_t func_addr) {
  * server); intentionally HALTS the emulation. */
 #ifndef PSX_NO_DEBUG_TOOLS
 static volatile int s_synth_recurse_armed = 0;
+/* Psx synth recurse. */
 static int psx_synth_recurse(volatile int n) {
     volatile char pad[2048]; pad[0] = (char)n;
     debug_server_log_call_entry(0x8000DEADu);   /* feeds the ring + runs the guard each level */
@@ -2218,6 +2249,7 @@ static void bioscall_suppress_init(void)
     }
 }
 
+/* Bioscall suppressed. */
 static int bioscall_suppressed(uint32_t table_base, uint32_t index)
 {
     bioscall_suppress_init();
@@ -2228,6 +2260,7 @@ static int bioscall_suppressed(uint32_t table_base, uint32_t index)
     return 0;
 }
 
+/* Psx bioscall record. */
 void psx_bioscall_record(uint32_t table_base, uint32_t index, uint32_t func_ptr,
                          uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t ra)
 {
@@ -2409,6 +2442,7 @@ static PcProbeSample s_pc_probe_samples[PC_PROBE_SAMPLE_CAP];
 static uint32_t     s_pc_probe_sample_n = 0;
 static uint32_t     s_pc_probe_sample_max = 32;
 
+/* Pc probe clear state. */
 static void pc_probe_clear_state(void)
 {
     s_pc_probe_armed = 0;
@@ -2418,6 +2452,7 @@ static void pc_probe_clear_state(void)
     memset(s_pc_probe_samples, 0, sizeof(s_pc_probe_samples));
 }
 
+/* Pc probe add pc. */
 static int pc_probe_add_pc(uint32_t raw)
 {
     uint32_t phys = raw & 0x1FFFFFFFu;
@@ -2445,6 +2480,7 @@ static int pc_probe_parse_list(const char *list)
     return added;
 }
 
+/* Pc probe arm nd intro defaults. */
 static void pc_probe_arm_nd_intro_defaults(void)
 {
     /* NdIntroMeshDraw post-RTPT funnel (block leaders with cyc_observe). */
@@ -2770,6 +2806,7 @@ static inline void pc_probe_observe(uint32_t block_leader_phys)
  * block-leader PC — interior loop tops, prologue exits — not just function
  * entries, which is required for a clean, KNOWN-instruction-sequence ruler.
  * Disarmed cost = one volatile load + return (see cyc_watch_observe). */
+/* Debug server: cyc observe. */
 void debug_server_cyc_observe(uint32_t block_leader_phys) {
 #ifdef PSX_NO_DEBUG_TOOLS
     (void)block_leader_phys;
@@ -2854,6 +2891,7 @@ void debug_server_cyc_observe(uint32_t block_leader_phys) {
 #endif
 }
 
+/* Debug server: trace dispatch. */
 void debug_server_trace_dispatch(uint32_t func_addr) {
 #ifdef PSX_NO_DEBUG_TOOLS
     (void)func_addr;
@@ -2957,6 +2995,7 @@ static void send_ok(int id);
 void debug_server_send_fmt(const char *fmt, ...);
 #define send_fmt debug_server_send_fmt
 
+/* Handle the 'chain trace' debug command. */
 static void handle_chain_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -3092,6 +3131,7 @@ static void handle_dirty_ram_stats(int id, const char *json)
     send_fmt("%s", buf);
 }
 
+/* Handle the 'dirty ram unsupported' debug command. */
 static void handle_dirty_ram_unsupported(int id, const char *json)
 {
     (void)json;
@@ -3171,6 +3211,7 @@ static void handle_dirty_block_log(int id, const char *json)
     free(out);
 }
 
+/* Handle the 'dirty flow log' debug command. */
 static void handle_dirty_flow_log(int id, const char *json)
 {
     char buf[32];
@@ -3217,6 +3258,7 @@ static void handle_dirty_flow_log(int id, const char *json)
     free(out);
 }
 
+/* Handle the 'dirty insn log' debug command. */
 static void handle_dirty_insn_log(int id, const char *json)
 {
     char buf[32];
@@ -3384,6 +3426,7 @@ static int parity_same_state(const ParityEntry *a, const ParityEntry *b)
     return 1;
 }
 
+/* Handle the 'parity dump' debug command. */
 static void handle_parity_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 131072);
@@ -3439,6 +3482,7 @@ static void handle_parity_dump(int id, const char *json)
     debug_server_send_line(out); free(out); free(e);
 }
 
+/* Handle the 'parity ctl' debug command. */
 static void handle_parity_ctl(int id, const char *json)
 {
     if (json_get_int(json, "reset", 0)) parity_trace_reset();
@@ -3458,6 +3502,7 @@ static void handle_parity_ctl(int id, const char *json)
  *   count           max newest events to return (default 65536, cap = ring)
  *   cyc_lo / cyc_hi half-open guest-cycle window (decimal) — slice the load
  *   src             only this I_STAT source bit (0..10); omit/negative = all */
+/* Handle the 'devtrace dump' debug command. */
 static void handle_devtrace_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 65536);
@@ -3495,6 +3540,7 @@ static void handle_devtrace_dump(int id, const char *json)
     debug_server_send_line(out); free(out); free(e);
 }
 
+/* Handle the 'devtrace ctl' debug command. */
 static void handle_devtrace_ctl(int id, const char *json)
 {
     if (json_get_int(json, "reset", 0)) device_trace_reset();
@@ -3507,6 +3553,7 @@ static void handle_devtrace_ctl(int id, const char *json)
     debug_server_send_line(buf);
 }
 
+/* Handle the 'fntrace arm' debug command. */
 static void handle_fntrace_arm(int id, const char *json)
 {
     char buf[32];
@@ -3520,6 +3567,7 @@ static void handle_fntrace_arm(int id, const char *json)
              id, target, fntrace_arm_count());
 }
 
+/* Handle the 'fntrace arm clear' debug command. */
 static void handle_fntrace_arm_clear(int id, const char *json)
 {
     (void)json;
@@ -3527,6 +3575,7 @@ static void handle_fntrace_arm_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'fntrace armed' debug command. */
 static void handle_fntrace_armed(int id, const char *json)
 {
     (void)json;
@@ -3546,6 +3595,7 @@ static void handle_fntrace_armed(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'fntrace clear' debug command. */
 static void handle_fntrace_clear(int id, const char *json)
 {
     (void)json;
@@ -3559,6 +3609,7 @@ static void handle_fntrace_clear(int id, const char *json)
  *   - count: max entries to return (default 256, cap = ring size)
  * Walks newest-first; emits up to `count` matches.  When no filter is
  * given, returns the most recent `count` entries verbatim. */
+/* Handle the 'fntrace dump' debug command. */
 static void handle_fntrace_dump(int id, const char *json)
 {
     char buf[32];
@@ -3677,6 +3728,7 @@ static void handle_bioscall_dump(int id, const char *json)
  * `match` compares the two — with the launch identity gate in place a
  * running process should always report match:1.
  *   {"cmd":"bios_info"} */
+/* Handle the 'bios info' debug command. */
 static void handle_bios_info(int id, const char *json)
 {
     (void)json;
@@ -3709,6 +3761,7 @@ static void handle_bios_info(int id, const char *json)
  *   {"cmd":"hle_dump","tail":N}          last N ring entries
  *   {"cmd":"hle_dump"}                   status summary (mode + totals)
  * Optional filters: "fn":N (t1 index), "route":0|1|2. */
+/* Handle the 'hle dump' debug command. */
 static void handle_hle_dump(int id, const char *json)
 {
     int  tail       = json_get_int(json, "tail", 0);
@@ -3778,6 +3831,7 @@ static void handle_hle_dump(int id, const char *json)
  *   {"cmd":"dirty_reject_log","tail":N} last N ring entries
  *   {"cmd":"dirty_reject_log","addr":"0x8019AA94"} filter by target
  */
+/* Handle the 'dirty reject log' debug command. */
 static void handle_dirty_reject_log(int id, const char *json)
 {
     int tail = json_get_int(json, "tail", 0);
@@ -3853,6 +3907,7 @@ static void handle_dirty_reject_log(int id, const char *json)
     free(out);
 }
 
+/* Handle the 'unknown dispatch log' debug command. */
 static void handle_unknown_dispatch_log(int id, const char *json)
 {
     int tail = json_get_int(json, "tail", 0);
@@ -3956,6 +4011,7 @@ static void handle_unknown_dispatch_log(int id, const char *json)
  * Optional addr_lo/addr_hi (hex-string) filter restricts to a single
  * MMIO register range — typical use: filter for SIO_DATA (0x1F801040)
  * or SIO_CTRL (0x1F80104A) writes only. */
+/* Handle the 'sio pc trace' debug command. */
 static void handle_sio_pc_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -3993,6 +4049,7 @@ static void handle_sio_pc_trace(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'sio pc window' debug command. */
 static void handle_sio_pc_window(int id, const char *json)
 {
     int seq = json_get_int(json, "byte_seq", -1);
@@ -4035,6 +4092,7 @@ static void handle_sio_pc_window(int id, const char *json)
     send_fmt("],\"emitted\":%d}\n", emitted);
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void emit_sio_ctrl_reg_entry(const SioCtrlRegTraceEntry *e, int first)
 {
     send_fmt("%s{\"seq\":%llu,\"pc\":\"0x%08X\",\"func\":\"0x%08X\","
@@ -4053,6 +4111,7 @@ static void emit_sio_ctrl_reg_entry(const SioCtrlRegTraceEntry *e, int first)
              (unsigned)e->counter_7514);
 }
 
+/* Handle the 'sio ctrl reg trace' debug command. */
 static void handle_sio_ctrl_reg_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -4077,6 +4136,7 @@ static void handle_sio_ctrl_reg_trace(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'sio ctrl reg window' debug command. */
 static void handle_sio_ctrl_reg_window(int id, const char *json)
 {
     int seq = json_get_int(json, "byte_seq", -1);
@@ -4108,6 +4168,7 @@ static void handle_sio_ctrl_reg_window(int id, const char *json)
     send_fmt("],\"emitted\":%d}\n", emitted);
 }
 
+/* Handle the 'sio ctrl reg clear' debug command. */
 static void handle_sio_ctrl_reg_clear(int id, const char *json)
 {
     (void)json;
@@ -4127,6 +4188,7 @@ static const char *restore_kind_name(uint32_t kind)
     }
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void emit_restore_entry(const RestoreTraceEntry *e, int first)
 {
     send_fmt("%s{\"seq\":%llu,\"kind\":%u,\"name\":\"%s\",\"jmp\":%u,"
@@ -4146,6 +4208,7 @@ static void emit_restore_entry(const RestoreTraceEntry *e, int first)
              e->frame, (unsigned)e->in_exception);
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static size_t append_restore_entry(char *buf, size_t pos, size_t cap,
                                    const RestoreTraceEntry *e, int first)
 {
@@ -4169,6 +4232,7 @@ static size_t append_restore_entry(char *buf, size_t pos, size_t cap,
     return pos;
 }
 
+/* Handle the 'restore trace' debug command. */
 static void handle_restore_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -4199,6 +4263,7 @@ static void handle_restore_trace(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'restore trace window' debug command. */
 static void handle_restore_trace_window(int id, const char *json)
 {
     int seq = json_get_int(json, "byte_seq", -1);
@@ -4236,6 +4301,7 @@ static void handle_restore_trace_window(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'restore trace clear' debug command. */
 static void handle_restore_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -4271,6 +4337,7 @@ static const char *thread_kind_name(uint32_t kind)
     }
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static size_t append_thread_entry(char *buf, size_t pos, size_t cap,
                                   const ThreadTraceEntry *e, int first)
 {
@@ -4330,6 +4397,7 @@ typedef struct ThreadCtxRingEntry {
 extern ThreadCtxRingEntry g_thread_ctx_ring[THREAD_CTX_RING_CAP_DS];
 extern uint64_t           g_thread_ctx_ring_seq;
 
+/* Handle the 'thread ctx ring' debug command. */
 static void handle_thread_ctx_ring(int id, const char *json)
 {
     int count = json_get_int(json, "count", 64);
@@ -4366,6 +4434,7 @@ static void handle_thread_ctx_ring(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'thread trace' debug command. */
 static void handle_thread_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -4475,6 +4544,7 @@ static void handle_thread_trace(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'thread trace clear' debug command. */
 static void handle_thread_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -4483,6 +4553,7 @@ static void handle_thread_trace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'sreg trace stats' debug command. */
 static void handle_sreg_trace_stats(int id, const char *json)
 {
     (void)json;
@@ -4494,6 +4565,7 @@ static void handle_sreg_trace_stats(int id, const char *json)
              (unsigned)SREG_TRACE_CAP);
 }
 
+/* Handle the 'sreg trace clear' debug command. */
 static void handle_sreg_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -4503,11 +4575,13 @@ static void handle_sreg_trace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Sreg trace yield func. */
 static int sreg_trace_yield_func(uint32_t func)
 {
     return func == 0x800223E0u || func == 0x800171D4u || func == 0x8005B40Cu;
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static size_t append_sreg_compact(char *buf, size_t pos, size_t cap,
                                   const SregTraceEntry *e, int first)
 {
@@ -4529,6 +4603,7 @@ static size_t append_sreg_compact(char *buf, size_t pos, size_t cap,
         e->task_state, e->task_mode, (unsigned)e->reason);
 }
 
+/* Handle the 'sreg trace find' debug command. */
 static void handle_sreg_trace_find(int id, const char *json)
 {
     uint64_t total = s_sreg_trace_seq;
@@ -4621,6 +4696,7 @@ static void handle_sreg_trace_find(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'sreg trace dump' debug command. */
 static void handle_sreg_trace_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -4750,6 +4826,7 @@ static void handle_sreg_trace_dump(int id, const char *json)
     free(buf);
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void emit_probe_entry(const ProbeTraceEntry *e, int first)
 {
     send_fmt("%s{\"seq\":%llu,\"pc\":\"0x%08X\",\"func\":\"0x%08X\","
@@ -4769,6 +4846,7 @@ static void emit_probe_entry(const ProbeTraceEntry *e, int first)
              e->frame, (unsigned)e->in_exception);
 }
 
+/* Handle the 'probe trace' debug command. */
 static void handle_probe_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -4791,6 +4869,7 @@ static void handle_probe_trace(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'probe clear' debug command. */
 static void handle_probe_clear(int id, const char *json)
 {
     (void)json;
@@ -4918,6 +4997,7 @@ static const char *json_get_str(const char *json, const char *key,
     }
 }
 
+/* Extract a JSON field (int). */
 static int json_get_int(const char *json, const char *key, int def)
 {
     /* Raw scan (NOT via json_get_str): integer fields keep bare-decimal
@@ -4935,6 +5015,7 @@ static int json_get_int(const char *json, const char *key, int def)
     return def;
 }
 
+/* Hex to u32. */
 static uint32_t hex_to_u32(const char *s)
 {
     if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) s += 2;
@@ -4952,9 +5033,12 @@ static uint32_t hex_to_u32(const char *s)
 static uint64_t s_tcp_send_stall_ms = 0;
 static uint32_t s_tcp_clients_dropped = 0;
 
+/* Debug server: get tcp stall ms. */
 uint64_t debug_server_get_tcp_stall_ms(void)  { return s_tcp_send_stall_ms; }
+/* Debug server: get tcp drops. */
 uint32_t debug_server_get_tcp_drops(void)     { return s_tcp_clients_dropped; }
 
+/* Monotonic ms. */
 static uint64_t monotonic_ms(void)
 {
 #ifdef _WIN32
@@ -4979,6 +5063,7 @@ static uint64_t monotonic_ms(void)
  * the budget must use the *_dump_file commands instead. */
 #define SEND_TOTAL_BUDGET_MS 15000u
 
+/* Send all blocking. */
 static int send_all_blocking(sock_t sock, const char *data, size_t len)
 {
     int ok = 0;
@@ -5049,6 +5134,7 @@ void debug_server_send_line(const char *json)
     s_resp_buf[s_resp_len] = '\0';
 }
 
+/* Debug server: send fmt. */
 void debug_server_send_fmt(const char *fmt, ...)
 {
     /* No fixed-size truncation: lines larger than the stack buffer (e.g. a
@@ -5077,6 +5163,7 @@ void debug_server_send_fmt(const char *fmt, ...)
 #define send_line  debug_server_send_line
 #define send_fmt   debug_server_send_fmt
 
+/* Debug server: dirty break maybe pause. */
 int debug_server_dirty_break_maybe_pause(uint32_t target, CPUState *cpu)
 {
     /* cyc_watch: dirty-RAM interpreter path. `target` is the virtual block
@@ -5107,11 +5194,13 @@ int debug_server_dirty_break_maybe_pause(uint32_t target, CPUState *cpu)
     return 1;
 }
 
+/* Send ok. */
 static void send_ok(int id)
 {
     send_fmt("{\"id\":%d,\"ok\":true}", id);
 }
 
+/* Send err. */
 static void send_err(int id, const char *msg)
 {
     send_fmt("{\"id\":%d,\"ok\":false,\"error\":\"%s\"}", id, msg);
@@ -5133,6 +5222,7 @@ static void handle_ping(int id, const char *json)
              s_unknown_unique_count);
 }
 
+/* Handle the 'frame' debug command. */
 static void handle_frame(int id, const char *json)
 {
     (void)json;
@@ -5146,6 +5236,7 @@ static void handle_frame(int id, const char *json)
  * of two runs (native vs interp/oracle): the first frame whose wr or pc differs
  * is the first-divergence frame. Small integer fields only — no large/ragged
  * payload, so it never trips the trace-dump JSON/eviction problems. */
+/* Handle the 'frame fingerprint' debug command. */
 static void handle_frame_fingerprint(int id, const char *json)
 {
     int count = json_get_int(json, "count", 1024);
@@ -5216,6 +5307,7 @@ static const char *rec_kind_str(uint8_t k)
  * classifies each. Optional "kind" param (0..3) filters to one class; default
  * (omitted/-1) emits everything. Diff two runs by `i` — the first differing
  * (kind,addr,val,pc) tuple is the literal first divergent access. */
+/* Handle the 'record frame dump' debug command. */
 static void handle_record_frame_dump(int id, const char *json)
 {
     int offset = json_get_int(json, "offset", 0);
@@ -5279,6 +5371,7 @@ static void handle_record_reads_dump(int id, const char *json)
     free(out);
 }
 
+/* Handle the 'get registers' debug command. */
 static void handle_get_registers(int id, const char *json)
 {
     (void)json;
@@ -5311,6 +5404,7 @@ static void handle_get_registers(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'read ram' debug command. */
 static void handle_read_ram(int id, const char *json)
 {
     char addr_str[32];
@@ -5354,6 +5448,7 @@ static void handle_read_ram(int id, const char *json)
  * the socket send buffer filled, the main-thread-pumped server blocked, and
  * the freeze watchdog killed the process.  One request, one response. */
 
+/* Handle the 'write ram' debug command. */
 static void handle_write_ram(int id, const char *json)
 {
     char addr_str[32], val_str[32];
@@ -5378,6 +5473,7 @@ static void handle_write_ram(int id, const char *json)
  * the faithful way. So "enabled" alone tells you nothing — these counters are
  * how you tell an engaged correction from an inert one. Both are free-running
  * totals; sample twice and diff for a per-window rate. */
+/* Handle the 'geom correction' debug command. */
 static void handle_geom_correction(int id, const char *json)
 {
     (void)json;
@@ -5473,6 +5569,7 @@ static void handle_pgxp(int id, const char *json)
              (unsigned)pgxp_test_suppress_depth(), pgxp_test_active());
 }
 
+/* Handle the 'gpu state' debug command. */
 static void handle_gpu_state(int id, const char *json)
 {
     (void)json;
@@ -5567,6 +5664,7 @@ static void handle_gpu_state(int id, const char *json)
              ws.angle_max_vanilla, ws.angle_max_widened);
 }
 
+/* Handle the 'ws aspect cone site' debug command. */
 static void handle_ws_aspect_cone_site(int id, const char *json)
 {
     char addr_str[32];
@@ -5595,6 +5693,7 @@ static void handle_ws_aspect_cone_site(int id, const char *json)
              (unsigned long long)site.queue_reject);
 }
 
+/* Handle the 'mem words' debug command. */
 static void handle_mem_words(int id, const char *json)
 {
     char addr_str[32];
@@ -5632,6 +5731,7 @@ static void handle_mem_words(int id, const char *json)
  * counters / VBLANK pacing (timers_state, freeze_check) to validate
  * cycles_to_next_event before wiring it into the two-tier executor. UINT32_MAX
  * (4294967295) for a source means "no deliverable IRQ scheduled". */
+/* Handle the 'cycles to next event' debug command. */
 static void handle_cycles_to_next_event(int id, const char *json)
 {
     (void)json;
@@ -5647,6 +5747,7 @@ static void handle_cycles_to_next_event(int id, const char *json)
              id, i_stat, i_mask, agg, t, c, d, s);
 }
 
+/* Handle the 'irq state' debug command. */
 static void handle_irq_state(int id, const char *json)
 {
     (void)json;
@@ -5687,6 +5788,7 @@ static void handle_defer_state(int id, const char *json)
  * per-frame GP0(E5) draw-offset-Y range/count. Used to confirm the guest is
  * receiving exactly 60 VBlanks/s (not the ~96/s the stale poll fallback caused)
  * and to probe double-buffer draw-offset alternation. */
+/* Handle the 'vblank rate' debug command. */
 static void handle_vblank_rate(int id, const char *json)
 {
     (void)json;
@@ -5706,6 +5808,7 @@ static void handle_vblank_rate(int id, const char *json)
              g_doff_min_last, g_doff_max_last, g_doff_cnt_last);
 }
 
+/* Handle the 'timers state' debug command. */
 static void handle_timers_state(int id, const char *json)
 {
     (void)json;
@@ -5748,6 +5851,7 @@ static const char *cdrom_trace_kind_name(uint8_t kind)
     }
 }
 
+/* Handle the 'cdrom state' debug command. */
 static void handle_cdrom_state(int id, const char *json)
 {
     (void)json;
@@ -5810,6 +5914,7 @@ static void handle_cdrom_state(int id, const char *json)
  * calls AND guest-cell writes are invisible to wtrace/fntrace; this is the
  * only observability into the bc84c/mode/session lifecycle. Indices match the
  * CDFN_* enum in game/cd.c. */
+/* Handle the 'cdfn dump' debug command. */
 static void handle_cdfn_dump(int id, const char *json)
 {
     (void)json;
@@ -5856,6 +5961,7 @@ static void handle_cdfn_dump(int id, const char *json)
     send_fmt("%s", buf);
 }
 
+/* Handle the 'cdrom sector dump' debug command. */
 static void handle_cdrom_sector_dump(int id, const char *json)
 {
     int offset = json_get_int(json, "offset", 0);
@@ -5901,6 +6007,7 @@ static void handle_cdrom_sector_dump(int id, const char *json)
     free(bytes);
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void append_hex_bytes(char *buf, size_t bufsz, size_t *pos,
                              const uint8_t *bytes, uint32_t len)
 {
@@ -5909,6 +6016,7 @@ static void append_hex_bytes(char *buf, size_t bufsz, size_t *pos,
     }
 }
 
+/* Handle the 'cdrom sector history' debug command. */
 static void handle_cdrom_sector_history(int id, const char *json)
 {
     int count = json_get_int(json, "count", 64);
@@ -5970,6 +6078,7 @@ static void handle_cdrom_sector_history(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'cdrom sector history clear' debug command. */
 static void handle_cdrom_sector_history_clear(int id, const char *json)
 {
     (void)json;
@@ -5977,6 +6086,7 @@ static void handle_cdrom_sector_history_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'cdrom drop history' debug command. */
 static void handle_cdrom_drop_history(int id, const char *json)
 {
     (void)json;
@@ -6028,6 +6138,7 @@ static const char *cdrom_command_kind_name(uint8_t kind)
     }
 }
 
+/* Handle the 'cdrom command history' debug command. */
 static void handle_cdrom_command_history(int id, const char *json)
 {
     int count = json_get_int(json, "count", 128);
@@ -6098,6 +6209,7 @@ static void handle_cdrom_command_history(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'cdrom command history clear' debug command. */
 static void handle_cdrom_command_history_clear(int id, const char *json)
 {
     (void)json;
@@ -6105,6 +6217,7 @@ static void handle_cdrom_command_history_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'cdrom trace clear' debug command. */
 static void handle_cdrom_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -6112,6 +6225,7 @@ static void handle_cdrom_trace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'cdrom trace dump' debug command. */
 static void handle_cdrom_trace_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -6182,6 +6296,7 @@ static const char *dma_trace_kind_name(uint32_t kind)
     }
 }
 
+/* Handle the 'dma state' debug command. */
 static void handle_dma_state(int id, const char *json)
 {
     (void)json;
@@ -6257,6 +6372,7 @@ static void handle_dma_state(int id, const char *json)
     debug_server_send_line(buf);
 }
 
+/* Handle the 'dma trace clear' debug command. */
 static void handle_dma_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -6264,6 +6380,7 @@ static void handle_dma_trace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'dma trace dump' debug command. */
 static void handle_dma_trace_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -6309,6 +6426,7 @@ static void handle_dma_trace_dump(int id, const char *json)
     free(buf);
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void append_word_array(char *buf, size_t bufsz, size_t *pos,
                               const uint32_t *words, int count)
 {
@@ -6320,6 +6438,7 @@ static void append_word_array(char *buf, size_t bufsz, size_t *pos,
     *pos += snprintf(buf + *pos, bufsz - *pos, "]");
 }
 
+/* Handle the 'dma cdrom history' debug command. */
 static void handle_dma_cdrom_history(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -6398,6 +6517,7 @@ extern int gpu_get_a0_extra(int index, uint32_t *func, uint32_t *sp, uint32_t *r
                             uint32_t *s1, uint32_t *stack10);
 extern int gpu_get_a0_src(int index, uint32_t *s2, uint32_t *a0, uint32_t *a1, uint32_t *frame);
 
+/* Handle the 'a0 history' debug command. */
 static void handle_a0_history(int id, const char *json)
 {
     (void)json;
@@ -6437,6 +6557,7 @@ extern int gpu_get_c0_history(int index, int *x, int *y, int *w, int *h,
                               uint32_t *func, uint32_t *sp, uint32_t *s1,
                               uint32_t *fw0, uint32_t *fw1, int *rcount);
 
+/* Handle the 'c0 history' debug command. */
 static void handle_c0_history(int id, const char *json)
 {
     (void)json;
@@ -6457,6 +6578,7 @@ static void handle_c0_history(int id, const char *json)
     send_fmt("%s", buf);
 }
 
+/* Handle the 'gpu opcodes' debug command. */
 static void handle_gpu_opcodes(int id, const char *json)
 {
     (void)json;
@@ -6476,6 +6598,7 @@ static void handle_gpu_opcodes(int id, const char *json)
     send_fmt("%s", buf);
 }
 
+/* Handle the 'gpu ring stats' debug command. */
 static void handle_gpu_ring_stats(int id, const char *json)
 {
     (void)json;
@@ -6490,6 +6613,7 @@ static void handle_gpu_ring_stats(int id, const char *json)
              oldest, newest);
 }
 
+/* Handle the 'gpu frame dump' debug command. */
 static void handle_gpu_frame_dump(int id, const char *json)
 {
     int target = json_get_int(json, "frame", -1);
@@ -6544,6 +6668,7 @@ static void handle_gpu_frame_dump(int id, const char *json)
     free(entries);
 }
 
+/* Handle the 'capture quads' debug command. */
 static void handle_capture_quads(int id, const char *json)
 {
     (void)json;
@@ -6551,6 +6676,7 @@ static void handle_capture_quads(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'get quads' debug command. */
 static void handle_get_quads(int id, const char *json)
 {
     (void)json;
@@ -6573,6 +6699,7 @@ static void handle_get_quads(int id, const char *json)
 
 extern uint64_t gte_get_exec_count(void);
 
+/* Handle the 'gte state' debug command. */
 static void handle_gte_state(int id, const char *json)
 {
     (void)json;
@@ -6681,6 +6808,7 @@ static void handle_gte_latch_dump(int id, const char *json)
     debug_server_send_line(reply); free(body); free(reply);
 }
 
+/* Handle the 'sio state' debug command. */
 static void handle_sio_state(int id, const char *json)
 {
     (void)json;
@@ -6765,6 +6893,7 @@ static void json_escape_string(char *dst, size_t dst_size, const char *src)
     dst[out] = '\0';
 }
 
+/* Handle the 'mc status' debug command. */
 static void handle_mc_status(int id, const char *json)
 {
     (void)json;
@@ -6792,6 +6921,7 @@ static void handle_mc_status(int id, const char *json)
              m1[0], m1[1]);
 }
 
+/* Handle the 'spu status' debug command. */
 static void handle_spu_status(int id, const char *json)
 {
     (void)json;
@@ -6860,6 +6990,7 @@ static void handle_spu_status(int id, const char *json)
  * Single-shot emission: assemble the entire response into a heap buffer
  * and fire one send_fmt. debug_server_send_line appends '\n' on every
  * call, so multi-call patterns produce multi-line garbage on the wire. */
+/* Handle the 'spu voices' debug command. */
 static void handle_spu_voices(int id, const char *json)
 {
     (void)json;
@@ -6990,6 +7121,7 @@ static void handle_spu_events(int id, const char *json)
     free(evs);
 }
 
+/* Handle the 'spu events reset' debug command. */
 static void handle_spu_events_reset(int id, const char *json)
 {
     (void)json;
@@ -6997,6 +7129,7 @@ static void handle_spu_events_reset(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
 
+/* Handle the 'spu ta' debug command. */
 static void handle_spu_ta(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -7041,6 +7174,7 @@ extern int psx_audio_out_stats(double *fill_ms, double *target_ms,
                                uint64_t *overflow_drops, double *correction,
                                int *legacy, int *host_rate);
 
+/* Handle the 'audio stats' debug command. */
 static void handle_audio_stats(int id, const char *json)
 {
     (void)json;
@@ -7094,6 +7228,7 @@ static void handle_audio_stats(int id, const char *json)
              correction);
 }
 
+/* Handle the 'audio wav' debug command. */
 static void handle_audio_wav(int id, const char *json)
 {
     char path[512];
@@ -7127,6 +7262,7 @@ static void handle_audio_wav(int id, const char *json)
              (unsigned long long)total);
 }
 
+/* Handle the 'audio events' debug command. */
 static void handle_audio_events(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -7223,6 +7359,7 @@ static void handle_pace_state(int id, const char *json)
              (unsigned long long)s[14], (unsigned long long)s[15]);
 }
 
+/* Handle the 'sio burst stats' debug command. */
 static void handle_sio_burst_stats(int id, const char *json)
 {
     (void)json;
@@ -7244,6 +7381,7 @@ static void handle_sio_burst_stats(int id, const char *json)
              reason_str);
 }
 
+/* Handle the 'sio arm audit' debug command. */
 static void handle_sio_arm_audit(int id, const char *json)
 {
     (void)json;
@@ -7314,6 +7452,7 @@ extern int memory_get_imask_bit7_set_count(void);
 extern int memory_get_imask_bit7_clear_count(void);
 extern const ImaskTraceEntry *memory_get_imask_trace(int *idx_out, int *count_out);
 
+/* Handle the 'imask trace' debug command. */
 static void handle_imask_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 64);
@@ -7384,6 +7523,7 @@ static void handle_card_handoff(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'sio trace' debug command. */
 static void handle_sio_trace(int id, const char *json)
 {
     int count = json_get_int(json, "count", 64);
@@ -7427,6 +7567,7 @@ static void handle_sio_trace(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'sio trace window' debug command. */
 static void handle_sio_trace_window(int id, const char *json)
 {
     int seq = json_get_int(json, "seq", -1);
@@ -7496,6 +7637,7 @@ static const char *txn_end_reason_str(int reason) {
     }
 }
 
+/* Emit/append a trace entry to the response buffer. */
 static void emit_card_txn_json(const SioTxnEntry *e, int is_live) {
     int n_bytes = e->byte_count;
     if (n_bytes > SIO_TXN_MAX_BYTES) n_bytes = SIO_TXN_MAX_BYTES;
@@ -7528,6 +7670,7 @@ static void emit_card_txn_json(const SioTxnEntry *e, int is_live) {
  * evcb_walk_dump      — recent always-on snapshots (paired entry + exit per
  *                       DeliverEvent call)
  * evcb_walk_stats     — counts + ring usage */
+/* Emit/append a trace entry to the response buffer. */
 static void emit_evcb_snapshot_json(const EvCBSnapshot *e) {
     send_fmt("{\"seq\":%llu,\"fn_entry_seq\":%llu,\"tag\":\"%s\","
              "\"evcb_base\":\"0x%08X\",\"evcb_total_bytes\":%u,"
@@ -7555,6 +7698,7 @@ static void emit_evcb_snapshot_json(const EvCBSnapshot *e) {
     send_fmt("]}");
 }
 
+/* Handle the 'evcb snapshot' debug command. */
 static void handle_evcb_snapshot(int id, const char *json)
 {
     (void)json;
@@ -7596,6 +7740,7 @@ static void handle_evcb_snapshot(int id, const char *json)
     send_fmt("}\n");
 }
 
+/* Handle the 'evcb walk dump' debug command. */
 static void handle_evcb_walk_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 8);
@@ -7622,6 +7767,7 @@ static void handle_evcb_walk_dump(int id, const char *json)
     send_fmt("]}\n");
 }
 
+/* Handle the 'evcb walk stats' debug command. */
 static void handle_evcb_walk_stats(int id, const char *json)
 {
     (void)json;
@@ -7650,6 +7796,7 @@ static const char *sio_irq_src_str(int s) {
     }
 }
 
+/* Handle the 'sio irq dump' debug command. */
 static void handle_sio_irq_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 64);
@@ -7693,6 +7840,7 @@ static void handle_sio_irq_dump(int id, const char *json)
     send_fmt("],\"emitted\":%d}\n", emitted);
 }
 
+/* Handle the 'sio irq window' debug command. */
 static void handle_sio_irq_window(int id, const char *json)
 {
     int byte_seq = json_get_int(json, "byte_seq", -1);
@@ -7739,6 +7887,7 @@ static void handle_sio_irq_window(int id, const char *json)
     send_fmt("],\"emitted\":%d}\n", emitted);
 }
 
+/* Handle the 'card txn dump' debug command. */
 static void handle_card_txn_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 16);
@@ -7782,6 +7931,7 @@ static void handle_card_txn_dump(int id, const char *json)
     send_fmt("],\"emitted\":%d}\n", emitted);
 }
 
+/* Handle the 'card read summary' debug command. */
 static void handle_card_read_summary(int id, const char *json)
 {
     (void)json;
@@ -7819,6 +7969,7 @@ static void handle_card_read_summary(int id, const char *json)
     send_fmt("%s", out);
 }
 
+/* Handle the 'card read summary reset' debug command. */
 static void handle_card_read_summary_reset(int id, const char *json)
 {
     (void)json;
@@ -7826,6 +7977,7 @@ static void handle_card_read_summary_reset(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
 
+/* Handle the 'card data writes' debug command. */
 static void handle_card_data_writes(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -7867,6 +8019,7 @@ static void handle_card_data_writes(int id, const char *json)
     send_fmt("%s", out);
 }
 
+/* Handle the 'card data writes reset' debug command. */
 static void handle_card_data_writes_reset(int id, const char *json)
 {
     (void)json;
@@ -7874,6 +8027,7 @@ static void handle_card_data_writes_reset(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
 
+/* Handle the 'watch' debug command. */
 static void handle_watch(int id, const char *json)
 {
     char addr_str[32];
@@ -7895,6 +8049,7 @@ static void handle_watch(int id, const char *json)
     send_err(id, "all watchpoint slots full (max 8)");
 }
 
+/* Handle the 'unwatch' debug command. */
 static void handle_unwatch(int id, const char *json)
 {
     char addr_str[32];
@@ -7913,6 +8068,7 @@ static void handle_unwatch(int id, const char *json)
     send_err(id, "watchpoint not found");
 }
 
+/* Handle the 'set input' debug command. */
 static void handle_set_input(int id, const char *json)
 {
     char val_str[32];
@@ -7935,6 +8091,7 @@ static void handle_set_input(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'press' debug command. */
 static void handle_press(int id, const char *json)
 {
     int buttons = json_get_int(json, "buttons", -1);
@@ -8000,10 +8157,7 @@ static void handle_clean_stats(int id, const char *json)
 }
 /* clean_fallback_stats — count + addr ring of dispatches in the timed
  * CD/IRQ band [0x80180000,0x801C0000) that clean_try_dispatch declined
- * (i.e. ran generated/untimed). Answers "is any untimed code still
- * reachable" with names, not guesses. */
 extern uint64_t psx_gen_fallback_inregion_count(void);
-extern uint32_t psx_gen_fallback_inregion_at(uint32_t i);
 static void handle_clean_fallback_stats(int id, const char *json)
 {
     (void)json;
@@ -8012,17 +8166,14 @@ static void handle_clean_fallback_stats(int id, const char *json)
     int p = snprintf(buf, sizeof(buf),
                      "{\"id\":%d,\"ok\":true,\"count\":%llu,\"addrs\":[",
                      id, (unsigned long long)n);
-    int first = 1;
     for (uint32_t i = 0; i < 128 && p < (int)sizeof(buf) - 24; i++) {
         uint32_t a = psx_gen_fallback_inregion_at(i);
         if (!a) continue;
         p += snprintf(buf + p, sizeof(buf) - p, "%s\"0x%08X\"",
                       first ? "" : ",", a);
-        first = 0;
     }
     snprintf(buf + p, sizeof(buf) - p, "]}");
     send_fmt("%s", buf);
-}
 static void handle_clean_trace(int id, const char *json)
 {
     (void)json;
@@ -8043,6 +8194,7 @@ static void handle_clean_trace(int id, const char *json)
 }
 extern uint32_t br2_dbg_svc_count(void);
 extern int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]);
+/* Handle the 'bios svc trace' debug command. */
 static void handle_bios_svc_trace(int id, const char *json)
 {
     (void)json;
@@ -8067,6 +8219,7 @@ static void handle_bios_svc_trace(int id, const char *json)
     snprintf(buf + p, sizeof(buf) - p, "]}");
     send_fmt("%s", buf);
 }
+/* Handle the 'pad status' debug command. */
 static void handle_pad_status(int id, const char *json)
 {
     (void)json;
@@ -8094,6 +8247,7 @@ static void handle_pad_status(int id, const char *json)
              s_axis_override[1] ? "true" : "false");
 }
 
+/* Handle the 'clear input' debug command. */
 static void handle_clear_input(int id, const char *json)
 {
     (void)json;
@@ -8109,6 +8263,7 @@ static void handle_clear_input(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'input route clear' debug command. */
 static void handle_input_route_clear(int id, const char *json)
 {
     (void)json;
@@ -8119,6 +8274,7 @@ static void handle_input_route_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'input route append' debug command. */
 static void handle_input_route_append(int id, const char *json)
 {
     int frames = json_get_int(json, "frames", -1);
@@ -8142,6 +8298,7 @@ static void handle_input_route_append(int id, const char *json)
              id, (unsigned)s_input_route_count);
 }
 
+/* Handle the 'input route start' debug command. */
 static void handle_input_route_start(int id, const char *json)
 {
     (void)json;
@@ -8161,6 +8318,7 @@ static void handle_input_route_start(int id, const char *json)
              (unsigned long long)s_frame_count);
 }
 
+/* Handle the 'input route stop' debug command. */
 static void handle_input_route_stop(int id, const char *json)
 {
     (void)json;
@@ -8169,6 +8327,7 @@ static void handle_input_route_stop(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'input route status' debug command. */
 static void handle_input_route_status(int id, const char *json)
 {
     (void)json;
@@ -8208,6 +8367,7 @@ static void handle_kernel_bless(int id, const char *json)
              (unsigned long long)s[4], (unsigned long long)s[5]);
 }
 
+/* Handle the 'ws margin' debug command. */
 static void handle_ws_margin(int id, const char *json)
 {
     int v = json_get_int(json, "value", -2);
@@ -8245,6 +8405,7 @@ static void handle_synth_recurse(int id, const char *json)
 #endif
 }
 
+/* Handle the 'frame perf' debug command. */
 static void handle_frame_perf(int id, const char *json)
 {
     (void)json;
@@ -8305,6 +8466,7 @@ static void handle_gl_ws_ablate(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"mode\":%d}", id, gl_renderer_get_ws_ablate());
 }
 
+/* Handle the 'gl interp' debug command. */
 static void handle_gl_interp(int id, const char *json)
 {
     (void)json;
@@ -8325,6 +8487,7 @@ static void handle_gl_interp(int id, const char *json)
  * every prim (the original full-mirror path). For A/B perf + parity checks. */
 extern void gl_renderer_set_wide_fast(int on);
 extern int  gl_renderer_get_wide_fast(void);
+/* Handle the 'gl wide fast' debug command. */
 static void handle_gl_wide_fast(int id, const char *json)
 {
     int on = json_get_int(json, "on", -1);
@@ -8361,6 +8524,7 @@ static void handle_ws_nw(int id, const char *json)
 
 extern void psx_ws_set_squash(int on);
 extern int  psx_ws_get_squash(void);
+/* Handle the 'ws squash' debug command. */
 static void handle_ws_squash(int id, const char *json)
 {
     int on = json_get_int(json, "on", -1);
@@ -8376,6 +8540,7 @@ static void handle_ws_squash(int id, const char *json)
  * to keep the current strength. Reports the resulting state. */
 extern void psx_video_set_scanlines(int on, float strength);
 extern int  psx_video_get_scanlines(float *strength);
+/* Handle the 'scanline' debug command. */
 static void handle_scanline(int id, const char *json)
 {
     int on  = json_get_int(json, "on", -1);
@@ -8418,6 +8583,7 @@ static void handle_ws_backdrop_ring(int id, const char *json)
  * say WHICH of CLUT/texpage/band/family differed, and `anchor` takes only three
  * values, so equal anchors do not prove two prims actually co-grouped.
  * Read-only; sized for the 2048-entry prepass cap. */
+/* Handle the 'ws ui groups' debug command. */
 static void handle_ws_ui_groups(int id, const char *json)
 {
     (void)json;
@@ -8473,6 +8639,7 @@ static void handle_ws_backdrop_stretch(int id, const char *json)
  * probe can stretch an exact prim set and screenshot which one fills the void.
  * Args: mode (0..8), lo, hi (OT addrs, hex via _hex fields or decimal), clut.
  * Reports matched/tagged counts (last frame) + applied. */
+/* Handle the 'ws dbg stretch' debug command. */
 static void handle_ws_dbg_stretch(int id, const char *json)
 {
     extern int g_ws_bd_stretch_on, g_ws_bd_stretch_pct, g_ws_bd_phase_mode;
@@ -8505,6 +8672,7 @@ static void handle_ws_dbg_stretch(int id, const char *json)
 extern void gte_ws_set_far_threshold(int t);
 extern int  gte_ws_get_far_threshold(void);
 extern void gte_ws_get_sz_stats(int* mn, int* mx, unsigned* n, unsigned* far_n);
+/* Handle the 'ws far threshold' debug command. */
 static void handle_ws_far_threshold(int id, const char *json)
 {
     int t = json_get_int(json, "t", -123456789);  /* sentinel = no change */
@@ -8520,6 +8688,7 @@ static void handle_ws_far_threshold(int id, const char *json)
  * (3*num)/(4*den) so a finite sky dome grows to fill the wider FOV. Tune the
  * depth split with ws_far_threshold (its sz_far count = verts being expanded). */
 extern void gte_ws_set_dome_expand(int on, int aspect_num, int aspect_den);
+/* Handle the 'ws dome' debug command. */
 static void handle_ws_dome(int id, const char *json)
 {
     int on  = json_get_int(json, "on", 1);
@@ -8535,6 +8704,7 @@ static void handle_ws_dome(int id, const char *json)
  * dome frame render, then call with no args to dump the tally. */
 extern void gte_dome_probe(int on, int thr);
 extern int  gte_dome_probe_dump(uint32_t* funcs, uint32_t* counts, int32_t* maxsz, int cap);
+/* Handle the 'ws dome probe' debug command. */
 static void handle_ws_dome_probe(int id, const char *json)
 {
     int on = json_get_int(json, "on", -1);
@@ -8557,6 +8727,7 @@ static void handle_ws_dome_probe(int id, const char *json)
     debug_server_send_line(buf);
 }
 
+/* Handle the 'ws census' debug command. */
 static void handle_ws_census(int id, const char *json)
 {
     char act[16] = {0};
@@ -8576,6 +8747,7 @@ static void handle_ws_census(int id, const char *json)
              id, n, path, (unsigned long long)gpu_ws_census_seq());
 }
 
+/* Handle the 'mmx6 freshfix' debug command. */
 static void handle_mmx6_freshfix(int id, const char *json)
 {
     extern void gpu_ws_mmx6_set_freshfix(int on);
@@ -8596,6 +8768,7 @@ static void handle_mmx6_freshfix(int id, const char *json)
  * {"cmd":"savestate","op":"save"|
  * "load","slot":N}. The request is staged and runs at the next block boundary
  * (savestate_poll); a load unwinds the guest, so the ack is sent before it. */
+/* Handle the 'savestate' debug command. */
 static void handle_savestate(int id, const char *json)
 {
     extern int savestate_request_save(int slot);
@@ -8646,6 +8819,7 @@ static void handle_savestate_status(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,%s}", id, status);
 }
 
+/* Handle the 'turbo' debug command. */
 static void handle_turbo(int id, const char *json)
 {
     int enabled = json_get_int(json, "enabled", -1);
@@ -8660,6 +8834,7 @@ static void handle_turbo(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"enabled\":%d}", id, s_turbo_enabled);
 }
 
+/* Handle the 'turbo state' debug command. */
 static void handle_turbo_state(int id, const char *json)
 {
     (void)json;
@@ -8688,26 +8863,31 @@ static void handle_turbo_state(int id, const char *json)
  * variables (s_paused, s_step_count, s_run_to) are kept as zero so
  * freeze_check still reports them and any stale callsite that reads
  * them gets a benign value. */
+/* Handle the 'pause' debug command. */
 static void handle_pause(int id, const char *json) {
     (void)json;
     send_err(id, "pause is removed; query a ring buffer (fn_entry_tail, wtrace_dump, gpu_frame_dump, etc.) instead of synthesizing a snapshot");
 }
 
+/* Handle the 'continue' debug command. */
 static void handle_continue(int id, const char *json) {
     (void)json;
     send_err(id, "continue is removed (pause is removed; nothing to resume)");
 }
 
+/* Handle the 'step' debug command. */
 static void handle_step(int id, const char *json) {
     (void)json;
     send_err(id, "step is removed; query a ring buffer over the window of interest instead of advancing N frames synchronously");
 }
 
+/* Handle the 'run to frame' debug command. */
 static void handle_run_to_frame(int id, const char *json) {
     (void)json;
     send_err(id, "run_to_frame is removed; use frame_range / read_frame_ram against the live frame ring buffer instead");
 }
 
+/* Handle the 'dirty break range' debug command. */
 static void handle_dirty_break_range(int id, const char *json)
 {
     char buf[32];
@@ -8743,6 +8923,7 @@ static void handle_dirty_break_range(int id, const char *json)
              id, s_dirty_break_lo, s_dirty_break_hi);
 }
 
+/* Handle the 'dirty break clear' debug command. */
 static void handle_dirty_break_clear(int id, const char *json)
 {
     (void)json;
@@ -8750,6 +8931,7 @@ static void handle_dirty_break_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'dirty break state' debug command. */
 static void handle_dirty_break_state(int id, const char *json)
 {
     (void)json;
@@ -8783,6 +8965,7 @@ static void handle_history(int id, const char *json)
              (unsigned long long)(s_history_count > 0 ? s_history_count - 1 : 0));
 }
 
+/* Handle the 'get frame' debug command. */
 static void handle_get_frame(int id, const char *json)
 {
     int f = json_get_int(json, "frame", -1);
@@ -8836,6 +9019,7 @@ static void handle_get_frame(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'frame range' debug command. */
 static void handle_frame_range(int id, const char *json)
 {
     int start = json_get_int(json, "start", -1);
@@ -8881,6 +9065,7 @@ static void handle_frame_range(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'frame timeseries' debug command. */
 static void handle_frame_timeseries(int id, const char *json)
 {
     int start = json_get_int(json, "start", -1);
@@ -8926,6 +9111,7 @@ static void handle_frame_timeseries(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'first failure' debug command. */
 static void handle_first_failure(int id, const char *json)
 {
     (void)json;
@@ -8944,6 +9130,7 @@ static void handle_first_failure(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"frame\":-1,\"message\":\"no failures found\"}", id);
 }
 
+/* Handle the 'read frame ram' debug command. */
 static void handle_read_frame_ram(int id, const char *json)
 {
     int f = json_get_int(json, "frame", -1);
@@ -8990,6 +9177,7 @@ static void handle_read_frame_ram(int id, const char *json)
              id, f, addr, len, hex);
 }
 
+/* Handle the 'set snapshot' debug command. */
 static void handle_set_snapshot(int id, const char *json)
 {
     int slot = json_get_int(json, "slot", -1);
@@ -9006,6 +9194,7 @@ static void handle_set_snapshot(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"slot\":%d,\"addr\":\"0x%08X\"}", id, slot, addr);
 }
 
+/* Handle the 'get snapshots' debug command. */
 static void handle_get_snapshots(int id, const char *json)
 {
     (void)json;
@@ -9149,6 +9338,7 @@ static void handle_display_ring_aux(int id, const char *json)
              "\"vram_words\":%u}", id, f, path, (unsigned)n1);
 }
 
+/* Handle the 'display ring stats' debug command. */
 static void handle_display_ring_stats(int id, const char *json)
 {
     (void)json;
@@ -9166,6 +9356,7 @@ static void handle_display_ring_stats(int id, const char *json)
              id, DISP_RING_CAP, n, oldest, newest);
 }
 
+/* Handle the 'display ring get' debug command. */
 static void handle_display_ring_get(int id, const char *json)
 {
     int f = json_get_int(json, "frame", -1);
@@ -9199,6 +9390,7 @@ static void handle_display_ring_get(int id, const char *json)
              "\"width\":%u,\"height\":%u}", id, f, path, w, h);
 }
 
+/* Handle the 'screenshot file' debug command. */
 static void handle_screenshot_file(int id, const char *json)
 {
     GpuDisplayInfo di;
@@ -9263,6 +9455,7 @@ static void handle_screenshot_file(int id, const char *json)
  * so what lands in the PNG is what the player sees. Falls back to the native
  * resolve when no hi-res surface exists (supersampling 1 / software), so the
  * command always answers with something truthful about the actual output. */
+/* Handle the 'screenshot hires' debug command. */
 static void handle_screenshot_hires(int id, const char *json)
 {
     GpuDisplayInfo di;
@@ -9358,6 +9551,7 @@ static void handle_screenshot_hires(int id, const char *json)
  * Refused up front on headless (no present surface) and on the Vulkan backend,
  * which presents through its own swapchain and has no readback hook — accepting
  * there would leave a request nothing can ever fulfil. */
+/* Handle the 'present shot' debug command. */
 static void handle_present_shot(int id, const char *json)
 {
     extern int present_shot_request(const char *path);
@@ -9433,6 +9627,7 @@ static void handle_dump_buffer(int id, const char *json)
  * present path uses (gr_render_wide_display into a scratch buffer), so the dump
  * reflects the composited wide frame 1:1, orientation included. Errors if the
  * active backend has no wide compositor or native-wide isn't engaged. */
+/* Handle the 'wide shot' debug command. */
 static void handle_wide_shot(int id, const char *json)
 {
     extern int gr_wide_supported(void);
@@ -9493,6 +9688,7 @@ static void handle_wide_shot(int id, const char *json)
  * this command unconditionally through handle_screenshot_file silently omits
  * precisely the reveal margins that widescreen diagnostics need to inspect.
  * Keep screenshot_file as the explicit canonical-VRAM probe. */
+/* Handle the 'present screenshot' debug command. */
 static void handle_present_screenshot(int id, const char *json)
 {
     extern int gr_wide_supported(void);
@@ -9508,6 +9704,7 @@ static void handle_present_screenshot(int id, const char *json)
  * (which crops to the displayed band), this shows where the over-draw actually
  * lands across the whole surface. SW backend only (diagnostic). base_x defaults
  * to 0 (the common vertical-double-buffer origin). */
+/* Handle the 'wide full' debug command. */
 static void handle_wide_full(int id, const char *json)
 {
     /* Backend-dispatched: gr_wide_dump_full routes to the active renderer's full
@@ -9549,6 +9746,7 @@ static void handle_wide_full(int id, const char *json)
              id, path, W, H);
 }
 
+/* Handle the 'vram peek' debug command. */
 static void handle_vram_peek(int id, const char *json)
 {
     int x = json_get_int(json, "x", 0);
@@ -9579,6 +9777,7 @@ static void handle_vram_peek(int id, const char *json)
 extern int  gl_renderer_fbo_peek(int x, int y, int w, int h, uint16_t *out);
 extern void gl_renderer_diag(int *gpu_dirty, int pending[5], int pack[5]);
 
+/* Handle the 'gl fbo peek' debug command. */
 static void handle_gl_fbo_peek(int id, const char *json)
 {
     int x = json_get_int(json, "x", 0);
@@ -9614,6 +9813,7 @@ static void handle_gl_fbo_peek(int id, const char *json)
 extern int gl_renderer_vram_diff(uint32_t *count, int bbox[4],
                                  int samples[8][2], uint16_t samples_px[8][2]);
 
+/* Handle the 'gl vram diff' debug command. */
 static void handle_gl_vram_diff(int id, const char *json)
 {
     (void)json;
@@ -9657,6 +9857,7 @@ static const char *gl_coh_kind_name(int k)
     }
 }
 
+/* Handle the 'gl coh ring' debug command. */
 static void handle_gl_coh_ring(int id, const char *json)
 {
     int n = json_get_int(json, "n", 200);
@@ -9695,6 +9896,7 @@ static void handle_gl_coh_ring(int id, const char *json)
  *             [r,g,b], glerr] */
 extern uint64_t gl_renderer_pres_total(void);
 
+/* Handle the 'gl present ring' debug command. */
 static void handle_gl_present_ring(int id, const char *json)
 {
     static const char *path_name[5] = { "vram", "wide", "cpu", "blank", "interp" };
@@ -9736,6 +9938,7 @@ static void handle_gl_present_ring(int id, const char *json)
  * -> events: [seq, frame, path, present_w, disp_w, disp_h, game_mode,
  *             native_43, fellback, tag_delta, nw_extra, gte_verts,
  *             ovh_prims] */
+/* Handle the 'present ring' debug command. */
 static void handle_present_ring(int id, const char *json)
 {
     static const char *pres_path_name[4] =
@@ -9828,6 +10031,7 @@ static inline int capture_frozen(void) {
            (uint32_t)s_frame_count >= g_capture_freeze_frame;
 }
 
+/* Trace-ring record: wtrace record. */
 static void wtrace_record(uint32_t phys, uint32_t old_val, uint32_t new_val, uint8_t width)
 {
     if (!s_wtrace) return;
@@ -9837,6 +10041,7 @@ static void wtrace_record(uint32_t phys, uint32_t old_val, uint32_t new_val, uin
     s_wtrace_head = (s_wtrace_head + 1) % WRITE_TRACE_CAP;
 }
 
+/* Trace-ring record: wtrace boot record. */
 static void wtrace_boot_record(uint32_t phys, uint32_t old_val,
                                uint32_t new_val, uint8_t width)
 {
@@ -9872,6 +10077,7 @@ static void wtrace_all_record(uint32_t phys, uint32_t new_val, uint8_t width)
     s_wtrace_all_head = (s_wtrace_all_head + 1) % WRITE_TRACE_ALL_CAP;
 }
 
+/* Trace-ring record: wtrace transition record. */
 static void wtrace_transition_record(uint32_t phys, uint32_t old_val,
                                      uint32_t new_val, uint8_t width)
 {
@@ -9938,6 +10144,7 @@ static inline int is_card_critical_addr(uint32_t phys) {
             * (slot 0 — the success event) and HwCARD-NEW invisible. */
            (phys >= 0x0000E028u && phys < 0x0000E0ECu);
 }
+/* Trace-ring record: card trace record. */
 static void card_trace_record(uint32_t phys, uint32_t old_val, uint32_t new_val, uint8_t width) {
     uint64_t seq = s_card_trace_seq++;
     CardTraceEntry *e = &s_card_trace[seq & (CARD_TRACE_CAP - 1u)];
@@ -9951,6 +10158,7 @@ static void card_trace_record(uint32_t phys, uint32_t old_val, uint32_t new_val,
     e->in_exception = (uint8_t)(psx_get_in_exception() ? 1u : 0u);
 }
 
+/* Handle the 'card trace dump' debug command. */
 static void handle_card_trace_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 200);
@@ -10111,6 +10319,7 @@ void debug_server_trace_mmio_read(uint32_t addr, uint32_t val, uint8_t width)
     s_mmio_rtrace_head = (s_mmio_rtrace_head + 1) % MMIO_TRACE_CAP;
 }
 
+/* Handle the 'wtrace range' debug command. */
 static void handle_wtrace_range(int id, const char *json)
 {
     /* Backward compat: sets slot 0, clears all other slots. */
@@ -10126,6 +10335,7 @@ static void handle_wtrace_range(int id, const char *json)
              id, lo, hi);
 }
 
+/* Handle the 'wtrace add' debug command. */
 static void handle_wtrace_add(int id, const char *json)
 {
     if (s_wtrace_range_count >= WTRACE_MAX_RANGES) {
@@ -10141,6 +10351,7 @@ static void handle_wtrace_add(int id, const char *json)
              id, slot, s_wtrace_ranges[slot].lo, s_wtrace_ranges[slot].hi);
 }
 
+/* Handle the 'wtrace del' debug command. */
 static void handle_wtrace_del(int id, const char *json)
 {
     int slot = json_get_int(json, "slot", -1);
@@ -10163,6 +10374,7 @@ static void handle_wtrace_disarm_all(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'wtrace ranges' debug command. */
 static void handle_wtrace_ranges(int id, const char *json)
 {
     (void)json;
@@ -10198,6 +10410,7 @@ static void handle_rwatchpc_arm(int id, const char *json)
              id, g_rwatchpc_lo, g_rwatchpc_hi, g_rwatchpc_rt, g_rwatchpc_active);
 }
 
+/* Handle the 'rwatchpc disarm' debug command. */
 static void handle_rwatchpc_disarm(int id, const char *json)
 {
     (void)json;
@@ -10205,6 +10418,7 @@ static void handle_rwatchpc_disarm(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'rwatchpc dump' debug command. */
 static void handle_rwatchpc_dump(int id, const char *json)
 {
     (void)json;
@@ -10357,6 +10571,7 @@ static void handle_pc_probe_arm(int id, const char *json)
              id, s_pc_probe_n, s_pc_probe_sample_max, nd);
 }
 
+/* Handle the 'pc probe dump' debug command. */
 static void handle_pc_probe_dump(int id, const char *json)
 {
     (void)json;
@@ -10397,6 +10612,7 @@ static void handle_pc_probe_dump(int id, const char *json)
     send_line("]}");
 }
 
+/* Handle the 'pc probe clear' debug command. */
 static void handle_pc_probe_clear(int id, const char *json)
 {
     (void)json;
@@ -10424,6 +10640,7 @@ static void handle_pc_probe_clear(int id, const char *json)
  * CPU/dirty-interp stores; stale for DMA), and dma_depth/ch/madr/bcr (set in dma.c
  * while a DMA moves data). Lets the corrupting 0x016F0110 write be attributed to the
  * exact channel + destination instead of a stale per-instruction store PC. */
+/* Handle the 'd44 ring' debug command. */
 static void handle_d44_ring(int id, const char *json)
 {
     (void)json;
@@ -10464,6 +10681,7 @@ typedef struct { uint64_t seq, cycle; uint32_t frame, istat, imask, sr, d44,
                  restored, v0_exit, v0_saved, v1_exit, v1_saved, ra_exit,
                  ra_saved, redirects, entry_sp, pump_site; } DbgIrqCtxEntry;
 
+/* Handle the 'irqctx ring' debug command. */
 static void handle_irqctx_ring(int id, const char *json)
 {
     typedef DbgIrqCtxEntry E;
@@ -10611,6 +10829,7 @@ static void handle_spdepth(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'freeze check' debug command. */
 static void handle_freeze_check(int id, const char *json)
 {
     int window = json_get_int(json, "window", 256);
@@ -11169,6 +11388,7 @@ static void handle_freeze_check(int id, const char *json)
     debug_server_send_line(buf);
 }
 
+/* Handle the 'wtrace stats' debug command. */
 static void handle_wtrace_stats(int id, const char *json)
 {
     (void)json;
@@ -11181,6 +11401,7 @@ static void handle_wtrace_stats(int id, const char *json)
              s_wtrace_range_count);
 }
 
+/* Handle the 'wtrace clear' debug command. */
 static void handle_wtrace_clear(int id, const char *json)
 {
     (void)json;
@@ -11190,6 +11411,7 @@ static void handle_wtrace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'wtrace boot stats' debug command. */
 static void handle_wtrace_boot_stats(int id, const char *json)
 {
     (void)json;
@@ -11203,6 +11425,7 @@ static void handle_wtrace_boot_stats(int id, const char *json)
              (s_wtrace_boot_count >= WRITE_TRACE_BOOT_CAP) ? "true" : "false");
 }
 
+/* Handle the 'wtrace boot clear' debug command. */
 static void handle_wtrace_boot_clear(int id, const char *json)
 {
     (void)json;
@@ -11214,6 +11437,7 @@ static void handle_wtrace_boot_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'wtrace boot dump' debug command. */
 static void handle_wtrace_boot_dump(int id, const char *json)
 {
     if (!s_wtrace_boot) { send_err(id, "boot trace not initialized"); return; }
@@ -11304,6 +11528,7 @@ typedef struct {
     uint32_t transitions[8];
 } WTraceBootSummary;
 
+/* Handle the 'wtrace boot summary' debug command. */
 static void handle_wtrace_boot_summary(int id, const char *json)
 {
     if (!s_wtrace_boot) { send_err(id, "boot trace not initialized"); return; }
@@ -11465,6 +11690,7 @@ static void handle_wtrace_all_stats(int id, const char *json)
              (unsigned long long)oldest, (unsigned long long)newest);
 }
 
+/* Handle the 'wtrace all reset' debug command. */
 static void handle_wtrace_all_reset(int id, const char *json)
 {
     (void)json;
@@ -11476,6 +11702,7 @@ static void handle_wtrace_all_reset(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'wtrace all dump' debug command. */
 static void handle_wtrace_all_dump(int id, const char *json)
 {
     if (!s_wtrace_all) { send_err(id, "wtrace_all not initialized"); return; }
@@ -11535,6 +11762,7 @@ static void handle_wtrace_all_dump(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'wtrace trans stats' debug command. */
 static void handle_wtrace_trans_stats(int id, const char *json)
 {
     (void)json;
@@ -11548,6 +11776,7 @@ static void handle_wtrace_trans_stats(int id, const char *json)
              s_wtrace_trans_range_count);
 }
 
+/* Handle the 'wtrace trans reset' debug command. */
 static void handle_wtrace_trans_reset(int id, const char *json)
 {
     (void)json;
@@ -11559,6 +11788,7 @@ static void handle_wtrace_trans_reset(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'wtrace trans dump' debug command. */
 static void handle_wtrace_trans_dump(int id, const char *json)
 {
     if (!s_wtrace_trans) { send_err(id, "wtrace_trans not initialized"); return; }
@@ -11645,6 +11875,7 @@ static void handle_wtrace_trans_dump(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'call focus stats' debug command. */
 static void handle_call_focus_stats(int id, const char *json)
 {
     (void)json;
@@ -11657,6 +11888,7 @@ static void handle_call_focus_stats(int id, const char *json)
              (unsigned long long)oldest, (unsigned long long)newest);
 }
 
+/* Handle the 'call focus reset' debug command. */
 static void handle_call_focus_reset(int id, const char *json)
 {
     (void)json;
@@ -11667,6 +11899,7 @@ static void handle_call_focus_reset(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'call focus dump' debug command. */
 static void handle_call_focus_dump(int id, const char *json)
 {
     if (!s_call_focus) { send_err(id, "call_focus not initialized"); return; }
@@ -11785,6 +12018,7 @@ static void handle_call_focus_dump(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'wtrace dump' debug command. */
 static void handle_wtrace_dump(int id, const char *json)
 {
     if (!s_wtrace) { send_err(id, "trace not initialized"); return; }
@@ -11927,6 +12161,7 @@ static void handle_mmio_dump(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'mmio clear' debug command. */
 static void handle_mmio_clear(int id, const char *json)
 {
     (void)json;
@@ -12016,6 +12251,7 @@ static void handle_rtrace_dump(int id, const char *json)
     free(buf);
 }
 
+/* Handle the 'rtrace clear' debug command. */
 static void handle_rtrace_clear(int id, const char *json)
 {
     (void)json;
@@ -12025,6 +12261,7 @@ static void handle_rtrace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'rtrace arm' debug command. */
 static void handle_rtrace_arm(int id, const char *json)
 {
     if (s_mmio_rtrace_range_count >= MMIO_RTRACE_MAX_RANGES) {
@@ -12040,6 +12277,7 @@ static void handle_rtrace_arm(int id, const char *json)
              id, slot, s_mmio_rtrace_ranges[slot].lo, s_mmio_rtrace_ranges[slot].hi);
 }
 
+/* Handle the 'rtrace ranges' debug command. */
 static void handle_rtrace_ranges(int id, const char *json)
 {
     (void)json;
@@ -12053,6 +12291,7 @@ static void handle_rtrace_ranges(int id, const char *json)
     send_fmt("]}");
 }
 
+/* Handle the 'rtrace stats' debug command. */
 static void handle_rtrace_stats(int id, const char *json)
 {
     (void)json;
@@ -12143,6 +12382,7 @@ static const char *mdec_event_kind_name(uint32_t kind)
     }
 }
 
+/* Handle the 'mdec state' debug command. */
 static void handle_mdec_state(int id, const char *json)
 {
     (void)json;
@@ -12174,6 +12414,7 @@ static void handle_mdec_state(int id, const char *json)
  * auto_skip_fmv + frame-count-table params, the live MDEC decode count and XA-stream
  * flag (the feature's detection inputs), and the current pad word (so a phantom
  * skip-press is visible). */
+/* Handle the 'fmv state' debug command. */
 static void handle_fmv_state(int id, const char *json)
 {
     (void)json;
@@ -12207,6 +12448,7 @@ static void handle_fmv_state(int id, const char *json)
              (unsigned)(sio_get_pad_buttons() & 0xFFFFu));
 }
 
+/* Handle the 'mdec trace' debug command. */
 static void handle_mdec_trace(int id, const char *json)
 {
     uint64_t total = mdec_debug_get_event_total();
@@ -12256,6 +12498,7 @@ static void handle_mdec_trace(int id, const char *json)
     free(events);
 }
 
+/* Handle the 'mdec trace clear' debug command. */
 static void handle_mdec_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -12263,6 +12506,7 @@ static void handle_mdec_trace_clear(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'quit' debug command. */
 static void handle_quit(int id, const char *json)
 {
     (void)json;
@@ -12304,6 +12548,7 @@ static void handle_dispatch_check(int id, const char *json) {
  * bail-source ledger (traps.c), and the live wild pc/ra/sp so a wedged
  * clean-C activation can be proven to be starving on a latched bail.
  * {"cmd":"call_bail"} */
+/* Handle the 'call bail' debug command. */
 static void handle_call_bail(int id, const char *json) {
     (void)json;
     extern int      g_psx_call_bail;
@@ -12373,6 +12618,7 @@ static void handle_dispatch_tail(int id, const char *json) {
     debug_server_send_fmt("]}\n");
 }
 
+/* Handle the 'card mgr trace' debug command. */
 static void handle_card_mgr_trace(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -12440,6 +12686,7 @@ static void handle_card_mgr_trace(int id, const char *json) {
     free(buf);
 }
 
+/* Handle the 'card mgr clear' debug command. */
 static void handle_card_mgr_clear(int id, const char *json) {
     (void)json;
     s_card_mgr_trace_seq = 0;
@@ -12460,12 +12707,14 @@ static void handle_fn_filter(int id, const char *json) {
              id, s_fn_trace_filter_lo, s_fn_trace_filter_hi, s_fn_trace_active);
 }
 
+/* Handle the 'fn disable' debug command. */
 static void handle_fn_disable(int id, const char *json) {
     (void)json;
     s_fn_trace_active = 0;
     send_fmt("{\"id\":%d,\"ok\":true,\"active\":0}\n", id);
 }
 
+/* Handle the 'fn clear' debug command. */
 static void handle_fn_clear(int id, const char *json) {
     (void)json;
     s_fn_entry_seq = 0;
@@ -12483,6 +12732,7 @@ static void handle_fn_clear(int id, const char *json) {
     send_ok(id);
 }
 
+/* Handle the 'fn stats' debug command. */
 static void handle_fn_stats(int id, const char *json) {
     (void)json;
     send_fmt("{\"id\":%d,\"ok\":true,"
@@ -12515,6 +12765,7 @@ static void handle_fn_stats(int id, const char *json) {
  * explicitly passes seq_lo. Keep emitted results bounded: the debug server
  * shares process health with the runtime, so giant JSON replies can look like
  * a game freeze. */
+/* Fn dump parse. */
 static void fn_dump_parse(const char *json, uint64_t total,
                          uint64_t *out_seq_lo, uint64_t *out_seq_hi,
                          uint32_t *out_addr_lo, uint32_t *out_addr_hi,
@@ -12537,6 +12788,7 @@ static void fn_dump_parse(const char *json, uint64_t total,
     if (*out_max > MAX_COUNT) *out_max = MAX_COUNT;
 }
 
+/* Handle the 'fn entry dump' debug command. */
 static void handle_fn_entry_dump(int id, const char *json) {
     if (!s_fn_entry) { send_err(id, "not initialized"); return; }
     uint64_t seq_lo, seq_hi;
@@ -12583,6 +12835,7 @@ static void handle_fn_entry_dump(int id, const char *json) {
     free(buf);
 }
 
+/* Handle the 'fn entry tail' debug command. */
 static void handle_fn_entry_tail(int id, const char *json) {
     if (!s_fn_entry) { send_err(id, "not initialized"); return; }
     int count = json_get_int(json, "count", 64);
@@ -12623,6 +12876,7 @@ static void handle_fn_entry_tail(int id, const char *json) {
     free(buf);
 }
 
+/* Handle the 'fn exit dump' debug command. */
 static void handle_fn_exit_dump(int id, const char *json) {
     if (!s_fn_exit) { send_err(id, "not initialized"); return; }
     uint64_t seq_lo, seq_hi;
@@ -12671,6 +12925,7 @@ static void handle_fn_exit_dump(int id, const char *json) {
  *
  * Parameters: "tail" (int, default 256) — how many recent entries to return.
  */
+/* Handle the 'cd read log' debug command. */
 static void handle_cd_read_log(int id, const char *json)
 {
     extern uint32_t cd_dma_log_get_total(void);
@@ -12841,6 +13096,7 @@ static void handle_cdrom_timing(int id, const char *json)
  * the buffer, when its INT1 was armed and presented to INTC, and the
  * data/dma/pended/lost flags -- enough to see a single skipped sector and
  * whether the guest or the drive was late around it. */
+/* Handle the 'cdrom timing dump' debug command. */
 static void handle_cdrom_timing_dump(int id, const char *json)
 {
     int tail = json_get_int(json, "tail", 1024);
@@ -13143,6 +13399,7 @@ static void handle_overlay_diff_on(int id, const char *json)
     overlay_loader_set_diff_mode(1);
     send_fmt("{\"id\":%d,\"ok\":true,\"diff_mode\":1}\n", id);
 }
+/* Handle the 'overlay diff off' debug command. */
 static void handle_overlay_diff_off(int id, const char *json)
 {
     (void)json;
@@ -13150,6 +13407,7 @@ static void handle_overlay_diff_off(int id, const char *json)
     overlay_loader_set_diff_mode(0);
     send_fmt("{\"id\":%d,\"ok\":true,\"diff_mode\":0}\n", id);
 }
+/* Handle the 'overlay shadow dump' debug command. */
 static void handle_overlay_shadow_dump(int id, const char *json)
 {
     (void)json;
@@ -13159,6 +13417,7 @@ static void handle_overlay_shadow_dump(int id, const char *json)
     if (len < 0) len = 0;
     send_fmt("{\"id\":%d,\"ok\":true,\"shadow\":%s}\n", id, sbuf);
 }
+/* Handle the 'overlay shadow detail' debug command. */
 static void handle_overlay_shadow_detail(int id, const char *json)
 {
     (void)json;
@@ -13179,6 +13438,7 @@ static void handle_overlay_irq_suppress_on(int id, const char *json)
     overlay_loader_set_irq_suppress(1, 0);
     send_fmt("{\"id\":%d,\"ok\":true,\"irq_suppress\":1}\n", id);
 }
+/* Handle the 'overlay irq suppress off' debug command. */
 static void handle_overlay_irq_suppress_off(int id, const char *json)
 {
     (void)json;
@@ -13195,6 +13455,7 @@ static void handle_overlay_irq_suppress_off(int id, const char *json)
  * dropped. N=1 == normal native cadence (every block); larger N approaches the
  * interpreter's coarse cadence. This is the decisive Priority-1 A/B knob; full
  * suppression (overlay_irq_suppress_on) is too blunt to be conclusive. */
+/* Handle the 'overlay irq ratelimit' debug command. */
 static void handle_overlay_irq_ratelimit(int id, const char *json)
 {
     extern void overlay_loader_set_irq_suppress(int mode, uint32_t ratelimit);
@@ -13210,6 +13471,7 @@ static void handle_overlay_irq_ratelimit(int id, const char *json)
  * if the village->overworld blue screen clears with this on, the cause is
  * per-block event-ordering (root #2/#3), and the real fix is a due-cycle event
  * scheduler. */
+/* Handle the 'overlay native event granularity' debug command. */
 static void handle_overlay_native_event_granularity(int id, const char *json)
 {
     extern int g_event_step_conservative;
@@ -13265,6 +13527,7 @@ static void handle_insn_freeze(int id, const char *json)
              id, g_insn_freeze_addr, g_insn_freeze_nth);
 }
 
+/* Handle the 'insn freeze status' debug command. */
 static void handle_insn_freeze_status(int id, const char *json)
 {
     (void)json;
@@ -13288,6 +13551,7 @@ static void handle_insn_freeze_status(int id, const char *json)
  * register). excl is an optional exact instruction encoding to ignore, so a
  * watched loop's own $s3 advance doesn't trip the latch. Called with no
  * args, reports the latch. lo=0 disarms. */
+/* Handle the 's3 smear watch' debug command. */
 static void handle_s3_smear_watch(int id, const char *json)
 {
     extern uint32_t g_s3_smear_lo, g_s3_smear_hi, g_s3_smear_excl;
@@ -13428,6 +13692,7 @@ static void handle_callret_watch(int id, const char *json)
     free(out);
 }
 
+/* Handle the 'insn freeze target' debug command. */
 static void handle_insn_freeze_target(int id, const char *json)
 {
     extern uint32_t g_insn_freeze_on_target;
@@ -13569,6 +13834,7 @@ static void handle_decomp_trace(int id, const char *json)
     debug_server_send_line(out);
     free(out);
 }
+/* Handle the 'decomp trace clear' debug command. */
 static void handle_decomp_trace_clear(int id, const char *json)
 {
     (void)json;
@@ -13587,6 +13853,7 @@ static void handle_overlay_native_on(int id, const char *json)
     overlay_loader_set_native_exec(1);
     send_fmt("{\"id\":%d,\"ok\":true,\"native_exec\":1}\n", id);
 }
+/* Handle the 'overlay native off' debug command. */
 static void handle_overlay_native_off(int id, const char *json)
 {
     (void)json;
@@ -13602,6 +13869,7 @@ static void handle_overlay_native_off(int id, const char *json)
  *   {"cmd":"overlay_native_block","addr":"0x80050B08"}  -> add (keyed by phys)
  *   {"cmd":"overlay_native_block","clear":1}            -> clear all
  *   {"cmd":"overlay_native_block"}                      -> just report state */
+/* Handle the 'overlay native block' debug command. */
 static void handle_overlay_native_block(int id, const char *json)
 {
     extern int      overlay_loader_native_block_add(uint32_t addr);
@@ -13657,6 +13925,7 @@ static void handle_overlay_cps_probe(int id, const char *json)
  * Returns:
  *   {"ok":true,"regions":[{"addr":"0x...","size":N,"crc32":"0x...","file":"<hex>.bin"},...]}
  */
+/* Handle the 'overlay dump' debug command. */
 static void handle_overlay_dump(int id, const char *json)
 {
     extern uint32_t dirty_ram_get_bitmap_word(uint32_t word_index);
@@ -13753,6 +14022,7 @@ static void handle_overlay_dump(int id, const char *json)
  * (very rare at dump time) cannot make us walk off the end.
  * ==================================================================== */
 
+/* Freeze-dump wtrace all as JSON. */
 void debug_server_freeze_dump_wtrace_all_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13784,6 +14054,7 @@ void debug_server_freeze_dump_wtrace_all_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump wtrace as JSON. */
 void debug_server_freeze_dump_wtrace_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13821,6 +14092,7 @@ void debug_server_freeze_dump_wtrace_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump frame history as JSON. */
 void debug_server_freeze_dump_frame_history_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13864,6 +14136,7 @@ void debug_server_freeze_dump_frame_history_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump sio pc as JSON. */
 void debug_server_freeze_dump_sio_pc_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13889,6 +14162,7 @@ void debug_server_freeze_dump_sio_pc_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump thread trace as JSON. */
 void debug_server_freeze_dump_thread_trace_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13926,6 +14200,7 @@ void debug_server_freeze_dump_thread_trace_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump restore trace as JSON. */
 void debug_server_freeze_dump_restore_trace_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13958,6 +14233,7 @@ void debug_server_freeze_dump_restore_trace_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump fn entry as JSON. */
 void debug_server_freeze_dump_fn_entry_json(FILE *f, uint32_t max_count)
 {
     if (!f) return;
@@ -13987,6 +14263,7 @@ void debug_server_freeze_dump_fn_entry_json(FILE *f, uint32_t max_count)
     fputc(']', f);
 }
 
+/* Freeze-dump dirty block as JSON. */
 void debug_server_freeze_dump_dirty_block_json(FILE *f, uint32_t max_count)
 {
     if (!f) { return; }
@@ -14019,6 +14296,7 @@ void debug_server_freeze_dump_dirty_block_json(FILE *f, uint32_t max_count)
 typedef void (*CmdHandler)(int id, const char *json);
 typedef struct { const char *name; CmdHandler handler; } CmdEntry;
 
+/* Handle the 'game options' debug command. */
 static void handle_game_options(int id, const char *json)
 {
     (void)json;
@@ -14055,6 +14333,7 @@ static void handle_cd_feb00_trace(int id, const char *json)
     (void)n;
 }
 
+/* Handle the 'cd seek trace' debug command. */
 static void handle_cd_seek_trace(int id, const char *json)
 {
     (void)json;
@@ -14105,6 +14384,7 @@ extern int      guest_watch_dump(char *buf, size_t cap, int max, int newest_firs
 extern void     guest_watch_diag(uint64_t *segv_pc, uint64_t *segv_addr,
                                  uint64_t *trap_pc, uint64_t *patch_fail);
 
+/* Handle the 'gwatch' debug command. */
 static void handle_gwatch(int id, const char *json)
 {
     char abuf[32]; uint32_t len = 4;
@@ -14126,6 +14406,7 @@ static void handle_gwatch(int id, const char *json)
     }
 }
 
+/* Handle the 'gwatch dump' debug command. */
 static void handle_gwatch_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 256);
@@ -14161,6 +14442,7 @@ static void handle_gwatch_dump(int id, const char *json)
     free(out); free(buf);
 }
 
+/* Handle the 'gwatch disarm' debug command. */
 static void handle_gwatch_disarm(int id, const char *json)
 {
     (void)json;
@@ -14168,6 +14450,7 @@ static void handle_gwatch_disarm(int id, const char *json)
     send_ok(id);
 }
 
+/* Handle the 'gwatch reset' debug command. */
 static void handle_gwatch_reset(int id, const char *json)
 {
     (void)json;
@@ -14224,6 +14507,7 @@ static void handle_ce_profile(int id, const char *json)
  * the process starts via PSX_XPROBE_WATCH, so a target can be watched from
  * instruction zero. Always reports the active list, so an empty `watched` dump
  * is never ambiguous between "not called" and "not watched". */
+/* Handle the 'xprobe watch' debug command. */
 static void handle_xprobe_watch(int id, const char *json)
 {
     extern void dirty_ram_xprobe_watch_set(const char *spec);
@@ -14249,6 +14533,7 @@ static void handle_xprobe_watch(int id, const char *json)
                       " targets=0x... to watch\"");
 }
 
+/* Handle the 'xprobe arm' debug command. */
 static void handle_xprobe_arm(int id, const char *json)
 {
     extern void dirty_ram_xprobe_arm(int frame_trip, int stk_kb, int warmup);
@@ -14292,6 +14577,7 @@ static void handle_vk_perf(int id, const char *json)
     send_fmt("{\"id\":%d,\"ok\":true,\"vk_perf\":%s}", id, buf);
 }
 
+/* Handle the 'lockstep' debug command. */
 static void handle_lockstep(int id, const char *json) {
     /* #2 lockstep comparator. {"lo":N,"hi":M} arms the frame window; the reply
      * reports the first compiled-vs-interp block divergence (if any) so far. */
@@ -14308,6 +14594,7 @@ static void handle_lockstep(int id, const char *json) {
     send_fmt("{\"id\":%d,\"ok\":true,\"lockstep\":%s}", id, buf);
 }
 
+/* Handle the 'lockstep func' debug command. */
 static void handle_lockstep_func(int id, const char *json) {
     /* Dispatch-segment lockstep comparator. Same arming shape as lockstep,
      * but the measured unit is one clean psx_dispatch_game_compiled() segment. */
@@ -14374,6 +14661,7 @@ static volatile uint32_t s_phots_addr[PHOT_SLOTS];
 static volatile uint64_t s_phots_cnt [PHOT_SLOTS];
 static volatile uint64_t s_phot_static_total = 0, s_phots_drops = 0;
 
+/* Phot add to. */
 static void phot_add_to(volatile uint32_t *ha, volatile uint64_t *hc,
                         volatile uint64_t *drops, uint32_t addr)
 {
@@ -14388,6 +14676,7 @@ static void phot_add_to(volatile uint32_t *ha, volatile uint64_t *hc,
     (*drops)++;
 }
 
+/* Phot add. */
 static void phot_add(uint32_t addr)
 {
     phot_add_to(s_phot_addr, s_phot_cnt, &s_phot_drops, addr);
@@ -14396,6 +14685,7 @@ static void phot_add(uint32_t addr)
 #ifdef _WIN32
 static DWORD WINAPI phase_sampler_main(LPVOID arg)
 #else
+/* Phase sampler main. */
 static void *phase_sampler_main(void *arg)
 #endif
 {
@@ -14444,6 +14734,7 @@ static void *phase_sampler_main(void *arg)
 #endif
 }
 
+/* Phase sampler start. */
 static void phase_sampler_start(void)
 {
 #ifdef _WIN32
@@ -14456,6 +14747,7 @@ static void phase_sampler_start(void)
 #endif
 }
 
+/* Handle the 'phase profile' debug command. */
 static void handle_phase_profile(int id, const char *json)
 {
     int window = json_get_int(json, "window", 10);
@@ -14575,6 +14867,7 @@ static void handle_idle_skip(int id, const char *json)
  * consecutive deltas give guest-throughput over wall time, and current_func
  * localizes where the emu thread was — the ring-buffer answer to "where did
  * the last N seconds go" without arming anything. */
+/* Handle the 'starv ring' debug command. */
 static void handle_starv_ring(int id, const char *json)
 {
     int count = json_get_int(json, "count", 128);
@@ -14994,6 +15287,7 @@ static const CmdEntry s_commands[] = {
     { NULL, NULL }
 };
 
+/* Process command. */
 static void process_command(const char *line)
 {
     char cmd[64];
@@ -15041,12 +15335,14 @@ CPUState *debug_cpu_ptr = NULL; /* Global, used by memory.c watchpoints */
 uint32_t debug_guest_ra(void) { return debug_cpu_ptr ? debug_cpu_ptr->gpr[31] : 0; }
 uint32_t debug_guest_sp(void) { return debug_cpu_ptr ? debug_cpu_ptr->gpr[29] : 0; }
 
+/* Debug server: set cpu. */
 void debug_server_set_cpu(CPUState *cpu)
 {
     s_cpu = cpu;
     debug_cpu_ptr = cpu;
 }
 
+/* Debug server: init. */
 void debug_server_init(int port)
 {
     if (port > 0) s_port = port;
@@ -15535,6 +15831,7 @@ static int recv_line(sock_t c, char *buf, int cap)
  * starves for minutes otherwise), matching real asynchronous pad delivery.
  * Returns 1 if `req` was an input command (state applied; caller replies),
  * 0 otherwise. */
+/* Io apply input cmd. */
 static int io_apply_input_cmd(const char *req)
 {
     int slot, frames, buttons;
@@ -15652,6 +15949,7 @@ static int io_thread_main(void *arg)
     return 0;
 }
 
+/* Debug server: get status. */
 void debug_server_get_status(int *listening, int *port, int *error)
 {
     if (listening) *listening = (s_listen != SOCK_INVALID);
@@ -15659,6 +15957,7 @@ void debug_server_get_status(int *listening, int *port, int *error)
     if (error)     *error     = s_listen_err;
 }
 
+/* Debug server: poll. */
 void debug_server_poll(void)
 {
     /* Phase 1.0e-e2 starvation watchdog heartbeat. Refreshes the
@@ -15693,6 +15992,7 @@ void debug_server_poll(void)
     SDL_UnlockMutex(s_io_mutex);
 }
 
+/* Debug server: record frame. */
 void debug_server_record_frame(void)
 {
     if (s_fmv_quiet) {
@@ -15782,6 +16082,7 @@ void debug_server_record_frame(void)
     }
 }
 
+/* Debug server: wait if paused. */
 void debug_server_wait_if_paused(void)
 {
     /* No-op: pause/step removed (see handle_pause). Kept exported so
@@ -15790,6 +16091,7 @@ void debug_server_wait_if_paused(void)
      * old `while (s_paused)` loop would have been a no-op anyway. */
 }
 
+/* Debug server: check watchpoints. */
 void debug_server_check_watchpoints(void)
 {
     if (s_fmv_quiet) return;
@@ -15810,6 +16112,7 @@ void debug_server_check_watchpoints(void)
     }
 }
 
+/* Debug server: shutdown. */
 void debug_server_shutdown(void)
 {
     /* Stop the I/O thread: clear the flag, close the listen socket to break the
@@ -15833,11 +16136,13 @@ void debug_server_shutdown(void)
 #endif
 }
 
+/* Debug server: is connected. */
 int debug_server_is_connected(void)
 {
     return s_client != SOCK_INVALID;
 }
 
+/* Debug server: get input override. */
 int debug_server_get_input_override(int slot)
 {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return -1;
@@ -15864,6 +16169,7 @@ int debug_server_get_input_override(int slot)
     return current;
 }
 
+/* Debug server: get axis override. */
 int debug_server_get_axis_override(int slot, unsigned char st[4])
 {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS || !s_axis_override[slot])
@@ -15873,6 +16179,7 @@ int debug_server_get_axis_override(int slot, unsigned char st[4])
     return 1;
 }
 
+/* Debug server: turbo enabled. */
 int debug_server_turbo_enabled(void)
 {
     return s_turbo_enabled != 0;
@@ -15884,11 +16191,17 @@ int debug_server_turbo_enabled(void)
  * drive emulated pads without a socket. Buttons use the same raw active-low
  * word convention as set_input. */
 extern void psx_write_half(uint32_t addr, uint16_t val);
+/* Debug-server guest read (8-bit/byte accessor). */
 int  br2_dbg_read8(uint32_t addr)  { return psx_read_byte(addr); }
+/* Debug-server guest read (6-bit/byte accessor). */
 int  br2_dbg_read16(uint32_t addr) { return psx_read_half(addr); }
+/* Debug-server guest read (2-bit/byte accessor). */
 int  br2_dbg_read32(uint32_t addr) { return (int)psx_read_word(addr); }
+/* Debug-server guest write (8-bit/byte accessor). */
 void br2_dbg_write8(uint32_t addr, int val)  { psx_write_byte(addr, (uint8_t)val); }
+/* Debug-server guest write (6-bit/byte accessor). */
 void br2_dbg_write16(uint32_t addr, int val) { psx_write_half(addr, (uint16_t)val); }
+/* Debug-server guest write (2-bit/byte accessor). */
 void br2_dbg_write32(uint32_t addr, int val) { psx_write_word(addr, (uint32_t)val); }
 
 /* Weak stubs so the wasm export list resolves on targets that do not link
@@ -15902,6 +16215,7 @@ __attribute__((weak)) uint32_t br2_dbg_clean_hit_at(uint32_t i, uint64_t *cnt) {
 __attribute__((weak)) uint32_t br2_dbg_svc_count(void) { return 0; }
 __attribute__((weak)) int br2_dbg_svc_ent(uint32_t i, uint32_t out[8]) { (void)i; (void)out; return 0; }
 
+/* BR2 debug bridge: set pad. */
 void br2_set_pad(int slot, int buttons) {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return;
     s_input_override[slot] = buttons;
@@ -15916,17 +16230,20 @@ void br2_release_pad(int slot) {
     s_axis_override[slot]  = 0;
 }
 
+/* BR2 debug bridge: pad status. */
 int br2_pad_status(int slot) {
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return -1;
     int ov = s_input_override[slot];
     return ov >= 0 ? ov : (int)sio_get_pad_buttons_slot(slot);
 }
 
+/* BR2 debug bridge: pad connected. */
 int br2_pad_connected(int slot) {
     extern int sio_get_pad_connected(int slot);
     return sio_get_pad_connected(slot);
 }
 
+/* BR2 debug bridge: pad connect. */
 int br2_pad_connect(int slot) {
     extern void sio_set_pad_connected(int slot, int connected);
     if (slot < 0 || slot >= INPUT_OVERRIDE_SLOTS) return -1;
@@ -15939,6 +16256,7 @@ int br2_pad_connect(int slot) {
  * tens of thousands of per-byte reads for blob scans (char-id). */
 #define BR2_READ_BUF_SIZE (1u << 20)
 static uint8_t s_br2_read_buf[BR2_READ_BUF_SIZE];
+/* Debug-server guest read (f-bit/byte accessor). */
 uint8_t *br2_dbg_read_buf(uint32_t addr, int len) {
     if (len < 0) len = 0;
     if ((uint32_t)len > BR2_READ_BUF_SIZE) len = BR2_READ_BUF_SIZE;
@@ -15952,21 +16270,26 @@ uint8_t *br2_dbg_read_buf(uint32_t addr, int len) {
  * ran — enough to localize a stall (e.g. a phase handler that never
  * advances) without the TCP debug server. */
 uint32_t br2_dbg_func_pc(void)  { return g_debug_current_func_addr; }
+/* Debug-server BR2 accessor: store pc. */
 uint32_t br2_dbg_store_pc(void) {
     extern uint32_t g_debug_last_store_pc;
     return g_debug_last_store_pc;
 }
+/* Debug-server BR2 accessor: irq pc. */
 uint32_t br2_dbg_irq_pc(void) {
     extern uint32_t psx_last_irq_check_pc(void);
     return psx_last_irq_check_pc();
 }
+/* Debug-server BR2 accessor: resume pc. */
 uint32_t br2_dbg_resume_pc(void) {
     extern uint32_t psx_compiled_irq_resume_pc(void);
     return psx_compiled_irq_resume_pc();
 }
+/* Debug-server BR2 accessor: cpu pc. */
 uint32_t br2_dbg_cpu_pc(void) {
     return debug_cpu_ptr ? debug_cpu_ptr->pc : 0;
 }
+/* Debug-server BR2 accessor: cpu ra. */
 uint32_t br2_dbg_cpu_ra(void) {
     return debug_cpu_ptr ? debug_cpu_ptr->gpr[31] : 0;
 }
@@ -15991,6 +16314,7 @@ void br2_dbg_irq_diag(uint32_t *out) {
  *  [16..23] exit_reason histogram (reasons 0-7),
  *  [24] distinct take_pc count, [25] last exit_reason,
  *  [26] last real_epc, [27] last same_thread, [28] last restored. */
+/* Debug-server BR2 accessor: irqctx stats. */
 void br2_dbg_irqctx_stats(uint32_t *out) {
     if (!out) return;
     extern DbgIrqCtxEntry g_irqctx_ring[]; extern uint64_t g_irqctx_seq;
@@ -16113,6 +16437,7 @@ void br2_dbg_cdrom(uint32_t *out) {
  * JS reads via HEAPU32. */
 #define BR2_CD_HIST_N 8
 static uint32_t s_br2_cd_hist[BR2_CD_HIST_N * 4];
+/* Debug-server BR2 accessor: cdrom hist. */
 uint32_t *br2_dbg_cdrom_hist(void) {
     const CDROMCommandHistoryEntry *entries = NULL;
     uint64_t seq = cdrom_debug_get_command_history(&entries);
