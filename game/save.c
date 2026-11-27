@@ -267,10 +267,9 @@ extern uint8_t  *g_DAT_801b43f0;
 #define SLOTSTR(i) ((char *)guest_at(g_PTR_u32_801b4160[i]))
 
 extern uint8_t  *g_DAT_801f2650;
-extern uint8_t  *g_DAT_801f35f4;
-extern uint8_t *_g_system_config_ptr;
+extern uint8_t  *_g_system_config_ptr;
 #define DAT_801f2650   (*(uint8_t  *)g_DAT_801f2650)
-#define _DAT_801f35f4  (*(uint32_t *)g_DAT_801f35f4)
+#define _DAT_801f35f4   (*(uint32_t *)g_DAT_801f35f4)
 
 /* ---- callee externs ----
  * The `name()` decls below are deliberately unprototyped: the Ghidra
