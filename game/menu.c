@@ -14416,21 +14416,21 @@ void script_move_timer_eval(uint32_t rec)
       MW32(rec + 0x10, cur + 4u);
       if ((MB16(cur + 4) & 0xff00u) != 0) {
         for (;;) {
-          uint32_t a1, cmd, arg, next = 0;
+          uint32_t cmd, arg, next = 0;
           int jumped = 0, stored = 0;
-          a1 = MB32(rec + 0x10);
-          tw = MB16(a1);
+          cur = MB32(rec + 0x10);
+          tw = MB16(cur);
           cmd = tw & 0xff00u; arg = tw & 0xffu;
           if (cmd == 0xfd00u) {
-            next = MB32(rec + 8) + (uint32_t)MBS16(a1 + 2) * 4u;
+            next = MB32(rec + 8) + (uint32_t)MBS16(cur + 2) * 4u;
             jumped = 1;
           } else if (cmd > 0xfd00u) {
             if (cmd == 0xfe00u) {
-              MW16(rec + 0x1c, MB16(a1 + 2));
-              next = a1 + 4u; stored = 1;
+              MW16(rec + 0x1c, MB16(cur + 2));
+              next = cur + 4u; stored = 1;
             } else if (cmd == 0xff00u) {
               if (arg < (uint32_t)MBS16(rec + 0x1a)) {
-                next = a1 + 4u; stored = 1;
+                next = cur + 4u; stored = 1;
               } else {
                 task_slot_step();
                 MW16(rec + 0x18, 0);
@@ -14441,7 +14441,7 @@ void script_move_timer_eval(uint32_t rec)
             }
           } else if (cmd == 0xfc00u) {
             if (arg < (uint32_t)MBS16(rec + 0x1a)) {
-              next = a1 + 4u; stored = 1;
+              next = cur + 4u; stored = 1;
             } else {
               MW16(rec + 0x1a, MB16(rec + 0x1a) + 1u);
               next = MB32(rec + 8) +
@@ -14480,24 +14480,24 @@ void script_move_timer_eval(uint32_t rec)
   {
     int32_t ph = (int32_t)MB32(rec + 0x14);
     if (ph >= 0 && ph < 2) {
-      int32_t t2 = MBS16(quad), t3 = MBS16(quad + 2);
-      int32_t t0 = MBS16(quad + 4), a3 = MBS16(quad + 6);
+      int32_t x0 = MBS16(quad), y0 = MBS16(quad + 2);
+      int32_t x1 = MBS16(quad + 4), y1 = MBS16(quad + 6);
       int32_t A = MBS16(rec + 0x18), D = MBS16(rec + 0x20);
       int32_t p1, p2;
       if (MB16(rec + 0x1e) == 0) {
-        p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t2 << 16) -
-              (t0 << 16)) * A)) / D) : 0;
-        p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t3 << 16) -
-              (a3 << 16)) * A)) / D) : 0;
-        x = t0 + (p1 >> 16);
-        y = a3 + (p2 >> 16);
+        p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(x0 << 16) -
+              (x1 << 16)) * A)) / D) : 0;
+        p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(y0 << 16) -
+              (y1 << 16)) * A)) / D) : 0;
+        x = x1 + (p1 >> 16);
+        y = y1 + (p2 >> 16);
       } else {
-        p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(t0 << 16) -
-              (t2 << 16)) * A)) / D) : 0;
-        p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(a3 << 16) -
-              (t3 << 16)) * A)) / D) : 0;
-        x = t2 + (p1 >> 16);
-        y = t3 + (p2 >> 16);
+        p1 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(x1 << 16) -
+              (x0 << 16)) * A)) / D) : 0;
+        p2 = D != 0 ? (int32_t)((int32_t)((int64_t)(((int64_t)(y1 << 16) -
+              (y0 << 16)) * A)) / D) : 0;
+        x = x0 + (p1 >> 16);
+        y = y0 + (p2 >> 16);
       }
     }
   }
