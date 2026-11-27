@@ -366,7 +366,6 @@ uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
 #define DB8P(a)  br2_ld8p(a)
-#define DB32G(a) (*(uint32_t *)guest_at(a))
 #define DB8(a)   (*(uint8_t  *)guest_at(a))
 #define DB16(a)  (*(uint16_t *)guest_at(a))
 #define DB32(a)  (*(uint32_t *)guest_at(a))
@@ -831,7 +830,6 @@ extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
 
 
-#define CDB32G(a) DB32G(a)
 
 /* shared sync-wait skeleton used by 968cc/96b4c/97698:
  * returns via out params; implemented inline per function for
@@ -1402,7 +1400,7 @@ int cd_dispatch_tbl4(int a0,uint32_t a1)
    * the caller's a0/a1 (a2/a3 are caller leftovers; call_guest zeroes
    * them, identical to the old (p1,p2,0,0) thunk). No waits, no MMIO,
    * no deferred-coroutine state — the IRQ-boundary comment was stale. */
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = br2_ld32(tbl + 4);
   return (int)call_guest(fn,(uint32_t)a0,a1);
 }
@@ -2027,7 +2025,7 @@ void cd_subchan_table_install(void)
 /* cd_dispatch_tbl8 — indirect dispatch: call *(u32*)(*0x801bddA0 + 8). */
 int cd_dispatch_tbl8(int a0,uint32_t a1)
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = *(uint32_t *)guest_at(tbl + 8);
   return (int)call_guest(fn,(uint32_t)a0,a1);
 }
@@ -2042,7 +2040,7 @@ int32_t cd_reg_init_seq(void)
    * indexed u16 accesses are MMIO and must use br2_ld/st, not guest_at. */
   uint32_t base;
   uint16_t v0;
-  base = DB32G(0x801bcb20);
+  base = DB32(0x801bcb20);
   v0 = br2_ld16(base + 0xdc * 2);        /* +0x1b8 */
   if (v0 == 0) {
     v0 = br2_ld16(base + 0xdd * 2);      /* +0x1ba */
@@ -2355,7 +2353,7 @@ int32_t cd_ext_table_init(uint32_t a0)
 /* cd_chan_block_init — indirect dispatch tbl+0x14: call_guest(fn,a0,a1). */
 void cd_chan_block_init(int32_t a0,uint32_t a1)
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = *(uint32_t *)guest_at(tbl + 0x14);
   (void)call_guest(fn,(uint32_t)a0,a1);
 }
@@ -5181,7 +5179,7 @@ void ret_zero_f(void)
 /* cd_ind_dispatch_14 — indirect dispatch: call *(u32*)(*0x801BDDA0 + 0x14) with (4, a0). */
 uint32_t cd_ind_dispatch_14(uint32_t a0)
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = *(uint32_t *)guest_at(tbl + 0x14);
   return call_guest(fn,4,a0);
 }
@@ -5196,7 +5194,7 @@ extern void FUN_8019a0ddc(void);
 /* 0x8019a774 — indirect dispatch tbl+0x10 (head loads *0x801bdda0). */
 uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = *(uint32_t *)guest_at(tbl + 0x10);
   (void)a2; (void)a3;
   return call_guest(fn,a0,a1);
@@ -5205,7 +5203,7 @@ uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 /* 0x8019a7a4 — indirect dispatch tbl+0x18. */
 uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
-  uint32_t tbl = CDB32G(0x801bdda0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = *(uint32_t *)guest_at(tbl + 0x18);
   (void)a2; (void)a3;
   return call_guest(fn,a0,a1);
@@ -5216,7 +5214,7 @@ uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 /* cd_state9_store — store a0 to state cell @0x801BDEEC on change; fires cd_tbl8_dispatch9(a0); returns previous. */
 uint32_t cd_state9_store(uint32_t a0)
 {
-  uint32_t old = DB32G(0x801bdeec);
+  uint32_t old = DB32(0x801bdeec);
   if (a0 != old) {
     DB32(0x801bdeec) = a0;
     cd_tbl8_dispatch9(a0);
@@ -5386,7 +5384,7 @@ uint32_t cd_gpu_defer_set(uint32_t a0)
 {
   uint32_t old = DB32(0x801b832c);
   if (DB8(0x801b8322) >= 2) {
-    call_guest(DB32G(0x801b831c),0x80125484,a0);
+    call_guest(DB32(0x801b831c),0x80125484,a0);
   }
   DB32(0x801b832c) = a0;
   return old;
@@ -5399,7 +5397,7 @@ void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 {
   uint32_t obj;
   gpu_rect_bounds_dbg(0x80125510,(short *)(uintptr_t)a0);
-  obj = DB32G(0x801b8318);
+  obj = DB32(0x801b8318);
   cd_gpu_call(8,*(uint32_t *)guest_at(obj + 0x1c),a0,8,a1);
 }
 
@@ -5408,7 +5406,7 @@ void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 /* cd_hdr_clear_fixed — clear u16 @p+0xA on block @0x801BCC94 (dead loop kept for fidelity). */
 void cd_hdr_clear_fixed(void)
 {
-  uint32_t p = DB32G(0x801bcc94);
+  uint32_t p = DB32(0x801bcc94);
   int i;
   *(uint16_t *)guest_at(p + 0xa) = 0;
   for (i = 9; i >= 0; i--) { }
@@ -5527,7 +5525,7 @@ uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
   uint32_t s1 = a1;
   uint32_t nxt, v0, v1;
   if (DB8(0x801b8322) >= 2) {
-    call_guest(DB32G(0x801b831c),0x80125528,s0);
+    call_guest(DB32(0x801b831c),0x80125528,s0);
   }
   s1 = s1 - 1;
   if (s1 != 0) {
@@ -5556,14 +5554,14 @@ int32_t cd_gpu_call_18(uint32_t a0)
 {
   for (;;) {
     if (br2_bail_pending()) return -1;
-    uint32_t st = br2_ld32(DB32G(0x801b8434));
+    uint32_t st = br2_ld32(DB32(0x801b8434));
     uint32_t o;
     int poll;
     if (DB8(0x801b8322) >= 2 && st == 0) { }
     if ((st & 0x1000000) != 0) {
       poll = 1;
     } else {
-      o = br2_ld32(DB32G(0x801b8428));
+      o = br2_ld32(DB32(0x801b8428));
       poll = (o & 0x04000000) == 0;
     }
     if (!poll) break;
@@ -5586,7 +5584,7 @@ int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
   } else {
     cd_dma_xfer_start(a0,0,0x40);
   }
-  return (br2_ld16(DB32G(0x801bdeb0) + 0x1ae) & 0x800) != 0;
+  return (br2_ld16(DB32(0x801bdeb0) + 0x1ae) & 0x800) != 0;
 }
 
 /* ======== 0x8019aca4 ======== */
@@ -5600,7 +5598,7 @@ uint32_t cd_state_blk_save(void)
   *(uint16_t *)guest_at(s0) = 1;
   br2_st16p(0x801bdda8, *(uint16_t *)guest_at(s0 + 0x32));
   br2_st32p(0x801bddac, *(uint32_t *)guest_at(s0 + 0x34));
-  FUN_8018e310(DB32G(0x801bdda8));
+  FUN_8018e310(DB32(0x801bdda8));
   return s0;
 }
 
@@ -5626,17 +5624,17 @@ uint32_t cd_state_blk_restore(void)
   uint32_t v0, v1, a0;
   if (*(uint16_t *)guest_at(s0) == 0) return 0;
   FUN_8018e300();
-  v0 = DB32G(0x801bdda8);
-  a0 = DB32G(0x801bddac);
+  v0 = DB32(0x801bdda8);
+  a0 = DB32(0x801bddac);
   v1 = br2_ld16(v0);
   *(uint16_t *)guest_at(s0 + 0x32) = (uint16_t)v1;
   v1 = br2_ld32(a0);
-  a0 = DB32G(0x801bdda4);
+  a0 = DB32(0x801bdda4);
   *(uint32_t *)guest_at(s0 + 0x34) = v1;
   br2_st16(v0, 0);
   v0 = br2_ld16(v0);
   br2_st16(a0, (uint16_t)v0);
-  a0 = DB32G(0x801bddac);
+  a0 = DB32(0x801bddac);
   v0 = br2_ld32(a0) & 0x77777777;
   br2_st32(a0, v0);
   bios_tramp_b018(a0,0,0,0);
@@ -5657,21 +5655,21 @@ uint32_t cd_dma_xfer_start(uint32_t a0,uint32_t a1,uint32_t a2)
    * delay slot of the second cd_delay_3c jal — before the callee runs — but
    * $s0 is callee-saved and never an arg, so placement is unobservable.
    * Returns $v0 = 1 (li v0,1 @0x8019B920 is the last v0 write). */
-  uint32_t blk = DB32G(0x801bdeb0);
+  uint32_t blk = DB32(0x801bdeb0);
   uint32_t s0;
   CDMMIO16_ST(blk,0xd3,(uint16_t)a1);          /* sh a1,0x1a6(blk) */
   s0 = a2;
   cd_delay_3c();
-  blk = DB32G(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 0x30));
   s0 <<= 16;
   cd_delay_3c();
   cd_mmio_strobe_22();
   s0 |= 0x10;
-  br2_st32(DB32G(0x801bdeb4), a0);            /* sw s1,0(*0x801bdeb4) */
-  br2_st32(DB32G(0x801bdeb8), s0);                 /* sw s0,0(*0x801bdeb8) */
+  br2_st32(DB32(0x801bdeb4), a0);            /* sw s1,0(*0x801bdeb4) */
+  br2_st32(DB32(0x801bdeb8), s0);                 /* sw s0,0(*0x801bdeb8) */
   DB32(0x801bdf00) = 1;                            /* DMA callback-arm cell */
-  br2_st32(DB32G(0x801bdebc), 0x01000200);         /* sw a0=0x01000200 */
+  br2_st32(DB32(0x801bdebc), 0x01000200);         /* sw a0=0x01000200 */
   return 1;
 }
 
@@ -5685,10 +5683,10 @@ uint32_t cd_gpu_call_34(uint32_t a0,uint32_t a1,uint32_t a2,
 {
   uint32_t s2 = DB8(0x801b8321);
   if (DB8(0x801b8322) >= 2) {
-    call_guest(DB32G(0x801b831c),0x80125470,a0);
+    call_guest(DB32(0x801b831c),0x80125470,a0);
   }
   if (a0 != DB8(0x801b8321)) {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     gpu_invoke(*(uint32_t *)guest_at(tbl + 0x34),1,a1,a2,a3);
     DB8(0x801b8321) = (uint8_t)a0;
     cd_dispatch_tbl4(2,0);
@@ -5812,7 +5810,7 @@ int32_t cd_gpu_rect_draw(uint32_t a0,uint32_t a1,uint32_t a2)
   *(uint32_t *)guest_at(0x801b83c0) = DB32(a0);
   *(uint32_t *)guest_at(0x801b83c4) = (a2 << 16) | (a1 & 0xffff);
   *(uint32_t *)guest_at(0x801b83c8) = DB32(a0 + 4);
-  tbl = DB32G(0x801b8318);
+  tbl = DB32(0x801b8318);
   gpu_invoke(*(uint32_t *)guest_at(tbl + 8),
                  *(uint32_t *)guest_at(tbl + 0x18),0x801b83b8,0x14,0);
   return (int32_t)DB32(a0 + 4);
@@ -5880,13 +5878,13 @@ static int32_t cd_wait_stat(void)
 {
   for (;;) {
     if (br2_bail_pending()) return -1;
-    uint32_t st = br2_ld32(DB32G(0x801b8434));
+    uint32_t st = br2_ld32(DB32(0x801b8434));
     uint32_t o;
     int poll;
     if ((st & 0x1000000) != 0) {
       poll = 1;
     } else {
-      o = br2_ld32(DB32G(0x801b8428));
+      o = br2_ld32(DB32(0x801b8428));
       poll = (o & 0x04000000) == 0;
     }
     if (!poll) return 0;
@@ -5971,7 +5969,7 @@ int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
   if (r != 0) return r;
   cd_dispatch_tbl4(2,0x80193ce0);
   {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     gpu_invoke(*(uint32_t *)guest_at(tbl + 0x20),a0,a1,0,0);
   }
   return 0;
@@ -5989,7 +5987,7 @@ int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
   if (r != 0) return r;
   cd_dispatch_tbl4(2,0x80193ce0);
   {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     gpu_invoke(*(uint32_t *)guest_at(tbl + 0x1c),a0,a1,0,0);
   }
   return 0;
@@ -6017,13 +6015,13 @@ void cd_prim_emit_a(uint32_t a0,uint32_t a1)
   uint32_t s0;
   uint32_t tbl;
   if (DB8(0x801b8322) >= 2) {
-    call_guest(DB32G(0x801b831c),0x80125584,a0);
+    call_guest(DB32(0x801b831c),0x80125584,a0);
   }
   s0 = a1 + 0x1c;
   gpu_prim_pkt_build((int)s0,(uint16_t *)(uintptr_t)a1);
   *(uint32_t *)guest_at(a1 + 0x1c) =
       (DB32(a1 + 0x1c) & 0xff000000) | (a0 & 0xffffff);
-  tbl = DB32G(0x801b8318);
+  tbl = DB32(0x801b8318);
   gpu_invoke(*(uint32_t *)guest_at(tbl + 8),
                  *(uint32_t *)guest_at(tbl + 0x18),s0,0x40,0);
   guest_memcpy((uint32_t *)(uintptr_t)0x801b8330,(uint32_t *)(uintptr_t)a1,0x5c);
@@ -6052,8 +6050,8 @@ int cd_queue_poll(uint32_t a0)
     uint32_t st, o;
     int busy;
     if (s0 != 0) cd_queue_drain();
-    st = br2_ld32(DB32G(0x801b8434));
-    o = br2_ld32(DB32G(0x801b8428));
+    st = br2_ld32(DB32(0x801b8434));
+    o = br2_ld32(DB32(0x801b8428));
     busy = ((st & 0x1000000) != 0) || ((o & 0x04000000) == 0);
     if (busy) return s0 != 0 ? (int)s0 : 1;
     return (int)s0;
@@ -6434,8 +6432,8 @@ int cd_mmio_bit_wait(uint32_t a0,uint32_t a1)
     if (br2_bail_pending()) return 0;
     br2_irq_poll();
   }
-  br2_st32(DB32G(0x801bcb50), 0x11400100);
-  (void)br2_ld32(DB32G(0x801bcb50));
+  br2_st32(DB32(0x801bcb50), 0x11400100);
+  (void)br2_ld32(DB32(0x801bcb50));
   return 0;
 }
 
@@ -6461,15 +6459,15 @@ int cd_file_open_seq(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80191184 ======== */
 
-/* cd_gpu_call_3c — if a1>=2 call_guest(DB32G(0x801B831C),0x801254B4,a0); then call tbl+0x3C fn(a0,0). */
+/* cd_gpu_call_3c — if a1>=2 call_guest(DB32(0x801B831C),0x801254B4,a0); then call tbl+0x3C fn(a0,0). */
 int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
-    uint32_t fn = DB32G(0x801b831c);
+    uint32_t fn = DB32(0x801b831c);
     call_guest(fn,0x801254b4,a0);
   }
   {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     uint32_t fn = *(uint32_t *)guest_at(tbl + 0x3c);
     return (int)call_guest(fn,a0,0);
   }
@@ -6489,15 +6487,15 @@ void cd_hdr_clear(uint32_t a0)
 
 /* ======== 0x80191778 ======== */
 
-/* cd_gpu_call_8b — if a1>=2 call_guest(DB32G(0x801B831C),0x80125558,a0); then call tbl+8 fn(tbl+0x18,a0). */
+/* cd_gpu_call_8b — if a1>=2 call_guest(DB32(0x801B831C),0x80125558,a0); then call tbl+8 fn(tbl+0x18,a0). */
 void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
-    uint32_t fn = DB32G(0x801b831c);
+    uint32_t fn = DB32(0x801b831c);
     call_guest(fn,0x80125558,a0);
   }
   {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     uint32_t f2 = *(uint32_t *)guest_at(tbl + 8);
     uint32_t a0v = *(uint32_t *)guest_at(tbl + 0x18);
     call_guest(f2,a0v,a0);   /* a2/a3 zero in guest */
@@ -6529,7 +6527,7 @@ void cd_dir_entry_store(uint32_t a0,uint32_t a1)
   *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
   feb00_note(2, t);
   DB32(0x801fc6a8) = DB32(0x801fc6a4);
-  fn = DB32G(0x801feb10);
+  fn = DB32(0x801feb10);
   if (fn != 0) call_guest(fn,fn,0);        /* jalr $a0: a0 = fn ptr */
   DB32(0x801fc69c) = 0;
 }
@@ -6557,29 +6555,29 @@ void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2
   /* p_v0/b are the MMIO channel block — CDMMIO not guest_at. */
   CDMMIO16_ST(p_v0,0xd3,(uint16_t)p_a1);
   cd_delay_3c();
-  b = DB32G(0x801bdeb0);
+  b = DB32(0x801bdeb0);
   CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) | 0x30));
   cd_delay_3c();
   p_a2 <<= 16;
   cd_mmio_strobe_22();
-  br2_st32(DB32G(0x801bdeb4), p_a0);
+  br2_st32(DB32(0x801bdeb4), p_a0);
   p_a2 |= 0x10;
-  br2_st32(DB32G(0x801bdeb8), p_a2);
+  br2_st32(DB32(0x801bdeb8), p_a2);
   DB32(0x801bdf00) = 1;
-  br2_st32(DB32G(0x801bdebc), 0x1000200);
+  br2_st32(DB32(0x801bdebc), 0x1000200);
 }
 
 /* ======== 0x80191670 ======== */
 
-/* cd_gpu_call_2c — if a2>=2 call_guest(DB32G(0x801B831C),0x80125540,a0); then call tbl fn(a0,a1). */
+/* cd_gpu_call_2c — if a2>=2 call_guest(DB32(0x801B831C),0x80125540,a0); then call tbl fn(a0,a1). */
 void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   if (a2 >= 2) {
-    uint32_t fn = DB32G(0x801b831c);
+    uint32_t fn = DB32(0x801b831c);
     call_guest(fn,0x80125540,a0);   /* a2 = a1 in guest */
   }
   {
-    uint32_t tbl = DB32G(0x801b8318);
+    uint32_t tbl = DB32(0x801b8318);
     uint32_t f2 = *(uint32_t *)guest_at(tbl + 0x2c);
     call_guest(f2,a0,a1);
   }
@@ -6600,15 +6598,15 @@ void cd_dma_chan_reset(uint32_t a0)
    * 0x8019B9E8 (0); when a ch4 callback is armed the reset skips the
    * ~3-scanline settle delay. */
   (void)a0;
-  if (DB32G(0x801bdf00) == 0) cd_delay_3c();
+  if (DB32(0x801bdf00) == 0) cd_delay_3c();
   {
     /* w[0xd5] is the CD channel status register at blk+0x1aa — MMIO via the
      * 0x801bdeb0 pointer cell, must use CDMMIO16 not guest_at (open-bus). */
-    uint32_t b = DB32G(0x801bdeb0);
+    uint32_t b = DB32(0x801bdeb0);
     CDMMIO16_ST(b,0xd5,(uint16_t)(CDMMIO16(b,0xd5) & 0xffcf));
     if ((CDMMIO16(b,0xd5) & 0x30) != 0) {
       for (i = 0; i < 0xf01; i++) {
-        b = DB32G(0x801bdeb0);
+        b = DB32(0x801bdeb0);
         if ((CDMMIO16(b,0xd5) & 0x30) == 0) break;
       }
     }
@@ -6617,11 +6615,11 @@ void cd_dma_chan_reset(uint32_t a0)
     static int cr_dbg = -1;
     if (cr_dbg < 0) { const char *e = getenv("PSX_CB7"); cr_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
     if (cr_dbg) fprintf(stderr, "[chanreset] bdf00=0x%08X dee8=0x%08X -> %s\n",
-                        DB32G(0x801bdf00), DB32G(0x801bdee8),
-                        DB32G(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
+                        DB32(0x801bdf00), DB32(0x801bdee8),
+                        DB32(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
   }
-  if (DB32G(0x801bdee8) != 0) {
-    call_guest(DB32G(0x801bdee8),0xf0000000,0);
+  if (DB32(0x801bdee8) != 0) {
+    call_guest(DB32(0x801bdee8),0xf0000000,0);
   } else {
     (void)cd_bios_svc_07(0xf0000009,0x20);
   }
@@ -6635,7 +6633,7 @@ void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
   uint32_t s0 = a0;
   int32_t s1;
   if (a2 >= 2) {
-    uint32_t fn = DB32G(0x801b831c);
+    uint32_t fn = DB32(0x801b831c);
     call_guest(fn,0x80125528,a0);   /* a2 = a1 in guest */
   }
   s1 = (int32_t)a1 - 1;
@@ -6694,17 +6692,17 @@ void cd_cb7_run(uint32_t a0)
    * *(0x801BDDF0) then dereferences it; a0 is an INTC-dispatch leftover and
    * is never read. a0 kept for signature parity only. */
   (void)a0;
-  uint32_t s1 = (br2_ld32(DB32G(0x801bddf0)) >> 24) & 0x7f;
+  uint32_t s1 = (br2_ld32(DB32(0x801bddf0)) >> 24) & 0x7f;
   {
     static int cb7_dbg = -1;
     if (cb7_dbg < 0) { const char *e = getenv("PSX_CB7"); cb7_dbg = (e && e[0] && e[0] != '0') ? 1 : 0; }
-    if (cb7_dbg) fprintf(stderr, "[cb7] donemask=0x%02X dicr=0x%08X\n", s1, br2_ld32(DB32G(0x801bddf0)));
+    if (cb7_dbg) fprintf(stderr, "[cb7] donemask=0x%02X dicr=0x%08X\n", s1, br2_ld32(DB32(0x801bddf0)));
   }
   int s0;
   uint32_t dma, dv;
   uint32_t *tbl;
   while (s1 != 0) {
-    dma = DB32G(0x801bddf0);
+    dma = DB32(0x801bddf0);
     tbl = (uint32_t *)guest_at(0x801bddf4);
     s0 = 0;
     while (s1 != 0 && s0 < 7) {
@@ -6730,12 +6728,12 @@ void cd_cb7_run(uint32_t a0)
     }
     s1 = (br2_ld32(dma) >> 24) & 0x7f;
   }
-  dma = DB32G(0x801bddf0);
+  dma = DB32(0x801bddf0);
   dv = br2_ld32(dma);
   {
     uint32_t v0 = dv & 0xff000000;
     if (v0 == 0x80000000 || (dv & 0x8000) != 0) {
-      uint32_t dma_base = DB32G(0x801bde14);
+      uint32_t dma_base = DB32(0x801bde14);
       printf_forward((const char *)guest_at(0x80125bb8),dv);
       for (s0 = 0; s0 < 7; s0++) {
         printf_forward((const char *)guest_at(0x80125bd4),
@@ -6784,7 +6782,7 @@ int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
       *(uint32_t *)guest_at(0x801febf0) = a0;
     }
     cd_job_result(0,0,&st);
-    cd_xchg_fec24(DB32G(0x801fec38));
+    cd_xchg_fec24(DB32(0x801fec38));
     if (st == 3) continue;
     if (st == 2) {
       s2++;
@@ -6808,9 +6806,9 @@ int cd_pump_watchdog(void)
   if (DB32(0x801b845c) < v0 || ({ a0 = DB32(0x801b8460); DB32(0x801b8460) = a0 + 1; 0xf < a0; })) {
     /* 0x801b8428/34/2c/44 are pointer cells into the 0x1F8010xx/1F8018xx
      * DMA/GPU regs — MMIO, route through br2_ld/st not guest_at. */
-    uint32_t a2a = DB32G(0x801b8428);
-    uint32_t a3a = DB32G(0x801b8434);
-    uint32_t cpa = DB32G(0x801b842c);
+    uint32_t a2a = DB32(0x801b8428);
+    uint32_t a3a = DB32(0x801b8434);
+    uint32_t cpa = DB32(0x801b842c);
     uint32_t diff = (DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f;
     uint16_t r;
     printf_forward((const char *)guest_at(0x801255b8),diff,
@@ -6821,7 +6819,7 @@ int cd_pump_watchdog(void)
     DB32(0x801b8448) = 0;
     br2_st32(a3a, 0x401);
     {
-      uint32_t p = DB32G(0x801b8444);
+      uint32_t p = DB32(0x801b8444);
       br2_st32(p, br2_ld32(p) | 0x800);
     }
     br2_st32(a2a, 0x200);
@@ -6851,7 +6849,7 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
   a0p[1] = ((uint32_t)a2 << 16) | (a1 & 0xffff);
   a0p[0] = *(uint32_t *)s0;
   a0p[2] = *(uint32_t *)(s0 + 4);
-  fn = br2_ld32(DB32G(0x801b8318) + 0x18);
+  fn = br2_ld32(DB32(0x801b8318) + 0x18);
   call_guest(fn,0x801b83b8,0);
   return 0;
 }
@@ -6985,18 +6983,18 @@ uint32_t cd_queue_drain(void)
   /* Re-verified against generated 0x801931C4-0x80193420: status mask is
    * 0x01000000 (lui 0x0100), not 0x100000 — earlier clean body had the
    * wrong bit. Busy-waits now bail-poll like every other clean-C spin. */
-  if ((br2_ld32(DB32G(0x801b8434)) & 0x01000000u) != 0)
+  if ((br2_ld32(DB32(0x801b8434)) & 0x01000000u) != 0)
     return 1;
   DB32(0x801b8454) = cd_u16_swap_store(0);
   if (DB32(0x801b8448) != DB32(0x801b844c)
-      && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0) {
+      && (br2_ld32(DB32(0x801b8434)) & 0x01000000u) == 0) {
     for (;;) {
       uint32_t tail = DB32(0x801b844c);
       uint32_t *e;
       uint32_t fn, dp, arg;
       if (((tail + 1) & 0x3f) == DB32(0x801b8448) && DB32(0x801b832c) == 0)
         cd_dispatch_tbl4(2,0);
-      while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000u) == 0) {
+      while ((br2_ld32(DB32(0x801b8428)) & 0x04000000u) == 0) {
         if (br2_bail_pending()) return 0;
         br2_irq_poll();
       }
@@ -7005,12 +7003,12 @@ uint32_t cd_queue_drain(void)
       call_guest(fn,dp,arg);          /* jalr fn: a0=data a1=arg */
       DB32(0x801b844c) = (tail + 1) & 0x3f;
       if (DB32(0x801b8448) == DB32(0x801b844c)) break;
-      if ((br2_ld32(DB32G(0x801b8434)) & 0x01000000u) != 0) break;
+      if ((br2_ld32(DB32(0x801b8434)) & 0x01000000u) != 0) break;
     }
   }
   cd_u16_swap_store((uint16_t)DB32(0x801b8454));
   if (DB32(0x801b8448) == DB32(0x801b844c)
-      && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0
+      && (br2_ld32(DB32(0x801b8434)) & 0x01000000u) == 0
       && DB32(0x801b8328) != 0) {
     uint32_t cb = DB32(0x801b832c);
     if (cb != 0) {
@@ -7056,11 +7054,11 @@ int cd_queue_push(uint32_t a0_fn,uint32_t a1_data,uint32_t a2_count,
     head = DB32(0x801b8448);
     tail = DB32(0x801b844c);
     direct = (head == tail
-              && (br2_ld32(DB32G(0x801b8434)) & 0x01000000u) == 0
+              && (br2_ld32(DB32(0x801b8434)) & 0x01000000u) == 0
               && DB32(0x801b832c) == 0);
   }
   if (direct) {
-    while ((br2_ld32(DB32G(0x801b8428)) & 0x04000000u) == 0) {
+    while ((br2_ld32(DB32(0x801b8428)) & 0x04000000u) == 0) {
       if (br2_bail_pending()) return -1;
       br2_irq_poll();
     }
