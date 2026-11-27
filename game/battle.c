@@ -16940,7 +16940,7 @@ void hud_time_score_draw(uint32_t tbl,uint16_t font,int32_t a2,int32_t clr,
     announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
     break;
   case 3:
-    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)rec,s2);
+    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)rec,s2,s1);
 LAB_80164124:
     slot_name_measure(line,*(uint8_t *)(rec + 4));
     print_dispatch(line);
