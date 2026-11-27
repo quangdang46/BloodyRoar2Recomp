@@ -9,8 +9,8 @@
  *   GP8/GP16/GP16S/GP32/GP32S(a) = *(T*)guest_at(a)   macro, direct deref
  *   br2_ldN/br2_stN(a, v)        = same deref via the weak bind.c
  *     bridge — used in the CPS register-model bodies so they keep the
- *     call form shared with generated/*.c and the other game/*.c TUs
- *     (and stay interposable); GP* is for hand-ported helpers.
+ *     call form shared with the generated code and the other game
+ *     TUs (and stay interposable); GP* is for hand-ported helpers.
  *   (T*)guest_at(addr)           host pointer for struct field access.
  * Pointer-compressed fields (& 0xffffff tags) round-trip through
  * guest_of(); spr_desc_slot_alloc returns a host pointer (signature
