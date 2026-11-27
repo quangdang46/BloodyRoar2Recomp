@@ -10489,7 +10489,7 @@ tail:
  * record (same 240-byte family as dev_cmd_seq's rec). Cell map:
  *   *0x801BE804 = enable flag / s4 arg source (reloaded after first cb)
  *   *0x801BE78C = per-record cb, *0x801BE788 = byte-request cb (a1 = arg),
- *   *0x801BE7A0/*0x801BE7A4 = drain/ctx cbs (same pair as dev_cmd_seq),
+ *   *0x801BE7A0, *0x801BE7A4 = drain/ctx cbs (same pair as dev_cmd_seq),
  *   *0x801BE780 = completion cb, *0x801BE7B4 = record-table base,
  *   *0x801BE7C0 = slot, *0x801BE7D8 = per-slot count tbl,
  *   *0x801BE7F8 = transaction counter, *0x801BE7FC = status ptr (+0xE h).
