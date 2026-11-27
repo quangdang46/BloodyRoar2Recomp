@@ -25,10 +25,14 @@ def emit(sym_host, guest_anchor, name, comment):
     body = extract('br2eu_psx_alias_body_' + sym_host)
     core = G._GPR_RE.sub(G._gpr_names, G.transform(body))
     core = G.rename_temps(core)
+<<<<<<< HEAD
     core = G.fold_idioms(core)
     core = G.fold_cps_readability(core)
     core = G.fold_setcc(core)
+=======
+>>>>>>> orch/w5/e02
     core = G.name_comment_targets(core)
+    core = G.fix_label_decls(core)
     core = core.replace('switch (entry)', 'switch (_sel)')
     # C23: a label immediately followed by a declaration needs a null
     # statement between them (block_*/L_*/dispatch_* CPS labels).
