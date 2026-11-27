@@ -2394,7 +2394,7 @@ void spr_tbl_init_a(void)
   int i;
   if (GP32S(0x801b55e4) >= 0) return;
   rec = (uint8_t *)guest_at(0x801f5d10);
-  dc = GP32(0x1f8000dc) - 2;
+  dc = (uint32_t)(frame_tag - 2);
   for (i = 0; i < 0x18; i++) {
     *(uint32_t *)rec = dc;
     rec[7] = 5;
@@ -2414,7 +2414,7 @@ void spr_tbl_init_b(void)
   int i;
   if (GP32S(0x801b55e8) >= 0) return;
   rec = (uint8_t *)guest_at(0x801f5ea4);
-  dc = GP32(0x1f8000dc) - 2;
+  dc = (uint32_t)(frame_tag - 2);
   for (i = 0; i < 8; i++) {
     *(uint32_t *)rec = dc;
     rec[7] = 8;
