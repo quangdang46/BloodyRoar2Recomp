@@ -102,6 +102,7 @@ static int  g_np_diag_max_players = 0;
 static int  g_np_diag_player_count = 0;
 static int  g_np_diag_configured = 0;
 
+/* Copy netplay diagnostic snapshot (arch, players, slots) to out params. */
 int psx_netplay_diag_snapshot(char *arch_out, size_t arch_cap,
                               int *max_players_out, int *player_count_out)
 {
@@ -112,6 +113,7 @@ int psx_netplay_diag_snapshot(char *arch_out, size_t arch_cap,
     return g_np_diag_configured;
 }
 
+/* Fill cfg with default netplay config values. */
 void psx_netplay_config_defaults(PsxNetplayConfig *cfg)
 {
     if (!cfg) return;
@@ -133,6 +135,7 @@ void psx_netplay_config_defaults(PsxNetplayConfig *cfg)
     cfg->peer_hostport[0] = '\0';
 }
 
+/* Read an unsigned env var with default. */
 static unsigned env_u(const char *name, unsigned def)
 {
     const char *v = getenv(name);
@@ -140,6 +143,7 @@ static unsigned env_u(const char *name, unsigned def)
     return (unsigned)strtoul(v, NULL, 10);
 }
 
+/* Apply PSX_NETPLAY_* env vars onto cfg. */
 void psx_netplay_apply_env(PsxNetplayConfig *cfg)
 {
     const char *v;
@@ -192,6 +196,7 @@ void psx_netplay_apply_env(PsxNetplayConfig *cfg)
         cfg->host_spectates = (v[0] != '0') ? 1 : 0;
 }
 
+/* Normalize a pad state (deadzone + button mask). */
 void psx_netplay_normalize_pad(PsxNetPad *pad)
 {
     const int dead = 24; /* ~SDL-ish center deadzone in 0..255 space */
@@ -206,6 +211,7 @@ void psx_netplay_normalize_pad(PsxNetPad *pad)
     }
 }
 
+/* Force all session pad slots to connected state. */
 static void force_session_pads_connected(int slot_count)
 {
     int i;
@@ -227,6 +233,7 @@ static void force_session_pads_connected(int slot_count)
     }
 }
 
+/* Release all netplay pad slots back to local input. */
 void psx_netplay_release_pads(void)
 {
     int n = g_np_slot_count;
@@ -244,12 +251,14 @@ static uint32_t psx_start_bisect_wall_ms(void)
     return (uint32_t)psx_host_mono_ms();
 }
 
+/* Cached env-flag reader for start-bisect toggles. */
 static int psx_start_bisect_env_flag(const char *name)
 {
     const char *e = getenv(name);
     return (e && e[0] == '1' && e[1] == '\0') ? 1 : 0;
 }
 
+/* True if start-bisect diagnostics are enabled. */
 int psx_start_bisect_enabled(void)
 {
     static int s_on = -1;
@@ -266,6 +275,7 @@ int psx_start_bisect_enabled(void)
     return s_on;
 }
 
+/* Bisect toggle: skip GC update in admit. */
 int psx_start_bisect_no_gc_update_in_admit(void)
 {
     static int s = -1;
@@ -279,6 +289,7 @@ int psx_start_bisect_no_gc_update_in_admit(void)
     return s;
 }
 
+/* Bisect toggle: skip tiphold capture. */
 int psx_start_bisect_no_tiphold_capture(void)
 {
     static int s = -1;
@@ -291,6 +302,7 @@ int psx_start_bisect_no_tiphold_capture(void)
     return s;
 }
 
+/* Bisect toggle: disable catchup. */
 int psx_start_bisect_no_catchup(void)
 {
     static int s = -1;
@@ -302,6 +314,7 @@ int psx_start_bisect_no_catchup(void)
     return s;
 }
 
+/* Bisect toggle: disable replay produce. */
 int psx_start_bisect_no_replay_produce(void)
 {
     static int s = -1;
@@ -314,6 +327,7 @@ int psx_start_bisect_no_replay_produce(void)
     return s;
 }
 
+/* Bisect toggle: spin-wait logging. */
 int psx_start_bisect_spin_log(void)
 {
     static int s = -1;
@@ -322,6 +336,7 @@ int psx_start_bisect_spin_log(void)
     return s;
 }
 
+/* Log a start-bisect event with phase counters. */
 void psx_start_bisect_log(const char *path, uint32_t sim, int sdl_start,
                           int cap_start, int deb_start, int sio_start,
                           int latched, int tip_hold, int resim)
@@ -367,6 +382,7 @@ void psx_start_bisect_log(const char *path, uint32_t sim, int sdl_start,
 
 static uint32_t g_start_consumer_offline_frame;
 
+/* True if the start consumer is enabled. */
 int psx_start_consumer_enabled(void)
 {
     static int s_on = -1;
@@ -383,6 +399,7 @@ int psx_start_consumer_enabled(void)
     return s_on;
 }
 
+/* Offline frame number for the start consumer. */
 uint32_t psx_start_consumer_offline_frame(void)
 {
     if (!psx_start_consumer_enabled())
@@ -391,6 +408,7 @@ uint32_t psx_start_consumer_offline_frame(void)
     return g_start_consumer_offline_frame;
 }
 
+/* Note a sim tick for the start consumer. */
 void psx_start_consumer_note(int slot, uint32_t sim, uint16_t buttons)
 {
     static uint32_t s_n;
@@ -436,6 +454,7 @@ void psx_start_consumer_note(int slot, uint32_t sim, uint16_t buttons)
 }
 
 #if !defined(PSX_HAS_RECOMP_NET)
+/* ---- PSX_HAS_RECOMP_NET stubs: every API below is inert (returns 0/-1/void) ---- */
 
 int  psx_netplay_active(void) { return 0; }
 int  psx_netplay_is_running(void) { return 0; }
@@ -518,15 +537,21 @@ void psx_netplay_admit_wait_info(char *stall_out, size_t stall_cap,
     if (sim_tick_out) *sim_tick_out = 0;
     if (lead_out) *lead_out = 0;
 }
+/* Bind the CPU state hooks for the session. */
 void psx_netplay_bind_cpu(struct CPUState *cpu) { (void)cpu; }
+/* Highest sim tick resolved (agreed) by the session. */
 uint32_t psx_netplay_resolved_through(void) { return 0; }
+/* Confirm state hashes through a tick. */
 int psx_netplay_hash_confirm_through(uint32_t tick) { (void)tick; return 0; }
+/* Current rollback mode (0=none, predictive flags). */
 int psx_netplay_rollback_mode(void) { return 0; }
+/* Poll a savestate snapshot request (cpu+resume_pc). */
 void psx_netplay_poll_snap(struct CPUState *cpu, uint32_t resume_pc)
 {
     (void)cpu;
     (void)resume_pc;
 }
+/* True while the session is resimulating (rollback). */
 int psx_netplay_is_resimulating(void) { return 0; }
 
 #else /* PSX_HAS_RECOMP_NET */
@@ -665,6 +690,7 @@ static uint32_t s_deferred_rw_tick;
 static int s_deferred_rw_slot;
 static int s_deferred_rw_logged;
 
+/* Reset the per-subsystem part-hash ring. */
 static void np_part_ring_reset(void)
 {
     memset(s_part_ring, 0, sizeof(s_part_ring));
@@ -679,6 +705,7 @@ static void np_part_ring_reset(void)
     s_deferred_rw_logged = 0;
 }
 
+/* Store per-subsystem part hashes for a tick. */
 static void np_part_ring_put(uint32_t tick, const NetplayCoreParts *parts,
                              uint32_t av, uint32_t cd, uint32_t spu,
                              uint32_t mdec, uint32_t aux)
@@ -702,6 +729,7 @@ static const NpPartSlot *np_part_ring_get(uint32_t tick)
     return s;
 }
 
+/* Log a live digest (AV/CD/SPU/MDEC/AUX) for divergence hunting. */
 static void np_log_live_digest(uint32_t tick, const NetplayCoreParts *parts,
                                uint32_t av, uint32_t cd, uint32_t spu,
                                uint32_t mdec, uint32_t aux, const char *tag)
@@ -745,6 +773,7 @@ static void np_log_live_digest(uint32_t tick, const NetplayCoreParts *parts,
  * episode reloads from the newest provably-safe snap (≤ fork tick — HC is
  * confirmed through fork-1 by definition) and reseals both seats from
  * wire-authoritative history, converging the states. */
+/* Try hard-confirm fork recovery at a sim tick. */
 static void np_try_hc_fork_recovery(uint32_t fork_tick)
 {
     uint32_t sim;
@@ -808,6 +837,7 @@ static void np_try_hc_fork_recovery(uint32_t fork_tick)
     (void)psx_netplay_rb_begin_rewind(fork_tick, remote);
 }
 
+/* Restart fork recovery from a sim tick. */
 void psx_netplay_hc_fork_recovery_restart(void)
 {
     uint32_t sim;
@@ -823,6 +853,7 @@ void psx_netplay_hc_fork_recovery_restart(void)
     fflush(stderr);
 }
 
+/* Clear fork-recovery state. */
 void psx_netplay_hc_fork_recovery_clear(void)
 {
     s_fork_tick = 0xffffffffu;
@@ -874,6 +905,7 @@ static void np_cd_bisect_init(void)
     fflush(stderr);
 }
 
+/* Arm the CD bisect window [from_sim, ticks]. */
 void psx_netplay_cd_bisect_arm(uint32_t from_sim, uint32_t ticks)
 {
     uint32_t span;
@@ -893,6 +925,7 @@ void psx_netplay_cd_bisect_arm(uint32_t from_sim, uint32_t ticks)
     fflush(stderr);
 }
 
+/* True if the CD bisect window is active. */
 int psx_netplay_cd_bisect_active(void)
 {
     uint32_t sim;
@@ -907,6 +940,7 @@ int psx_netplay_cd_bisect_active(void)
     return 0;
 }
 
+/* CD bisect per-tick check (CDROM+MDEC debug state). */
 static void np_cd_bisect_tick(uint32_t tick)
 {
     CDROMDebugState cds;
@@ -983,6 +1017,7 @@ static void np_cd_bisect_tick(uint32_t tick)
     fflush(stderr);
 }
 
+/* Compare local vs peer core-part hashes; log divergence. */
 static void np_check_core_diverge(void)
 {
     uint32_t tick = 0, local_d = 0, peer_d = 0;
@@ -1020,6 +1055,7 @@ static void np_check_core_diverge(void)
     fflush(stderr);
 }
 
+/* Drain peer frame-commit messages up to a tick. */
 static void np_drain_peer_frame_commits(void)
 {
     rnet_u32 through = 0, hash = 0;
@@ -1050,6 +1086,7 @@ static void np_drain_peer_frame_commits(void)
     np_check_core_diverge();
 }
 
+/* Emit a local frame-commit (parts hash + digest). */
 static void np_emit_frame_commit(uint32_t tick)
 {
     NetplayCoreParts parts;
@@ -1112,11 +1149,13 @@ static int g_diag_summary_written;
 static uint32_t g_diag_last_write_ms;
 static int g_diag_mkdir_done;
 
+/* Host sleep for ms milliseconds. */
 static void np_sleep_ms(unsigned ms)
 {
     psx_host_sleep_ms(ms);
 }
 
+/* Host monotonic clock in ms. */
 static uint32_t np_mono_ms(void)
 {
     return (uint32_t)psx_host_mono_ms();
@@ -1129,6 +1168,7 @@ static void np_starv_reset(void);
 static void np_maybe_stage_target_save(void);
 static void np_note_save_complete(void);
 
+/* CRC32 of a file buffer (rnet_checksum). */
 static int np_file_crc(const uint8_t *data, size_t size, uint32_t *crc_out)
 {
     if (!data || size == 0 || !crc_out) return 0;
@@ -1136,6 +1176,7 @@ static int np_file_crc(const uint8_t *data, size_t size, uint32_t *crc_out)
     return 1;
 }
 
+/* CRC32 of a save slot's contents. */
 static int np_slot_crc(int slot, uint32_t *size_out, uint32_t *crc_out)
 {
     uint8_t *data = NULL;
@@ -1152,6 +1193,7 @@ static int np_slot_crc(int slot, uint32_t *size_out, uint32_t *crc_out)
     return 1;
 }
 
+/* Serialize memcard state into the netplay blob format. */
 static int np_build_mc_blob(uint8_t *out, size_t cap, size_t *out_size)
 {
     uint8_t *p;
@@ -1166,6 +1208,7 @@ static int np_build_mc_blob(uint8_t *out, size_t cap, size_t *out_size)
     return 0;
 }
 
+/* Apply a netplay memcard blob to local memcard. */
 static int np_apply_mc_blob(const uint8_t *data, size_t size)
 {
     if (!data || size < NP_MC_BLOB_BYTES) return -1;
@@ -1178,6 +1221,7 @@ static int np_apply_mc_blob(const uint8_t *data, size_t size)
     return 0;
 }
 
+/* CRC32 of the serialized memcard blob. */
 static int np_mc_blob_crc(uint32_t *size_out, uint32_t *crc_out)
 {
     uint8_t *blob = (uint8_t *)malloc(NP_MC_BLOB_BYTES);
@@ -1198,6 +1242,7 @@ static int np_mc_blob_crc(uint32_t *size_out, uint32_t *crc_out)
     return 1;
 }
 
+/* True if a save/load xfer is in flight. */
 static int np_xfer_busy(void)
 {
     if (!g_np.session) return 0;
@@ -1206,6 +1251,7 @@ static int np_xfer_busy(void)
            rnet_session_state_take_ready(g_np.session, NULL, NULL, NULL, NULL);
 }
 
+/* Enter guest-save sandbox (redirect memcard root). */
 static void np_enter_guest_sandbox(void)
 {
     /* Prefer memcard/save ROOT (pre-BIOS-token). savestate_dir() may already
@@ -1265,6 +1311,7 @@ static void np_enter_guest_sandbox(void)
     fflush(stdout);
 }
 
+/* Leave guest-save sandbox (flush + restore root). */
 static void np_leave_guest_sandbox(void)
 {
     if (!g_np.guest_sandbox) return;
@@ -1324,6 +1371,7 @@ static void np_enter_host_card_sandbox(void)
     fflush(stdout);
 }
 
+/* Leave host-card sandbox (flush memcard). */
 static void np_leave_host_card_sandbox(void)
 {
     if (!g_np.host_card_sandbox) return;
@@ -1350,6 +1398,7 @@ static int np_build_guest_card_blob(uint8_t *out, size_t cap, size_t *out_size)
     return 0;
 }
 
+/* Apply a ready-state payload (op+slot+data) from peer. */
 static void np_apply_ready_state(void)
 {
     rnet_u8 op = 0, slot = 0;
@@ -1487,6 +1536,7 @@ static void np_apply_ready_state(void)
     fflush(stdout);
 }
 
+/* Probe a guest save op (size+crc) without applying. */
 static void np_guest_handle_probe(void)
 {
     rnet_u8 op = 0, slot = 0;
@@ -1641,6 +1691,7 @@ static void np_guest_handle_probe(void)
     }
 }
 
+/* Drive the host side of a save/load xfer. */
 static void np_host_drive_xfer(void)
 {
     int match = 0;
@@ -1819,6 +1870,7 @@ static void np_host_drive_xfer(void)
     }
 }
 
+/* Re-prime pads/session after a hard resync. */
 static void np_prime_after_hard_resync(void)
 {
     uint8_t bytes[PSX_NETPLAY_PAD_BYTES];
@@ -1893,6 +1945,7 @@ static void np_commit_load_sync(void)
         psx_netplay_rb_clear_fmv_desync_hold("netplay load sync");
 }
 
+/* Enter load-ready barrier state. */
 static void np_enter_load_ready(int slot)
 {
     /* Do not hard_resync/prime here — the later-applying peer would clear the
@@ -1996,6 +2049,7 @@ static void np_maybe_upload_guest_card(void)
     fflush(stdout);
 }
 
+/* Start memcard sync if host and not already synced. */
 static void np_maybe_start_mc_sync(void)
 {
     uint32_t size = 0, crc = 0;
@@ -2017,6 +2071,7 @@ static void np_maybe_start_mc_sync(void)
     g_np.xfer = NP_XFER_MC_PROBE;
 }
 
+/* Encode a PsxNetPad for the wire (normalized). */
 static void encode_pad(const PsxNetPad *pad, RNetInputSample *out, rnet_u32 tick)
 {
     PsxNetPad n = *pad;
@@ -2035,6 +2090,7 @@ static void encode_pad(const PsxNetPad *pad, RNetInputSample *out, rnet_u32 tick
     out->valid = 1;
 }
 
+/* Decode a wire pad frame into PsxNetPad. */
 static void decode_pad(const RNetInputSample *in, PsxNetPad *pad)
 {
     memset(pad, 0, sizeof(*pad));
@@ -2087,16 +2143,19 @@ static int np_pad_trace_enabled(void)
     return s_on;
 }
 
+/* True if pad diagnostics (log or trace) are enabled. */
 static int np_pad_diag_enabled(void)
 {
     return np_pad_log_enabled() || np_pad_trace_enabled();
 }
 
+/* Monotonic ms for pad diagnostics. */
 static uint32_t np_pad_mono_ms(void)
 {
     return (uint32_t)psx_host_mono_ms();
 }
 
+/* True if the START button transitioned down. */
 static int np_pad_start_down(uint16_t buttons)
 {
     return ((uint16_t)(~buttons) & NP_PAD_BTN_START) != 0;
@@ -2123,6 +2182,7 @@ static uint8_t g_start_gest_down_valid;
 static uint8_t g_start_gest_up_valid;
 static uint32_t g_start_gest_last_stage_down_sim = 0xFFFFFFFFu;
 
+/* Trace a START-down edge with gap context. */
 static void np_pad_trace_start_down(const char *src, uint32_t sim)
 {
     uint32_t gap;
@@ -2149,6 +2209,7 @@ static void np_pad_trace_start_down(const char *src, uint32_t sim)
         g_start_gest_last_stage_down_sim = sim;
 }
 
+/* Trace a START-up edge. */
 static void np_pad_trace_start_up(const char *src, uint32_t sim)
 {
     (void)src;
@@ -2159,6 +2220,7 @@ static void np_pad_trace_start_up(const char *src, uint32_t sim)
     g_start_gest_down_valid = 0;
 }
 
+/* Log a pad button edge (press/release). */
 static void np_pad_log_edge(const char *tag, int slot, uint32_t sim, uint16_t prev,
                             uint16_t cur)
 {
@@ -2211,6 +2273,7 @@ static uint16_t g_sio_apply_btn[NP_SLOT_CAP];
 static uint8_t g_sio_apply_n[NP_SLOT_CAP];
 static uint8_t g_sio_apply_have[NP_SLOT_CAP];
 
+/* RB snapshot loaded: rebind pads + restart session bits. */
 void psx_netplay_on_rb_snap_loaded(void)
 {
     int i;
@@ -2291,6 +2354,7 @@ void psx_netplay_on_rb_snap_loaded(void)
     }
 }
 
+/* Pad trace dev hook (card/fallback/sdl buttons). */
 void psx_netplay_pad_trace_dev(int card, int fallback, int sdl_start,
                                uint16_t buttons)
 {
@@ -2323,6 +2387,7 @@ void psx_netplay_pad_trace_dev(int card, int fallback, int sdl_start,
     }
 }
 
+/* Apply a decoded pad frame to a session slot. */
 static void apply_pad_slot(int slot, const PsxNetPad *pad)
 {
     if (slot < 0 || slot >= g_np.slot_count || slot >= NP_SLOT_CAP || !pad) return;
@@ -2408,6 +2473,7 @@ static void apply_pad_slot(int slot, const PsxNetPad *pad)
     }
 }
 
+/* Host callback: sample local pad into the session. */
 static void host_sample_local(rnet_u32 tick, RNetInputSample *out, void *ctx)
 {
     NetplayState *st = (NetplayState *)ctx;
@@ -2422,6 +2488,7 @@ static void host_sample_local(rnet_u32 tick, RNetInputSample *out, void *ctx)
     encode_pad(&pad, out, tick);
 }
 
+/* Host callback: publish local input for this tick. */
 static void host_publish(rnet_u32 tick, const RNetInputSample *by_slot, int slots, void *ctx)
 {
     int i;
@@ -2445,6 +2512,7 @@ typedef struct {
     uint32_t            tick;
 } NpHcGateCtx;
 
+/* HC promote gate context callback. */
 static uint8_t np_hash_confirm_promote_gate(void *ctx)
 {
     NpHcGateCtx *g = (NpHcGateCtx *)ctx;
@@ -2452,6 +2520,7 @@ static uint8_t np_hash_confirm_promote_gate(void *ctx)
     return netplay_hc_confirm_through(g->hc, g->tick);
 }
 
+/* Publish SIO pad history for the session. */
 static void np_publish_hist_sio(uint32_t tick)
 {
     int i;
@@ -2466,6 +2535,7 @@ static void np_publish_hist_sio(uint32_t tick)
     }
 }
 
+/* Apply an RB frame row to a slot. */
 static void np_rb_apply_frame_slot(int slot, uint32_t tick, uint16_t buttons,
                                    int8_t sx, int8_t sy, uint8_t analog)
 {
@@ -2484,6 +2554,7 @@ static void np_rb_apply_frame_slot(int slot, uint32_t tick, uint16_t buttons,
     apply_pad_slot(slot, &pad);
 }
 
+/* Bind RB (rollback) bindings and start the session. */
 static void np_rb_bind_and_start(void)
 {
     PsxNetplayRbBindings b;
@@ -2544,6 +2615,7 @@ static int np_digital_new_press(const RNetInputContractFrame *pub,
  * §63: outside TipHold, also scrub sim..sim+P so gap1 invent poison past the
  * current tip cannot re-hold Start/dpad before wire catches up (soak: sio
  * Start↓@5861 then invent Start↓@5868 while auth was release). */
+/* Scrub-ahead using predicted released frames. */
 static void np_scrub_ahead_predicted(int slot, rnet_u32 release_tick,
                                      const RNetRbFrame *released)
 {
@@ -2714,6 +2786,7 @@ static void np_tip_hold_coalesce_ahead(void)
  * §46: button mispredicts whose digests already match through t (HC watermark)
  * promote hist silently — no episode. Loading-screen clicks / ignored pads
  * stay corrected in history without a rubber-band resim. */
+/* True if silent HC promote is enabled (env-gated). */
 static int np_hc_silent_promote_enabled(void)
 {
     static int s_on = -1;
@@ -2730,6 +2803,7 @@ static int np_hc_silent_promote_enabled(void)
     return s_on;
 }
 
+/* Reconcile rollback state against the wire timeline. */
 static void np_rollback_reconcile_wire(void)
 {
     rnet_u32 sim;
@@ -3270,11 +3344,13 @@ static int np_try_admit_rollback(void)
     return 1;
 }
 
+/* True if a netplay session is active. */
 int psx_netplay_active(void)
 {
     return g_np.active && g_np.session != NULL;
 }
 
+/* True if the session is running (not paused/lobby). */
 int psx_netplay_is_running(void)
 {
     return psx_netplay_active() && rnet_session_is_running(g_np.session);
@@ -3286,6 +3362,7 @@ const char *psx_netplay_transport_name(void)
     return g_np.use_ice ? "ice" : "lan";
 }
 
+/* True if ICE negotiation failed (env/transport state). */
 int psx_netplay_ice_failed(void)
 {
 #if defined(RNET_ENABLE_ICE)
@@ -3297,32 +3374,38 @@ int psx_netplay_ice_failed(void)
 #endif
 }
 
+/* True if local peer is a spectator. */
 int psx_netplay_is_spectator(void)
 {
     return (g_np.session && g_np.spectator) ? 1 : 0;
 }
 
+/* True if the host peer spectates. */
 int psx_netplay_host_spectates(void)
 {
     return (g_np.session && g_np.host_spectates) ? 1 : 0;
 }
 
+/* Local player slot index (-1 if inactive). */
 int psx_netplay_local_slot(void)
 {
     return psx_netplay_active() ? g_np.local_slot : -1;
 }
 
+/* Which player index local input drives. */
 int psx_netplay_input_player(void)
 {
     return psx_netplay_active() ? g_np.input_player : 0;
 }
 
+/* Current session sim tick. */
 uint32_t psx_netplay_sim_tick(void)
 {
     if (!psx_netplay_active()) return 0;
     return rnet_session_sim_tick(g_np.session);
 }
 
+/* Stage local pad state for publish (host gallery note). */
 void psx_netplay_stage_local(const PsxNetPad *pad)
 {
     /* Host in the gallery: its seat still publishes a row every tick (the
@@ -3434,6 +3517,7 @@ void psx_netplay_stage_local(const PsxNetPad *pad)
     g_np.staged_valid = 1;
 }
 
+/* True if the session needs a fresh local pad sample. */
 int psx_netplay_needs_local_sample(void)
 {
     if (!psx_netplay_active()) return 0;
@@ -3444,6 +3528,7 @@ int psx_netplay_needs_local_sample(void)
     }
 }
 
+/* Read live pad buttons (0xFFFF = none). */
 int psx_netplay_live_pad_buttons(uint16_t *out)
 {
     if (!out)
@@ -3456,12 +3541,14 @@ int psx_netplay_live_pad_buttons(uint16_t *out)
     return 1;
 }
 
+/* Input-desync flag from the session. */
 int psx_netplay_input_desync(uint32_t *tick, uint32_t *local_hash, uint32_t *remote_hash)
 {
     if (!psx_netplay_active()) return 0;
     return rnet_session_input_desync(g_np.session, tick, local_hash, remote_hash);
 }
 
+/* Peer disconnect event (timeout_ms==0 → BYE). */
 int psx_netplay_peer_disconnected(uint32_t timeout_ms)
 {
     if (!psx_netplay_active()) return 0;
@@ -3470,12 +3557,14 @@ int psx_netplay_peer_disconnected(uint32_t timeout_ms)
     return rnet_session_peer_disconnected(g_np.session, (rnet_u64)timeout_ms);
 }
 
+/* Refresh peer liveness timestamp. */
 void psx_netplay_touch_peer_liveness(void)
 {
     if (!psx_netplay_active() || !g_np.session) return;
     rnet_session_touch_peer_liveness(g_np.session);
 }
 
+/* Liveness timeout while running. */
 uint32_t psx_netplay_running_liveness_timeout_ms(void)
 {
     uint32_t sim;
@@ -3495,6 +3584,7 @@ uint32_t psx_netplay_running_liveness_timeout_ms(void)
     return 1500u;
 }
 
+/* Capture a diagnostic snapshot (arch/players/slots). */
 static void np_diag_capture(const PsxNetplayConfig *cfg, int slots)
 {
     const char *arch = "p2p";
@@ -3513,6 +3603,7 @@ static void np_diag_capture(const PsxNetplayConfig *cfg, int slots)
 }
 
 #if defined(__linux__)
+/* True if peer host:port is loopback. */
 static int peer_is_loopback(const char *peer_hostport)
 {
     if (!peer_hostport || !peer_hostport[0]) return 0;
@@ -3548,6 +3639,7 @@ static void pin_localhost_peer_cpus(int local_slot)
 #endif
 
 #if defined(PSX_HAS_LOBBY_CLIENT) && defined(RNET_ENABLE_ICE)
+/* Host signal callback (lobby/session events). */
 static void host_on_signal(const RNetSignal *msg, void *ctx)
 {
     (void)ctx;
@@ -3555,6 +3647,7 @@ static void host_on_signal(const RNetSignal *msg, void *ctx)
     (void)psx_lobby_send_signal((int)msg->type, (int)msg->flag, msg->text);
 }
 
+/* Drain pending lobby signals into type/flag/text. */
 static void drain_lobby_signals(void)
 {
     int type = 0, flag = 0;
@@ -3575,9 +3668,11 @@ static void drain_lobby_signals(void)
     }
 }
 #else
+/* Drain pending lobby signals into type/flag/text. */
 static void drain_lobby_signals(void) {}
 #endif
 
+/* Decide ICE vs LAN transport from config + MOTK room state. */
 static int resolve_use_ice(const PsxNetplayConfig *cfg)
 {
     int in_motk_room = 0;
@@ -3615,6 +3710,7 @@ static int resolve_use_ice(const PsxNetplayConfig *cfg)
 }
 
 
+/* Start a netplay session from cfg (RNetConfig + host vtable). */
 int psx_netplay_start(const PsxNetplayConfig *cfg)
 {
     RNetConfig rcfg;
@@ -4099,6 +4195,7 @@ int psx_netplay_start(const PsxNetplayConfig *cfg)
     return 0;
 }
 
+/* Bind guest save slots into the session (BIOS/entry probe). */
 void psx_netplay_bind_guest_saves(void)
 {
     uint32_t bios = 0, entry = 0;
@@ -4160,11 +4257,13 @@ static int np_starv_env_int(const char *name, int def)
     return (int)n;
 }
 
+/* Reset starvation-runway tracking. */
 static void np_starv_reset(void)
 {
     memset(&g_starv, 0, sizeof(g_starv));
 }
 
+/* True if remote-lead runway covers input delay. */
 static int np_starv_runway_ok(void)
 {
     int lead = psx_netplay_remote_lead();
@@ -4176,6 +4275,7 @@ static int np_starv_runway_ok(void)
     return lead >= delay + hr_lead;
 }
 
+/* Cold-reset host-only statics (BSS-zero semantics). */
 void psx_netplay_cold_reset(void)
 {
     /* Host-only statics that survive soft-return (BSS-zero on a cold peer).
@@ -4216,6 +4316,7 @@ void psx_netplay_cold_reset(void)
     psx_irq_clear_resume_latches();
 }
 
+/* Shut down the session (close diag file, free state). */
 void psx_netplay_shutdown(void)
 {
     if (g_diag_file) {
@@ -4255,6 +4356,7 @@ int psx_netplay_is_host(void)
     return psx_netplay_active() && g_np.local_slot == 0;
 }
 
+/* Request a save-slot sync to peers. */
 int psx_netplay_request_save(int slot)
 {
     uint32_t sim;
@@ -4291,6 +4393,7 @@ int psx_netplay_request_save(int slot)
     return 1;
 }
 
+/* Request a load-slot sync from peers. */
 int psx_netplay_request_load(int slot)
 {
     uint32_t size = 0, crc = 0;
@@ -4323,6 +4426,7 @@ int psx_netplay_request_load(int slot)
     return 1;
 }
 
+/* True while a load barrier is active. */
 int psx_netplay_in_load_barrier(void)
 {
     if (!psx_netplay_active())
@@ -4332,6 +4436,7 @@ int psx_netplay_in_load_barrier(void)
     return (g_np.xfer != NP_XFER_NONE) ? 1 : 0;
 }
 
+/* Consume + clear the load-apply-failed flag. */
 int psx_netplay_consume_load_apply_failed(void)
 {
     int v = g_np.load_apply_failed;
@@ -4340,6 +4445,7 @@ int psx_netplay_consume_load_apply_failed(void)
 }
 
 
+/* True if netplay diagnostics are enabled (env-gated, cached). */
 static int np_diag_enabled(void)
 {
     static int cached = -1;
@@ -4365,6 +4471,7 @@ static int np_delay_sync_diag_enabled(void)
     return cached;
 }
 
+/* Diagnostic dump interval in ms (env-configurable). */
 static unsigned np_diag_interval_ms(void)
 {
     static unsigned cached = 0;
@@ -4379,6 +4486,7 @@ static unsigned np_diag_interval_ms(void)
     return cached;
 }
 
+/* Escape a string for diagnostic output (JSON-safe). */
 static void np_diag_escape(char *out, size_t out_len, const char *in)
 {
     size_t oi = 0;
@@ -4436,6 +4544,7 @@ static const char *np_diag_ice_nat(const char *path)
     return "unknown";
 }
 
+/* True if the ICE/LAN path is ready for diagnostics. */
 static int np_diag_path_ready(const RNetSessionStats *st)
 {
     if (!g_np.use_ice)
@@ -4453,6 +4562,7 @@ static int np_diag_path_ready(const RNetSessionStats *st)
     return 0;
 }
 
+/* Write a diagnostic summary line. */
 static void np_diag_write_summary(FILE *f, const RNetSessionStats *st, uint32_t now)
 {
     char server_esc[280];
@@ -4498,6 +4608,7 @@ static void np_diag_write_summary(FILE *f, const RNetSessionStats *st, uint32_t 
             ice_local_esc, ice_remote_esc);
 }
 
+/* Per-frame netplay diagnostic tick. */
 void psx_netplay_diag_tick(void)
 {
     RNetSessionStats st;
@@ -4624,6 +4735,7 @@ static void np_note_save_complete(void)
     psx_netplay_rb_clear_fmv_desync_hold("netplay save complete");
 }
 
+/* Pump the session (ICE/lobby aware) each frame. */
 static void np_pump_session(void)
 {
 #if defined(PSX_HAS_LOBBY_CLIENT)
@@ -4655,6 +4767,7 @@ static void np_pump_session(void)
     }
 }
 
+/* Public pump entry (inert when inactive). */
 void psx_netplay_pump(void)
 {
     if (!psx_netplay_active())
@@ -4680,6 +4793,7 @@ void psx_netplay_pump(void)
     psx_netplay_diag_tick();
 }
 
+/* Try to admit a gameplay frame from the session. */
 static int np_try_admit_gameplay(void)
 {
     rnet_u32 sim = rnet_session_sim_tick(g_np.session);
@@ -4698,6 +4812,7 @@ static int np_try_admit_gameplay(void)
  * Load will hard_resync at mutual ready; pads here only need guest cycles for
  * savestate_poll / one resume tick.
  */
+/* Try to admit a load-barrier frame (rollback aware). */
 static int np_try_admit_load_barrier_rb(void)
 {
     rnet_u32 sim = rnet_session_sim_tick(g_np.session);
@@ -4751,6 +4866,7 @@ static int np_try_admit_load_barrier_rb(void)
     return 1;
 }
 
+/* Poll whether a frame may be admitted (1=ok). */
 int psx_netplay_poll_admit(void)
 {
     rnet_u32 sim;
@@ -4957,6 +5073,7 @@ int psx_netplay_poll_admit(void)
     return 0;
 }
 
+/* Mark the local frame finished for the session. */
 void psx_netplay_finish_frame(void)
 {
     rnet_u32 done;
@@ -5052,6 +5169,7 @@ int psx_netplay_is_resimulating(void)
     return psx_netplay_active() && g_np.rollback && psx_netplay_rb_is_resimulating();
 }
 
+/* How many ticks the remote peer leads local. */
 int psx_netplay_remote_lead(void)
 {
     RNetSessionStats st;
@@ -5062,6 +5180,7 @@ int psx_netplay_remote_lead(void)
     return st.remote_lead;
 }
 
+/* Configured input delay (ticks). */
 int psx_netplay_input_delay(void)
 {
     RNetSessionStats st;
@@ -5072,6 +5191,7 @@ int psx_netplay_input_delay(void)
     return st.delay > 0 ? (int)st.delay : 2;
 }
 
+/* Catch-up budget remaining (ticks). */
 int psx_netplay_catchup_budget(void)
 {
     int lead;
@@ -5107,18 +5227,21 @@ int psx_netplay_catchup_budget(void)
     return budget;
 }
 
+/* Consume one catch-up frame from the budget. */
 void psx_netplay_catchup_consume_frame(void)
 {
     if (g_starv.recovery_amount > 0)
         g_starv.recovery_amount--;
 }
 
+/* Wait up to timeout_ms for inbound session data. */
 void psx_netplay_wait_recv(int timeout_ms)
 {
     if (!psx_netplay_active()) return;
     (void)rnet_session_wait_recv(g_np.session, timeout_ms);
 }
 
+/* Report admit-wait stall info + sim/lead ticks. */
 void psx_netplay_admit_wait_info(char *stall_out, size_t stall_cap,
                                  uint32_t *sim_tick_out, int *lead_out)
 {
