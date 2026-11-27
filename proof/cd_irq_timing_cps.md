@@ -719,3 +719,31 @@ clean_table: 8953 wrappers (+15), 5 legit skips unchanged.
 Remaining filtered pool ~159 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :5023 frames 6908 -> 10257+
 attract CD streaming, no wedge.
+
+## Batch 33 (orch/w5/e05) — 14 leaves + 8 _cont rows
+
+14 leaves -> cpst_ (801ae768, 801a9ec0, 801adecc, 801ade98,
+801ae720, 801a1e5c, 801a1cac, 801a9e4c, 801a9d1c, 801a35b8,
+801a9e3c, 801a1dc8, 80199c0c, 801aecbc). Eight bodies carry _cont
+cases; added 8 resume rows (801a9ec8, 801a1e6c, 801a9e54, 801a9d2c,
+801a9e44, 801a1dd0, 80199c14, 801aeccc -> owning cpst_). No fnmap
+conflicts.
+
+clean_table: 8975 wrappers (+22), 5 legit skips unchanged.
+Remaining filtered pool ~145 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :5027 frames 4099 -> 11176+
+attract CD streaming, no wedge.
+
+## Batch 34 (orch/w5/e05) — 14 leaves + 11 _cont rows
+
+14 leaves -> cpst_ (8019e300, 80199c78, 8018dbe4, 80191e74,
+801a1f38, 801a9f10, 801af9c4, 801af9fc, 801af428, 801af460,
+801a9de0, 801af6d4, 8019adcc, 801a9c7c). 11 _cont cases -> resume
+rows, no fnmap conflicts. Added missing extern
+psx_restore_state_escape to cd_irq_probe.c (jr-$ra longjmp-return
+path used by cpst_8019e300 family).
+
+clean_table: 8999 wrappers (+25), 5 legit skips unchanged.
+Remaining filtered pool ~131 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :5033 frames 2955 -> 6311+
+boot/attract advancing, no wedge.
