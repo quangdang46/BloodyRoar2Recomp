@@ -78,7 +78,7 @@ typedef void code();
 /* additional guest globals (camera/viewport state) */
 extern uint16_t *g_DAT_1f80030c, *g_DAT_801f0234, *g_DAT_1f8002f8;
 extern uint16_t *g_DAT_801f0250;
-extern uint8_t  *g_DAT_801b144c, *g_DAT_801b140c, *g_DAT_1f800098, *g_DAT_801f0228;
+extern uint8_t  *g_DAT_801b144c, *g_DAT_801b140c, *g_DAT_1f800098;
 extern uint32_t *g__DAT_801f022c;
 #define DAT_1f80030c   g_DAT_1f80030c[0]
 #define DAT_1f80030e   g_DAT_1f80030c[1]
@@ -129,7 +129,6 @@ extern uint32_t *g__DAT_801f022c;
 #define DAT_801b144c   (*g_DAT_801b144c)
 #define DAT_801b140c   (*g_DAT_801b140c)
 #define DAT_1f800098   (*g_DAT_1f800098)
-#define DAT_801f0228   (*g_DAT_801f0228)
 #define _DAT_801f022c  (*(int16_t *)g__DAT_801f022c) /* guest lh/sh @0x801f022c (0x8012ee48,0x8012ecbc) */
 
 /* host hooks (guest-faithful names; runtime binds implementations) */
@@ -988,10 +987,7 @@ switchD_8016cecc_default:
   return;
 
 }
-#define PTR_FUN_801b55c0  (*g_PTR_FUN_801b55c0)
 #define PTR_DAT_801b47ec   (*g_PTR_DAT_801b47ec)
-#define PTR_DAT_801b4e10    (*g_PTR_DAT_801b4e10)
-#define PTR_DAT_801b4e14    (*g_PTR_DAT_801b4e14)
 
 /* guest globals for battle_camera_step / battle_hud_draw (host binds storage) */
 extern uint8_t *g_DAT_8011f944, *g_DAT_8011f946, *g_DAT_8011f948, *g_DAT_8011f9c4, *g_DAT_8011f9c6, *g_DAT_8011f9c8, *g_DAT_8011fa04, *g_DAT_8011fa0c, *g_DAT_801b4a30, *g_DAT_801b4a48, *g_DAT_801b4ac8, *g_DAT_801b4b48, *g_DAT_801b4b5c, *g_DAT_801b4be4, *g_DAT_801b4c24, *g_DAT_801b4c25, *g_DAT_801b4c26, *g_DAT_801b4c27, *g_DAT_801b4c28, *g_DAT_801b4c29, *g_DAT_801b4c2a, *g_DAT_801b4c2b, *g_DAT_801b4c30, *g_DAT_801b4c32, *g_DAT_801b4c34, *g_DAT_801b4c36, *g_DAT_801b4c40, *g_DAT_801b4c42, *g_DAT_801b4c44, *g_DAT_801b4c46, *g_DAT_801b4c50, *g_DAT_801b4c52, *g_DAT_801b4c54, *g_DAT_801b4c56, *g_DAT_801b4c88, *g_DAT_801b4c8a, *g_DAT_801b4c8c, *g_DAT_801b4c8e, *g_DAT_801b4c9c, *g_DAT_801b4c9e, *g_DAT_801b4cbc, *g_DAT_801b4ccc, *g_DAT_801b4cd2, *g_DAT_801b4cdc, *g_DAT_801b4cec, *g_DAT_801b4cf2, *g_DAT_801b4d28, *g_DAT_801b4d34, *g_DAT_801b4d3c, *g_DAT_801b4d50, *g_DAT_801b4d58, *g_DAT_801b4d6c, *g_DAT_801b4d7c, *g_DAT_801b4d90, *g_DAT_801b4d98, *g_DAT_801b4dac, *g_DAT_801b4dbc, *g_DAT_801b4dd4, *g_DAT_801b4de8, *g_DAT_801b4e08, *g_DAT_801b4e20, *g_DAT_801f0760, *g_DAT_801f0940, *g_DAT_801f4f28, *g_DAT_801f51d0, *g_DAT_801f51d8, *g_DAT_801f5210, *g_DAT_801f5218;
@@ -1221,8 +1217,7 @@ extern uint32_t *g__DAT_801f4f20, *g__DAT_801f50c0, *g__DAT_801f50d0, *g__DAT_80
 #define _DAT_801f5184   (*(uint16_t *)g__DAT_801f5184) /* guest sh @0x801f5184 */
 #define _DAT_801f5210   (*g__DAT_801f5210)
 #define _DAT_801f5214   (*g__DAT_801f5214)
-extern code    **g_PTR_FUN_801b55c0;
-extern uint8_t  **g_PTR_DAT_801b47ec, **g_PTR_DAT_801b4e10, **g_PTR_DAT_801b4e14;
+extern uint8_t  **g_PTR_DAT_801b47ec;
 extern uint8_t  *_g_pad_buffer;
 extern uint8_t  *g_DAT_801b4b94, *g_DAT_801b4b95, *g_DAT_801b4b96, *g_DAT_801b4b97, *g_DAT_801b4e28;
 extern uint16_t *g_DAT_801b4b54, *g_DAT_801b4b56;
@@ -15474,14 +15469,11 @@ extern uint32_t *g__DAT_801b22f8,*g__DAT_801b22fc,*g__DAT_801b2304;
 #define DAT_801b22f8   (*g__DAT_801b22f8)
 #define DAT_801b22fc   (*g__DAT_801b22fc)
 #define DAT_801b2304   (*g__DAT_801b2304)
-extern int16_t  *g_DAT_801b8614;
-#define DAT_801b8614   (*g_DAT_801b8614)
 extern uint8_t  *g_DAT_801b180c;
 #define DAT_801b180c   (*g_DAT_801b180c)
 extern uint32_t *g_PTR_DAT_801b1d44;
 #define PTR_DAT_801b1d44 ((undefined4)(uintptr_t)g_PTR_DAT_801b1d44)
 extern void *g_PTR_FUN_801b1ec0;
-#define PTR_FUN_801b1ec0 (*g_PTR_FUN_801b1ec0)
 extern void motion_integrator_tail();
 extern void keyframe_advance();
 extern void spark_trail_task_update();
