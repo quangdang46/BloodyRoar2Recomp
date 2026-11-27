@@ -877,6 +877,8 @@ static void bind_globals_1(void)
     g__DAT_801f68e0 = (uint8_t *)guest_for("g__DAT_801f68e0");
 }
 
+/* host_rand — host-side rand() % 100 for guest random calls that have
+ * no deterministic guest-RAM source in clean ports. */
 int host_rand(void) { return rand() % 100; }
 /* action_select — select the event stream for action `idx` on `ctrl`.
  * Only reachable from the legacy ev_step EV5 path in ev.c (dead code —
@@ -932,6 +934,8 @@ uint8_t *g_DAT_801b4e50, *g_DAT_801b4e5c, *g_DAT_801e40b6;
 uint8_t *g_DAT_801f04f2, *g_DAT_801f04f4, *g_DAT_801f04f6, *g_DAT_801f04f8, *g_DAT_801f04fa;
 uint8_t *g_DAT_801f4d7a, *g_DAT_801f4d7c;
 
+/* trap — guest `break`/`trap` code delivery; no-op in clean ports
+ * (the runtime handles break via br2_bail_pending unwinds). */
 void trap(int code) { (void)code; }
 
 /* pending_action_gate == pending_gate (fight.c), guest arg order:
