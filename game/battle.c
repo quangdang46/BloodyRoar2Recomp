@@ -13722,51 +13722,51 @@ int * gte_xform_add_off(int x,undefined4 *y,int *z)
 
 }
 
-uint * angle_pair_rotmat(uint x,uint y,uint *z)
+uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 {
-  int i0;
-  int i1;
-  int i2;
-  int i3;
-  uint v0;
-  uint v1;
-  int i4;
-  i0 = (x & 0x3ff) * 2;
-  i4 = (x & 0x3ff) * -2 + 0x800;
-  i3 = i0;
-  if ((x & 0x400) != 0) {
-    i3 = i4;
-    i4 = i0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
+  uint g0;
+  uint g1;
+  int t4;
+  t0 = (ang0 & 0x3ff) * 2;
+  t4 = (ang0 & 0x3ff) * -2 + 0x800;
+  t3 = t0;
+  if ((ang0 & 0x400) != 0) {
+    t3 = t4;
+    t4 = t0;
   }
-  i3 = (int)*(short *)(&DAT_801247a8 + i3);
-  if ((x & 0x800) != 0) {
-    i3 = -i3;
+  t3 = (int)*(short *)(&DAT_801247a8 + t3);
+  if ((ang0 & 0x800) != 0) {
+    t3 = -t3;
   }
-  i1 = (y & 0x3ff) * 2;
-  i2 = (y & 0x3ff) * -2 + 0x800;
-  i0 = i1;
-  if ((y & 0x400) != 0) {
-    i0 = i2;
-    i2 = i1;
+  t1 = (ang1 & 0x3ff) * 2;
+  t2 = (ang1 & 0x3ff) * -2 + 0x800;
+  t0 = t1;
+  if ((ang1 & 0x400) != 0) {
+    t0 = t2;
+    t2 = t1;
   }
-  i0 = (int)*(short *)(&DAT_801247a8 + i0);
-  if ((y & 0x800) != 0) {
-    i0 = -i0;
+  t0 = (int)*(short *)(&DAT_801247a8 + t0);
+  if ((ang1 & 0x800) != 0) {
+    t0 = -t0;
   }
-  v1 = (uint)*(short *)(&DAT_801247a8 + i2);
-  if ((y + 0x400 & 0x800) != 0) {
-    v1 = -v1;
+  g1 = (uint)*(short *)(&DAT_801247a8 + t2);
+  if ((ang1 + 0x400 & 0x800) != 0) {
+    g1 = -g1;
   }
-  v0 = (uint)*(short *)(&DAT_801247a8 + i4);
-  if ((x + 0x400 & 0x800) != 0) {
-    v0 = -v0;
+  g0 = (uint)*(short *)(&DAT_801247a8 + t4);
+  if ((ang0 + 0x400 & 0x800) != 0) {
+    g0 = -g0;
   }
-  z[3] = -i0 & 0xffffU | ((int)(v1 * i3) >> 0xc) << 0x10;
-  *z = v1 & 0xffff | (i0 * i3 >> 0xc) << 0x10;
-  z[1] = (int)(i0 * v0) >> 0xc & 0xffff;
-  z[2] = v0 & 0xffff | i3 * -0x10000;
-  *(short *)(z + 4) = (short)((int)(v1 * v0) >> 0xc);
-  return z;
+  out[3] = -t0 & 0xffffU | ((int)(g1 * t3) >> 0xc) << 0x10;
+  *out = g1 & 0xffff | (t0 * t3 >> 0xc) << 0x10;
+  out[1] = (int)(t0 * g0) >> 0xc & 0xffff;
+  out[2] = g0 & 0xffff | t3 * -0x10000;
+  *(short *)(out + 4) = (short)((int)(g1 * g0) >> 0xc);
+  return out;
 
 }
 
@@ -13977,30 +13977,30 @@ int trig_sin_lookup(uint ang)
 
 uint * angle_vec_build(uint ang,uint *out)
 {
-  int i0;
-  int i2;
-  uint v0;
-  int i1;
-  uint v1;
+  int t0;
+  int t2;
+  uint g0;
+  int t1;
+  uint g1;
   *(undefined2 *)(out + 4) = 0x1000;
-  i0 = (ang & 0x3ff) * 2;
-  i1 = (ang & 0x3ff) * -2 + 0x800;
-  i2 = i0;
+  t0 = (ang & 0x3ff) * 2;
+  t1 = (ang & 0x3ff) * -2 + 0x800;
+  t2 = t0;
   if ((ang & 0x400) != 0) {
-    i2 = i1;
-    i1 = i0;
+    t2 = t1;
+    t1 = t0;
   }
-  v0 = (uint)*(ushort *)(&DAT_801247a8 + i2);
+  g0 = (uint)*(ushort *)(&DAT_801247a8 + t2);
   if ((ang & 0x800) != 0) {
-    v0 = -v0;
+    g0 = -g0;
   }
-  v1 = (uint)*(ushort *)(&DAT_801247a8 + i1);
+  g1 = (uint)*(ushort *)(&DAT_801247a8 + t1);
   if ((ang + 0x400 & 0x800) != 0) {
-    v1 = -v1 & 0xffff;
+    g1 = -g1 & 0xffff;
   }
-  *out = v1 | v0 * -0x10000;
-  out[1] = v0 * 0x10000;
-  out[2] = v1;
+  *out = g1 | g0 * -0x10000;
+  out[1] = g0 * 0x10000;
+  out[2] = g1;
   out[3] = 0;
   return out;
 
