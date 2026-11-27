@@ -560,7 +560,7 @@ L_done:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void battle_flow_state_machine(intptr_t in_rec)
+void battle_flow_state_machine(intptr_t cmd_rec)
 
 {
   int ot_base;
@@ -820,7 +820,7 @@ L_dat1_8:
         FUN_801787dc((byte *)&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
-      if (((*(ushort *)(in_rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
+      if (((*(ushort *)(cmd_rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
         otdp = ot_base + 0x10;
         if (DAT_1f80009d == '\0') {
           otdp = ot_base + 0x2038;
@@ -829,7 +829,7 @@ L_dat1_8:
       }
       battle_camera_step(_DAT_1f8000bc,(byte *)&DAT_1f8000e8,(byte *)&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
-      if (((*(ushort *)(in_rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
+      if (((*(ushort *)(cmd_rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
         fighter_flash_update(ot_base,otidx,0x1f800000,(byte *)&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
@@ -852,7 +852,7 @@ L_dat1_8:
           else {
             player_light_apply((byte *)&DAT_1f8000e8,1);
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
-             * in_rec = record[0] prim hdr (byte +0x10), param_4 = signed
+             * cmd_rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
             prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),ot_base + 0x40,otidx,
                          (int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
@@ -863,7 +863,7 @@ L_dat1_8:
           prim_list_gte_invoke((int *)guest_at(gaddr),ot_base + 0x40,otidx,sbyte,0x1f800028,0x1f80033c);
         }
 LAB_801704bc:
-        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(cmd_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170524:
             FUN_8018b100(_DAT_1f800104,ot_base + 0x2040,otidx,0xf,0x1f800028,0x1f80035c);
@@ -878,7 +878,7 @@ LAB_80170524:
           }
         }
       }
-      if (((*(ushort *)(in_rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
+      if (((*(ushort *)(cmd_rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
         fighter_flash_update(ot_base,otidx,0x1f800000,(byte *)&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
@@ -904,7 +904,7 @@ LAB_80170524:
           prim_list_gte_invoke((int *)guest_at(gaddr),ot_base + 0x40,otidx,sbyte,0x1f800028,0x1f80033c);
         }
 LAB_801706ac:
-        if (((*(ushort *)(in_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
+        if (((*(ushort *)(cmd_rec + 2) >> 6 & 1) != 0) && (DAT_1f80009f == '\0')) {
           if (DAT_1f800098 == 4) {
 LAB_80170714:
             FUN_8018b100(_DAT_1f80020c,ot_base + 0x2040,otidx,0xf,0x1f800028,0x1f80035c);
@@ -919,7 +919,7 @@ LAB_80170714:
           }
         }
       }
-      if ((*(ushort *)(in_rec + 2) >> 4 & 1) == 0) {
+      if ((*(ushort *)(cmd_rec + 2) >> 4 & 1) == 0) {
         DAT_1f8000b1 = 1;
       }
       battle_intro_fsm(0x1f800028,ot_base,otidx,0x1f800000);
@@ -929,24 +929,24 @@ LAB_80170714:
       }
       _DAT_801f4cb2 = 0;
       fighter_tint_fade(ot_base,otidx,0x1f800000,(char)DAT_1f800098);
-      if ((*(ushort *)(in_rec + 2) >> 3 & 1) != 0) {
+      if ((*(ushort *)(cmd_rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
       if (((DAT_1f80009f == '\0') && (DAT_1f80009e == '\0')) &&
-         ((*(ushort *)(in_rec + 2) >> 5 & 1) != 0)) {
+         ((*(ushort *)(cmd_rec + 2) >> 5 & 1) != 0)) {
         slot_height_proj(ot_base + 0x207c,_DAT_1f8000bc,otidx,0x1f800000);
       }
-      if (*(short *)(in_rec + 8) != 0) {
-        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8000e8,(int)*(short *)(in_rec + 8));
+      if (*(short *)(cmd_rec + 8) != 0) {
+        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8000e8,(int)*(short *)(cmd_rec + 8));
       }
-      if (*(short *)(in_rec + 10) != 0) {
-        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8001f0,(int)*(short *)(in_rec + 10));
+      if (*(short *)(cmd_rec + 10) != 0) {
+        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8001f0,(int)*(short *)(cmd_rec + 10));
       }
-      if (*(short *)(in_rec + 4) != 0) {
-        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(in_rec + 4));
+      if (*(short *)(cmd_rec + 4) != 0) {
+        status_text_display(0x1f8000e8u,(uint32_t)*(short *)(cmd_rec + 4));
       }
-      if (*(short *)(in_rec + 6) != 0) {
-        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(in_rec + 6));
+      if (*(short *)(cmd_rec + 6) != 0) {
+        status_text_display(0x1f8001f0u,(uint32_t)*(short *)(cmd_rec + 6));
       }
     }
     break;
@@ -1002,7 +1002,7 @@ undefined4 system_config_menu_a(void)
    * (a0 = sp+0x10); the +0xc callback is a u32 GUEST code address
    * (fn_lookup), stored as uint32_t — a host code* would write 8 bytes
    * and clobber +0x10..0x13. Ghidra split the block into scalars;
-   * local_XX names keep their sp offsets via macros.
+   * desc_a_fNN macros keep the step_desc_a byte offsets.
    * The block must live in guest RAM: menu_stepper_state_advance hands
    * guest_of(desc) to generated callbacks (dialog_msg_dispatch guest_at's
    * it), which is 0 for a host stack array. Reserve the real 0x70-byte
@@ -1010,30 +1010,30 @@ undefined4 system_config_menu_a(void)
    * sp+0x10 -> frm+0x10. */
   uint32_t sca_frm = br2_guest_frame(0x70);
   uint8_t *step_desc_a = (uint8_t *)guest_at(sca_frm + 0x10);
-#define local_60 (*(uint16_t *)&step_desc_a[0x00])
-#define local_5e (*(uint8_t  *)&step_desc_a[0x02])
-#define local_5d (*(uint8_t  *)&step_desc_a[0x03])
-#define local_5c (*(uint8_t  *)&step_desc_a[0x04])
-#define local_5b (*(uint8_t  *)&step_desc_a[0x05])
-#define local_5a (*(int16_t  *)&step_desc_a[0x06])
-#define local_58 (*(int16_t  *)&step_desc_a[0x08])
-#define local_54 (*(uint32_t *)&step_desc_a[0x0c])
-#define local_50 (*(uint16_t *)&step_desc_a[0x10])
-#define local_4e (*(uint16_t *)&step_desc_a[0x12])
-#define local_4c (*(uint16_t *)&step_desc_a[0x14])
-#define local_4a (*(uint16_t *)&step_desc_a[0x16])
-#define local_48 (*(uint16_t *)&step_desc_a[0x18])
-#define local_46 (*(uint16_t *)&step_desc_a[0x1a])
-#define local_44 (*(uint16_t *)&step_desc_a[0x1c])
-#define local_42 (*(uint16_t *)&step_desc_a[0x1e])
-#define local_40 (*(uint16_t *)&step_desc_a[0x20])
-#define local_3e (*(uint16_t *)&step_desc_a[0x22])
-#define local_3c (*(uint16_t *)&step_desc_a[0x24])
-#define local_3a (*(uint16_t *)&step_desc_a[0x26])
-#define local_38 (*(uint16_t *)&step_desc_a[0x28])
-#define local_36 (*(uint16_t *)&step_desc_a[0x2a])
-#define local_34 (*(uint16_t *)&step_desc_a[0x2c])
-#define local_32 (*(uint16_t *)&step_desc_a[0x2e])
+#define desc_a_f00 (*(uint16_t *)&step_desc_a[0x00])
+#define desc_a_f02 (*(uint8_t  *)&step_desc_a[0x02])
+#define desc_a_f03 (*(uint8_t  *)&step_desc_a[0x03])
+#define desc_a_f04 (*(uint8_t  *)&step_desc_a[0x04])
+#define desc_a_f05 (*(uint8_t  *)&step_desc_a[0x05])
+#define desc_a_f06 (*(int16_t  *)&step_desc_a[0x06])
+#define desc_a_f08 (*(int16_t  *)&step_desc_a[0x08])
+#define desc_a_f0c (*(uint32_t *)&step_desc_a[0x0c])
+#define desc_a_f10 (*(uint16_t *)&step_desc_a[0x10])
+#define desc_a_f12 (*(uint16_t *)&step_desc_a[0x12])
+#define desc_a_f14 (*(uint16_t *)&step_desc_a[0x14])
+#define desc_a_f16 (*(uint16_t *)&step_desc_a[0x16])
+#define desc_a_f18 (*(uint16_t *)&step_desc_a[0x18])
+#define desc_a_f1a (*(uint16_t *)&step_desc_a[0x1a])
+#define desc_a_f1c (*(uint16_t *)&step_desc_a[0x1c])
+#define desc_a_f1e (*(uint16_t *)&step_desc_a[0x1e])
+#define desc_a_f20 (*(uint16_t *)&step_desc_a[0x20])
+#define desc_a_f22 (*(uint16_t *)&step_desc_a[0x22])
+#define desc_a_f24 (*(uint16_t *)&step_desc_a[0x24])
+#define desc_a_f26 (*(uint16_t *)&step_desc_a[0x26])
+#define desc_a_f28 (*(uint16_t *)&step_desc_a[0x28])
+#define desc_a_f2a (*(uint16_t *)&step_desc_a[0x2a])
+#define desc_a_f2c (*(uint16_t *)&step_desc_a[0x2c])
+#define desc_a_f2e (*(uint16_t *)&step_desc_a[0x2e])
 
   pad_buf = _g_pad_buffer;
   ret = 0;
@@ -1058,7 +1058,7 @@ LAB_8015c900:
         DAT_1f800001 = 0xf0;
         ret = 1;
       }
-      if (local_58 == local_5a) {
+      if (desc_a_f08 == desc_a_f06) {
         if ((*pad_buf == 0) || ((_DAT_1f800080 & 0xf) != 0xf)) {
           if ((_DAT_1f80007c & 0xe0) != 0) {
             deferred_cmd_post(0x400,0xc,0);
@@ -1070,22 +1070,22 @@ LAB_8015c900:
           menu_stepper_sm(_g_pad_buffer);
         }
       }
-      menu_stepper_state_advance(&local_60);
+      menu_stepper_state_advance(&desc_a_f00);
       hud_gauge_render(0x1f800000,_DAT_1f800008,0);
     }
     else {
       if (1 < DAT_1f800001) {
         if (DAT_1f800001 == 0xf0) {
-          *(undefined1 *)(_g_system_config_ptr + 7) = (undefined1)local_48;
-          *(undefined1 *)(_g_system_config_ptr + 8) = (undefined1)local_46;
-          *(undefined1 *)(_g_system_config_ptr + 9) = (undefined1)local_44;
+          *(undefined1 *)(_g_system_config_ptr + 7) = (undefined1)desc_a_f18;
+          *(undefined1 *)(_g_system_config_ptr + 8) = (undefined1)desc_a_f1a;
+          *(undefined1 *)(_g_system_config_ptr + 9) = (undefined1)desc_a_f1c;
           cfg_p = (intptr_t)_g_system_config_ptr;
-          *(undefined1 *)(_g_system_config_ptr + 6) = (undefined1)local_42;
-          *(undefined1 *)(cfg_p + 5) = (undefined1)local_42;
-          *(undefined1 *)(_g_system_config_ptr + 0x11) = (undefined1)local_40;
-          *(undefined1 *)(_g_system_config_ptr + 0x25) = (undefined1)local_3e;
-          *(undefined1 *)(_g_system_config_ptr + 0x24) = (undefined1)local_36;
-          dbg_marker_mode_set((int)(short)local_36);
+          *(undefined1 *)(_g_system_config_ptr + 6) = (undefined1)desc_a_f1e;
+          *(undefined1 *)(cfg_p + 5) = (undefined1)desc_a_f1e;
+          *(undefined1 *)(_g_system_config_ptr + 0x11) = (undefined1)desc_a_f20;
+          *(undefined1 *)(_g_system_config_ptr + 0x25) = (undefined1)desc_a_f22;
+          *(undefined1 *)(_g_system_config_ptr + 0x24) = (undefined1)desc_a_f2a;
+          dbg_marker_mode_set((int)(short)desc_a_f2a);
           deferred_cmd_post(0x203,0,0);
         }
         else if (DAT_1f800001 != 0xf1) goto LAB_8015ca68;
@@ -1101,30 +1101,30 @@ LAB_8015c900:
            * code address (fn_lookup -> call_guest fallback). Guest stores
            * 0x8015CAA8 there (generated 0x8015C814); a host fn pointer
            * would be truncated to garbage. */
-          local_54 = 0x8015caa8;
-          local_5a = 0xe;
-          local_58 = 0xe;
-          local_60 = 0;
-          local_5e = 0;
-          local_5d = 0;
-          local_5c = 1;
-          local_5b = 0;
-          local_50 = 0x10;
-          local_4e = 0xffff;
-          local_4a = 0;
-          local_4c = 0;
-          local_3c = 0;
-          local_3a = 0;
-          local_38 = 0;
-          local_48 = (ushort)*(byte *)(_g_system_config_ptr + 7);
-          local_46 = (ushort)*(byte *)(_g_system_config_ptr + 8);
-          local_44 = (ushort)*(byte *)(_g_system_config_ptr + 9);
-          local_42 = (ushort)*(byte *)(_g_system_config_ptr + 5);
-          local_40 = (ushort)*(byte *)(_g_system_config_ptr + 0x11);
-          local_3e = (ushort)*(byte *)(_g_system_config_ptr + 0x25);
-          local_36 = (ushort)*(byte *)(_g_system_config_ptr + 0x24);
-          local_34 = 0;
-          local_32 = 0;
+          desc_a_f0c = 0x8015caa8;
+          desc_a_f06 = 0xe;
+          desc_a_f08 = 0xe;
+          desc_a_f00 = 0;
+          desc_a_f02 = 0;
+          desc_a_f03 = 0;
+          desc_a_f04 = 1;
+          desc_a_f05 = 0;
+          desc_a_f10 = 0x10;
+          desc_a_f12 = 0xffff;
+          desc_a_f16 = 0;
+          desc_a_f14 = 0;
+          desc_a_f24 = 0;
+          desc_a_f26 = 0;
+          desc_a_f28 = 0;
+          desc_a_f18 = (ushort)*(byte *)(_g_system_config_ptr + 7);
+          desc_a_f1a = (ushort)*(byte *)(_g_system_config_ptr + 8);
+          desc_a_f1c = (ushort)*(byte *)(_g_system_config_ptr + 9);
+          desc_a_f1e = (ushort)*(byte *)(_g_system_config_ptr + 5);
+          desc_a_f20 = (ushort)*(byte *)(_g_system_config_ptr + 0x11);
+          desc_a_f22 = (ushort)*(byte *)(_g_system_config_ptr + 0x25);
+          desc_a_f2a = (ushort)*(byte *)(_g_system_config_ptr + 0x24);
+          desc_a_f2c = 0;
+          desc_a_f2e = 0;
           sprite_desc_table_init(1);
           print_mode_dispatch_b(2,0,0);
           _DAT_801e8508 = 0;
@@ -1139,30 +1139,30 @@ LAB_8015ca68:
     frame_tick(0x1f800000);
   } while( true );
 }
-#undef local_60
-#undef local_5e
-#undef local_5d
-#undef local_5c
-#undef local_5b
-#undef local_5a
-#undef local_58
-#undef local_54
-#undef local_50
-#undef local_4e
-#undef local_4c
-#undef local_4a
-#undef local_48
-#undef local_46
-#undef local_44
-#undef local_42
-#undef local_40
-#undef local_3e
-#undef local_3c
-#undef local_3a
-#undef local_38
-#undef local_36
-#undef local_34
-#undef local_32
+#undef desc_a_f00
+#undef desc_a_f02
+#undef desc_a_f03
+#undef desc_a_f04
+#undef desc_a_f05
+#undef desc_a_f06
+#undef desc_a_f08
+#undef desc_a_f0c
+#undef desc_a_f10
+#undef desc_a_f12
+#undef desc_a_f14
+#undef desc_a_f16
+#undef desc_a_f18
+#undef desc_a_f1a
+#undef desc_a_f1c
+#undef desc_a_f1e
+#undef desc_a_f20
+#undef desc_a_f22
+#undef desc_a_f24
+#undef desc_a_f26
+#undef desc_a_f28
+#undef desc_a_f2a
+#undef desc_a_f2c
+#undef desc_a_f2e
 
 /* ======== 0x8015b9a0 ======== */
 
@@ -1184,7 +1184,7 @@ undefined4 system_config_menu_b(void)
    * menu_stepper_button_wait/masked_sweep dispatch it via fn_lookup,
    * so it is stored as uint32_t — a host code* would write 8 bytes and
    * clobber +0x10..0x13. Ghidra split the block into scalars;
-   * local_XX names keep their sp offsets via macros.
+   * desc_b_fNN macros keep the step_desc_b byte offsets.
    * The block must live in guest RAM: the stepper helpers hand
    * guest_of(desc) to generated callbacks (dialog_sel_dispatch_wide
    * guest_at's it), which is 0 for a host stack array. Reserve the real
@@ -1192,26 +1192,26 @@ undefined4 system_config_menu_b(void)
    * at sp+0x10 -> frm+0x10. */
   uint32_t scb_frm = br2_guest_frame(0x78);
   uint8_t *step_desc_b = (uint8_t *)guest_at(scb_frm + 0x10);
-#define local_68 (*(uint16_t *)&step_desc_b[0x00])
-#define local_66 (*(uint8_t  *)&step_desc_b[0x02])
-#define local_65 (*(uint8_t  *)&step_desc_b[0x03])
-#define local_64 (*(uint8_t  *)&step_desc_b[0x04])
-#define local_63 (*(uint8_t  *)&step_desc_b[0x05])
-#define local_62 (*(int16_t  *)&step_desc_b[0x06])
-#define local_60 (*(int16_t  *)&step_desc_b[0x08])
-#define local_5c (*(uint32_t *)&step_desc_b[0x0c])
-#define local_58 (*(uint16_t *)&step_desc_b[0x10])
-#define local_56 (*(uint16_t *)&step_desc_b[0x12])
-#define local_54 (*(uint16_t *)&step_desc_b[0x14])
-#define local_52 (*(uint16_t *)&step_desc_b[0x16])
-#define local_50 (*(uint16_t *)&step_desc_b[0x18])
-#define local_4e (*(uint16_t *)&step_desc_b[0x1a])
-#define local_4c (*(uint16_t *)&step_desc_b[0x1c])
-#define local_4a (*(uint16_t *)&step_desc_b[0x1e])
-#define local_48 (*(uint16_t *)&step_desc_b[0x20])
-#define local_46 (*(uint16_t *)&step_desc_b[0x22])
-#define local_44 (*(uint16_t *)&step_desc_b[0x24])
-#define local_42 (*(uint16_t *)&step_desc_b[0x26])
+#define desc_b_f00 (*(uint16_t *)&step_desc_b[0x00])
+#define desc_b_f02 (*(uint8_t  *)&step_desc_b[0x02])
+#define desc_b_f03 (*(uint8_t  *)&step_desc_b[0x03])
+#define desc_b_f04 (*(uint8_t  *)&step_desc_b[0x04])
+#define desc_b_f05 (*(uint8_t  *)&step_desc_b[0x05])
+#define desc_b_f06 (*(int16_t  *)&step_desc_b[0x06])
+#define desc_b_f08 (*(int16_t  *)&step_desc_b[0x08])
+#define desc_b_f0c (*(uint32_t *)&step_desc_b[0x0c])
+#define desc_b_f10 (*(uint16_t *)&step_desc_b[0x10])
+#define desc_b_f12 (*(uint16_t *)&step_desc_b[0x12])
+#define desc_b_f14 (*(uint16_t *)&step_desc_b[0x14])
+#define desc_b_f16 (*(uint16_t *)&step_desc_b[0x16])
+#define desc_b_f18 (*(uint16_t *)&step_desc_b[0x18])
+#define desc_b_f1a (*(uint16_t *)&step_desc_b[0x1a])
+#define desc_b_f1c (*(uint16_t *)&step_desc_b[0x1c])
+#define desc_b_f1e (*(uint16_t *)&step_desc_b[0x1e])
+#define desc_b_f20 (*(uint16_t *)&step_desc_b[0x20])
+#define desc_b_f22 (*(uint16_t *)&step_desc_b[0x22])
+#define desc_b_f24 (*(uint16_t *)&step_desc_b[0x24])
+#define desc_b_f26 (*(uint16_t *)&step_desc_b[0x26])
 
   cfg_base = (intptr_t)_g_system_config_ptr;
   ret = 0;
@@ -1236,44 +1236,44 @@ LAB_8015bbd8:
         DAT_1f800001 = 0xf0;
         ret = 1;
       }
-      if ((local_60 == local_62) && ((_DAT_1f80007c & 0xe0) != 0)) {
+      if ((desc_b_f08 == desc_b_f06) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
         DAT_1f800001 = 0xf0;
         ret = 1;
       }
-      menu_stepper_button_wait(&local_68,step_arg);
+      menu_stepper_button_wait(&desc_b_f00,step_arg);
       hud_gauge_render(0x1f800000,_DAT_1f800008,1);
     }
     else {
       if (1 < DAT_1f800001) {
         if (DAT_1f800001 == 0xf0) {
-          *cfg_ptr = (byte)local_54;
-          *(undefined1 *)(cfg_base + 0x39) = (undefined1)local_52;
-          *(undefined1 *)(cfg_base + 0x3a) = (undefined1)local_50;
-          if (local_4e == 0) {
+          *cfg_ptr = (byte)desc_b_f14;
+          *(undefined1 *)(cfg_base + 0x39) = (undefined1)desc_b_f16;
+          *(undefined1 *)(cfg_base + 0x3a) = (undefined1)desc_b_f18;
+          if (desc_b_f1a == 0) {
             cfg_flags = *(uint *)(cfg_base + 0x40) & 0xffffdfff;
           }
           else {
             cfg_flags = *(uint *)(cfg_base + 0x40) | 0x2000;
           }
           *(uint *)(cfg_base + 0x40) = cfg_flags;
-          *(undefined1 *)(cfg_base + 0x3b) = (undefined1)local_4c;
-          *(undefined1 *)(cfg_base + 0x3c) = (undefined1)local_4a;
-          if (local_48 == 0) {
+          *(undefined1 *)(cfg_base + 0x3b) = (undefined1)desc_b_f1c;
+          *(undefined1 *)(cfg_base + 0x3c) = (undefined1)desc_b_f1e;
+          if (desc_b_f20 == 0) {
             cfg_flags = *(uint *)(cfg_base + 0x40) | 0x40;
           }
           else {
             cfg_flags = *(uint *)(cfg_base + 0x40) & 0xffffffbf;
           }
           *(uint *)(cfg_base + 0x40) = cfg_flags;
-          if (local_46 == 0) {
+          if (desc_b_f22 == 0) {
             cfg_flags = *(uint *)(cfg_base + 0x40) & 0xfffff7ff;
           }
           else {
             cfg_flags = *(uint *)(cfg_base + 0x40) | 0x800;
           }
           *(uint *)(cfg_base + 0x40) = cfg_flags;
-          if (local_44 == 0) {
+          if (desc_b_f24 == 0) {
             cfg_flags = *(uint *)(cfg_base + 0x40) & 0xfffffbff;
           }
           else {
@@ -1289,26 +1289,26 @@ LAB_8015bbd8:
       if (((DAT_1f800001 == 0) && (res = frame_divisor_get(), res == 0)) &&
          (res = intro_movie_state(0), res != 0)) {
         deferred_cmd_post(0x203,0,0);
-        local_5c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
-        local_62 = 0xb;
-        local_58 = 0x10;
-        local_68 = 0;
-        local_66 = 0;
-        local_65 = 0;
-        local_64 = 1;
-        local_63 = 0;
-        local_60 = 1;
-        local_56 = 0xffff;
-        local_42 = 0;
-        local_54 = (ushort)*cfg_ptr;
-        local_52 = (ushort)*(byte *)(cfg_base + 0x39);
-        local_50 = (ushort)*(byte *)(cfg_base + 0x3a);
-        local_4e = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xd) & 1;
-        local_4c = (ushort)*(byte *)(cfg_base + 0x3b);
-        local_4a = (ushort)*(byte *)(cfg_base + 0x3c);
-        local_48 = ((ushort)(*(uint *)(cfg_base + 0x40) >> 6) ^ 1) & 1;
-        local_46 = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xb) & 1;
-        local_44 = (ushort)(*(uint *)(cfg_base + 0x40) >> 10) & 1;
+        desc_b_f0c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
+        desc_b_f06 = 0xb;
+        desc_b_f10 = 0x10;
+        desc_b_f00 = 0;
+        desc_b_f02 = 0;
+        desc_b_f03 = 0;
+        desc_b_f04 = 1;
+        desc_b_f05 = 0;
+        desc_b_f08 = 1;
+        desc_b_f12 = 0xffff;
+        desc_b_f26 = 0;
+        desc_b_f14 = (ushort)*cfg_ptr;
+        desc_b_f16 = (ushort)*(byte *)(cfg_base + 0x39);
+        desc_b_f18 = (ushort)*(byte *)(cfg_base + 0x3a);
+        desc_b_f1a = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xd) & 1;
+        desc_b_f1c = (ushort)*(byte *)(cfg_base + 0x3b);
+        desc_b_f1e = (ushort)*(byte *)(cfg_base + 0x3c);
+        desc_b_f20 = ((ushort)(*(uint *)(cfg_base + 0x40) >> 6) ^ 1) & 1;
+        desc_b_f22 = (ushort)(*(uint *)(cfg_base + 0x40) >> 0xb) & 1;
+        desc_b_f24 = (ushort)(*(uint *)(cfg_base + 0x40) >> 10) & 1;
         step_arg = *(uint *)(cfg_base + 0x44);
         step_arg = (step_arg & 1) << 2 | 0xc03 | step_arg >> 0xd & 8 | step_arg >> 9 & 0x10 | step_arg >> 9 & 0x20
                 | step_arg >> 9 & 0x40 | (step_arg & 0x40) << 1 | step_arg >> 3 & 0x100 | step_arg >> 1 & 0x200;
@@ -1325,26 +1325,26 @@ LAB_8015bd78:
     frame_tick(0x1f800000);
   } while( true );
 }
-#undef local_68
-#undef local_66
-#undef local_65
-#undef local_64
-#undef local_63
-#undef local_62
-#undef local_60
-#undef local_5c
-#undef local_58
-#undef local_56
-#undef local_54
-#undef local_52
-#undef local_50
-#undef local_4e
-#undef local_4c
-#undef local_4a
-#undef local_48
-#undef local_46
-#undef local_44
-#undef local_42
+#undef desc_b_f00
+#undef desc_b_f02
+#undef desc_b_f03
+#undef desc_b_f04
+#undef desc_b_f05
+#undef desc_b_f06
+#undef desc_b_f08
+#undef desc_b_f0c
+#undef desc_b_f10
+#undef desc_b_f12
+#undef desc_b_f14
+#undef desc_b_f16
+#undef desc_b_f18
+#undef desc_b_f1a
+#undef desc_b_f1c
+#undef desc_b_f1e
+#undef desc_b_f20
+#undef desc_b_f22
+#undef desc_b_f24
+#undef desc_b_f26
 
 /* ======== 0x8016362c ======== */
 
