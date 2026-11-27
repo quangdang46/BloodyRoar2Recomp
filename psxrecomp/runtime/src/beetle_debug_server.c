@@ -203,6 +203,7 @@ static void send_raw(const char *data, int n) {
     }
 }
 
+/* Format a JSON response into the shared send buffer (vsnprintf, 128 KiB cap). */
 static void send_fmt(const char *fmt, ...) {
     static char buf[1 << 17];
     va_list ap; va_start(ap, fmt);
@@ -213,9 +214,11 @@ static void send_fmt(const char *fmt, ...) {
     send_raw(buf, n);
 }
 
+/* Reply ok:true for command id. */
 static void send_ok(int id) {
     send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
+/* Reply ok:false with an error message for command id. */
 static void send_err(int id, const char *msg) {
     send_fmt("{\"id\":%d,\"ok\":false,\"error\":\"%s\"}\n", id, msg);
 }
@@ -236,6 +239,7 @@ static int json_get_int(const char *json, const char *key, int dflt) {
     return (int)strtol(p, NULL, 0);
 }
 
+/* Extract a string field from a JSON object by key. */
 static int json_get_str(const char *json, const char *key, char *out, int outlen) {
     char pat[64];
     snprintf(pat, sizeof(pat), "\"%s\"", key);
@@ -251,6 +255,7 @@ static int json_get_str(const char *json, const char *key, char *out, int outlen
     return 1;
 }
 
+/* Parse a hex (0x) or decimal string to u32; 0 on failure. */
 static uint32_t hex_to_u32(const char *s) {
     if (!s) return 0;
     if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
@@ -293,6 +298,7 @@ static void h_get_registers(int id, const char *json) {
  * native/interp IRQ take-PC be arbitrated against real-HW behaviour by ORDER +
  * EPC VALUE (cross-emulator cycle counts are not comparable). */
 extern int retro_psxref_exc_ring_dump(char *out, int cap);
+/* Dump the Beetle exception ring buffer as JSON. */
 static void h_exc_ring(int id, const char *json) {
     (void)json;
     int cap = 4 * 1024 * 1024;
@@ -305,6 +311,7 @@ static void h_exc_ring(int id, const char *json) {
     free(buf);
 }
 
+/* Read guest RAM range from Beetle and return it as hex. */
 static void h_read_ram(int id, const char *json) {
     char addr_s[32] = {0};
     if (!json_get_str(json, "addr", addr_s, sizeof(addr_s))) {
@@ -340,6 +347,7 @@ static void h_read_ram(int id, const char *json) {
     free(out); free(buf);
 }
 
+/* Inject a pad button press for N frames via Beetle. */
 static void h_press(int id, const char *json) {
     int buttons = json_get_int(json, "buttons", -1);
     int frames  = json_get_int(json, "frames", 2);
@@ -349,6 +357,7 @@ static void h_press(int id, const char *json) {
     send_ok(id);
 }
 
+/* Set the pad input override word for N frames. */
 static void h_set_input(int id, const char *json) {
     char val[16] = {0};
     if (!json_get_str(json, "buttons", val, sizeof(val))) {
@@ -360,6 +369,7 @@ static void h_set_input(int id, const char *json) {
     send_ok(id);
 }
 
+/* Clear the pad input override. */
 static void h_clear_input(int id, const char *json) {
     (void)json;
     s_input_override = -1;
@@ -367,6 +377,7 @@ static void h_clear_input(int id, const char *json) {
     send_ok(id);
 }
 
+/* Report current pad state + override status. */
 static void h_pad_status(int id, const char *json) {
     (void)json;
     send_fmt("{\"id\":%d,\"ok\":true,\"pad\":\"0x%04X\","
@@ -396,6 +407,7 @@ static void h_vram_peek(int id, const char *json) {
     free(hex);
 }
 
+/* Write a Beetle framebuffer screenshot to a file path. */
 static void h_screenshot_file(int id, const char *json) {
     char path[512] = {0};
     if (!json_get_str(json, "path", path, sizeof(path))) {
@@ -436,6 +448,7 @@ static void h_sio_trace_reset(int id, const char *json) {
     send_ok(id);
 }
 
+/* Dump the Beetle SIO trace ring. */
 static void h_sio_trace(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -466,6 +479,7 @@ static void h_sio_trace(int id, const char *json) {
     free(seqs); free(txs); free(rxs); free(ctrl);
 }
 
+/* Dump the Beetle CD-command trace ring. */
 static void h_cdrom_cmd_dump(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -495,12 +509,14 @@ static void h_cdrom_cmd_dump(int id, const char *json) {
     free(seqs); free(pcs); free(cmds); free(nargs); free(a0); free(a1); free(a2);
 }
 
+/* Reset the Beetle CD-command trace. */
 static void h_cdrom_cmd_reset(int id, const char *json) {
     (void)json;
     beetle_reset_cdcmd_trace();
     send_ok(id);
 }
 
+/* Dump a window of Beetle SIO write history. */
 static void h_sio_write_window(int id, const char *json) {
     int which = json_get_int(json, "which", 0);
     int before = json_get_int(json, "before", 4);
@@ -596,6 +612,7 @@ static void h_wtrace_disarm_all(int id, const char *json) {
     (void)json; beetle_wtrace_disarm_all(); send_ok(id);
 }
 
+/* Reset the Beetle write watchpoint trace. */
 static void h_wtrace_reset(int id, const char *json) {
     (void)json; beetle_wtrace_reset(); send_ok(id);
 }
@@ -614,6 +631,7 @@ static void h_wtrace_stats(int id, const char *json) {
              beetle_wtrace_range_count());
 }
 
+/* List armed Beetle write-watch ranges. */
 static void h_wtrace_ranges(int id, const char *json) {
     (void)json;
     int n = beetle_wtrace_range_count();
@@ -633,6 +651,7 @@ static void h_wtrace_ranges(int id, const char *json) {
  * branches. Documented gaps vs runtime: no `old` (callback fires post-
  * write), no `func` (no per-function dispatch gate on beetle). `cpu_pc`
  * is the same as `pc` on beetle, emitted equal for parity. */
+/* Dump the Beetle write watchpoint trace ring. */
 static void h_wtrace_dump(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -748,6 +767,7 @@ static void h_rtrace_arm(int id, const char *json) {
              id, slot, lo, hi);
 }
 
+/* Disarm one Beetle read-watch slot. */
 static void h_rtrace_disarm(int id, const char *json) {
     int slot = json_get_int(json, "slot", -1);
     if (slot < 0) { send_err(id, "missing slot"); return; }
@@ -755,14 +775,17 @@ static void h_rtrace_disarm(int id, const char *json) {
     send_ok(id);
 }
 
+/* Disarm all Beetle read-watch slots. */
 static void h_rtrace_disarm_all(int id, const char *json) {
     (void)json; beetle_rtrace_disarm_all(); send_ok(id);
 }
 
+/* Reset the Beetle read watchpoint trace. */
 static void h_rtrace_reset(int id, const char *json) {
     (void)json; beetle_rtrace_reset(); send_ok(id);
 }
 
+/* Report Beetle read-watchpoint ring stats. */
 static void h_rtrace_stats(int id, const char *json) {
     (void)json;
     uint64_t total = beetle_rtrace_total();
@@ -776,6 +799,7 @@ static void h_rtrace_stats(int id, const char *json) {
              beetle_rtrace_range_count());
 }
 
+/* List armed Beetle read-watch ranges. */
 static void h_rtrace_ranges(int id, const char *json) {
     (void)json;
     int n = beetle_rtrace_range_count();
@@ -789,6 +813,7 @@ static void h_rtrace_ranges(int id, const char *json) {
     send_fmt("]}\n");
 }
 
+/* Dump the Beetle read watchpoint trace ring. */
 static void h_rtrace_dump(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -855,6 +880,7 @@ static const char *fn_kind_str(uint8_t k) {
                  case 3: return "JR"; case 4: return "JALR"; default: return "?"; }
 }
 
+/* Arm a Beetle function-entry trace on a target address. */
 static void h_fntrace_arm(int id, const char *json) {
     char target_s[32] = {0};
     if (!json_get_str(json, "target", target_s, sizeof(target_s))) {
@@ -867,10 +893,12 @@ static void h_fntrace_arm(int id, const char *json) {
              id, slot, target);
 }
 
+/* Disarm all Beetle function-entry traces. */
 static void h_fntrace_disarm(int id, const char *json) {
     (void)json; beetle_fntrace_disarm_all(); send_ok(id);
 }
 
+/* List armed Beetle function-trace targets. */
 static void h_fntrace_arms(int id, const char *json) {
     (void)json;
     int n = beetle_fntrace_arm_count();
@@ -882,16 +910,19 @@ static void h_fntrace_arms(int id, const char *json) {
     send_fmt("]}\n");
 }
 
+/* Toggle unfiltered Beetle function tracing. */
 static void h_fntrace_unfiltered(int id, const char *json) {
     int on = json_get_int(json, "on", 0);
     beetle_fntrace_set_unfiltered(on);
     send_fmt("{\"id\":%d,\"ok\":true,\"unfiltered\":%d}\n", id, on);
 }
 
+/* Reset the Beetle function trace. */
 static void h_fntrace_reset(int id, const char *json) {
     (void)json; beetle_fntrace_reset(); send_ok(id);
 }
 
+/* Dump the Beetle function trace ring. */
 static void h_fntrace_dump(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -948,6 +979,7 @@ static void h_fntrace_dump(int id, const char *json) {
  * Beetle has no recomp-style "active" flag — we synthesize it as
  * (adsr_level > 0), the closest oracle equivalent.
  */
+/* Report Beetle SPU voice/register state. */
 static void h_spu_voices(int id, const char *json) {
     (void)json;
     uint16_t spu_ctrl = 0, mvc_l = 0, mvc_r = 0, mv_l = 0, mv_r = 0;
@@ -1059,6 +1091,7 @@ static void h_spu_events(int id, const char *json) {
  * 44.1 kHz reference SPU output captured at the libretro audio_batch
  * callback (beetle_libretro.cpp). Pump/queue fields report zero: this
  * binary never opens a host audio device. */
+/* Report Beetle audio pipeline trace stats. */
 static void h_audio_stats(int id, const char *json) {
     (void)json;
     AudioTraceStats st;
@@ -1093,6 +1126,7 @@ static void h_audio_stats(int id, const char *json) {
              (unsigned long long)st.events_total);
 }
 
+/* Dump Beetle audio output to a WAV file. */
 static void h_audio_wav(int id, const char *json) {
     char path[512];
     if (!json_get_str(json, "path", path, sizeof(path))) {
@@ -1123,6 +1157,7 @@ static void h_audio_wav(int id, const char *json) {
              (unsigned long long)audio_trace_tap_total(tap));
 }
 
+/* Dump the Beetle audio event ring. */
 static void h_audio_events(int id, const char *json) {
     int count = json_get_int(json, "count", 256);
     if (count < 1) count = 1;
@@ -1171,6 +1206,7 @@ static void h_cdc_volume(int id, const char *json) {
  * connect. Lean fields only (no register window) to keep capacity
  * affordable. */
 
+/* Report aggregate Beetle write-watch stats. */
 static void h_wtrace_all_stats(int id, const char *json) {
     (void)json;
     uint64_t total = beetle_wtrace_all_total();
@@ -1183,10 +1219,12 @@ static void h_wtrace_all_stats(int id, const char *json) {
              (unsigned long long)oldest, (unsigned long long)newest);
 }
 
+/* Reset all Beetle write-watch traces. */
 static void h_wtrace_all_reset(int id, const char *json) {
     (void)json; beetle_wtrace_all_reset(); send_ok(id);
 }
 
+/* Dump all Beetle write-watch traces. */
 static void h_wtrace_all_dump(int id, const char *json) {
     int count = json_get_int(json, "count", 1024);
     if (count < 1) count = 1;
@@ -1250,6 +1288,7 @@ static void h_history(int id, const char *json) {
              (unsigned long long)newest);
 }
 
+/* Return a recorded Beetle frame (RGB565) by index. */
 static void h_get_frame(int id, const char *json) {
     int f = json_get_int(json, "frame", -1);
     if (f < 0) { send_err(id, "missing frame"); return; }
@@ -1287,6 +1326,7 @@ static void h_get_frame(int id, const char *json) {
     send_raw(buf, pos);
 }
 
+/* Return a range of recorded Beetle frames. */
 static void h_frame_range(int id, const char *json) {
     int start = json_get_int(json, "start", -1);
     int end   = json_get_int(json, "end",   -1);
@@ -1317,6 +1357,7 @@ static void h_frame_range(int id, const char *json) {
     send_raw(buf, pos);
 }
 
+/* Return per-frame timing for a range. */
 static void h_frame_timeseries(int id, const char *json) {
     int start = json_get_int(json, "start", -1);
     int end   = json_get_int(json, "end",   -1);
@@ -1346,6 +1387,7 @@ static void h_frame_timeseries(int id, const char *json) {
     send_raw(buf, pos);
 }
 
+/* Find the first frame where Beetle diverged from native. */
 static void h_first_failure(int id, const char *json) {
     (void)json;
     uint32_t frame = 0; int diff = 0;
@@ -1359,6 +1401,7 @@ static void h_first_failure(int id, const char *json) {
     }
 }
 
+/* Read guest RAM as it was at a recorded frame. */
 static void h_read_frame_ram(int id, const char *json) {
     int f = json_get_int(json, "frame", -1);
     if (f < 0) { send_err(id, "missing frame"); return; }
@@ -1398,6 +1441,7 @@ static void h_read_frame_ram(int id, const char *json) {
              id, f, addr, len, hex);
 }
 
+/* Set which RAM snapshot region a read targets. */
 static void h_set_snapshot(int id, const char *json) {
     int slot = json_get_int(json, "slot", -1);
     if (slot < 0 || slot >= BEETLE_RAM_SNAPSHOT_REGIONS) {
@@ -1415,6 +1459,7 @@ static void h_set_snapshot(int id, const char *json) {
              id, slot, addr);
 }
 
+/* Report RAM snapshot region states. */
 static void h_get_snapshots(int id, const char *json) {
     (void)json;
     uint32_t a[BEETLE_RAM_SNAPSHOT_REGIONS] = {0};
@@ -1446,9 +1491,11 @@ static void h_cyc_watch(int id, const char *json) {
              "\"end\":\"0x%08X\",\"end_phys\":\"0x%08X\",\"region\":%d,\"max_hits\":%u}\n",
              id, araw, aphys, eraw, ephys, (ephys != 0u) ? 1 : 0, maxh);
 }
+/* Clear the Beetle cycle-watchpoint state. */
 static void h_cyc_watch_clear(int id, const char *json) {
     (void)json; beetle_cyc_watch_clear(); send_fmt("{\"id\":%d,\"ok\":true}\n", id);
 }
+/* Dump Beetle cycle-watchpoint state. */
 static void h_cyc_watch_dump(int id, const char *json) {
     (void)json;
     uint32_t araw, aphys, eraw, ephys, maxh, hits; int armed;
@@ -1486,6 +1533,7 @@ static int parity_same_state(const ParityEntry *a, const ParityEntry *b)
     return 1;
 }
 
+/* Dump native-vs-Beetle parity comparison data. */
 static void h_parity_dump(int id, const char *json)
 {
     int count = json_get_int(json, "count", 131072);
