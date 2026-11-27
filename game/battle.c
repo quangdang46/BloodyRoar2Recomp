@@ -568,6 +568,9 @@ LAB_8017f680:
 
 }
 
+/* camera_state_cache — snapshot camera/light globals 0x1f80030c-0x320
+ * into the 0x801f025x cache; uses rec_flag1_set values when _DAT_801f022c,
+ * then derives aim angles via angle_gte_vec. */
 void camera_state_cache(uint unused,int battle)
 {
   _DAT_801f0250 = _DAT_1f80030c;
@@ -613,6 +616,9 @@ void camera_state_cache(uint unused,int battle)
 
 }
 
+/* player_light_apply — load per-side GTE light vector, then (when the
+ * rec_flag1_set latch is armed) rotate a secondary light by fighter
+ * facing and dispatch the DAT_801b140c mode callback. */
 void player_light_apply(byte *ctrl,int side)
 {
   short ang;
@@ -3370,6 +3376,9 @@ LAB_8017fca0:
 
 }
 
+/* fighter_atk_dir — attack-direction eligibility: returns 0 when the
+ * attacker state/anim flags disallow a directional attack, else the
+ * facing/direction code relative to the defender. */
 undefined4 fighter_atk_dir(int atk,int def)
 {
   int dist;
@@ -3464,6 +3473,8 @@ undefined4 fighter_atk_dir(int atk,int def)
 
 }
 
+/* hit_pose_swap — on a registered hit (f1+0x9c), toggle the hit flag
+ * and swap attacker anim pose slots +0x23c<->+0x1c4 and +0x28c<->+0x264. */
 void hit_pose_swap(int f0,int f1)
 {
   undefined2 tmp;
@@ -3485,6 +3496,9 @@ void hit_pose_swap(int f0,int f1)
 
 }
 
+/* hit_elig_check — both fighters must be in a hittable state: rejects
+ * dead/invalid char slots and shield/invuln flag combos on f1, then
+ * checks facing flag bits on f0+0x64 vs f1+0x58. */
 undefined4 hit_elig_check(int f0,int f1)
 {
   uint fb;
@@ -3621,6 +3635,8 @@ undefined4 hitbox_pair_test(int f0,int f1,undefined2 *out)
 
 }
 
+/* fighter_range_code — distance-band code from relative z separation:
+ * returns 9/5 inside 0x155, 4/8 mid-range, ORs 2 beyond 0x4e3. */
 uint fighter_range_code(int f0,int f1)
 {
   int rel;
