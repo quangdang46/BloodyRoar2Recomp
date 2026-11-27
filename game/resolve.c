@@ -139,8 +139,6 @@ extern void launch_vel_update(byte*,byte*);
 extern void ev_stream_dispatch(byte *ctrl,byte *motion);
 extern void action_switch_guest(int ctrl,int *motion,int act);
 extern void slot_apply_guest(int ctrl,int motion);
-extern void part_record_reset(undefined2 *ctrl);
-extern ushort * ev5_action_select(int ctrl,int motion,ushort *stream);
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec);
 extern uint8_t *g_DAT_1f8003a0,*g_DAT_1f8003c0;
@@ -213,7 +211,6 @@ void fighter_frame(byte *ctrl,byte *motion);
 unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec);
 
 extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_gaddr(const void *p);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void debug_server_poll(void);
