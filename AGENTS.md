@@ -1404,3 +1404,40 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 - Frontier: cps_801587c0 (46a/337i, callees hud_text_d/spr_attr_alloc_*
   clean), cps_80161630 (74a/337i, largest), cps_80126234 (guest main,
   2 blocks) — analysis agents spawned.
+
+### Session update 30 (cps_ frontier: 801587c0 ported, 80161630 promoted)
+
+- **cps_801587c0 → `hud_gauge_frame_emit`** (`c1e0eb25`+`de1dac85`,
+  menu.c ~11615): 46-block synchronous HUD gauge/frame emitter —
+  "L:"/"R:" labels (rodata @0x80120DC0/C4, verified in disc) +
+  mode-selected sprite emit. variant bits[7:4] = layout
+  {0x00 quad bar via spr_attr_alloc_a, 0x10/0x20 strips via
+  spr_attr_alloc_c with box-edge patches}, bits[3:0] = color index
+  into 5-entry table @0x80120DCC (live-in regs when >=5). Metrics
+  m0..m3 = MB32(0x801F46F8/36E8/36E4/46F0)*t0>>15; t0 = 128/208/
+  live-in-$t0 by mode. **Callee contract fix**: spr_attr_alloc_c
+  guest v0 = record guest-addr on success / 0 on failure (was
+  inverted 0/-1) — its only caller dereferences rec+14/+22.
+- **★ exit-$v0 is load-bearing**: sole generated caller
+  (0x8015DED0 site) does `beq v0,zero`. Port returns uint32_t with
+  per-path scratch verified against CPS tail blocks: invalid mode
+  ->32, alloc_c fail ->0, mode 0x10 -> untruncated rec+22 sum,
+  mode 0x20 -> m3>>3, mode 0x00 -> 4th alloc_a return. RULE: for
+  synchronous ports, trace v0 through EVERY exit path — the CPS
+  `jr ra` leaves whatever scratch the last block computed.
+- **cps_80161630 → ret_zero_e promotion** (`2573eae2`): the ~290-line
+  bind.c port was already complete (all 21 callees clean). bind.c is
+  skipped by gen_fnmap, so added `ret_zero_e_entry_0x80161630`
+  (save.c:6008) — addr-encoded `_0x<8hex>$` name suffix gives fnmap
+  an entry automatically; forwards a0, returns flag as $v0. All 74
+  clean_cps.map rows retired (10589->10516 wrappers). Mid-fn addrs
+  still resolve via generated dispatch if ever reached.
+- **Pipeline order matters**: gen_fnmap.py BEFORE gen_clean_table.py
+  (clean_table parses fnmap.c + real prototypes for arg marshalling —
+  got the 5-arg/stack-arg5 ABI right automatically).
+- Verification: both headless versus_fight_mash verified (frames
+  advancing 70k+/300k+). 120 clean_cps.map rows retired total.
+- Remaining unnamed-cps frontier: only prim_xform3_task_run
+  (0x8018b100, 12a named) + flat-region 1-2-addr fragments (port as
+  part of parent). The whole-function hand-port campaign for
+  unnamed jal-targets is effectively COMPLETE.
