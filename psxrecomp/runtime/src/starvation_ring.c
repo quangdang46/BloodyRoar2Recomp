@@ -195,7 +195,7 @@ void starvation_ring_pc_sample(void) {
 /* starvation ring total: return s_seq; */
 uint64_t starvation_ring_total(void) { return s_seq; }
 
-/* starvation ring get: if (seq >= s_seq) return 0; /* not written yet */ */
+/* starvation ring get: returns 0 when seq is not yet written. */
 int starvation_ring_get(uint64_t seq, StarvationEntry *out) {
     if (seq >= s_seq) return 0;                                /* not written yet */
     if (s_seq - seq > STARVATION_RING_CAP) return 0;           /* evicted */
@@ -204,7 +204,7 @@ int starvation_ring_get(uint64_t seq, StarvationEntry *out) {
     return 1;
 }
 
-/* starvation ring dump: if (s_dump_done) return; /* dump exactly once */ */
+/* starvation ring dump: writes the dump exactly once. */
 void starvation_ring_dump(const char *path) {
     if (s_dump_done) return;  /* dump exactly once */
     s_dump_done = 1;
