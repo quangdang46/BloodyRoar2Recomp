@@ -11122,20 +11122,20 @@ void dual_axis_coord_xform(uint32_t unused,uint32_t unused2,uint32_t dst,
   uint32_t obj = MB32(ent + 0x20);
   uint32_t pos[3];
 
-  uint32_t s0, ang_a;
+  uint32_t cv, av, ang_a;
   int32_t ang;
   pos[0] = MB32(obj + 0x174);
-  s0 = MB32(obj + 0x178) + 0xa00u;
-  pos[1] = s0;
+  cv = MB32(obj + 0x178) + 0xa00u;
+  pos[1] = cv;
   pos[2] = MB32(obj + 0x17c);
   ang_a = (uint32_t)atan2_lut((int32_t)pos[2], (int32_t)pos[0]);
   (void)FUN_80195370(&pos[0], &pos[0]);
   ang = FUN_801948c0(pos[0] + pos[2]);
-  ang = atan2_lut(-(int32_t)s0, ang);
-  s0 = (uint32_t)(int32_t)(int16_t)ang;
+  ang = atan2_lut(-(int32_t)cv, ang);
+  av = (uint32_t)(int32_t)(int16_t)ang;
   ang_a = (uint32_t)(int32_t)(int16_t)ang_a;
-  vec2_rot(s0, ang_a, (undefined2 *)guest_at(dst + 6));
-  angle_gte_vec(s0, ang_a, (uint *)guest_at(dst + 0x20));
+  vec2_rot(av, ang_a, (undefined2 *)guest_at(dst + 6));
+  angle_gte_vec(av, ang_a, (uint *)guest_at(dst + 0x20));
 }
 
 /* dual_redraw_a — dual redraw, no pre/post call @0x8014c258 (50
