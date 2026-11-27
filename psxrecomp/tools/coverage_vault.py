@@ -38,6 +38,7 @@ EVIDENCE_FIELDS = ("executed_pcs", "dispatch_entry_pcs",
                    "static_dispatch_entry_pcs", "function_entry_pcs", "seeds")
 
 def _variant_key(region):
+    """Stable key for a coverage region variant."""
     b = region.get("bytes_b64", "") or ""
     return "%s:%s" % (region.get("load_addr"), hashlib.sha1(b.encode()).hexdigest())
 
@@ -87,6 +88,7 @@ def _iter_json_array(path, chunk_size=1024 * 1024):
         eof = False
 
         def fill():
+            """Read-ahead buffer fill for chunked hashing."""
             nonlocal buffer, eof
             chunk = source.read(chunk_size)
             if chunk:
@@ -138,6 +140,7 @@ def _iter_json_array(path, chunk_size=1024 * 1024):
             expect_value = False
 
 def _address(value, field):
+    """Parse an address field to int."""
     try:
         return int(value, 0) if isinstance(value, str) else int(value)
     except (TypeError, ValueError):
@@ -321,6 +324,7 @@ def _load_addendum(path):
     return regions
 
 def _fnv64_file(path):
+    """FNV-1a 64 hash of a file."""
     value = 1469598103934665603
     with open(path, "rb") as source:
         while True:
@@ -333,6 +337,7 @@ def _fnv64_file(path):
     return value
 
 def _verified_v2_record(record, addendum, lineno):
+    """Validate a v2 vault record's snapshot+fnv64."""
     snapshot = record.get("snapshot")
     expected = str(record.get("fnv64", "")).upper()
     if not isinstance(snapshot, str) or not snapshot:
@@ -523,12 +528,14 @@ def merge_capture_regions(vault_json, src):
     return new_variants, new_pcs
 
 def merge_captures(vault_json, src_json):
+    """Merge capture JSON(s) into the vault."""
     if not src_json or not (os.path.exists(src_json) or
                             os.path.isdir(src_json + ".d")):
         return 0, 0
     return merge_capture_regions(vault_json, _load_list(src_json))
 
 def merge_addendum(vault_json, addendum):
+    """Merge an addendum file into the vault."""
     return merge_capture_regions(vault_json, _load_addendum(addendum))
 
 def merge_cache(vault_cache, src_cache):
@@ -559,6 +566,7 @@ def merge_cache(vault_cache, src_cache):
     return added
 
 def cmd_stats(vault):
+    """Print vault coverage statistics."""
     cj = os.path.join(vault, CAP_NAME)
     regs = _load_list(cj)
     pcs = sum(len(r.get("executed_pcs", [])) for r in regs)
@@ -572,6 +580,7 @@ def cmd_stats(vault):
     print("  cache:    %d DLL(s)" % ndll)
 
 def _print_compact_stats(source, stats):
+    """Print compacted analysis stats."""
     print("coverage_vault: compacted analysis for %s" % source)
     print("  regions: %d -> %d (%d data-only dropped)" %
           (stats["source_regions"], stats["output_variants"],
@@ -588,6 +597,7 @@ def _print_compact_stats(source, stats):
               stats["invalid_evidence_entries"])
 
 def _prune_stale_manifest_temps(vault_json, minimum_age_hours=24):
+    """Delete stale manifest temp files older than N hours."""
     directory = os.path.dirname(vault_json) or "."
     basename = os.path.basename(vault_json)
     pattern = re.compile(re.escape(basename) + r"\.\d+\.tmp$")
@@ -605,6 +615,7 @@ def _prune_stale_manifest_temps(vault_json, minimum_age_hours=24):
 def cmd_compact(vault, output=None, apply=False, prune_cache=False,
                 prune_stale_temp=False, stale_temp_hours=24,
                 drop_invalid_evidence=False):
+    """Compact the vault manifest (gc/prune options)."""
     vault = os.path.abspath(vault)
     source = os.path.join(vault, CAP_NAME)
     if not os.path.isfile(source):
@@ -651,6 +662,7 @@ def cmd_compact(vault, output=None, apply=False, prune_cache=False,
     return stats
 
 def main():
+    """Coverage vault CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["merge", "stats", "compact",
                                     "compact-addendum"])

@@ -58,7 +58,7 @@ def find_window(title_substr):
 
     @ctypes.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)
     def cb(hwnd, lparam):
-        """EnumWindows callback: collect visible windows matching the title filter.."""
+        """EnumWindows callback: collect visible windows matching the title filter."""
         if not user32.IsWindowVisible(hwnd):
             return True
         n = user32.GetWindowTextLengthW(hwnd)
@@ -146,7 +146,7 @@ def diff_pixels(a, b):
 
 
 def main():
-    """Capture a window's pixels to an image; CLI entry point.."""
+    """Capture a window's pixels to an image; CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--title", required=True,
                     help="window title substring (case-insensitive)")

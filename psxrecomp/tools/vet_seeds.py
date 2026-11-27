@@ -60,12 +60,15 @@ def _parse_toml_str(path, section, key):
 # ---------------------------------------------------------------------------
 
 def _word(data, off):
+    """Read a little-endian u32 at offset."""
     return struct.unpack_from('<I', data, off)[0]
 
 def _is_jr_ra(w):
+    """True if word is `jr $ra`."""
     return w == 0x03E00008          # jr $ra
 
 def _is_nop(w):
+    """True if word is NOP."""
     return w == 0x00000000
 
 def _is_addiu_sp_neg(w):
@@ -123,6 +126,7 @@ def vet(exe_bytes, base_phys, text_size, vaddr):
 # ---------------------------------------------------------------------------
 
 def main():
+    """Seed-vetting CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--game', required=True, metavar='TOML',

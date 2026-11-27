@@ -20,6 +20,7 @@ CWD  = r"../TombaRecomp"
 NONE,RIGHT,CROSS,START = 0xFFFF,0xFFDF,0xBFFF,0xFFF7
 
 def q(cmd, **kw):
+    """Send a JSON command to the runtime; reconnect+retry on failure."""
     d={"cmd":cmd}; d.update(kw)
     try:
         s=socket.socket(); s.settimeout(5); s.connect(("127.0.0.1",PORT))
@@ -49,18 +50,21 @@ def mc():    return q("sio_state").get("mc_reads")
 def press(b,frames=6): q("press",buttons=b,frames=frames)
 
 def kill_launch():
+    """Kill any running psx-runtime and relaunch Tomba."""
     subprocess.run(["powershell","-Command","Stop-Process -Name psx-runtime -Force -ErrorAction SilentlyContinue"],capture_output=True)
     time.sleep(1.5)
     subprocess.Popen(["powershell","-Command",
         f"Start-Process -FilePath '{EXE}' -ArgumentList '--game','{TOML}','--bios','{BIOS}','--disc','tomba/tomba.cue' -WorkingDirectory '{CWD}'"])
 
 def alive_advancing():
+    """True if the frame counter advances over ~1.2s."""
     a=frame()
     if a is None: return False
     time.sleep(1.2); b=frame()
     return b is not None and b!=a
 
 def nonblack():
+    """Count non-black pixels in the current GPU frame."""
     g=q("gpu_state"); dx,dy=g.get("display_x",0),g.get("display_y",0)
     nz=tot=0
     for ry in range(0,224,16):
@@ -70,12 +74,14 @@ def nonblack():
     return nz/tot if tot else 0
 
 def shot(name):
+    """Capture a screenshot BMP via the debug server."""
     b=f"../_scratch/{name}.bmp"; q("screenshot_file",path=b)
     try:
         from PIL import Image; Image.open(b).save(b.replace(".bmp",".png"))
     except Exception: pass
 
 def attempt():
+    """One load-test attempt: relaunch, wait for title, mash through."""
     kill_launch()
     # wait for TCP
     for _ in range(25):
@@ -112,6 +118,7 @@ def attempt():
     return None
 
 def main():
+    """Run N load-test attempts and report."""
     for a in range(6):
         print(f"=== attempt {a} ===")
         r=attempt()

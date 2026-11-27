@@ -108,7 +108,7 @@ def check_destination(cue: Path, data: bytes | None) -> None:
 
 
 def stage_companion(cue: Path, report: dict, data: bytes | None) -> dict:
-    """Stage the companion cue/bin pair next to the game disc; returns report.."""
+    """Stage the companion cue/bin pair next to the game disc; returns report."""
     check_destination(cue, data)
     result = dict(report)
     if data is not None:

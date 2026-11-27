@@ -14,12 +14,12 @@ except ImportError:
 ROOT = Path(__file__).parent.parent
 
 def hex_int(s, field):
-    """Parse a hex-string config field, raising with field name on bad input.."""
+    """Parse a hex-string config field, raising with field name on bad input."""
     if not isinstance(s, str): raise ValueError(f"{field}: expected hex string, got {type(s).__name__}")
     return int(s, 16)
 
 def validate(path, expect_remaps):
-    """Load and schema-validate one audit config TOML.."""
+    """Load and schema-validate one audit config TOML."""
     print(f"\n=== {path} ===")
     with open(path, "rb") as f:
         cfg = tomllib.load(f)

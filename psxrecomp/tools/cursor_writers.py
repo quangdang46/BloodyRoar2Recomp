@@ -135,7 +135,7 @@ def group_events(writes, focus, gap_frames=8):
 
 
 def describe_event(ev, focus):
-    """Summarize a cursor-write event: total delta, unique PCs, focus bytes.."""
+    """Summarize a cursor-write event: total delta, unique PCs, focus bytes."""
     total = sum(byte_delta(e, focus) for e in ev)
     pcs = sorted({e["pc"] for e in ev})
     if len(ev) == 1:
@@ -182,7 +182,7 @@ def verdict(focus_writes, focus=None):
 
 
 def main():
-    """Cursor-writer audit CLI entry point.."""
+    """Cursor-writer audit CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")

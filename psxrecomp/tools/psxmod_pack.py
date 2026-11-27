@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def main() -> int:
-    """Package a psxmod directory into a distributable archive.."""
+    """Package a psxmod directory into a distributable archive."""
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
     parser.add_argument("output", type=Path)

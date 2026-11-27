@@ -76,6 +76,7 @@ DEFAULT_BEETLE_PORT = 4382
 # ---------------------------------------------------------------------------
 
 def _recv_one_json(sock):
+    """Read exactly one JSON object from the socket."""
     buf = bytearray()
     pos = 0
     depth = 0
@@ -154,6 +155,7 @@ def _is_unknown_command(resp):
 
 
 def arm(host, port, label, anchor, hits, end=None):
+    """Arm a cyc_watch at anchor for `hits` hits."""
     cmd = {"cmd": "cyc_watch", "pc": anchor, "n": hits}
     if end:
         cmd["end"] = end   # two-anchor REGION mode: each entry = Δcycles of one A->B pass
@@ -171,6 +173,7 @@ def arm(host, port, label, anchor, hits, end=None):
 
 
 def dump(host, port, label):
+    """Fetch the cyc_watch trace dump."""
     try:
         resp = query(host, port, {"cmd": "cyc_watch_dump"})
     except (ConnectionRefusedError, TimeoutError, OSError, ConnectionError) as e:
@@ -183,6 +186,7 @@ def dump(host, port, label):
 
 
 def clear(host, port, label):
+    """Clear the cyc_watch trace."""
     try:
         query(host, port, {"cmd": "cyc_watch_clear"})
     except (ConnectionRefusedError, TimeoutError, OSError, ConnectionError) as e:
@@ -202,6 +206,7 @@ def entries_by_index(resp):
 # ---------------------------------------------------------------------------
 
 def report(anchor, native_resp, beetle_resp):
+    """Compare native vs beetle cycle traces and print deltas."""
     nat = entries_by_index(native_resp)
     bet = entries_by_index(beetle_resp)
 
@@ -282,6 +287,7 @@ def report(anchor, native_resp, beetle_resp):
 # ---------------------------------------------------------------------------
 
 def main():
+    """Cycle compare CLI entry point."""
     p = argparse.ArgumentParser(add_help=True, description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("anchor", nargs="?", help="anchor guest PC (region START), hex (e.g. 0x80012345)")

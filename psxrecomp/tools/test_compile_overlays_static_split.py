@@ -15,6 +15,7 @@ import compile_overlays  # noqa: E402
 
 
 def part(ns, body, symbols):
+    """Build a synthetic overlay part dict for tests."""
     return {
         'src': f'#include "psx_runtime.h"\n{body}\n',
         'namespace': ns,
@@ -27,13 +28,16 @@ def part(ns, body, symbols):
 
 class StaticSplitTests(unittest.TestCase):
     def setUp(self):
+        """Create temp dir + output path."""
         self.tmp = tempfile.TemporaryDirectory()
         self.out = os.path.join(self.tmp.name, 'overlays_static.c')
 
     def tearDown(self):
+        """Clean up temp dir."""
         self.tmp.cleanup()
 
     def test_split_writes_dispatcher_prototypes_and_parts(self):
+        """Verify split mode emits per-part files + dispatcher protos."""
         parts = [part('ov_a', 'void ov_a_func_80100000(CPUState *cpu) {}',
                       ['ov_a_func_80100000']),
                  part('ov_b', 'void ov_b_func_80100004(CPUState *cpu) {}',
@@ -56,6 +60,7 @@ class StaticSplitTests(unittest.TestCase):
         self.assertNotIn('ov_b_func', p0)
 
     def test_unchanged_part_keeps_mtime_and_stale_parts_are_removed(self):
+        """Verify unchanged parts keep mtime; stale parts deleted."""
         parts = [part('ov_a', 'int a;', ['ov_a_func_80100000']),
                  part('ov_b', 'int b;', ['ov_b_func_80100004']),
                  part('ov_c', 'int c;', ['ov_c_func_80100008'])]
@@ -84,6 +89,7 @@ class StaticSplitTests(unittest.TestCase):
                           'overlays_static_0001.c'])
 
     def test_single_file_mode_is_monolithic_and_cleans_parts(self):
+        """Verify single-file mode emits one TU and removes parts."""
         parts = [part('ov_a', 'int a;', ['ov_a_func_80100000'])]
         variants = parts[0]['variants']
         compile_overlays.write_static_outputs(self.out, parts, variants, '/* d */\n')
@@ -99,6 +105,7 @@ class StaticSplitTests(unittest.TestCase):
         self.assertNotIn('(CPUState *cpu);', main)
 
     def test_static_part_paths_only_matches_numbered_siblings(self):
+        """Verify part-path matching only hits numbered siblings."""
         for name in ('overlays_static_0000.c', 'overlays_static_0001.c',
                      'overlays_static.c', 'overlays_static_x.c',
                      'other_0000.c'):
@@ -117,6 +124,7 @@ class StaticWorkerContractTests(unittest.TestCase):
         self.assertIs(fn, compile_overlays.static_capture_job)
 
     def test_data_only_capture_reports_skip_with_captured_log(self):
+        """Verify data-only captures report skip with log."""
         import argparse
         import base64
         cap = {
@@ -172,6 +180,7 @@ class ResumeCaseBatchTests(unittest.TestCase):
     add_cps_resume_case entry by entry (the pre-batch implementation)."""
 
     def _sequential(self, src, requests):
+        """Reference sequential compile for comparison."""
         ok = {}
         for host_symbol, host, entries in requests:
             for entry in entries:
@@ -182,6 +191,7 @@ class ResumeCaseBatchTests(unittest.TestCase):
         return src, ok
 
     def test_batch_matches_sequential_fresh_switch_and_existing_switch(self):
+        """Verify batched compile matches sequential."""
         requests = [
             ('ov_x_func_80100000', 0x80100000,
              [0x80100010, 0x80100020, 0x80100030, 0x80100999]),   # no such block
@@ -202,6 +212,7 @@ class ResumeCaseBatchTests(unittest.TestCase):
                          {0x80100010, 0x80100020, 0x80100030})
 
     def test_batch_edits_are_confined_to_each_host_segment(self):
+        """Verify batch edits stay within each host segment."""
         requests = [('ov_x_func_80100100', 0x80100100, [0x80100110])]
         bat_src, _ = compile_overlays.add_cps_resume_cases(HOST_SRC, requests)
         marker = 'void ov_x_func_80100100(CPUState* cpu)\n{'

@@ -2,7 +2,7 @@
 import socket, json
 
 def call(d):
-    """Send a JSON command to the debug server; return parsed reply.."""
+    """Send a JSON command to the debug server; return parsed reply."""
     s = socket.create_connection(('127.0.0.1', 4370)); s.settimeout(15.0)
     s.sendall((json.dumps(d) + '\n').encode())
     buf = b''
@@ -17,7 +17,7 @@ def call(d):
 
 
 def read(addr, n):
-    """read_ram helper returning hex bytes at addr.."""
+    """read_ram helper returning hex bytes at addr."""
     r = call({'id': 1, 'cmd': 'read_ram', 'addr': f'0x{addr:08X}', 'len': n})
     return r.get('hex', '')
 

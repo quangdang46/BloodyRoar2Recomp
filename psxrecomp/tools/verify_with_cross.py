@@ -3,7 +3,7 @@ import socket, json, time
 
 
 def call(d, timeout=15.0):
-    """Send a JSON command to the cross-check debug server; return parsed reply.."""
+    """Send a JSON command to the cross-check debug server; return parsed reply."""
     s = socket.create_connection(('127.0.0.1', 4370))
     s.settimeout(timeout)
     s.sendall((json.dumps(d) + '\n').encode())

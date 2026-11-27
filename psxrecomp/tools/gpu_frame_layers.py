@@ -55,6 +55,7 @@ class Canvas:
     """Float RGB canvas in VRAM coordinates, offset to the frame's draw area."""
 
     def __init__(self, x0: int, y0: int, w: int, h: int, backdrop: float = 0.0):
+        """LayerBuffer ctor: viewport rect + backdrop color."""
         self.x0, self.y0 = x0, y0
         self.w, self.h = w, h
         self.backdrop = float(backdrop)
@@ -82,6 +83,7 @@ class Canvas:
         self.cov[mask] = True
 
     def triangle(self, pts, cols, semi, stp):
+        """Rasterize a textured/flat triangle into the buffer."""
         (ax, ay), (bx, by), (cx, cy) = pts
         den = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
         if den == 0:
@@ -113,6 +115,7 @@ class Canvas:
         self._blend(full, src, semi, stp)
 
     def rect(self, x, y, w, h, color, semi, stp):
+        """Rasterize an axis-aligned rect (fast path for sprites/tilemaps)."""
         x0 = max(0, x - self.x0)
         y0 = max(0, y - self.y0)
         x1 = min(self.w, x - self.x0 + max(0, w))
@@ -124,6 +127,7 @@ class Canvas:
         self._blend(mask, np.asarray(color, dtype=np.float32), semi, stp)
 
     def line(self, p0, p1, c0, c1, semi, stp):
+        """Rasterize a line via sampled points."""
         (x0, y0), (x1, y1) = p0, p1
         n = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
         if n > 4096:
@@ -145,9 +149,11 @@ class Canvas:
         self._blend(mask, acc[mask], semi, stp)
 
     def to_rgb_image(self):
+        """Return the buffer as an RGB PIL image."""
         return Image.fromarray(self.rgb.astype(np.uint8), "RGB")
 
     def to_rgba_image(self):
+        """Return the buffer as an RGBA PIL image."""
         rgba = np.zeros((self.h, self.w, 4), dtype=np.uint8)
         rgba[..., :3] = self.rgb.astype(np.uint8)
         rgba[..., 3] = np.where(self.cov, 255, 0)
@@ -155,6 +161,7 @@ class Canvas:
 
 
 def prim_color(p, tex_tint: bool):
+    """Resolve a primitive's flat/tinted color."""
     if p.get("textured"):
         if tex_tint:
             return TEX_TINT
@@ -203,12 +210,14 @@ def draw_prim(canvas: Canvas, p, tex_tint: bool):
 
 
 def safe_name(func: str) -> str:
+    """Sanitize a function name for filenames."""
     return re.sub(r"[^0-9A-Za-z_.-]", "_", func)
 
 
 def render(dump, out_dir, scale=1, tex_tint=False, order="issue",
            max_layers=64, only=None, exclude=None, sheet=True,
            layer_backdrop=LAYER_BACKDROP):
+    """Render all GPU-frame layers to images in out_dir."""
     x0, y0, x1, y1 = draw_area(dump)
     w, h = min(1024, x1 - x0), min(512, y1 - y0)
     if w <= 0 or h <= 0:
@@ -232,6 +241,7 @@ def render(dump, out_dir, scale=1, tex_tint=False, order="issue",
             per_func.setdefault(p.get("func", "0x00000000"), []).append(p)
 
     def save(img, name):
+        """Save an image, optionally upscaled."""
         if scale > 1:
             img = img.resize((img.width * scale, img.height * scale), Image.NEAREST)
         path = os.path.join(out_dir, name)
@@ -327,6 +337,7 @@ def save_sheet(thumbs, path, w, h, cols=4, pad=8, label_h=16, backdrop=LAYER_BAC
 
 
 def main(argv=None):
+    """GPU frame layers CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("dump", help="a psx-gpu-frame JSON written by gpu_frame_capture.py")
