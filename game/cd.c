@@ -1512,7 +1512,6 @@ uint32_t cd_read_finish_cb(void)
 /* ---- batch28: CD sync-wait wrappers + BIOS trampolines ---- */
 extern uint32_t cd_cmd_issue_b(uint32_t,uint32_t);
 extern uint32_t cd_cmd_issue_c(uint32_t,uint32_t);
-uint32_t bios_call(uint32_t fn, uint32_t a0);
 extern void cd_cmd_bytes(uintptr_t);
 
 uint cd_sync_wait_a(int a0,undefined1 *out_buf)
