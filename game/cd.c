@@ -5344,7 +5344,7 @@ static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
   uint32_t *t = (uint32_t *)guest_at(DB32(0x801b8318));
   return gpu_invoke(t[off >> 2],a0,a1,a2,a3);
 }
-extern void gpu_rect_bounds_dbg(uint32_t,short *);
+extern void gpu_rect_bounds_dbg(uint32_t,int16_t *);
 extern int cd_pump_watchdog(void);
 extern uint32_t cd_dma_xfer_start(uint32_t,uint32_t,uint32_t);
 
