@@ -168,12 +168,15 @@ static uint64_t s_last_segv_pc = 0, s_last_segv_addr = 0;
 static uint64_t s_last_trap_pc = 0;
 static uint64_t s_patch_fail   = 0;
 
+/* gw is scratch: return phys >= GW_SCRATCH_PHYS && phys < GW_SCRATCH_PHYS + GW_SCRATCH_GSIZE; */
 static int gw_is_scratch(uint32_t phys)
 { return phys >= GW_SCRATCH_PHYS && phys < GW_SCRATCH_PHYS + GW_SCRATCH_GSIZE; }
 
+/* gw phys ok: return phys < GW_RAM_SIZE || gw_is_scratch(phys); */
 static int gw_phys_ok(uint32_t phys)
 { return phys < GW_RAM_SIZE || gw_is_scratch(phys); }
 
+/* gw addr in ranges: for (int i = 0; i < s_range_count; i++) */
 static int gw_addr_in_ranges(uint32_t phys)
 {
     for (int i = 0; i < s_range_count; i++)
@@ -221,12 +224,14 @@ static size_t gw_host_avail(uintptr_t h)
     return 0;
 }
 
+/* gw protect pages: for (int i = 0; i < s_page_count; i++) */
 static void gw_protect_pages(int prot)
 {
     for (int i = 0; i < s_page_count; i++)
         mprotect((void *)s_pages[i], s_page_size, prot);
 }
 
+/* gw push entry: if (s_total >= GW_RING_CAP) { s_dropped++; return;  */
 static void gw_push_entry(void)
 {
     if (s_total >= GW_RING_CAP) { s_dropped++; return; }
@@ -352,6 +357,7 @@ static uint64_t gw_xread(ucontext_t *uc, unsigned r)
 #endif
 }
 
+/* gw spread: return (uint64_t)uc->uc_mcontext->__ss.__sp */
 static uint64_t gw_spread(ucontext_t *uc)
 {
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -363,6 +369,7 @@ static uint64_t gw_spread(ucontext_t *uc)
 #endif
 }
 
+/* gw pcread: return (uint64_t)uc->uc_mcontext->__ss.__pc */
 static uint64_t gw_pcread(ucontext_t *uc)
 {
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -374,6 +381,7 @@ static uint64_t gw_pcread(ucontext_t *uc)
 #endif
 }
 
+/* gw pcadvance: uc->uc_mcontext->__ss.__pc += 4 */
 static void gw_pcadvance(ucontext_t *uc)
 {
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -454,6 +462,7 @@ static int gw_store_emu(ucontext_t *uc, uintptr_t fa)
 #endif
 }
 
+/* gw segv handler: ucontext_t *uc = (ucontext_t *)uc_v */
 static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
 {
     ucontext_t *uc = (ucontext_t *)uc_v;
@@ -553,6 +562,7 @@ static void gw_segv_handler(int sig, siginfo_t *si, void *uc_v)
     /* Return: kernel re-executes the store at PC against writable pages. */
 }
 
+/* gw trap handler: ucontext_t *uc = (ucontext_t *)uc_v */
 static void gw_trap_handler(int sig, siginfo_t *si, void *uc_v)
 {
     (void)sig; (void)si;
@@ -572,6 +582,7 @@ static void gw_trap_handler(int sig, siginfo_t *si, void *uc_v)
     else { signal(sig, SIG_DFL); raise(sig); }
 }
 
+/* gw install handlers: if (s_handlers_installed) return */
 static void gw_install_handlers(void)
 {
     if (s_handlers_installed) return;
@@ -593,6 +604,7 @@ static void gw_install_handlers(void)
     if (s_page_size == 0) s_page_size = 4096;
 }
 
+/* guest watch add: if (!s_armed)  */
 int guest_watch_add(uint32_t guest_addr, uint32_t len)
 {
     if (!s_armed) {
@@ -641,6 +653,7 @@ int guest_watch_add(uint32_t guest_addr, uint32_t len)
     return 0;
 }
 
+/* guest watch disarm: if (g_guest_watch_pending) gw_finish_pending() */
 void guest_watch_disarm(void)
 {
     if (g_guest_watch_pending) gw_finish_pending();
@@ -650,6 +663,7 @@ void guest_watch_disarm(void)
     s_armed = 0;
 }
 
+/* guest watch reset ring: s_seq = 0; s_head = 0; s_total = 0; s_oor_hits = 0; s_dropped = 0 */
 void guest_watch_reset_ring(void)
 {
     s_seq = 0; s_head = 0; s_total = 0; s_oor_hits = 0; s_dropped = 0;
@@ -697,18 +711,26 @@ static void gw_entry_json(char *buf, size_t cap, const GwEntry *e)
         (unsigned)e->in_range, oldh, newh);
 }
 
+/* guest watch total: return s_total; */
 uint64_t guest_watch_total(void)    { return s_total; }
+/* guest watch oor: return s_oor_hits; */
 uint64_t guest_watch_oor(void)      { return s_oor_hits; }
+/* guest watch dropped: return s_dropped; */
 uint64_t guest_watch_dropped(void)  { return s_dropped; }
+/* guest watch armed: return s_armed; */
 int      guest_watch_armed(void)    { return s_armed; }
+/* guest watch pending: return g_guest_watch_pending; */
 int      guest_watch_pending(void)  { return g_guest_watch_pending; }
+/* guest watch diag */
 void     guest_watch_diag(uint64_t *segv_pc, uint64_t *segv_addr,
                           uint64_t *trap_pc, uint64_t *patch_fail)
 {
     *segv_pc = s_last_segv_pc; *segv_addr = s_last_segv_addr;
     *trap_pc = s_last_trap_pc; *patch_fail = s_patch_fail;
 }
+/* guest watch range count: return s_range_count; */
 int      guest_watch_range_count(void) { return s_range_count; }
+/* guest watch range: if (i >= 0 && i < s_range_count) { *lo = s_ranges[i].lo; *hi = s_rang... */
 void     guest_watch_range(int i, uint32_t *lo, uint32_t *hi)
 {
     if (i >= 0 && i < s_range_count) { *lo = s_ranges[i].lo; *hi = s_ranges[i].hi; }
@@ -748,19 +770,31 @@ int guest_watch_dump(char *buf, size_t cap, int max, int newest_first)
 #else /* !_WIN32 POSIX — Windows stub */
 
 int  guest_watch_add(uint32_t a, uint32_t l) { (void)a; (void)l; return -99; }
+/* guest watch disarm: void guest_watch_range(int i, uint32_t *lo, uint32_t *hi) { (void)i; ... */
 void guest_watch_disarm(void) {}
+/* guest watch reset ring: void guest_watch_range(int i, uint32_t *lo, uint32_t *hi) { (void)i; ... */
 void guest_watch_reset_ring(void) {}
+/* guest watch block tick: void guest_watch_range(int i, uint32_t *lo, uint32_t *hi) { (void)i; ... */
 void guest_watch_block_tick(void) {}
+/* guest watch total: return 0; */
 uint64_t guest_watch_total(void) { return 0; }
+/* guest watch oor: return 0; */
 uint64_t guest_watch_oor(void) { return 0; }
+/* guest watch dropped: return 0; */
 uint64_t guest_watch_dropped(void) { return 0; }
+/* guest watch armed: return 0; */
 int  guest_watch_armed(void) { return 0; }
+/* guest watch pending: return 0; */
 int  guest_watch_pending(void) { return 0; }
+/* guest watch range count: return 0; */
 int  guest_watch_range_count(void) { return 0; }
+/* guest watch range: (void)i; *lo=*hi=0; */
 void guest_watch_range(int i, uint32_t *lo, uint32_t *hi) { (void)i; *lo=*hi=0; }
+/* guest watch dump */
 int  guest_watch_dump(char *buf, size_t cap, int max, int nf) {
     (void)max; (void)nf; return snprintf(buf, cap, "[]");
 }
+/* guest watch diag */
 void guest_watch_diag(uint64_t *a, uint64_t *b, uint64_t *c, uint64_t *d) {
     *a=*b=*c=*d=0;
 }

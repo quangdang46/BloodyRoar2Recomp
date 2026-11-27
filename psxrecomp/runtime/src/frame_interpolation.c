@@ -3,10 +3,12 @@
 #include <math.h>
 #include <string.h>
 
+/* frame interpolation schedule reset: if (schedule) memset(schedule, 0, sizeof(*schedule)) */
 void frame_interpolation_schedule_reset(FrameInterpolationSchedule *schedule) {
     if (schedule) memset(schedule, 0, sizeof(*schedule));
 }
 
+/* frame interpolation schedule begin: double source_period */
 int frame_interpolation_schedule_begin(FrameInterpolationSchedule *schedule,
                                        uint64_t now, uint64_t frequency,
                                        double source_hz, double target_hz) {
@@ -52,6 +54,7 @@ int frame_interpolation_schedule_begin(FrameInterpolationSchedule *schedule,
     return 1;
 }
 
+/* frame interpolation schedule next: double d */
 int frame_interpolation_schedule_next(FrameInterpolationSchedule *schedule,
                                       uint64_t now, uint64_t *deadline,
                                       float *alpha) {
@@ -77,6 +80,7 @@ int frame_interpolation_schedule_next(FrameInterpolationSchedule *schedule,
     return 1;
 }
 
+/* frame interpolation schedule end: if (!schedule || schedule->frame_end <= 0.0) return 0 */
 uint64_t frame_interpolation_schedule_end(
     const FrameInterpolationSchedule *schedule) {
     if (!schedule || schedule->frame_end <= 0.0) return 0;

@@ -56,6 +56,7 @@ struct BeetleSioTraceEntry {
 static BeetleSioTraceEntry s_sio_trace[BEETLE_SIO_TRACE_CAP];
 static int      s_sio_trace_idx = 0;
 static uint32_t s_sio_trace_seq = 0;
+/* sio trace callback: BeetleSioTraceEntry *e = &s_sio_trace[s_sio_trace_idx] */
 static void sio_trace_callback(uint8_t tx, uint8_t rx, uint16_t ctrl) {
     BeetleSioTraceEntry *e = &s_sio_trace[s_sio_trace_idx];
     e->seq = s_sio_trace_seq++; e->tx = tx; e->rx = rx; e->ctrl = ctrl;
@@ -70,6 +71,7 @@ struct BeetleCdcmdEntry {
 static BeetleCdcmdEntry s_cdcmd_trace[BEETLE_CDCMD_TRACE_CAP];
 static int      s_cdcmd_idx = 0;
 static uint32_t s_cdcmd_seq = 0;
+/* cdcmd trace callback */
 static void cdcmd_trace_callback(uint8_t cmd, uint8_t nargs,
                                  uint8_t a0, uint8_t a1, uint8_t a2,
                                  uint32_t pc) {
@@ -156,6 +158,7 @@ static uint64_t s_wtrace_seq = 0;
 static struct { uint32_t lo, hi; } s_wtrace_ranges[BEETLE_WTRACE_MAX_RANGES];
 static int s_wtrace_range_count = 0;
 
+/* wtrace callback */
 static void wtrace_callback(uint32_t addr, uint32_t value,
                             uint32_t pc, uint32_t ra, uint8_t size)
 {
@@ -251,6 +254,7 @@ static uint64_t s_rtrace_seq = 0;
 static struct { uint32_t lo, hi; } s_rtrace_ranges[BEETLE_RTRACE_MAX_RANGES];
 static int s_rtrace_range_count = 0;
 
+/* rtrace callback: if (s_rtrace_range_count == 0) return */
 static void rtrace_callback(uint32_t addr, uint32_t value,
                             uint32_t pc, uint32_t ra, uint8_t size)
 {
@@ -298,10 +302,12 @@ static int      s_fntrace_unfiltered = 0;
 /* Parity RAM reader: addresses are guest-virtual; mask to phys for
  * beetle_read_word (extern "C", defined later) which RAM-decodes below 0x800000. */
 extern "C" uint32_t beetle_read_word(uint32_t phys);
+/* beetle parity rw: return beetle_read_word(addr & 0x1FFFFFFFu) */
 static uint32_t beetle_parity_rw(void* /*ctx*/, uint32_t addr) {
     return beetle_read_word(addr & 0x1FFFFFFFu);
 }
 
+/* fntrace callback: if (parity_trace_is_armed() && PSX_CPU)  */
 static void fntrace_callback(uint32_t caller_pc, uint32_t target_pc,
                              uint32_t parent_ra, uint32_t a0, uint32_t a1,
                              uint8_t kind)
@@ -364,6 +370,7 @@ static uint32_t s_fb[BEETLE_FB_MAX_PIXELS];
 static unsigned s_fb_width  = 0;
 static unsigned s_fb_height = 0;
 
+/* on video refresh: s_frame_width = width */
 void on_video_refresh(const void *data, unsigned width, unsigned height, size_t pitch) {
     s_frame_width  = width;
     s_frame_height = height;
@@ -388,12 +395,15 @@ void on_audio_sample(int16_t l, int16_t r) {
     int16_t frame[2] = { l, r };
     audio_trace_pcm(AUDIO_TAP_SPU_OUT, frame, 1);
 }
+/* on audio sample batch: return frames */
 size_t on_audio_sample_batch(const int16_t *data, size_t frames) {
     audio_trace_pcm(AUDIO_TAP_SPU_OUT, data, (int)frames);
     return frames;
 }
+/* on input poll: if (port != 0 || device != RETRO_DEVICE_JOYPAD) return 0 */
 void on_input_poll(void) {}
 
+/* on input state: if (port != 0 || device != RETRO_DEVICE_JOYPAD) return 0 */
 int16_t on_input_state(unsigned port, unsigned device, unsigned index, unsigned id) {
     (void)index;
     if (port != 0 || device != RETRO_DEVICE_JOYPAD) return 0;
@@ -406,6 +416,7 @@ int16_t on_input_state(unsigned port, unsigned device, unsigned index, unsigned 
     return ((s_joypad >> psx_bit) & 1) ? 0 : 1;
 }
 
+/* on log printf */
 void on_log_printf(enum retro_log_level level, const char *fmt, ...) {
     (void)level;
     va_list ap; va_start(ap, fmt);
@@ -413,6 +424,7 @@ void on_log_printf(enum retro_log_level level, const char *fmt, ...) {
     va_end(ap);
 }
 
+/* on environment: switch (cmd)  */
 bool on_environment(unsigned cmd, void *data) {
     switch (cmd) {
         case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY: *(const char**)data = s_system_dir; return true;
@@ -477,10 +489,12 @@ bool on_environment(unsigned cmd, void *data) {
 
 extern "C" int beetle_init_with_disc(const char *bios_path, const char *disc_path);
 
+/* beetle init: return beetle_init_with_disc(bios_path, NULL) */
 extern "C" int beetle_init(const char *bios_path) {
     return beetle_init_with_disc(bios_path, NULL);
 }
 
+/* beetle init with disc: if (s_loaded) return 0 */
 extern "C" int beetle_init_with_disc(const char *bios_path, const char *disc_path) {
     if (s_loaded) return 0;
 
@@ -583,6 +597,7 @@ extern "C" int beetle_init_with_disc(const char *bios_path, const char *disc_pat
     return 0;
 }
 
+/* beetle shutdown: if (!s_loaded) return */
 extern "C" void beetle_shutdown(void) {
     if (!s_loaded) return;
     retro_unload_game();
@@ -590,6 +605,7 @@ extern "C" void beetle_shutdown(void) {
     s_loaded = false;
 }
 
+/* beetle run frame: if (!s_loaded) return */
 extern "C" void beetle_run_frame(uint16_t pad1_buttons) {
     if (!s_loaded) return;
     s_joypad = pad1_buttons;
@@ -599,6 +615,7 @@ extern "C" void beetle_run_frame(uint16_t pad1_buttons) {
     beetle_history_record_frame();
 }
 
+/* beetle get framebuffer: if (s_fb_width == 0 || s_fb_height == 0) return 0 */
 extern "C" int beetle_get_framebuffer(uint32_t **out_pixels,
                                        unsigned *out_w, unsigned *out_h) {
     if (s_fb_width == 0 || s_fb_height == 0) return 0;
@@ -614,8 +631,11 @@ extern "C" uint16_t beetle_vram_peek(uint32_t x, uint32_t y) {
     return GPU_PeekRAM(((y & 0x1FF) << 10) | (x & 0x3FF));
 }
 
+/* beetle get pad: return s_joypad; */
 extern "C" uint16_t beetle_get_pad(void) { return s_joypad; }
+/* beetle get frame count: return s_frame_count; */
 extern "C" uint32_t beetle_get_frame_count(void) { return s_frame_count; }
+/* beetle is loaded: return s_loaded ? 1 : 0; */
 extern "C" int beetle_is_loaded(void) { return s_loaded ? 1 : 0; }
 
 /* Oracle CPU register snapshot (ground truth via PS_CPU::GetRegister).
@@ -638,6 +658,7 @@ extern "C" int beetle_get_registers(uint32_t *out /* >= 38 words */) {
     return 1;
 }
 
+/* beetle read byte: if (phys < 0x00800000u)  */
 extern "C" uint8_t beetle_read_byte(uint32_t phys) {
     if (phys < 0x00800000u) {
         uint32_t offset = phys & 0x1FFFFF;
@@ -652,6 +673,7 @@ extern "C" uint8_t beetle_read_byte(uint32_t phys) {
     return 0;
 }
 
+/* beetle read word: if (phys < 0x00800000u)  */
 extern "C" uint32_t beetle_read_word(uint32_t phys) {
     if (phys < 0x00800000u) {
         uint32_t offset = phys & 0x1FFFFF;
@@ -696,6 +718,7 @@ static void irq_event_callback(int which) {
     device_trace_note((uint32_t)which, detail);
 }
 
+/* beetle get ram: void *ram = retro_get_memory_data(RETRO_MEMORY_SYSTEM_RAM) */
 extern "C" void beetle_get_ram(uint8_t *out_2mb) {
     void *ram = retro_get_memory_data(RETRO_MEMORY_SYSTEM_RAM);
     size_t ram_size = retro_get_memory_size(RETRO_MEMORY_SYSTEM_RAM);
@@ -708,12 +731,14 @@ extern "C" void beetle_get_ram(uint8_t *out_2mb) {
     }
 }
 
+/* beetle get vram: uint16_t *vram = GPU_get_vram() */
 extern "C" void beetle_get_vram(uint16_t *out_1mb) {
     uint16_t *vram = GPU_get_vram();
     if (vram) memcpy(out_1mb, vram, 1024 * 512 * 2);
     else      memset(out_1mb, 0, 1024 * 512 * 2);
 }
 
+/* beetle get scratchpad: if (ScratchRAM) memcpy(out_1kb, ScratchRAM->data8, 1024) */
 extern "C" void beetle_get_scratchpad(uint8_t *out_1kb) {
     if (ScratchRAM) memcpy(out_1kb, ScratchRAM->data8, 1024);
     else            memset(out_1kb, 0, 1024);
@@ -738,7 +763,9 @@ extern "C" uint32_t beetle_get_sio_trace(uint32_t *out_seq, uint8_t *out_tx,
     }
     return (uint32_t)count;
 }
+/* beetle get sio trace total: return s_sio_trace_seq; */
 extern "C" uint32_t beetle_get_sio_trace_total(void) { return s_sio_trace_seq; }
+/* beetle reset sio trace: s_sio_trace_idx = 0 */
 extern "C" void beetle_reset_sio_trace(void) {
     s_sio_trace_idx = 0;
     s_sio_trace_seq = 0;
@@ -768,7 +795,9 @@ extern "C" uint32_t beetle_get_cdcmd_trace(uint32_t *out_seq, uint8_t *out_cmd,
     }
     return (uint32_t)count;
 }
+/* beetle get cdcmd trace total: return s_cdcmd_seq; */
 extern "C" uint32_t beetle_get_cdcmd_trace_total(void) { return s_cdcmd_seq; }
+/* beetle reset cdcmd trace: s_cdcmd_idx = 0 */
 extern "C" void beetle_reset_cdcmd_trace(void) {
     s_cdcmd_idx = 0;
     s_cdcmd_seq = 0;
@@ -784,7 +813,9 @@ extern "C" int beetle_wtrace_arm(uint32_t lo, uint32_t hi) {
     s_wtrace_ranges[slot].hi = hi & 0x1FFFFFFFu;
     return slot;
 }
+/* beetle wtrace disarm all: s_wtrace_range_count = 0; */
 extern "C" void beetle_wtrace_disarm_all(void) { s_wtrace_range_count = 0; }
+/* beetle wtrace disarm: if (slot < 0 || slot >= s_wtrace_range_count) return -1 */
 extern "C" int  beetle_wtrace_disarm(int slot) {
     if (slot < 0 || slot >= s_wtrace_range_count) return -1;
     /* Compact remaining slots down — matches runtime's wtrace_del semantics. */
@@ -793,19 +824,25 @@ extern "C" int  beetle_wtrace_disarm(int slot) {
     s_wtrace_range_count--;
     return 0;
 }
+/* beetle wtrace range count: return s_wtrace_range_count; */
 extern "C" int  beetle_wtrace_range_count(void)  { return s_wtrace_range_count; }
+/* beetle wtrace max ranges: return BEETLE_WTRACE_MAX_RANGES; */
 extern "C" int  beetle_wtrace_max_ranges(void)   { return BEETLE_WTRACE_MAX_RANGES; }
+/* beetle wtrace capacity: return BEETLE_WTRACE_CAP; */
 extern "C" int  beetle_wtrace_capacity(void)     { return BEETLE_WTRACE_CAP; }
+/* beetle wtrace get range: if (slot < 0 || slot >= s_wtrace_range_count) return -1 */
 extern "C" int  beetle_wtrace_get_range(int slot, uint32_t *out_lo, uint32_t *out_hi) {
     if (slot < 0 || slot >= s_wtrace_range_count) return -1;
     *out_lo = s_wtrace_ranges[slot].lo;
     *out_hi = s_wtrace_ranges[slot].hi;
     return 0;
 }
+/* beetle wtrace reset: s_wtrace_idx = 0; s_wtrace_seq = 0 */
 extern "C" void beetle_wtrace_reset(void) {
     s_wtrace_idx = 0; s_wtrace_seq = 0;
     memset(s_wtrace, 0, sizeof(s_wtrace));
 }
+/* beetle wtrace total: return s_wtrace_seq; */
 extern "C" uint64_t beetle_wtrace_total(void) { return s_wtrace_seq; }
 
 /* ---- rtrace accessors (MMIO-READ trace) — parity with wtrace verbs ---- */
@@ -818,7 +855,9 @@ extern "C" int beetle_rtrace_arm(uint32_t lo, uint32_t hi) {
     s_rtrace_ranges[slot].hi = hi;
     return slot;
 }
+/* beetle rtrace disarm all: s_rtrace_range_count = 0; */
 extern "C" void beetle_rtrace_disarm_all(void) { s_rtrace_range_count = 0; }
+/* beetle rtrace disarm: if (slot < 0 || slot >= s_rtrace_range_count) return -1 */
 extern "C" int  beetle_rtrace_disarm(int slot) {
     if (slot < 0 || slot >= s_rtrace_range_count) return -1;
     for (int i = slot; i < s_rtrace_range_count - 1; i++)
@@ -826,19 +865,25 @@ extern "C" int  beetle_rtrace_disarm(int slot) {
     s_rtrace_range_count--;
     return 0;
 }
+/* beetle rtrace range count: return s_rtrace_range_count; */
 extern "C" int  beetle_rtrace_range_count(void) { return s_rtrace_range_count; }
+/* beetle rtrace capacity: return BEETLE_RTRACE_CAP; */
 extern "C" int  beetle_rtrace_capacity(void)    { return BEETLE_RTRACE_CAP; }
+/* beetle rtrace max ranges: return BEETLE_RTRACE_MAX_RANGES; */
 extern "C" int  beetle_rtrace_max_ranges(void)  { return BEETLE_RTRACE_MAX_RANGES; }
+/* beetle rtrace get range: if (slot < 0 || slot >= s_rtrace_range_count) return -1 */
 extern "C" int  beetle_rtrace_get_range(int slot, uint32_t *out_lo, uint32_t *out_hi) {
     if (slot < 0 || slot >= s_rtrace_range_count) return -1;
     *out_lo = s_rtrace_ranges[slot].lo;
     *out_hi = s_rtrace_ranges[slot].hi;
     return 0;
 }
+/* beetle rtrace reset: s_rtrace_idx = 0; s_rtrace_seq = 0 */
 extern "C" void beetle_rtrace_reset(void) {
     s_rtrace_idx = 0; s_rtrace_seq = 0;
     memset(s_rtrace, 0, sizeof(s_rtrace));
 }
+/* beetle rtrace total: return s_rtrace_seq; */
 extern "C" uint64_t beetle_rtrace_total(void) { return s_rtrace_seq; }
 
 /* Fill the newest `count` entries (oldest-first) into the caller arrays.
@@ -868,11 +913,14 @@ extern "C" uint32_t beetle_rtrace_get(uint64_t *out_seq, uint32_t *out_addr,
 
 /* ---- wtrace_all (always-on, no-filter) accessors ---- */
 extern "C" uint64_t beetle_wtrace_all_total(void) { return s_wtrace_all_seq; }
+/* beetle wtrace all capacity: return BEETLE_WTRACE_ALL_CAP; */
 extern "C" int      beetle_wtrace_all_capacity(void) { return BEETLE_WTRACE_ALL_CAP; }
+/* beetle wtrace all reset: s_wtrace_all_idx = 0; s_wtrace_all_seq = 0 */
 extern "C" void     beetle_wtrace_all_reset(void) {
     s_wtrace_all_idx = 0; s_wtrace_all_seq = 0;
     memset(s_wtrace_all, 0, sizeof(s_wtrace_all));
 }
+/* beetle wtrace all get: int avail = (int)(s_wtrace_all_seq < (uint64_t)BEETLE_WTRACE_ALL_CAP */
 extern "C" uint32_t beetle_wtrace_all_get(uint64_t *out_seq, uint32_t *out_addr,
                                           uint32_t *out_new, uint32_t *out_pc,
                                           uint32_t *out_ra, uint32_t *out_frame,
@@ -945,17 +993,23 @@ extern "C" int beetle_fntrace_arm(uint32_t target_pc) {
     s_fntrace_arms[slot] = phys;
     return slot;
 }
+/* beetle fntrace disarm all: s_fntrace_arm_count = 0; */
 extern "C" void beetle_fntrace_disarm_all(void) { s_fntrace_arm_count = 0; }
+/* beetle fntrace arm count: return s_fntrace_arm_count; */
 extern "C" int  beetle_fntrace_arm_count(void)  { return s_fntrace_arm_count; }
+/* beetle fntrace get arm: if (slot < 0 || slot >= s_fntrace_arm_count) return 0 */
 extern "C" uint32_t beetle_fntrace_get_arm(int slot) {
     if (slot < 0 || slot >= s_fntrace_arm_count) return 0;
     return s_fntrace_arms[slot];
 }
+/* beetle fntrace set unfiltered: s_fntrace_unfiltered = on ? 1 : 0; */
 extern "C" void beetle_fntrace_set_unfiltered(int on) { s_fntrace_unfiltered = on ? 1 : 0; }
+/* beetle fntrace reset: s_fntrace_idx = 0; s_fntrace_seq = 0 */
 extern "C" void beetle_fntrace_reset(void) {
     s_fntrace_idx = 0; s_fntrace_seq = 0;
     memset(s_fntrace, 0, sizeof(s_fntrace));
 }
+/* beetle fntrace total: return s_fntrace_seq; */
 extern "C" uint64_t beetle_fntrace_total(void) { return s_fntrace_seq; }
 
 /* ---- SPU event ring (always-on, mirrors recomp's spu_events).
@@ -985,6 +1039,7 @@ static BeetleSpuEvent s_spu_events[BEETLE_SPU_EVENT_CAP];
 static uint32_t s_spu_event_idx = 0;
 static uint64_t s_spu_event_seq = 0;
 
+/* psxrecomp beetle spu event: BeetleSpuEvent *e = &s_spu_events[s_spu_event_idx & (BEETLE_SPU_EVENT... */
 extern "C" void psxrecomp_beetle_spu_event(unsigned kind, unsigned voice,
                                            unsigned addr, unsigned env)
 {
@@ -1012,6 +1067,7 @@ extern "C" void psxrecomp_beetle_spu_event(unsigned kind, unsigned voice,
     s_spu_event_idx++;
 }
 
+/* beetle spu event total: return s_spu_event_seq; */
 extern "C" uint64_t beetle_spu_event_total(void) { return s_spu_event_seq; }
 
 /* CD-audio volume matrix ground truth (PS_CDC::DecodeVolume; 0x80 = unity).
@@ -1029,6 +1085,7 @@ extern "C" int beetle_cdc_decode_volume(unsigned out[4])
     return 1;
 }
 
+/* beetle spu event get: uint64_t avail = s_spu_event_seq < (uint64_t)BEETLE_SPU_EVENT_CAP */
 extern "C" uint32_t beetle_spu_event_get(uint64_t *out_seq, uint32_t *out_frame,
                                          uint32_t *out_addr, uint16_t *out_env,
                                          uint16_t *out_pitch,
@@ -1089,6 +1146,7 @@ extern "C" int beetle_spu_get_voice_state(int v,
     return 1;
 }
 
+/* beetle spu get global state: if (!PSX_SPU) return 0 */
 extern "C" int beetle_spu_get_global_state(
     uint16_t *spu_ctrl,
     uint16_t *main_vol_ctrl_l, uint16_t *main_vol_ctrl_r,
@@ -1112,6 +1170,7 @@ extern "C" int beetle_spu_get_global_state(
     return 1;
 }
 
+/* beetle fntrace get: int avail = (int)(s_fntrace_seq < (uint64_t)BEETLE_FNTRACE_CAP */
 extern "C" uint32_t beetle_fntrace_get(uint64_t *out_seq,
                                        uint32_t *out_caller, uint32_t *out_target,
                                        uint32_t *out_ra, uint32_t *out_a0,
@@ -1159,6 +1218,7 @@ static uint64_t           s_beetle_history_count = 0;
 static uint32_t           s_beetle_snap_addrs[BEETLE_RAM_SNAPSHOT_REGIONS];
 static int                s_beetle_snap_active[BEETLE_RAM_SNAPSHOT_REGIONS];
 
+/* beetle history init: if (s_beetle_history) return */
 extern "C" void beetle_history_init(void) {
     if (s_beetle_history) return;
     s_beetle_history = (BeetleFrameRecord *)std::calloc(
@@ -1173,6 +1233,7 @@ extern "C" void beetle_history_init(void) {
     }
 }
 
+/* beetle history record frame: if (!s_beetle_history || !PSX_CPU) return */
 extern "C" void beetle_history_record_frame(void) {
     if (!s_beetle_history || !PSX_CPU) return;
 
@@ -1242,6 +1303,7 @@ extern "C" void beetle_history_record_frame(void) {
     s_beetle_history_count = (uint64_t)s_frame_count + 1;
 }
 
+/* beetle history get bounds: uint64_t cnt = s_beetle_history_count */
 extern "C" void beetle_history_get_bounds(uint64_t *out_count,
                                           uint64_t *out_oldest,
                                           uint64_t *out_newest)
@@ -1255,6 +1317,7 @@ extern "C" void beetle_history_get_bounds(uint64_t *out_count,
     if (out_newest) *out_newest = newest;
 }
 
+/* beetle history get frame: if (!s_beetle_history) return nullptr */
 extern "C" const BeetleFrameRecord *beetle_history_get_frame(uint32_t frame) {
     if (!s_beetle_history) return nullptr;
     uint64_t cnt = s_beetle_history_count;
@@ -1268,6 +1331,7 @@ extern "C" const BeetleFrameRecord *beetle_history_get_frame(uint32_t frame) {
     return r;
 }
 
+/* beetle history first failure: if (out_frame) *out_frame = (uint32_t)-1 */
 extern "C" int beetle_history_first_failure(uint32_t *out_frame, int *out_diff_count) {
     /* No verify-mode on beetle yet; mirrors runtime's "no failures" path. */
     if (out_frame)      *out_frame      = (uint32_t)-1;
@@ -1275,6 +1339,7 @@ extern "C" int beetle_history_first_failure(uint32_t *out_frame, int *out_diff_c
     return 0;
 }
 
+/* beetle history set snapshot: if (slot < 0 || slot >= BEETLE_RAM_SNAPSHOT_REGIONS) return 0 */
 extern "C" int beetle_history_set_snapshot(int slot, uint32_t addr) {
     if (slot < 0 || slot >= BEETLE_RAM_SNAPSHOT_REGIONS) return 0;
     s_beetle_snap_addrs[slot]  = addr;
@@ -1282,6 +1347,7 @@ extern "C" int beetle_history_set_snapshot(int slot, uint32_t addr) {
     return 1;
 }
 
+/* beetle history get snapshot: if (slot < 0 || slot >= BEETLE_RAM_SNAPSHOT_REGIONS) return 0 */
 extern "C" int beetle_history_get_snapshot(int slot, uint32_t *out_addr, int *out_active) {
     if (slot < 0 || slot >= BEETLE_RAM_SNAPSHOT_REGIONS) return 0;
     if (out_addr)   *out_addr   = s_beetle_snap_addrs[slot];
@@ -1298,6 +1364,7 @@ static uint32_t s_cw_end_raw = 0, s_cw_end_phys = 0;
 static uint32_t s_cw_max_hits = 0, s_cw_hits = 0;
 static int s_cw_armed = 0;
 
+/* beetle cyc watch arm: s_cw_anchor_raw = anchor_raw */
 extern "C" void beetle_cyc_watch_arm(uint32_t anchor_raw, uint32_t end_raw, int n) {
     s_cw_anchor_raw = anchor_raw;
     s_cw_anchor_phys = anchor_raw & 0x1FFFFFFFu;
@@ -1307,9 +1374,11 @@ extern "C" void beetle_cyc_watch_arm(uint32_t anchor_raw, uint32_t end_raw, int 
     s_cw_hits = 0;
     s_cw_armed = 1;
 }
+/* beetle cyc watch clear: s_cw_armed = 0; s_cw_hits = 0 */
 extern "C" void beetle_cyc_watch_clear(void) {
     s_cw_armed = 0; s_cw_hits = 0;
 }
+/* beetle cyc watch get state: if (anchor_raw) *anchor_raw = s_cw_anchor_raw */
 extern "C" void beetle_cyc_watch_get_state(uint32_t *anchor_raw, uint32_t *anchor_phys,
                                           uint32_t *end_raw, uint32_t *end_phys,
                                           uint32_t *max_hits, uint32_t *hits, int *armed) {
@@ -1321,12 +1390,14 @@ extern "C" void beetle_cyc_watch_get_state(uint32_t *anchor_raw, uint32_t *ancho
     if (hits)        *hits        = s_cw_hits;
     if (armed)       *armed       = s_cw_armed;
 }
+/* beetle cyc watch get: return 0 */
 extern "C" int beetle_cyc_watch_get(uint32_t i, uint32_t *hit_index, uint32_t *pc,
                                    unsigned long long *cyc) {
     (void)i; (void)hit_index; (void)pc; (void)cyc;
     return 0;
 }
 
+/* retro psxref exc ring dump: if (!out || cap < 32) return -1 */
 extern "C" int retro_psxref_exc_ring_dump(char *out, int cap) {
     if (!out || cap < 32) return -1;
     return std::snprintf(out, (size_t)cap, "{\"ok\":true,\"entries\":[]}");

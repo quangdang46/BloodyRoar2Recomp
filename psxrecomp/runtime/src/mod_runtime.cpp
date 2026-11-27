@@ -80,6 +80,7 @@ struct RuntimeMods {
     const ModResolution::Plugin* current_plugin = nullptr;
 };
 
+/* state: return value */
 RuntimeMods& state() {
     static RuntimeMods value;
     return value;
@@ -91,15 +92,18 @@ struct FunctionEntryPlugin {
     PSXModFunctionEntryCallback callback = nullptr;
 };
 
+/* function entry plugins: return value */
 std::vector<FunctionEntryPlugin>& function_entry_plugins() {
     static std::vector<FunctionEntryPlugin> value;
     return value;
 }
 
+/* selected package: return state().manager.selected_package(id) */
 const ModPackage* selected_package(const std::string& id) {
     return state().manager.selected_package(id);
 }
 
+/* package has enabled feature: return std::any_of( */
 bool package_has_enabled_feature(const ModPackage& package) {
     return std::any_of(
         package.features.begin(), package.features.end(),
@@ -108,6 +112,7 @@ bool package_has_enabled_feature(const ModPackage& package) {
         });
 }
 
+/* selected value: if (selection != state().manager.selections().end())  */
 std::string selected_value(const ModPackage& package, const ModOption& option) {
     const auto selection = state().manager.selections().find(package.id);
     if (selection != state().manager.selections().end()) {
@@ -133,6 +138,7 @@ bool option_is_disabled(const ModPackage& package, const ModOption& option) {
     return false;
 }
 
+/* build disc index: for (size_t i = 0; i < s.plan.writes.size(); ++i)  */
 void build_disc_index(RuntimeMods& s) {
     s.raw_disc_index.clear();
     s.user_disc_index.clear();
@@ -159,10 +165,12 @@ void build_disc_index(RuntimeMods& s) {
     }
 }
 
+/* set error: state().error = error */
 void set_error(const std::string& error) {
     state().error = error;
 }
 
+/* apply main write: if (write.fields.empty())  */
 void apply_main_write(const ModResolution::Write& write) {
     if (write.fields.empty()) {
         for (size_t i = 0; i < write.replacement.size(); ++i)
@@ -186,6 +194,7 @@ void apply_main_write(const ModResolution::Write& write) {
     }
 }
 
+/* restored main matches plan: std::map<uint32_t, uint8_t> desired */
 bool restored_main_matches_plan(const RuntimeMods& s, uint32_t& failed_at) {
     std::map<uint32_t, uint8_t> desired;
     for (const ModResolution::Write& write : s.plan.writes) {
@@ -223,6 +232,7 @@ bool restored_main_matches_plan(const RuntimeMods& s, uint32_t& failed_at) {
     return true;
 }
 
+/* sha256 file: if (path.empty()) return true */
 bool sha256_file(const std::filesystem::path& path, std::string& out,
                  std::string* error) {
     out.clear();
@@ -289,6 +299,7 @@ bool sha256_file(const std::filesystem::path& path, std::string& out,
     return true;
 }
 
+/* raw image path: std::string extension = path.extension().string() */
 std::filesystem::path raw_image_path(const std::filesystem::path& path,
                                      std::string* error) {
     std::string extension = path.extension().string();
@@ -325,6 +336,7 @@ std::filesystem::path raw_image_path(const std::filesystem::path& path,
     return {};
 }
 
+/* sha256 disc range: std::string extension = image.extension().string() */
 bool sha256_disc_range(const std::filesystem::path& image,
                        ModPatchTarget target, uint64_t location, size_t size,
                        std::string& out, std::string* error) {
@@ -430,6 +442,7 @@ bool sha256_disc_range(const std::filesystem::path& image,
 }
 
 #if defined(_WIN32)
+/* quote windows argument: if (value.find_first_of(L" \t\n\v\"") == std::wstring::npos) return v... */
 std::wstring quote_windows_argument(const std::wstring& value) {
     if (value.find_first_of(L" \t\n\v\"") == std::wstring::npos) return value;
     std::wstring out = L"\"";
@@ -453,6 +466,7 @@ std::wstring quote_windows_argument(const std::wstring& value) {
 }
 #endif
 
+/* run xdelta decode: std::wstring command = */
 bool run_xdelta_decode(const std::filesystem::path& executable,
                        const std::filesystem::path& source,
                        const std::filesystem::path& patch,
@@ -508,6 +522,7 @@ bool run_xdelta_decode(const std::filesystem::path& executable,
 #endif
 }
 
+/* valid cached disc: std::error_code ec */
 bool valid_cached_disc(const std::filesystem::path& path,
                        const ModResolution::DerivedDisc& derived) {
     std::error_code ec;
@@ -515,6 +530,7 @@ bool valid_cached_disc(const std::filesystem::path& path,
            std::filesystem::file_size(path, ec) == derived.output_size && !ec;
 }
 
+/* materialize derived disc: if (plan.derived_discs.empty()) return true */
 bool materialize_derived_disc(RuntimeMods& s, const ModResolution& plan,
                               std::filesystem::path& out, std::string* error) {
     out.clear();
@@ -601,15 +617,18 @@ bool materialize_derived_disc(RuntimeMods& s, const ModResolution& plan,
 }
 
 #if defined(RECOMP_LAUNCHER)
+/* copy text: if (!out || capacity == 0) return */
 void copy_text(char* out, size_t capacity, const std::string& value) {
     if (!out || capacity == 0) return;
     std::snprintf(out, capacity, "%s", value.c_str());
 }
 
+/* provider package count: return (int)state().manager.packages().size() */
 int provider_package_count(void*) {
     return (int)state().manager.packages().size();
 }
 
+/* provider package get: if (!out || index < 0) return 0 */
 int provider_package_get(void*, int index, RecompLauncherCModPackage* out) {
     if (!out || index < 0) return 0;
     const auto& packages = state().manager.packages();
@@ -644,6 +663,7 @@ int provider_package_get(void*, int index, RecompLauncherCModPackage* out) {
     return 1;
 }
 
+/* provider option get: if (!package_id || !out || index < 0) return 0 */
 int provider_option_get(void*, const char* package_id, int index,
                         RecompLauncherCModOption* out) {
     if (!package_id || !out || index < 0) return 0;
@@ -668,6 +688,7 @@ int provider_option_get(void*, const char* package_id, int index,
     return 1;
 }
 
+/* provider choice get: if (!package_id || !option_id || !out || index < 0) return 0 */
 int provider_choice_get(void*, const char* package_id, const char* option_id,
                         int index, RecompLauncherCModChoice* out) {
     if (!package_id || !option_id || !out || index < 0) return 0;
@@ -685,6 +706,7 @@ int provider_choice_get(void*, const char* package_id, const char* option_id,
 template <typename Callback>
 int mutate(Callback callback);
 
+/* provider feature at: if (index < 0) return false */
 bool provider_feature_at(int index, const ModPackage*& package,
                          const ModFeature*& feature) {
     if (index < 0) return false;
@@ -703,6 +725,7 @@ bool provider_feature_at(int index, const ModPackage*& package,
     return false;
 }
 
+/* provider feature options: std::vector<const ModOption*> out */
 std::vector<const ModOption*> provider_feature_options(
     const ModPackage& package, const std::string& feature_id) {
     std::vector<const ModOption*> out;
@@ -711,6 +734,7 @@ std::vector<const ModOption*> provider_feature_options(
     return out;
 }
 
+/* diagnostic matches: return (diagnostic.package_id == package_id && */
 bool diagnostic_matches(const ModResolution::Diagnostic& diagnostic,
                         const std::string& package_id,
                         const std::string& feature_id) {
@@ -720,6 +744,7 @@ bool diagnostic_matches(const ModResolution::Diagnostic& diagnostic,
             diagnostic.other_feature_id == feature_id);
 }
 
+/* provider feature count: int count = 0 */
 int provider_feature_count(void*) {
     int count = 0;
     for (const auto& [package_id, versions] : state().manager.packages()) {
@@ -730,6 +755,7 @@ int provider_feature_count(void*) {
     return count;
 }
 
+/* provider feature get: if (!out) return 0 */
 int provider_feature_get(void*, int index, RecompLauncherCModFeature* out) {
     if (!out) return 0;
     const ModPackage* package = nullptr;
@@ -783,6 +809,7 @@ int provider_feature_get(void*, int index, RecompLauncherCModFeature* out) {
     return 1;
 }
 
+/* provider feature option get: if (!package_id || !feature_id || !out || index < 0) return 0 */
 int provider_feature_option_get(void*, const char* package_id,
                                 const char* feature_id, int index,
                                 RecompLauncherCModOption* out) {
@@ -814,6 +841,7 @@ int provider_feature_option_get(void*, const char* package_id,
     return 1;
 }
 
+/* provider feature choice get: if (!package_id || !feature_id || !option_id || !out || index < 0) */
 int provider_feature_choice_get(void*, const char* package_id,
                                 const char* feature_id,
                                 const char* option_id, int index,
@@ -837,6 +865,7 @@ int provider_feature_choice_get(void*, const char* package_id,
     return 1;
 }
 
+/* provider feature enable: if (!package_id || !feature_id) return 0 */
 int provider_feature_enable(void*, const char* package_id,
                             const char* feature_id, int enabled) {
     if (!package_id || !feature_id) return 0;
@@ -851,6 +880,7 @@ int provider_feature_enable(void*, const char* package_id,
     });
 }
 
+/* provider feature set option: if (!package_id || !feature_id || !option_id || !value) return 0 */
 int provider_feature_set_option(void*, const char* package_id,
                                 const char* feature_id,
                                 const char* option_id,
@@ -867,6 +897,7 @@ int provider_feature_set_option(void*, const char* package_id,
     });
 }
 
+/* provider feature resource count: if (!package_id || !feature_id) return 0 */
 int provider_feature_resource_count(void*, const char* package_id,
                                     const char* feature_id) {
     if (!package_id || !feature_id) return 0;
@@ -879,6 +910,7 @@ int provider_feature_resource_count(void*, const char* package_id,
         });
 }
 
+/* provider feature resource get: if (!package_id || !feature_id || !out || index < 0) return 0 */
 int provider_feature_resource_get(void*, const char* package_id,
                                   const char* feature_id, int index,
                                   RecompLauncherCModResource* out) {
@@ -918,6 +950,7 @@ int provider_feature_resource_get(void*, const char* package_id,
     return 0;
 }
 
+/* provider feature resource set path: if (!package_id || !feature_id || !resource_id || !path) return 0 */
 int provider_feature_resource_set_path(void*, const char* package_id,
                                        const char* feature_id,
                                        const char* resource_id,
@@ -930,6 +963,7 @@ int provider_feature_resource_set_path(void*, const char* package_id,
     });
 }
 
+/* provider diagnostic count: if (!package_id || !feature_id) return 0 */
 int provider_diagnostic_count(void*, const char* package_id,
                               const char* feature_id) {
     if (!package_id || !feature_id) return 0;
@@ -941,6 +975,7 @@ int provider_diagnostic_count(void*, const char* package_id,
         });
 }
 
+/* provider diagnostic get: if (!package_id || !feature_id || !out || index < 0) return 0 */
 int provider_diagnostic_get(void*, const char* package_id,
                             const char* feature_id, int index,
                             RecompLauncherCModDiagnostic* out) {
@@ -966,12 +1001,14 @@ int provider_diagnostic_get(void*, const char* package_id,
     return 0;
 }
 
+/* provider version count: if (!package_id) return 0 */
 int provider_version_count(void*, const char* package_id) {
     if (!package_id) return 0;
     const auto package = state().manager.packages().find(package_id);
     return package == state().manager.packages().end() ? 0 : (int)package->second.size();
 }
 
+/* provider version get: if (!package_id || !out || index < 0) return 0 */
 int provider_version_get(void*, const char* package_id, int index,
                          RecompLauncherCModVersion* out) {
     if (!package_id || !out || index < 0) return 0;
@@ -991,6 +1028,7 @@ int provider_version_get(void*, const char* package_id, int index,
 }
 
 template <typename Callback>
+/* mutate: std::string error */
 int mutate(Callback callback) {
     std::string error;
     if (!callback(error)) {
@@ -1006,6 +1044,7 @@ int mutate(Callback callback) {
     return 1;
 }
 
+/* provider install: if (!path) return 0 */
 int provider_install(void*, const char* path) {
     if (!path) return 0;
     return mutate([&](std::string& error) {
@@ -1016,6 +1055,7 @@ int provider_install(void*, const char* path) {
     });
 }
 
+/* provider remove: if (!id || !version) return 0 */
 int provider_remove(void*, const char* id, const char* version) {
     if (!id || !version) return 0;
     return mutate([&](std::string& error) {
@@ -1023,6 +1063,7 @@ int provider_remove(void*, const char* id, const char* version) {
     });
 }
 
+/* provider enable: if (!id) return 0 */
 int provider_enable(void*, const char* id, int enabled) {
     if (!id) return 0;
     return mutate([&](std::string& error) {
@@ -1030,6 +1071,7 @@ int provider_enable(void*, const char* id, int enabled) {
     });
 }
 
+/* provider select: if (!id || !version) return 0 */
 int provider_select(void*, const char* id, const char* version) {
     if (!id || !version) return 0;
     return mutate([&](std::string& error) {
@@ -1037,6 +1079,7 @@ int provider_select(void*, const char* id, const char* version) {
     });
 }
 
+/* provider set option: if (!id || !option || !value) return 0 */
 int provider_set_option(void*, const char* id, const char* option, const char* value) {
     if (!id || !option || !value) return 0;
     return mutate([&](std::string& error) {
@@ -1044,6 +1087,7 @@ int provider_set_option(void*, const char* id, const char* option, const char* v
     });
 }
 
+/* provider commit: std::string error */
 int provider_commit(void*, const char* image_path) {
     std::string error;
     if (!mod_runtime_commit(image_path ? std::filesystem::path(image_path) :
@@ -1055,6 +1099,7 @@ int provider_commit(void*, const char* image_path) {
     return 1;
 }
 
+/* provider commit netplay: std::string error */
 int provider_commit_netplay(void*, const char* image_path) {
     std::string error;
     const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
@@ -1085,6 +1130,7 @@ int provider_commit_netplay(void*, const char* image_path) {
     return 1;
 }
 
+/* provider error: return state().error.c_str() */
 const char* provider_error(void*) {
     return state().error.c_str();
 }
@@ -1123,6 +1169,7 @@ RecompLauncherCModProvider provider = {
 
 } // namespace
 
+/* mod runtime initialize: RuntimeMods& s = state() */
 bool mod_runtime_initialize(const std::filesystem::path& root,
                             const std::string& game_id,
                             uint32_t game_entry_pc,
@@ -1171,6 +1218,7 @@ bool mod_runtime_initialize(const std::filesystem::path& root,
     return true;
 }
 
+/* mod runtime clear for netplay: RuntimeMods& s = state() */
 bool mod_runtime_clear_for_netplay(std::string* error) {
     RuntimeMods& s = state();
     if (!s.initialized) {
@@ -1193,6 +1241,7 @@ bool mod_runtime_clear_for_netplay(std::string* error) {
     return true;
 }
 
+/* mod runtime commit: RuntimeMods& s = state() */
 bool mod_runtime_commit(const std::filesystem::path& disc_path, std::string* error) {
     RuntimeMods& s = state();
     if (!s.initialized) return true;
@@ -1267,6 +1316,7 @@ bool mod_runtime_commit(const std::filesystem::path& disc_path, std::string* err
     return true;
 }
 
+/* mod runtime netplay serialize package: RuntimeMods& s = state() */
 bool mod_runtime_netplay_serialize_package(const std::string& package_id,
                                            char* config, size_t config_cap) {
     RuntimeMods& s = state();
@@ -1303,6 +1353,7 @@ bool mod_runtime_netplay_serialize_package(const std::string& package_id,
     return o > 0;
 }
 
+/* mod runtime netplay fill plan: RuntimeMods& s = state() */
 int mod_runtime_netplay_fill_plan(void* plan, int plan_cap) {
     RuntimeMods& s = state();
     if (!s.initialized || !plan || plan_cap <= 0) return 0;
@@ -1329,6 +1380,7 @@ int mod_runtime_netplay_fill_plan(void* plan, int plan_cap) {
     return n;
 }
 
+/* mod runtime netplay package installed: RuntimeMods& s = state() */
 int mod_runtime_netplay_package_installed(const char* id, const char* version) {
     RuntimeMods& s = state();
     if (!s.initialized || !id || !id[0]) return 0;
@@ -1338,6 +1390,7 @@ int mod_runtime_netplay_package_installed(const char* id, const char* version) {
     return 1;
 }
 
+/* mod runtime netplay plan applied: return state().netplay_plan_applied */
 bool mod_runtime_netplay_plan_applied(void) {
     return state().netplay_plan_applied;
 }
@@ -1372,6 +1425,7 @@ size_t mod_runtime_netplay_offer_json(char* out, size_t out_cap) {
     return o > 13 ? o : 0;
 }
 
+/* mod runtime netplay apply plan: RuntimeMods& s = state() */
 bool mod_runtime_netplay_apply_plan(const void* plan, int count, int* missing,
                                     const std::filesystem::path& disc_path,
                                     std::string* error) {
@@ -1437,15 +1491,18 @@ bool mod_runtime_netplay_apply_plan(const void* plan, int count, int* missing,
     return ok;
 }
 
+/* mod runtime fingerprint: return state().plan.fingerprint */
 const std::string& mod_runtime_fingerprint() {
     return state().plan.fingerprint;
 }
 
+/* mod runtime effective disc path: return state().effective_disc_path */
 const std::filesystem::path& mod_runtime_effective_disc_path() {
     return state().effective_disc_path;
 }
 
 #if defined(RECOMP_LAUNCHER)
+/* mod runtime launcher provider: return &provider */
 const RecompLauncherCModProvider* mod_runtime_launcher_provider() {
     return &provider;
 }
@@ -1453,6 +1510,7 @@ const RecompLauncherCModProvider* mod_runtime_launcher_provider() {
 
 } // namespace PSXRecompV4
 
+/* mod runtime on dispatch: using namespace PSXRecompV4 */
 extern "C" void mod_runtime_on_dispatch(uint32_t target) {
     using namespace PSXRecompV4;
     RuntimeMods& s = state();
@@ -1484,6 +1542,7 @@ extern "C" void mod_runtime_on_dispatch(uint32_t target) {
                      s.plan.fingerprint.c_str());
 }
 
+/* mod runtime on savestate loaded: using namespace PSXRecompV4 */
 extern "C" void mod_runtime_on_savestate_loaded(void) {
     using namespace PSXRecompV4;
     RuntimeMods& s = state();
@@ -1513,10 +1572,12 @@ extern "C" void mod_runtime_on_savestate_loaded(void) {
             s.plan.fingerprint.c_str());
 }
 
+/* mod runtime enable disc patches: PSXRecompV4::state().disc_enabled = true */
 extern "C" void mod_runtime_enable_disc_patches(void) {
     PSXRecompV4::state().disc_enabled = true;
 }
 
+/* mod runtime activate plugins: using namespace PSXRecompV4 */
 extern "C" void mod_runtime_activate_plugins(void) {
     using namespace PSXRecompV4;
     RuntimeMods& s = state();
@@ -1528,6 +1589,7 @@ extern "C" void mod_runtime_activate_plugins(void) {
     }
 }
 
+/* mod runtime on vblank: using namespace PSXRecompV4 */
 extern "C" void mod_runtime_on_vblank(void) {
     using namespace PSXRecompV4;
     RuntimeMods& s = state();
@@ -1539,10 +1601,12 @@ extern "C" void mod_runtime_on_vblank(void) {
     }
 }
 
+/* psx mod game started: return fntrace_is_game_started() */
 extern "C" int psx_mod_game_started(void) {
     return fntrace_is_game_started();
 }
 
+/* psx mod option value: using namespace PSXRecompV4 */
 extern "C" int psx_mod_option_value(const char* package_id,
                                     const char* feature_id,
                                     const char* option_id,
@@ -1565,6 +1629,7 @@ extern "C" int psx_mod_option_value(const char* package_id,
     return 1;
 }
 
+/* psx mod current resource path: using namespace PSXRecompV4 */
 extern "C" int psx_mod_current_resource_path(const char* resource_id,
                                              char* out, uint32_t out_size) {
     using namespace PSXRecompV4;
@@ -1586,45 +1651,55 @@ extern "C" int psx_mod_current_resource_path(const char* resource_id,
     return 0;
 }
 
+/* psx mod read byte: return psx_read_byte(address) */
 extern "C" uint8_t psx_mod_read_byte(uint32_t address) {
     return psx_read_byte(address);
 }
 
+/* psx mod write byte */
 extern "C" void psx_mod_write_byte(uint32_t address, uint8_t value) {
     psx_write_byte(address, value);
 }
 
+/* psx mod read half: return psx_read_half(address) */
 extern "C" uint16_t psx_mod_read_half(uint32_t address) {
     return psx_read_half(address);
 }
 
+/* psx mod write half */
 extern "C" void psx_mod_write_half(uint32_t address, uint16_t value) {
     psx_write_half(address, value);
 }
 
+/* psx mod read word: return psx_read_word(address) */
 extern "C" uint32_t psx_mod_read_word(uint32_t address) {
     return psx_read_word(address);
 }
 
+/* psx mod write word */
 extern "C" void psx_mod_write_word(uint32_t address, uint32_t value) {
     psx_write_word(address, value);
 }
 
+/* psx mod write code word */
 extern "C" void psx_mod_write_code_word(uint32_t address, uint32_t value) {
     psx_write_word(address, value);
     dirty_ram_mark_executable_range(address & 0x1FFFFFFFu, 4u);
 }
 
+/* psx mod alloc guest memory: return psx_mod_memory_alloc(size, alignment) */
 extern "C" uint32_t psx_mod_alloc_guest_memory(uint32_t size,
                                                 uint32_t alignment) {
     return psx_mod_memory_alloc(size, alignment);
 }
 
+/* psx mod alloc gpu dma memory: return psx_mod_gpu_dma_memory_alloc(size, alignment) */
 extern "C" uint32_t psx_mod_alloc_gpu_dma_memory(uint32_t size,
                                                   uint32_t alignment) {
     return psx_mod_gpu_dma_memory_alloc(size, alignment);
 }
 
+/* psx mod widescreen x margin: return (int32_t)psx_ws_x_margin() */
 extern "C" int32_t psx_mod_widescreen_x_margin(void) {
     return (int32_t)psx_ws_x_margin();
 }
@@ -1643,6 +1718,7 @@ extern "C" uint32_t psx_mod_display_width(void) {
     return info.width;
 }
 
+/* psx mod display height: GpuDisplayInfo info */
 extern "C" uint32_t psx_mod_display_height(void) {
     GpuDisplayInfo info;
     std::memset(&info, 0, sizeof(info));
@@ -1650,6 +1726,7 @@ extern "C" uint32_t psx_mod_display_height(void) {
     return info.height;
 }
 
+/* psx mod register function entry plugin: using namespace PSXRecompV4 */
 extern "C" int psx_mod_register_function_entry_plugin(
     const char* id, uint32_t address, PSXModFunctionEntryCallback callback) {
     using namespace PSXRecompV4;
@@ -1664,6 +1741,7 @@ extern "C" int psx_mod_register_function_entry_plugin(
     return 1;
 }
 
+/* psx mod function entry: using namespace PSXRecompV4 */
 extern "C" void psx_mod_function_entry(CPUState* cpu, uint32_t address) {
     using namespace PSXRecompV4;
     if (!cpu) return;
@@ -1672,6 +1750,7 @@ extern "C" void psx_mod_function_entry(CPUState* cpu, uint32_t address) {
     }
 }
 
+/* mod runtime patch disc sector: using namespace PSXRecompV4 */
 extern "C" void mod_runtime_patch_disc_sector(uint32_t lba, int raw_sector,
                                                uint8_t* bytes, uint32_t size) {
     using namespace PSXRecompV4;

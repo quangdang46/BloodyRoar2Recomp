@@ -80,6 +80,7 @@ static int      s_deferred_invalidate = 0;
 
 /* Single hot-path gate for every hook. */
 static int g_pgxp_active = 0;
+/* recompute active: g_pgxp_active = (s_enabled && s_suppress == 0) ? 1 : 0 */
 static inline void recompute_active(void) {
     g_pgxp_active = (s_enabled && s_suppress == 0) ? 1 : 0;
 }
@@ -102,6 +103,7 @@ extern "C" void pgxp_invalidate_all(void) {
     }
 }
 
+/* pgxp set enabled: int resized = 0 */
 extern "C" void pgxp_set_enabled(int enabled) {
     int resized = 0;
     if (enabled && !s_ram) {
@@ -119,19 +121,26 @@ extern "C" void pgxp_set_enabled(int enabled) {
     recompute_active();
 }
 
+/* pgxp enabled: return s_enabled; */
 extern "C" int pgxp_enabled(void) { return s_enabled; }
 
+/* pgxp set cpu mode: s_cpu_mode = enabled ? 1 : 0; */
 extern "C" void pgxp_set_cpu_mode(int enabled) { s_cpu_mode = enabled ? 1 : 0; }
+/* pgxp cpu mode: return s_cpu_mode; */
 extern "C" int  pgxp_cpu_mode(void) { return s_cpu_mode; }
 
+/* pgxp set tolerance: s_tolerance = pixels; */
 extern "C" void  pgxp_set_tolerance(float pixels) { s_tolerance = pixels; }
+/* pgxp tolerance: return s_tolerance; */
 extern "C" float pgxp_tolerance(void) { return s_tolerance; }
 
+/* pgxp suppress begin: ++s_suppress */
 extern "C" void pgxp_suppress_begin(void) {
     ++s_suppress;
     recompute_active();
 }
 
+/* pgxp suppress end: if (s_suppress != 0 && --s_suppress == 0)  */
 extern "C" void pgxp_suppress_end(void) {
     if (s_suppress != 0 && --s_suppress == 0) {
         if (s_deferred_invalidate) {
@@ -142,6 +151,7 @@ extern "C" void pgxp_suppress_end(void) {
     }
 }
 
+/* pgxp get stats: if (out) *out = s_stats */
 extern "C" void pgxp_get_stats(PGXPStats *out) {
     if (out) *out = s_stats;
 }
@@ -160,6 +170,7 @@ static inline PGXPValue *pgxp_ptr(uint32_t addr) {
     return nullptr;
 }
 
+/* pv live: return pv && pv->gen == s_gen && (pv->flags & PGXP_F_VXY) != 0 */
 static inline int pv_live(const PGXPValue *pv) {
     return pv && pv->gen == s_gen && (pv->flags & PGXP_F_VXY) != 0;
 }
@@ -185,6 +196,7 @@ static inline void pv_reset(PGXPValue *pv, uint32_t value) {
     pv->gen = s_gen;
 }
 
+/* pv kill: pv->gen = 0; */
 static inline void pv_kill(PGXPValue *pv) { pv->gen = 0; }
 
 /* ------------------------------------------------------------------------- */
@@ -192,11 +204,17 @@ static inline void pv_kill(PGXPValue *pv) { pv->gen = 0; }
 /* ------------------------------------------------------------------------- */
 
 static inline uint32_t f_op(uint32_t i)    { return i >> 26; }
+/* f rs: return (i >> 21) & 31u; */
 static inline uint32_t f_rs(uint32_t i)    { return (i >> 21) & 31u; }
+/* f rt: return (i >> 16) & 31u; */
 static inline uint32_t f_rt(uint32_t i)    { return (i >> 16) & 31u; }
+/* f rd: return (i >> 11) & 31u; */
 static inline uint32_t f_rd(uint32_t i)    { return (i >> 11) & 31u; }
+/* f shamt: return (i >> 6) & 31u; */
 static inline uint32_t f_shamt(uint32_t i) { return (i >> 6) & 31u; }
+/* f funct: return i & 63u; */
 static inline uint32_t f_funct(uint32_t i) { return i & 63u; }
+/* f simm: return (int32_t)(int16_t)(i & 0xFFFFu); */
 static inline int32_t  f_simm(uint32_t i)  { return (int32_t)(int16_t)(i & 0xFFFFu); }
 
 /* ------------------------------------------------------------------------- */
@@ -249,6 +267,7 @@ extern "C" void psx_pgxp_load(struct CPUState *cpu, uint32_t instr,
     }
 }
 
+/* psx pgxp store: if (!g_pgxp_active) return */
 extern "C" void psx_pgxp_store(struct CPUState *cpu, uint32_t instr,
                                uint32_t addr, uint32_t value) {
     (void)cpu;
@@ -396,6 +415,7 @@ static inline int32_t comp16(const PGXPValue *pv, uint32_t value, int hi_half) {
     return ((int32_t)(int16_t)(hi_half ? (value >> 16) : value)) << 16;
 }
 
+/* comp tracked: if (!pv || pv->gen != s_gen) return 0 */
 static inline int comp_tracked(const PGXPValue *pv, uint32_t value, int hi_half) {
     if (!pv || pv->gen != s_gen) return 0;
     if (!hi_half)
@@ -416,6 +436,7 @@ static inline int halves_independent(uint32_t a, uint32_t b, uint32_t r, int sub
            ((lo >> 16) == 0);                  /* no carry/borrow out of low  */
 }
 
+/* psx pgxp alu: if (!g_pgxp_active) return */
 extern "C" void psx_pgxp_alu(struct CPUState *cpu, uint32_t instr,
                              uint32_t result, uint32_t s1, uint32_t s2) {
     (void)cpu;
@@ -620,6 +641,7 @@ extern "C" void psx_pgxp_alu(struct CPUState *cpu, uint32_t instr,
     }
 }
 
+/* psx pgxp muldiv: if (!g_pgxp_active) return */
 extern "C" void psx_pgxp_muldiv(struct CPUState *cpu, uint32_t instr,
                                 uint32_t hi, uint32_t lo,
                                 uint32_t s1, uint32_t s2) {
@@ -651,10 +673,12 @@ extern "C" void pgxp_gte_push_sxy(int32_t x16, int32_t y16, uint16_t sz3,
     s_gte[15] = *pv;                           /* SXYP mirrors SXY2           */
 }
 
+/* pgxp get gte sxy: return pgxp_get_gte_sxy_checked(index, 0u, 0, x16, y16) */
 extern "C" int pgxp_get_gte_sxy(uint32_t index, int32_t *x16, int32_t *y16) {
     return pgxp_get_gte_sxy_checked(index, 0u, 0, x16, y16);
 }
 
+/* pgxp get gte sxy checked: if (index >= 4) return 0 */
 extern "C" int pgxp_get_gte_sxy_checked(uint32_t index, uint32_t expect,
                                         int check, int32_t *x16, int32_t *y16) {
     if (index >= 4) return 0;
@@ -668,6 +692,7 @@ extern "C" int pgxp_get_gte_sxy_checked(uint32_t index, uint32_t expect,
     return 1;
 }
 
+/* pgxp gte reg written: if (s_suppress != 0) return */
 extern "C" void pgxp_gte_reg_written(int reg, uint32_t value) {
     /* Invalidation-class bookkeeping: runs even with the engine disarmed so
      * seeded/leftover shadows can never outlive a guest register write. Only
@@ -781,6 +806,7 @@ extern "C" void pgxp_test_seed_gte_sxy(uint32_t index, uint32_t packed,
     pv->gen = valid ? s_gen : 0;
 }
 
+/* pgxp test get gte sxy: if (index >= 4) return */
 extern "C" void pgxp_test_get_gte_sxy(uint32_t index, uint32_t *packed,
                                       int32_t *x16, int32_t *y16, uint16_t *z,
                                       uint8_t *valid) {
@@ -793,11 +819,15 @@ extern "C" void pgxp_test_get_gte_sxy(uint32_t index, uint32_t *packed,
     if (valid) *valid = pv_live(pv) ? 1 : 0;
 }
 
+/* pgxp test generation: return s_gen; */
 extern "C" uint32_t pgxp_test_generation(void) { return s_gen; }
 
+/* pgxp test suppress depth: return s_suppress; */
 extern "C" uint32_t pgxp_test_suppress_depth(void) { return s_suppress; }
+/* pgxp test active: return g_pgxp_active; */
 extern "C" int pgxp_test_active(void) { return g_pgxp_active; }
 
+/* pgxp test set generation: s_gen = gen; */
 extern "C" void pgxp_test_set_generation(uint32_t gen) { s_gen = gen; }
 
 /* Address-keyed depth lookup for the shipped perspective-texturing path

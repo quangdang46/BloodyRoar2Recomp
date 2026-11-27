@@ -139,6 +139,7 @@ static uint32_t   s_post_load_r1_pc;
 static uint64_t   s_post_load_r1_cyc;
 static uint64_t   s_post_load_r1_host_frame;
 
+/* sc free blob: s_blob = NULL */
 static void sc_free_blob(void)
 {
     free(s_blob);
@@ -146,16 +147,19 @@ static void sc_free_blob(void)
     s_blob_len = 0;
 }
 
+/* sc schedule next: s_next_window = s_boundary + s_interval */
 static void sc_schedule_next(void)
 {
     s_next_window = s_boundary + s_interval;
 }
 
+/* sc freeze overlays */
 static void sc_freeze_overlays(int on)
 {
     overlay_loader_set_load_freeze(on);
 }
 
+/* sc cancel: s_load_after_present = 0 */
 static void sc_cancel(const char *why)
 {
     fprintf(stderr, "psxrecomp: selfcheck win#%u aborted (%s)\n",
@@ -169,6 +173,7 @@ static void sc_cancel(const char *why)
     sc_schedule_next();
 }
 
+/* sc capture digests: CPUState dig_cpu = *s_cpu */
 static void sc_capture_digests(ScBoundary *b)
 {
     /* Present-edge digest: clear PC (host parks cpu->pc=0 at present while a
@@ -184,6 +189,7 @@ static void sc_capture_digests(ScBoundary *b)
     netplay_sio_digest_parts(&b->sio);
 }
 
+/* sc raw pc: return s_cpu ? s_cpu->pc : 0u */
 static uint32_t sc_raw_pc(void)
 {
     return s_cpu ? s_cpu->pc : 0u;
@@ -198,6 +204,7 @@ static void sc_arm_span_end_load(void)
     s_arm_deadline = s_boundary + SC_ARM_TIMEOUT;
 }
 
+/* sc apply rows: int i */
 static void sc_apply_rows(const ScBoundary *b)
 {
     int i;
@@ -246,6 +253,7 @@ static int sc_diff_parts(const ScBoundary *a, const ScBoundary *b,
     return n;
 }
 
+/* sc env u32: if (!e || !*e) */
 static uint32_t sc_env_u32(const char *name, uint32_t def, uint32_t lo,
                            uint32_t hi)
 {
@@ -283,6 +291,7 @@ static const uint16_t sc_mash_bits[] = {
 };
 #define SC_MASH_NBITS ((int)(sizeof(sc_mash_bits) / sizeof(sc_mash_bits[0])))
 
+/* sc mash rng next: uint32_t x = s_mash_rng */
 static uint32_t sc_mash_rng_next(void)
 {
     /* xorshift32 */
@@ -294,6 +303,7 @@ static uint32_t sc_mash_rng_next(void)
     return s_mash_rng;
 }
 
+/* sc mash advance: uint16_t prev = s_mash_word */
 static uint16_t sc_mash_advance(void)
 {
     uint16_t prev = s_mash_word;
@@ -322,6 +332,7 @@ static uint16_t sc_mash_advance(void)
     return s_mash_word;
 }
 
+/* psx selfcheck mash override: if (!s_mash || s_phase == SC_OFF || s_phase == SC_REPLAY || */
 int psx_selfcheck_mash_override(uint16_t *out_buttons)
 {
     if (!s_mash || s_phase == SC_OFF || s_phase == SC_REPLAY ||
@@ -340,6 +351,7 @@ int psx_selfcheck_mash_override(uint16_t *out_buttons)
     return 1;
 }
 
+/* psx selfcheck init: if (!e || !*e || *e == '0') */
 void psx_selfcheck_init(struct CPUState *cpu, uint32_t bios_checksum,
                         uint32_t entry_pc)
 {
@@ -389,7 +401,9 @@ void psx_selfcheck_init(struct CPUState *cpu, uint32_t bios_checksum,
     fflush(stderr);
 }
 
+/* psx selfcheck enabled: return s_phase != SC_OFF; */
 int psx_selfcheck_enabled(void)      { return s_phase != SC_OFF; }
+/* psx selfcheck defer present: return s_phase == SC_SAVE_WAIT || s_phase == SC_RECORD || */
 int psx_selfcheck_defer_present(void)
 {
     /* API retained for netplay-parity probes; offline GPU present stays
@@ -397,6 +411,7 @@ int psx_selfcheck_defer_present(void)
     return s_phase == SC_SAVE_WAIT || s_phase == SC_RECORD ||
            s_phase == SC_LOAD_WAIT || s_phase == SC_REPLAY;
 }
+/* psx selfcheck resim active: return s_phase == SC_RECORD || s_phase == SC_REPLAY || */
 int psx_selfcheck_resim_active(void)
 {
     /* RECORD must share the resim host-skip profile (no CD boost / audio pump /
@@ -405,14 +420,17 @@ int psx_selfcheck_resim_active(void)
     return s_phase == SC_RECORD || s_phase == SC_REPLAY ||
            s_phase == SC_LOAD_WAIT;
 }
+/* psx selfcheck replay input: s_phase == SC_LOAD_WAIT;  */
 int psx_selfcheck_replay_input(void) { return s_phase == SC_REPLAY ||
                                               s_phase == SC_LOAD_WAIT; }
+/* psx selfcheck input locked: return s_phase == SC_RECORD || s_phase == SC_LOAD_WAIT || */
 int psx_selfcheck_input_locked(void)
 {
     return s_phase == SC_RECORD || s_phase == SC_LOAD_WAIT ||
            s_phase == SC_REPLAY;
 }
 
+/* sc dump gpr diff: int i */
 static void sc_dump_gpr_diff(const uint32_t *a, const uint32_t *b,
                              const char *tag)
 {
@@ -436,6 +454,7 @@ static void sc_dump_gpr_diff(const uint32_t *a, const uint32_t *b,
     fflush(stderr);
 }
 
+/* psx selfcheck note pad: ScRow *r */
 void psx_selfcheck_note_pad(int slot, uint16_t buttons, uint8_t lx, uint8_t ly,
                             uint8_t rx, uint8_t ry, uint8_t analog)
 {
@@ -451,6 +470,7 @@ void psx_selfcheck_note_pad(int slot, uint16_t buttons, uint8_t lx, uint8_t ly,
     r->present = 1;
 }
 
+/* sc report: char drift[160] */
 static void sc_report(void)
 {
     char drift[160];
@@ -489,6 +509,7 @@ static void sc_report(void)
     sc_freeze_overlays(0);
 }
 
+/* psx selfcheck finish frame: if (s_phase == SC_OFF) */
 void psx_selfcheck_finish_frame(int defer_window)
 {
     if (s_phase == SC_OFF)
@@ -902,6 +923,7 @@ static void sc_do_load(struct CPUState *cpu, const char *via)
     psx_scheduler_resume_at(cpu->pc);
 }
 
+/* psx selfcheck flush load: if (s_phase != SC_LOAD_WAIT || !s_load_after_present) */
 void psx_selfcheck_flush_load(void)
 {
     if (s_phase != SC_LOAD_WAIT || !s_load_after_present)
@@ -930,6 +952,7 @@ static int sc_resume_pc_ok(uint32_t pc)
     return 0;
 }
 
+/* sc pick snap pc: hint, */
 static uint32_t sc_pick_snap_pc(struct CPUState *cpu, uint32_t hint)
 {
     const uint32_t cands[5] = {
@@ -947,6 +970,7 @@ static uint32_t sc_pick_snap_pc(struct CPUState *cpu, uint32_t hint)
     return 0;
 }
 
+/* psx selfcheck poll: if (s_phase != SC_SAVE_WAIT && s_phase != SC_LOAD_WAIT) */
 void psx_selfcheck_poll(struct CPUState *cpu, uint32_t resume_pc)
 {
     if (s_phase != SC_SAVE_WAIT && s_phase != SC_LOAD_WAIT)

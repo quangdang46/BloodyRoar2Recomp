@@ -2,81 +2,123 @@
 #include "cpu_state.h" /* full CPUState — stub path assigns *out = *in */
 
 #if !defined(PSX_HAS_RECOMP_NET)
+/* psx netplay rb bind: (void)b; */
 void psx_netplay_rb_bind(const PsxNetplayRbBindings *b) { (void)b; }
+/* psx netplay rb start */
 void psx_netplay_rb_start(void) {}
+/* psx netplay rb shutdown */
 void psx_netplay_rb_shutdown(void) {}
+/* psx netplay rb cold reset */
 void psx_netplay_rb_cold_reset(void) {}
+/* psx netplay rb poll */
 void psx_netplay_rb_poll(struct CPUState *cpu, uint32_t resume_pc)
 {
     (void)cpu;
     (void)resume_pc;
 }
+/* psx netplay rb flush resume */
 void psx_netplay_rb_flush_resume(void) {}
+/* psx netplay rb top level resume active: return 0; */
 int psx_netplay_rb_top_level_resume_active(void) { return 0; }
+/* psx netplay rb recover null pc: return 0 */
 int psx_netplay_rb_recover_null_pc(struct CPUState *cpu, uint32_t *out_pc)
 {
     (void)cpu;
     (void)out_pc;
     return 0;
 }
+/* psx netplay rb request snap: (void)tick; */
 void psx_netplay_rb_request_snap(uint32_t tick) { (void)tick; }
+/* psx netplay rb begin rewind: return 0 */
 int psx_netplay_rb_begin_rewind(uint32_t mismatch_tick, int slot)
 {
     (void)mismatch_tick;
     (void)slot;
     return 0;
 }
+/* psx netplay rb tip extend: return 0 */
 int psx_netplay_rb_tip_extend(uint32_t mismatch_tick, int slot)
 {
     (void)mismatch_tick;
     (void)slot;
     return 0;
 }
+/* psx netplay rb rewind suppressed: return 0; */
 int psx_netplay_rb_rewind_suppressed(void) { return 0; }
+/* psx netplay rb fmv defer rewind: return 0; */
 int psx_netplay_rb_fmv_defer_rewind(void) { return 0; }
+/* psx netplay rb fmv media active: return 0; */
 int psx_netplay_rb_fmv_media_active(void) { return 0; }
+/* psx netplay rb lockstep no invent: return 0; */
 int psx_netplay_rb_lockstep_no_invent(void) { return 0; }
+/* psx netplay rb fmv settle active: return 0; */
 int psx_netplay_rb_fmv_settle_active(void) { return 0; }
+/* psx netplay rb fmv desync hold: return 0; */
 int psx_netplay_rb_fmv_desync_hold(void) { return 0; }
+/* psx netplay rb clear fmv desync hold: (void)why; */
 void psx_netplay_rb_clear_fmv_desync_hold(const char *why) { (void)why; }
+/* psx netplay rb request post fmv heal kf */
 void psx_netplay_rb_request_post_fmv_heal_kf(void) {}
+/* psx netplay rb post fmv heal eligible: return 0; */
 int psx_netplay_rb_post_fmv_heal_eligible(void) { return 0; }
+/* psx netplay rb fmv episode unsafe: (void)tick; return 0; */
 int psx_netplay_rb_fmv_episode_unsafe(uint32_t tick) { (void)tick; return 0; }
+/* psx netplay rb media kf probe match: return 0 */
 int psx_netplay_rb_media_kf_probe_match(uint32_t size, uint32_t crc)
 {
     (void)size;
     (void)crc;
     return 0;
 }
+/* psx netplay rb media kf on ready: return 0 */
 int psx_netplay_rb_media_kf_on_ready(const void *data, size_t size)
 {
     (void)data;
     (void)size;
     return 0;
 }
+/* psx netplay rb media kf busy: return 0; */
 int psx_netplay_rb_media_kf_busy(void) { return 0; }
+/* psx netplay rb poll replay stall */
 void psx_netplay_rb_poll_replay_stall(void) {}
+/* psx netplay rb take promote sweep: return 0; */
 int psx_netplay_rb_take_promote_sweep(void) { return 0; }
+/* psx netplay rb fmv unlock grace active: return 0; */
 int psx_netplay_rb_fmv_unlock_grace_active(void) { return 0; }
+/* psx netplay rb pump */
 void psx_netplay_rb_pump(void) {}
+/* psx netplay rb boot dig0 gate: return 0; */
 int psx_netplay_rb_boot_dig0_gate(void) { return 0; }
+/* psx netplay rb boot dig0 note local: (void)core; */
 void psx_netplay_rb_boot_dig0_note_local(uint32_t core) { (void)core; }
+/* psx netplay rb boot dig0 note peer: (void)core; */
 void psx_netplay_rb_boot_dig0_note_peer(uint32_t core) { (void)core; }
+/* psx netplay rb active: return 0; */
 int psx_netplay_rb_active(void) { return 0; }
+/* psx netplay rb is resimulating: return 0; */
 int psx_netplay_rb_is_resimulating(void) { return 0; }
+/* psx netplay rb tip holding: return 0; */
 int psx_netplay_rb_tip_holding(void) { return 0; }
+/* psx netplay rb episode target: return 0; */
 uint32_t psx_netplay_rb_episode_target(void) { return 0; }
+/* psx netplay rb tip hold invent slack: return 0; */
 uint32_t psx_netplay_rb_tip_hold_invent_slack(void) { return 0; }
+/* psx netplay rb tip hold rereplay pending: return 0; */
 int psx_netplay_rb_tip_hold_rereplay_pending(void) { return 0; }
+/* psx netplay rb tip hold rereplay from: return 0; */
 uint32_t psx_netplay_rb_tip_hold_rereplay_from(void) { return 0; }
+/* psx netplay rb tip runway: return 0; */
 uint32_t psx_netplay_rb_tip_runway(void) { return 0; }
+/* psx netplay rb tip hold block quiet: (void)block; */
 void psx_netplay_rb_tip_hold_block_quiet(int block) { (void)block; }
+/* psx netplay rb ignore peer frame commit: return 0 */
 int psx_netplay_rb_ignore_peer_frame_commit(uint32_t tick, uint32_t hash)
 {
     (void)tick;
     (void)hash;
     return 0;
 }
+/* psx netplay rb abort resim core mismatch: return 0 */
 int psx_netplay_rb_abort_resim_core_mismatch(uint32_t tick, uint32_t local_core,
                                              uint32_t peer_core)
 {
@@ -85,17 +127,25 @@ int psx_netplay_rb_abort_resim_core_mismatch(uint32_t tick, uint32_t local_core,
     (void)peer_core;
     return 0;
 }
+/* psx netplay rb load pending: return 0; */
 int psx_netplay_rb_load_pending(void) { return 0; }
+/* psx netplay rb baseline fork cap: return 0; */
 uint32_t psx_netplay_rb_baseline_fork_cap(void) { return 0; }
+/* psx netplay rb try admit: return 0; */
 int psx_netplay_rb_try_admit(void) { return 0; }
+/* psx netplay rb finish frame */
 void psx_netplay_rb_finish_frame(void) {}
+/* psx netplay rb confirmed frontier: return 0 */
 uint32_t psx_netplay_rb_confirmed_frontier(uint32_t from_tick)
 {
     (void)from_tick;
     return 0;
 }
+/* psx netplay rb confirmed remaining: return 0; */
 uint32_t psx_netplay_rb_confirmed_remaining(void) { return 0; }
+/* psx netplay rb ownership step */
 void psx_netplay_rb_ownership_step(void) {}
+/* psx netplay rb cpu for present digest: if (!out || !in) */
 void psx_netplay_rb_cpu_for_present_digest(struct CPUState *out,
                                            const struct CPUState *in)
 {
@@ -104,12 +154,19 @@ void psx_netplay_rb_cpu_for_present_digest(struct CPUState *out,
     *out = *in;
     out->pc = 0;
 }
+/* psx netplay rb episode count: return 0; */
 uint32_t psx_netplay_rb_episode_count(void) { return 0; }
+/* psx netplay rb take replay ticks: return 0; */
 uint64_t psx_netplay_rb_take_replay_ticks(void) { return 0; }
+/* psx netplay rb replay ticks total: return 0; */
 uint64_t psx_netplay_rb_replay_ticks_total(void) { return 0; }
+/* psx netplay rb phase: return 0; */
 int psx_netplay_rb_phase(void) { return 0; }
+/* psx netplay rb snap count: return 0; */
 uint32_t psx_netplay_rb_snap_count(void) { return 0; }
+/* psx netplay rb sticky bb pc: return 0; */
 uint32_t psx_netplay_rb_sticky_bb_pc(void) { return 0; }
+/* psx netplay rb rtt estimate ms: return 0; */
 uint32_t psx_netplay_rb_rtt_estimate_ms(void) { return 0; }
 #else
 
@@ -275,6 +332,7 @@ static uint32_t tip_dense_window(void)
     return win;
 }
 
+/* tip dense reset: g_tip_dense_fifo_n = 0 */
 static void tip_dense_reset(void)
 {
     g_tip_dense_fifo_n = 0;
@@ -807,6 +865,7 @@ static uint32_t g_ownership_chain_origin_tip;
 static uint32_t g_chain_suppress_until_tip;
 static uint64_t g_chain_suppress_until_ms;
 
+/* ownership clear chain budget: g_replay_catchup_cap = 0u */
 static void ownership_clear_chain_budget(void)
 {
     g_replay_catchup_cap = 0u;
@@ -814,6 +873,7 @@ static void ownership_clear_chain_budget(void)
     g_ownership_chain_origin_tip = 0u;
 }
 
+/* ownership chain max hops: if (e && e[0])  */
 static uint32_t ownership_chain_max_hops(void)
 {
     const char *e = getenv("PSX_RB_CHAIN_MAX_HOPS");
@@ -829,6 +889,7 @@ static uint32_t ownership_chain_max_hops(void)
     return RB_OWNERSHIP_CHAIN_MAX_HOPS;
 }
 
+/* ownership chain max ticks: if (e && e[0])  */
 static uint32_t ownership_chain_max_ticks(void)
 {
     const char *e = getenv("PSX_RB_CHAIN_MAX_TICKS");
@@ -864,6 +925,7 @@ static uint32_t ownership_chain_min_ahead(void)
     return min_ahead;
 }
 
+/* ownership chain suppress ticks: if (e && e[0])  */
 static uint32_t ownership_chain_suppress_ticks(void)
 {
     const char *e = getenv("PSX_RB_CHAIN_SUPPRESS_TICKS");
@@ -878,6 +940,7 @@ static uint32_t ownership_chain_suppress_ticks(void)
     return RB_OWNERSHIP_CHAIN_SUPPRESS_TICKS;
 }
 
+/* ownership chain suppress ms: if (e && e[0])  */
 static uint32_t ownership_chain_suppress_ms(void)
 {
     const char *e = getenv("PSX_RB_CHAIN_SUPPRESS_MS");
@@ -891,6 +954,7 @@ static uint32_t ownership_chain_suppress_ms(void)
     return RB_OWNERSHIP_CHAIN_SUPPRESS_MS;
 }
 
+/* ownership arm chain suppress: uint32_t ticks = ownership_chain_suppress_ticks() */
 static void ownership_arm_chain_suppress(uint32_t tip)
 {
     uint32_t ticks = ownership_chain_suppress_ticks();
@@ -914,6 +978,7 @@ static void ownership_arm_chain_suppress(uint32_t tip)
     fflush(stderr);
 }
 
+/* ownership chain suppressed: int by_tip = 0 */
 static int ownership_chain_suppressed(uint32_t tip)
 {
     int by_tip = 0;
@@ -990,6 +1055,7 @@ static void ownership_exit_to_live(uint32_t tip, uint32_t frontier,
         ownership_arm_chain_suppress(tip);
 }
 
+/* rb fmv media active: if (gpu_display_is_depth24()) */
 static int rb_fmv_media_active(void)
 {
     if (gpu_display_is_depth24())
@@ -1326,6 +1392,7 @@ static int rb_post_fmv_heal_sticky_invent_hold(uint32_t sim)
     return (st.remote_lead > 0) ? 1 : 0;
 }
 
+/* rb post fmv heal sticky active: return (g_post_fmv_heal_sticky_until > 0u && sim < g_post_fmv_heal_st... */
 static int rb_post_fmv_heal_sticky_active(uint32_t sim)
 {
     return (g_post_fmv_heal_sticky_until > 0u && sim < g_post_fmv_heal_sticky_until)
@@ -1356,6 +1423,7 @@ static int rb_in_fmv_lockstep_window(void)
     return sim < g_fmv_lockstep_until;
 }
 
+/* rb media crc note: RbMediaCrc *e */
 static void rb_media_crc_note(uint32_t tick, uint32_t size, uint32_t crc)
 {
     RbMediaCrc *e;
@@ -1380,6 +1448,7 @@ static void rb_media_crc_note(uint32_t tick, uint32_t size, uint32_t crc)
         g_media_crc_n++;
 }
 
+/* rb media crc lookup: uint32_t i */
 static int rb_media_crc_lookup(uint32_t tick, uint32_t *size_out, uint32_t *crc_out)
 {
     uint32_t i;
@@ -1397,6 +1466,7 @@ static int rb_media_crc_lookup(uint32_t tick, uint32_t *size_out, uint32_t *crc_
     return 0;
 }
 
+/* arm rewind cooldown ticks: uint32_t until = sim + ticks */
 static void arm_rewind_cooldown_ticks(uint32_t sim, uint32_t ticks, const char *why)
 {
     uint32_t until = sim + ticks;
@@ -1408,6 +1478,7 @@ static void arm_rewind_cooldown_ticks(uint32_t sim, uint32_t ticks, const char *
     fflush(stderr);
 }
 
+/* clear rewind cooldown: g_rewind_cooldown_until = 0 */
 static void clear_rewind_cooldown(const char *why)
 {
     g_rewind_cooldown_until = 0;
@@ -1554,11 +1625,13 @@ static void dump_post_diverge_diag(const char *why)
 extern int psx_game_is_function_entry(uint32_t addr);
 #endif
 
+/* sess: return (g_bound && g_b.session) ? *g_b.session : NULL */
 static RNetSession *sess(void)
 {
     return (g_bound && g_b.session) ? *g_b.session : NULL;
 }
 
+/* cpu: return (g_bound && g_b.cpu) ? *g_b.cpu : NULL */
 static CPUState *cpu(void)
 {
     return (g_bound && g_b.cpu) ? *g_b.cpu : NULL;
@@ -1595,6 +1668,7 @@ static int rb_resume_pc_ok(uint32_t pc)
 #define RB_MOTK_WAIT2_A 0x800768C8u
 #define RB_MOTK_WAIT2_B 0x80076880u
 
+/* rb canonicalize resume pc: if (pc == RB_MOTK_WAIT_A || pc == RB_MOTK_WAIT_B) */
 static uint32_t rb_canonicalize_resume_pc(uint32_t pc)
 {
     if (pc == RB_MOTK_WAIT_A || pc == RB_MOTK_WAIT_B)
@@ -1604,6 +1678,7 @@ static uint32_t rb_canonicalize_resume_pc(uint32_t pc)
     return pc;
 }
 
+/* rb pc is bios: return ((pc & 0xfff00000u) == 0xbfc00000u) ? 1 : 0 */
 static int rb_pc_is_bios(uint32_t pc)
 {
     return ((pc & 0xfff00000u) == 0xbfc00000u) ? 1 : 0;
@@ -1654,17 +1729,20 @@ static uint32_t pick_snap_resume_pc(const CPUState *c, uint32_t hint)
     return 0;
 }
 
+/* psx netplay rb sticky bb pc: return g_last_good_bb_pc */
 uint32_t psx_netplay_rb_sticky_bb_pc(void)
 {
     return g_last_good_bb_pc;
 }
 
+/* note good bb pc: if (rb_resume_pc_ok(pc)) */
 static void note_good_bb_pc(uint32_t pc)
 {
     if (rb_resume_pc_ok(pc))
         g_last_good_bb_pc = rb_canonicalize_resume_pc(pc);
 }
 
+/* psx netplay rb cpu for present digest: if (!out || !in) */
 void psx_netplay_rb_cpu_for_present_digest(struct CPUState *out,
                                            const struct CPUState *in)
 {
@@ -1714,6 +1792,7 @@ static void log_cpu_digest_split(const CPUState *raw, const char *tag)
     fflush(stderr);
 }
 
+/* clear episode wire state: g_local_baseline_sent = 0 */
 static void clear_episode_wire_state(void)
 {
     g_local_baseline_sent = 0;
@@ -1809,6 +1888,7 @@ static int rb_post_fmv_heal_eligible(void)
     return 0;
 }
 
+/* rb arm post fmv heal sticky: uint32_t until = tip + RB_FMV_HEAL_STICKY_TICKS */
 static void rb_arm_post_fmv_heal_sticky(uint32_t tip, uint32_t fork_tick)
 {
     uint32_t until = tip + RB_FMV_HEAL_STICKY_TICKS;
@@ -1826,6 +1906,7 @@ static void rb_arm_post_fmv_heal_sticky(uint32_t tip, uint32_t fork_tick)
     fflush(stderr);
 }
 
+/* rb clear post fmv heal sticky: if (g_post_fmv_heal_sticky_until == 0u && g_post_fmv_heal_fork_tick =... */
 static void rb_clear_post_fmv_heal_sticky(const char *why)
 {
     if (g_post_fmv_heal_sticky_until == 0u && g_post_fmv_heal_fork_tick == 0u)
@@ -1876,6 +1957,7 @@ static void rb_post_fmv_platform_nondet_enter(uint32_t keep_tick, uint32_t fork_
     fflush(stderr);
 }
 
+/* rb clear post fmv platform nondet: if (!g_post_fmv_platform_nondet && g_post_fmv_platform_keep_tick == 0... */
 static void rb_clear_post_fmv_platform_nondet(const char *why)
 {
     if (!g_post_fmv_platform_nondet && g_post_fmv_platform_keep_tick == 0u &&
@@ -1920,6 +2002,7 @@ static void rb_post_fmv_platform_accept(uint32_t through, uint32_t fork,
     fflush(stderr);
 }
 
+/* psx netplay rb platform fork accepted: return (g_platform_accepted_fork != 0u && */
 int psx_netplay_rb_platform_fork_accepted(uint32_t fork_tick)
 {
     return (g_platform_accepted_fork != 0u &&
@@ -1945,6 +2028,7 @@ static int rb_want_heal_kf(uint32_t mismatch, uint32_t load)
 static void clear_baseline_pin(void);
 static void abort_episode(const char *why);
 
+/* rb install media kf bytes: uint8_t *ring_copy */
 static int rb_install_media_kf_bytes(uint32_t tick, const uint8_t *data, size_t size)
 {
     uint8_t *ring_copy;
@@ -1971,6 +2055,7 @@ static int rb_install_media_kf_bytes(uint32_t tick, const uint8_t *data, size_t 
     return 1;
 }
 
+/* rb media kf seal local: size_t sz = 0 */
 static int rb_media_kf_seal_local(uint32_t tick)
 {
     size_t sz = 0;
@@ -1983,6 +2068,7 @@ static int rb_media_kf_seal_local(uint32_t tick)
     return rb_install_media_kf_bytes(tick, p, sz);
 }
 
+/* rb media kf host drive: RNetSession *s = sess() */
 static void rb_media_kf_host_drive(void)
 {
     RNetSession *s = sess();
@@ -2092,6 +2178,7 @@ static void rb_media_kf_host_drive(void)
     }
 }
 
+/* clear baseline pin: g_pin_data = NULL */
 static void clear_baseline_pin(void)
 {
     free(g_pin_data);
@@ -2101,6 +2188,7 @@ static void clear_baseline_pin(void)
     g_pin_valid = 0;
 }
 
+/* pin baseline from ring: size_t sz = 0 */
 static void pin_baseline_from_ring(uint32_t tick)
 {
     size_t sz = 0;
@@ -2223,6 +2311,7 @@ static void realign_invalidate_evidence(uint32_t tick)
     fflush(stderr);
 }
 
+/* schedule live realign: RNetSession *s = sess() */
 static void schedule_live_realign(uint32_t tick, const char *why)
 {
     RNetSession *s = sess();
@@ -2264,6 +2353,7 @@ static uint32_t g_peer_abort_last_epoch = 0xffffffffu; /* rexmit dedupe */
 
 #define RB_ABORT_NOTICE_BURST 3
 
+/* send abort notice: RNetSession *s = sess() */
 static void send_abort_notice(uint32_t epoch, uint32_t cls, uint32_t realign_tick)
 {
     RNetSession *s = sess();
@@ -2289,6 +2379,7 @@ static void send_commit_notice(uint32_t epoch, uint32_t tick)
                                         RNET_RB_SYNC_OP_COMMIT, 0u);
 }
 
+/* abort class cooldown ticks: switch (cls)  */
 static uint32_t abort_class_cooldown_ticks(uint32_t cls)
 {
     switch (cls) {
@@ -2300,6 +2391,7 @@ static uint32_t abort_class_cooldown_ticks(uint32_t cls)
     }
 }
 
+/* abort episode: if (g_rb && rnet_rb_is_active(g_rb)) */
 static void abort_episode(const char *why)
 {
     fprintf(stderr, "psxrecomp: rb episode ABORT — %s\n", why ? why : "?");
@@ -2349,6 +2441,7 @@ static void abort_episode(const char *why)
     }
 }
 
+/* psx netplay rb top level resume active: return psx_scheduler_top_level_resume_active() */
 int psx_netplay_rb_top_level_resume_active(void)
 {
     /* Shared with savestate/selfcheck — armed inside psx_scheduler_resume_at. */
@@ -2405,6 +2498,7 @@ static int tip_ok_for_realign(uint32_t tick)
     return 1;
 }
 
+/* pick snap below fork cap: uint32_t oldest */
 static int pick_snap_below_fork_cap(uint32_t *out_tick)
 {
     uint32_t oldest;
@@ -2427,6 +2521,7 @@ static int pick_snap_below_fork_cap(uint32_t *out_tick)
     return 0;
 }
 
+/* pick realign tip: if (g_episode_baseline_matched && g_pin_valid && */
 static int pick_realign_tip(uint32_t *out_tick)
 {
     /* Prefer the frozen pre-resim baseline — ring load_tick was often overwritten. */
@@ -2806,6 +2901,7 @@ static int honor_peer_abort_realign(uint32_t wire_tick, int snap_was_applied,
     return 0;
 }
 
+/* host save state: CPUState *c = cpu() */
 static int host_save_state(void *ctx, uint32_t tick)
 {
     CPUState *c = cpu();
@@ -2824,6 +2920,7 @@ static int host_save_state(void *ctx, uint32_t tick)
                : -1;
 }
 
+/* host load state: g_pending_load_tick = tick */
 static int host_load_state(void *ctx, uint32_t tick)
 {
     (void)ctx;
@@ -2832,6 +2929,7 @@ static int host_load_state(void *ctx, uint32_t tick)
     return 0;
 }
 
+/* host advance sim: MotK advances via the live guest frame loop */
 static int host_advance_sim(void *ctx, uint32_t tick)
 {
     (void)ctx;
@@ -2839,6 +2937,7 @@ static int host_advance_sim(void *ctx, uint32_t tick)
     return 0; /* MotK advances via the live guest frame loop. */
 }
 
+/* host state digest: CPUState *c = cpu() */
 static uint32_t host_state_digest(void *ctx, uint32_t tick, uint32_t partition)
 {
     CPUState *c = cpu();
@@ -2852,6 +2951,7 @@ static uint32_t host_state_digest(void *ctx, uint32_t tick, uint32_t partition)
     return netplay_core_digest(c);
 }
 
+/* host hash confirm through: if (!g_b.hc) */
 static uint8_t host_hash_confirm_through(void *ctx, uint32_t tick)
 {
     (void)ctx;
@@ -2915,6 +3015,7 @@ static int seat_tick_confirmed(int slot, uint32_t tick)
     return row.is_predicted ? 0 : 1;
 }
 
+/* psx netplay rb confirmed frontier: uint32_t t */
 uint32_t psx_netplay_rb_confirmed_frontier(uint32_t from_tick)
 {
     uint32_t t;
@@ -2948,6 +3049,7 @@ uint32_t psx_netplay_rb_confirmed_frontier(uint32_t from_tick)
     return last;
 }
 
+/* psx netplay rb confirmed remaining: RNetSession *s = sess() */
 uint32_t psx_netplay_rb_confirmed_remaining(void)
 {
     RNetSession *s = sess();
@@ -2976,6 +3078,7 @@ uint32_t psx_netplay_rb_confirmed_remaining(void)
     return rem;
 }
 
+/* host prefresh seal range: uint32_t t */
 static void host_prefresh_seal_range(int slot, uint32_t lo, uint32_t hi)
 {
     uint32_t t;
@@ -2985,6 +3088,7 @@ static void host_prefresh_seal_range(int slot, uint32_t lo, uint32_t hi)
         (void)host_promote_from_session(slot, t, NULL);
 }
 
+/* host get input row: if (!g_b.ih || !out) */
 static uint8_t host_get_input_row(void *ctx, int32_t slot, uint32_t tick, RNetRbFrame *out)
 {
     (void)ctx;
@@ -3002,6 +3106,7 @@ static uint8_t host_get_input_row(void *ctx, int32_t slot, uint32_t tick, RNetRb
     return netplay_ih_invent_idle(g_b.ih, (int)slot, tick, out) ? 1u : 0u;
 }
 
+/* host hash confirm promote: uint32_t *tickp = (uint32_t *)ctx */
 static uint8_t host_hash_confirm_promote(void *ctx)
 {
     uint32_t *tickp = (uint32_t *)ctx;
@@ -3010,6 +3115,7 @@ static uint8_t host_hash_confirm_promote(void *ctx)
     return netplay_hc_confirm_through(g_b.hc, *tickp);
 }
 
+/* rb mono ms: return psx_host_mono_ms() */
 static uint64_t rb_mono_ms(void)
 {
     return psx_host_mono_ms();
@@ -3565,6 +3671,7 @@ static uint32_t hc_interval_floor(uint32_t hc_floor, uint32_t iv)
     }
 }
 
+/* choose load tick inner: uint32_t t */
 static int choose_load_tick_inner(uint32_t mismatch, uint32_t *out_load)
 {
     uint32_t t;
@@ -3855,6 +3962,7 @@ static int choose_load_tick_inner(uint32_t mismatch, uint32_t *out_load)
     return 0;
 }
 
+/* choose load tick: if (g_bl_fork_cap > 0u)  */
 static int choose_load_tick(uint32_t mismatch, uint32_t *out_load)
 {
     /* §55: after a baseline core mismatch at load L the fork provably predates
@@ -4072,6 +4180,7 @@ static void follow_refuse_nack(uint32_t epoch, uint32_t mismatch, uint32_t load,
     }
 }
 
+/* export local seals: RNetSession *s = sess() */
 static void export_local_seals(void)
 {
     RNetSession *s = sess();
@@ -4146,6 +4255,7 @@ static void maybe_rexmit_seals(void)
     export_local_seals();
 }
 
+/* publish sealed sio: int slot */
 static void publish_sealed_sio(uint32_t tick)
 {
     int slot;
@@ -4177,6 +4287,7 @@ static void stash_peer_begin(uint32_t epoch, uint32_t mismatch, uint32_t load,
 static void apply_stashed_begin(void);
 static void maybe_rexmit_begin(void);
 
+/* enter awaiting baseline: uint32_t load = rnet_rb_get_load_tick(g_rb) */
 static void enter_awaiting_baseline(void)
 {
     uint32_t load = rnet_rb_get_load_tick(g_rb);
@@ -4202,6 +4313,7 @@ static void enter_awaiting_baseline(void)
     apply_stashed_baseline();
 }
 
+/* accept peer baseline: int changed */
 static void accept_peer_baseline(uint32_t epoch, uint32_t load, uint32_t dig_m,
                                  uint32_t dig_a, uint32_t dig_b, uint32_t dig_c)
 {
@@ -4258,6 +4370,7 @@ static void accept_peer_baseline(uint32_t epoch, uint32_t load, uint32_t dig_m,
     maybe_enter_replay();
 }
 
+/* apply stashed baseline: if (!g_stash_bl_valid || !g_rb || !rnet_rb_is_active(g_rb)) */
 static void apply_stashed_baseline(void)
 {
     if (!g_stash_bl_valid || !g_rb || !rnet_rb_is_active(g_rb))
@@ -4273,6 +4386,7 @@ static void apply_stashed_baseline(void)
                          g_stash_bl_dig_a, g_stash_bl_dig_b, g_stash_bl_dig_c);
 }
 
+/* stash or accept baseline: if (g_rb && rnet_rb_is_active(g_rb) && epoch == rnet_rb_get_epoch_id(... */
 static void stash_or_accept_baseline(uint32_t epoch, uint32_t load, uint32_t dig_m,
                                      uint32_t dig_a, uint32_t dig_b, uint32_t dig_c)
 {
@@ -4388,6 +4502,7 @@ static uint32_t rb_ready_timeout_ms(void)
     return ms;
 }
 
+/* send baseline packet: RNetSession *s = sess() */
 static void send_baseline_packet(int ready, int rexmit_log)
 {
     RNetSession *s = sess();
@@ -4433,6 +4548,7 @@ static void send_baseline_burst(int ready, int n, int rexmit_log)
         send_baseline_packet(ready, rexmit_log && i == 0);
 }
 
+/* maybe send baseline: RNetSession *s = sess() */
 static void maybe_send_baseline(void)
 {
     RNetSession *s = sess();
@@ -4542,6 +4658,7 @@ static void resim_audit_cache_invalidate(void)
     s_resim_audit_valid = 0;
 }
 
+/* log resim tick audit: CPUState *c = cpu() */
 static void log_resim_tick_audit(uint32_t sim, const char *tag)
 {
     CPUState *c = cpu();
@@ -4619,6 +4736,7 @@ static int rb_arm_rows_ready(uint32_t sim)
     return 1;
 }
 
+/* arm replay tick: g_stat_replay_ticks++ */
 static void arm_replay_tick(uint32_t sim)
 {
     publish_sealed_sio(sim);
@@ -4632,6 +4750,7 @@ static void arm_replay_tick(uint32_t sim)
     log_resim_tick_audit(sim, "arm");
 }
 
+/* arm rereplay after load: RNetSession *s = sess() */
 static void arm_rereplay_after_load(uint32_t reload_tick)
 {
     RNetSession *s = sess();
@@ -4764,6 +4883,7 @@ static void enter_verify_at_tip(uint32_t done)
     }
 }
 
+/* maybe enter replay: RNetSession *s = sess() */
 static void maybe_enter_replay(void)
 {
     RNetSession *s = sess();
@@ -4955,6 +5075,7 @@ static void maybe_enter_replay(void)
     }
 }
 
+/* clear post handshake: g_local_post_sent = 0 */
 static void clear_post_handshake(void)
 {
     g_local_post_sent = 0;
@@ -4967,6 +5088,7 @@ static void clear_post_handshake(void)
     g_verify_wait_ms = 0;
 }
 
+/* clear tip extend prime: g_tip_extend_prime_tick = 0 */
 static void clear_tip_extend_prime(void)
 {
     g_tip_extend_prime_tick = 0;
@@ -5212,6 +5334,7 @@ static void ownership_chain_next_span(uint32_t tip, uint32_t frontier)
     g_ownership_chain_frontier = 0;
 }
 
+/* ownership on post match: uint32_t frontier */
 static void ownership_on_post_match(uint32_t tip)
 {
     uint32_t frontier;
@@ -5335,6 +5458,7 @@ static void ownership_on_post_match(uint32_t tip)
     enter_tip_hold(tip);
 }
 
+/* psx netplay rb ownership step: RNetSession *s = sess() */
 void psx_netplay_rb_ownership_step(void)
 {
     RNetSession *s = sess();
@@ -5401,6 +5525,7 @@ void psx_netplay_rb_ownership_step(void)
     (void)psx_netplay_rb_tip_extend(want, slot);
 }
 
+/* enter tip hold: RNetSession *s = sess() */
 static void enter_tip_hold(uint32_t target)
 {
     RNetSession *s = sess();
@@ -5500,6 +5625,7 @@ static void enter_tip_hold(uint32_t target)
     fflush(stderr);
 }
 
+/* clear tip hold rereplay pending: g_tip_hold_rereplay_pending = 0 */
 static void clear_tip_hold_rereplay_pending(void)
 {
     g_tip_hold_rereplay_pending = 0;
@@ -5567,6 +5693,7 @@ static void tip_hold_absorb_frontier_before_flush(void)
     }
 }
 
+/* flush tip hold deferred rereplay: RNetSession *s */
 static int flush_tip_hold_deferred_rereplay(void)
 {
     RNetSession *s;
@@ -5672,6 +5799,7 @@ static void tip_hold_try_finalize(void)
     finalize_tip_hold();
 }
 
+/* finalize tip hold: uint32_t target */
 static void finalize_tip_hold(void)
 {
     uint32_t target;
@@ -5746,6 +5874,7 @@ static void finalize_tip_hold(void)
     psx_netplay_timesync_on_episode_boundary();
 }
 
+/* poll tip hold finalize: RNetSession *s = sess() */
 static void poll_tip_hold_finalize(void)
 {
     RNetSession *s = sess();
@@ -6075,6 +6204,7 @@ static void schedule_episode_rereplay(uint32_t prefer_plus_one)
     fflush(stderr);
 }
 
+/* commit episode: RNetSession *s = sess() */
 static void commit_episode(void)
 {
     RNetSession *s = sess();
@@ -6124,6 +6254,7 @@ static void commit_episode(void)
      * cooldown still arms from live sim on failed episodes. */
 }
 
+/* psx netplay rb bind: if (!b)  */
 void psx_netplay_rb_bind(const PsxNetplayRbBindings *b)
 {
     if (!b) {
@@ -6135,6 +6266,7 @@ void psx_netplay_rb_bind(const PsxNetplayRbBindings *b)
     g_bound = 1;
 }
 
+/* psx netplay rb start: RNetRbConfig cfg */
 void psx_netplay_rb_start(void)
 {
     RNetRbConfig cfg;
@@ -6261,6 +6393,7 @@ void psx_netplay_rb_start(void)
             (unsigned)snap_interval(), (unsigned)tip_dense_window());
 }
 
+/* psx netplay rb cold reset: g_boot_dig0_synced = 0 */
 void psx_netplay_rb_cold_reset(void)
 {
     /* Residue rb_shutdown historically left until the next rb_start — a
@@ -6322,6 +6455,7 @@ void psx_netplay_rb_cold_reset(void)
     g_last_good_bb_pc = 0;
 }
 
+/* psx netplay rb shutdown: if (g_rb)  */
 void psx_netplay_rb_shutdown(void)
 {
     if (g_rb) {
@@ -6430,6 +6564,7 @@ static int rb_fmv_dense_snap_window(void)
     return 0;
 }
 
+/* psx netplay rb request snap: uint32_t iv */
 void psx_netplay_rb_request_snap(uint32_t tick)
 {
     uint32_t iv;
@@ -6837,6 +6972,7 @@ static int try_apply_pending_load(CPUState *cpu_in)
     }
 }
 
+/* psx netplay rb flush resume: uint32_t pc */
 void psx_netplay_rb_flush_resume(void)
 {
     uint32_t pc;
@@ -6930,6 +7066,7 @@ void psx_netplay_rb_flush_resume(void)
     abort_episode("flush_resume returned (longjmp failed)");
 }
 
+/* psx netplay rb poll: uint32_t pc */
 void psx_netplay_rb_poll(struct CPUState *cpu_in, uint32_t resume_pc)
 {
     uint32_t pc;
@@ -7026,6 +7163,7 @@ void psx_netplay_rb_poll(struct CPUState *cpu_in, uint32_t resume_pc)
         (void)try_apply_pending_load(cpu_in);
 }
 
+/* psx netplay rb rewind suppressed: RNetSession *s = sess() */
 int psx_netplay_rb_rewind_suppressed(void)
 {
     RNetSession *s = sess();
@@ -7036,16 +7174,19 @@ int psx_netplay_rb_rewind_suppressed(void)
     return sim < g_rewind_cooldown_until;
 }
 
+/* psx netplay rb fmv defer rewind: return rb_in_fmv_defer_rewind_window() */
 int psx_netplay_rb_fmv_defer_rewind(void)
 {
     return rb_in_fmv_defer_rewind_window();
 }
 
+/* psx netplay rb fmv media active: return rb_fmv_media_active() */
 int psx_netplay_rb_fmv_media_active(void)
 {
     return rb_fmv_media_active();
 }
 
+/* psx netplay rb lockstep no invent: return rb_in_fmv_lockstep_window() */
 int psx_netplay_rb_lockstep_no_invent(void)
 {
     /* Media + post-FMV lockstep MIN (§26/§113). Invent after MIN/RELEASE.
@@ -7054,6 +7195,7 @@ int psx_netplay_rb_lockstep_no_invent(void)
     return rb_in_fmv_lockstep_window();
 }
 
+/* psx netplay rb fmv settle active: RNetSession *s = sess() */
 int psx_netplay_rb_fmv_settle_active(void)
 {
     RNetSession *s = sess();
@@ -7062,6 +7204,7 @@ int psx_netplay_rb_fmv_settle_active(void)
     return (sim < g_fmv_settle_until) ? 1 : 0;
 }
 
+/* psx netplay rb fmv desync hold: RNetSession *s = sess() */
 int psx_netplay_rb_fmv_desync_hold(void)
 {
     RNetSession *s = sess();
@@ -7070,16 +7213,19 @@ int psx_netplay_rb_fmv_desync_hold(void)
     return g_fmv_unmatched_desync ? 1 : 0;
 }
 
+/* psx netplay rb clear fmv desync hold */
 void psx_netplay_rb_clear_fmv_desync_hold(const char *why)
 {
     rb_clear_fmv_desync_hold(why);
 }
 
+/* psx netplay rb post fmv heal eligible: return rb_post_fmv_heal_eligible() */
 int psx_netplay_rb_post_fmv_heal_eligible(void)
 {
     return rb_post_fmv_heal_eligible();
 }
 
+/* psx netplay rb post fmv heal sticky: RNetSession *s = sess() */
 int psx_netplay_rb_post_fmv_heal_sticky(void)
 {
     RNetSession *s = sess();
@@ -7087,6 +7233,7 @@ int psx_netplay_rb_post_fmv_heal_sticky(void)
     return rb_post_fmv_heal_sticky_active(sim);
 }
 
+/* psx netplay rb request post fmv heal kf: if (!rb_post_fmv_heal_eligible()) */
 void psx_netplay_rb_request_post_fmv_heal_kf(void)
 {
     if (!rb_post_fmv_heal_eligible())
@@ -7107,6 +7254,7 @@ void psx_netplay_rb_request_post_fmv_heal_kf(void)
     fflush(stderr);
 }
 
+/* psx netplay rb fmv episode unsafe: if (rb_media_kf_enabled()) */
 int psx_netplay_rb_fmv_episode_unsafe(uint32_t tick)
 {
     (void)rb_in_fmv_defer_rewind_window();
@@ -7119,6 +7267,7 @@ int psx_netplay_rb_fmv_episode_unsafe(uint32_t tick)
     return rb_fmv_tick_unsafe_for_episode(tick);
 }
 
+/* psx netplay rb media kf probe match: uint32_t load */
 int psx_netplay_rb_media_kf_probe_match(uint32_t size, uint32_t crc)
 {
     uint32_t load;
@@ -7143,11 +7292,13 @@ int psx_netplay_rb_media_kf_probe_match(uint32_t size, uint32_t crc)
     return 1;
 }
 
+/* psx netplay rb media kf busy: return (g_media_kf_episode && !g_media_kf_ready) ? 1 : 0 */
 int psx_netplay_rb_media_kf_busy(void)
 {
     return (g_media_kf_episode && !g_media_kf_ready) ? 1 : 0;
 }
 
+/* psx netplay rb media kf on ready: uint32_t load */
 int psx_netplay_rb_media_kf_on_ready(const void *data, size_t size)
 {
     uint32_t load;
@@ -7192,6 +7343,7 @@ int psx_netplay_rb_media_kf_on_ready(const void *data, size_t size)
     return 1;
 }
 
+/* psx netplay rb poll replay stall: uint64_t now */
 void psx_netplay_rb_poll_replay_stall(void)
 {
     uint64_t now;
@@ -7208,6 +7360,7 @@ void psx_netplay_rb_poll_replay_stall(void)
     }
 }
 
+/* psx netplay rb take promote sweep: int v = g_promote_sweep */
 int psx_netplay_rb_take_promote_sweep(void)
 {
     int v = g_promote_sweep;
@@ -7215,6 +7368,7 @@ int psx_netplay_rb_take_promote_sweep(void)
     return v;
 }
 
+/* psx netplay rb fmv unlock grace active: RNetSession *s = sess() */
 int psx_netplay_rb_fmv_unlock_grace_active(void)
 {
     RNetSession *s = sess();
@@ -7226,6 +7380,7 @@ int psx_netplay_rb_fmv_unlock_grace_active(void)
            sim < g_fmv_lockstep_until;
 }
 
+/* psx netplay rb tip extend: RNetSession *s = sess() */
 int psx_netplay_rb_tip_extend(uint32_t mismatch_tick, int slot)
 {
     RNetSession *s = sess();
@@ -7529,6 +7684,7 @@ int psx_netplay_rb_tip_extend(uint32_t mismatch_tick, int slot)
     return 1;
 }
 
+/* psx netplay rb begin rewind: RNetRbCorrection corr */
 int psx_netplay_rb_begin_rewind(uint32_t mismatch_tick, int slot)
 {
     RNetRbCorrection corr;
@@ -8004,6 +8160,7 @@ int psx_netplay_rb_begin_rewind(uint32_t mismatch_tick, int slot)
     return 1;
 }
 
+/* stash peer begin: if (g_rb && rnet_rb_is_active(g_rb) && */
 static void stash_peer_begin(uint32_t epoch, uint32_t mismatch, uint32_t load,
                              uint32_t target, int slot, uint8_t wire_flags)
 {
@@ -8033,6 +8190,7 @@ static void stash_peer_begin(uint32_t epoch, uint32_t mismatch, uint32_t load,
     }
 }
 
+/* apply stashed begin: uint32_t epoch, mismatch, load, target */
 static void apply_stashed_begin(void)
 {
     uint32_t epoch, mismatch, load, target;
@@ -8102,6 +8260,7 @@ static void maybe_rexmit_begin(void)
         (rnet_u8)(slot < 0 ? 0 : slot), RNET_RB_SYNC_OP_BEGIN, wire_flags);
 }
 
+/* begin follower: RNetRbCorrection corr */
 static void begin_follower(uint32_t epoch, uint32_t mismatch, uint32_t load, uint32_t target,
                            int slot, uint8_t wire_flags)
 {
@@ -8759,6 +8918,7 @@ static void rb_post_fmv_platform_kf_stream_poll(void)
     (void)psx_netplay_rb_begin_rewind(stream_mm, remote);
 }
 
+/* psx netplay rb pump: RNetSession *s = sess() */
 void psx_netplay_rb_pump(void)
 {
     RNetSession *s = sess();
@@ -9338,18 +9498,21 @@ void psx_netplay_rb_pump(void)
     poll_tip_hold_finalize();
 }
 
+/* psx netplay rb boot dig0 note local: g_boot_dig0_local_core = core */
 void psx_netplay_rb_boot_dig0_note_local(uint32_t core)
 {
     g_boot_dig0_local_core = core;
     g_boot_dig0_local_valid = 1u;
 }
 
+/* psx netplay rb boot dig0 note peer: g_boot_dig0_peer_core = core */
 void psx_netplay_rb_boot_dig0_note_peer(uint32_t core)
 {
     g_boot_dig0_peer_core = core;
     g_boot_dig0_peer_valid = 1u;
 }
 
+/* boot dig0 rexmit local: RNetSession *s */
 static void boot_dig0_rexmit_local(void)
 {
     RNetSession *s;
@@ -9367,6 +9530,7 @@ static void boot_dig0_rexmit_local(void)
     (void)rnet_session_send_rb_frame_commit(s, 0u, g_boot_dig0_local_core);
 }
 
+/* psx netplay rb boot dig0 gate: uint32_t ld = 0u */
 int psx_netplay_rb_boot_dig0_gate(void)
 {
     uint32_t ld = 0u;
@@ -9432,21 +9596,25 @@ int psx_netplay_rb_boot_dig0_gate(void)
     return 0;
 }
 
+/* psx netplay rb active: return g_rb && rnet_rb_is_active(g_rb) */
 int psx_netplay_rb_active(void)
 {
     return g_rb && rnet_rb_is_active(g_rb);
 }
 
+/* psx netplay rb is resimulating: return g_rb && rnet_rb_is_resimulating(g_rb) */
 int psx_netplay_rb_is_resimulating(void)
 {
     return g_rb && rnet_rb_is_resimulating(g_rb);
 }
 
+/* psx netplay rb tip holding: return g_rb && rnet_rb_is_tip_holding(g_rb) */
 int psx_netplay_rb_tip_holding(void)
 {
     return g_rb && rnet_rb_is_tip_holding(g_rb);
 }
 
+/* psx netplay rb episode target: if (!g_rb || !rnet_rb_is_active(g_rb)) */
 uint32_t psx_netplay_rb_episode_target(void)
 {
     if (!g_rb || !rnet_rb_is_active(g_rb))
@@ -9454,6 +9622,7 @@ uint32_t psx_netplay_rb_episode_target(void)
     return rnet_rb_get_target_tick(g_rb);
 }
 
+/* psx netplay rb tip hold invent slack: if (!g_rb) */
 uint32_t psx_netplay_rb_tip_hold_invent_slack(void)
 {
     if (!g_rb)
@@ -9464,16 +9633,19 @@ uint32_t psx_netplay_rb_tip_hold_invent_slack(void)
     return rnet_rb_get_tip_seal_slack(g_rb);
 }
 
+/* psx netplay rb tip hold rereplay pending: return g_tip_hold_rereplay_pending ? 1 : 0 */
 int psx_netplay_rb_tip_hold_rereplay_pending(void)
 {
     return g_tip_hold_rereplay_pending ? 1 : 0;
 }
 
+/* psx netplay rb tip hold rereplay from: return g_tip_hold_rereplay_pending ? g_tip_hold_rereplay_from : 0u */
 uint32_t psx_netplay_rb_tip_hold_rereplay_from(void)
 {
     return g_tip_hold_rereplay_pending ? g_tip_hold_rereplay_from : 0u;
 }
 
+/* psx netplay rb tip runway: if (!g_rb) */
 uint32_t psx_netplay_rb_tip_runway(void)
 {
     if (!g_rb)
@@ -9481,6 +9653,7 @@ uint32_t psx_netplay_rb_tip_runway(void)
     return rnet_rb_get_tip_runway(g_rb);
 }
 
+/* psx netplay rb tip hold block quiet: if (!g_rb || !rnet_rb_is_tip_holding(g_rb)) */
 void psx_netplay_rb_tip_hold_block_quiet(int block)
 {
     if (!g_rb || !rnet_rb_is_tip_holding(g_rb))
@@ -9493,6 +9666,7 @@ void psx_netplay_rb_tip_hold_block_quiet(int block)
     }
 }
 
+/* psx netplay rb ignore peer frame commit: uint32_t ld = 0 */
 int psx_netplay_rb_ignore_peer_frame_commit(uint32_t tick, uint32_t hash)
 {
     uint32_t ld = 0;
@@ -9513,6 +9687,7 @@ int psx_netplay_rb_ignore_peer_frame_commit(uint32_t tick, uint32_t hash)
     return 0;
 }
 
+/* psx netplay rb abort resim core mismatch: char why[128] */
 int psx_netplay_rb_abort_resim_core_mismatch(uint32_t tick, uint32_t local_core,
                                              uint32_t peer_core)
 {
@@ -9567,16 +9742,19 @@ int psx_netplay_rb_abort_resim_core_mismatch(uint32_t tick, uint32_t local_core,
     return 1;
 }
 
+/* psx netplay rb load pending: return g_pending_load_valid || g_pending_resume_valid || g_live_reali... */
 int psx_netplay_rb_load_pending(void)
 {
     return g_pending_load_valid || g_pending_resume_valid || g_live_realign_pending;
 }
 
+/* psx netplay rb baseline fork cap: return g_bl_fork_cap */
 uint32_t psx_netplay_rb_baseline_fork_cap(void)
 {
     return g_bl_fork_cap;
 }
 
+/* psx netplay rb try admit: RNetSession *s = sess() */
 int psx_netplay_rb_try_admit(void)
 {
     RNetSession *s = sess();
@@ -9664,6 +9842,7 @@ int psx_netplay_rb_try_admit(void)
     return 1;
 }
 
+/* psx netplay rb finish frame: RNetSession *s = sess() */
 void psx_netplay_rb_finish_frame(void)
 {
     RNetSession *s = sess();
@@ -9710,11 +9889,13 @@ void psx_netplay_rb_finish_frame(void)
     }
 }
 
+/* psx netplay rb episode count: return g_episode_count */
 uint32_t psx_netplay_rb_episode_count(void)
 {
     return g_episode_count;
 }
 
+/* psx netplay rb take replay ticks: uint64_t n = g_stat_replay_ticks */
 uint64_t psx_netplay_rb_take_replay_ticks(void)
 {
     uint64_t n = g_stat_replay_ticks;
@@ -9722,6 +9903,7 @@ uint64_t psx_netplay_rb_take_replay_ticks(void)
     return n;
 }
 
+/* psx netplay rb replay ticks total: return g_stat_replay_ticks_total */
 uint64_t psx_netplay_rb_replay_ticks_total(void)
 {
     return g_stat_replay_ticks_total;
@@ -9734,11 +9916,13 @@ uint32_t psx_netplay_rb_rtt_estimate_ms(void)
     return g_rb_rtt_ema_ms;
 }
 
+/* psx netplay rb phase: return g_rb ? (int)rnet_rb_get_phase(g_rb) : 0 */
 int psx_netplay_rb_phase(void)
 {
     return g_rb ? (int)rnet_rb_get_phase(g_rb) : 0;
 }
 
+/* psx netplay rb snap count: return g_snaps ? netplay_snap_ring_count(g_snaps) : 0u */
 uint32_t psx_netplay_rb_snap_count(void)
 {
     return g_snaps ? netplay_snap_ring_count(g_snaps) : 0u;

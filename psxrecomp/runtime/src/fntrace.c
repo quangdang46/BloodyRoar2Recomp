@@ -16,6 +16,7 @@ static uint32_t parity_rw_cb(void* ctx, uint32_t addr) {
 
 /* Frame + guest-cycle accessors for parity_trace.c (decoupled per process). */
 uint32_t parity_host_frame(void) { extern uint64_t s_frame_count; return (uint32_t)s_frame_count; }
+/* parity host cycle: extern uint64_t psx_get_cycle_count(void); return psx_get_cycle_count(); */
 uint64_t parity_host_cycle(void) { extern uint64_t psx_get_cycle_count(void); return psx_get_cycle_count(); }
 
 /* Explicit .bss: without this, MinGW+LTO can emit ~144MiB of zeros into .rdata. */
@@ -38,6 +39,7 @@ static int      s_game_started = 0;
 extern void cdrom_notify_game_started(void);
 extern void boot_state_trigger_capture(const CPUState* cpu);
 
+/* fntrace set game range: s_game_entry_phys = lo & 0x1FFFFFFFu */
 void fntrace_set_game_range(uint32_t lo, uint32_t hi) {
     /* lo is treated as entry_pc; hi is ignored (kept for API compat). */
     (void)hi;
@@ -45,6 +47,7 @@ void fntrace_set_game_range(uint32_t lo, uint32_t hi) {
     s_game_started = 0;
 }
 
+/* fntrace is game started: return s_game_started; */
 int fntrace_is_game_started(void) { return s_game_started; }
 
 /* Centralised game-start transition.  Idempotent — safe to call from both
@@ -87,6 +90,7 @@ void fntrace_maybe_mark_game_started(CPUState* cpu, uint32_t addr) {
         fntrace_mark_game_started(cpu);
 }
 
+/* armed match: if (boot_all == -1) { const char *e = getenv("PSX_FNTRACE_ALL") */
 static inline int armed_match(uint32_t target) {
     /* PSX_FNTRACE_ALL=1 records every dispatch from power-on — the ring
      * then holds the earliest boot execution (before any TCP client can
@@ -284,6 +288,7 @@ void fntrace_record(CPUState* cpu, uint32_t target) {
     e->sp     = cpu->gpr[29];
 }
 
+/* fntrace arm: if (target == 0) { fntrace_arm_clear(); return;  */
 void fntrace_arm(uint32_t target) {
     if (target == 0) { fntrace_arm_clear(); return; }
     if (target == 0xFFFFFFFFu) { s_arm_record_all = 1; return; }
@@ -295,17 +300,21 @@ void fntrace_arm(uint32_t target) {
     s_arm_targets[s_arm_count++] = target;
 }
 
+/* fntrace arm clear: s_arm_count = 0 */
 void fntrace_arm_clear(void) {
     s_arm_count = 0;
     s_arm_record_all = 0;
     memset(s_arm_targets, 0, sizeof(s_arm_targets));
 }
 
+/* fntrace arm count: return s_arm_count; */
 uint32_t fntrace_arm_count(void) { return s_arm_count; }
+/* fntrace arm get: return (i < s_arm_count) ? s_arm_targets[i] : 0 */
 uint32_t fntrace_arm_get(uint32_t i) {
     return (i < s_arm_count) ? s_arm_targets[i] : 0;
 }
 
+/* fntrace arm from env: if (!spec || !*spec) return */
 void fntrace_arm_from_env(const char *env_name) {
     const char *spec = getenv(env_name);
     if (!spec || !*spec) return;
@@ -343,6 +352,7 @@ void fntrace_arm_from_env(const char *env_name) {
     }
 }
 
+/* fntrace clear: g_fntrace_seq = 0 */
 void fntrace_clear(void) {
     g_fntrace_seq = 0;
     /* Storage left in place; consumer dumps relative to seq. */

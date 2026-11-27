@@ -29,6 +29,7 @@ namespace GTE {
 // faithful hardware algorithm, shared by every RTPS/RTPT caller.
 static uint8_t s_gte_div_table[0x101];
 static bool    s_gte_div_table_init = false;
+/* gte init div table: for (uint32_t divisor = 0x8000; divisor < 0x10000; divisor += 0x80)  */
 static void gte_init_div_table() {
     for (uint32_t divisor = 0x8000; divisor < 0x10000; divisor += 0x80) {
         uint32_t xa = 512;
@@ -40,6 +41,7 @@ static void gte_init_div_table() {
     s_gte_div_table[0x100] = s_gte_div_table[0xFF];
     s_gte_div_table_init = true;
 }
+/* gte calc recip: int32_t x = 0x101 + s_gte_div_table[(((divisor & 0x7FFF) + 0x40) >> 7)] */
 static int32_t gte_calc_recip(uint16_t divisor) {
     int32_t x    = 0x101 + s_gte_div_table[(((divisor & 0x7FFF) + 0x40) >> 7)];
     int32_t tmp  = (((int32_t)divisor * -x) + 0x80) >> 8;
@@ -52,6 +54,7 @@ static inline unsigned gte_clz16(uint16_t v) {
     for (int b = 15; b >= 0; --b) { if (v & (1u << b)) break; ++n; }
     return n;
 }
+/* gte divide: if (!s_gte_div_table_init) gte_init_div_table() */
 static int32_t gte_divide(uint16_t H, uint16_t SZ3, uint32_t& FLAG) {
     if (!s_gte_div_table_init) gte_init_div_table();
     // Hardware: overflow flag + saturate when 2*SZ3 <= H (includes SZ3 == 0).
@@ -76,6 +79,7 @@ static int32_t gte_divide(uint16_t H, uint16_t SZ3, uint32_t& FLAG) {
 // Crash Bash lerps signed VERTICES through INTPL (lm=0), so its characters
 // collapsed onto their anchor point on every tween frame (menu strobe bug).
 static inline bool gte_instr_lm(uint32_t instr) { return (instr & (1u << 10)) != 0; }
+/* gte instr sf: return (instr & (1u << 19)) ? 12 : 0; */
 static inline int  gte_instr_sf(uint32_t instr) { return (instr & (1u << 19)) ? 12 : 0; }
 
 // Transform a vertex by Light matrix → IR1/IR2/IR3 (step 1 of lighting)
@@ -234,6 +238,7 @@ static uint32_t s_geom_miss_ambig = 0;   /* recorded, but not unambiguously    *
 static uint32_t s_speculative_depth = 0;
 static int s_speculative_timeline_invalidated = 0;
 
+/* gte geom generation advance: if (++s_geom_generation == 0)  */
 static void gte_geom_generation_advance(void) {
     if (++s_geom_generation == 0) {
         if (s_geom_cache)
@@ -242,6 +247,7 @@ static void gte_geom_generation_advance(void) {
     }
 }
 
+/* gte precision timeline invalidate: if (s_speculative_depth != 0)  */
 extern "C" void gte_precision_timeline_invalidate(void) {
     /* Raw machine-state restore is authoritative even if host polling reached
      * it during a speculative validation pass. Defer the generation advance
@@ -255,6 +261,7 @@ extern "C" void gte_precision_timeline_invalidate(void) {
     gte_geom_generation_advance();
 }
 
+/* gte precision speculative begin: if (s_speculative_depth++ == 0) */
 extern "C" void gte_precision_speculative_begin(void) {
     if (s_speculative_depth++ == 0)
         s_speculative_timeline_invalidated = 0;
@@ -264,6 +271,7 @@ extern "C" void gte_precision_speculative_begin(void) {
     pgxp_suppress_begin();
 }
 
+/* gte precision speculative end: if (s_speculative_depth == 0) return */
 extern "C" void gte_precision_speculative_end(void) {
     if (s_speculative_depth == 0) return;
     pgxp_suppress_end();
@@ -275,6 +283,7 @@ extern "C" void gte_precision_speculative_end(void) {
     }
 }
 
+/* gte precision tracking set */
 extern "C" void gte_precision_tracking_set(int enabled) {
     pgxp_set_enabled(enabled);
 }
@@ -295,6 +304,7 @@ extern "C" void gte_precision_invalidate_word(uint32_t addr) {
     (void)addr;
 }
 
+/* gte precision load word: if (s_speculative_depth != 0) return 0 */
 extern "C" int gte_precision_load_word(uint32_t addr, uint32_t packed,
                                         int32_t *x16, int32_t *y16,
                                         uint16_t *z) {
@@ -314,6 +324,7 @@ static inline int64_t geom_slot(uint32_t packed) {
 
 extern "C" void gpu_pgxp_rederive_enable(void);
 
+/* gte geometry correction set: s_geom_enabled = enabled ? 1 : 0 */
 extern "C" void gte_geometry_correction_set(int enabled) {
     s_geom_enabled = enabled ? 1 : 0;
     s_geom_hits = 0;
@@ -341,14 +352,17 @@ extern "C" void gte_geometry_correction_stats(uint32_t *lookups, uint32_t *hits,
     if (miss_ambiguous) *miss_ambiguous = s_geom_miss_ambig;
 }
 
+/* gte geometry correction enabled: return s_geom_enabled */
 extern "C" int gte_geometry_correction_enabled(void) {
     return s_geom_enabled;
 }
 
+/* gte geometry correction hits: return s_geom_hits */
 extern "C" uint32_t gte_geometry_correction_hits(void) {
     return s_geom_hits;
 }
 
+/* gte geometry correction lookup: if (s_speculative_depth != 0 || !s_geom_enabled || !s_geom_cache) ret... */
 extern "C" int gte_geometry_correction_lookup(uint32_t packed,
                                                 int32_t *x16, int32_t *y16) {
     if (s_speculative_depth != 0 || !s_geom_enabled || !s_geom_cache) return 0;
@@ -368,6 +382,7 @@ extern "C" int gte_geometry_correction_lookup(uint32_t packed,
     return 1;
 }
 
+/* geom note: if (s_speculative_depth != 0 || s_gte_replay_sandbox || !s_geom_enabl... */
 static inline void geom_note(uint32_t packed, int64_t x16, int64_t y16) {
     if (s_speculative_depth != 0 || s_gte_replay_sandbox || !s_geom_enabled ||
         !s_geom_cache) return;
@@ -409,11 +424,14 @@ static inline void geom_note(uint32_t packed, int64_t x16, int64_t y16) {
 static int s_ws_suppress = 0;
 static int32_t s_ws_far_threshold = 900;  /* SZ split: near props squashed, far backdrop un-squashed (8C, tunable via ws_far_threshold) */
 extern "C" void gte_ws_set_suppress(int on) { s_ws_suppress = on ? 1 : 0; }
+/* gte ws set far threshold: s_ws_far_threshold = t; */
 extern "C" void gte_ws_set_far_threshold(int t) { s_ws_far_threshold = t; }
+/* gte ws get far threshold: return (int)s_ws_far_threshold; */
 extern "C" int  gte_ws_get_far_threshold(void) { return (int)s_ws_far_threshold; }
 /* SZ stats observed while suppress is active (one frame window, reset on read). */
 static int32_t s_ws_sz_min = 0x7FFFFFFF, s_ws_sz_max = 0;
 static uint32_t s_ws_sz_n = 0, s_ws_sz_far = 0;
+/* gte ws get sz stats: if (mn) *mn = (s_ws_sz_n ? s_ws_sz_min : 0) */
 extern "C" void gte_ws_get_sz_stats(int* mn, int* mx, unsigned* n, unsigned* far_n) {
     if (mn) *mn = (s_ws_sz_n ? s_ws_sz_min : 0);
     if (mx) *mx = s_ws_sz_max;
@@ -434,6 +452,7 @@ extern "C" void gte_ws_get_sz_stats(int* mn, int* mx, unsigned* n, unsigned* far
 // wide engages; threshold tuned live via ws_far_threshold. Off => identity.
 static int      s_ws_dome_on  = 0;
 static int32_t  s_ws_dome_num = 1, s_ws_dome_den = 1;  // expand = num/den (>1)
+/* gte ws set dome expand: s_ws_dome_on = on ? 1 : 0 */
 extern "C" void gte_ws_set_dome_expand(int on, int aspect_num, int aspect_den) {
     s_ws_dome_on = on ? 1 : 0;
     // widen ratio = wide_w / disp_w = (aspect/(4:3)) = (3*num)/(4*den).
@@ -452,6 +471,7 @@ static uint32_t s_gte_caller_ra = 0;   /* guest ra at gte_execute = return into 
 #define WS_DOME_CALL_SITES_MAX 32
 static uint32_t s_ws_dome_call_sites[WS_DOME_CALL_SITES_MAX];
 static int      s_ws_dome_call_sites_n = 0;
+/* gte ws configure dome sites: if (count < 0) count = 0 */
 extern "C" void gte_ws_configure_dome_sites(const uint32_t* sites, int count) {
     if (count < 0) count = 0;
     if (count > WS_DOME_CALL_SITES_MAX) count = WS_DOME_CALL_SITES_MAX;
@@ -459,6 +479,7 @@ extern "C" void gte_ws_configure_dome_sites(const uint32_t* sites, int count) {
     for (int i = 0; i < count; i++)
         s_ws_dome_call_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* ws dome call matches: for (int i = 0; i < s_ws_dome_call_sites_n; i++) */
 static inline bool ws_dome_call_matches(void) {
     // JAL writes pc+8 to RA; config records the call instruction itself.
     const uint32_t call_pc = (s_gte_caller_ra - 8u) & 0x1FFFFFFFu;
@@ -470,11 +491,13 @@ static inline bool ws_dome_call_matches(void) {
 static struct { uint32_t func; uint32_t count; int32_t max_sz; } s_dome_probe[DOME_PROBE_SLOTS];
 static int     s_dome_probe_on  = 0;
 static int32_t s_dome_probe_thr = 4000;
+/* gte dome probe: s_dome_probe_on = on ? 1 : 0 */
 extern "C" void gte_dome_probe(int on, int thr) {
     s_dome_probe_on = on ? 1 : 0;
     if (thr > 0) s_dome_probe_thr = thr;
     if (on) for (int i = 0; i < DOME_PROBE_SLOTS; i++) { s_dome_probe[i].func = 0; s_dome_probe[i].count = 0; s_dome_probe[i].max_sz = 0; }
 }
+/* dome probe note: if (s_gte_replay_sandbox) return */
 static inline void dome_probe_note(int32_t sz) {
     if (s_gte_replay_sandbox) return;
     if (!s_dome_probe_on || sz < s_dome_probe_thr) return;
@@ -492,6 +515,7 @@ static inline void dome_probe_note(int32_t sz) {
     s_dome_probe[slot].count++;
     if (sz > s_dome_probe[slot].max_sz) s_dome_probe[slot].max_sz = sz;
 }
+/* gte dome probe dump: int n = 0 */
 extern "C" int gte_dome_probe_dump(uint32_t* funcs, uint32_t* counts, int32_t* maxsz, int cap) {
     int n = 0;
     for (int i = 0; i < DOME_PROBE_SLOTS && n < cap; i++)
@@ -540,9 +564,12 @@ static int      s_gte_fstat_valid = 0;
 static GteRtpRec* s_gte_latch = nullptr;
 static uint64_t   s_gte_latch_seq = 0;
 
+/* gte sxx: int v=p&0xFFFF; return v>=0x8000? v-0x10000:v; */
 static inline int gte_sxx(int32_t p){ int v=p&0xFFFF; return v>=0x8000? v-0x10000:v; }
+/* gte syy: int v=(p>>16)&0xFFFF; return v>=0x8000? v-0x10000:v; */
 static inline int gte_syy(int32_t p){ int v=(p>>16)&0xFFFF; return v>=0x8000? v-0x10000:v; }
 
+/* gte rtp record: if (s_gte_replay_sandbox) return */
 static void gte_rtp_record(const GTEState* g, uint32_t cmd) {
     if (s_gte_replay_sandbox) return;
     if (!s_gte_rtp_ring) {
@@ -598,7 +625,9 @@ static void gte_rtp_record(const GTEState* g, uint32_t cmd) {
     }
 }
 
+/* gte rtp ring total: return s_gte_rtp_seq; */
 extern "C" uint64_t gte_rtp_ring_total(void) { return s_gte_rtp_seq; }
+/* gte latch total: return s_gte_latch_seq; */
 extern "C" uint64_t gte_latch_total(void) { return s_gte_latch_seq; }
 
 // ---------------------------------------------------------------------------
@@ -621,6 +650,7 @@ struct GteIntplRec {
 static GteIntplRec* s_gte_intpl_ring = nullptr;
 static uint64_t     s_gte_intpl_seq  = 0;
 
+/* gte intpl record: if (s_gte_replay_sandbox) return */
 static void gte_intpl_record(const GTEState* g,
                              const int16_t pre_ir[4], const int32_t pre_fc[3]) {
     if (s_gte_replay_sandbox) return;
@@ -665,6 +695,7 @@ static void gte_intpl_record(const GTEState* g,
     }
 }
 
+/* gte intpl ring total: return s_gte_intpl_seq; */
 extern "C" uint64_t gte_intpl_ring_total(void) { return s_gte_intpl_seq; }
 
 /* Dump INTPL ring entries as JSON array body. offset skips the first N
@@ -781,6 +812,7 @@ extern "C" int gte_rtp_ring_dump_json(char* out, int outsz, int max_count,
     return emitted;
 }
 
+/* gte set display aspect: if (num <= 0 || den <= 0) { s_ws_xnum = s_ws_xden = 1; return;  */
 extern "C" void gte_set_display_aspect(int num, int den) {
     if (num <= 0 || den <= 0) { s_ws_xnum = s_ws_xden = 1; return; }
     // squash = (4/3) / (num/den) = (4*den) / (3*num); identity for 4:3.
@@ -936,18 +968,21 @@ static uint64_t s_nclip_disagreements = 0;
 static int32_t s_nclip_last_native = 0;
 static int8_t s_nclip_last_precise_sign = 0;
 static bool s_nclip_last_precise_valid = false;
+/* gte nclip precise stats: if (hits) *hits = s_nclip_precise_hits */
 extern "C" void gte_nclip_precise_stats(uint64_t *hits, uint64_t *fallbacks,
                                         uint64_t *disagreements) {
     if (hits) *hits = s_nclip_precise_hits;
     if (fallbacks) *fallbacks = s_nclip_fallbacks;
     if (disagreements) *disagreements = s_nclip_disagreements;
 }
+/* gte nclip precise bltz: if (!s_nclip_last_precise_valid || native_mac0 != s_nclip_last_native) */
 extern "C" int gte_nclip_precise_bltz(int32_t native_mac0) {
     if (!s_nclip_last_precise_valid || native_mac0 != s_nclip_last_native)
         return native_mac0 < 0;
     return s_nclip_last_precise_sign < 0;
 }
 
+/* gte nclip: gte->FLAG = 0 */
 void gte_nclip(GTEState* gte, uint32_t instr) {
     gte->FLAG = 0;
     int32_t sx0 = static_cast<int16_t>(gte->SXY[0] & 0xFFFF);
@@ -1032,6 +1067,7 @@ void gte_nccs_internal(GTEState* gte, int16_t* V, uint32_t instr) {
     color_output(gte, instr);
 }
 
+/* gte nccs: gte->FLAG = 0 */
 void gte_nccs(GTEState* gte, uint32_t instr) {
     gte->FLAG = 0;
     gte_nccs_internal(gte, gte->V0, instr);
@@ -1059,6 +1095,7 @@ void gte_ncds_internal(GTEState* gte, int16_t* V, uint32_t instr) {
     color_output(gte, instr);
 }
 
+/* gte ncds: gte->FLAG = 0 */
 void gte_ncds(GTEState* gte, uint32_t instr) {
     gte->FLAG = 0;
     gte_ncds_internal(gte, gte->V0, instr);
@@ -1089,6 +1126,7 @@ void gte_ncs_internal(GTEState* gte, int16_t* V, uint32_t instr) {
         gte->saturate_color(gte->MAC3 >> 4, 2));
 }
 
+/* gte ncs: gte->FLAG = 0 */
 void gte_ncs(GTEState* gte, uint32_t instr) {
     gte->FLAG = 0;
     gte_ncs_internal(gte, gte->V0, instr);
@@ -1576,8 +1614,10 @@ uint32_t gte_cfc2(GTEState* gte, uint8_t reg) {
 // gte_execute — C-linkage bridge called from generated code
 // ---------------------------------------------------------------------------
 static uint64_t s_gte_exec_count = 0;
+/* gte get exec count: return s_gte_exec_count; */
 extern "C" uint64_t gte_get_exec_count(void) { return s_gte_exec_count; }
 static uint32_t s_gte_replay_saved_caller_ra = 0;
+/* gte replay side effects begin: using namespace PSXRecomp::GTE */
 extern "C" int gte_replay_side_effects_begin(void) {
     using namespace PSXRecomp::GTE;
     if (s_gte_replay_sandbox) return 0;
@@ -1586,6 +1626,7 @@ extern "C" int gte_replay_side_effects_begin(void) {
     pgxp_suppress_begin();
     return 1;
 }
+/* gte replay side effects end: using namespace PSXRecomp::GTE */
 extern "C" void gte_replay_side_effects_end(void) {
     using namespace PSXRecomp::GTE;
     if (!s_gte_replay_sandbox) return;
@@ -1596,10 +1637,12 @@ extern "C" void gte_replay_side_effects_end(void) {
 
 static uint32_t gte_cpu_lzcr(uint32_t value);
 
+/* gte unpack s16: return static_cast<int16_t>(value & 0xFFFFu) */
 static inline int16_t gte_unpack_s16(uint32_t value) {
     return static_cast<int16_t>(value & 0xFFFFu);
 }
 
+/* gte pack s16 pair: return static_cast<uint32_t>(static_cast<uint16_t>(lo)) | */
 static inline uint32_t gte_pack_s16_pair(int16_t lo, int16_t hi) {
     return static_cast<uint32_t>(static_cast<uint16_t>(lo)) |
            (static_cast<uint32_t>(static_cast<uint16_t>(hi)) << 16);
@@ -1684,6 +1727,7 @@ static void gte_import_cpu_state(PSXRecomp::GTE::GTEState* gte,
     gte->FLAG = c[31] & 0x7FFFF000u;
 }
 
+/* gte state pack irgb: return (b << 10) | (g << 5) | r */
 static uint32_t gte_state_pack_irgb(const PSXRecomp::GTE::GTEState* gte) {
     const uint32_t r = static_cast<uint32_t>(std::clamp(
         static_cast<int>(gte->IR1 >> 7), 0, 0x1F));
@@ -1694,6 +1738,7 @@ static uint32_t gte_state_pack_irgb(const PSXRecomp::GTE::GTEState* gte) {
     return (b << 10) | (g << 5) | r;
 }
 
+/* gte export cpu state: uint32_t* d = cpu->gte_data */
 static void gte_export_cpu_state(CPUState* cpu,
                                  const PSXRecomp::GTE::GTEState* gte) {
     uint32_t* d = cpu->gte_data;
@@ -1754,6 +1799,7 @@ static void gte_export_cpu_state(CPUState* cpu,
     c[31] = gte->FLAG;
 }
 
+/* gte run command: using namespace PSXRecomp::GTE */
 static void gte_run_command(PSXRecomp::GTE::GTEState* gte, uint32_t cmd) {
     using namespace PSXRecomp::GTE;
     switch (cmd & 0x3Fu) {
@@ -1783,6 +1829,7 @@ static void gte_run_command(PSXRecomp::GTE::GTEState* gte, uint32_t cmd) {
     }
 }
 
+/* gte execute: using namespace PSXRecomp::GTE */
 extern "C" void gte_execute(CPUState* cpu, uint32_t cmd) {
     using namespace PSXRecomp::GTE;
 #ifndef PSX_NO_DEBUG_TOOLS
@@ -1959,6 +2006,7 @@ static uint32_t gte_cpu_lzcr(uint32_t value) {
     return count;
 }
 
+/* gte cpu irgb component: if (ir <= 0) return 0 */
 static uint32_t gte_cpu_irgb_component(uint32_t value) {
     const int32_t ir = static_cast<int16_t>(value & 0xFFFFu);
     if (ir <= 0) return 0;
@@ -1966,6 +2014,7 @@ static uint32_t gte_cpu_irgb_component(uint32_t value) {
     return scaled > 0x1Fu ? 0x1Fu : scaled;
 }
 
+/* gte cpu pack irgb: return (b << 10) | (g << 5) | r */
 static uint32_t gte_cpu_pack_irgb(const CPUState* cpu) {
     const uint32_t r = gte_cpu_irgb_component(cpu->gte_data[9]);
     const uint32_t g = gte_cpu_irgb_component(cpu->gte_data[10]);
@@ -1973,6 +2022,7 @@ static uint32_t gte_cpu_pack_irgb(const CPUState* cpu) {
     return (b << 10) | (g << 5) | r;
 }
 
+/* gte sign extend 16: return static_cast<uint32_t>(static_cast<int32_t>( */
 static uint32_t gte_sign_extend_16(uint32_t value) {
     return static_cast<uint32_t>(static_cast<int32_t>(
         static_cast<int16_t>(value & 0xFFFFu)));
@@ -2000,6 +2050,7 @@ static void gte_cpu_canonicalize_backing(CPUState* cpu) {
         cpu->gte_ctrl[reg] = gte_sign_extend_16(cpu->gte_ctrl[reg]);
 }
 
+/* gte read data: if (reg >= 32) return 0 */
 extern "C" uint32_t gte_read_data(CPUState* cpu, uint8_t reg) {
     if (reg >= 32) return 0;
     switch (reg) {
@@ -2021,6 +2072,7 @@ extern "C" uint32_t gte_read_data(CPUState* cpu, uint8_t reg) {
     }
 }
 
+/* gte read ctrl: if (reg >= 32) return 0 */
 extern "C" uint32_t gte_read_ctrl(CPUState* cpu, uint8_t reg) {
     if (reg >= 32) return 0;
     switch (reg) {
@@ -2033,6 +2085,7 @@ extern "C" uint32_t gte_read_ctrl(CPUState* cpu, uint8_t reg) {
     }
 }
 
+/* gte write data: if (reg >= 32) return */
 extern "C" void gte_write_data(CPUState* cpu, uint8_t reg, uint32_t val) {
     if (reg >= 32) return;
     gte_cpu_canonicalize_backing(cpu);
@@ -2107,6 +2160,7 @@ extern "C" void gte_write_data(CPUState* cpu, uint8_t reg, uint32_t val) {
     }
 }
 
+/* gte write ctrl: if (reg >= 32) return */
 extern "C" void gte_write_ctrl(CPUState* cpu, uint8_t reg, uint32_t val) {
     if (reg >= 32) return;
     gte_cpu_canonicalize_backing(cpu);
@@ -2126,6 +2180,7 @@ extern "C" void gte_write_ctrl(CPUState* cpu, uint8_t reg, uint32_t val) {
     }
 }
 
+/* gte canonicalize cpu state */
 extern "C" void gte_canonicalize_cpu_state(CPUState* cpu) {
     gte_cpu_canonicalize_backing(cpu);
     /* ctrl[31] is emulator state, not a guest CTC2 write. Preserve the
@@ -2144,6 +2199,7 @@ extern "C" void gte_test_set_precise_valid_mask(uint32_t mask) {
         pgxp_test_seed_gte_sxy(i, 0, 0, 0, 1, (mask >> i) & 1u);
 }
 
+/* gte test get precise valid mask: uint32_t mask = 0 */
 extern "C" uint32_t gte_test_get_precise_valid_mask(void) {
     uint32_t mask = 0;
     for (uint32_t i = 0; i < 4; ++i) {
@@ -2154,20 +2210,24 @@ extern "C" uint32_t gte_test_get_precise_valid_mask(void) {
     return mask;
 }
 
+/* gte test set timeline generations: PSXRecomp::GTE::s_geom_generation = geometry */
 extern "C" void gte_test_set_timeline_generations(uint32_t precision,
                                                     uint32_t geometry) {
     pgxp_test_set_generation(precision);
     PSXRecomp::GTE::s_geom_generation = geometry;
 }
 
+/* gte test get precision generation: return pgxp_test_generation() */
 extern "C" uint32_t gte_test_get_precision_generation(void) {
     return pgxp_test_generation();
 }
 
+/* gte test get geometry generation: return PSXRecomp::GTE::s_geom_generation */
 extern "C" uint32_t gte_test_get_geometry_generation(void) {
     return PSXRecomp::GTE::s_geom_generation;
 }
 
+/* gte test seed precise projection */
 extern "C" void gte_test_seed_precise_projection(uint32_t index,
                                                     uint32_t packed,
                                                     int32_t x16,
@@ -2176,6 +2236,7 @@ extern "C" void gte_test_seed_precise_projection(uint32_t index,
     pgxp_test_seed_gte_sxy(index, packed, x16, y16, z, 1);
 }
 
+/* gte test get precise projection */
 extern "C" void gte_test_get_precise_projection(uint32_t index,
                                                   uint32_t* packed,
                                                   int32_t* x16,
@@ -2185,6 +2246,7 @@ extern "C" void gte_test_get_precise_projection(uint32_t index,
     pgxp_test_get_gte_sxy(index, packed, x16, y16, z, valid);
 }
 
+/* gte test seed geometry: if (!PSXRecomp::GTE::s_geom_cache)  */
 extern "C" void gte_test_seed_geometry(uint32_t packed, int32_t x16,
                                          int32_t y16) {
     /* The table is allocated lazily on enable; tests seed it directly, so make

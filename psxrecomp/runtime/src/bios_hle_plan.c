@@ -2,6 +2,7 @@
 
 #include "bios_hle_plan.h"
 
+/* psx bios hle plan: PsxBiosHlePlan p */
 PsxBiosHlePlan psx_bios_hle_plan(PsxBiosHleRequest req)
 {
     PsxBiosHlePlan p;

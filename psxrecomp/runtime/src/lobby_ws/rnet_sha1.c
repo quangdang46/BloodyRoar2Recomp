@@ -10,8 +10,10 @@ typedef struct {
     size_t buffer_len;
 } Sha1Ctx;
 
+/* rol: return (v << n) | (v >> (32 - n)); */
 static uint32_t rol(uint32_t v, int n) { return (v << n) | (v >> (32 - n)); }
 
+/* sha1 process: uint32_t w[80] */
 static void sha1_process(Sha1Ctx *ctx, const uint8_t block[64])
 {
     uint32_t w[80];
@@ -57,6 +59,7 @@ static void sha1_process(Sha1Ctx *ctx, const uint8_t block[64])
     ctx->state[4] += e;
 }
 
+/* sha1 init: ctx->state[0] = 0x67452301u */
 static void sha1_init(Sha1Ctx *ctx)
 {
     ctx->state[0] = 0x67452301u;
@@ -68,6 +71,7 @@ static void sha1_init(Sha1Ctx *ctx)
     ctx->buffer_len = 0;
 }
 
+/* sha1 update: size_t i = 0 */
 static void sha1_update(Sha1Ctx *ctx, const uint8_t *data, size_t len)
 {
     size_t i = 0;
@@ -81,6 +85,7 @@ static void sha1_update(Sha1Ctx *ctx, const uint8_t *data, size_t len)
     }
 }
 
+/* sha1 final: size_t i */
 static void sha1_final(Sha1Ctx *ctx, uint8_t out[20])
 {
     size_t i;
@@ -107,6 +112,7 @@ static void sha1_final(Sha1Ctx *ctx, uint8_t out[20])
     }
 }
 
+/* rnet sha1: Sha1Ctx ctx */
 void rnet_sha1(const uint8_t *data, size_t len, uint8_t out[20])
 {
     Sha1Ctx ctx;

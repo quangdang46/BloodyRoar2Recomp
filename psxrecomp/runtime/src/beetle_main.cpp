@@ -42,6 +42,7 @@ int  beetle_debug_server_get_input_override(void);
 #define PAD_CROSS    (1 << 14)
 #define PAD_SQUARE   (1 << 15)
 
+/* pad from keyboard: uint16_t b = 0xFFFF */
 static uint16_t pad_from_keyboard(void) {
     const Uint8* keys = SDL_GetKeyboardState(NULL);
     uint16_t b = 0xFFFF;
