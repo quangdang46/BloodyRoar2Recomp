@@ -2979,6 +2979,7 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
   }
 }
 
+/* lzss_trap — host-side diagnostic for the unreachable LZSS mode-1 break. */
 void lzss_trap(uint32_t a0,uint32_t a1)
 {
   /* Mode-1 (break) should be unreachable on real data; reaching it means the
@@ -3076,6 +3077,7 @@ extern int rgb_triple_store(uint32_t,uint32_t,uint32_t);
 extern int scratch_013_set(uint32_t);
 extern int spr_draw_off(int32_t,int32_t,int32_t,int32_t);
 
+/* guest-memory accessors: NULL-safe typed loads via guest_at */
 static uint32_t g32(uint32_t a)
 {
   uint32_t *p = (uint32_t *)guest_at(a);
@@ -4495,6 +4497,10 @@ static void coord_rec_fill(uint8_t *d, uint32_t s)
   d[0x16]=(uint8_t)(b0 + b2);
   d[0x17]=(uint8_t)(b1 + b3);
 }
+
+/* fighter_anim_table_init @0x80172a34 — fighter anim/sprite table init:
+ * two task_pool_init blocks, task_heads_clear, sprite desc records at
+ * 0x801f4f30/0x801f4cbc regions. a0 != 0 -> early out. */
 void fighter_anim_table_init(int32_t a0)
 {
   uint32_t pass_off, pass, ri;
@@ -4800,6 +4806,9 @@ static void tag24_merge(uint32_t dst, uint32_t src)
   *(uint32_t *)guest_at(dst) = (v & 0xff000000u) | (src & 0xffffffu);
 }
 
+/* sprite_anim_chain_build @0x8016d478 — sprite anim chain build: per-i
+ * prim/clut/rect/tag packet chain at 0x801f4cbc + i*0x58, texclut from
+ * 0x801e40a0 + i*0x2150. */
 void sprite_anim_chain_build(uint32_t a0)
 {
   uint32_t sp20 = 0, sp24, sp28, sp2c = 0;
@@ -4961,6 +4970,8 @@ static int32_t sdiv16(int32_t v)
   return v / 16;
 }
 
+/* status_text_display @0x8016f588 — status text display: scroll offsets,
+ * print_dispatch banner, then per-mode (a1v<0x10) stat glyph draw. */
 void status_text_display(uint32_t a0,uint32_t a1)
 {
   uint8_t *st = (uint8_t *)guest_at(a0);
@@ -5148,6 +5159,9 @@ static int32_t shr4_trunc(int32_t v)
 static int32_t shr2_trunc(int32_t v)
 { return v < 0 ? (v + 3) >> 2 : v >> 2; }
 
+/* hud_state_machine @0x8016e21c — HUD state machine: per-frame sprite desc
+ * init + channel dispatch over pad state @0x1f800000; br2_bail_pending
+ * early-out each iteration. */
 void hud_state_machine(uint32_t a0)
 {
   extern int br2_bail_pending(void);
@@ -6557,6 +6571,8 @@ static int32_t hud_div4(int32_t v)
   return v / 4;
 }
 
+/* hud_announce @0x8015143c — HUD announce banner: gate on desc flag bit,
+ * sel<0x17 selects the descblk_variant_f string block + x/y offsets. */
 void hud_announce(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint8_t *st = (uint8_t *)guest_at(a0);
@@ -9538,6 +9554,8 @@ static int mc_issue(uint32_t a0,const void *a1,void *a2,
   return 1;
 }
 
+/* mc_job_issue_a @0x8019f35c / mc_job_issue_b @0x8019f5b4 — mc_issue
+ * wrappers: job type 3 / 4 with result callbacks 0x8019f474 / 0x8019f6cc. */
 int mc_job_issue_a(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
   return mc_issue(a0,a1,a2,a3,a4,3,0x8019f474);
