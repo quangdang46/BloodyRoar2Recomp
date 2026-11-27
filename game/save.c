@@ -356,7 +356,7 @@ void memcard_tick(void)
       DAT_801bef60 = 0xca;
       cd_cmd_issue_async(0xe,(int)guest_of(&DAT_801bef60));
       if (DAT_801c4580) {
-        DAT_801bef6d = DAT_801bef6d + 0x03;
+        DAT_801bef6d += 0x03;
       }
       DAT_801c4580 = 0x01;
     case 0x11:
@@ -500,7 +500,7 @@ void memcard_tick(void)
     DAT_801bef60 = 7;
     cd_cmd_issue_async(0xe,(int)guest_of(&DAT_801bef60));
     if (!(DAT_801c4580)) {
-      DAT_801bef6d = DAT_801bef6d + 0x03;
+      DAT_801bef6d += 0x03;
     }
     DAT_801c4580 = 0;
   case 0x11:
@@ -1266,8 +1266,8 @@ void memcard_slot_poll(void)
       }
     }
     slot_i++;
-    rec = rec + 0x10;
-    slot_flag = slot_flag + 0x10;
+    rec += 0x10;
+    slot_flag += 0x10;
   } while (slot_i < 0x18);
   return;
 }
@@ -1327,8 +1327,8 @@ void deferred_cmd_drain(uint32_t a0,int a1)
     }
 bb_80156ebc:
     slot_i++;
-    rec_s = rec_s + 3;
-    rec_u = rec_u + 3;
+    rec_s += 3;
+    rec_u += 3;
     if (0x1f < slot_i) {
       return;
     }
@@ -1354,7 +1354,7 @@ void save_defaults_fill(void)
     i++;
     *(uint16_t *)(dst + 0x400) = def_val;
     *(uint16_t *)(dst + 0x3f0) = def_val;
-    dst = dst + 2;
+    dst += 2;
   } while (i < 8);
   return;
 }
@@ -1394,10 +1394,10 @@ void save_block_init(void)
     do {
       *(uint16_t *)(dst + 0xe) = 0;
       j--;
-      dst = dst - 2;
+      dst -= 2;
     } while (-1 < j);
     i++;
-    n = n + 0x24;
+    n += 0x24;
   } while (i < 0xb);
   return;
 }
@@ -2078,7 +2078,7 @@ void chan_sweep_flag200(void)
       DAT_801f35f4--;
     }
     i++;
-    ent = ent + 3;
+    ent += 3;
   } while (i < 0x20);
 }
 
@@ -2096,7 +2096,7 @@ void chan_sweep_flag100(void)
       DAT_801f35f4--;
     }
     i++;
-    ent = ent + 3;
+    ent += 3;
   } while (i < 0x20);
 }
 
@@ -2174,7 +2174,7 @@ void datetime_confirm_b(int32_t a0,uint32_t a1)
   *(int16_t *)(dlg + 0x12) = (int16_t)a0;
   mc_state_init();
   tmp = cd_stamp_to_sector(date_str);
-  tmp = tmp + cd_stamp_to_sector((const void *)guest_at(
+  tmp += cd_stamp_to_sector((const void *)guest_at(
       0x801b3310u + (uint32_t)*(uint16_t *)(dlg + 0x12) * 4)) * 2;
   *(uint32_t *)(dlg + 0x28) = (uint32_t)tmp;
   dlg[0] = 1;
@@ -2225,7 +2225,7 @@ int slot_display_pos(uint8_t *a0,uint32_t a1)
   if (!(a1)) {
     y = *(int16_t *)(a0 + 0x22) * 3;
     if (y < 0) {
-      y = y + 3;
+      y += 3;
     }
     x_raw = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
     x = (int16_t)((x_raw / 2) - 0x45);
@@ -2237,7 +2237,7 @@ int slot_display_pos(uint8_t *a0,uint32_t a1)
   if (a1 == 1) {
     y = *(int16_t *)(a0 + 0x22) * 7;
     if (y < 0) {
-      y = y + 7;
+      y += 7;
     }
     x_raw = (int32_t)(int16_t)*(uint16_t *)(a0 + 0x20);
     x = (int16_t)((x_raw / 2) - 0x45);
