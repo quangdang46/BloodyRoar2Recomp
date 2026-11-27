@@ -101,12 +101,12 @@ extern char *s_SetDispMask__d_____801254a0;
 extern char *s_DrawSync__d_____801254b4;
 extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
-#define spr_pool_b_next   (*(int32_t *)g_DAT_801b55dc)
-#define spr_slot_next   (*(int32_t *)g_DAT_801b55e0)
-#define spr_pool_a_next   (*(int32_t *)g_DAT_801b55e4)
+#define spr_pool_b_next  (*(int32_t *)g_DAT_801b55dc)
+#define spr_slot_next    (*(int32_t *)g_DAT_801b55e0)
+#define spr_pool_a_next  (*(int32_t *)g_DAT_801b55e4)
 #define spr_desc_tbl_a   (*(uint32_t *)g_DAT_801f642c)
 #define spr_desc_tbl_b   (*(uint32_t *)g_DAT_801f68b4)
-#define frame_tag  (*(uint32_t *)g__DAT_1f8000dc)
+#define frame_tag        (*(uint32_t *)g__DAT_1f8000dc)
 /* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a). */
 #define GP32(a)   (*(uint32_t *)guest_at(a))
 #define GP8(a)    (*(uint8_t  *)guest_at(a))
@@ -114,12 +114,12 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define GP32S(a)  (*(int32_t  *)guest_at(a))
 #define GP16S(a)  (*(int16_t  *)guest_at(a))
 
-#define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
-#define gpu_mode_state   (*(uint8_t  *)g_DAT_801b8321)
+#define gpu_mode        (*(uint8_t  *)g_DAT_801b8320)
+#define gpu_mode_state  (*(uint8_t  *)g_DAT_801b8321)
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
-#define disp_width   (*(uint16_t *)g_DAT_801b8324)
-#define disp_height   (*(uint16_t *)g_DAT_801b8326)
-#define otag_r_tag   (GP32(0x801b83e0))
+#define disp_width      (*(uint16_t *)g_DAT_801b8324)
+#define disp_height     (*(uint16_t *)g_DAT_801b8326)
+#define otag_r_tag      (GP32(0x801b83e0))
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
  * payload). Entries are guest addrs of libgpu syscall impls;
@@ -1899,7 +1899,7 @@ void     gp_20_store(uint32_t);
  * register file — accesses must go through the pointer-cell bridge
  * (br2_ld32p/br2_st32p) so MMIO side effects fire; a raw guest_at()
  * deref would only touch the open-bus mirror. */
-#define MDECREG(C) br2_ld32p(C)
+#define MDECREG(C)       br2_ld32p(C)
 #define MDECREG_ST(C, V) br2_st32p(C, V)
 
 /* ======== 0x8018fc00 ======== */
@@ -2014,6 +2014,8 @@ void mdec_pump_b(uint32_t bfr_g, uint32_t size)
   MDECREG_ST(0x801b68d4, 0x1000200);
   return;
 }
+#undef MDECREG
+#undef MDECREG_ST
 
 /* ======== 0x80193fa0 ======== */
 
