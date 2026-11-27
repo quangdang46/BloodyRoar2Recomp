@@ -1396,10 +1396,6 @@ __attribute__((weak))
 /* guest 0x80195290 = gte_ofs_set (renames.map). */
 void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
 
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-
 uint8_t *g_DAT_801e40b7, *g_DAT_801e40b8;
 uint8_t *g_DAT_801e6206, *g_DAT_801e6207, *g_DAT_801e6208;
 uint8_t *g_DAT_801e6209, *g_DAT_801e620a, *g_DAT_801e620b;
