@@ -1242,7 +1242,7 @@ extern int      getCopReg(int fmt,int reg);
 extern void     setCopControlWord(int fmt,int reg,int v);
 extern int lut_cos_q12(int angle);
 extern int lut_sin_q12(uint angle);
-extern int FUN_80194500(uint32_t a0, ...);
+extern int FUN_80194500(uint32_t val, ...);
 
 /* Faithful signed 32/32 `div` LO result (same idiom as resolve.c).
  * Guest div has NO trap: div-by-zero yields LO = (dividend>=0) ? -1 : 1,
