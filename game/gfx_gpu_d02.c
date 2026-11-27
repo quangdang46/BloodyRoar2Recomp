@@ -1,13 +1,9 @@
 #include <stdint.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "cpu_state.h"
-
-extern CPUState *clean_cpu_state(void);
 
 #include "psx_cyc.h"
 
+extern CPUState *clean_cpu_state(void);
 extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
 uint32_t gpu_callback_state_flags(uint32_t a0, uint32_t a1,
