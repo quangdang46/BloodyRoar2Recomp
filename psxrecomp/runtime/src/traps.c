@@ -223,6 +223,7 @@ uint32_t g_ra_tw_frame = 0;
 uint32_t g_ra_tw_in_exc = 0;
 uint32_t g_ra_tw_sp = 0;
 
+/* One-shot latch: record the first $ra->1 clobber site for diagnostics. */
 void psx_ra_tripwire(CPUState *cpu, uint32_t prev_ra, uint32_t pc, uint32_t site) {
     if (g_ra_tw_latched) return;
     if (cpu->gpr[31] == 1u && prev_ra != 1u) {
@@ -236,6 +237,7 @@ void psx_ra_tripwire(CPUState *cpu, uint32_t prev_ra, uint32_t pc, uint32_t site
     }
 }
 
+/* Write crash text, dump the ring, then halt/exit via psx_fatal_halt. */
 static void trap_crash(const char* msg) {
     FILE* cf = fopen("psx_crash.txt", "w");
     if (cf) { fprintf(cf, "%s\n", msg); fclose(cf); }
@@ -995,6 +997,8 @@ void psx_scheduler_run(CPUState* cpu)
     }
 }
 
+/* BIOS syscall dispatch (EnterCriticalSection/Exit/ReturnFromException
+ * and unknown numbers via the installed exception handler). */
 int psx_syscall(CPUState* cpu, uint32_t code) {
     /*
      * PS1 BIOS SYSCALL convention:
@@ -1157,6 +1161,7 @@ int psx_syscall(CPUState* cpu, uint32_t code) {
     return 1;
 }
 
+/* BREAK exception: fatal crash report + halt. */
 void psx_break(CPUState* cpu, uint32_t code, uint32_t pc) {
     char buf[128];
     snprintf(buf, sizeof(buf), "BREAK @ PC=0x%08X, code=0x%05X", pc, code);
@@ -1165,6 +1170,7 @@ void psx_break(CPUState* cpu, uint32_t code, uint32_t pc) {
     exit(1);
 }
 
+/* Arithmetic-overflow exception: fatal crash report + halt. */
 void psx_arith_overflow(CPUState* cpu) {
     char buf[128];
     snprintf(buf, sizeof(buf), "OVERFLOW @ PC=0x%08X", cpu->pc);
@@ -1173,6 +1179,7 @@ void psx_arith_overflow(CPUState* cpu) {
     exit(1);
 }
 
+/* Surviving ADEL fault: log diagnostics (first 3 hits) and skip on. */
 void psx_unaligned_access(CPUState* cpu, uint32_t addr, uint32_t pc) {
     /* Survivable fault: log diagnostics and let the generated code's
      * `return;` skip the rest of the current function. */
@@ -1196,6 +1203,7 @@ void psx_unaligned_access(CPUState* cpu, uint32_t addr, uint32_t pc) {
     }
 }
 
+/* Dispatch miss handler: absorb null targets, detect ReturnFromException. */
 void psx_unknown_dispatch(CPUState* cpu, uint32_t addr, uint32_t phys) {
     /* NULL dispatch: address 0 is never a valid function target.
      * Silently absorb — this can happen when a corrupt function pointer
