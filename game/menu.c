@@ -3753,91 +3753,91 @@ int32_t pi;
     uint8_t *prec = recs + pi * 0x30;
     uint16_t *ph = (uint16_t *)(b + 0xb4 + pi * 2);
     uint32_t cls = *ph & 0xf00;
-    uint32_t t, a0, v1;
+    uint32_t t, fw, fw2;
     *(uint32_t *)(prec + 0x38) = (uint32_t)select_phase_gate(battle_g,pi);
     t = *(uint32_t *)(prec + 0x28);
     if (cls==0x100||cls==0x200||cls==0x700) t |= 1; else t &= ~1u;
     *(uint32_t *)(prec + 0x28) = t;
     {
       int32_t r = gate_read_ec(battle_g,pi);
-      a0 = (t & ~3u) | ((uint32_t)(r & 1) << 1);
-      *(uint32_t *)(prec + 0x28) = a0;
+      fw = (t & ~3u) | ((uint32_t)(r & 1) << 1);
+      *(uint32_t *)(prec + 0x28) = fw;
       *(uint32_t *)(prec + 0x54) = 0;
-      v1 = a0 & ~4u;
-      v1 |= (*ph >> 0xa) & 4;
-      *(uint32_t *)(prec + 0x28) = v1;
+      fw2 = fw & ~4u;
+      fw2 |= (*ph >> 0xa) & 4;
+      *(uint32_t *)(prec + 0x28) = fw2;
     }
   }
 
   {
     uint32_t mode = b[0x9b];
-    int32_t a2 = 1;
+    int32_t one = 1;
     if (mode == 3) {
       /* path A: both players forced-ready */
       for (pi = 0; pi < 2; pi++) {
-        uint8_t *a1 = recs + pi * 0x30;
+        uint8_t *rptr = recs + pi * 0x30;
         uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
-        *(uint32_t *)(a1 + 0x3c) = (uint32_t)pi;
-        *(uint32_t *)(a1 + 0x40) = (uint32_t)pi;
-        *(uint32_t *)(a1 + 0x38) = 1;
-        if (direct) *(uint32_t *)(a1 + 0x44) = cr[pi + 0x1b];
-        else    *(uint32_t *)(a1 + 0x44) = xlat[cr[pi + 0x1b]];
-        *(uint32_t *)(a1 + 0x4c) = 0;
-        *(uint32_t *)(a1 + 0x28) |= 0x78;
+        *(uint32_t *)(rptr + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(rptr + 0x40) = (uint32_t)pi;
+        *(uint32_t *)(rptr + 0x38) = 1;
+        if (direct) *(uint32_t *)(rptr + 0x44) = cr[pi + 0x1b];
+        else    *(uint32_t *)(rptr + 0x44) = xlat[cr[pi + 0x1b]];
+        *(uint32_t *)(rptr + 0x4c) = 0;
+        *(uint32_t *)(rptr + 0x28) |= 0x78;
       }
     } else if ((mode < 4 && (int8_t)mode >= 0) || mode == 4) {
       /* main per-player fill loop */
       for (pi = 0; pi < 2; pi++) {
-        uint8_t *a0 = recs + pi * 0x30;
+        uint8_t *rptr = recs + pi * 0x30;
         uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
-        uint32_t g38 = *(uint32_t *)(a0 + 0x38);
-        *(uint32_t *)(a0 + 0x3c) = (uint32_t)pi;
-        *(uint32_t *)(a0 + 0x40) = (uint32_t)pi;
+        uint32_t g38 = *(uint32_t *)(rptr + 0x38);
+        *(uint32_t *)(rptr + 0x3c) = (uint32_t)pi;
+        *(uint32_t *)(rptr + 0x40) = (uint32_t)pi;
         if (g38 == 0) {
           /* char select then +0x28 bit0 test */
-          if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
-          else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
+          if (direct) *(uint32_t *)(rptr + 0x44) = cr[pi + 0x1b];
+          else    *(uint32_t *)(rptr + 0x44) = xlat[cr[pi + 0x1b]];
           {
-            uint32_t v1 = *(uint32_t *)(a0 + 0x28);
-            if (v1 & 1) {
-              *(uint32_t *)(a0 + 0x28) = v1 | 0x78;
-              *(uint32_t *)(a0 + 0x4c) = 0;
+            uint32_t fw3 = *(uint32_t *)(rptr + 0x28);
+            if (fw3 & 1) {
+              *(uint32_t *)(rptr + 0x28) = fw3 | 0x78;
+              *(uint32_t *)(rptr + 0x4c) = 0;
             } else {
-              *(uint32_t *)(a0 + 0x28) = v1 | 0x58;
-              *(uint32_t *)(a0 + 0x4c) = (uint32_t)a2;
+              *(uint32_t *)(rptr + 0x28) = fw3 | 0x58;
+              *(uint32_t *)(rptr + 0x4c) = (uint32_t)one;
             }
           }
-        } else if (g38 == (uint32_t)a2) {
-          uint32_t fl_old = *(uint32_t *)(a0 + 0x28);
+        } else if (g38 == (uint32_t)one) {
+          uint32_t fl_old = *(uint32_t *)(rptr + 0x28);
           uint32_t foe_bit;
-          *(uint32_t *)(a0 + 0x28) = fl_old | 0x40;
+          *(uint32_t *)(rptr + 0x28) = fl_old | 0x40;
           foe_bit = ((*(uint32_t *)(recs + (pi ^ 1) * 0x30 + 0x28) >> 1) & 1);
-          if (foe_bit != (uint32_t)a2) {
+          if (foe_bit != (uint32_t)one) {
             /* 493c4: cr-based char select */
-            if (direct) *(uint32_t *)(a0 + 0x44) = cr[pi + 0x1b];
-            else    *(uint32_t *)(a0 + 0x44) = xlat[cr[pi + 0x1b]];
+            if (direct) *(uint32_t *)(rptr + 0x44) = cr[pi + 0x1b];
+            else    *(uint32_t *)(rptr + 0x44) = xlat[cr[pi + 0x1b]];
           } else {
             /* 49380: +0x28 = old|0x58, char via battle+0xa8 table */
             int16_t off;
-            *(uint32_t *)(a0 + 0x28) = fl_old | 0x58;
+            *(uint32_t *)(rptr + 0x28) = fl_old | 0x58;
             off = *(int16_t *)(b + 0xa2);
-            if (direct) *(uint32_t *)(a0 + 0x44) =
+            if (direct) *(uint32_t *)(rptr + 0x44) =
               *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off);
-            else    *(uint32_t *)(a0 + 0x44) = xlat[
+            else    *(uint32_t *)(rptr + 0x44) = xlat[
               *(uint8_t *)guest_at(*(uint32_t *)(b + 0xa8) + (uint32_t)off)];
           }
           /* 49408 tail */
           if (*(uint8_t *)(b + 0x9c) == 5 &&
-              (*(uint8_t *)(b + 0x9b) == (uint8_t)a2 ||
+              (*(uint8_t *)(b + 0x9b) == (uint8_t)one ||
                *(uint8_t *)(b + 0x9b) == 4)) {
-            *(uint32_t *)(a0 + 0x4c) = 0;
-            *(uint32_t *)(a0 + 0x28) |= 0x78;
+            *(uint32_t *)(rptr + 0x4c) = 0;
+            *(uint32_t *)(rptr + 0x28) |= 0x78;
           } else {
-            *(uint32_t *)(a0 + 0x4c) = (uint32_t)a2;
+            *(uint32_t *)(rptr + 0x4c) = (uint32_t)one;
           }
         }
         /* 49448 tail: +0x48 = +0x44 */
-        *(uint32_t *)(a0 + 0x48) = *(uint32_t *)(a0 + 0x44);
+        *(uint32_t *)(rptr + 0x48) = *(uint32_t *)(rptr + 0x44);
       }
     }
   }
@@ -14153,28 +14153,28 @@ void anim_wb_init_gate(uint32_t ent,uint32_t aidx,uint32_t v3,
  * anim_wb_init_gate(s0,K,q2,q1,q3). Tail: if MB32(s0+0x64)&0x20000 &&
  * MBS16(s2+0x80)!=0x11f: s1 in {2,7,10,13,16} ->
  * task_node_alloc_init(s0,s1,0); s1!=0 -> deferred_cmd_post(0x400,0x5a,0). */
-uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
-                      uint32_t v3)
+uint32_t desc_slot_alloc(uint32_t ent,uint32_t aux,
+                      uint32_t desc)
 {
 
-  uint32_t cmdw = MB16(v3);
+  uint32_t cmdw = MB16(desc);
   int32_t s1 = (int32_t)(int8_t)(cmdw >> 8);
   int32_t mode = s1 >> 4;
-  uint32_t rec = aidx + MB8(aidx + 0x100) * 4u;
+  uint32_t rec = aux + MB8(aux + 0x100) * 4u;
   uint32_t tbl = MB32(rec + 0xf8);
   int32_t flag = MB8(ent + 5) & 1;
   int32_t q1, q2, q3, b101, den;
   int i;
-  if (mode == 1) { if (flag) return v3 + 4; }
-  else if (mode == 2) { if (!flag) return v3 + 4; }
+  if (mode == 1) { if (flag) return desc + 4; }
+  else if (mode == 2) { if (!flag) return desc + 4; }
   for (i = 0; i < 8; i++) {
     uint32_t slot = MB32(ent + 0x14) + (uint32_t)i * 4u;
     if ((int8_t)MB8(slot) == -1) {
       uint32_t nb;
       MW8(slot, 0);
-      nb = MB8(tbl + MB8(v3 + 2)) + 1u;
+      nb = MB8(tbl + MB8(desc + 2)) + 1u;
       MW8(slot + 1, (uint8_t)nb);
-      MW16(slot + 2, (uint16_t)(MB16(v3 + 2) >> 8));
+      MW16(slot + 2, (uint16_t)(MB16(desc + 2) >> 8));
       s1 = (int32_t)(int8_t)nb;
       if (i + 1 < 8)
         MW8(MB32(ent + 0x14) + (uint32_t)(i + 1) * 4u, 0xff);
@@ -14184,7 +14184,7 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
   den = MBS16(ent + 0x88);
   {
     /* MIPS div-by-zero rule (generated): lo = num>=0 ? -1 : 1 */
-    int32_t b = (int8_t)MB8(aidx + 0x102);
+    int32_t b = (int8_t)MB8(aux + 0x102);
     int32_t n;
     if (b < 0) {
       n = MBS16(ent + 0xba);
@@ -14193,7 +14193,7 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
       n = b * 16;
       q1 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(aidx + 0x103);
+    b = (int8_t)MB8(aux + 0x103);
     if (b < 0) {
       n = MBS16(ent + 0xb8);
       q2 = den != 0 ? n / den : (n >= 0 ? -1 : 1);
@@ -14201,7 +14201,7 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
       n = b * 16;
       q2 = den != 0 ? n / den : -1;
     }
-    b = (int8_t)MB8(aidx + 0x104);
+    b = (int8_t)MB8(aux + 0x104);
     if (b < 0) q3 = 4;
     else {
       n = b * 16;
@@ -14209,7 +14209,7 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
     }
   }
   q3 <<= 16;
-  b101 = (int8_t)MB8(aidx + 0x101);
+  b101 = (int8_t)MB8(aux + 0x101);
   if (b101 == 2) {
     if (s1 == 0xa) anim_wb_init_gate(ent, 0xa, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     else if (s1 < 0xb) { if (s1 == 7) anim_wb_init_gate(ent, 7, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3); }
@@ -14225,13 +14225,13 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aidx,
       else if (s1 == 0x10) anim_wb_init_gate(ent, 0x10, (uint32_t)q2, (uint32_t)q1, (uint32_t)q3);
     }
   }
-  if ((MB32(ent + 0x64) & 0x20000u) != 0 && MBS16(aidx + 0x80) != 0x11f) {
+  if ((MB32(ent + 0x64) & 0x20000u) != 0 && MBS16(aux + 0x80) != 0x11f) {
     if ((uint32_t)(s1 - 2) < 0xf &&
         (s1 == 2 || s1 == 7 || s1 == 10 || s1 == 13 || s1 == 16))
       task_node_alloc_init((int32_t)ent, s1, 0);
     if (s1 != 0) deferred_cmd_post(0x400, 0x5a, 0);
   }
-  return v3 + 4;
+  return desc + 4;
 }
 
 /* ======== batch67 ======== */
