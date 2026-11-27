@@ -18132,7 +18132,7 @@ void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 extern int  console_emit(int c);
 extern int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2);
 extern int  rotate_xy_pairs(int n,uint32_t ang);  /* guest 0x80195570 — battle.c */
-extern int spr_pool_b_alloc();   /* weak-stubbed in bind.c; returns prim ptr */
+extern void * spr_pool_b_alloc();  /* gfx.c def — returns host ptr; guest_of() it */
 extern void *spr_desc_slot_alloc(void);   /* gfx.c — returns host ptr */
 
 /* guest debug_line_putc @0x8018ee28 — debug line-buffer putc: tab expands to
@@ -18594,7 +18594,7 @@ void sprite_prim_build(int ot,int pos,int dim,int uv,int sw,int sh,int col)
   int t3;
   int t0;
   int t1;
-  spr = spr_pool_b_alloc(ot,pos,dim,uv);
+  spr = (int)guest_of(spr_pool_b_alloc(ot,pos,dim,uv));
   if (spr != 0) {
     w = ((dim >> 0x10) & 0xff) + 1;
     h = (int)((uint32_t)dim >> 0x18) + 1;
