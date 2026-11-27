@@ -35971,8 +35971,8 @@ extern void cpst_8019eb00(void);
     cpst_8019eb00();
 }
 static void wrap_8019eb78(CPUState *cpu) {
-extern void cpst_8019ec24(void);
-    cpst_8019ec24();
+extern void cpst_8019eb78(void);
+    cpst_8019eb78();
 }
 static void wrap_8019eb84(CPUState *cpu) {
 extern void cpst_8019eb00(void);

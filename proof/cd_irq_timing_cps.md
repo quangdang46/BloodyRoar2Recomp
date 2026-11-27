@@ -979,3 +979,31 @@ the band is untimed-by-convention anyway.
 Post-region 0x801C+: zero uncovered entries.
 
 No code changes — audit only.
+
+## Batch 49 (orch/w5/e05) — embedded entry 0x8019EB78 CLOSED
+
+find_body preferred the largest covering body, so 0x8019EB78 resolved
+to br2eu_func_8019EB00 where the addr is a mid-block instruction
+anchor -> embedded-entry reject (batch-47's "transformer limitation").
+But br2eu_psx_alias_body_8019EB00 explicitly lists `case 0x8019EB78`
+in its switch(entry) with a real `block_8019EB78:` label — the alias
+body is the correct source.
+
+Fix: find_body now scores match quality — case/block label match (2)
+beats instruction-anchor-only match (1); largest body still breaks
+ties, exact-name match still wins outright. Returns (name, body, path).
+
+Emitted cpst_8019eb78 from the alias body (48 _cont cases, all shared
+with cpst_8019eb00's resume rows — already routed, peer-ports-win
+preserved; only the entry row added).
+
+clean_table: 10528 wrappers (row replaced an unrouted entry — net
+unchanged count). cd_irq_probe.c +~430 lines.
+
+Verified: clean build EU + USA; headless :5111 frames 148 -> 27434+
+attract CD streaming, no wedge.
+
+Result: 0x8018-0x801B entry-level coverage is now literally 100% —
+even the last embedded entry is timed. Remaining generated surface:
+0x8012-0x8017 game-logic band only (515 fully-uncovered func entries,
+peer-scope, untimed-by-convention).

@@ -206,15 +206,19 @@ def find_body(addr):
             if end < 0:
                 continue
             body = txt[start:end]
-            covers = (f'case 0x{addr:08X}u' in body or
-                      f'case 0x{addr:x}u' in body or
-                      f'block_{addr:08X}:' in body or
-                      f'block_{addr:08x}:' in body or
-                      # embedded entry: addr is an instruction inside a block
-                      # (jal target mid-block — e.g. 0x8019D508 inside
-                      # br2eu_func_8019D500's first block). The /* 0xADDR: ENC */
-                      # op comment is the per-instruction anchor.
-                      f'/* 0x{addr:08X}:' in body)
+            # Match quality: a body that names `addr` as a case label or
+            # block label is a true entry/block match; a body that only has
+            # the /* 0xADDR: ENC */ instruction anchor contains it mid-block.
+            # Prefer true matches — e.g. alias bodies list every alias entry
+            # in switch(entry), while the plain parent func merges the same
+            # guest addr into a larger block.
+            quality = 0
+            if (f'case 0x{addr:08X}u' in body or f'case 0x{addr:x}u' in body or
+                    f'block_{addr:08X}:' in body or f'block_{addr:08x}:' in body):
+                quality = 2
+            elif f'/* 0x{addr:08X}:' in body:
+                quality = 1
+            covers = quality > 0
             if covers and 'block_' in body:
                 # Exact-entry match wins over a larger parent that merely
                 # contains the addr as an instruction anchor: when the
@@ -223,9 +227,10 @@ def find_body(addr):
                 # not the parent's mid-block instruction.
                 if name.lower().endswith(f'_{addr:08x}'):
                     return (name, body, path)
-                if best is None or len(body) > len(best[1]):
-                    best = (name, body, path)
-    return best
+                if best is None or quality > best[3] or \
+                        (quality == best[3] and len(body) > len(best[1])):
+                    best = (name, body, path, quality)
+    return best[:3] if best else None
 
 
 def _truncate_embedded_entry(body, entry):
