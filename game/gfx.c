@@ -477,15 +477,13 @@ void gpu_draw_otag(uint32_t otag)
 int gpu_draw_env_put(int env_g)
 
 {
-  uint8_t *envp;
-  intptr_t hp;
+  uint8_t *envp = (uint8_t *)guest_at((uint32_t)env_g);
 
-  hp = (intptr_t)guest_at((uint32_t)env_g);
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDrawEnv__08x_____8012556c, env_g);
   }
   gpu_prim_pkt_build(env_g + 0x1c, (uint16_t *)(uintptr_t)env_g);
-  *(uint32_t *)((char *)hp + 0x1c) = *(uint32_t *)((char *)hp + 0x1c) | 0xffffff;
+  *(uint32_t *)(envp + 0x1c) |= 0xffffff;
   gpu_call(8, GPU_TBL()[6], env_g + 0x1c, 0x40, 0);
   guest_memcpy((uint32_t *)(uintptr_t)0x801b8330, (uint32_t *)(uintptr_t)env_g, 0x5c);
   return env_g;
@@ -667,11 +665,12 @@ uint32_t draw_env_timing(uint32_t env_g)
   }
   tbl_off = ((uint32_t)(int8_t)env[9] * 5 + std_idx) * 4;
   timing_tbl = (uint16_t *)guest_at(0x801b83f4);
+  timing_b = (uint8_t *)guest_at(0x801b841c);
   /* tbl_off is a BYTE offset into the u16 timing table (MIPS: lhu @base+tbl_off),
    * not a u16 element index — divide by 2 for timing_tbl[] indexing. */
   delta = (int)timing_tbl[tbl_off / 2 + 1] - (int)timing_tbl[tbl_off / 2];
   ta = (uint32_t)timing_tbl[tbl_off / 2] +
-          (int)(int16_t)env[4] * (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx];
+          (int)(int16_t)env[4] * (uint32_t)(int8_t)timing_b[std_idx];
   if ((int16_t)env[6] != 0) {
     delta = delta * (int16_t)env[6] >> 8;
   }
@@ -681,7 +680,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((499 < (int)ta) && (tb = 0xcb2, (int)ta < 0xcb3)) {
       tb = ta;
     }
-    ta = tb + (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    ta = tb + (uint32_t)(int8_t)timing_b[std_idx] * 4;
     if (((int)ta <= (int)td) && (ta = 0xcda, (int)td < 0xcdb)) {
       ta = td;
     }
@@ -704,7 +703,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((0x21b < (int)ta) && (tb = 0xc94, (int)ta < 0xc95)) {
       tb = ta;
     }
-    ta = tb + (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx] * 4;
+    ta = tb + (uint32_t)(int8_t)timing_b[std_idx] * 4;
     if (((int)ta <= (int)td) && (ta = 0xcbc, (int)td < 0xcbd)) {
       ta = td;
     }
