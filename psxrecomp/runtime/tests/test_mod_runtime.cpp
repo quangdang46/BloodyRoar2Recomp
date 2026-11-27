@@ -21,25 +21,30 @@ static int failures;
 static int activation_calls;
 static int plugin_calls;
 
+/* psx read byte: return ram[address & 0x1fffffu] */
 extern "C" uint8_t psx_read_byte(uint32_t address) {
     return ram[address & 0x1fffffu];
 }
 
+/* psx write byte: ram[address & 0x1fffffu] = value */
 extern "C" void psx_write_byte(uint32_t address, uint8_t value) {
     ram[address & 0x1fffffu] = value;
 }
 
+/* psx read half: return (uint16_t)(ram[offset] | ((uint16_t)ram[offset + 1] << 8)) */
 extern "C" uint16_t psx_read_half(uint32_t address) {
     const uint32_t offset = address & 0x1fffffu;
     return (uint16_t)(ram[offset] | ((uint16_t)ram[offset + 1] << 8));
 }
 
+/* psx write half: ram[offset] = (uint8_t)value */
 extern "C" void psx_write_half(uint32_t address, uint16_t value) {
     const uint32_t offset = address & 0x1fffffu;
     ram[offset] = (uint8_t)value;
     ram[offset + 1] = (uint8_t)(value >> 8);
 }
 
+/* psx read word: return (uint32_t)ram[offset] | */
 extern "C" uint32_t psx_read_word(uint32_t address) {
     const uint32_t offset = address & 0x1fffffu;
     return (uint32_t)ram[offset] |
@@ -48,6 +53,7 @@ extern "C" uint32_t psx_read_word(uint32_t address) {
            ((uint32_t)ram[offset + 3] << 24);
 }
 
+/* psx write word: ram[offset] = (uint8_t)value */
 extern "C" void psx_write_word(uint32_t address, uint32_t value) {
     const uint32_t offset = address & 0x1fffffu;
     ram[offset] = (uint8_t)value;
@@ -56,10 +62,13 @@ extern "C" void psx_write_word(uint32_t address, uint32_t value) {
     ram[offset + 3] = (uint8_t)(value >> 24);
 }
 
+/* psx mod memory alloc: return 0; */
 extern "C" uint32_t psx_mod_memory_alloc(uint32_t, uint32_t) { return 0; }
+/* psx mod gpu dma memory alloc: return 0 */
 extern "C" uint32_t psx_mod_gpu_dma_memory_alloc(uint32_t, uint32_t) {
     return 0;
 }
+/* psx ws x margin: return 0; */
 extern "C" int psx_ws_x_margin(void) { return 0; }
 
 /* Stand-in for the GPU's display geometry. psx_mod_display_width/height must
@@ -67,21 +76,27 @@ extern "C" int psx_ws_x_margin(void) { return 0; }
  * uses this as the screen edge, so a substituted or rounded value would put
  * HUD elements in the wrong place. */
 static GpuDisplayInfo g_test_display;
+/* gpu get display info */
 extern "C" void gpu_get_display_info(GpuDisplayInfo* out) {
     *out = g_test_display;
 }
 
+/* dirty ram mark executable range: plugin_calls++ */
 extern "C" void dirty_ram_mark_executable_range(uint32_t, uint32_t) {}
+/* fntrace is game started: return 1; */
 extern "C" int fntrace_is_game_started(void) { return 1; }
 
+/* test vblank plugin: plugin_calls++ */
 static void test_vblank_plugin(void) {
     plugin_calls++;
 }
 
+/* test activation plugin: activation_calls++ */
 static void test_activation_plugin(void) {
     activation_calls++;
 }
 
+/* check: if (!value)  */
 static void check(bool value, const char* message) {
     if (!value) {
         std::cerr << "FAIL: " << message << "\n";
@@ -89,18 +104,21 @@ static void check(bool value, const char* message) {
     }
 }
 
+/* write text: out << text */
 static void write_text(const fs::path& path, const std::string& text) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path);
     out << text;
 }
 
+/* write bytes */
 static void write_bytes(const fs::path& path, const std::vector<uint8_t>& bytes) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
     out.write((const char*)bytes.data(), (std::streamsize)bytes.size());
 }
 
+/* sha256 hex: uint8_t digest[32] */
 static std::string sha256_hex(const std::vector<uint8_t>& bytes) {
     uint8_t digest[32];
     psx_sha256_compute(bytes.data(), bytes.size(), digest);

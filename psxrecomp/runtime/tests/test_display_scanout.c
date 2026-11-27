@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+/* test vertical offsets: assert(psx_display_vertical_offset(1, 83, 312) == 32) */
 static void test_vertical_offsets(void)
 {
     assert(psx_display_vertical_offset(1, 83, 312) == 32);
@@ -12,6 +13,7 @@ static void test_vertical_offsets(void)
     assert(psx_display_vertical_offset(1, 400, 500) == 0);
 }
 
+/* test present height: assert(psx_display_present_height(0, 225, 288) == 225) */
 static void test_present_height(void)
 {
     assert(psx_display_present_height(0, 225, 288) == 225);
@@ -35,6 +37,7 @@ static void test_present_height(void)
     assert(psx_display_source_height(offscreen, 240) == 0);
 }
 
+/* test vertical layout: PsxDisplayVerticalLayout offset_range = psx_display_vertical_layout(1... */
 static void test_vertical_layout(void)
 {
     PsxDisplayVerticalLayout offset_range = psx_display_vertical_layout(1, 83, 312);

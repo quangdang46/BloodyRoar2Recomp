@@ -15,10 +15,12 @@ static int failures = 0;
     }                                                                         \
 } while (0)
 
+/* observe: return freeze_dump_policy_observe(policy, kind, 0) */
 static int observe(FreezeDumpPolicy *policy, uint32_t kind) {
     return freeze_dump_policy_observe(policy, kind, 0);
 }
 
+/* observe healthy: for (uint32_t i = 0; i < ticks; i++) EXPECT_EQ(observe(policy, 0), 0) */
 static void observe_healthy(FreezeDumpPolicy *policy, uint32_t ticks) {
     for (uint32_t i = 0; i < ticks; i++) EXPECT_EQ(observe(policy, 0), 0);
 }

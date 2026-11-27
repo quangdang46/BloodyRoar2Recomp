@@ -26,6 +26,7 @@ static uint32_t g_fb_packed = 0;
 static int32_t  g_fb_x16 = 0, g_fb_y16 = 0;
 static int      g_fb_valid = 0;
 
+/* gte geometry correction lookup: if (!g_fb_valid || packed != g_fb_packed) return 0 */
 extern "C" int gte_geometry_correction_lookup(uint32_t packed,
                                               int32_t *x16, int32_t *y16) {
     if (!g_fb_valid || packed != g_fb_packed) return 0;
@@ -39,10 +40,12 @@ extern "C" int gte_geometry_correction_lookup(uint32_t packed,
 static uint32_t enc_i(uint32_t op, uint32_t rs, uint32_t rt, uint16_t imm) {
     return (op << 26) | (rs << 21) | (rt << 16) | imm;
 }
+/* enc r: return (rs << 21) | (rt << 16) | (rd << 11) | (sh << 6) | funct */
 static uint32_t enc_r(uint32_t rs, uint32_t rt, uint32_t rd, uint32_t sh,
                       uint32_t funct) {
     return (rs << 21) | (rt << 16) | (rd << 11) | (sh << 6) | funct;
 }
+/* enc cop2: return (0x12u << 26) | (sub << 21) | (rt << 16) | (rd << 11) */
 static uint32_t enc_cop2(uint32_t sub, uint32_t rt, uint32_t rd) {
     return (0x12u << 26) | (sub << 21) | (rt << 16) | (rd << 11);
 }
@@ -78,6 +81,7 @@ static void produce_at(uint32_t addr) {
     psx_pgxp_cop2(nullptr, SWC2(14), PACKED, addr);
 }
 
+/* lookup: int32_t lx, ly; uint16_t lz */
 static int lookup(uint32_t addr, uint32_t word, int32_t ix, int32_t iy,
                   int32_t *x, int32_t *y, uint16_t *z) {
     int32_t lx, ly; uint16_t lz;

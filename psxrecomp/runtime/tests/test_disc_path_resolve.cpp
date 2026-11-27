@@ -26,6 +26,7 @@ namespace {
 
 int g_checks = 0;
 
+/* check: ++g_checks */
 void check(bool cond, const char* what) {
     ++g_checks;
     if (!cond) {
@@ -34,6 +35,7 @@ void check(bool cond, const char* what) {
     }
 }
 
+/* write sectors: for (int i = 0; i < count; ++i) */
 void write_sectors(const fs::path& path, int count, uint8_t marker) {
     std::ofstream out(path, std::ios::binary);
     std::vector<uint8_t> sector(2352, marker);
@@ -41,11 +43,13 @@ void write_sectors(const fs::path& path, int count, uint8_t marker) {
         out.write(reinterpret_cast<const char*>(sector.data()), (std::streamsize)sector.size());
 }
 
+/* write text: out << body */
 void write_text(const fs::path& path, const std::string& body) {
     std::ofstream out(path);
     out << body;
 }
 
+/* same: return a.lexically_normal() == b.lexically_normal() */
 bool same(const fs::path& a, const fs::path& b) {
     return a.lexically_normal() == b.lexically_normal();
 }

@@ -45,11 +45,15 @@ extern "C" void gte_test_execute_reference(CPUState *cpu, uint32_t cmd);
 /* gte.cpp runtime dependencies that are irrelevant to register-transfer tests. */
 extern "C" int gpu_ws_present_native_43(void) { return 0; }
 static int g_test_precise_nclip_enabled;
+/* gpu ws precise nclip enabled: return g_test_precise_nclip_enabled */
 extern "C" int gpu_ws_precise_nclip_enabled(void) {
     return g_test_precise_nclip_enabled;
 }
+/* gpu pgxp rederive enable: uint64_t s_frame_count = 0 */
 extern "C" void gpu_pgxp_rederive_enable(void) {}
+/* memory get ram bytes: return 2u * 1024u * 1024u; */
 extern "C" uint32_t memory_get_ram_bytes(void) { return 2u * 1024u * 1024u; }
+/* psx ws note gte project: uint64_t s_frame_count = 0 */
 extern "C" void psx_ws_note_gte_project(int) {}
 extern "C" {
 uint64_t s_frame_count = 0;
@@ -59,10 +63,12 @@ uint64_t g_test_cycle = 0;
 uint32_t g_test_gte_set_calls = 0;
 uint32_t g_test_gte_last_latency = 0;
 
+/* psx gte cmd latency: return 7u + (cmd & 0x3Fu) */
 extern "C" uint32_t psx_gte_cmd_latency(uint32_t cmd) {
     return 7u + (cmd & 0x3Fu);
 }
 
+/* psx gte set: ++g_test_gte_set_calls */
 extern "C" void psx_gte_set(CPUState *cpu, uint32_t latency) {
     ++g_test_gte_set_calls;
     g_test_gte_last_latency = latency;
@@ -80,6 +86,7 @@ struct PreciseState {
     uint8_t valid;
 };
 
+/* precise snapshot: std::array<PreciseState, 4> result */
 std::array<PreciseState, 4> precise_snapshot() {
     std::array<PreciseState, 4> result{};
     for (uint32_t i = 0; i < result.size(); ++i) {
@@ -90,6 +97,7 @@ std::array<PreciseState, 4> precise_snapshot() {
     return result;
 }
 
+/* seed precise snapshot: for (uint32_t i = 0; i < 4; ++i) */
 void seed_precise_snapshot() {
     for (uint32_t i = 0; i < 4; ++i)
         gte_test_seed_precise_projection(i, 0x01010001u * (i + 1u),
@@ -98,6 +106,7 @@ void seed_precise_snapshot() {
                                          static_cast<uint16_t>(0x100u + i));
 }
 
+/* same precise: for (uint32_t i = 0; i < lhs.size(); ++i)  */
 bool same_precise(const std::array<PreciseState, 4> &lhs,
                   const std::array<PreciseState, 4> &rhs) {
     for (uint32_t i = 0; i < lhs.size(); ++i) {
@@ -118,6 +127,7 @@ constexpr std::array<uint8_t, 6> kInvalidRegs = {32u, 33u, 63u, 64u, 127u, 255u}
 
 uint64_t g_rng = 0xD1B54A32D192ED03ull;
 
+/* random u32: g_rng ^= g_rng >> 12 */
 uint32_t random_u32() {
     g_rng ^= g_rng >> 12;
     g_rng ^= g_rng << 25;
@@ -125,12 +135,14 @@ uint32_t random_u32() {
     return static_cast<uint32_t>((g_rng * 0x2545F4914F6CDD1Dull) >> 16);
 }
 
+/* randomize gte: for (uint32_t &value : cpu.gte_data) value = random_u32() */
 void randomize_gte(CPUState &cpu) {
     std::memset(&cpu, 0, sizeof(cpu));
     for (uint32_t &value : cpu.gte_data) value = random_u32();
     for (uint32_t &value : cpu.gte_ctrl) value = random_u32();
 }
 
+/* oracle load: for (uint8_t reg = 0; reg < 32; ++reg)  */
 void oracle_load(GTEState &gte, const CPUState &cpu) {
     for (uint8_t reg = 0; reg < 32; ++reg) {
         if (reg == 15 || reg == 28) continue;
@@ -143,6 +155,7 @@ void oracle_load(GTEState &gte, const CPUState &cpu) {
     gte.FLAG = cpu.gte_ctrl[31];
 }
 
+/* oracle export: for (uint8_t reg = 0; reg < 32; ++reg) */
 void oracle_export(CPUState &cpu, GTEState &gte) {
     for (uint8_t reg = 0; reg < 32; ++reg)
         cpu.gte_data[reg] = gte_mfc2(&gte, reg);
@@ -150,24 +163,28 @@ void oracle_export(CPUState &cpu, GTEState &gte) {
         cpu.gte_ctrl[reg] = gte_cfc2(&gte, reg);
 }
 
+/* oracle canonicalize: GTEState gte */
 void oracle_canonicalize(CPUState &cpu) {
     GTEState gte;
     oracle_load(gte, cpu);
     oracle_export(cpu, gte);
 }
 
+/* oracle read data: GTEState gte */
 uint32_t oracle_read_data(const CPUState &cpu, uint8_t reg) {
     GTEState gte;
     oracle_load(gte, cpu);
     return gte_mfc2(&gte, reg);
 }
 
+/* oracle read ctrl: GTEState gte */
 uint32_t oracle_read_ctrl(const CPUState &cpu, uint8_t reg) {
     GTEState gte;
     oracle_load(gte, cpu);
     return gte_cfc2(&gte, reg);
 }
 
+/* oracle write data: GTEState gte */
 void oracle_write_data(CPUState &cpu, uint8_t reg, uint32_t value) {
     GTEState gte;
     oracle_load(gte, cpu);
@@ -175,6 +192,7 @@ void oracle_write_data(CPUState &cpu, uint8_t reg, uint32_t value) {
     oracle_export(cpu, gte);
 }
 
+/* oracle write ctrl: GTEState gte */
 void oracle_write_ctrl(CPUState &cpu, uint8_t reg, uint32_t value) {
     GTEState gte;
     oracle_load(gte, cpu);
@@ -182,11 +200,13 @@ void oracle_write_ctrl(CPUState &cpu, uint8_t reg, uint32_t value) {
     oracle_export(cpu, gte);
 }
 
+/* same gte: return std::memcmp(lhs.gte_data, rhs.gte_data, sizeof(lhs.gte_data)) ... */
 bool same_gte(const CPUState &lhs, const CPUState &rhs) {
     return std::memcmp(lhs.gte_data, rhs.gte_data, sizeof(lhs.gte_data)) == 0 &&
            std::memcmp(lhs.gte_ctrl, rhs.gte_ctrl, sizeof(lhs.gte_ctrl)) == 0;
 }
 
+/* fail value: "FAIL: %s iter=%u reg=%u value=%08X expected=%08X actual=%08X\n", */
 int fail_value(const char *phase, unsigned iteration, unsigned reg,
                uint32_t value, uint32_t expected, uint32_t actual) {
     std::fprintf(stderr,
@@ -195,6 +215,7 @@ int fail_value(const char *phase, unsigned iteration, unsigned reg,
     return 1;
 }
 
+/* fail state: for (unsigned i = 0; i < 32; ++i)  */
 int fail_state(const char *phase, unsigned iteration, unsigned reg, uint32_t value,
                const CPUState &expected, const CPUState &actual) {
     for (unsigned i = 0; i < 32; ++i) {
@@ -222,6 +243,7 @@ int fail_state(const char *phase, unsigned iteration, unsigned reg, uint32_t val
     return 1;
 }
 
+/* check all reads: for (uint8_t reg = 0; reg < 32; ++reg)  */
 int check_all_reads(const CPUState &expected, CPUState &actual,
                     const char *phase, unsigned iteration) {
     for (uint8_t reg = 0; reg < 32; ++reg) {
@@ -238,6 +260,7 @@ int check_all_reads(const CPUState &expected, CPUState &actual,
     return 0;
 }
 
+/* test canonicalizer: for (unsigned iteration = 0; iteration < 512; ++iteration)  */
 int test_canonicalizer() {
     for (unsigned iteration = 0; iteration < 512; ++iteration) {
         CPUState expected;
@@ -251,6 +274,7 @@ int test_canonicalizer() {
     return 0;
 }
 
+/* test reads: for (unsigned iteration = 0; iteration < 256; ++iteration)  */
 int test_reads() {
     for (unsigned iteration = 0; iteration < 256; ++iteration) {
         CPUState state;
@@ -275,6 +299,7 @@ int test_reads() {
     return 0;
 }
 
+/* test writes: for (unsigned iteration = 0; iteration < 64; ++iteration)  */
 int test_writes() {
     for (unsigned iteration = 0; iteration < 64; ++iteration) {
         CPUState seed;
@@ -330,6 +355,7 @@ int test_writes() {
     return 0;
 }
 
+/* test sequence fuzz: for (unsigned iteration = 0; iteration < 128; ++iteration)  */
 int test_sequence_fuzz() {
     for (unsigned iteration = 0; iteration < 128; ++iteration) {
         CPUState expected;
@@ -377,6 +403,7 @@ int test_sequence_fuzz() {
     return 0;
 }
 
+/* test command marshaling: 0x01, 0x06, 0x0C, 0x10, 0x11, 0x12, 0x13, 0x14, */
 int test_command_marshaling() {
     constexpr std::array<uint8_t, 22> kFunctions = {
         0x01, 0x06, 0x0C, 0x10, 0x11, 0x12, 0x13, 0x14,
@@ -470,6 +497,7 @@ int test_command_marshaling() {
     return 0;
 }
 
+/* test command timing hook: CPUState cpu */
 int test_command_timing_hook() {
     CPUState cpu{};
     g_test_cycle = 100u;
@@ -489,6 +517,7 @@ int test_command_timing_hook() {
     return 0;
 }
 
+/* test precise sxy invalidation: CPUState cpu */
 int test_precise_sxy_invalidation() {
     CPUState cpu{};
     for (uint8_t reg = 0; reg < 32; ++reg) {
@@ -555,6 +584,7 @@ int test_precise_sxy_invalidation() {
     return 0;
 }
 
+/* test precise nclip is title scoped: CPUState cpu */
 int test_precise_nclip_is_title_scoped() {
     CPUState cpu{};
     gte_precision_tracking_set(1);
@@ -598,6 +628,7 @@ int test_precise_nclip_is_title_scoped() {
     return 0;
 }
 
+/* test precision speculative transaction: int32_t got_x = 0, got_y = 0 */
 int test_precision_speculative_transaction() {
     constexpr uint32_t address = 0x00123450u;
     constexpr uint32_t packed = 0x00420021u;

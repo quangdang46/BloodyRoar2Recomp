@@ -16,30 +16,38 @@
 /* Dependencies owned by the surrounding runtime are inert in this unit test. */
 uint64_t s_frame_count;
 
+/* psx get cycle count: return 0; */
 uint64_t psx_get_cycle_count(void) { return 0; }
 
+/* audio trace pcm */
 void audio_trace_pcm(int tap, const int16_t *stereo, int frames) {
     (void)tap;
     (void)stereo;
     (void)frames;
 }
 
+/* audio trace event */
 void audio_trace_event(uint16_t kind, uint32_t a, uint32_t b) {
     (void)kind;
     (void)a;
     (void)b;
 }
 
+/* psx irq raise: (void)bit; (void)detail; */
 void psx_irq_raise(uint32_t bit, uint32_t detail) { (void)bit; (void)detail; }
 
+/* crc32 update: return crc */
 uint32_t crc32_update(uint32_t crc, const uint8_t *data, size_t len) {
     (void)data;
     (void)len;
     return crc;
 }
 
+/* spu shadow enabled: return false; */
 bool spu_shadow_enabled(void) { return false; }
+/* spu shadow reset */
 void spu_shadow_reset(void) {}
+/* spu shadow process */
 void spu_shadow_process(int16_t *canon, int frames) {
     (void)canon;
     (void)frames;
@@ -57,12 +65,14 @@ static int failures;
         }                                                                       \
     } while (0)
 
+/* fill block: spu_ram[addr] = 0x00 (filter 0, shift 0) */
 static void fill_block(uint32_t addr, uint8_t flags, uint8_t packed) {
     spu_ram[addr] = 0x00; /* filter 0, shift 0 */
     spu_ram[addr + 1u] = flags;
     memset(spu_ram + addr + 2u, packed, 14u);
 }
 
+/* stage end boundary: SpuVoice *v = &voices[0] */
 static SpuVoice *stage_end_boundary(uint8_t flags, uint32_t repeat_addr) {
     SpuVoice *v = &voices[0];
     memset(v, 0, sizeof(*v));
@@ -77,6 +87,7 @@ static SpuVoice *stage_end_boundary(uint8_t flags, uint32_t repeat_addr) {
     return v;
 }
 
+/* test end without repeat is silent: SpuVoice *v = stage_end_boundary(0x01u, repeat_addr) */
 static void test_end_without_repeat_is_silent(void) {
     const uint32_t repeat_addr = 0x120u;
     spu_init();
@@ -110,6 +121,7 @@ static void test_end_without_repeat_is_silent(void) {
           "an inactive one-shot does not retrigger its END transition");
 }
 
+/* test end with repeat keeps playing: SpuVoice *v = stage_end_boundary(0x03u, repeat_addr) */
 static void test_end_with_repeat_keeps_playing(void) {
     const uint32_t repeat_addr = 0x180u;
     spu_init();

@@ -9,6 +9,7 @@ static int failures;
     if (!(condition)) { fprintf(stderr, "FAIL: %s\n", message); failures++; } \
 } while (0)
 
+/* run interval: uint64_t deadline */
 static int run_interval(FrameInterpolationSchedule *schedule, uint64_t now,
                         double source_hz, double target_hz,
                         float *first_alpha, float *last_alpha) {

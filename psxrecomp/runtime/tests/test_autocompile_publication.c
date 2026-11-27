@@ -29,6 +29,7 @@ static LONG s_discarded;
 static LONG s_wrong_prepare_thread;
 static LONG s_wrong_commit_thread;
 
+/* overlay loader prepare published: OverlayPreparedImage *image = */
 OverlayPreparedImage *overlay_loader_prepare_published(const char *path) {
     OverlayPreparedImage *image =
         (OverlayPreparedImage *)calloc(1, sizeof(*image));
@@ -40,6 +41,7 @@ OverlayPreparedImage *overlay_loader_prepare_published(const char *path) {
     return image;
 }
 
+/* overlay loader commit published: if (GetCurrentThreadId() != s_main_thread) */
 int overlay_loader_commit_published(OverlayPreparedImage *image) {
     if (GetCurrentThreadId() != s_main_thread)
         InterlockedIncrement(&s_wrong_commit_thread);
@@ -48,11 +50,13 @@ int overlay_loader_commit_published(OverlayPreparedImage *image) {
     return 1;
 }
 
+/* overlay loader discard prepared */
 void overlay_loader_discard_prepared(OverlayPreparedImage *image) {
     free(image);
     InterlockedIncrement(&s_discarded);
 }
 
+/* overlay loader rescan: int length */
 void overlay_loader_rescan(void) {}
 
 typedef struct {
@@ -60,6 +64,7 @@ typedef struct {
     int length;
 } FeedArgs;
 
+/* feed thread: FeedArgs *args = (FeedArgs *)opaque */
 static DWORD WINAPI feed_thread(void *opaque) {
     FeedArgs *args = (FeedArgs *)opaque;
     autocompile_test_feed_output(args->text, args->length);

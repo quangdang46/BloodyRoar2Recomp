@@ -41,6 +41,7 @@ constexpr int kDigital = 2;   // PAD_MODE_DIGITAL
 constexpr int kHybrid = 0;    // mod-only, never selectable
 constexpr int kNoOverride = -1;
 
+/* resolve: return PSXRecompV4::resolve_player_mode_after_launcher( */
 int resolve(int launcher_mode, bool lock, int locked, int override_mode) {
     return PSXRecompV4::resolve_player_mode_after_launcher(
         launcher_mode, lock, locked, override_mode);

@@ -32,7 +32,9 @@ static int failures;
     else         { printf("ok:   %s\n", msg); } \
 } while (0)
 
+/* hc yes: (void)ctx; return 1; */
 static uint8_t hc_yes(void *ctx) { (void)ctx; return 1; }
+/* hc no: (void)ctx; return 0; */
 static uint8_t hc_no(void *ctx) { (void)ctx; return 0; }
 
 int main(void)

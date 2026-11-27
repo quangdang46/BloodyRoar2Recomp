@@ -14,6 +14,7 @@ using namespace PSXRecompV4;
 
 static int failures;
 
+/* check: if (!value)  */
 static void check(bool value, const char* message) {
     if (!value) {
         std::cerr << "FAIL: " << message << "\n";
@@ -21,18 +22,21 @@ static void check(bool value, const char* message) {
     }
 }
 
+/* write text: out << text */
 static void write_text(const fs::path& path, const std::string& text) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path);
     out << text;
 }
 
+/* write bytes */
 static void write_bytes(const fs::path& path, const std::vector<uint8_t>& bytes) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary);
     out.write((const char*)bytes.data(), (std::streamsize)bytes.size());
 }
 
+/* sha256 hex: uint8_t digest[32] */
 static std::string sha256_hex(const std::vector<uint8_t>& bytes) {
     uint8_t digest[32];
     psx_sha256_compute(bytes.data(), bytes.size(), digest);
@@ -45,6 +49,7 @@ static std::string sha256_hex(const std::vector<uint8_t>& bytes) {
     return out;
 }
 
+/* write deflated package: "4bcb2fca4d2c892f4b2d2acecccf53b05530e4ca4c01524a5599057ab9f929" */
 static void write_deflated_package(const fs::path& path) {
     static const char* compressed_hex =
         "4bcb2fca4d2c892f4b2d2acecccf53b05530e4ca4c01524a5599057ab9f929"
@@ -81,6 +86,7 @@ static void write_deflated_package(const fs::path& path) {
     out.write((const char*)zip.data(), (std::streamsize)zip.size());
 }
 
+/* manifest: return */
 static std::string manifest(const std::string& id, const std::string& version,
                             const std::string& extra = {}) {
     return

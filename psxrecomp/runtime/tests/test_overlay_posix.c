@@ -11,6 +11,7 @@ typedef struct ScanResult {
     uint32_t crc;
 } ScanResult;
 
+/* record cache file: ScanResult *result = (ScanResult *)opaque */
 static int record_cache_file(const PsxOverlayCacheFile *file, void *opaque) {
     ScanResult *result = (ScanResult *)opaque;
     result->count++;
@@ -21,6 +22,7 @@ static int record_cache_file(const PsxOverlayCacheFile *file, void *opaque) {
     return 0;
 }
 
+/* check name parser: uint32_t addr = 1, crc = 1 */
 static void check_name_parser(void) {
     uint32_t addr = 1, crc = 1;
     assert(psx_overlay_cache_name_parse("00000000_00000000.so", &addr, &crc));

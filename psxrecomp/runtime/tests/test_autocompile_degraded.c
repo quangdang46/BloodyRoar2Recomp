@@ -30,11 +30,15 @@
  * that runs here (we never spawn a child), but the symbols must resolve.
  * Signatures must match overlay_loader.h exactly. */
 struct OverlayPreparedImage { unsigned id; };
+/* overlay loader prepare published */
 OverlayPreparedImage *overlay_loader_prepare_published(const char *dll_path) {
     (void)dll_path; return NULL;
 }
+/* overlay loader commit published: (void)image; return 0; */
 int  overlay_loader_commit_published(OverlayPreparedImage *image) { (void)image; return 0; }
+/* overlay loader discard prepared: (void)image; */
 void overlay_loader_discard_prepared(OverlayPreparedImage *image) { (void)image; }
+/* overlay loader rescan: if (!(cond)) { fprintf(stderr, "FAIL: %s\n", (msg)); failures++; } \ */
 void overlay_loader_rescan(void) { }
 
 static int failures;

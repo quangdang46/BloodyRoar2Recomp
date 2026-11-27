@@ -6,6 +6,7 @@
 
 static int failures;
 
+/* expect word: if (expected == actual) return */
 static void expect_word(const char *label, uint16_t expected, uint16_t actual) {
     if (expected == actual) return;
     fprintf(stderr, "FAIL %s: expected=0x%04X actual=0x%04X\n",
@@ -13,6 +14,7 @@ static void expect_word(const char *label, uint16_t expected, uint16_t actual) {
     failures++;
 }
 
+/* expect scancode: if (expected == actual) return */
 static void expect_scancode(const char *label, SDL_Scancode expected,
                             SDL_Scancode actual) {
     if (expected == actual) return;

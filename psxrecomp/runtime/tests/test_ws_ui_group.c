@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+/* scale about: int32_t delta = x - anchor */
 static int32_t scale_about(int32_t x, int32_t anchor,
                            int32_t numerator, int32_t denominator) {
     int32_t delta = x - anchor;

@@ -93,10 +93,12 @@ static void fake_connected(void)
 }
 
 static int g_failures;
+/* ck: if (!cond) { printf("FAIL: %s\n", what); g_failures++;  */
 static void ck(int cond, const char *what)
 {
     if (!cond) { printf("FAIL: %s\n", what); g_failures++; }
 }
+/* ck sub: if (!cond) { printf(" FAIL: %s\n", what); g_failures++;  */
 static void ck_sub(int cond, const char *what)
 {
     if (!cond) { printf("  FAIL: %s\n", what); g_failures++; }
@@ -134,6 +136,7 @@ static void fill_host_plan(PsxLobbyMatchCaps *caps)
     caps->plan_count = 3;
 }
 
+/* test mod offer builder: return (size_t)snprintf(out, out_cap, */
 static size_t test_mod_offer_builder(char *out, size_t out_cap)
 {
     /* Exactly the server's mod_offer shape: {"v":1,"pkgs":[{id,ver},…]}. */
@@ -141,6 +144,7 @@ static size_t test_mod_offer_builder(char *out, size_t out_cap)
         "{\"v\":1,\"pkgs\":[{\"id\":\"br2.enhancement.turbo\",\"ver\":\"0.1.0\"}]}");
 }
 
+/* case host serializes plan: PsxLobbyMatchCaps caps */
 static void case_host_serializes_plan(void)
 {
     PsxLobbyMatchCaps caps;
@@ -170,6 +174,7 @@ static void case_host_serializes_plan(void)
     ck(g_cap_len < 8000, "host message fits the lobby send queue");
 }
 
+/* case guest join includes mod offer: ck(psx_lobby_join("lobby-xyz", NULL, "0.0.0.0:7778") == 0, */
 static void case_guest_join_includes_mod_offer(void)
 {
     printf("  guest join includes the mod_offer object\n");
@@ -188,6 +193,7 @@ static void case_guest_join_includes_mod_offer(void)
     ck(g_cap_len < 8000, "join with mod_offer fits the send buffer");
 }
 
+/* case guest parses plan from launch: "{\"op\":\"launch\",\"ok\":true,\"lobby_id\":\"lobby-xyz\"," */
 static void case_guest_parses_plan_from_launch(void)
 {
     const PsxLobbyMatchCaps *caps;
@@ -225,6 +231,7 @@ static void case_guest_parses_plan_from_launch(void)
     ck(psx_lobby_launch_pending() == 1, "launch_pending set by the launch op");
 }
 
+/* case request start resends plan: PsxLobbyMatchCaps caps */
 static void case_request_start_resends_plan(void)
 {
     PsxLobbyMatchCaps caps;
@@ -244,6 +251,7 @@ static void case_request_start_resends_plan(void)
        "the full plan travels on start (frozen launch settings)");
 }
 
+/* case guest apply plan transient: "{\"op\":\"launch\",\"ok\":true,\"lobby_id\":\"l\",\"session_id\":2," */
 static void case_guest_apply_plan_transient(void)
 {
     printf("  host plan applies and survives a netplay boot (flag wiring)\n");

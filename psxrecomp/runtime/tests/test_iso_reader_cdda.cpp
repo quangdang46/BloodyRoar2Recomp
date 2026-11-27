@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+/* write sectors: for (int i = 0; i < count; ++i) out.write(reinterpret_cast<const char... */
 static void write_sectors(const std::filesystem::path& path, int count, uint8_t marker) {
     std::ofstream out(path, std::ios::binary);
     std::vector<uint8_t> sector(2352, marker);

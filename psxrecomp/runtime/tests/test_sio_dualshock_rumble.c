@@ -15,8 +15,11 @@ uint32_t i_stat = 0;
 uint32_t i_mask = 0;
 uint32_t g_debug_current_func_addr = 0;
 uint32_t g_debug_last_store_pc = 0;
+/* psx get in exception: return 0; */
 int psx_get_in_exception(void) { return 0; }
+/* psx read byte: (void)addr; return 0; */
 uint8_t psx_read_byte(uint32_t addr) { (void)addr; return 0; }
+/* psx read word: (void)addr; return 0; */
 uint32_t psx_read_word(uint32_t addr) { (void)addr; return 0; }
 
 /* sio.c gates card-transfer deferral on `psx_get_cycle_count() < deadline`, so
@@ -25,37 +28,49 @@ uint64_t psx_get_cycle_count(void) {
     static uint64_t t;
     return t += 64;
 }
+/* memory get sr: return 0; */
 uint32_t memory_get_sr(void) { return 0; }
+/* debug server poll */
 void debug_server_poll(void) {}
+/* debug server log sio write */
 void debug_server_log_sio_write(uint32_t a, uint32_t v, uint8_t w) {
     (void)a; (void)v; (void)w;
 }
+/* starvation ring record */
 void starvation_ring_record(uint8_t k, uint8_t tx, uint8_t rx, uint16_t c,
                             uint16_t st, uint8_t d, uint8_t ss, uint16_t ms,
                             uint8_t mc, uint16_t sec, uint8_t di, uint32_t f) {
     (void)k; (void)tx; (void)rx; (void)c; (void)st; (void)d; (void)ss;
     (void)ms; (void)mc; (void)sec; (void)di; (void)f;
 }
+/* card read summary record */
 void card_read_summary_record(uint8_t s, uint8_t c, uint16_t sec, uint8_t e,
                               uint8_t chk, uint8_t d0, uint8_t d1, uint32_t f) {
     (void)s; (void)c; (void)sec; (void)e; (void)chk; (void)d0; (void)d1; (void)f;
 }
+/* card data writes arm */
 void card_data_writes_arm(uint8_t v, uint16_t s, uint8_t i, uint8_t sl) {
     (void)v; (void)s; (void)i; (void)sl;
 }
+/* event ring record aux */
 void event_ring_record_aux(uint16_t k, uint8_t d, uint32_t a) {
     (void)k; (void)d; (void)a;
 }
+/* psx irq raise: (void)detail; i_stat |= 1u << bit */
 void psx_irq_raise(uint32_t bit, uint32_t detail) {
     (void)detail; i_stat |= 1u << bit;
 }
+/* memcard is present: (void)card; return 0; */
 int memcard_is_present(int card) { (void)card; return 0; }
+/* memcard read sector */
 int memcard_read_sector(int card, int sector, uint8_t *buf) {
     (void)card; (void)sector; memset(buf, 0, 128); return -1;
 }
+/* memcard write sector */
 int memcard_write_sector(int card, int sector, const uint8_t *buf) {
     (void)card; (void)sector; (void)buf; return -1;
 }
+/* memcard flush: (void)card; */
 void memcard_flush(int card) { (void)card; }
 
 #define SIO_TX_DATA 0x1F801040u
@@ -78,6 +93,7 @@ static int failures;
     }                                                                         \
 } while (0)
 
+/* xchg: return rx */
 static uint8_t xchg(int slot, uint8_t tx) {
     const uint16_t ctrl = (uint16_t)(CTRL_TX_EN | CTRL_SELECT |
         CTRL_ACK_IRQ_EN | (slot ? CTRL_SLOT : 0));
@@ -89,10 +105,12 @@ static uint8_t xchg(int slot, uint8_t tx) {
     return rx;
 }
 
+/* finish six data bytes: while (already_sent++ < 6) (void)xchg(slot, 0x00) */
 static void finish_six_data_bytes(int slot, unsigned already_sent) {
     while (already_sent++ < 6) (void)xchg(slot, 0x00);
 }
 
+/* enter config */
 static void enter_config(int slot) {
     EXPECT("enter.prefix", 0xFF, xchg(slot, 0x01));
     EXPECT("enter.id", 0x73, xchg(slot, 0x43));
@@ -101,6 +119,7 @@ static void enter_config(int slot) {
     finish_six_data_bytes(slot, 1);
 }
 
+/* set rumble map: for (int i = 0; i < 6; i++) */
 static void set_rumble_map(int slot, const uint8_t map[6],
                            const uint8_t expected_old[6]) {
     EXPECT("map.prefix", 0xFF, xchg(slot, 0x01));
@@ -110,6 +129,7 @@ static void set_rumble_map(int slot, const uint8_t map[6],
         EXPECT("map.echo", expected_old[i], xchg(slot, map[i]));
 }
 
+/* exit config */
 static void exit_config(int slot) {
     EXPECT("exit.prefix", 0xFF, xchg(slot, 0x01));
     EXPECT("exit.id", 0xF3, xchg(slot, 0x43));
@@ -118,6 +138,7 @@ static void exit_config(int slot) {
     finish_six_data_bytes(slot, 1);
 }
 
+/* poll with motors */
 static void poll_with_motors(int slot, uint8_t small, uint8_t large) {
     EXPECT("poll.prefix", 0xFF, xchg(slot, 0x01));
     EXPECT("poll.id", 0x73, xchg(slot, 0x42));

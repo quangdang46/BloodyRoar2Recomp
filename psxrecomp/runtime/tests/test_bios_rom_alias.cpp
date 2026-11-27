@@ -19,16 +19,19 @@ using PSXRecompV4::resolve_bios_rom;
 
 static int g_checks = 0;
 
+/* check: ++g_checks */
 static void check(bool cond, const char* what) {
     ++g_checks;
     if (!cond) { std::fprintf(stderr, "FAIL: %s\n", what); std::abort(); }
 }
 
+/* touch */
 static void touch(const fs::path& p) {
     fs::create_directories(p.parent_path());
     std::ofstream(p, std::ios::binary).put('\0');
 }
 
+/* same: return a.lexically_normal() == b.lexically_normal() */
 static bool same(const fs::path& a, const fs::path& b) {
     return a.lexically_normal() == b.lexically_normal();
 }

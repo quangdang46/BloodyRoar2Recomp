@@ -19,12 +19,14 @@ namespace {
 
 int failures = 0;
 
+/* check: if (!condition)  */
 void check(bool condition, const char* message) {
     if (!condition) {
         std::fprintf(stderr, "FAIL: %s\n", message);
         ++failures;
     }
 }
+/* key name: std::ostringstream out */
 std::string key_name(uint32_t texture_hash, uint32_t palette_hash) {
     std::ostringstream out;
     out << std::hex << std::nouppercase << texture_hash << '-'
@@ -32,6 +34,7 @@ std::string key_name(uint32_t texture_hash, uint32_t palette_hash) {
     return out.str();
 }
 
+/* padded key name: std::ostringstream out */
 std::string padded_key_name(uint32_t texture_hash, uint32_t palette_hash) {
     std::ostringstream out;
     out << std::hex << std::nouppercase << std::setw(8) << std::setfill('0')
@@ -39,11 +42,13 @@ std::string padded_key_name(uint32_t texture_hash, uint32_t palette_hash) {
     return out.str();
 }
 
+/* touch */
 void touch(const fs::path& path) {
     std::ofstream output(path, std::ios::binary);
     output.put('\0');
 }
 
+/* png crc: uint32_t crc = 0xFFFFFFFFu */
 uint32_t png_crc(const uint8_t* data, size_t size) {
     uint32_t crc = 0xFFFFFFFFu;
     for (size_t i = 0; i < size; ++i) {
@@ -54,6 +59,7 @@ uint32_t png_crc(const uint8_t* data, size_t size) {
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* append be32 */
 void append_be32(std::vector<uint8_t>& bytes, uint32_t value) {
     bytes.push_back(static_cast<uint8_t>(value >> 24));
     bytes.push_back(static_cast<uint8_t>(value >> 16));
@@ -61,6 +67,7 @@ void append_be32(std::vector<uint8_t>& bytes, uint32_t value) {
     bytes.push_back(static_cast<uint8_t>(value));
 }
 
+/* append png chunk */
 void append_png_chunk(std::vector<uint8_t>& png, const char type[4],
                       const std::vector<uint8_t>& payload) {
     append_be32(png, static_cast<uint32_t>(payload.size()));
@@ -184,6 +191,7 @@ struct Fixture {
     }
 };
 
+/* open pack: HdTexturePack* pack = nullptr */
 HdTexturePack* open_pack(const fs::path& root) {
     HdTexturePack* pack = nullptr;
     char error[512]{};
@@ -193,6 +201,7 @@ HdTexturePack* open_pack(const fs::path& root) {
     return pack;
 }
 
+/* query4: HdTextureDrawQuery query */
 HdTextureDrawQuery query4(const std::vector<uint16_t>& vram,
                           uint8_t u_first,
                           uint8_t u_last) {
@@ -211,6 +220,7 @@ HdTextureDrawQuery query4(const std::vector<uint16_t>& vram,
     return query;
 }
 
+/* test crc exact little endian: check(hd_texture_crc32_words_le(ascii_words, 4) == 0x9AE0DAAFu, */
 void test_crc_exact_little_endian() {
     const uint16_t ascii_words[] = {0x3231, 0x3433, 0x3635, 0x3837};
     check(hd_texture_crc32_words_le(ascii_words, 4) == 0x9AE0DAAFu,
@@ -219,6 +229,7 @@ void test_crc_exact_little_endian() {
           "empty CRC32 is the IEEE empty-buffer value");
 }
 
+/* test scan mapping: HdTexturePack* pack = open_pack(fixture.root) */
 void test_scan_mapping(Fixture& fixture) {
     HdTexturePack* pack = open_pack(fixture.root);
     if (!pack) return;
@@ -270,6 +281,7 @@ void test_scan_mapping(Fixture& fixture) {
 #endif
 }
 
+/* test palette match and invalidation: HdTexturePack* pack = open_pack(fixture.root) */
 void test_palette_match_and_invalidation(Fixture& fixture) {
     HdTexturePack* pack = open_pack(fixture.root);
     if (!pack) return;
@@ -349,6 +361,7 @@ void test_palette_match_and_invalidation(Fixture& fixture) {
     hd_texture_pack_destroy(pack);
 }
 
+/* test tracking savestate continuity: HdTexturePack* pack = open_pack(fixture.root) */
 void test_tracking_savestate_continuity(Fixture& fixture) {
     HdTexturePack* pack = open_pack(fixture.root);
     if (!pack) return;
@@ -413,6 +426,7 @@ void test_tracking_savestate_continuity(Fixture& fixture) {
     std::free(state);
 }
 
+/* test wrapping: HdTexturePack* pack = open_pack(fixture.root) */
 void test_wrapping(Fixture& fixture) {
     HdTexturePack* pack = open_pack(fixture.root);
     if (!pack) return;
@@ -442,6 +456,7 @@ void test_wrapping(Fixture& fixture) {
     hd_texture_pack_destroy(pack);
 }
 
+/* test ambiguity fallback: TempTree temp */
 void test_ambiguity_fallback() {
     TempTree temp;
     const fs::path direct = temp.path / "ambiguous-texture-replacements";
@@ -481,6 +496,7 @@ void test_ambiguity_fallback() {
     hd_texture_pack_destroy(pack);
 }
 
+/* test bounded async decode: HdTexturePack* pack = open_pack(fixture.root) */
 void test_bounded_async_decode(Fixture& fixture) {
     HdTexturePack* pack = open_pack(fixture.root);
     if (!pack) return;
