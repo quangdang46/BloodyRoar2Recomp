@@ -218,7 +218,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   uint8_t *desc;
   
   /* spr is a guest address (callers pass the heap cursor
-   * _DAT_801e3cfc); resolve before dereferencing. spr + 0x14
+   * 0x801e3cfc); resolve before dereferencing. spr + 0x14
    * stays a guest address for gpu_load_image_cmd's a1. */
   desc = (uint8_t *)guest_at((uint32_t)spr);
   if ((*(uint32_t *)(desc + 4) & 8) != 0) {
@@ -1141,7 +1141,7 @@ void text_win_init(uint32_t w,int32_t h)
   guest_memset_b(0x801b7740,0,0x180);
 }
 
-/* text_line_select — select active text line (bounds vs DAT_801b78c0). */
+/* text_line_select — select active text line (bounds vs 0x801b78c0). */
 void text_line_select(int32_t line)
 {
   if ((0 <= line) && (line <= (int32_t)GP8(0x801b78c0))) {
@@ -1151,7 +1151,7 @@ void text_line_select(int32_t line)
 }
 
 /* text_widget_alloc — allocate one 0x30-int8_t text-string widget slot.
- * Returns slot index or -1 when DAT_801b78c0 >= 8. */
+ * Returns slot index or -1 when 0x801b78c0 >= 8. */
 int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
                      uint16_t aux,int32_t mode,int32_t count)
 {
@@ -1490,7 +1490,7 @@ void *spr_pool_b_alloc(void)
  * here — callee globals), fmt = fmt, args = u32 arg array.
  * Flags: '-' left, '+' sign, ' ' space, '#' alt, '0' pad, digit width,
  * '.' precision, '*' width/precision from args, l/h length, d/i/u/o/x/X/p/c/s/n.
- * Elided-arg sites verified against disasm: sign emit passes iVar21,
+ * Elided-arg sites verified against disasm: sign emit passes sign,
  * space pads pass 0x20. */
 extern void console_emit(uint32_t);
 extern void console_pct(void);
@@ -2124,7 +2124,7 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
 /* Text-window printf: vsprintf into the 0x30-int8_t window slot at
  * 0x801b7740 + win*0x30 (fields: +0x1c limit, +0x24 line buffer guest
  * ptr, +0x28 cursor). a0 selects the window; if a0 is out of range it
- * is itself the format string and DAT_801b78c4 picks the window.
+ * is itself the format string and 0x801b78c4 picks the window.
  * Supported specs: %d %x %X %c %s %% plus decimal width; '0' flag only
  * affects %x (zero-pad into the digit buffer). Faithful quirks kept:
  * unknown specs emit `count` bytes from a stale pointer, return is the
@@ -2163,7 +2163,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   iargs[2] = a3;
   va_start(ap,a3);
   if ((sel < 0) || ((int32_t)GP32(0x801b78c0) <= sel)) {
-    /* out-of-range a0: it is the format string; window = DAT_801b78c4 */
+    /* out-of-range a0: it is the format string; window = 0x801b78c4 */
     win = GP32(0x801b78c4);
     if (GP32(0x801b7740 + win * 0x30 + 0x24) == 0) {
       va_end(ap);
@@ -2444,7 +2444,7 @@ void vram_tile_decode(uint8_t *vram)
 {
   const uint8_t *s = (const uint8_t *)guest_at(0x801b6930);
   /* vram: host pointer from the clean_table wrapper, guest-address
-   * value from game.c scene_entry (_DAT_801f4758 = 0x80010000+0x6f000) —
+   * value from game.c scene_entry (0x801f4758 = 0x80010000+0x6f000) —
    * resolve either form. */
   uint8_t *base;
   {
@@ -6192,7 +6192,7 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
 /* ======== 0x8018bb38 ======== */
 
 /* flag_801b55d0_set — sets the flag word @0x801b55d0 to 1 and returns 1.
- * The flag is polled as (DAT_801b55d0 & 1) by the record/string emit
+ * The flag is polled as (0x801b55d0 & 1) by the record/string emit
  * paths (battle.c). Disasm 0x8018bb38-0x8018bb44 (lui v1,0x801b;
  * li v0,1; sw v0,0x55d0(v1); jr ra). */
 uint32_t flag_801b55d0_set(void)
