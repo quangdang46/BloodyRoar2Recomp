@@ -637,6 +637,60 @@ def fold_cps_readability(body):
     return '\n'.join(out)
 
 
+_SETCC_RE = re.compile(
+    r'^(\s*)([A-Za-z_]\w*) = (\(.*\)) \? 1 : 0;\s*(/\*.*\*/)?\s*$')
+
+
+def _is_pure_cmp(e):
+    """True if expr e (inside the outer parens of a `(...) ? 1 : 0`)
+    is a comparison/logical expression whose value is already 0/1, so
+    dropping the ternary is semantics-preserving. Conservative: any
+    depth-0 arithmetic/bitwise/comma/ternary operator rejects."""
+    depth = 0
+    has_cmp = False
+    prev = ''
+    i = 0
+    while i < len(e):
+        c = e[i]
+        if c == '(':
+            depth += 1
+        elif c == ')':
+            depth -= 1
+        elif depth == 0:
+            two = e[i:i + 2]
+            if two in ('<=', '>=', '==', '!='):
+                has_cmp = True
+                i += 2
+                prev = ')'
+                continue
+            if c in '<>':
+                has_cmp = True
+            elif c in '+-':
+                if prev not in '(<>=!&|+-*/%^,?:' and prev != '':
+                    return False          # binary arith at top level
+            elif c in '*/%&|^?,':
+                return False
+        if not c.isspace():
+            prev = c
+        i += 1
+    return has_cmp
+
+
+def fold_setcc(body):
+    """`X = (<cmp>) ? 1 : 0;` -> `X = <cmp>;` — setcc-style ternaries the
+    generated code emits for slt/sltiu/sgt; the comparison already yields
+    0/1 so the ternary is noise (~1240 sites across the clean files)."""
+    out = []
+    for ln in body.split('\n'):
+        m = _SETCC_RE.match(ln)
+        if m and _is_pure_cmp(m.group(3)[1:-1]):
+            cmt = f'  {m.group(4)}' if m.group(4) else ''
+            out.append(f'{m.group(1)}{m.group(2)} = {m.group(3)[1:-1]};{cmt}')
+        else:
+            out.append(ln)
+    return '\n'.join(out)
+
+
 def _gpr_names(m):
     """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
@@ -731,6 +785,7 @@ def emit_fn(addr):
     core = rename_temps(core)
     core = fold_idioms(core)
     core = fold_cps_readability(core)
+    core = fold_setcc(core)
     core = name_comment_targets(core)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry

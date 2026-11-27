@@ -1089,7 +1089,7 @@ block_80157E10:
     v1 = (int32_t)(int16_t)cpu->read_half(s0 + 18);
     a0 = cpu->read_byte(s0 + 12);
     /* nop */  /* 0x80157E1C: 0x00000000 */
-    v0 = ((int32_t)a0 < (int32_t)v1) ? 1 : 0;  /* 0x80157E20: 0x0083102A */
+    v0 = (int32_t)a0 < (int32_t)v1;  /* 0x80157E20: 0x0083102A */
     int cond_80157E24 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80157E28: 0x00000000 */
@@ -1522,7 +1522,7 @@ block_80158090:
 block_80158098:
     v1 = cpu->read_word(s0 + 40);
     a0 = v0;
-    v1 = ((int32_t)v1 < (int32_t)a0) ? 1 : 0;  /* 0x801580A0: 0x0064182A */
+    v1 = (int32_t)v1 < (int32_t)a0;  /* 0x801580A0: 0x0064182A */
     int cond_801580A4 = (v1 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(s0 + 32, a0);
@@ -1538,7 +1538,7 @@ block_801580AC:
     v0 = cpu->read_word(s0 + 36);
     /* nop */  /* 0x801580B0: 0x00000000 */
     v0 -= 300;
-    v0 = ((int32_t)a0 < (int32_t)v0) ? 1 : 0;  /* 0x801580B8: 0x0082102A */
+    v0 = (int32_t)a0 < (int32_t)v0;  /* 0x801580B8: 0x0082102A */
     int cond_801580BC = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x801580C0: 0x00000000 */
