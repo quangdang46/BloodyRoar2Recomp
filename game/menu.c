@@ -3857,12 +3857,12 @@ extern void deferred_cmd_post(int32_t,int32_t,int32_t);
 void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
                   uint8_t *cfg,int32_t direct)
 {
-  uint8_t *s3 = (uint8_t *)guest_at(battle_g);
-  uint16_t *bp = (uint16_t *)s3;
-  uint8_t *s2 = cfg;
-  uint8_t *s6 = cfg + 0x28;
+  uint8_t *bstate = (uint8_t *)guest_at(battle_g);
+  uint16_t *bp = (uint16_t *)bstate;
+  uint8_t *cfg_cur = cfg;
+  uint8_t *srecs = cfg + 0x28;
   int32_t fp = direct;
-  int32_t s1, i;
+  int32_t pi, i;
 
   battle_config_eval(args_a,battle_g,fp);
   battle_config_eval(args_b,battle_g,fp);
@@ -3870,62 +3870,62 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
   if ((bp[0xb4/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb4/2] = 0x600; }
   if ((bp[0xb6/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb6/2] = 0x600; }
 
-  if (s3[1] < 7) {
-    int32_t s7 = 0x59, s5 = 0xb90, s4 = 0xaa0;
-    uint8_t *s0 = s6;
-    for (s1 = 0; s1 < 2; s1++) {
-      if (*(uint32_t *)(s0 + 0x10) == 1 &&
-          ((bp[0xb4/2 + s1] & 0xf00) == 0x700)) {
-        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(s3 + 0xc0));
+  if (bstate[1] < 7) {
+    int32_t rtype = 0x59, poff_b = 0xb90, poff_a = 0xaa0;
+    uint8_t *rcur = srecs;
+    for (pi = 0; pi < 2; pi++) {
+      if (*(uint32_t *)(rcur + 0x10) == 1 &&
+          ((bp[0xb4/2 + pi] & 0xf00) == 0x700)) {
+        uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(bstate + 0xc0));
         uint32_t ch;
         confirm_bookkeeping(battle_g);
         if (fp != 0) {
-          ch = cr[s1 + 0x1b];
-          *(uint32_t *)s0 = (uint32_t)s7;
-          *(uint32_t *)(s0 + 0x24) = 0;
-          *(uint32_t *)(s0 + 0x10) = 0;
-          *(uint32_t *)(s0 + 0x1c) = ch;
-          s3[1] = 6;
+          ch = cr[pi + 0x1b];
+          *(uint32_t *)rcur = (uint32_t)rtype;
+          *(uint32_t *)(rcur + 0x24) = 0;
+          *(uint32_t *)(rcur + 0x10) = 0;
+          *(uint32_t *)(rcur + 0x1c) = ch;
+          bstate[1] = 6;
         } else {
           uint8_t *a3t = (uint8_t *)guest_at(0x801b23ac);
-          ch = a3t[cr[s1 + 0x1b]];
-          *(uint32_t *)s0 = (uint32_t)s7;
-          *(uint32_t *)(s0 + 0x24) = 0;
-          *(uint32_t *)(s0 + 0x10) = 0;
-          *(uint32_t *)(s0 + 0x1c) = ch;
+          ch = a3t[cr[pi + 0x1b]];
+          *(uint32_t *)rcur = (uint32_t)rtype;
+          *(uint32_t *)(rcur + 0x24) = 0;
+          *(uint32_t *)(rcur + 0x10) = 0;
+          *(uint32_t *)(rcur + 0x1c) = ch;
           /* disasm 0x801488fc-0x80148924: DAT1==3 -> 2, DAT1==6 -> 5,
            * otherwise the store is skipped entirely (j 0x80148924). */
-          if (s3[1] == 3) s3[1] = 2;
-          else if (s3[1] == 6) s3[1] = 5;
+          if (bstate[1] == 3) bstate[1] = 2;
+          else if (bstate[1] == 6) bstate[1] = 5;
           {
-            uint32_t *c = (uint32_t *)s2;
+            uint32_t *c = (uint32_t *)cfg_cur;
             if (c[1] != 0) { task_node_free(c[1]); c[1] = 0; }
             if (c[3] != 0) { task_node_free(c[3]); c[3] = 0; }
           }
           {
-            uint8_t *t1 = (uint8_t *)guest_at(0x801f10c0);
-            uint32_t *c = (uint32_t *)s2;
-            c[1] = task_alloc_wrap_c(*(uint32_t *)(t1 + 0) + s4 + 0xe,
-                                *(uint32_t *)(t1 + 4) + s4 + 0xe,
+            uint8_t *ttab = (uint8_t *)guest_at(0x801f10c0);
+            uint32_t *c = (uint32_t *)cfg_cur;
+            c[1] = task_alloc_wrap_c(*(uint32_t *)(ttab + 0) + poff_a + 0xe,
+                                *(uint32_t *)(ttab + 4) + poff_a + 0xe,
                                 0x801b2ed8,0x801b2ef4);
-            c[3] = task_alloc_wrap_c(*(uint32_t *)(t1 + 0) + s5 + 0xe,
-                                *(uint32_t *)(t1 + 4) + s5 + 0xe,
+            c[3] = task_alloc_wrap_c(*(uint32_t *)(ttab + 0) + poff_b + 0xe,
+                                *(uint32_t *)(ttab + 4) + poff_b + 0xe,
                                 0x801b2ed8,0x801b2ef4);
           }
         }
         deferred_cmd_post(0x400,0x41,0);
         return;
       }
-      s5 += 0x28; s4 += 0x28; s2 += 4; s1++;
-      s0 += 0x30;
+      poff_b += 0x28; poff_a += 0x28; cfg_cur += 4; pi++;
+      rcur += 0x30;
     }
   }
 
-  *(uint32_t *)(s6 + 0x38) = 0;
-  *(uint32_t *)(s6 + 8) = 0;
+  *(uint32_t *)(srecs + 0x38) = 0;
+  *(uint32_t *)(srecs + 8) = 0;
 
   {
-    uint32_t mode = s3[0x9b];
+    uint32_t mode = bstate[0x9b];
     if (mode >= 5) return;
     switch (mode) {
     case 0: {
@@ -3935,15 +3935,15 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
       else if (cls==0x200||cls==0x300||cls==0x400) go = 1;
       else return;
       (void)go;
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *a1 = s3 + s1 * 2;
-        uint8_t *a2 = s6 + s1 * 0x30;
-        if (*(uint32_t *)(a2 + 0x10) == 0 && (*(uint32_t *)a2 & 1) == 1) {
-          uint16_t *h = (uint16_t *)a1;
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *pstate = bstate + pi * 2;
+        uint8_t *sub = srecs + pi * 0x30;
+        if (*(uint32_t *)(sub + 0x10) == 0 && (*(uint32_t *)sub & 1) == 1) {
+          uint16_t *h = (uint16_t *)pstate;
           uint32_t v = (h[0x74/2] & 0xf00f) |
                        (h[0x6c/2] & 0xffff0700) |
                        (h[0x68/2] & 0x8f0);
-          *(uint32_t *)(a2 + 8) = v;
+          *(uint32_t *)(sub + 8) = v;
         }
       }
       return;
@@ -3952,9 +3952,9 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
       /* merge both players' masked bits into own + foe records */
       uint32_t v;
       v = (bp[0x74/2] & 0xf00f) | (bp[0x6c/2] & 0xffff0700) | (bp[0x68/2] & 0x8f0);
-      *(uint32_t *)(s6 + 8) = v;
+      *(uint32_t *)(srecs + 8) = v;
       v = (bp[0x76/2] & 0xf00f) | (bp[0x6e/2] & 0xffff0700) | (bp[0x6a/2] & 0x8f0);
-      *(uint32_t *)(s6 + 0x38) = v;
+      *(uint32_t *)(srecs + 0x38) = v;
       return;
     }
     case 3: {
@@ -3962,8 +3962,8 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
        * whose +0x24 == 0 (beq -> merge); if both confirmed (+0x24!=0) do
        * nothing. Loop i<2 then return. */
       for (i = 0; i < 2; i++) {
-        uint8_t *a2 = s6 + i * 0x30;
-        if (*(uint32_t *)(a2 + 0x24) == 0) {
+        uint8_t *sub = srecs + i * 0x30;
+        if (*(uint32_t *)(sub + 0x24) == 0) {
           uint32_t v = (bp[0x74/2] & 0xf00f) | (bp[0x6c/2] & 0xffff0700) |
                        (bp[0x68/2] & 0x8f0);
           v |= (bp[0x76/2] & 0xf00f) | (bp[0x6e/2] & 0xffff0700) |
@@ -3979,7 +3979,7 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
             w |= (bp[0x6e/2] & 0xffff0700);
             w |= (bp[0x68/2] & 0x8f0);
             w |= (bp[0x6a/2] & 0x8f0);
-            *(uint32_t *)(a2 + 8) = w;
+            *(uint32_t *)(sub + 8) = w;
           }
           (void)v;
           return;
@@ -3992,17 +3992,17 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
     default: {
       /* per-player: select_phase_gate gate; rec+0x24 nonzero -> foe record,
        * zero -> own record; merge masked u16 triple */
-      for (s1 = 0; s1 < 2; s1++) {
-        uint8_t *s0p = s3 + s1 * 2;
-        uint8_t *s2p = s6 + s1 * 0x30;
-        if (select_phase_gate(battle_g,s1) != 0) continue;
+      for (pi = 0; pi < 2; pi++) {
+        uint8_t *s0p = bstate + pi * 2;
+        uint8_t *s2p = srecs + pi * 0x30;
+        if (select_phase_gate(battle_g,pi) != 0) continue;
         {
           uint8_t *dst;
           uint16_t *h = (uint16_t *)s0p;
           uint32_t v;
           if (*(uint32_t *)(s2p + 0x24) != 0) {
-            int foe = s1 ^ 1;
-            dst = s6 + foe * 0x30;
+            int foe = pi ^ 1;
+            dst = srecs + foe * 0x30;
           } else dst = s2p;
           v = (h[0x74/2] & 0xf00f) | (h[0x6c/2] & 0x700) | (h[0x68/2] & 0x8f0);
           *(uint32_t *)(dst + 8) = v;
