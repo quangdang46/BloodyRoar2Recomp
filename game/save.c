@@ -425,7 +425,7 @@ void memcard_tick(void)
         DAT_801bef6d = DAT_801bef6d + 0x01;
         return;
       }
-      DAT_801bef6d = DAT_801bef6d - 1;
+      DAT_801bef6d--;
       return;
     case 0x18:
       cd_cmd_issue_async(0x10,0);
@@ -442,7 +442,7 @@ void memcard_tick(void)
       }
       DAT_801bef80 = cd_stamp_to_sector(&DAT_801bef64);
       if ((DAT_801bef80 <= DAT_801bef88) && (DAT_801bef84 - 300 <= DAT_801bef80)) {
-        DAT_801bef6d = DAT_801bef6d - 1;
+        DAT_801bef6d--;
         return;
       }
       goto bb_80157c80;
@@ -450,11 +450,11 @@ void memcard_tick(void)
       brightness_packet_send(0);
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = 0x23;
-        DAT_801bef74 = DAT_801bef74 + 1;
+        DAT_801bef74++;
         return;
       }
       DAT_801bef6d = DAT_801bef6d + 0x01;
-      DAT_801bef74 = DAT_801bef74 + 1;
+      DAT_801bef74++;
       return;
     case '!':
       cd_cmd_issue_async(1,0);
@@ -466,14 +466,14 @@ void memcard_tick(void)
         if (cd_rc != 5) {
           return;
         }
-        DAT_801bef6d = DAT_801bef6d - 1;
+        DAT_801bef6d--;
         return;
       }
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = DAT_801bef6d + 0x01;
         return;
       }
-      DAT_801bef6d = DAT_801bef6d - 1;
+      DAT_801bef6d--;
       return;
     case '#':
       cd_cmd_issue_async(0x13,0);
@@ -579,14 +579,14 @@ bb_80157c80:
     }
     else {
       DAT_801bef6d = 0x10;
-      DAT_801bef78 = DAT_801bef78 + 1;
+      DAT_801bef78++;
       DAT_801bef80 = DAT_801bef84;
     }
     break;
   case 0x18:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
-      DAT_801bef6d = DAT_801bef6d - 1;
+      DAT_801bef6d--;
     }
     else if (cd_rc == 5) {
       DAT_801bef6d = ' ';
@@ -594,7 +594,7 @@ bb_80157c80:
     break;
   case ' ':
     brightness_packet_send(0);
-    DAT_801bef74 = DAT_801bef74 + 1;
+    DAT_801bef74++;
     if ((DAT_801bef64 & 0x10) == 0) {
       DAT_801bef6d = '#';
     }
@@ -613,11 +613,11 @@ bb_80157c80:
         DAT_801bef6d = DAT_801bef6d + 0x01;
       }
       else {
-        DAT_801bef6d = DAT_801bef6d - 1;
+        DAT_801bef6d--;
       }
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = DAT_801bef6d - 1;
+      DAT_801bef6d--;
     }
     break;
   case '#':
@@ -649,7 +649,7 @@ bb_80157c80:
     }
     dir_n = cd_dir_read_wrap(&DAT_801bef8c);
     if ((int)dir_n < 1) {
-      DAT_801bef6d = DAT_801bef6d - 1;
+      DAT_801bef6d--;
       return;
     }
     DAT_801bef6c = (int8_t)dir_n;
@@ -1265,7 +1265,7 @@ void memcard_slot_poll(void)
         }
       }
     }
-    slot_i = slot_i + 1;
+    slot_i++;
     rec = rec + 0x10;
     slot_flag = slot_flag + 0x10;
   } while (slot_i < 0x18);
@@ -1318,7 +1318,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
         }
         if (a1) {
           *rec_u = 0;
-          _DAT_801f35f4 = _DAT_801f35f4 - 1;
+          _DAT_801f35f4--;
         }
       }
       else {
@@ -1326,7 +1326,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
       }
     }
 bb_80156ebc:
-    slot_i = slot_i + 1;
+    slot_i++;
     rec_s = rec_s + 3;
     rec_u = rec_u + 3;
     if (0x1f < slot_i) {
@@ -1350,8 +1350,8 @@ void save_defaults_fill(void)
   dst = &DAT_801c11e0;
   do {
     def_val = *src;
-    src = src + 1;
-    i = i + 1;
+    src++;
+    i++;
     *(uint16_t *)(dst + 0x400) = def_val;
     *(uint16_t *)(dst + 0x3f0) = def_val;
     dst = dst + 2;
@@ -1375,10 +1375,10 @@ void save_block_init(void)
   i = 0;
   n = 0x1f;
   do {
-    n = n - 1;
+    n--;
     dst = &DAT_801c11e0 + i;
     src = src_name + i;
-    i = i + 1;
+    i++;
     *dst = *src;
   } while (-1 < n);
   i = 0;
@@ -1393,10 +1393,10 @@ void save_block_init(void)
     *(uint16_t *)(&DAT_801c11e0 + n) = 0;
     do {
       *(uint16_t *)(dst + 0xe) = 0;
-      j = j - 1;
+      j--;
       dst = dst - 2;
     } while (-1 < j);
-    i = i + 1;
+    i++;
     n = n + 0x24;
   } while (i < 0xb);
   return;
@@ -1436,12 +1436,12 @@ bb_8018bb4c:
         j = 0;
         idx = i * 2;
         do {
-          j = j + 1;
+          j++;
           (&DAT_801f596c)[idx] = 0;
           (&DAT_801f5970)[idx] = 0;
           idx = j + i * 2;
         } while (j < 2);
-        i = i + 1;
+        i++;
       } while (i < 2);
       DAT_801b55d0 = (char)a0;
       return;
@@ -1540,10 +1540,10 @@ void perm_table_apply(uint32_t a0)
     cell = (uint8_t *)guest_at((uint32_t)(i - 0x7fe17c00));
     perm_idx = (&DAT_8011ec40)[a0 & 0xff];
     swap_tmp = *cell;
-    i = i + 1;
+    i++;
     *cell = *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400));
     *(uint8_t *)guest_at((uint32_t)(perm_idx + 0x801e8400)) = swap_tmp;
-    a0 = a0 + 1;
+    a0++;
   } while (i < 0x100);
   return;
 }
@@ -1593,7 +1593,7 @@ void flow_cfg_init(uint8_t a0)
   cfg[4] = a0;
   do {
     idx = i * 2;
-    i = i + 1;
+    i++;
     *(uint16_t *)((char *)cfg + (idx + 6) * 4) = 0;
   } while (i < 8);
   if (!(_DAT_1f8000b8)) {
@@ -1952,7 +1952,7 @@ void picker_table_shuffle(uint8_t *a0)
   int32_t i;
   int32_t j;
 
-  for (n = 0; n < 0xb; n = n + 1) {
+  for (n = 0; n < 0xb; n++) {
     tab_a[n] = (uint8_t)n;
     tab_b[n] = (uint8_t)(n % 9);
   }
@@ -1961,7 +1961,7 @@ void picker_table_shuffle(uint8_t *a0)
   n = a0[0x9c];
   if (!(n)) {
     cur = tab_a;
-    for (i = 0; i < 9; i = i + 1) {
+    for (i = 0; i < 9; i++) {
       j = (int32_t)table_byte_next_a() % 9;
       tmp = cur[i];
       cur[i] = cur[j];
@@ -1981,7 +1981,7 @@ void picker_table_shuffle(uint8_t *a0)
     tab_b[4] = tab_b[5];
     tab_b[5] = tmp;
     cur = tab_b;
-    for (i = 0; i < 5; i = i + 1) {
+    for (i = 0; i < 5; i++) {
       j = (int32_t)table_byte_next_a() % 5;
       tmp = cur[i];
       cur[i] = cur[j];
@@ -1993,14 +1993,14 @@ void picker_table_shuffle(uint8_t *a0)
     return;
   }
   cur = tab_a;
-  for (i = 0; i < 9; i = i + 1) {
+  for (i = 0; i < 9; i++) {
     j = (int32_t)table_byte_next_a() % 9;
     tmp = cur[i];
     cur[i] = cur[j];
     cur[j] = tmp;
   }
   cur = tab_b;
-  for (i = 0; i < 0xb; i = i + 1) {
+  for (i = 0; i < 0xb; i++) {
     /* guest: v1 = rand; v0 = (v1 < 0) ? v1 + 7 : v1;
      * m = v1 - ((v0 >> 3) << 3)  (signed mod-8 via shifts) */
     j = (int32_t)table_byte_next_a();
@@ -2075,9 +2075,9 @@ void chan_sweep_flag200(void)
   do {
     if ((*ent & 0xf00) == 0x200) {
       *ent = 0;
-      DAT_801f35f4 = DAT_801f35f4 - 1;
+      DAT_801f35f4--;
     }
-    i = i + 1;
+    i++;
     ent = ent + 3;
   } while (i < 0x20);
 }
@@ -2093,9 +2093,9 @@ void chan_sweep_flag100(void)
     uint16_t cls = *ent & 0xf00;
     if ((cls != 0x200) && (cls < 0x201) && (cls == 0x100)) {
       *ent = 0;
-      DAT_801f35f4 = DAT_801f35f4 - 1;
+      DAT_801f35f4--;
     }
-    i = i + 1;
+    i++;
     ent = ent + 3;
   } while (i < 0x20);
 }
