@@ -809,8 +809,8 @@ L_dat1_8:
       if (_DAT_1f800082 == 0) {
         record_state_stepper(0x1f800000);
         fighter_contact_resolve((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
-        FUN_801787dc(&DAT_1f8000e8,(uint8_t *)guest_at(0x1f800000));
-        FUN_801787dc(&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
+        FUN_801787dc((byte *)&DAT_1f8000e8,(uint8_t *)guest_at(0x1f800000));
+        FUN_801787dc((byte *)&DAT_1f8001f0,(uint8_t *)guest_at(0x1f800000));
         fighter_pair_update((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),0x1f800000);
       }
       if (((*(ushort *)(in_rec + 2) >> 2 & 1) != 0) && (DAT_1f8000b0 == '\0')) {
@@ -820,19 +820,19 @@ L_dat1_8:
         }
         battle_hud_draw(otdp,0x1f800000,(int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0));
       }
-      battle_camera_step(_DAT_1f8000bc,&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
+      battle_camera_step(_DAT_1f8000bc,(byte *)&DAT_1f8000e8,(byte *)&DAT_1f8001f0,0x1f800000);
       camera_state_cache(_DAT_1f8000bc,0x1f800000);
       if (((*(ushort *)(in_rec + 2) & 1) != 0) && ((_DAT_1f800148 & 2) == 0)) {
-        fighter_flash_update(ot_base,otidx,0x1f800000,&DAT_1f8000e8);
+        fighter_flash_update(ot_base,otidx,0x1f800000,(byte *)&DAT_1f8000e8);
         if ((_DAT_1f800154 & 0x400) == 0) {
           if ((_DAT_1f800154 & 0x200) == 0) {
             if (((_DAT_1f800154 & 0x8000000) == 0) || (otidx == 0)) {
-              player_light_apply(&DAT_1f8000e8,1);
+              player_light_apply((byte *)&DAT_1f8000e8,1);
               sbyte = (int)(int8_t)DAT_1f8000ee;
               gaddr = _DAT_1f800100;
             }
             else {
-              player_light_apply(&DAT_1f8000e8,1);
+              player_light_apply((byte *)&DAT_1f8000e8,1);
               /* Guest 0x80170430/0x8017043C: lb 0x24($v0) / lw 0x34($v0) —
                * BYTE offsets into the 0x24-byte render-record table at
                * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
@@ -843,7 +843,7 @@ L_dat1_8:
             }
           }
           else {
-            player_light_apply(&DAT_1f8000e8,1);
+            player_light_apply((byte *)&DAT_1f8000e8,1);
             /* Guest 0x80170414/0x80170404: lw 0x10($v0) / lb 0($v0) —
              * in_rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
@@ -872,22 +872,22 @@ LAB_80170524:
         }
       }
       if (((*(ushort *)(in_rec + 2) >> 1 & 1) != 0) && ((_DAT_1f800250 & 2) == 0)) {
-        fighter_flash_update(ot_base,otidx,0x1f800000,&DAT_1f8001f0);
+        fighter_flash_update(ot_base,otidx,0x1f800000,(byte *)&DAT_1f8001f0);
         if ((_DAT_1f80025c & 0x400) == 0) {
           if ((_DAT_1f80025c & 0x200) == 0) {
             if (((_DAT_1f80025c & 0x8000000) == 0) || (otidx == 0)) {
-              player_light_apply(&DAT_1f8001f0,2);
+              player_light_apply((byte *)&DAT_1f8001f0,2);
               sbyte = (int)(int8_t)DAT_1f8001f6;
               gaddr = _DAT_1f800208;
             }
             else {
-              player_light_apply(&DAT_1f8001f0,2);
+              player_light_apply((byte *)&DAT_1f8001f0,2);
               sbyte = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
               gaddr = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
-            player_light_apply(&DAT_1f8001f0,2);
+            player_light_apply((byte *)&DAT_1f8001f0,2);
             prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),ot_base + 0x40,otidx,
                          (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
             if (otidx == 0) goto LAB_801706ac;
@@ -1749,7 +1749,7 @@ LAB_801654c0:
         do {
           sprintf_core((char *)fmt_buf,&DAT_80121fe0,ri + 1);
           if (rec_idx == ri) {
-            scroll_offset_accumulate(0,0xfffffffc);
+            scroll_offset_accumulate(0,(int16_t)0xfffffffc);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
             aux_mode = 0x13;
@@ -3020,7 +3020,6 @@ undefined1 frame_divisor_get(void)
 }
 
 /* ---- batch30: state-machine stepper + scroll stripes ---- */
-extern void *guest_at(uint32_t addr);
 extern void *fn_lookup(uint32_t addr);
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 #define MB8(a)   (*(uint8_t  *)guest_at(a))
@@ -3029,7 +3028,6 @@ extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 #define MB32S(a) (*(int32_t   *)guest_at(a))
 extern void menu_stepper_input(void *);
 extern void menu_stepper_redraw(void *);
-extern void announce_param_block_init(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
 extern char **PTR_s_NAME_ENTRY_801b13a8;
 extern char *PTR_s_MOVIES_AND_PICTURES_801b13c4;
 
@@ -3098,7 +3096,6 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
  * dialog_mode_mirror/frame_counter_bump transitions. param_1 = host ptr. */
 extern void dialog_mode_mirror(int32_t);
 extern void frame_counter_bump(int32_t);
-extern uint32_t spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 void cursor_sprite_anim(uint8_t *st)
 {
   char phase;
@@ -3186,7 +3183,6 @@ extern int32_t select_cursor_step(int32_t,int32_t);
 extern void fighter_spawn_setup(uint32_t,uint8_t *,uint8_t *,uint8_t *,int32_t);
 extern void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
 extern int32_t battle_config_eval(uint8_t *,uint32_t,int32_t);
-extern int32_t table_byte_next_a(void);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
@@ -3864,7 +3860,6 @@ int32_t pi;
  * Disasm-verified. */
 extern void task_node_free(uint32_t);
 extern uint32_t task_alloc_wrap_c(uint32_t,uint32_t,uint32_t,uint32_t);
-extern void deferred_cmd_post(uint cmd,int arg,short aux);
 void fighter_spawn_setup(uint32_t battle_g,uint8_t *ab_a,uint8_t *ab_b,
                   uint8_t *cfg,int32_t direct)
 {
@@ -4632,7 +4627,6 @@ emit:
 extern int32_t battle_state_gate(uint32_t,uint32_t);
 extern int32_t ret_zero_a(uint32_t);
 extern int32_t ret_zero_c(uint32_t);
-extern int str_len(char *);
 int32_t continue_countdown(uint32_t battle_g,uint32_t player)
 {
   uint8_t *b = (uint8_t *)guest_at(battle_g);
@@ -4881,7 +4875,6 @@ void battle_struct_init(uint32_t battle_g, uint32_t env_g)
  * if a1==0 clear u16 +0x22; then dispatch table 0x801b1774 indexed by
  * ((s8)B[0x98]<<24)>>22 = s8*4 -> call_guest(fn,0x801f04a8,0x1f800000).
  * Disasm 0x801358e8-0x80135a10. */
-extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 extern void record_table_select(int32_t,int32_t);
 int32_t per_side_setup(int32_t side, int32_t flag)
 {
@@ -6757,7 +6750,6 @@ void string_pair_emit(uint32_t unused_a,uint32_t unused_b,uint32_t unused_c,
  * spr_desc_c per record), then ~15 table-driven record-init blocks
  * mixing sprite_place_centered lh-quad calls and byte/u16 table copies.
  * sprite_place_centered(rec,p1,t) reads lh t+0,+2,+4,+6 (a2,a3,stk5,stk6). */
-extern void sprite_place_centered(uint32_t,uint32_t,int32_t,int32_t,int32_t,int32_t);
 #define BR2_E70(rec,t) \
   sprite_place_centered((rec),p1,(int32_t)MBS16(t),(int32_t)MBS16((t)+2), \
                (int32_t)MBS16((t)+4),(int32_t)MBS16((t)+6))
@@ -7008,7 +7000,6 @@ extern void slot_triple_set(int32_t,int32_t,int32_t,int32_t);
 extern void rec_clear_irq(uint32_t,uint32_t);
 extern void stat_counter_accum(int32_t,int32_t);
 extern int32_t record_field_step(int32_t,int32_t);
-extern int  menu_sprite_load_sm(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void hud_announce(uint32_t,uint32_t,uint32_t);
 extern uint32_t g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes;
 int32_t post_battle_dispatch(uint8_t *side_a,uint8_t *side_b,uint32_t battle)
@@ -8248,7 +8239,6 @@ extern void packed_field_store(uint32_t);
 extern void descblk_variant_e(uint32_t,uint32_t,void *,int32_t,int32_t,int32_t);
 extern int32_t victory_record_restore(uint32_t,int32_t);
 extern void task_heads_clear(int);
-extern void task_node_free(uint32_t);
 extern void task_pools_tick(int);
 extern void record_flag_byte_clear(uint32_t);
 extern void record_flag_byte_set(uint32_t);
@@ -10646,7 +10636,7 @@ int32_t fighter_frame_triple_emit(uint32_t obj)
   uint32_t trail_ent = obj + 0x28;
   if (MBS8(0x801e3d00u) < 0) return -1;
   MW8(obj + 0x9d, 0);
-  battle_camera_step(MB32(obj + 0xbc), (uint8_t *)guest_at(0x1f8000e8),(uint8_t *)guest_at(0x1f8001f0),(int32_t)obj);
+  battle_camera_step(MB32(obj + 0xbc), (byte *)guest_at(0x1f8000e8),(byte *)guest_at(0x1f8001f0),(int32_t)obj);
   fighter_tint_fade(MB32(obj + 8), MB32(obj + 0xc), obj, MBS8(obj + 0x98));
   fighter_trail_emit((undefined4 *)guest_at(trail_ent), 0x1f80033cu, MB32(obj + 0xbc), (int32_t)obj);
   slot_height_proj(MB32(obj + 8) + 0x207cu, MB32(obj + 0xbc), MB32(obj + 0xc),
@@ -11327,7 +11317,6 @@ void dual_entry_attr_bump(uint32_t rec,uint32_t im0,uint32_t im1,
 extern void text_render_simple(uint32_t *,uint32_t,int32_t);
 extern int32_t text_win_printf(int32_t,uint32_t,uint32_t,uint32_t,...);
 extern void cd_reg_window_update(uint8_t *);
-extern void task_slot_step(void);
 
 /* gpu_prim8_emit — 8-tile GPU prim emitter @0x801479c4 (123 insns,
  * 5 args). Negative h/w fold into x/y. Ring idx MB8(0x801f10c8)
@@ -12754,7 +12743,6 @@ uint32_t quad_strip_emit_b(uint32_t dst, uint32_t src, uint32_t tb,
  * by ~3200/6400 (0x51eb851f mulhi >>5 - sign), clamp a1<=0x3fff,
  * v1<=0x7fff, then fill struct 0x801f2690 {u32 0x2c3, u16 x4,
  * u32 1 @+0x18} and cd_chan_attr_apply(0x801f2690). */
-extern void cd_chan_attr_apply(uint32_t);
 void gauge_scale_fixed(int16_t gw,int16_t gh)
 {
   int32_t x = (int32_t)(int16_t)gw;
@@ -13242,7 +13230,7 @@ goto block_8017DC20;
 }
 block_8017DC20:
 cpu->gpr[2] = cpu->gpr[3] & 0x0040;
-block_8017DC24:
+block_8017DC24: ;
 int _bc_8017DC24 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DC24) {
 goto block_8017DC3C;
@@ -13296,7 +13284,7 @@ goto block_8017E10C;
 } else {
 goto block_8017DC8C;
 }
-block_8017DC8C:
+block_8017DC8C: ;
 int _bc_8017DC8C = (cpu->gpr[18] != cpu->gpr[0]);
 { cpu->gpr[5] = cpu->gpr[5] + 64;
 }
@@ -13323,7 +13311,7 @@ goto block_8017DCD0;
 } else {
 goto block_8017DCB0;
 }
-block_8017DCB0:
+block_8017DCB0: ;
 int _bc_8017DCB0 = (cpu->gpr[2] == cpu->gpr[0]);
 { cpu->gpr[2] = -1;
 }
@@ -13332,7 +13320,7 @@ goto block_8017DD98;
 } else {
 goto block_8017DCB8;
 }
-block_8017DCB8:
+block_8017DCB8: ;
 int _bc_8017DCB8 = (cpu->gpr[3] == cpu->gpr[2]);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13341,7 +13329,7 @@ goto block_8017E11C;
 } else {
 goto block_8017DCC0;
 }
-block_8017DCC0:
+block_8017DCC0: ;
 int _bc_8017DCC0 = (cpu->gpr[3] == cpu->gpr[0]);
 if (_bc_8017DCC0) {
 goto block_8017DD34;
@@ -13363,7 +13351,7 @@ goto block_8017DD1C;
 } else {
 goto block_8017DCE8;
 }
-block_8017DCE8:
+block_8017DCE8: ;
 int _bc_8017DCE8 = (cpu->gpr[2] == cpu->gpr[0]);
 { cpu->gpr[2] = 512;
 }
@@ -13372,7 +13360,7 @@ goto block_8017DD00;
 } else {
 goto block_8017DCF0;
 }
-block_8017DCF0:
+block_8017DCF0: ;
 int _bc_8017DCF0 = (cpu->gpr[3] == cpu->gpr[6]);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13383,7 +13371,7 @@ goto block_8017DCF8;
 }
 block_8017DCF8:
 goto block_8017E11C;
-block_8017DD00:
+block_8017DD00: ;
 int _bc_8017DD00 = (cpu->gpr[3] == cpu->gpr[2]);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13425,7 +13413,7 @@ goto block_8017DD80;
 } else {
 goto block_8017DD4C;
 }
-block_8017DD4C:
+block_8017DD4C: ;
 int _bc_8017DD4C = (cpu->gpr[2] == cpu->gpr[0]);
 { cpu->gpr[2] = 512;
 }
@@ -13434,7 +13422,7 @@ goto block_8017DD64;
 } else {
 goto block_8017DD54;
 }
-block_8017DD54:
+block_8017DD54: ;
 int _bc_8017DD54 = (cpu->gpr[3] == cpu->gpr[6]);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13445,7 +13433,7 @@ goto block_8017DD5C;
 }
 block_8017DD5C:
 goto block_8017E11C;
-block_8017DD64:
+block_8017DD64: ;
 int _bc_8017DD64 = (cpu->gpr[3] == cpu->gpr[2]);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13486,7 +13474,7 @@ goto block_8017E10C;
 } else {
 goto block_8017DDAC;
 }
-block_8017DDAC:
+block_8017DDAC: ;
 int _bc_8017DDAC = (cpu->gpr[18] != cpu->gpr[0]);
 { cpu->gpr[5] = cpu->gpr[5] + 64;
 }
@@ -13574,7 +13562,7 @@ goto block_8017DE50;
 block_8017DE4C:
 { cpu->gpr[16] = 199;
 }
-block_8017DE50:
+block_8017DE50: ;
 int _bc_8017DE50 = ((int32_t)cpu->gpr[16] < 0);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13611,7 +13599,7 @@ goto block_8017DED0;
 } else {
 goto block_8017DE90;
 }
-block_8017DE90:
+block_8017DE90: ;
 int _bc_8017DE90 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017DE90) {
 goto block_8017DED0;
@@ -13733,7 +13721,7 @@ goto block_8017DF80;
 block_8017DF7C:
 { cpu->gpr[16] = 199;
 }
-block_8017DF80:
+block_8017DF80: ;
 int _bc_8017DF80 = ((int32_t)cpu->gpr[16] < 0);
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
@@ -13770,7 +13758,7 @@ goto block_8017E000;
 } else {
 goto block_8017DFC0;
 }
-block_8017DFC0:
+block_8017DFC0: ;
 int _bc_8017DFC0 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017DFC0) {
 goto block_8017E000;
@@ -13858,7 +13846,7 @@ goto block_8017E0B4;
 } else {
 goto block_8017E074;
 }
-block_8017E074:
+block_8017E074: ;
 int _bc_8017E074 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017E074) {
 goto block_8017E0B4;
@@ -14031,7 +14019,6 @@ void memmap_debug_dump(void)
 
 /* ======== batch65 ======== */
 
-extern void task_node_free(uint32_t);
 
 /* rec16_fill — 16-byte record fill @0x80137578 (6 insns):
  * a0 = guest ptr; {a1,0,a2,0} u32s + a3 u16 at +0x10 (delay slot). */
@@ -14682,7 +14669,6 @@ extern int32_t heap_serialize(uint32_t,uint32_t,uint32_t,uint32_t,
 extern uint32_t peak_track(void);
 extern int32_t display_cur_invalidate(void);
 extern int32_t display_pair_invalidate(void);
-extern uint32_t rand_lcg(void);
 extern int32_t euler_rotmat(uint32_t,uint32_t,uint32_t,void *);
 extern void part_link_unlink(void *,void *,int32_t);
 
@@ -15137,8 +15123,6 @@ void heap_ptr_fixup(uint32_t blk)
     decomp_trace_record(26,blk,MB32(blk+4u),(uint8_t)MB32(blk+0xcu),MB32(blk+8u)); }
 }
 
-extern uint32_t br2_guest_frame(uint32_t);
-extern void br2_guest_frame_free(void);
 /* heap_record_emit @0x8016cc5c — serialize one heap record: for rc slots
  * (arg5, or remaining count when 0) at a0+0x10+a3*4, call
  * heap_serialize(slot, a2, dst=a1, fp, &sp20, s7, s6); when it produced
@@ -15212,7 +15196,7 @@ uint32_t heap_record_emit(uint32_t heap,uint32_t dst,uint32_t src,
  * rc=0..99 writes 0x28-stride records (two banks at s5 += 0xfa0). */
 int32_t options_menu_alloc(void)
 {
-  int32_t *blk = (int32_t *)task_node_alloc(2, 2, 0, 0x8015b810, 0, 0x24bc);
+  int32_t *blk = (int32_t *)(uintptr_t)task_node_alloc(2, 2, 0, 0x8015b810, 0, 0x24bc);
   uint32_t obj, off, b2, w1, r1, di, w2;
   int32_t  i;
   if (blk == 0) return 0;
@@ -16266,8 +16250,6 @@ next_block:
  * All args are guest u32 values (no host pointers -> no guest_of). */
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t br2_guest_frame(uint32_t);
-extern void br2_guest_frame_free(void);
 extern void br2_st32(uint32_t,uint32_t);
 
 #define BR2_TAG5(NM,AD) \
