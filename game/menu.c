@@ -1368,7 +1368,6 @@ void results_scoreboard(int mode)
   int rowy, fv;
   int rec_off;
   int row_off;
-  undefined1 *name_ptr;
   uint32_t *name_tbl;
   /* sprintf dst = guest $sp+0x18 (frame -0x88) = entry_sp-0x70; the
    * rank strings are re-read by announce_param_block_init_b/hud_time_score_draw
@@ -1376,32 +1375,38 @@ void results_scoreboard(int mode)
    * (sp+0x18 -> frm+0x20) for the function's lifetime. */
   uint32_t rsb_frm = br2_guest_frame(0x88);
   undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
-  int local_60 [6];
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  int local_38;
-  undefined1 *local_34;
-  undefined1 *local_30;
+  /* The tally state (local_60 slots, slide offsets, fill index, fade, name
+   * table pointers) lives in the guest frame (sp+0x28..0x58 -> frm+0x30..0x60,
+   * +8 skew from the 0x88->0x90 align) so it survives across per-frame calls;
+   * local_34/local_30 hold guest addresses, translated at the hud call. */
+  int32_t *rsb_slots = (int32_t *)guest_at(rsb_frm + 0x30);
+#define local_60   rsb_slots
+#define local_48   rsb_slots[6]
+#define local_44   rsb_slots[7]
+#define local_40   rsb_slots[8]
+#define local_3c   rsb_slots[9]
+#define local_38   rsb_slots[10]
+#define local_34   (*(uint32_t *)guest_at(rsb_frm + 0x5c))
+#define local_30   (*(uint32_t *)guest_at(rsb_frm + 0x60))
+  uint32_t name_g;
 
   if (mode == 1) {
-    local_30 = (undefined1 *)guest_at(0x801c13a4);
+    local_30 = 0x801c13a4;
     goto LAB_80164714;
   }
   if (mode < 2) {
     if (mode != 0) goto LAB_80164714;
-    local_34 = &DAT_801c1264;
+    local_34 = 0x801c1264;
   }
   else {
     if (mode == 2) {
-      local_30 = &DAT_801c1304;
+      local_30 = 0x801c1304;
       goto LAB_80164714;
     }
     if (mode != 3) goto LAB_80164714;
-    local_34 = (undefined1 *)guest_at(0x801c13a4);
+    local_34 = 0x801c13a4;
   }
-  local_30 = &DAT_801c1304;
+  local_30 = 0x801c1304;
 LAB_80164714:
   res = memcard_err_sentinel();
   if (res < 0) {
@@ -1466,7 +1471,7 @@ LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
         ri = rec_off;
-        name_ptr = local_34;
+        name_g = local_34;
         do {
           if (DAT_1f800015 == '\0') {
             rowy = row_off + 0x30;
@@ -1489,7 +1494,7 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,rowy,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,rowy,(uint8_t *)guest_at(name_g),draw_mode);
             }
 LAB_80164b68:
             fv = *(int *)((char *)local_60 + rec_off);
@@ -1498,7 +1503,7 @@ LAB_80164b68:
             }
           }
           rec_off = rec_off + 4;
-          name_ptr = name_ptr + 0x10;
+          name_g = name_g + 0x10;
           ri = ri + 1;
           row_off = row_off + 0x20;
         } while (ri < 5);
@@ -1521,7 +1526,7 @@ LAB_80164c38:
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
         ry = 0;
-        name_ptr = local_30;
+        name_g = local_30;
         do {
           if (DAT_1f800015 == '\0') {
             row_off = ry + 0x30;
@@ -1537,7 +1542,7 @@ LAB_80164c38:
           if (mode == 1) {
             draw_mode = 5;
 LAB_80164d80:
-            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_3c + 0x70,row_off,name_ptr,draw_mode);
+            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_3c + 0x70,row_off,(uint8_t *)guest_at(name_g),draw_mode);
           }
           else if (mode < 2) {
             if (mode == 0) {
@@ -1547,7 +1552,7 @@ LAB_80164d68:
             }
           }
           else if (mode < 4) goto LAB_80164d68;
-          name_ptr = name_ptr + 0x10;
+          name_g = name_g + 0x10;
           name_tbl = name_tbl + 1;
           rec_off = rec_off + 1;
           ry = ry + 0x20;
@@ -1606,6 +1611,14 @@ LAB_80164e34:
   }
   DAT_1f800001 = 0;
   br2_guest_frame_free();
+#undef local_60
+#undef local_48
+#undef local_44
+#undef local_40
+#undef local_3c
+#undef local_38
+#undef local_34
+#undef local_30
   return;
 }
 
@@ -1650,13 +1663,18 @@ void player_name_entry(void)
 #define local_68   pne_slots[16]
 #define local_67   pne_slots[17]
 #define local_60   (pne_slots + 24)
-  int wait_timer;
+  /* wait_timer/rec_idx/records are guest stack slots too (sp+0x40/0x4c/0x58):
+   * the name-entry state machine carries them across calls via the stable
+   * guest frame, so host locals would lose the countdown/selection state.
+   * records_g holds the guest address; `records` translates it per use. */
+#define wait_timer  (*(int32_t *)guest_at(pne_frm + 0x40))
+#define rec_idx     (*(int32_t *)guest_at(pne_frm + 0x4c))
+#define records_g   (*(uint32_t *)guest_at(pne_frm + 0x58))
+#define records     ((undefined1 *)guest_at(records_g))
   undefined1 *local_4c;
   undefined1 *local_48;
   undefined1 *active_bank;
-  int rec_idx;
   uint slot_idx;
-  undefined1 *records;
   undefined1 *fmt_buf;
   undefined4 *name_ptr;
 
@@ -1675,13 +1693,13 @@ void player_name_entry(void)
   local_60[1] = DAT_8012207d;
   name_len = 0;
   if (DAT_1f80009c == 3) {
-    records = (undefined1 *)guest_at(0x801c13a4);
+    records_g = 0x801c13a4;
   }
   else if (DAT_1f80009c < 4) {
-    records = &DAT_801c1264;
+    records_g = 0x801c1264;
   }
   else if (DAT_1f80009c == 5) {
-    records = &DAT_801c1264;
+    records_g = 0x801c1264;
   }
   _DAT_1f80008c = 0;
   if (DAT_1f800001 != 0xff) {
@@ -1933,6 +1951,10 @@ LAB_801651e8:
 #undef local_68
 #undef local_67
 #undef local_60
+#undef wait_timer
+#undef rec_idx
+#undef records_g
+#undef records
 
 /* ======== 0x80165cb4 ======== */
 
@@ -1945,7 +1967,10 @@ void transition_screen_flow(int mode)
   int val, res;
   uint gray;
   undefined4 spr_code;
-  int fade_ctr;
+  /* guest keeps the fade counter in $s1: on the DAT_1f800001!=0xff path it is
+   * read before any write, so the faithful host value is the live gpr[17]
+   * (callee-saved: at entry it still holds the caller's $s1). */
+  int fade_ctr = (int)clean_cpu_state()->gpr[17];
 
   if ((mode != 0) || (_DAT_801c4578 == 1)) {
     fade_acc = memcard_err_sentinel();
@@ -2081,12 +2106,7 @@ LAB_8016767c:
         if (_DAT_1f80008e == 0) {
           _DAT_1f80008e = 200;
           flags = table_byte_next_a();
-          if ((flags & 1) == 0) {
-            field_id = 3;
-          }
-          else if ((flags & 1) == 1) {
-            field_id = 0x20;
-          }
+          field_id = (flags & 1) ? 0x20 : 3;
           battle_field_set(_DAT_1f8000bc,field_id);
           field_attr = table_byte_next_a();
           *(ushort *)guest_at(_DAT_1f8000bc + 0x7e) = field_attr & 7;
@@ -3186,7 +3206,11 @@ int32_t select_screen_tick(int32_t entry_mode)
   uint32_t pidx_b;
   uint8_t *rec;
   uint32_t *spr_tab;
-  uint32_t attr_idx;
+  /* attr_idx mirrors guest $s2: written=0/1/2 on the entry_mode paths and
+   * reused as the sprite-attr temp in the state-6 block; when entry_mode is
+   * out of range the guest passes the incoming (caller) $s2 to
+   * intro_movie_state, so seed from the live gpr. */
+  uint32_t attr_idx = (uint32_t)clean_cpu_state()->gpr[18];
   int32_t local_c8 = 0, local_c0 = 0;
   /* guest sp-0xf8..sp frame image (prologue @0x8014f260: addiu sp,-0xf8,
    * s7=sp+0x40, sp+0x18 -> cell 0x801f10bc). Reserve the window on the
@@ -14143,7 +14167,7 @@ uint32_t desc_slot_alloc(uint32_t ent,uint32_t aux,
 {
 
   uint32_t cmdw = MB16(desc);
-  int32_t cmd_hi = (int32_t)(int8_t)(cmdw >> 8), opc;
+  int32_t cmd_hi = (int32_t)(int8_t)(cmdw >> 8), opc = cmd_hi;
   int32_t mode = cmd_hi >> 4;
   uint32_t rec = aux + MB8(aux + 0x100) * 4u;
   uint32_t tbl = MB32(rec + 0xf8);
@@ -14490,7 +14514,7 @@ phase2:
   quad = MB32(rec + 0xc) + (uint32_t)MBS16(MB32(rec + 0x10)) * 12u;
   {
     int32_t dimx = MBS16(quad + 8), dimy = MBS16(quad + 0xa);
-    int32_t x = (int32_t)(int16_t)x, y = (int32_t)(int16_t)y;
+    x = (int32_t)(int16_t)x; y = (int32_t)(int16_t)y;
     if (MBS16(rec + 0x18) == 0) {
       sprite_place_centered(MB32(rec), 0x1f800000u, x, y, dimx, dimy);
       sprite_place_centered(MB32(rec + 4), 0x1f800000u, x, y, dimx, dimy);
