@@ -358,7 +358,7 @@ void memcard_tick(void)
       if (DAT_801c4580) {
         DAT_801bef6d += 0x03;
       }
-      DAT_801c4580 = 0x01;
+      DAT_801c4580 = 0x01; /* fallthrough */
     case 0x11:
     case 0x12:
     case 0x13:
@@ -502,7 +502,7 @@ void memcard_tick(void)
     if (!(DAT_801c4580)) {
       DAT_801bef6d += 0x03;
     }
-    DAT_801c4580 = 0;
+    DAT_801c4580 = 0; /* fallthrough */
   case 0x11:
   case 0x12:
   case 0x13:
@@ -869,12 +869,12 @@ bb_8015fbfc:
         sprintf_core(msg_buf,s_SAVING_TO_MEMORY_CARD__s__801217f0,SLOTSTR(slot_no));
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_arg,0x10,0x1000,0);
         scroll_offset_accumulate(0,0x10);
-        sprintf_core(msg_buf,s_OVER_WRITE_OK___8012180c);
+        sprintf_core(msg_buf,s_OVER_WRITE_OK___8012180c); /* fallthrough */
       default:
         break;
       case 5:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
-        scroll_offset_accumulate(0,0x10);
+        scroll_offset_accumulate(0,0x10); /* fallthrough */
       case 1:
         sprintf_core(msg_buf,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(slot_no))
         ;
@@ -944,7 +944,7 @@ bb_8015fc08:
         fmt_str = s_NOW_CHECKING_MEMORY_CARD__s____801218b0;
         break;
       case 5:
-        dlg_type = 1;
+        dlg_type = 1; /* fallthrough */
       case 1:
         str_arg = SLOTSTR(slot_no);
         fmt_str = s_NOW_SAVING_TO_MEMORY_CARD__s____8012186c;
@@ -1051,7 +1051,7 @@ dflt_8015ffe4:
             case 0:
               gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                            ((uint32_t)*(int8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
-              brightness_commit(*(int8_t *)(_g_system_config_ptr + 0xc) ^ 1);
+              brightness_commit(*(int8_t *)(_g_system_config_ptr + 0xc) ^ 1); /* fallthrough */
             case 1:
             case 3:
               _DAT_801c15f0 = 0;
