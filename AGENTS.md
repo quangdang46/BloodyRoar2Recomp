@@ -1165,5 +1165,15 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 - **Remaining frontier**: the ~10 large entangled `cps_` bodies in
   cps_clean.c (largest `cps_8012fce0` 4767 lines) need gen_cps_clean.py
   template work to restructure into named clean C.
+- **Ghidra typedefs ELIMINATED** (commits `7f851184`..`84440f27`):
+  `undefined`/`undefined1`/`undefined2`/`undefined4`/`undefined8`,
+  `byte`, `ushort`, `uint`, `ulonglong`, `longlong`, `code`,
+  `int32_t_ghidra` typedefs deleted from battle.c/menu.c/resolve.c/ev.c/
+  gfx_emit_p04.c — all uses substituted with the real stdint types
+  (byte->uint8_t in battle/resolve/ev, ->int8_t in menu/gfx_emit_p04 —
+  per-file signedness preserved). ~4700 sites, pure alias substitution,
+  build clean. `CONCAT11/12/22/44` macros kept (locally defined,
+  functional). Two -Wshadow warnings remain (isqrt_refine inner `n`,
+  menu.c `f1c`) — deliberate faithful-port temp reuse, not defects.
 - Headless verify post-commits: frame 33,915+ advancing, no crash.
-  master ~26 ahead of mine/master, unpushed.
+  master ~33 ahead of mine/master, unpushed.
