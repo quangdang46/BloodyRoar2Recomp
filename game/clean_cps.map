@@ -11110,47 +11110,26 @@
 
 801847f0 scriptop_add_src_cases
 
-80188200 prim_poly_emit_54a
 
-80188208 prim_poly_emit_54a
 
-80188210 prim_poly_emit_54a
 
-80188214 prim_poly_emit_54a
 
-80188260 prim_poly_emit_54a
 
-801882f8 prim_poly_emit_54a
 
-80188300 prim_poly_emit_54a
 
-80188308 prim_poly_emit_5ca
 
-80188310 prim_poly_emit_5ca
 
-80188318 prim_poly_emit_5ca
 
-8018831c prim_poly_emit_5ca
 
-80188368 prim_poly_emit_5ca
 
-80188424 prim_poly_emit_5ca
 
-8018842c prim_poly_emit_5ca
 
-80188434 prim_point_emit_48a
 
-8018843c prim_point_emit_48a
 
-80188444 prim_point_emit_48a
 
-80188448 prim_point_emit_48a
 
-80188494 prim_point_emit_48a
 
-80188500 prim_point_emit_48a
 
-80188508 prim_point_emit_48a
 
 80194470 gte_screen_init_defer_mfhi
 
