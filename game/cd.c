@@ -2067,6 +2067,7 @@ int32_t cd_subsystem_init(void)
 {
   uint8_t a0 = 1, a1 = 0, v1 = 7;
   uint8_t *c;
+  (void)a1; (void)c;
   CDFN(CDFN_SUBSYS_INIT,0);
   cd_str_print(0x80125898);
   printf_forward((const char *)guest_at(0x801258a4),
@@ -3491,6 +3492,7 @@ int32_t cd_chan_mode_apply(uint32_t a0)
   uint32_t s3, s0, s5, s4 = 0, s6 = 0, s7 = 0, fp = 0, f58 = 0;
   uint32_t mode, vv, ent;
   int32_t i;
+  (void)i;
   uint8_t *src;
   int32_t x13, x12, hi1, hi2, q1, q2, q, xs;
   uint32_t xs_u, p_hi;
@@ -6409,6 +6411,7 @@ uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 /* cd_mmio_bit_wait — spin until bit6 of byte at a1 sets; irq_poll each pass, bail-aware. */
 int cd_mmio_bit_wait(uint32_t a0,uint32_t a1)
 {
+  (void)a0;
   volatile uint8_t *p = (volatile uint8_t *)guest_at(a1);
   while ((*p & 0x40) == 0) {
     if (br2_bail_pending()) return 0;
