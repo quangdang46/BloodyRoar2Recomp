@@ -1140,3 +1140,17 @@ Applied via full regen of all three pipeline files:
 
 Verified: clean build EU + USA; headless :5159 frame 21530 attract CD
 streaming, clean_fallback_stats count=0, scratchpad live.
+
+## Batch 57 (orch/w5/e05) — w3_e06 _cont resume rows (148)
+
+Post-regen audit vs the FULL dispatch table (clean_table.c, not just
+clean_cps.map): 148 `case 0x…` resume addrs inside the two w3_e06
+alias bodies (confirm_code_entry_cps 10, memcard_dialog_cps 138) had
+no dispatch rows — a yield inside those coroutines resumed into
+generated code. Added `addr -> owning sym` rows to clean_cps.map
+(batch-56 block); clean_table regen: 10,526 -> 10,674 wrappers, 0
+skipped. All other case addrs verified dispatched (the 9 cd_irq_probe
+stragglers resolve via fnmap rows, not clean_cps.map).
+
+Verified: clean build EU + USA; headless :5161 frame 30781,
+clean_fallback_stats count=0.
