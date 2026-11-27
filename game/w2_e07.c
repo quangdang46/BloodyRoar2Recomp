@@ -2184,71 +2184,71 @@ block_80184358:
 
 uint32_t scriptop_wait_cps_80183964(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_wait_cps_8018397c — CPS piece-entry wrapper: resume scriptop_wait_cps_body at guest 0x8018397c */
 uint32_t scriptop_wait_cps_8018397c(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_wait_cps_80183988 — CPS piece-entry wrapper: resume scriptop_wait_cps_body at guest 0x80183988 */
 uint32_t scriptop_wait_cps_80183988(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_wait_cps_80183a48 — CPS piece-entry wrapper: resume scriptop_wait_cps_body at guest 0x80183a48 */
 uint32_t scriptop_wait_cps_80183a48(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_wait_cps_80183a74 — CPS piece-entry wrapper: resume scriptop_wait_cps_body at guest 0x80183a74 */
 uint32_t scriptop_wait_cps_80183a74(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_wait_cps_80183aa4 — CPS piece-entry wrapper: resume scriptop_wait_cps_body at guest 0x80183aa4 */
 uint32_t scriptop_wait_cps_80183aa4(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_wait_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_wait_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_chk_cps_80183ce4 — CPS piece-entry wrapper: resume scriptop_chk_cps_body at guest 0x80183ce4 */
 uint32_t scriptop_chk_cps_80183ce4(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_chk_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_chk_cps_body(cpu);
+  return cpu->gpr[2];
 }
 
 /* scriptop_chk_cps_80183cf0 — CPS piece-entry wrapper: resume scriptop_chk_cps_body at guest 0x80183cf0 */
 uint32_t scriptop_chk_cps_80183cf0(void)
 {
-  CPUState *c = clean_cpu_state();
-  if (!c) return 0;
-  scriptop_chk_cps_body(c);
-  return c->gpr[2];
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return 0;
+  scriptop_chk_cps_body(cpu);
+  return cpu->gpr[2];
 }
