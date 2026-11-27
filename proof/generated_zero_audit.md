@@ -70,3 +70,28 @@ guest-reachable CD/IRQ-region addr now resolves through clean dispatch —
 Residual generated execution in 0x8018–0x801B is now purely the
 unconverted parent functions (~1347 generated-only piece-groups, mostly
 large unnamed bodies — the data-pointer frontier), not delegate bypass.
+
+## Post-audit closure (batches 45-63, orch/w5/e05)
+
+The "~1347 generated-only piece-groups" residual noted above is now
+closed at every audit level:
+
+- **Function entries**: 100% coverage in 0x8018-0x801B (batch 47-49 —
+  93 uncovered jal-target/data-pointer entries converted to cpst_;
+  embedded entry 0x8019EB78 fixed via find_body match-quality scoring)
+- **Tail dispatches**: every literal cpu->pc target inside cpst_
+  bodies resolves to timed cpst_, a real peer port, or intentional
+  generated-leaf (batch 45)
+- **Resume switches**: every switch(_cont)/switch(entry) case in
+  every dispatched clean body has a dispatch row — timed band (batches
+  57-58: 148 w3_e06 + 138 fighter_script_fsm_cps) and untimed band
+  (batch 59: 58 rows)
+- **Runtime proof**: clean_fallback_stats instrumentation on
+  psx_dispatch_game_compiled (the single dispatch funnel) reports
+  count=0 in [0x80180000,0x801C0000) at frame 55213+ — the
+  register-indirect jr/jalr class that static audit cannot enumerate
+  is verified empty at runtime (batch 50)
+
+Remaining generated execution in-band: only intra-function generated
+fallthrough inside partially-covered functions and dynamic
+register-indirect dispatch (runtime-verified zero in attract window).
