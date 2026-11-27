@@ -5198,7 +5198,7 @@ uint32_t cd_ind_dispatch_14(uint32_t a0)
 
 /* ======== batch_mass2 ======== */
 
-extern int gpu_coord_pack(int,int);
+extern uint32_t gpu_coord_pack(int,int);
 extern void cd_guest_zero32_c(uint32_t,uint32_t);
 extern void cd_guest_zero32_b(uint32_t,uint32_t);
 extern void FUN_8019a0ddc(void);
