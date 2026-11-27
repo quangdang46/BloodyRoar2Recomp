@@ -867,3 +867,18 @@ cpst_ coverage. Untimed cps_ execution paths >=0x8018 remain zero.
 
 Verified: clean build EU + USA; headless :5079 frames 8171 -> 11886+
 attract CD streaming, no wedge.
+
+## Batch 44 (orch/w5/e05) — DEAD-BODY SWEEP: cps_clean.c 118k -> 69.5k lines
+
+With the filtered pool at zero, swept all dead cps_ defs >=0x80180000
+from cps_clean.c: 540 bodies removed (530 standard + 10 cps_801b0xxx
+GTE pieces with comment-between-sig-and-brace signatures), plus
+theirir prototypes and orphan /* cps_ */ annotation blocks.
+
+Kept (3 live refs): cps_801835d0 (direct call from w2_e06.c),
+cps_80195cf0 + cps_801a8ee0 (fnmap/clean_table aliases for guest
+addrs 0x80125698 / 0x80120000).
+
+Verified: zero remaining map rows >=0x8018 -> untimed cps_; zero
+intra-file dangling refs (743 defs == 743 refs); clean build EU +
+USA; headless :5083 frames 6769 -> 10074+ attract CD streaming.
