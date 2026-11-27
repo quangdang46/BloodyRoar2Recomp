@@ -519,7 +519,7 @@ void gpu_draw_sync(uint32_t n)
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_DrawSync__d_____801254b4,n);
   }
-  /* jalr t[15] with a0=n (delay slot 0x801911D0: move a0,s0). */
+  /* jalr t[15] with a0=n (delay slot 0x801911d0: move a0,s0). */
   gpu_call(0x3c,n,0,0,0);
   return;
 }
@@ -553,7 +553,7 @@ uint32_t gpu_graph_reset(uint32_t arg)
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430,arg);
     }
-    /* jalr t[13] with a0=1 (delay slot 0x80190F5C: addiu a0,zero,1);
+    /* jalr t[13] with a0=1 (delay slot 0x80190f5c: addiu a0,zero,1);
      * a1 = leftover (s1=arg on debug path, caller a1 otherwise). */
     v = gpu_call(0x34,1,0,0,0);
   }
@@ -594,13 +594,13 @@ uint32_t draw_env_timing(uint32_t env_g)
      ((GP16(0x801b8390) != env[2] || (GP16(0x801b8392) != env[3])))) {
     gp_type = gp_bde20_read();
     *(char *)(env + 9) = gp_type;
-    /* s0 = 0x08000000 unconditionally (lui @0x801919DC delay slot);
-     * ori s0,s0,8 @0x80191AC0 only when gp_type==1. */
+    /* s0 = 0x08000000 unconditionally (lui @0x801919dc delay slot);
+     * ori s0,s0,8 @0x80191ac0 only when gp_type==1. */
     tc = 0x08000000;
     if (gp_type == '\x01') {
       tc |= 8;
     }
-    if (((uint8_t *)env)[0x11] != 0) {   /* lbu @env+0x11 (0x80191AC4) */
+    if (((uint8_t *)env)[0x11] != 0) {   /* lbu @env+0x11 (0x80191ac4) */
       tc = tc | 0x10;
     }
     if ((char)env[8] != '\0') {
@@ -872,22 +872,22 @@ void gpu_prim_pkt_build(int pkt_g,uint16_t *env_p)
 
 /* gpu_mode_regs_apply — GPU mode/register apply @0x80193424 (336 bytes,
  * 15 blocks). Faithful clean port; every callee is already clean:
- * cd_u16_swap_store (0x8019A7FC), guest_memset (0x80193D08),
+ * cd_u16_swap_store (0x8019a7fc), guest_memset (0x80193d08),
  * gpu_status_cmd (0x80193828). All values are guest u32s.
  *
- * Prologue side effects (all modes): *0x801B845C = 0; first
- * cd_u16_swap_store(0) result saved @0x801B8468; *0x801B8458 =
- * *0x801B845C (the just-zeroed cell -> 0).
+ * Prologue side effects (all modes): *0x801b845c = 0; first
+ * cd_u16_swap_store(0) result saved @0x801b8468; *0x801b8458 =
+ * *0x801b845c (the just-zeroed cell -> 0).
  *
  * mode = a0 & 7 dispatch (verified against the slti/beq tree):
- *   {0,3,5}: **(u32*)0x801B8444 = 0x401; **(u32*)0x801B8454 |= 0x800;
- *            **(u32*)0x801B8438 = 0 (in the jal delay slot);
- *            guest_memset(0x801FAD68,0,0x100);
- *            guest_memset(0x801FAE70,0,0x1800).
- *   {1}:     same two register writes; **(u32*)0x801B8438 = 0x02000000
+ *   {0,3,5}: **(u32*)0x801b8444 = 0x401; **(u32*)0x801b8454 |= 0x800;
+ *            **(u32*)0x801b8438 = 0 (in the jal delay slot);
+ *            guest_memset(0x801fad68,0,0x100);
+ *            guest_memset(0x801fae70,0,0x1800).
+ *   {1}:     same two register writes; **(u32*)0x801b8438 = 0x02000000
  *            then = 0x01000000 (first store is dead — faithful).
  *   {2,4,6,7}: no register writes.
- * Tail (all modes): v0 = cd_u16_swap_store(*0x801B8468); if mode==0
+ * Tail (all modes): v0 = cd_u16_swap_store(*0x801b8468); if mode==0
  * v0 = gpu_status_cmd(a0). Returns last call's $v0. */
 uint32_t gpu_mode_regs_apply(uint32_t arg)
 {
@@ -895,22 +895,22 @@ uint32_t gpu_mode_regs_apply(uint32_t arg)
   uint32_t v0 = cd_u16_swap_store(0);
   uint32_t p;
   uint32_t r;
-  GP32(0x801B845C) = 0;
-  GP32(0x801B8468) = v0;
-  GP32(0x801B8458) = GP32(0x801B845C);
+  GP32(0x801b845c) = 0;
+  GP32(0x801b8468) = v0;
+  GP32(0x801b8458) = GP32(0x801b845c);
   if (mode == 0 || mode == 3 || mode == 5) {
-    p = GP32(0x801B8444); GP32(p) = 0x401;
-    p = GP32(0x801B8454); GP32(p) = GP32(p) | 0x800;
-    p = GP32(0x801B8438); GP32(p) = 0;
-    guest_memset((uint32_t *)0x801FAD68, 0, 0x100);
-    guest_memset((uint32_t *)0x801FAE70, 0, 0x1800);
+    p = GP32(0x801b8444); GP32(p) = 0x401;
+    p = GP32(0x801b8454); GP32(p) = GP32(p) | 0x800;
+    p = GP32(0x801b8438); GP32(p) = 0;
+    guest_memset((uint32_t *)0x801fad68, 0, 0x100);
+    guest_memset((uint32_t *)0x801fae70, 0, 0x1800);
   } else if (mode == 1) {
-    p = GP32(0x801B8444); GP32(p) = 0x401;
-    p = GP32(0x801B8454); GP32(p) = GP32(p) | 0x800;
-    p = GP32(0x801B8438); GP32(p) = 0x02000000;
-    p = GP32(0x801B8438); GP32(p) = 0x01000000;
+    p = GP32(0x801b8444); GP32(p) = 0x401;
+    p = GP32(0x801b8454); GP32(p) = GP32(p) | 0x800;
+    p = GP32(0x801b8438); GP32(p) = 0x02000000;
+    p = GP32(0x801b8438); GP32(p) = 0x01000000;
   }
-  r = cd_u16_swap_store((int)GP32(0x801B8468));
+  r = cd_u16_swap_store((int)GP32(0x801b8468));
   if (mode == 0) r = gpu_status_cmd(arg);
   return r;
 }
@@ -978,7 +978,7 @@ void cd_chan_boot_init(int chan)
 
 {
   /* Keep clean: it must reach cd_ext_init_once() so the CD
-   * OpenEvent(0xF0000009) init path runs. Delegating this body (and
+   * OpenEvent(0xf0000009) init path runs. Delegating this body (and
    * cd_chan_boot_fwd) to generated was tried; the generated CPS path did not
    * dispatch cd_ext_init_once either, leaving the guard unset. */
   uint16_t *w;
@@ -1524,9 +1524,9 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   if (fmt == 0) return 0;
   const char *digits = s_0123456789abcdef_80124fe8;
   count = 0;
-  /* Outer format loop (0x8018E5E0): plain chars go straight to
+  /* Outer format loop (0x8018e5e0): plain chars go straight to
    * console_emit; '%' enters the flag/width/precision scan. Every path
-   * reconverges at fmt++ (0x8018EBEC). End-of-string and a dangling '%'
+   * reconverges at fmt++ (0x8018ebec). End-of-string and a dangling '%'
    * both flush the line buffer via console_pct and return. */
   for (;;) {
     v = (uint32_t)*fmt;
@@ -1534,9 +1534,9 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
     flags = 0;
     pfx = 0; alt = 0; sht = 0; lng = 0;
     if (v != 0x25) {
-      console_emit(v);                          /* plain char (0x8018EBE4) */
+      console_emit(v);                          /* plain char (0x8018ebe4) */
     } else {
-      /* spec init (0x8018E5F8) + flag-scan loop (0x8018E60C).
+      /* spec init (0x8018e5f8) + flag-scan loop (0x8018e60c).
        * emit_kind: -1 = still scanning, 0 = advance only ('n'/literal),
        * 1 = string emit ('c'/'s'), 2 = numeric (digit-gen then emit). */
       int emit_kind = -1;
@@ -1711,7 +1711,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         if (emit_kind >= 0) break;
       }
       if (emit_kind == 2) {
-        /* numeric: precision setup + digit generation (0x8018E95C/984) */
+        /* numeric: precision setup + digit generation (0x8018e95c/984) */
         prec = (intptr_t)prec_raw;
         if (-1 < (int)prec_raw) flags &= ~0x20;
         /* Guest digit scratch = sp+0x10..0x37, i.e. dbuf[40]; the cursor
@@ -1742,7 +1742,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         emit_kind = 1;
       }
       if (emit_kind == 1) {
-        /* shared string emit + padding (0x8018E9FC) */
+        /* shared string emit + padding (0x8018e9fc) */
         args = (const uint32_t *)((const uint32_t *)ap + 1);
         need = (uint32_t *)((intptr_t)left + zpad);
         if (sign != 0) need = (uint32_t *)((intptr_t)need + 1);
@@ -1780,7 +1780,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
     }
     fmt = fmt + 1;                                /* guest 0x8018EBEC */
   }
-  console_pct();                                /* 0x8018EBC0 */
+  console_pct();                                /* 0x8018ebc0 */
   return (uint32_t)count;
 }
 
@@ -1892,7 +1892,7 @@ int32_t  mdec_stat_wait_b(void);
 void     gp_20_store(uint32_t);
 
 /* MDEC reg cell: 0x801b68xx holds a guest pointer to a status reg. */
-/* The 0x801b68xx cells hold guest pointers into the 0x1F801xxx MDEC
+/* The 0x801b68xx cells hold guest pointers into the 0x1f801xxx MDEC
  * register file — accesses must go through the pointer-cell bridge
  * (br2_ld32p/br2_st32p) so MMIO side effects fire; a raw guest_at()
  * deref would only touch the open-bus mirror. */
@@ -2362,8 +2362,8 @@ int32_t aux_tbl_store_b(uint32_t val,int32_t idx)
  * If ==2: a0&8 -> write 0x9000001 via 0x801b8428, return 2; else return 1.
  * If !=2: read *T8428, write (*T8428 & 0x3fff) | 0xe1001000 through the
  * 0x801b8424 cell, re-read *T8424 (status side effect), return 0.
- * Disasm-verified @0x80193828 (cell addrs 0x801B8428/0x801B8424, store
- * base a1 = ptr from 0x801B8424 at 0x8019387C). */
+ * Disasm-verified @0x80193828 (cell addrs 0x801b8428/0x801b8424, store
+ * base a1 = ptr from 0x801b8424 at 0x8019387c). */
 uint32_t gpu_status_cmd(uint32_t flags)
 {
   uint32_t v;
@@ -2748,7 +2748,7 @@ static void gte_swc2(uint32_t gaddr, int reg)
 /* Debug/profiler snapshot: stores gpr[4],gpr[5],gpr[2],gpr[3],gpr[12],
  * gpr[13],gpr[15],gpr[24],gpr[25] into the 9-word block @0x801b6904 and
  * returns 1. Needs the live CPUState for the non-arg registers.
- * Disasm 0x80190228-0x8019025C. */
+ * Disasm 0x80190228-0x8019025c. */
 uint32_t cpu_regs_snapshot(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2783,7 +2783,7 @@ uint32_t gpu_flag_8322_read(void)
  * transfer split from x*y, pumps the GPU status bit through
  * cd_pump_watchdog, streams env+payload through the 0x801c8424 reg cell,
  * then kicks the 0x801c8428/842c/8430/8434 DMA cells when the high chunk
- * count is nonzero. Disasm 0x80192944-0x80192B7C. */
+ * count is nonzero. Disasm 0x80192944-0x80192b7c. */
 uint32_t gpu_draw_env_dma(uint32_t envg, uint32_t listg)
 {
   int32_t xs, ys, xv, yv, prod, p1, half, q5, rem;
@@ -2867,7 +2867,7 @@ uint32_t gpu_draw_env_dma(uint32_t envg, uint32_t listg)
  * & 0xffffff tag convention used throughout the OT packet code), not
  * *a1's payload — the guest ANDs the a1 argument register, verified
  * against the generated body (and $a1,$a1,$t2 @0x80194028).
- * Disasm 0x80194000-0x8019403C. */
+ * Disasm 0x80194000-0x8019403c. */
 void gpu_pkt_merge24(uint32_t a0g, uint32_t a1g)
 {
   uint32_t *a0 = (uint32_t *)guest_at(a0g);
@@ -2900,14 +2900,14 @@ void gpu_pkt_tag_0c3c(uint32_t a0g)
 }
 
 /* ======== 0x801948c0 ======== */
-/* Fixed-point reciprocal via the 0x801B8480 LUT — sibling of
- * ani.c's fixed_rsqrt_q12 (0x80194500) but with a 0x13 (not 0x1F)
+/* Fixed-point reciprocal via the 0x801b8480 LUT — sibling of
+ * ani.c's fixed_rsqrt_q12 (0x80194500) but with a 0x13 (not 0x1f)
  * exponent bias and a signed result: returns table_val << e for e>=0,
  * table_val >> -e for e<0 (the 0x80194940 negative-exponent tail is
- * inlined here; LZCR==32 returns 0 via the 0x8019494C tail).
+ * inlined here; LZCR==32 returns 0 via the 0x8019494c tail).
  * a0 is the LZCS source AND the value being normalized-shifted
  * (sllv/srav $t4,$a0,$t3) — faithful to the guest.
- * Disasm 0x801948c0-0x8019495C. */
+ * Disasm 0x801948c0-0x8019495c. */
 uint32_t fixed_recip_lut(uint32_t a0)
 {
   uint32_t lz, sh, m, idx, v;
@@ -2916,7 +2916,7 @@ uint32_t fixed_recip_lut(uint32_t a0)
   setCopReg(2, GTE_DREG(30), a0);          /* LZCS: latch source */
   lz = (uint32_t)getCopReg(2, GTE_DREG(31));
   if (lz == 32) return 0;
-  lz &= 0xFFFFFFFEu;
+  lz &= 0xfffffffeu;
   sh = (uint32_t)(((int32_t)(0x13u - lz)) >> 1);   /* sra, bias 0x13 */
 
   /* Mantissa extract (sllv/srav $t4,$a0,$t3): m = a0 << (lz-24) when
@@ -2930,7 +2930,7 @@ uint32_t fixed_recip_lut(uint32_t a0)
     m = a0 << (d & 31);                                      /* sllv */
   }
   idx = (m - 64u) << 1;
-  v = (uint32_t)*(const int16_t *)guest_at(0x801B8480u + idx);
+  v = (uint32_t)*(const int16_t *)guest_at(0x801b8480u + idx);
 
   if ((int32_t)sh < 0) {
     uint32_t e = (uint32_t)(-(int32_t)sh);
@@ -2942,7 +2942,7 @@ uint32_t fixed_recip_lut(uint32_t a0)
 /* ======== 0x80195290 ======== */
 /* GTE control offset pair: ctrl[24] = a0 << 16, ctrl[25] = a1 << 16
  * (CTC2 writes; the <<16 happens in GPRs first). Disasm
- * 0x80195290-0x801952A8. */
+ * 0x80195290-0x801952a8. */
 void gte_ofs_set(int32_t a0, int32_t a1)
 {
   setCopControlWord(2, GTE_CREG(24), (uint32_t)(a0 << 16));
@@ -2952,7 +2952,7 @@ void gte_ofs_set(int32_t a0, int32_t a1)
 /* ======== 0x801952c0 ======== */
 /* MVMVA vec3 wrapper: lwc2 gte[9..11] = in[0..2], GTE cmd 0x4DA412
  * (MVMVA), swc2 gte[9..11] -> out[0..2]. in/out are guest addresses.
- * Disasm 0x801952c0-0x801952E4. */
+ * Disasm 0x801952c0-0x801952e4. */
 void gte_mvmva_vec3(uint32_t in, uint32_t out)
 {
   gte_lwc2(in + 0, 9);
@@ -2967,7 +2967,7 @@ void gte_mvmva_vec3(uint32_t in, uint32_t out)
 /* ======== 0x801952e8 ======== */
 /* DPCL wrapper: lwc2 gte[9..11] = vec[0..2], lwc2 gte[6] = *scl_addr,
  * gte[8] = a2 (IR0), GTE cmd 0x680029 (DPCL), swc2 gte[22] -> *out.
- * Disasm 0x801952e8-0x8019530C. */
+ * Disasm 0x801952e8-0x8019530c. */
 void gte_dpcl_vec3(uint32_t vec, uint32_t scl_addr, uint32_t ir0,
                    uint32_t out)
 {
@@ -2986,7 +2986,7 @@ void gte_dpcl_vec3(uint32_t vec, uint32_t scl_addr, uint32_t ir0,
  *   gte[8] = a3 (IR0 — the raw 4th arg, NOT dereferenced),
  *   GTE cmd 0x0F8002A (DPCT),
  *   swc2 gte[20..22] -> *stk0,*stk1,*stk2 (sp+16/20/24 args).
- * Generated 0x80195310-0x8019534C loads gte[6] from $a2 (gpr6), the
+ * Generated 0x80195310-0x8019534c loads gte[6] from $a2 (gpr6), the
  * same pointer that fed gte[22]. */
 void gte_dpct_vec3(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3,
                    uint32_t o0, uint32_t o1, uint32_t o2)
@@ -3005,7 +3005,7 @@ void gte_dpct_vec3(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3,
 /* ======== 0x8019534c ======== */
 /* INTPL wrapper: lwc2 gte[9..11] = vec[0..2], gte[8] = ir0,
  * GTE cmd 0x0980011 (INTPL), swc2 gte[22] -> *out.
- * Disasm 0x8019534C-0x80195370. */
+ * Disasm 0x8019534c-0x80195370. */
 void gte_intpl_vec3(uint32_t vec, uint32_t ir0, uint32_t out)
 {
   gte_lwc2(vec + 0, 9);
@@ -3037,7 +3037,7 @@ uint32_t gte_sqr_vec3_b(uint32_t in, uint32_t out)
 /* ======== 0x801953c0 ======== */
 /* AVSZ3 wrapper: gte[17..19] = a0..a2, GTE cmd 0x158002D (AVSZ3),
  * returns gte[7] (the single accumulator read-back).
- * Disasm 0x801953C0-0x801953E0. */
+ * Disasm 0x801953c0-0x801953e0. */
 uint32_t gte_avsz3_wrap(uint32_t a0, uint32_t a1, uint32_t a2)
 {
   setCopReg(2, GTE_DREG(17), a0);
@@ -3049,7 +3049,7 @@ uint32_t gte_avsz3_wrap(uint32_t a0, uint32_t a1, uint32_t a2)
 
 /* ======== 0x801953e0 ======== */
 /* AVSZ4 wrapper: gte[16..19] = a0..a3, GTE cmd 0x168002E (AVSZ4),
- * returns gte[7]. Disasm 0x801953E0-0x80195404. */
+ * returns gte[7]. Disasm 0x801953e0-0x80195404. */
 uint32_t gte_avsz4_wrap(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
   setCopReg(2, GTE_DREG(16), a0);
@@ -3064,7 +3064,7 @@ uint32_t gte_avsz4_wrap(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* OP-with-matrix wrapper (variant A, cmd 0x178000C): saves ctrl[0,2,4],
  * loads them from mtx[0..2], lwc2 gte[9..11] = vec[8],vec[0],vec[4]
  * (note the +8/+0/+4 order), OP, swc2 MAC1..3 -> out[0..2], restores
- * ctrl[0,2,4]. Disasm 0x80195404-0x8019545C. */
+ * ctrl[0,2,4]. Disasm 0x80195404-0x8019545c. */
 void gte_op_vec3_a(uint32_t mtx, uint32_t vec, uint32_t out)
 {
   int32_t c0 = getCopControlWord(2, GTE_CREG(0));
@@ -3088,7 +3088,7 @@ void gte_op_vec3_a(uint32_t mtx, uint32_t vec, uint32_t out)
 /* ======== 0x8019545c ======== */
 /* OP-with-matrix wrapper (variant B, cmd 0x170000C — different OP
  * operand fields than variant A). Identical ctrl save/set and
- * vec load order. Disasm 0x8019545C-0x801954B4. */
+ * vec load order. Disasm 0x8019545c-0x801954b4. */
 void gte_op_vec3_b(uint32_t mtx, uint32_t vec, uint32_t out)
 {
   int32_t c0 = getCopControlWord(2, GTE_CREG(0));
@@ -3114,7 +3114,7 @@ void gte_op_vec3_b(uint32_t mtx, uint32_t vec, uint32_t out)
  * in[0..1], GTE cmd 0x0180001 (RTPS), swc2 gte[14] -> *out_sxy,
  * gte[8] (sign-extended read) -> *out_mac, ctrl[31] -> *out_flag,
  * returns gte[19] >> 2 (arithmetic). in/out_* are guest addresses.
- * Disasm 0x801954D0-0x80195500. */
+ * Disasm 0x801954d0-0x80195500. */
 uint32_t gte_rtps_vec3(uint32_t in, uint32_t out_sxy, uint32_t out_mac,
                        uint32_t out_flag)
 {
@@ -3317,16 +3317,16 @@ void gte_xform_norm3pts(uint32_t a0g, uint32_t a1g)
 /* ======== 0x80194478 / 0x80195710 ======== */
 /* Init-time helpers. Both ported faithfully against the generated
  * bodies; every callee is already clean or a sanctioned bridge:
- *   0x80194478 gte_screen_init_defer: spill ra @0x801B8470, jal
+ *   0x80194478 gte_screen_init_defer: spill ra @0x801b8470, jal
  *     gpu_state_patch_defer, restore, SR |= 0x40000000 (cop0 r12),
- *     then GTE ctrl writes: ctc2 29=0x155, 30=0x100, 26=0x3E8,
- *     27=0xFFFFEF9E (s16 -4194), 28=0x01400000, 24=0, 25=0 — the
+ *     then GTE ctrl writes: ctc2 29=0x155, 30=0x100, 26=0x3e8,
+ *     27=0xffffef9e (s16 -4194), 28=0x01400000, 24=0, 25=0 — the
  *     generated code routes 26/27/29/30 through gte_write_ctrl
  *     (sign-extend/&0xffff semantics) and stores 24/25/28 directly.
- *   0x80195710 gpu_state_patch_defer: spill ra @0x801FC670, jal
+ *   0x80195710 gpu_state_patch_defer: spill ra @0x801fc670, jal
  *     FUN_8018e300 (EnterCriticalSection), BIOS B0 svc 0x56 via the
- *     0xB0 vector, then a 6-word compare of *(v0+24)+40 against the
- *     table @0x801957BC; on match copies the table @0x801957D4 over
+ *     0xb0 vector, then a 6-word compare of *(v0+24)+40 against the
+ *     table @0x801957bc; on match copies the table @0x801957d4 over
  *     it. Tail (both paths): BIOS A0 svc 0x44 (bios_tramp_a044 /
  *     br2_bios_tramp forwards live a0-a3) then FUN_8018e310
  *     (ExitCriticalSection), restore ra, return. */
@@ -3337,17 +3337,17 @@ uint32_t gte_screen_init_defer(void)
   uint32_t ra;
   if (!c) return 0;
   ra = c->gpr[31];
-  GP32(0x801B8470) = ra;               /* sw ra scratch slot */
+  GP32(0x801b8470) = ra;               /* sw ra scratch slot */
   gpu_state_patch_defer();
   c->cop0[12] = (c->cop0[12] | 0x40000000u);
   gte_write_ctrl(c, 29, 0x155u);
   gte_write_ctrl(c, 30, 0x100u);
-  gte_write_ctrl(c, 26, 0x3E8u);
-  gte_write_ctrl(c, 27, 0xFFFFEF9Eu);
+  gte_write_ctrl(c, 26, 0x3e8u);
+  gte_write_ctrl(c, 27, 0xffffef9eu);
   c->gte_ctrl[28] = 0x01400000u;
   c->gte_ctrl[24] = 0;
   c->gte_ctrl[25] = 0;
-  (void)GP32(0x801B8470);               /* lw ra restore — dead in C */
+  (void)GP32(0x801b8470);               /* lw ra restore — dead in C */
   return 0;
 }
 
@@ -3359,36 +3359,36 @@ void gpu_state_patch_defer(void)
   uint32_t v0, base;
   int i, same = 1;
   if (!c) return;
-  GP32(0x801FC670) = c->gpr[31];        /* sw ra scratch slot */
-  FUN_8018e300();                       /* jal 0x8018E300: EnterCriticalSection */
-  br2_bios_tramp(0xb0, 0x56);           /* jalr 0xB0, $t1=0x56 — B0 svc 0x56 */
+  GP32(0x801fc670) = c->gpr[31];        /* sw ra scratch slot */
+  FUN_8018e300();                       /* jal 0x8018e300: EnterCriticalSection */
+  br2_bios_tramp(0xb0, 0x56);           /* jalr 0xb0, $t1=0x56 — B0 svc 0x56 */
   v0 = c->gpr[2];                       /* BIOS $v0 */
   base = GP32(v0 + 24) + 40;
   /* Generated compares TWELVE words: table cursor runs
-   * 0x801957BC -> 0x801957EC (exclusive) against base+0..44. Only on a
-   * full 12-word match does it copy the SIX words @0x801957D4
-   * (-> 0x801957EC) over base+0..20 — the copy source overlaps the
+   * 0x801957bc -> 0x801957ec (exclusive) against base+0..44. Only on a
+   * full 12-word match does it copy the SIX words @0x801957d4
+   * (-> 0x801957ec) over base+0..20 — the copy source overlaps the
    * tail of the compare table. */
   for (i = 0; i < 12; i++) {
-    if (GP32(0x801957BCu + (uint32_t)i * 4u) != GP32(base + (uint32_t)i * 4u)) {
+    if (GP32(0x801957bcu + (uint32_t)i * 4u) != GP32(base + (uint32_t)i * 4u)) {
       same = 0;
       break;
     }
   }
   if (same) {
     for (i = 0; i < 6; i++)
-      GP32(base + (uint32_t)i * 4u) = GP32(0x801957D4u + (uint32_t)i * 4u);
+      GP32(base + (uint32_t)i * 4u) = GP32(0x801957d4u + (uint32_t)i * 4u);
   }
-  br2_bios_tramp(0xa0, 0x44);           /* jal 0x801957F0: BIOS A0 svc 0x44 */
-  FUN_8018e310(0);                      /* jal 0x8018E310: ExitCriticalSection */
+  br2_bios_tramp(0xa0, 0x44);           /* jal 0x801957f0: BIOS A0 svc 0x44 */
+  FUN_8018e310(0);                      /* jal 0x8018e310: ExitCriticalSection */
 }
 
 /* =====================================================================
- * 0x801AAE08 — GTE transform-packet executor (per-frame vertex path).
+ * 0x801aae08 — GTE transform-packet executor (per-frame vertex path).
  *
  * Faithful clean port of the CPS-split generated family
  * br2eu_func_801AAE08 / _801AB470 / _801AB84C / _801ABD94 — ONE logical
- * guest function spanning 0x801AAE08..0x801AC06C (~1160 insns) that the
+ * guest function spanning 0x801aae08..0x801ac06c (~1160 insns) that the
  * recompiler split at taken-branch boundaries. The fragments are internal
  * CPS continuations only (no external jal targets — verified against
  * generated/SLES_017.22_dispatch.c and every generated source file), so a single
@@ -3396,13 +3396,13 @@ void gpu_state_patch_defer(void)
  *
  * Structure: packet descriptor at a0. Flag words select which transform
  * stages run:
- *   lw  [a0+0x20]==0 -> stage-C entry (0x801AB84C)
- *   else copy [a0+0x14..0x1C] -> scratch 0x1F8003F4..FC, then
- *   lw  [a0+0x24]==0 -> stage-B entry (0x801AB470)
- *   else lh  [a0+0x28]==0 -> skip stage-A extra (join 0x801AB07C)
+ *   lw  [a0+0x20]==0 -> stage-C entry (0x801ab84c)
+ *   else copy [a0+0x14..0x1c] -> scratch 0x1f8003f4..FC, then
+ *   lw  [a0+0x24]==0 -> stage-B entry (0x801ab470)
+ *   else lh  [a0+0x28]==0 -> skip stage-A extra (join 0x801ab07c)
  * Each stage loads GTE ctrl matrices (CT0..4 / CT8..12 / CT0..7), runs
  * RTPS-family vertex transforms (SXY triplets via data 9/10/11), and
- * writes results back to the 0x1F8003E0 scratchpad / OT packet area.
+ * writes results back to the 0x1f8003e0 scratchpad / OT packet area.
  * ===================================================================== */
 uint32_t gte_xform_packet(uint32_t a0)
 {
@@ -4467,19 +4467,19 @@ uint32_t gte_xform_packet(uint32_t a0)
     return g[2];
 }
 
-/* ======== 0x801B0DB8 ======== */
+/* ======== 0x801b0db8 ======== */
 
 /* scene_node_walk — scene-graph node dispatcher / render-callback walker.
  * Faithful clean port of the CPS-split generated family br2eu_func_801B0DB8
- * plus its internal continuation fragments (0x801B0E60..0x801B0F4 / shared
- * tails 0x801B0E24,0x801B10CC,0x801B10FC,0x801B1124). The fragments are
+ * plus its internal continuation fragments (0x801b0e60..0x801b0f4 / shared
+ * tails 0x801b0e24,0x801b10cc,0x801b10fc,0x801b1124). The fragments are
  * internal CPS/jump-table continuations only: no generated source jal's to
  * them directly, so one clean CFG covers the whole logical function.
  *
- * Guest shape: a0 is the walk context; gp+0x4C/+0x50 cache a0/a0[1]. The
- * loop reads a 32-bit node word at s2, takes opcode = word&0xFF (must be
+ * Guest shape: a0 is the walk context; gp+0x4c/+0x50 cache a0/a0[1]. The
+ * loop reads a 32-bit node word at s2, takes opcode = word&0xff (must be
  * <17) and sub = word>>8, then either updates s2 through a per-opcode
- * {fn,delta} table or tail-dispatches through one of the 0x801CExxx
+ * {fn,delta} table or tail-dispatches through one of the 0x801cexxx
  * handler tables. Handler calls are guest jalr's reproduced with
  * call_guest(); their delay-slot register updates are applied BEFORE the
  * synchronous call, matching MIPS jalr semantics. */
@@ -4499,7 +4499,7 @@ void scene_node_walk(uint32_t a0)
     if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } \
   } while (0)
 
-  /* addiu sp,sp,-0x30 + sw ra/s3/s2/s1/s0 (801B0DB8-0x801B0DCC). The guest
+  /* addiu sp,sp,-0x30 + sw ra/s3/s2/s1/s0 (801B0DB8-0x801b0dcc). The guest
    * frame is real because the type-7/8/9/12 handlers receive sp+0x10 as an
    * out-param and nested guest calls must not land on it. */
   sp = br2_guest_frame(0x30);
@@ -4603,7 +4603,7 @@ void scene_node_walk(uint32_t a0)
     break;
   case 0x07:                                          /* 801B0F5C */
     SCN_GPR(3) = SCN_GPR(16) & 0xffu;
-    if (SCN_GPR(3) == 11u) { done = 1; break; }       /* sub 0xB: done */
+    if (SCN_GPR(3) == 11u) { done = 1; break; }       /* sub 0xb: done */
     lt12 = ((int32_t)SCN_GPR(3) < 12) ? 1u : 0u;      /* slti (delay) */
     SCN_GPR(2) = 4;                                   /* delay: v0=4 */
     if (lt12 != 0 && SCN_GPR(3) == 4u) {              /* sub 4: commit s2 */
@@ -4615,12 +4615,12 @@ void scene_node_walk(uint32_t a0)
       done = 1;
       break;
     }
-    if (lt12 == 0 && SCN_GPR(3) == 12u) {             /* sub 0xC: jal helper */
+    if (lt12 == 0 && SCN_GPR(3) == 12u) {             /* sub 0xc: jal helper */
       SCN_CALL(0x801a482cu);
       done = 1;
       break;
     }
-    /* FC table call (L_fc_call 801B0FC4): entry = 0x801BE89C + sub*4 */
+    /* FC table call (L_fc_call 801B0FC4): entry = 0x801be89c + sub*4 */
     SCN_GPR(2) = 0x801be89cu;
     if (lt12 == 0) SCN_GPR(3) = SCN_GPR(16) & 0xffu; /* FC0 refresh */
     SCN_GPR(3) = (SCN_GPR(3) << 2) + SCN_GPR(2);     /* base + sub*4 */
@@ -4717,11 +4717,11 @@ void scene_node_walk(uint32_t a0)
   return;
 }
 
-/* ======== 0x801B0240 ======== */
+/* ======== 0x801b0240 ======== */
 
 /* scene_emit_xform — GTE point transform + emit-record writer. Faithful
  * clean port of the CPS family br2eu_func_801B0240 (internal continuations
- * 0x801B02C4..0x801B03CC are part of the same logical function). Entry args
+ * 0x801b02c4..0x801b03cc are part of the same logical function). Entry args
  * arrive in live regs, NOT a0-a3: $v0 = source vertex record, $v1 = packed
  * input halfword, $a1 = emit-context base (record table stride 40).
  * Allocates a real guest frame because the GTE result halfword pair and
@@ -4743,7 +4743,7 @@ void scene_emit_xform(void)
   XF_G(3) = XF_LD16S(XF_G(2) + 6);                /* lh v1,6(v0)      */
   XF_SH(sp + 2, XF_G(3));                         /* sh v1,2(sp)      */
   XF_G(2) = XF_LD16S(XF_G(2) + 10);               /* lh v0,10(v0)     */
-  XF_G(3) = br2_ld32(0x801bef00u);                /* lw v1,0x801BEF00 */
+  XF_G(3) = br2_ld32(0x801bef00u);                /* lw v1,0x801bef00 */
   XF_G(7) = XF_G(5);                              /* move a3,a1       */
   XF_SH(sp + 4, XF_G(2));                         /* sh v0,4(sp)      */
   XF_G(2) = XF_G(3) << 2;                         /* sll v0,v1,2      */
@@ -4753,7 +4753,7 @@ void scene_emit_xform(void)
 
   /* GTE sequence: lwc2 gte[0] <- word(sp) is a raw gte_data write in the
    * generated emitter; lwc2 gte[1] routes through gte_write_data which
-   * masks &0xFFFF so only the lh10 halfword lands. cmd 0x0180001,
+   * masks &0xffff so only the lh10 halfword lands. cmd 0x0180001,
    * swc2 gte[14] -> sp+8, mfc2 gte[19] -> t4 = (sra 2) -> sp+16. */
   c->gte_data[0] = br2_ld32(sp);                  /* lwc2 gte[0] raw  */
   setCopReg(2, GTE_DREG(1), br2_ld32(sp + 4));    /* lwc2 gte[1]      */
@@ -4771,9 +4771,9 @@ void scene_emit_xform(void)
   br2_st32(sp + 16, XF_G(5));                     /* delay: sw a1,16  */
   if (XF_G(2) != 0) {
 
-  /* 0x801B02C4: signed divide (lh(a3+0x50)<<9) / (a1<<2). The div-by-zero
+  /* 0x801b02c4: signed divide (lh(a3+0x50)<<9) / (a1<<2). The div-by-zero
    * and break(7168)/break(6144) trap paths are no-ops that all converge on
-   * 0x801B02F8; the `at` compares leave $at = 0x80000000 (delay slot). */
+   * 0x801b02f8; the `at` compares leave $at = 0x80000000 (delay slot). */
   XF_G(4) = XF_LD16S(XF_G(7) + 0x50);             /* lh a0,0x50(a3)    */
   XF_G(5) <<= 2;                                  /* sll a1,a1,2       */
   XF_G(4) <<= 9;                                  /* sll a0,a0,9       */
@@ -4813,16 +4813,16 @@ void scene_emit_xform(void)
   XF_G(2) -= XF_G(3); XF_G(2) += XF_G(4);
   XF_SH(XF_G(6) + 34, XF_G(2));                        /* +34 = u10-h+a0 */
 
-  /* tag word + slot pointer: tbl24 = lw 0x801BEF24; a1 += tbl24;
-   * a2[0] = lw(a1) | 0x09000000; slot tbl24+idx*4 = a2 & 0xFFFFFF. */
-  XF_G(3) = br2_ld32(0x801bef24u);                /* lw v1,0x801BEF24 */
+  /* tag word + slot pointer: tbl24 = lw 0x801bef24; a1 += tbl24;
+   * a2[0] = lw(a1) | 0x09000000; slot tbl24+idx*4 = a2 & 0xffffff. */
+  XF_G(3) = br2_ld32(0x801bef24u);                /* lw v1,0x801bef24 */
   XF_G(5) += XF_G(3);                             /* a1 += tbl24      */
   XF_G(2) = br2_ld32(XF_G(5));                    /* lw v0,(a1)       */
   XF_G(3) = 0x09000000u;
   XF_G(2) |= XF_G(3);                             /* v0 |= 0x09000000 */
   br2_st32(XF_G(6), XF_G(2));                     /* sw v0,0(a2)      */
   XF_G(3) = br2_ld32(sp + 16);                    /* lw v1,16(sp) idx */
-  XF_G(2) = br2_ld32(0x801bef24u);                /* lw v0,0x801BEF24 */
+  XF_G(2) = br2_ld32(0x801bef24u);                /* lw v0,0x801bef24 */
   XF_G(3) <<= 2;                                  /* sll v1,v1,2      */
   XF_G(3) += XF_G(2);                             /* v1 += tbl24      */
   XF_G(2) = XF_G(6) << 8;                         /* sll v0,a2,8      */
@@ -4830,7 +4830,7 @@ void scene_emit_xform(void)
   br2_st32(XF_G(3), XF_G(2));                     /* sw v0,(v1)       */
   }
 
-  /* L_emit_ret 0x801B03D0 */
+  /* L_emit_ret 0x801b03d0 */
   br2_guest_frame_free();                         /* addiu sp,+24;jr  */
 #undef XF_G
 #undef XF_LD16S
@@ -4839,40 +4839,40 @@ void scene_emit_xform(void)
   return;
 }
 
-/* ======== 0x801B0228 ======== */
+/* ======== 0x801b0228 ======== */
 
 /* scene_emit_setup — arg-shuffle trampoline into scene_emit_xform
- * (0x801B0240, tail-jump). Guest: v0 = *(*(gp+0x4C)+8) + lh(a0+2);
+ * (0x801b0240, tail-jump). Guest: v0 = *(*(gp+0x4c)+8) + lh(a0+2);
  * v1 = lh(v0+2); then enters the emitter with $v0 = resolved record ptr,
- * $v1 = packed input half, $a1 passthrough. Disasm 0x801B0228-0x801B023C. */
+ * $v1 = packed input half, $a1 passthrough. Disasm 0x801b0228-0x801b023c. */
 void scene_emit_setup(void)
 {
   CPUState *c = clean_cpu_state();
   uint32_t v0, v1;
   if (!c) return;
-  v0 = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));    /* lw v0,0x4C(gp)    */
+  v0 = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));    /* lw v0,0x4c(gp)    */
   v1 = (uint32_t)(int32_t)(int16_t)br2_ld16(c->gpr[4] + 2); /* lh v1,2(a0) */
   v0 = br2_ld32(v0 + 8);                           /* lw v0,8(v0)      */
   v0 += v1;                                        /* addu v0,v0,v1    */
   v1 = (uint32_t)(int32_t)(int16_t)br2_ld16(v0 + 2);/* lh v1,2(v0)     */
   c->gpr[2] = v0;
   c->gpr[3] = v1;
-  scene_emit_xform();                              /* j 0x801B0240     */
+  scene_emit_xform();                              /* j 0x801b0240     */
 }
 
-/* ======== 0x801B07D0 ======== */
+/* ======== 0x801b07d0 ======== */
 
 /* scene_leaf_ret — shared `jr $ra` thunk for the op-stream cluster.
- * Leaves every register untouched. Disasm 0x801B07D0-0x801B07D4. */
+ * Leaves every register untouched. Disasm 0x801b07d0-0x801b07d4. */
 void scene_leaf_ret(void)
 {
 }
 
-/* ======== 0x801B06A4 ======== */
+/* ======== 0x801b06a4 ======== */
 
 /* scene_op_flush — op-stream terminator: copies the 4-int8_t record
  * {b0,b1,b2,b3} at *(a1+0x54) + lhu(cursor)*4 into the t0 output struct
- * (int8_t pairs at +0x0C/+0x14/+0x1C/+0x24/+0x34/+0x3C/+0x44/+0x4C with the
+ * (int8_t pairs at +0x0c/+0x14/+0x1c/+0x24/+0x34/+0x3c/+0x44/+0x4c with the
  * guest's exact per-field add pattern), then stores lhu(cursor+2) into
  * a1+0x60 and returns. Disasm-verified vs generated/SLES_017.22_full_54.c
  * (all loads are LBU; the final `lb v1,3(v1)` clobbers $v1 with b3). */
@@ -4915,31 +4915,31 @@ void scene_op_flush(void)
   c->gpr[2] = FLUSH_LB(1); c->gpr[3] = FLUSH_LB(3); c->gpr[2] += c->gpr[3];
   br2_st8(t0 + 0x4d, (uint8_t)c->gpr[2]);
 #undef FLUSH_LB
-  /* tail: a1[0x60] = lhu(cursor+2); j 0x801B07D0 (jr ra) */
+  /* tail: a1[0x60] = lhu(cursor+2); j 0x801b07d0 (jr ra) */
   c->gpr[2] = br2_ld32(a1 + 0x58);                  /* lw v0,0x58(a1)   */
   c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2] + 2);    /* lhu v0,2(v0)     */
   br2_st16(a1 + 0x60, (uint16_t)c->gpr[2]);         /* sh v0,0x60(a1)   */
 }
 
-/* ======== 0x801B05D8/0684/0688 ======== */
+/* ======== 0x801b05d8/0684/0688 ======== */
 
 /* scene_op_loop — the op-stream step/next interpreter shared by three CPS
- * entry points (heads 0x801B05D8 step, 0x801B0684 cursor-store frag,
- * 0x801B0688 next-dispatch frag). The fragments loop back into each other
+ * entry points (heads 0x801b05d8 step, 0x801b0684 cursor-store frag,
+ * 0x801b0688 next-dispatch frag). The fragments loop back into each other
  * (step -> next -> step) once per stream record, so they are one clean CFG
  * with an entry selector — guest CPS resume addresses are internal-only.
- * $a1 = stream ctx (+0x54 record table, +0x58 cursor, +0x5C index table,
+ * $a1 = stream ctx (+0x54 record table, +0x58 cursor, +0x5c index table,
  * +0x60 counter, +0x62 int8_t index); $t0 = output struct (set by caller);
- * $t1/$t2 = tag bounds 0xFE00/0x8000 (set by scene_op_tick). */
+ * $t1/$t2 = tag bounds 0xfe00/0x8000 (set by scene_op_tick). */
 static void scene_op_loop(uint32_t entry)
 {
   CPUState *c = clean_cpu_state();
   uint32_t a1, a2;
   if (!c) return;
   a1 = c->gpr[5];
-  /* Entry fragments: 0x801B0684 stores $v0 as the record cursor, then
-   * both it and 0x801B0688 enter at the op_next tail check; only the
-   * 0x801B05D8 step head (and loop-backs) run the tag dispatch. */
+  /* Entry fragments: 0x801b0684 stores $v0 as the record cursor, then
+   * both it and 0x801b0688 enter at the op_next tail check; only the
+   * 0x801b05d8 step head (and loop-backs) run the tag dispatch. */
   int skip_step = (entry == 0x801b0684u || entry == 0x801b0688u);
   if (entry == 0x801b0684u) {
     br2_st32(a1 + 0x58, c->gpr[2]);                     /* sw v0,0x58(a1)  */
@@ -4947,7 +4947,7 @@ static void scene_op_loop(uint32_t entry)
 
   for (;;) {
     if (!skip_step) {
-      /* ---- step head 0x801B05D8: tag dispatch ---- */
+      /* ---- step head 0x801b05d8: tag dispatch ---- */
       a2 = br2_ld32(a1 + 0x58);                          /* lw a2,0x58(a1)  */
       c->gpr[6] = a2;
       c->gpr[2] = (uint32_t)br2_ld16(a2);                /* lhu v0,0(a2)    */
@@ -4964,14 +4964,14 @@ static void scene_op_loop(uint32_t entry)
         c->gpr[2] = 0xff00u;                             /* delay: v0=FF00  */
         if (t1_lt) {                                     /* bnez -> 0610    */
           if (c->gpr[3] == c->gpr[2]) {                  /* beq v1,FF00     */
-            /* ---- L_ff00_body 0x801B0664 ---- */
+            /* ---- L_ff00_body 0x801b0664 ---- */
             c->gpr[2] = (uint32_t)br2_ld16(a1 + 0x62);   /* lhu v0,0x62(a1) */
             int inb = (c->gpr[2] < c->gpr[7]) ? 1 : 0;   /* sltu v0,v0,a3   */
             c->gpr[2] = a2 + 4u;                         /* delay: v0=a2+4  */
             if (inb) {
               action = 1;                                /* -> cursor_set  */
             } else {
-              /* 0x801B0678: *(gp_cache+0x14) = 0; jr ra */
+              /* 0x801b0678: *(gp_cache+0x14) = 0; jr ra */
               c->gpr[2] = br2_ld32((uint32_t)(c->gpr[28] + 0x4c));
               br2_st32(c->gpr[2] + 0x14, 0u);            /* delay slot      */
               return;
@@ -4979,14 +4979,14 @@ static void scene_op_loop(uint32_t entry)
           }
           /* else -> op_next */
         } else if (c->gpr[3] == c->gpr[10]) {            /* beq v1,t2      */
-          /* ---- L_cond_adv 0x801B062C ---- */
+          /* ---- L_cond_adv 0x801b062c ---- */
           c->gpr[4] = (uint32_t)br2_ld16(a1 + 0x62);     /* lhu a0,0x62(a1) */
           int adv = (c->gpr[7] < c->gpr[4]) ? 1 : 0;     /* sltu v0,a3,a0   */
           c->gpr[2] = a2 + 4u;                           /* delay: v0=a2+4  */
           if (adv) {
             action = 1;                                  /* -> cursor_set  */
           } else {
-            /* 0x801B0640: index++ then emit via cursor+2 halfword */
+            /* 0x801b0640: index++ then emit via cursor+2 halfword */
             c->gpr[3] = br2_ld32(a1 + 0x58);             /* lw v1,0x58(a1)  */
             c->gpr[2] = c->gpr[4] + 1u;                  /* v0 = a0+1       */
             br2_st16(a1 + 0x62, (uint16_t)c->gpr[2]);    /* sh v0,0x62(a1)  */
@@ -5000,7 +5000,7 @@ static void scene_op_loop(uint32_t entry)
       if (action == 1) {                                 /* L_cursor_set   */
         br2_st32(a1 + 0x58, c->gpr[2]);                  /* sw v0,0x58(a1)  */
       } else if (action == 2) {                          /* L_emit_idx     */
-        c->gpr[3] = br2_ld32(a1 + 0x5c);                 /* lw v1,0x5C(a1)  */
+        c->gpr[3] = br2_ld32(a1 + 0x5c);                 /* lw v1,0x5c(a1)  */
         c->gpr[2] <<= 2;                                 /* sll v0,v0,2     */
         c->gpr[3] += c->gpr[2];                          /* v1 += v0        */
         br2_st32(a1 + 0x58, c->gpr[3]);                  /* delay: sw cur   */
@@ -5009,42 +5009,42 @@ static void scene_op_loop(uint32_t entry)
     }
     skip_step = 0;
 
-    /* ---- op_next 0x801B0688: loop while next tag nonzero ---- */
+    /* ---- op_next 0x801b0688: loop while next tag nonzero ---- */
     c->gpr[2] = br2_ld32(a1 + 0x58);                     /* lw v0,0x58(a1)  */
     c->gpr[2] = (uint32_t)br2_ld16(c->gpr[2]);           /* lhu v0,0(v0)    */
     c->gpr[2] &= 0xff00u;                                /* andi v0,FF00    */
     if (c->gpr[2] == 0u) {                               /* beqz -> flush   */
-      scene_op_flush();                                 /* -> 0x801B06A4   */
+      scene_op_flush();                                 /* -> 0x801b06a4   */
       return;
     }
   }
 }
 
-/* scene_op_step — entry 0x801B05D8 (op-stream step dispatch). */
+/* scene_op_step — entry 0x801b05d8 (op-stream step dispatch). */
 void scene_op_step(void)
 {
   scene_op_loop(0x801b05d8u);
 }
 
-/* scene_cursor_set — entry 0x801B0684 (store $v0 as cursor, then next). */
+/* scene_cursor_set — entry 0x801b0684 (store $v0 as cursor, then next). */
 void scene_cursor_set(void)
 {
   scene_op_loop(0x801b0684u);
 }
 
-/* scene_op_next — entry 0x801B0688 (next-record dispatch). */
+/* scene_op_next — entry 0x801b0688 (next-record dispatch). */
 void scene_op_next(void)
 {
   scene_op_loop(0x801b0688u);
 }
 
-/* ======== 0x801B0584 ======== */
+/* ======== 0x801b0584 ======== */
 
 /* scene_op_tick — op-stream per-frame tick + dispatch head. Decrements
  * the a1+0x60 counter (lhu-- / lh reload / bgtz early-out through the
- * 0x801B07D0 jr-ra thunk), publishes 1 into gp_cache+0x14, advances the
- * a1+0x58 cursor by 4, then either flushes (next tag&0xFF00 == 0) or arms
- * t1=0xFE00/t2=0x8000 and enters the step loop. $t0 = a1 in the delay
+ * 0x801b07d0 jr-ra thunk), publishes 1 into gp_cache+0x14, advances the
+ * a1+0x58 cursor by 4, then either flushes (next tag&0xff00 == 0) or arms
+ * t1=0xfe00/t2=0x8000 and enters the step loop. $t0 = a1 in the delay
  * slot on every path. Disasm-verified vs generated/SLES_017.22_full_54.c. */
 void scene_op_tick(void)
 {
@@ -5068,9 +5068,9 @@ void scene_op_tick(void)
     scene_op_flush();
     return;
   }
-  c->gpr[9]  = 0xfe00u;                                /* t1 = 0xFE00    */
+  c->gpr[9]  = 0xfe00u;                                /* t1 = 0xfe00    */
   c->gpr[10] = 0x8000u;                                /* t2 = 0x8000    */
-  scene_op_loop(0x801b05d8u);                         /* -> 0x801B05D8  */
+  scene_op_loop(0x801b05d8u);                         /* -> 0x801b05d8  */
 }
 
 /* ======== 0x8019261c ======== */
@@ -5078,7 +5078,7 @@ void scene_op_tick(void)
 /* gpu_data_reg_read — read the register behind pointer cell
  * @0x801b8428: guest `lui v0,0x801c; lw v0,-0x7bd8(v0); nop; lw v0,(v0);
  * jr ra`. br2_ld32p resolves the cell then routes the pointed-to
- * access through br2_ld32 (MMIO-safe — the cell can hold a 0x1F80xxxx
+ * access through br2_ld32 (MMIO-safe — the cell can hold a 0x1f80xxxx
  * hardware address). Disasm 0x8019261c-0x80192630. */
 uint32_t gpu_data_reg_read(void)
 {
@@ -5117,10 +5117,10 @@ void gpu_reg_cells_init(uint32_t val)
 /* ======== 0x80192ec0 ======== */
 
 /* gpu_reg_cmd_commit — issue cmd | 0x10000000 through the pointer
- * cell @0x801b8428, then return *(*0x801b8424) & 0x00FFFFFF. The cell
- * contents are device/register addresses (can be 0x1F80xxxx MMIO), so
+ * cell @0x801b8428, then return *(*0x801b8424) & 0x00ffffff. The cell
+ * contents are device/register addresses (can be 0x1f80xxxx MMIO), so
  * both dereferences go through br2_ld32/br2_st32. Disasm
- * 0x80192EC0-0x80192EF0. */
+ * 0x80192ec0-0x80192ef0. */
 uint32_t gpu_reg_cmd_commit(uint32_t cmd)
 {
   uint32_t dst = br2_ld32(0x801b8428u);
@@ -5135,7 +5135,7 @@ uint32_t gpu_reg_cmd_commit(uint32_t cmd)
  *   t0 = ra; a0 += a1; jal lut_sin_q12        -> v0 = sin(a0+a1)
  *   LO = low32(a2 * v0)  (mult; LO survives the next jal — the LUT
  *   bodies contain no mult/div)
- *   jal lut_cos_q12      -> v0 = cos(a0+a1)   [0x8018D298 adds the
+ *   jal lut_cos_q12      -> v0 = cos(a0+a1)   [0x8018d298 adds the
  *   +0x400 phase inside; clean lut_cos_q12 already folds it in]
  *   v1 = sra(LO + 0x800, 12)
  *   v0 = sra(low32(a2 * -v0) + 0x800, 12); jr t0
@@ -5329,10 +5329,10 @@ uint32_t op_gp_indexed_byte_store(uint32_t a0, uint32_t a1)
   return v;
 }
 
-/* ======== 0x801AD984 ======== */
+/* ======== 0x801ad984 ======== */
 
 /* op_s16_store14 — *(gp_cache+0x14) = sext16(lh(a1)); returns the
- * sign-extended halfword (guest $v0). Disasm 0x801AD984-0x801AD990 —
+ * sign-extended halfword (guest $v0). Disasm 0x801ad984-0x801ad990 —
  * the gp-cell store sits in the jr delay slot and always executes. */
 uint32_t op_s16_store14(uint32_t a0, uint32_t a1)
 {
@@ -5343,10 +5343,10 @@ uint32_t op_s16_store14(uint32_t a0, uint32_t a1)
   return v;
 }
 
-/* ======== 0x801AD964 ======== */
+/* ======== 0x801ad964 ======== */
 
 /* op_hword_clear — *(u16*)a1 = 0; $v0 passes through unchanged (the guest
- * never writes v0). Disasm 0x801AD964-0x801AD96C: jr $ra with the
+ * never writes v0). Disasm 0x801ad964-0x801ad96c: jr $ra with the
  * delay-slot `sh $0,0(a1)` always executing. */
 uint32_t op_hword_clear(uint32_t a0, uint32_t a1)
 {
@@ -5356,10 +5356,10 @@ uint32_t op_hword_clear(uint32_t a0, uint32_t a1)
   return c ? c->gpr[2] : 0;
 }
 
-/* ======== 0x801AD96C ======== */
+/* ======== 0x801ad96c ======== */
 
 /* op_dword_clear — *(u32*)a1 = 0; $v0 passes through unchanged. Disasm
- * 0x801AD96C-0x801AD974: jr $ra with the delay-slot `sw $0,0(a1)`. */
+ * 0x801ad96c-0x801ad974: jr $ra with the delay-slot `sw $0,0(a1)`. */
 uint32_t op_dword_clear(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
@@ -5368,10 +5368,10 @@ uint32_t op_dword_clear(uint32_t a0, uint32_t a1)
   return c ? c->gpr[2] : 0;
 }
 
-/* ======== 0x801AE68C ======== */
+/* ======== 0x801ae68c ======== */
 
 /* op_gp_deref8_s16_add — *a1 = *(*(gp+0x4c)+8) + sext16(*(u16*)(a0+2));
- * returns the stored sum in $v0. Disasm 0x801AE68C-0x801AE6A8:
+ * returns the stored sum in $v0. Disasm 0x801ae68c-0x801ae6a8:
  * lw v0,0x4c(gp); lh v1,2(a0); lw v0,8(v0); addu v0,v0,v1; delay-slot
  * sw v0,0(a1); jr ra. */
 uint32_t op_gp_deref8_s16_add(uint32_t a0, uint32_t a1)
@@ -5383,10 +5383,10 @@ uint32_t op_gp_deref8_s16_add(uint32_t a0, uint32_t a1)
   return v;
 }
 
-/* ======== 0x801AE65C ======== */
+/* ======== 0x801ae65c ======== */
 
 /* op_gp_deref18_add_s16 — s = sext16(*(u16*)a0); *(*(gp+0x4c)+0x18) =
- * *(gp+0x50) + s; returns s in $v0. Disasm 0x801AE65C-0x801AE674:
+ * *(gp+0x50) + s; returns s in $v0. Disasm 0x801ae65c-0x801ae674:
  * lh v0,0(a0); lw v1,0x50(gp); lw a0,0x4c(gp); addu v1,v1,v0;
  * delay-slot sw v1,0x18(a0); jr ra. */
 uint32_t op_gp_deref18_add_s16(uint32_t a0, uint32_t a1)
@@ -5399,11 +5399,11 @@ uint32_t op_gp_deref18_add_s16(uint32_t a0, uint32_t a1)
   return s;
 }
 
-/* ======== 0x801ADA24 ======== */
+/* ======== 0x801ada24 ======== */
 
 /* op_dword_mul_store — *a1 = lo32(*(u32*)a1 * *(u32*)(a0+2)); the product
  * also lands in $a2 and $lo/$hi. Returns *(a0+2) (guest $v0 keeps the
- * multiplier loaded before the mult). Disasm 0x801ADA24-0x801ADA38. */
+ * multiplier loaded before the mult). Disasm 0x801ada24-0x801ada38. */
 uint32_t op_dword_mul_store(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
@@ -5421,10 +5421,10 @@ uint32_t op_dword_mul_store(uint32_t a0, uint32_t a1)
   return y;
 }
 
-/* ======== 0x801ADAA4 ======== */
+/* ======== 0x801adaa4 ======== */
 
 /* op_hmask_and_store — *a1 = lhu(a1) & lhu(a0+2); gp_cache[5] =
- * sext16(result); returns sext16(result). Disasm 0x801ADAA4-0x801ADAC4 —
+ * sext16(result); returns sext16(result). Disasm 0x801adaa4-0x801adac4 —
  * the sll16+sra16 sign-extend and the gp-cell store are the jr delay. */
 uint32_t op_hmask_and_store(uint32_t a0, uint32_t a1)
 {
@@ -5438,10 +5438,10 @@ uint32_t op_hmask_and_store(uint32_t a0, uint32_t a1)
   return sx;
 }
 
-/* ======== 0x801ADAC8 ======== */
+/* ======== 0x801adac8 ======== */
 
 /* op_dword_and_store — *a1 &= *(u32*)(a0+2); gp_cache[5] = result;
- * returns result. Disasm 0x801ADAC8-0x801ADAE0 — gp-cell store is the
+ * returns result. Disasm 0x801adac8-0x801adae0 — gp-cell store is the
  * jr delay slot. */
 uint32_t op_dword_and_store(uint32_t a0, uint32_t a1)
 {
@@ -5454,10 +5454,10 @@ uint32_t op_dword_and_store(uint32_t a0, uint32_t a1)
   return r;
 }
 
-/* ======== 0x801ADC48 ======== */
+/* ======== 0x801adc48 ======== */
 
-/* op_dword_shl_field — *a1 = *a1 << (sext16(lh(a0+2)) & 0x1F);
- * returns the shifted value. Disasm 0x801ADC48-0x801ADC5C — the store
+/* op_dword_shl_field — *a1 = *a1 << (sext16(lh(a0+2)) & 0x1f);
+ * returns the shifted value. Disasm 0x801adc48-0x801adc5c — the store
  * is the jr delay slot. */
 uint32_t op_dword_shl_field(uint32_t a0, uint32_t a1)
 {
@@ -5468,11 +5468,11 @@ uint32_t op_dword_shl_field(uint32_t a0, uint32_t a1)
   return r;
 }
 
-/* ======== 0x801ADDB4 ======== */
+/* ======== 0x801addb4 ======== */
 
 /* op_dword_add_idx2 — p1 = a1 + sext16(lh(a0+2))*4;
  * p2 = a2 + sext16(lh(a0+6))*4; *p1 += *p2; returns the sum.
- * Disasm 0x801ADDB4-0x801ADDE0 — the *p1 store is the jr delay slot;
+ * Disasm 0x801addb4-0x801adde0 — the *p1 store is the jr delay slot;
  * $a3 keeps p1 and $v1 keeps *p2 for callers that inspect them. */
 uint32_t op_dword_add_idx2(uint32_t a0, uint32_t a1, uint32_t a2)
 {
@@ -5493,16 +5493,16 @@ uint32_t op_dword_add_idx2(uint32_t a0, uint32_t a1, uint32_t a2)
   return s;
 }
 
-/* ======== 0x801AEA94 ======== */
+/* ======== 0x801aea94 ======== */
 
-/* op_ctx_chain3 — ret = call_guest(0x801AD284 = noop_c, *a1, a1); then a
+/* op_ctx_chain3 — ret = call_guest(0x801ad284 = noop_c, *a1, a1); then a
  * three-level pointer chase anchored at e0 = *(*(gp_cache+8) + lh(a0+2)):
  *   ret[1] = *(e0 + lh(a0+4)*4)
  *   ret[2] = *(e0 + ret[1]*4 + 4)
  *   ret[3] = *(e0 + ret[2]*4 + 8)
  * The guest saves/restores s0+ra around the jal and reloads lh(a0+4)
  * before each chase level (dead loads that still write $a1). Disasm
- * 0x801AEA94-0x801AEB20. */
+ * 0x801aea94-0x801aeb20. */
 uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
@@ -5512,7 +5512,7 @@ uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
   ret = call_guest(0x801ad284u, br2_ld32(a1), a1);
   c->gpr[2] = ret;                             /* jal result -> v0  */
   if (br2_bail_pending()) return ret;
-  ctx = br2_ld32((uint32_t)(guest_gp() + 0x4c));/* lw v1,gp+0x4C    */
+  ctx = br2_ld32((uint32_t)(guest_gp() + 0x4c));/* lw v1,gp+0x4c    */
   i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 2);
   e0  = br2_ld32(br2_ld32(ctx + 8) + i2);      /* *(ctx8 + lh(s0+2))*/
   i2  = (uint32_t)(int32_t)(int16_t)br2_ld16(s0 + 4);
@@ -5528,25 +5528,25 @@ uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
   return ret;
 }
 
-/* ======== 0x801AFD38 ======== */
+/* ======== 0x801afd38 ======== */
 
-/* op_hpair_store_16_3e — a1[0x16] = a1[0x3E] = lhu(a0+2); the guest
+/* op_hpair_store_16_3e — a1[0x16] = a1[0x3e] = lhu(a0+2); the guest
  * reloads the source halfword for the delay-slot store. Returns the
- * halfword. Disasm 0x801AFD38-0x801AFD4C. */
+ * halfword. Disasm 0x801afd38-0x801afd4c. */
 uint32_t op_hpair_store_16_3e(uint32_t a0, uint32_t a1)
 {
   uint32_t h = (uint32_t)br2_ld16(a0 + 2);     /* lhu v0,2(a0)      */
   br2_st16(a1 + 0x16, (uint16_t)h);
   h = (uint32_t)br2_ld16(a0 + 2);              /* reload for delay  */
-  br2_st16(a1 + 0x3e, (uint16_t)h);            /* delay: sh ->+0x3E */
+  br2_st16(a1 + 0x3e, (uint16_t)h);            /* delay: sh ->+0x3e */
   return h;
 }
 
-/* ======== 0x801AFD50 ======== */
+/* ======== 0x801afd50 ======== */
 
-/* op_hpair_store_0e_36 — a1[0x0E] = a1[0x36] = lhu(a0+2); same shape as
+/* op_hpair_store_0e_36 — a1[0x0e] = a1[0x36] = lhu(a0+2); same shape as
  * op_hpair_store_16_3e with the sibling offset pair. Disasm
- * 0x801AFD50-0x801AFD64. */
+ * 0x801afd50-0x801afd64. */
 uint32_t op_hpair_store_0e_36(uint32_t a0, uint32_t a1)
 {
   uint32_t h = (uint32_t)br2_ld16(a0 + 2);     /* lhu v0,2(a0)      */
@@ -5556,13 +5556,13 @@ uint32_t op_hpair_store_0e_36(uint32_t a0, uint32_t a1)
   return h;
 }
 
-/* ======== 0x801AFF20 ======== */
+/* ======== 0x801aff20 ======== */
 
 /* op_pair_rec_init — initialize two 40-int8_t records at a1 (and a1+40)
  * with the fixed tag bytes {+3=9, +7=46, +4..+6=128}, then copy
  * lhu(a0+2)->a1+0x50 and lhu(a0+4)->a1+0x52. The 2-iteration loop and
  * the jr-delay halfword load are reproduced exactly; $a2 ends at 2,
- * $a3=128, $t0=46, $t1=9, $v1=a1+80. Disasm 0x801AFF20-0x801AFF6C. */
+ * $a3=128, $t0=46, $t1=9, $v1=a1+80. Disasm 0x801aff20-0x801aff6c. */
 uint32_t op_pair_rec_init(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
@@ -5633,7 +5633,7 @@ void gte_lwc2_r0_r1(uint32_t a0)
   gte_lwc2(a0 + 4, 1);
 }
 
-/* ======== 0x801A54F8 / 0x801A5698 / 0x801A5878 / 0x801A5A0C ======== */
+/* ======== 0x801a54f8 / 0x801a5698 / 0x801a5878 / 0x801a5a0c ======== */
 
 /* RTPT/NCLIP primitive-record emitters — the four-entry GTE family that
  * prim-list walkers invoke per record batch. Shared prologue spills
@@ -5649,10 +5649,10 @@ void gte_lwc2_r0_r1(uint32_t a0)
  * Verified insn-by-insn against disc/SLES_017.22 and
  * generated/SLES_017.22_full_50.c.
  *
- *   0x801A54F8 tri indexed OT, tag 0x07000000, rec 0x20
- *   0x801A5698 quad indexed OT, tag 0x09000000, rec 0x28
- *   0x801A5878 tri fixed OT head, tag 0x07000000, rec 0x20
- *   0x801A5A0C quad fixed OT head, tag 0x09000000, rec 0x28
+ *   0x801a54f8 tri indexed OT, tag 0x07000000, rec 0x20
+ *   0x801a5698 quad indexed OT, tag 0x09000000, rec 0x28
+ *   0x801a5878 tri fixed OT head, tag 0x07000000, rec 0x20
+ *   0x801a5a0c quad fixed OT head, tag 0x09000000, rec 0x28
  * Guest v0 at jr ra = 0x00ffffff (the mask constant) — returned. */
 static void prim_emit_ctx_save(void)
 {
@@ -5756,7 +5756,7 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   return 0x00ffffffu;
 }
 
-/* 0x801A5878 — same tri stream, fixed OT head at *a0 (no slot bounds). */
+/* 0x801a5878 — same tri stream, fixed OT head at *a0 (no slot bounds). */
 uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t s0,s1,s2,s3,s4,va0 = 0,va1 = 0,old;
@@ -5892,7 +5892,7 @@ uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   return 0x00ffffffu;
 }
 
-/* 0x801A5A0C — same quad stream, fixed OT head. Unlike the indexed twin
+/* 0x801a5a0c — same quad stream, fixed OT head. Unlike the indexed twin
  * the idx3 RTPS and the *a0 link word are computed BEFORE the MAC0/flags
  * gate every pass (guest order: lw *a0, lwc2 idx3, or tag, mfc2 MAC0,
  * RTPS, lh flags, then bgez/(flags+0x200)!=0). */
@@ -5968,7 +5968,7 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   return 0x00ffffffu;
 }
 
-/* ======== 0x801A88DC / 0x801A8BC8 ======== */
+/* ======== 0x801a88dc / 0x801a8bc8 ======== */
 
 /* Shared prologue for the textured tri/quad OT emitters. Returns the
  * descriptor fields the loop needs; *mode_out is the raw +0x32 hword and
@@ -6012,14 +6012,14 @@ static void prim_emit_tag_insert(uint32_t otbase, uint32_t out,
   GP32(slot) = out & 0x00ffffffu;
 }
 
-/* 0x801A88DC — textured triangle emitter. Descriptor layout matches the
+/* 0x801a88dc — textured triangle emitter. Descriptor layout matches the
  * prim_emit_* family (+0x10 vertex table, +0x14 color stream, +0x18 index
  * stream of 3xh16 stride 6, +0x1c 8-int8_t color table, +0x20 secondary
  * index stream stride 2, +0x24 flag stream, +0x30 count, +0x32 mode,
  * +0x34 gate). Per record it RTPT/NCLIPs three vertices, optionally runs
  * AVSZ3 for the OT depth when mode==0, then emits a textured tri packet
  * for flag&0xff==2 records whose depth/depth-flag gate passes. Disasm
- * 0x801A88DC-0x801A8BC4. */
+ * 0x801a88dc-0x801a8bc4. */
 uint32_t prim_emit_tri_tex_ot(uint32_t desc)
 {
   uint32_t slotidx, out, flags, vtab, idxs, cols, cidxs, ctab;
@@ -6101,11 +6101,11 @@ uint32_t prim_emit_tri_tex_ot(uint32_t desc)
   return 0;
 }
 
-/* 0x801A8BC8 — textured quad emitter. Same descriptor contract as the
+/* 0x801a8bc8 — textured quad emitter. Same descriptor contract as the
  * tri twin but the index stream is 4xh16 stride 8, output records are
  * 0x28 bytes, and each emitted quad first projects the fourth vertex
  * (RTPS -> out+0x20) before the NCCS color/OT-link tail uses tag
- * 0x09000000. Disasm 0x801A8BC8-0x801A8EDC. */
+ * 0x09000000. Disasm 0x801a8bc8-0x801a8edc. */
 uint32_t prim_emit_quad_tex_ot(uint32_t desc)
 {
   uint32_t slotidx, out, flags, vtab, idxs, cols, cidxs, ctab;
@@ -6232,9 +6232,9 @@ static void swl_guest(uint32_t addr, uint32_t v)
   uint32_t al = addr & ~3u;
   uint32_t w = GP32(al);
   switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
+  case 0: w = (w & 0xffffff00u) | (v >> 24); break;
+  case 1: w = (w & 0xffff0000u) | (v >> 16); break;
+  case 2: w = (w & 0xff000000u) | (v >> 8);  break;
   default: w = v; break;
   }
   GP32(al) = w;
@@ -6924,7 +6924,7 @@ uint32_t prim_emit_98(uint32_t cur, uint32_t ot, uint32_t sel,
  * cur+0/+4/+8 are dereferenced into GTE SXY0-2 (regs 12-14) and NCLIP'd;
  * MAC0 gates a gouraud/color tail: second words of the three pointers
  * feed gte17-19, a fourth pointer at cur+16 supplies the packed color
- * (split lo/hi16 into gte9/gte10), AVSZ3, CC (func 0x1C) and the indexed
+ * (split lo/hi16 into gte9/gte10), AVSZ3, CC (func 0x1c) and the indexed
  * OT link. Stores the three raw pointer-deref words to out+8/+0xc/+0x10
  * unconditionally. a2==0 -> delta 0x14, else 0x28.
  * Disasm 0x80187e18-0x80187ede. */
@@ -7217,17 +7217,17 @@ uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
 
 extern int psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
 
-/* prim_persp_ot_emit — guest 0x8018B76C (hand-written leaf; args arrive in
+/* prim_persp_ot_emit — guest 0x8018b76c (hand-written leaf; args arrive in
  * a0/a1/a3 plus hidden temps $t4/$t7/$t8 — see ARG_GPRS). Per record of
  * `in_stride` bytes at `cur`: lwc2 V0..V2 (regs 0-5) <- cur[0..5], RTPT,
  * NCLIP; when the PREVIOUS iteration's FLAG (cfc2 ctrl31 read before this
- * NCLIP — faithful stale-by-one ordering) has no bits under 0x7FC40000 and
+ * NCLIP — faithful stale-by-one ordering) has no bits under 0x7fc40000 and
  * MAC0 > 0, emit four SXY words into the out record at cur+delta
  * (+8,+8+out_stride,+8+2*out_stride,+8+3*out_stride), RTPS the secondary
  * vector cur[6..7], accumulate the four screen-cull tests (sx via
  * psx_ws_cull_sltiu, sy via sltiu 480), AVSZ4 depth-check OTZ >= 2048, then
  * swl-link the OT entry. do-while on signed count; returns final cur.
- * Disasm generated/SLES_017.22_full_41.c 0x8018B76C-0x8018B890. */
+ * Disasm generated/SLES_017.22_full_41.c 0x8018b76c-0x8018b890. */
 uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
                             uint32_t delta, uint32_t in_stride,
                             uint32_t out_stride)
@@ -7247,11 +7247,11 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030);                  /* RTPT */
     t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1c(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) == 0) {
+    if ((flag & 0x7fc40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7270,15 +7270,15 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     /* Cull accumulation — same ops/order as the guest: sx tests ride the
      * widescreen-aware sltiu helper, sy tests are plain sltiu 480 on the
      * arithmetic-shifted high half. */
-    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xffffu, 512u);
     sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += out_stride; GP32(out) = sxy2;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
@@ -7301,7 +7301,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
   return cur;                                   /* move v0,a0 */
 }
 
-/* prim_persp_ot_emit_112 — guest 0x8018B98C (heap_serialize tag 0x40051
+/* prim_persp_ot_emit_112 — guest 0x8018b98c (heap_serialize tag 0x40051
  * mode-19 emit variant; sibling of prim_persp_ot_emit above). Identical
  * RTPT -> cfc2-FLAG -> NCLIP -> conditional RTPS -> SXY0..2 store ->
  * four-way screen cull -> AVSZ4/OTZ depth check -> swl OT link pipeline,
@@ -7309,7 +7309,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
  * (guest $t8), and the out-record delta is 32 when a2==0 else 72
  * (guest $t4 = 32 + (a2 ? 40 : 0)). Signed count in a3; returns the
  * advanced input cursor in v0 (early-outs with the untouched a0 when
- * count <= 0). Disasm generated/SLES_017.22_full_41.c 0x8018B98C-0x8018BAB8. */
+ * count <= 0). Disasm generated/SLES_017.22_full_41.c 0x8018b98c-0x8018bab8. */
 uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
                                 int32_t count)
 {
@@ -7331,11 +7331,11 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030);                  /* RTPT */
     t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1c(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) == 0) {
+    if ((flag & 0x7fc40000u) == 0) {
 
     out = base + 8;                              /* addiu t3,8 */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
@@ -7354,15 +7354,15 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     /* Cull accumulation — identical op order to the sibling emit:
      * sx tests ride the widescreen-aware sltiu helper, sy tests are
      * plain sltiu 480 on the arithmetic-shifted high half. */
-    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xffffu, 512u);
     sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; GP32(out) = sxy2;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
@@ -7385,12 +7385,12 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
   return cur;                                   /* move v0,a0 */
 }
 
-/* prim_emit_tail_advance — guest 0x8018B884: shared loop tail of the
+/* prim_emit_tail_advance — guest 0x8018b884: shared loop tail of the
  * prim_persp_ot_emit family (the generated body is a CPS split piece —
  * see br2eu_func_8018B884 "fallthrough to split piece"). Semantics:
  * a0 += $t7 unconditionally (delay slot), then if a3 > 0 re-enter the
- * emit loop head 0x8018B76C with the live cursor/OT/count/delta/strides,
- * else fall into the 0x8018B88C epilogue (v0 = a0, jr $ra). Ported as a
+ * emit loop head 0x8018b76c with the live cursor/OT/count/delta/strides,
+ * else fall into the 0x8018b88c epilogue (v0 = a0, jr $ra). Ported as a
  * tail call into prim_persp_ot_emit — identical observable behavior:
  * the callee consumes the advanced cursor and returns the final one.
  * Args arrive as (a0=cur, a1=ot, a3=count, $t4=delta, $t7=in_stride,
@@ -7406,19 +7406,19 @@ uint32_t prim_emit_tail_advance(uint32_t cur, uint32_t ot, int32_t count,
   return cur;                                   /* move v0,a0 */
 }
 
-/* prim_depth_shade_emit — guest 0x8018A9E8 (heap_serialize tag 0x40051
- * mode-7 emit variant; alias entry into the 0x8018A9C8 body). Same
+/* prim_depth_shade_emit — guest 0x8018a9e8 (heap_serialize tag 0x40051
+ * mode-7 emit variant; alias entry into the 0x8018a9c8 body). Same
  * RTPT -> cfc2-FLAG -> NCLIP -> conditional RTPS -> SXY0..2 store ->
  * screen-cull pipeline as prim_persp_ot_emit_112, specialized to
  * in-stride 112 / out-stride 8 / delta 32|72, but the emit tail differs:
  * instead of the plain OTZ>=2048 reject it runs AVSZ4 then computes a
  * depth-shaded attribute word for base+12 from OTZ (GTE reg 7):
- *   z < 256          -> attr = mem & ~0x03C00000
- *   256 <= z < 1280  -> attr = (mem & ~0x03C00000) | (((z-256)<<16) & 0x03C00000)
- *   z >= 1280        -> attr = mem | 0x03C00000
+ *   z < 256          -> attr = mem & ~0x03c00000
+ *   256 <= z < 1280  -> attr = (mem & ~0x03c00000) | (((z-256)<<16) & 0x03c00000)
+ *   z >= 1280        -> attr = mem | 0x03c00000
  * then the usual swl OT link. Also wraps the loop in CTC2 ctrl30 writes:
  * 256 before iterating, 1024 on normal exit (skipped on count<=0 early
- * out). Disasm generated/SLES_017.22_full_41.c 0x8018A9E8-0x8018AB84. */
+ * out). Disasm generated/SLES_017.22_full_41.c 0x8018a9e8-0x8018ab84. */
 uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
                                int32_t count)
 {
@@ -7441,12 +7441,12 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030);                  /* RTPT */
     t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1c(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006);                  /* NCLIP */
     /* mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT — unconditional. */
     setCopReg(2, GTE_DREG(0), t1);               /* mtc2 V0.xy */
-    if ((flag & 0x7FC40000u) == 0) {
+    if ((flag & 0x7fc40000u) == 0) {
 
     setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
     base = cur + delta;                          /* t3 = a0 + t4 */
@@ -7465,33 +7465,33 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     /* Cull accumulation — identical op order to the sibling emit:
      * sx tests ride the widescreen-aware sltiu helper, sy tests are
      * plain sltiu 480 on the arithmetic-shifted high half. */
-    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
+    sx_ok = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xffffu, 512u);
     sy_ok = ((uint32_t)((int32_t)sxy0 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy1 >> 16) < 480u) ? 1u : 0u;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
     out += 8; GP32(out) = sxy2;
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     if (sy_ok != 0) {                           /* t3=a0+t4 recompute: dead */
 
     copFunction(2, 0x168002E);                  /* AVSZ4 -> OTZ */
 
-    /* Depth-shade attribute word at base+12 (lw t2,0xC(t3) — t3 was
+    /* Depth-shade attribute word at base+12 (lw t2,0xc(t3) — t3 was
      * recomputed to base in the sy-branch delay slot). */
     base = cur + delta;
     mem  = GP32(base + 12);
     z    = (uint32_t)getCopReg(2, GTE_DREG(7));  /* mfc2 OTZ (16-bit) */
     if (z < 256u) {
-      attr = mem & ~0x03C00000u;
+      attr = mem & ~0x03c00000u;
     } else if (z - 256u < 1024u) {
-      attr = (mem & ~0x03C00000u) |
-             (((z - 256u) << 16) & 0x03C00000u);
+      attr = (mem & ~0x03c00000u) |
+             (((z - 256u) << 16) & 0x03c00000u);
     } else {
-      attr = mem | 0x03C00000u;
+      attr = mem | 0x03c00000u;
     }
     GP32(base + 12) = attr;
 
@@ -7511,15 +7511,15 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
 
 /* ======== 0x8018ab84 / 0x8018ac54 family ======== */
 
-/* prim_cull3_emit — shared body of the five-entry 0x8018AC54 stub family
+/* prim_cull3_emit — shared body of the five-entry 0x8018ac54 stub family
  * (heap emit variants; each stub only loads $s6/$s7/$t8 then falls into
  * the common loop). Per record of `in_stride` bytes at `cur`: lwc2
  * V0..V2 (regs 0-5) <- cur[0..5], RTPT, then the SAME post-RTPT FLAG gate
- * as the prim_persp_ot_emit family — cfc2 ctrl31 & 0x7FC40000 rejects —
+ * as the prim_persp_ot_emit family — cfc2 ctrl31 & 0x7fc40000 rejects —
  * but NO NCLIP, NO MAC0 check, NO RTPS secondary vector, NO AVSZ depth
  * test. On pass it reads SXY0..2 (GTE data 12-14) and accumulates the
  * three screen culls independently: sx_ok = sum of
- * psx_ws_cull_sltiu(sxyN & 0xFFFF, 512), sy_ok = sum of
+ * psx_ws_cull_sltiu(sxyN & 0xffff, 512), sy_ok = sum of
  * ((int32)sxyN >> 16) < 480. Emit requires sx_ok > 0 AND sy_ok > 0.
  * SXY0 is stored at out+0 unconditionally once sx_ok > 0 (it sits in the
  * sy-branch DELAY SLOT); SXY1/SXY2 land at out+out_stride /
@@ -7528,7 +7528,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
  * old = *ot; swl ot+2 <- out_base<<8; swl out_base+2 <- old<<8.
  * out_base = cur + delta where delta = 24 (+ d_extra when sel != 0).
  * Signed count in a3; returns advanced cursor. Disasm
- * generated/SLES_017.22_full_41.c 0x8018AC54-0x8018AD80. */
+ * generated/SLES_017.22_full_41.c 0x8018ac54-0x8018ad80. */
 static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
                                 int32_t count, uint32_t d_extra,
                                 uint32_t in_stride, uint32_t out_stride)
@@ -7552,14 +7552,14 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) == 0) {
+    if ((flag & 0x7fc40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
-    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
+    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xffffu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xffffu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xffffu, 512u);
     if (sx_ok != 0) {
 
     /* sy0 is computed in the sx-branch DELAY SLOT — live whenever the
@@ -7588,9 +7588,9 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
 }
 
 /* The five stubs differ only in $s6/$s7/$t8 (d_extra/in_stride/out_stride):
- *   0x8018AC54: s6=24 s7=72  t8=4    0x8018AC74: s6=28 s7=80  t8=8
- *   0x8018AC64: s6=20 s7=64  t8=4    0x8018AC84: s6=32 s7=88  t8=8
- *   0x8018AC94: s6=40 s7=104 t8=12 */
+ *   0x8018ac54: s6=24 s7=72  t8=4    0x8018ac74: s6=28 s7=80  t8=8
+ *   0x8018ac64: s6=20 s7=64  t8=4    0x8018ac84: s6=32 s7=88  t8=8
+ *   0x8018ac94: s6=40 s7=104 t8=12 */
 uint32_t prim_cull3_emit_48(uint32_t cur, uint32_t ot, uint32_t sel,
                             int32_t count)
 { return prim_cull3_emit(cur, ot, sel, count, 24u, 72u, 4u); }
@@ -7607,17 +7607,17 @@ uint32_t prim_cull3_emit_68(uint32_t cur, uint32_t ot, uint32_t sel,
                             int32_t count)
 { return prim_cull3_emit(cur, ot, sel, count, 40u, 104u, 12u); }
 
-/* prim_cull2_emit_30 — guest 0x8018AB84: the two-vertex sibling of the
+/* prim_cull2_emit_30 — guest 0x8018ab84: the two-vertex sibling of the
  * prim_cull3_emit family (fixed geometry: in-stride 48 = 0x30, out-stride
  * 4, delta = 16 when sel==0 else 32 — the guest loads t4=16 then adds
  * $s6=16 on the sel!=0 path). Input setup differs: V0.xy/V0.z come from
  * plain `lw` of cur[0]/cur[4] written via mtc2, V1.xy/V1.z via lwc2 of
  * cur[8]/cur[12], and V2 is an exact copy of V0 (mtc2 of the same two
- * loaded words). Same RTPT -> cfc2 FLAG & 0x7FC40000 gate -> two-way SXY
+ * loaded words). Same RTPT -> cfc2 FLAG & 0x7fc40000 gate -> two-way SXY
  * screen cull (sx_ok/sy_ok over SXY0/SXY1 only) -> SXY0 store (delay
  * slot, unconditional once sx_ok>0) + SXY1 at base+4 + direct-slot OT
  * link. Signed count in a3; returns advanced cursor. Disasm
- * generated/SLES_017.22_full_41.c 0x8018AB84-0x8018AC54. */
+ * generated/SLES_017.22_full_41.c 0x8018ab84-0x8018ac54. */
 uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
                             int32_t count)
 {
@@ -7641,12 +7641,12 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030);                  /* RTPT */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     base = cur + delta;                          /* t3 = a0 + t4 */
-    if ((flag & 0x7FC40000u) == 0) {
+    if ((flag & 0x7fc40000u) == 0) {
 
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
-    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xFFFFu, 512u);
-    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xFFFFu, 512u);
+    sx_ok  = (uint32_t)psx_ws_cull_sltiu(sxy0 & 0xffffu, 512u);
+    sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy1 & 0xffffu, 512u);
     if (sx_ok != 0) {
 
     sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
@@ -7673,7 +7673,7 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
 /* part_skin_emit — skinned part renderer / OT primitive emitter.
  *
  * a0 = part record, a1 = skin/pose source, a2 = out vertex block,
- * a3 = scratch. Builds scratchpad work area at 0x1F800000+0x38C
+ * a3 = scratch. Builds scratchpad work area at 0x1f800000+0x38c
  * (u16 triples: transformed xy + packed attr), transforms the part's
  * rtps point set via rtps_point_xform2, derives per-axis deltas with
  * (prod + rounding)>>8 fixed-point math, angle-dispatches on the s16
@@ -7720,7 +7720,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   br2_st32(fr + 100, g[23]);             /* sw s7 saved-incoming */
   g[23] = g[6];                          /* s7 = a2 */
   br2_st32(fr + 80, g[18]);              /* sw s2 saved-incoming */
-  g[18] = 0x1F800000u;
+  g[18] = 0x1f800000u;
   g[5] = g[22] + 24;
   g[6] = g[22] + 52;
   br2_st32(fr + 108, g[31]);             /* ra */
@@ -7756,7 +7756,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 
   /* L_80186568 */
   g[2] = br2_ld16(g[20]);                /* lhu */
-  g[18] |= 0x38Cu;                       /* delay slot: s2 += 0x38C */
+  g[18] |= 0x38cu;                       /* delay slot: s2 += 0x38c */
   g[2] &= 0x4000u;
   if (g[2] == 0) {                           /* flag clear -> emit pass */
 
@@ -7770,7 +7770,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   g[2] = c->lo;
   g[4] = (int32_t)g[2] >> 8;             /* delay slot sra */
   if ((int32_t)g[2] < 0) {               /* bgez not taken -> round up */
-    g[2] += 0xFFu;
+    g[2] += 0xffu;
     g[4] = (int32_t)g[2] >> 8;
   }
   g[2] = br2_ld16(g[16] + 52);           /* lhu */
@@ -7785,13 +7785,13 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   psk_mult_lo(c, g[2], g[17]);
   g[3] = c->lo;
   g[2] = g[19] << 2;                     /* delay slot */
-  if ((int32_t)g[3] < 0) g[3] += 0xFFu;  /* bgez not taken */
+  if ((int32_t)g[3] < 0) g[3] += 0xffu;  /* bgez not taken */
   /* L_801865e0 */
   g[2] = g[2] + g[19];
   g[2] = g[2] << 3;
   g[2] = g[2] + g[19];
   g[4] = (int32_t)g[3] >> 8;             /* delay slot sra */
-  if ((int32_t)g[2] < 0) g[2] += 0xFFu;  /* L_801865F8: skip round-up */
+  if ((int32_t)g[2] < 0) g[2] += 0xffu;  /* L_801865F8: skip round-up */
   g[3] = (int32_t)g[2] >> 8;
   g[3] = g[4] + g[3];
   g[2] = br2_ld16(g[16] + 56);           /* lhu */
@@ -7809,7 +7809,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   g[2] = c->lo;
   g[4] = (int32_t)g[2] >> 8;             /* delay slot sra */
   if ((int32_t)g[2] < 0) {
-    g[2] += 0xFFu;
+    g[2] += 0xffu;
     g[4] = (int32_t)g[2] >> 8;
   }
   g[2] = br2_ld16(g[16] + 60);           /* lhu */
@@ -7828,19 +7828,19 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   if ((int32_t)g[17] > 0)                /* blez not taken */
     br2_st16(g[18] + 2, (uint16_t)g[2]);
 
-  /* jal 0x80186680 -> prim_attr_repack(a0=g30, a1=0x1F800394) */
+  /* jal 0x80186680 -> prim_attr_repack(a0=g30, a1=0x1f800394) */
   g[4] = g[30];
-  g[5] = 0x1F800000u;
+  g[5] = 0x1f800000u;
   g[5] |= 0x394u;                        /* delay slot */
   g[2] = prim_attr_repack(g[4], g[5]);
 
-  /* jal 0x8018669c -> gte_rtps_xform1(0x1F800394, 0x1F80038C, 0x1F80038C) */
-  g[4] = 0x1F800000u;
+  /* jal 0x8018669c -> gte_rtps_xform1(0x1f800394, 0x1f80038c, 0x1f80038c) */
+  g[4] = 0x1f800000u;
   g[4] |= 0x394u;
-  g[5] = 0x1F800000u;
-  g[5] |= 0x38Cu;
-  g[6] = 0x1F800000u;
-  g[6] |= 0x38Cu;                        /* delay slot */
+  g[5] = 0x1f800000u;
+  g[5] |= 0x38cu;
+  g[6] = 0x1f800000u;
+  g[6] |= 0x38cu;                        /* delay slot */
   g[2] = (uint32_t)guest_of(gte_rtps_xform1(
       (uint32_t *)guest_at(g[4]),
       (uint32_t *)guest_at(g[5]),
@@ -8104,7 +8104,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * jal/jr targets the interior addresses). swc2 sites keep the generated
  * gte_precision_store_word side-call; lwc2 keeps the generated direct
  * gte_data[] write for reg 6 and gte_write_data for regs 16-19 (the
- * helper masks to 0xFFFF — different semantics, both replicated).
+ * helper masks to 0xffff — different semantics, both replicated).
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188510. */
 
 uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -8188,7 +8188,7 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_write_data(cpu, 11, br2_ld32(cpu->gpr[8] + 4)); /* lwc2 gte[11] */
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       gte_execute(cpu, 0x138041C);                     /* RTPS */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       cpu->gpr[9]  = cpu->gpr[11] << 8;                 /* out << 8 */
@@ -8232,7 +8232,7 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * beq+bgtz branches -> structured if/do-while. lwc2 sites use the generated
  * psx_cyc_lwc2_read (charge + raw read); the gte[6] mtc2 keeps the
  * generated direct gte_data[] write (gte_write_data would mask to
- * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.
+ * 0xffff); swc2 keeps the generated gte_precision_store_word side-call.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018866C. */
 
 uint32_t prim_poly_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -8288,7 +8288,7 @@ uint32_t prim_poly_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       br2_st32(cpu->gpr[11] + 32, cpu->gpr[13]);        /* sw t5,32(t3) */
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       gte_execute(cpu, 0x138041C);                     /* RTPS */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       cpu->gpr[9]  = cpu->gpr[11] << 8;                 /* out << 8 */
@@ -8403,7 +8403,7 @@ uint32_t prim_poly_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_write_data(cpu, 11, br2_ld32(cpu->gpr[8] + 4)); /* lwc2 gte[11] */
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       gte_execute(cpu, 0x138041C);                     /* RTPS */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       cpu->gpr[9]  = cpu->gpr[11] << 8;                 /* out << 8 */
@@ -8505,7 +8505,7 @@ uint32_t prim_poly_emit_6c_tex(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);  /* lwc2 gte[6] */
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       gte_execute(cpu, 0x138041C);                     /* RTPS v3 */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       cpu->gpr[9]  = cpu->gpr[11] << 8;                 /* out << 8 */
@@ -8619,7 +8619,7 @@ uint32_t prim_poly_emit_78(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);  /* lwc2 gte[6] */
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       gte_execute(cpu, 0x138041C);                     /* RTPS v3 */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       cpu->gpr[9]  = cpu->gpr[11] << 8;                 /* out << 8 */
@@ -8648,10 +8648,10 @@ uint32_t prim_poly_emit_78(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  *
  * NOTE: generated br2eu_func_80188B5C has FOUR entry blocks setting
  * (t6 out-delta base, t7 record stride, t8 sub-stride):
- *   0x80188B5C: t6=20 t7=64  t8=4   <- this port (renames.map entry)
- *   0x80188B6C: t6=28 t7=80  t8=8   (stays generated — separate dispatch
- *   0x80188B7C: t6=32 t7=88  t8=8    entries; clean_table has no
- *   0x80188B8C: t6=40 t7=104 t8=12   multi-entry contract for them)
+ *   0x80188b5c: t6=20 t7=64  t8=4   <- this port (renames.map entry)
+ *   0x80188b6c: t6=28 t7=80  t8=8   (stays generated — separate dispatch
+ *   0x80188b7c: t6=32 t7=88  t8=8    entries; clean_table has no
+ *   0x80188b8c: t6=40 t7=104 t8=12   multi-entry contract for them)
  * out-delta t4 = 24 (a2==0) else 24+t6.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188B5C. */
 uint32_t prim_xform_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
@@ -8659,7 +8659,7 @@ uint32_t prim_xform_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x80188B5C: t6=20, t7=64, t8=4 */
+  /* entry 0x80188b5c: t6=20, t7=64, t8=4 */
   cpu->gpr[14] = 20;                                 /* t6 = 20 */
   cpu->gpr[15] = 64;                                 /* t7 = 64 */
   cpu->gpr[24] = 4;                                  /* t8 = 4 */
@@ -8687,7 +8687,7 @@ uint32_t prim_xform_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
     gte_execute(cpu, 0x1400006);                       /* NCLIP */
     cpu->gpr[8]  = cpu->gte_data[24];                   /* mfc2 t0, data24 */
     if ((int32_t)cpu->gpr[8] > 0) {                     /* blez t0 -> skip */
-      gte_execute(cpu, 0x158002D);                     /* gte cmd 0x2D */
+      gte_execute(cpu, 0x158002D);                     /* gte cmd 0x2d */
       br2_st32(cpu->gpr[9],  cpu->gte_data[12]);        /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[9], 12);
       br2_st32(cpu->gpr[10], cpu->gte_data[13]);        /* swc2 gte[13] */
@@ -8696,7 +8696,7 @@ uint32_t prim_xform_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11], 14);
       cpu->gpr[8]  = gte_read_data(cpu, 7);             /* mfc2 t0, data7 */
       cpu->gpr[9]  = cpu->gpr[13] << 8;                 /* out << 8 */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;             /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;             /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];         /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);             /* old = *slot */
       swl_guest(cpu->gpr[2] + 2, cpu->gpr[9]);          /* swl slot+2 */
@@ -8783,11 +8783,11 @@ uint32_t prim_poly_emit_64_vs(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3
 /* ======== 0x80188c34 ======== */
 
 /* prim_nclip_emit_50 — NCLIP-gated GTE emitter, input record stride 80
- * (0x50). Sibling of prim_xform_emit (0x80188B5C): a0 = record cursor
+ * (0x50). Sibling of prim_xform_emit (0x80188b5c): a0 = record cursor
  * (advances by t7=80 per element, returned in v0), a1 = OT base,
  * a2 = out-delta select (0 -> t4=32, else t4=32+t6), a3 = signed count
- * (<=0 -> return cursor unchanged). Entry 0x80188C34 sets t6=24, t7=80,
- * t8=4; the sibling entry blocks 0x80188C44/54/64 (t6=36/40/52,
+ * (<=0 -> return cursor unchanged). Entry 0x80188c34 sets t6=24, t7=80,
+ * t8=4; the sibling entry blocks 0x80188c44/54/64 (t6=36/40/52,
  * t7=104/112/136, t8=8/8/12) are NOT separately registered and stay on
  * the generated dispatcher, same contract as prim_xform_emit.
  *
@@ -8852,7 +8852,7 @@ uint32_t prim_nclip_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[9], 14);
       cpu->gpr[8]  = gte_read_data(cpu, 7);          /* mfc2 t0, data7 */
       cpu->gpr[9]  = cpu->gpr[11] << 8;              /* out << 8 */
-      cpu->gpr[2]  = cpu->gpr[8] & 0x1FFCu;          /* otz & 0x1ffc */
+      cpu->gpr[2]  = cpu->gpr[8] & 0x1ffcu;          /* otz & 0x1ffc */
       cpu->gpr[2]  = cpu->gpr[5] + cpu->gpr[2];      /* OT slot */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[2]);          /* old = *slot */
       swl_guest(cpu->gpr[2] + 2, cpu->gpr[9]);       /* swl slot+2 */
@@ -8882,7 +8882,7 @@ uint32_t prim_nclip_emit_4c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80188D2C: out-delta t4 = 36 (a2==0) else 56, computed once;
+  /* Guest 0x80188d2c: out-delta t4 = 36 (a2==0) else 56, computed once;
    * per element NCLIP gates the emit on gte data24 (MAC0) > 0;
    * a3-- mid-body, a0 += 0x4c in the bgtz delay slot (runs on the
    * final iteration too), loop while a3 > 0 signed. */
@@ -8909,7 +8909,7 @@ uint32_t prim_nclip_emit_4c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);   /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);   /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
       br2_st32(cpu->gpr[11] + 12, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -8946,7 +8946,7 @@ uint32_t prim_nclip_emit_5c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80188DCC: out-delta t4 = 44 (a2==0) else 68, computed once;
+  /* Guest 0x80188dcc: out-delta t4 = 44 (a2==0) else 68, computed once;
    * per element NCLIP gates on gte data24 > 0; a3-- mid-body, a0 += 92
    * in the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -8979,7 +8979,7 @@ uint32_t prim_nclip_emit_5c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11] + 20, 14);
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);   /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 12, cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 12, 12);
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9013,7 +9013,7 @@ uint32_t prim_nclip_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80188E88: out-delta t4 = 52 (a2==0) else 80, computed once;
+  /* Guest 0x80188e88: out-delta t4 = 52 (a2==0) else 80, computed once;
    * per element NCLIP gates on gte data24 > 0; a3-- mid-body, a0 += 108
    * in the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9043,7 +9043,7 @@ uint32_t prim_nclip_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40));/* lwc2 gte[3] */
       cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);   /* lwc2 gte[4] */
       gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48));/* lwc2 gte[5] */
-      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3F */
+      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3f */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9080,7 +9080,7 @@ uint32_t prim_nclip_emit_8c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80188F40: out-delta t4 = 68 (a2==0) else 104, computed once;
+  /* Guest 0x80188f40: out-delta t4 = 68 (a2==0) else 104, computed once;
    * per element NCLIP gates on gte data24 > 0; a3-- mid-body, a0 += 140
    * in the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9117,7 +9117,7 @@ uint32_t prim_nclip_emit_8c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11] + 32, 14);
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);   /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3F */
+      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3f */
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 16, 12);
       br2_st32(cpu->gpr[11] + 24, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9126,7 +9126,7 @@ uint32_t prim_nclip_emit_8c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11] + 4, 20);
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 60);   /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 64));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9161,7 +9161,7 @@ uint32_t prim_nclip_emit_60(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x8018902C: out-delta t4 = 32 (a2==0) else 64; per element NCLIP
+  /* Guest 0x8018902c: out-delta t4 = 32 (a2==0) else 64; per element NCLIP
    * gates on gte data24 > 0; a3-- mid-body, a0 += 96 in the bgtz delay
    * slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9194,7 +9194,7 @@ uint32_t prim_nclip_emit_60(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
     gte_write_data(cpu, 1, cpu->gpr[10]);             /* mtc2 gte[1] = t2 */
     cpu->gpr[8]  = cpu->gte_data[24];                 /* mfc2 t0, data24 */
     if ((int32_t)cpu->gpr[8] > 0) {
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
@@ -9218,7 +9218,7 @@ uint32_t prim_nclip_emit_60(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* ======== 0x801891a4 ======== */
 
 /* prim_nclip_emit_80 — NCLIP-gated GTE emitter, input record stride 128
- * (0x80). Sibling of prim_nclip_emit_60 (0x8018902C): a0 = record cursor
+ * (0x80). Sibling of prim_nclip_emit_60 (0x8018902c): a0 = record cursor
  * (advances by 128 per element, returned in v0), a1 = OT base, a2 =
  * out-size select (0 -> t4=48, else t4=48+40=88), a3 = signed count
  * (<=0 -> return cursor unchanged).
@@ -9238,7 +9238,7 @@ uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x801891A4: out-delta t4 = 48 (a2==0) else 88; per element NCLIP
+  /* Guest 0x801891a4: out-delta t4 = 48 (a2==0) else 88; per element NCLIP
    * gates on gte data24 > 0; a3-- mid-body, a0 += 128 in the bgtz delay
    * slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9273,7 +9273,7 @@ uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_write_data(cpu, 3, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36)); /* lwc2 gte[3] */
       cpu->gte_data[4] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);      /* lwc2 gte[4] */
       gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44)); /* lwc2 gte[5] */
-      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3F */
+      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3f */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9315,7 +9315,7 @@ uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x8018926C: out-delta t4 = 64 (a2==0) else 116; per element NCLIP
+  /* Guest 0x8018926c: out-delta t4 = 64 (a2==0) else 116; per element NCLIP
    * gates on gte data24 > 0; a3-- mid-body, a0 += 168 in the bgtz delay
    * slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9357,7 +9357,7 @@ uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11] + 44, 14);
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);      /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36)); /* lwc2 gte[1] */
-      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3F */
+      gte_execute(cpu, 0x118043F);                   /* gte cmd 0x3f */
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 20, 12);
       br2_st32(cpu->gpr[11] + 32, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9366,7 +9366,7 @@ uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       gte_precision_store_word(cpu->gpr[11] + 4, 20);
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56);      /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 60)); /* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 (OT) */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9429,7 +9429,7 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);    /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);    /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9439,7 +9439,7 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 4, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);    /* lwc2 gte[6] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 (OT) */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9448,7 +9448,7 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 12, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);    /* lwc2 gte[6] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 20, 22);
     }
@@ -9463,10 +9463,10 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* prim_nclip_emit_74 — NCLIP-gated GTE emitter, input record stride 116
  * (0x74). Same gate as prim_nclip_emit_64 (t4 = 60, else 60+28=88; no
  * attribute int8_t; t3 after the data24 mfc2). Three-vertex body with wider
- * per-vertex data: v1 = gte[6] @a0+24 + gte[0]/[1] @a0+36/+40 + cmd 0x1B,
+ * per-vertex data: v1 = gte[6] @a0+24 + gte[0]/[1] @a0+36/+40 + cmd 0x1b,
  * swc2 gte[12]/[13]/[14]->out+8/+16/+24, gte[22]->out+4; v2 = gte[6] @a0+28
- * + gte[0]/[1] @a0+44/+48 + cmd 0x1B, FIXED OT link at a1, gte[22]->out+12;
- * v3 = gte[6] @a0+32 + gte[0]/[1] @a0+52/+56 + cmd 0x1B, gte[22]->out+20.
+ * + gte[0]/[1] @a0+44/+48 + cmd 0x1b, FIXED OT link at a1, gte[22]->out+12;
+ * v3 = gte[6] @a0+32 + gte[0]/[1] @a0+52/+56 + cmd 0x1b, gte[22]->out+20.
  * a0 += 116 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189428. */
 
@@ -9501,7 +9501,7 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 24);    /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);    /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 8,  cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 8, 12);
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9513,7 +9513,7 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 28);    /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);    /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 (OT) */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9524,7 +9524,7 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);    /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52);    /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 20, 22);
     }
@@ -9537,16 +9537,16 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* ======== 0x80189500 ======== */
 
 /* prim_nclip_emit_80b — NCLIP-gated GTE emitter, input record stride 128
- * (0x80), second variant (sibling of prim_nclip_emit_80 at 0x801891A4).
+ * (0x80), second variant (sibling of prim_nclip_emit_80 at 0x801891a4).
  * Same gate (t4 = 56, else 56+36=92; no attribute int8_t; t3 after the
  * data24 mfc2). Quirky body: mfc2 gpr[8] = gte_data[12] FIRST (before any
  * loads — reads the previous AVSZ-class result), then lwc2 gte[0]/[1]
  * @a0+24/+28, gte cmd 0x0180001, and a PLAIN sw of gpr[8] -> out+8 (not
  * swc2 — no precision side-call); swc2 gte[14]->out+32. Then three
- * vertex stages: v2 = gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1B,
+ * vertex stages: v2 = gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1b,
  * swc2 gte[12]/[13]->out+16/+24, gte[22]->out+4; v3 = gte[6] @a0+36 + cmd
- * 0x1B, FIXED OT link at a1, gte[22]->out+12; v4 = gte[6] @a0+40 + cmd 0x1B,
- * gte[22]->out+20; v5 = gte[6] @a0+44 + cmd 0x1B, gte[22]->out+28.
+ * 0x1b, FIXED OT link at a1, gte[22]->out+12; v4 = gte[6] @a0+40 + cmd 0x1b,
+ * gte[22]->out+20; v5 = gte[6] @a0+44 + cmd 0x1b, gte[22]->out+28.
  * a0 += 128 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189500. */
 
@@ -9588,7 +9588,7 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);     /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48);     /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 16, 12);
       br2_st32(cpu->gpr[11] + 24, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9596,7 +9596,7 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       br2_st32(cpu->gpr[11] + 4,  cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 4, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);     /* lwc2 gte[6] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 (OT) */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9605,11 +9605,11 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       br2_st32(cpu->gpr[11] + 12, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 12, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);     /* lwc2 gte[6] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 20, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);     /* lwc2 gte[6] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 28, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 28, 22);
     }
@@ -9625,11 +9625,11 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * (0x98). Same gate (t4 = 80, else 80+36=116; no attribute int8_t; t3 after
  * the data24 mfc2). Body leads with swc2 gte[12]->out+8 BEFORE any loads,
  * then a four-stage vertex transform: v1 = lwc2 gte[0]/[1] @a0+24/+28 +
- * gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1B, swc2 gte[12]/[13]/[14]
+ * gte[6] @a0+32 + gte[0]/[1] @a0+48/+52 + cmd 0x1b, swc2 gte[12]/[13]/[14]
  * ->out+16/+24/+32, gte[22]->out+4; v2 = gte[6] @a0+36 + gte[0]/[1]
- * @a0+56/+60 + cmd 0x1B, FIXED OT link at a1, gte[22]->out+12; v3 =
- * gte[6] @a0+40 + gte[0]/[1] @a0+64/+68 + cmd 0x1B, gte[22]->out+20; v4 =
- * gte[6] @a0+44 + gte[0]/[1] @a0+72/+76 + cmd 0x1B, gte[22]->out+28.
+ * @a0+56/+60 + cmd 0x1b, FIXED OT link at a1, gte[22]->out+12; v3 =
+ * gte[6] @a0+40 + gte[0]/[1] @a0+64/+68 + cmd 0x1b, gte[22]->out+20; v4 =
+ * gte[6] @a0+44 + gte[0]/[1] @a0+72/+76 + cmd 0x1b, gte[22]->out+28.
  * a0 += 152 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_801895F8. */
 
@@ -9638,7 +9638,7 @@ uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x801895F8: out-delta t4 = 80 (a2==0) else 116; per element NCLIP
+  /* Guest 0x801895f8: out-delta t4 = 80 (a2==0) else 116; per element NCLIP
    * gates on gte data24 > 0; a3-- mid-body, a0 += 152 in the bgtz delay
    * slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9669,7 +9669,7 @@ uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 32);     /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 48);     /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 52));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 16, cpu->gte_data[12]); /* swc2 gte[12] */
       gte_precision_store_word(cpu->gpr[11] + 16, 12);
       br2_st32(cpu->gpr[11] + 24, cpu->gte_data[13]); /* swc2 gte[13] */
@@ -9681,7 +9681,7 @@ uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 36);     /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 56);     /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 60));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);           /* old = *a1 (OT) */
       cpu->gpr[9]  = cpu->gpr[11] << 8;               /* out << 8 */
       swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);        /* swl a1+2 */
@@ -9692,13 +9692,13 @@ uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 40);     /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 64);     /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 68));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 20, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 20, 22);
       cpu->gte_data[6] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 44);     /* lwc2 gte[6] */
       cpu->gte_data[0] = psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 72);     /* lwc2 gte[0] */
       gte_write_data(cpu, 1, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 76));/* lwc2 gte[1] */
-      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1B */
+      gte_execute(cpu, 0x108041B);                   /* gte cmd 0x1b */
       br2_st32(cpu->gpr[11] + 28, cpu->gte_data[22]); /* swc2 gte[22] */
       gte_precision_store_word(cpu->gpr[11] + 28, 22);
     }
@@ -9711,7 +9711,7 @@ uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* ======== 0x80189704 ======== */
 
 /* prim_poly_emit_3c — polygon/face GTE emitter, input stride 60
- * (0x3c). Sibling of prim_poly_emit_64 (0x8018866C): a0 = record cursor
+ * (0x3c). Sibling of prim_poly_emit_64 (0x8018866c): a0 = record cursor
  * (advances by 60 per element, returned in v0), a1 = OT base,
  * a2 = out-delta select (0 -> t4=20, else t4=20+20=40), a3 = signed
  * count (<=0 -> return cursor unchanged).
@@ -9801,7 +9801,7 @@ uint32_t prim_poly_emit_54(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x801897B0: out-delta t4 = 28 (a2==0) else 56; per element NCLIP
+  /* Guest 0x801897b0: out-delta t4 = 28 (a2==0) else 56; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 84 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9889,7 +9889,7 @@ uint32_t prim_poly_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x801898A0: out-delta t4 = 16 (a2==0) else 48; per element NCLIP
+  /* Guest 0x801898a0: out-delta t4 = 16 (a2==0) else 48; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 80 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -9966,7 +9966,7 @@ uint32_t prim_poly_emit_68(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x8018995C: out-delta t4 = 24 (a2==0) else 64; per element NCLIP
+  /* Guest 0x8018995c: out-delta t4 = 24 (a2==0) else 64; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 104 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10041,7 +10041,7 @@ uint32_t prim_poly_emit_68(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* ======== 0x80189a60 ======== */
 
 /* prim_poly_emit_54b — polygon/face GTE emitter, input stride 84
- * (0x54), second variant (sibling of prim_poly_emit_54 at 0x801897B0).
+ * (0x54), second variant (sibling of prim_poly_emit_54 at 0x801897b0).
  * a0 = record cursor (advances by 84 per element, returned in v0),
  * a1 = OT base, a2 = out-delta select (0 -> t4=28, else t4=28+28=56),
  * a3 = signed count (<=0 -> return cursor unchanged).
@@ -10060,7 +10060,7 @@ uint32_t prim_poly_emit_54b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80189A60: out-delta t4 = 28 (a2==0) else 56; per element NCLIP
+  /* Guest 0x80189a60: out-delta t4 = 28 (a2==0) else 56; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 84 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10146,7 +10146,7 @@ uint32_t prim_poly_emit_5c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80189B50: out-delta t4 = 36 (a2==0) else 64; per element NCLIP
+  /* Guest 0x80189b50: out-delta t4 = 36 (a2==0) else 64; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 92 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10235,7 +10235,7 @@ uint32_t prim_point_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80189C4C: out-delta t4 = 24 (a2==0) else 48; per element NCLIP
+  /* Guest 0x80189c4c: out-delta t4 = 24 (a2==0) else 48; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 72 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10315,7 +10315,7 @@ uint32_t prim_poly_emit_6cb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80189D08: out-delta t4 = 36 (a2==0) else 72; per element NCLIP
+  /* Guest 0x80189d08: out-delta t4 = 36 (a2==0) else 72; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 108 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10423,7 +10423,7 @@ uint32_t prim_poly_emit_88b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x80189EFC: out-delta t4 = 32 (a2==0) else 84; per element NCLIP
+  /* Guest 0x80189efc: out-delta t4 = 32 (a2==0) else 84; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 136 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10536,7 +10536,7 @@ uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x8018A030: out-delta t4 = 36 (a2==0) else 72; per element NCLIP
+  /* Guest 0x8018a030: out-delta t4 = 36 (a2==0) else 72; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 108 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10622,7 +10622,7 @@ uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 
 /* prim_poly_emit_78b — polygon/face GTE emitter, input stride 0x78
  * (120), untextured fixed-link variant (sibling of the textured
- * prim_poly_emit_78 at 0x801889F4).
+ * prim_poly_emit_78 at 0x801889f4).
  * a0 = record cursor (advances by 120 per element, returned in v0),
  * a1 = OT base, a2 = out-delta select (0 -> t4=48, else t4=48+36=84),
  * a3 = signed count (<=0 -> return cursor unchanged).
@@ -10642,7 +10642,7 @@ uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* Guest 0x8018A14C: out-delta t4 = 48 (a2==0) else 84; per element NCLIP
+  /* Guest 0x8018a14c: out-delta t4 = 48 (a2==0) else 84; per element NCLIP
    * gates on gte data24 > 0 (kept in gpr[13]); a3-- mid-body, a0 += 120 in
    * the bgtz delay slot, loop while a3 > 0 signed. */
   if ((int32_t)cpu->gpr[7] <= 0) {
@@ -10733,8 +10733,8 @@ uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 
 /* prim_xform_emit_64 — RTPT-based GTE transform/emit helper, input
  * record stride 64 (0x40). MULTI-ENTRY guest fn: only entry
- * 0x8018A27C is ported (sets t6=20 out-delta extra, t7=64 record
- * stride, t8=4 output spacing); sibling entries 0x8018A28C/29C/2AC
+ * 0x8018a27c is ported (sets t6=20 out-delta extra, t7=64 record
+ * stride, t8=4 output spacing); sibling entries 0x8018a28c/29C/2AC
  * (stride 80/88/104) remain generated-authoritative.
  * a0 = record cursor (advances by t7=64 per element, returned in v0),
  * a1 = OT base, a2 = out-delta select (0 -> t4=24, else t4=24+t6=44),
@@ -10757,7 +10757,7 @@ uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A27C: t6=20 (out-delta extra), t7=64 (stride),
+  /* entry 0x8018a27c: t6=20 (out-delta extra), t7=64 (stride),
    * t8=4 (out-word spacing) — set once before the shared body. */
   cpu->gpr[14] = 20;
   cpu->gpr[15] = 64;
@@ -10807,9 +10807,9 @@ uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 /* ======== 0x8018a340 ======== */
 
 /* prim_persp_ot_emit_50 — RTPT/NCLIP perspective OT emitter, input record
- * stride 80 (0x50). MULTI-ENTRY guest fn: only entry 0x8018A340 is ported
+ * stride 80 (0x50). MULTI-ENTRY guest fn: only entry 0x8018a340 is ported
  * (t6=24 out-delta extra, t7=80 stride, t8=4 out-word spacing); sibling
- * entries 0x8018A350/A360/A370 (stride 104/112/136, t6 36/40/52) remain
+ * entries 0x8018a350/A360/A370 (stride 104/112/136, t6 36/40/52) remain
  * generated-authoritative via br2eu_func_8018A340's CPS pc-switch.
  * a0 = record cursor (advances by t7, returned in v0), a1 = OT base,
  * a2 = out-delta select (0 -> t4=32, else t4=32+t6=56), a3 = signed count.
@@ -10829,7 +10829,7 @@ uint32_t prim_persp_ot_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A340: t6=24, t7=80, t8=4 */
+  /* entry 0x8018a340: t6=24, t7=80, t8=4 */
   cpu->gpr[14] = 24;
   cpu->gpr[15] = 80;
   cpu->gpr[24] = 4;
@@ -10852,7 +10852,7 @@ uint32_t prim_persp_ot_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
     cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];      /* t3 = a0+t4 (out base) */
     cpu->gpr[13] = cpu->gpr[11] + 8;                /* t5 = base+8 */
     cpu->gpr[9]  = br2_ld32(cpu->gpr[4] + 24);      /* t1 = lw 0x18(a0) */
-    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1C(a0) */
+    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1c(a0) */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);          /* cfc2 $2,$31 */
     gte_execute(cpu, 0x1400006);                   /* NCLIP */
     cpu->gpr[8]  = cpu->gte_data[24];               /* mfc2 t0,d24 (MAC0) */
@@ -10886,8 +10886,8 @@ uint32_t prim_persp_ot_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
 /* ======== 0x8018a424 ======== */
 
 /* prim_vert3_ot_emit_40 — three-vertex OT emitter, input record stride
- * 64 (0x40). MULTI-ENTRY guest fn: only entry 0x8018A424 is ported
- * (t6=24, t7=64, t8=4); sibling entries 0x8018A434/A444/A454 (stride
+ * 64 (0x40). MULTI-ENTRY guest fn: only entry 0x8018a424 is ported
+ * (t6=24, t7=64, t8=4); sibling entries 0x8018a434/A444/A454 (stride
  * 88/96/120, t6 36/40/52) remain generated-authoritative.
  * a0 = record cursor (advances by t7, returned in v0), a1 = OT base,
  * a2 = out-delta select (0 -> t4=16, else t4=16+t6=40), a3 = count.
@@ -10905,7 +10905,7 @@ uint32_t prim_vert3_ot_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A424: t6=24, t7=64, t8=4 */
+  /* entry 0x8018a424: t6=24, t7=64, t8=4 */
   cpu->gpr[14] = 24;
   cpu->gpr[15] = 64;
   cpu->gpr[24] = 4;
@@ -10957,17 +10957,17 @@ uint32_t prim_vert3_ot_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a
 
 /* prim_persp_cull_emit_48 — RTPT/NCLIP emitter with screen-edge cull and
  * OT link, input record stride 72 (0x48). MULTI-ENTRY guest fn: only
- * entry 0x8018A59C is ported (t6=24, t7=72, t8=4); sibling entries
- * 0x8018A5AC/A5BC/A5CC/A5DC remain generated-authoritative.
+ * entry 0x8018a59c is ported (t6=24, t7=72, t8=4); sibling entries
+ * 0x8018a5ac/A5BC/A5CC/A5DC remain generated-authoritative.
  * a0 = record cursor (advances by t7, returned in v0), a1 = OT base,
  * a2 = out-delta select (0 -> t4=24, else t4=24+t6=48), a3 = count.
  *
  * Per record: lwc2 gte[0..5] <- a0[0..5]; a3--; RTPT (0x0280030);
  * cfc2 $2,$31; NCLIP; t3=a0+t4 (delay slot,
- * unconditional); FLAG&0x7FC40000 != 0 skips. Then out=base+8;
- * mfc2 MAC0/SXY0 — MAC0<=0 skips (SXY0&0xFFFF pre-computed in delay
+ * unconditional); FLAG&0x7fc40000 != 0 skips. Then out=base+8;
+ * mfc2 MAC0/SXY0 — MAC0<=0 skips (SXY0&0xffff pre-computed in delay
  * slot); SXY1/SXY2 = gte[13]/[14]; four-way screen cull: sx via
- * psx_ws_cull_sltiu(x&0xFFFF,512) on all four SXY words (the 4th uses a
+ * psx_ws_cull_sltiu(x&0xffff,512) on all four SXY words (the 4th uses a
  * POST-check reload pattern — see below), sy via (x>>16)<480; both
  * accumulators must be nonzero. SXY0 stored at out UNCONDITIONALLY in
  * the second beq delay slot; then SXY1/SXY2 at out+t8/+2*t8; base
@@ -10978,7 +10978,7 @@ uint32_t prim_persp_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A59C: t6=24, t7=72, t8=4 */
+  /* entry 0x8018a59c: t6=24, t7=72, t8=4 */
   cpu->gpr[14] = 24;
   cpu->gpr[15] = 72;
   cpu->gpr[24] = 4;
@@ -10998,7 +10998,7 @@ uint32_t prim_persp_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
     gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                /* a3-- */
     gte_execute(cpu, 0x0280030);                   /* RTPT */
-    cpu->gpr[25] = 0x7FC4u << 16;                    /* 0x7FC40000 */
+    cpu->gpr[25] = 0x7fc4u << 16;                    /* 0x7fc40000 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);          /* cfc2 $2,$31 (FLAG) */
     gte_execute(cpu, 0x1400006);                   /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];      /* FLAG & mask */
@@ -11007,16 +11007,16 @@ uint32_t prim_persp_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
       cpu->gpr[11] = cpu->gpr[11] + 8;              /* out = base+8 */
       cpu->gpr[9]  = cpu->gte_data[24];             /* mfc2 t1,d24 (MAC0) */
       cpu->gpr[8]  = cpu->gte_data[12];             /* mfc2 t0,d12 (SXY0) */
-      cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;         /* sx0 (delay slot) */
+      cpu->gpr[25] = cpu->gpr[8] & 0xffffu;         /* sx0 (delay slot) */
       if ((int32_t)cpu->gpr[9] > 0) {               /* blez MAC0 -> skip */
         cpu->gpr[9]  = cpu->gte_data[13];           /* mfc2 SXY1 */
         cpu->gpr[10] = cpu->gte_data[14];           /* mfc2 SXY2 */
-        /* sx cull: 3x psx_ws_cull_sltiu(x&0xFFFF,512) accumulated in t9 */
+        /* sx cull: 3x psx_ws_cull_sltiu(x&0xffff,512) accumulated in t9 */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[25] = (int32_t)cpu->gpr[8] >> 16;   /* sy0 (beq delay slot) */
@@ -11054,13 +11054,13 @@ uint32_t prim_persp_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
 
 /* prim_persp_cull_emit_58 — perspective screen-cull OT emitter with a
  * secondary RTPS'd vertex, input record stride 88 (0x58). MULTI-ENTRY
- * guest fn: only entry 0x8018A6D4 is ported (t6=28, t7=88, t8=4);
- * sibling entries 0x8018A6E4/A6F4/A704/A714 remain generated.
+ * guest fn: only entry 0x8018a6d4 is ported (t6=28, t7=88, t8=4);
+ * sibling entries 0x8018a6e4/A6F4/A704/A714 remain generated.
  * a0 = record cursor, a1 = OT base, a2 = out-delta select
  * (0 -> t4=32, else t4=32+t6=60), a3 = count.
  *
  * Per record: lwc2 gte[0..5]; a3--; RTPT; t1=ld32(a0+24),
- * t2=ld32(a0+28); cfc2 FLAG; NCLIP; FLAG&0x7FC40000 != 0 skips
+ * t2=ld32(a0+28); cfc2 FLAG; NCLIP; FLAG&0x7fc40000 != 0 skips
  * (t3=a0+t4 in delay slot). out=base+8; mtc2 gte[0]=t1 / gte[1]=t2
  * (unconditional, BEFORE the MAC0 test); mfc2 MAC0/SXY0 — MAC0<=0
  * skips but SXY0 is STILL stored at out in the blez delay slot.
@@ -11076,7 +11076,7 @@ uint32_t prim_persp_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A6D4: t6=28, t7=88, t8=4 */
+  /* entry 0x8018a6d4: t6=28, t7=88, t8=4 */
   cpu->gpr[14] = 28;
   cpu->gpr[15] = 88;
   cpu->gpr[24] = 4;
@@ -11097,8 +11097,8 @@ uint32_t prim_persp_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                /* a3-- */
     gte_execute(cpu, 0x0280030);                   /* RTPT */
     cpu->gpr[9]  = br2_ld32(cpu->gpr[4] + 24);      /* t1 = lw 0x18(a0) */
-    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1C(a0) */
-    cpu->gpr[25] = 0x7FC4u << 16;                    /* 0x7FC40000 */
+    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1c(a0) */
+    cpu->gpr[25] = 0x7fc4u << 16;                    /* 0x7fc40000 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);          /* cfc2 $2,$31 (FLAG) */
     gte_execute(cpu, 0x1400006);                   /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];      /* FLAG & mask */
@@ -11120,17 +11120,17 @@ uint32_t prim_persp_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
         gte_execute(cpu, 0x0180001);               /* RTPS: V0 -> SXY0 */
         /* sx cull on SXY0 (post-RTPS) into t9, sy cull into t0 — guest order:
          * sx0 test, sy0 test, sx1+sy1, sx2+sy2 interleaved per component. */
-        cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;
+        cpu->gpr[25] = cpu->gpr[8] & 0xffffu;
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
         cpu->gpr[8]  = (int32_t)cpu->gpr[8] >> 16;
         cpu->gpr[8]  = (cpu->gpr[8] < (uint32_t)480) ? 1u : 0u;
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;
         cpu->gpr[9]  = (cpu->gpr[9] < (uint32_t)480) ? 1u : 0u;
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;
@@ -11139,7 +11139,7 @@ uint32_t prim_persp_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
         cpu->gpr[10] = cpu->gte_data[14];           /* mfc2 SXY2 (post-RTPS reload) */
         cpu->gpr[11] = cpu->gpr[11] + cpu->gpr[24]; /* out += t8 */
         br2_st32(cpu->gpr[11], cpu->gpr[10]);       /* sw SXY2' -> out+3*t8 */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16; /* sy2' (delay slot) */
@@ -11167,21 +11167,21 @@ uint32_t prim_persp_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
 
 /* prim_depth_shade_emit_40 — screen-cull + depth-shaded attribute OT
  * emitter, input record stride 64 (0x40). MULTI-ENTRY guest fn: only
- * entry 0x8018A844 is ported (t6=20, t7=64, t8=4); sibling entries
- * 0x8018A854/A864/A874 remain generated-authoritative.
+ * entry 0x8018a844 is ported (t6=20, t7=64, t8=4); sibling entries
+ * 0x8018a854/A864/A874 remain generated-authoritative.
  * a0 = record cursor, a1 = OT base, a2 = out-delta select
  * (0 -> t4=24, else t4=24+t6=44), a3 = count.
  *
  * Wraps the loop in ctc2 ctrl29 writes: 341 before iterating (in the
  * blez delay slot path — skipped on count<=0 early out), 1365 on normal
  * exit. Per record: lwc2 gte[0..5]; a3--; RTPT; cfc2 FLAG; NCLIP;
- * FLAG&0x7FC40000 != 0 skips (t3=a0+t4 in delay slot). out=base+8;
+ * FLAG&0x7fc40000 != 0 skips (t3=a0+t4 in delay slot). out=base+8;
  * mfc2 MAC0/SXY0 — MAC0<=0 skips (sx0 pre-computed in delay slot);
  * SXY1/SXY2 = gte[13]/[14]; four-way screen cull (sx via
  * psx_ws_cull_sltiu, sy via >>16 <480); SXY0 stored at out in the sy
  * beq delay slot (unconditional once past MAC0), SXY1/SXY2 at
  * out+t8/+2*t8; base recomputed; AVSZ3 (0x158002D); OTZ = gte_read_data(7);
- * depth-shade attr word at base+12 from OTZ (mask 0x03C00000):
+ * depth-shade attr word at base+12 from OTZ (mask 0x03c00000):
  *   z<256 -> mem & ~mask; 256<=z<1280 -> (mem&~mask)|(((z-256)<<16)&mask);
  *   z>=1280 -> mem | mask.  Then OT swl pair swl(a1+2, base<<8) /
  * swl(base+2, old<<8).
@@ -11191,7 +11191,7 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A844: t6=20, t7=64, t8=4 */
+  /* entry 0x8018a844: t6=20, t7=64, t8=4 */
   cpu->gpr[14] = 20;
   cpu->gpr[15] = 64;
   cpu->gpr[24] = 4;
@@ -11214,7 +11214,7 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
     gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20)); /* lwc2 gte[5] */
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                /* a3-- */
     gte_execute(cpu, 0x0280030);                   /* RTPT */
-    cpu->gpr[25] = 0x7FC4u << 16;                    /* 0x7FC40000 */
+    cpu->gpr[25] = 0x7fc4u << 16;                    /* 0x7fc40000 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);          /* cfc2 $2,$31 (FLAG) */
     gte_execute(cpu, 0x1400006);                   /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];      /* FLAG & mask */
@@ -11223,16 +11223,16 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
       cpu->gpr[11] = cpu->gpr[11] + 8;              /* out = base+8 */
       cpu->gpr[9]  = cpu->gte_data[24];             /* mfc2 t1,d24 (MAC0) */
       cpu->gpr[8]  = cpu->gte_data[12];             /* mfc2 t0,d12 (SXY0) */
-      cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;         /* sx0 (delay slot) */
+      cpu->gpr[25] = cpu->gpr[8] & 0xffffu;         /* sx0 (delay slot) */
       if ((int32_t)cpu->gpr[9] > 0) {               /* blez MAC0 -> skip */
         cpu->gpr[9]  = cpu->gte_data[13];           /* mfc2 SXY1 */
         cpu->gpr[10] = cpu->gte_data[14];           /* mfc2 SXY2 */
         /* sx cull: 3x sltiu512 into t9 via t5 */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[25] = (int32_t)cpu->gpr[8] >> 16;   /* sy0 (beq delay slot) */
@@ -11252,13 +11252,13 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
             br2_st32(cpu->gpr[11], cpu->gpr[10]);         /* sw SXY2 */
             cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];    /* t3 = a0+t4 (base) */
             gte_execute(cpu, 0x158002D);                 /* AVSZ3 -> OTZ */
-            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* t2 = lw 0xC(t3) attr mem */
+            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* t2 = lw 0xc(t3) attr mem */
             cpu->gpr[8]  = gte_read_data(cpu, 7);         /* mfc2 t0,d7 (OTZ) */
-            cpu->gpr[9]  = 0x03C0u << 16;                 /* 0x03C00000 shade mask */
+            cpu->gpr[9]  = 0x03c0u << 16;                 /* 0x03c00000 shade mask */
             cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)256) ? 1u : 0u;
-            cpu->gpr[8]  = cpu->gpr[8] + 0xFFFFFF00u;     /* z -= 256 (delay slot) */
+            cpu->gpr[8]  = cpu->gpr[8] + 0xffffff00u;     /* z -= 256 (delay slot) */
             if (cpu->gpr[25] != 0) {                  /* z < 256 */
-              cpu->gpr[9]  = ~cpu->gpr[9];            /* ~0x03C00000 */
+              cpu->gpr[9]  = ~cpu->gpr[9];            /* ~0x03c00000 */
               cpu->gpr[9]  = cpu->gpr[9] & cpu->gpr[10];  /* attr = mem & ~mask */
             } else {                                  /* z >= 256 */
               cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)1024) ? 1u : 0u;  /* (z-256)<1024 */
@@ -11294,10 +11294,10 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
 
 /* prim_depth_shade_emit_50 — perspective depth-shaded attribute OT
  * emitter, input record stride 80 (0x50). Sibling of
- * prim_depth_shade_emit (0x8018A9E8, stride 112) sharing the SAME
- * generated body br2eu_func_8018A9C8; only entry 0x8018A9C8 is ported
+ * prim_depth_shade_emit (0x8018a9e8, stride 112) sharing the SAME
+ * generated body br2eu_func_8018A9C8; only entry 0x8018a9c8 is ported
  * here (t6=24, t7=80, t8=4 -> delta 32|56). Sibling entries
- * 0x8018A9D8/A9E8/A9F8 remain generated-authoritative — note 0x8018A9E8
+ * 0x8018a9d8/A9E8/A9F8 remain generated-authoritative — note 0x8018a9e8
  * is separately registered to prim_depth_shade_emit.
  * a0 = record cursor, a1 = OT base, a2 = out-delta select
  * (0 -> t4=32, else t4=32+t6=56), a3 = count.
@@ -11306,11 +11306,11 @@ uint32_t prim_depth_shade_emit_40(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
  * on count<=0 early out), 1024 on normal exit. Per record: lwc2
  * gte[0..5]; a3--; RTPT; t1=ld32(a0+24), t2=ld32(a0+28); cfc2 FLAG;
  * NCLIP; mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT
- * (unconditional); FLAG&0x7FC40000 != 0 skips. gte[1]=t2 then
+ * (unconditional); FLAG&0x7fc40000 != 0 skips. gte[1]=t2 then
  * out=base+8; MAC0<=0 skips but SXY0 is STILL stored at out in the blez
  * delay slot. SXY1/SXY2 stored at out+t8/+2*t8; RTPS; four-way screen
  * cull on post-RTPS SXY0 + gte[14]-reload as 4th word (stored at
- * out+3*t8); AVSZ4; OTZ depth-shade attr at base+12 (mask 0x03C00000,
+ * out+3*t8); AVSZ4; OTZ depth-shade attr at base+12 (mask 0x03c00000,
  * z thresholds 256/1280 — identical math to prim_depth_shade_emit);
  * OT swl pair.
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018A9C8. */
@@ -11319,7 +11319,7 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018A9C8: t6=24, t7=80, t8=4 */
+  /* entry 0x8018a9c8: t6=24, t7=80, t8=4 */
   cpu->gpr[14] = 24;
   cpu->gpr[15] = 80;
   cpu->gpr[24] = 4;
@@ -11343,8 +11343,8 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                /* a3-- */
     gte_execute(cpu, 0x0280030);                   /* RTPT */
     cpu->gpr[9]  = br2_ld32(cpu->gpr[4] + 24);      /* t1 = lw 0x18(a0) */
-    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1C(a0) */
-    cpu->gpr[25] = 0x7FC4u << 16;                    /* 0x7FC40000 */
+    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);      /* t2 = lw 0x1c(a0) */
+    cpu->gpr[25] = 0x7fc4u << 16;                    /* 0x7fc40000 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);          /* cfc2 $2,$31 (FLAG) */
     gte_execute(cpu, 0x1400006);                   /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];      /* FLAG & mask */
@@ -11365,17 +11365,17 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         br2_st32(cpu->gpr[11], cpu->gpr[10]);       /* sw SXY2 */
         gte_execute(cpu, 0x0180001);               /* RTPS: V0 -> SXY0 */
         /* sx/sy cull — same interleaved order as prim_persp_cull_emit_58 */
-        cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;
+        cpu->gpr[25] = cpu->gpr[8] & 0xffffu;
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
         cpu->gpr[8]  = (int32_t)cpu->gpr[8] >> 16;
         cpu->gpr[8]  = (cpu->gpr[8] < (uint32_t)480) ? 1u : 0u;
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;
         cpu->gpr[9]  = (cpu->gpr[9] < (uint32_t)480) ? 1u : 0u;
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;
@@ -11384,7 +11384,7 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         cpu->gpr[10] = cpu->gte_data[14];           /* mfc2 SXY2 (post-RTPS reload) */
         cpu->gpr[11] = cpu->gpr[11] + cpu->gpr[24]; /* out += t8 */
         br2_st32(cpu->gpr[11], cpu->gpr[10]);       /* sw SXY2' -> out+3*t8 */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16; /* sy2' (delay slot) */
@@ -11394,11 +11394,11 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
           cpu->gpr[11] = cpu->gpr[4] + cpu->gpr[12];/* t3 = a0+t4 (delay slot) */
           if (cpu->gpr[8] != 0) {                   /* beq sy_ok,0 -> skip */
             gte_execute(cpu, 0x168002E);           /* AVSZ4 -> OTZ */
-            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* t2 = lw 0xC(t3) attr mem */
+            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* t2 = lw 0xc(t3) attr mem */
             cpu->gpr[8]  = gte_read_data(cpu, 7);         /* mfc2 t0,d7 (OTZ) */
-            cpu->gpr[9]  = 0x03C0u << 16;                 /* 0x03C00000 shade mask */
+            cpu->gpr[9]  = 0x03c0u << 16;                 /* 0x03c00000 shade mask */
             cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)256) ? 1u : 0u;
-            cpu->gpr[8]  = cpu->gpr[8] + 0xFFFFFF00u;     /* z -= 256 (delay slot) */
+            cpu->gpr[8]  = cpu->gpr[8] + 0xffffff00u;     /* z -= 256 (delay slot) */
             if (cpu->gpr[25] != 0) {                  /* z < 256 */
               cpu->gpr[9]  = ~cpu->gpr[9];
               cpu->gpr[9]  = cpu->gpr[9] & cpu->gpr[10];  /* attr = mem & ~mask */
@@ -11437,7 +11437,7 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
 /* prim_depth_shade_emit_70 — perspective depth-shaded attribute OT
  * emitter, input record stride 112 (0x70), out-record stride 8, out-delta
  * t4 = 32 when a2==0 else 72 (32+40). Sibling of prim_depth_shade_emit
- * (0x8018A9E8, same stride) but a DISTINCT generated body: here BOTH
+ * (0x8018a9e8, same stride) but a DISTINCT generated body: here BOTH
  * secondary-vector mtc2s (gte[0]=lw(a0+24), gte[1]=lw(a0+28)) sit AFTER
  * the FLAG gate — fully conditional — whereas the A9C8-family body keeps
  * mtc2 gte[0] in the flag-branch delay slot (unconditional).
@@ -11447,12 +11447,12 @@ uint32_t prim_depth_shade_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
  * Wraps the loop in ctc2 ctrl30 writes: 256 before iterating (delay slot
  * of the entry blez — skipped value-wise on count<=0 early out), 1024 on
  * normal exit. Per record: lwc2 gte[0..5]; a3--; RTPT; t7=lw(a0+24),
- * t8=lw(a0+28); cfc2 FLAG; NCLIP; FLAG&0x7FC40000 != 0 skips (t3=a0+t4
+ * t8=lw(a0+28); cfc2 FLAG; NCLIP; FLAG&0x7fc40000 != 0 skips (t3=a0+t4
  * in the branch delay slot). mtc2 gte[0]=t7, gte[1]=t8; MAC0<=0 skips
  * but SXY0 is STILL stored at out+8 in the blez delay slot. SXY1/SXY2 at
  * out+16/+24; RTPS; four-way screen cull on SXY0..2 + post-RTPS
  * gte[14]-reload as 4th word (stored at out+32); AVSZ4; OTZ depth-shade
- * attr at base+12 (mask 0x03C00000, z thresholds 256/1280 — identical
+ * attr at base+12 (mask 0x03c00000, z thresholds 256/1280 — identical
  * math to prim_depth_shade_emit); OT swl pair swl(a1+2, base<<8) /
  * swl(base+2, old<<8).
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018AD80. */
@@ -11480,8 +11480,8 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                  /* a3-- */
     gte_execute(cpu, 0x0280030);                     /* RTPT */
     cpu->gpr[15] = br2_ld32(cpu->gpr[4] + 24);        /* lw t7,0x18(a0) */
-    cpu->gpr[24] = br2_ld32(cpu->gpr[4] + 28);        /* lw t8,0x1C(a0) */
-    cpu->gpr[25] = 0x7FC40000u;                       /* lui t9,0x7FC4 */
+    cpu->gpr[24] = br2_ld32(cpu->gpr[4] + 28);        /* lw t8,0x1c(a0) */
+    cpu->gpr[25] = 0x7fc40000u;                       /* lui t9,0x7fc4 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);            /* cfc2 v0,FLAG */
     gte_execute(cpu, 0x1400006);                     /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];        /* t9 = flag & mask */
@@ -11498,17 +11498,17 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         br2_st32(cpu->gpr[11] + 16, cpu->gpr[9]);     /* sw SXY1,16(t3) */
         br2_st32(cpu->gpr[11] + 24, cpu->gpr[10]);    /* sw SXY2,24(t3) */
         gte_execute(cpu, 0x0180001);                 /* RTPS */
-        cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;         /* sx0 = SXY0 & 0xffff */
+        cpu->gpr[25] = cpu->gpr[8] & 0xffffu;         /* sx0 = SXY0 & 0xffff */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
         cpu->gpr[8]  = (int32_t)cpu->gpr[8] >> 16;    /* SXY0 >> 16 */
         cpu->gpr[8]  = (cpu->gpr[8] < (uint32_t)480) ? 1u : 0u;
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok += */
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;
         cpu->gpr[9]  = (cpu->gpr[9] < (uint32_t)480) ? 1u : 0u;
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];    /* sy_ok += */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;
@@ -11516,7 +11516,7 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         cpu->gpr[9]  = cpu->gte_data[14];             /* post-RTPS SXY2 */
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[10];    /* sy_ok += */
         br2_st32(cpu->gpr[11] + 32, cpu->gpr[9]);     /* sw SXY2',32(t3) */
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok 4th */
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;    /* delay: SXY2' >> 16 (unconditional) */
@@ -11525,11 +11525,11 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
           cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];  /* sy_ok 4th */
           if (cpu->gpr[8] != 0) {                     /* beq sy_ok,zero -> skip */
             gte_execute(cpu, 0x168002E);             /* AVSZ4 -> OTZ */
-            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* lw t2,0xC(t3) attr */
+            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* lw t2,0xc(t3) attr */
             cpu->gpr[8]  = gte_read_data(cpu, 7);         /* mfc2 t0,OTZ */
-            cpu->gpr[9]  = 0x03C00000u;                   /* lui t1,0x03C0 */
+            cpu->gpr[9]  = 0x03c00000u;                   /* lui t1,0x03c0 */
             cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)256) ? 1u : 0u;
-            cpu->gpr[8]  = cpu->gpr[8] + 0xFFFFFF00u;     /* delay: t0 -= 256 (unconditional) */
+            cpu->gpr[8]  = cpu->gpr[8] + 0xffffff00u;     /* delay: t0 -= 256 (unconditional) */
             uint32_t shade_emit = 0;
             if (cpu->gpr[25] != 0) {                      /* z < 256 */
               cpu->gpr[9]  = ~cpu->gpr[9];
@@ -11539,7 +11539,7 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
               cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)1024) ? 1u : 0u;
               cpu->gpr[8]  = cpu->gpr[8] << 16;           /* delay: t0 <<= 16 (unconditional) */
               if (cpu->gpr[25] != 0) {                    /* 256 <= z < 1280 */
-                cpu->gpr[8]  = cpu->gpr[8] & cpu->gpr[9]; /* t0 &= 0x03C00000 */
+                cpu->gpr[8]  = cpu->gpr[8] & cpu->gpr[9]; /* t0 &= 0x03c00000 */
                 cpu->gpr[9]  = ~cpu->gpr[9];              /* not mask */
                 cpu->gpr[10] = cpu->gpr[10] & cpu->gpr[9];/* mem &= ~mask */
                 cpu->gpr[9]  = cpu->gpr[8] | cpu->gpr[10];/* attr = shade|mem */
@@ -11548,7 +11548,7 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
               /* z >= 1280: beq -> loop tail, emit skipped entirely */
             }
             if (shade_emit) {
-              br2_st32(cpu->gpr[11] + 12, cpu->gpr[9]); /* sw attr,0xC(t3) */
+              br2_st32(cpu->gpr[11] + 12, cpu->gpr[9]); /* sw attr,0xc(t3) */
               cpu->gpr[9]  = cpu->gpr[11] << 8;         /* sll t1,t3,8 */
               cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);     /* lw t0,(a1) old OT */
               swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);  /* swl (t3<<8),2(a1) */
@@ -11572,7 +11572,7 @@ uint32_t prim_depth_shade_emit_70(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
 /* prim_depth_shade_emit_88 — depth-shaded attribute OT emitter, input
  * record stride 136 (0x88), out-record stride 12, out-delta t4 = 32
  * when a2==0 else 84 (32+52). Same algorithm as
- * prim_depth_shade_emit_70 (0x8018AD80) with wider output spacing:
+ * prim_depth_shade_emit_70 (0x8018ad80) with wider output spacing:
  * SXY0 at out+8, SXY1 at out+20, SXY2 at out+32, post-RTPS SXY2 at
  * out+44, depth attr at base+12, a0 += 136 per record.
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018AEE8. */
@@ -11600,8 +11600,8 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                  /* a3-- */
     gte_execute(cpu, 0x0280030);                     /* RTPT */
     cpu->gpr[15] = br2_ld32(cpu->gpr[4] + 24);        /* lw t7,0x18(a0) */
-    cpu->gpr[24] = br2_ld32(cpu->gpr[4] + 28);        /* lw t8,0x1C(a0) */
-    cpu->gpr[25] = 0x7FC40000u;                       /* lui t9,0x7FC4 */
+    cpu->gpr[24] = br2_ld32(cpu->gpr[4] + 28);        /* lw t8,0x1c(a0) */
+    cpu->gpr[25] = 0x7fc40000u;                       /* lui t9,0x7fc4 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);            /* cfc2 v0,FLAG */
     gte_execute(cpu, 0x1400006);                     /* NCLIP */
     cpu->gpr[25] = cpu->gpr[2] & cpu->gpr[25];        /* t9 = flag & mask */
@@ -11618,17 +11618,17 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         br2_st32(cpu->gpr[11] + 20, cpu->gpr[9]);     /* sw SXY1,20(t3) */
         br2_st32(cpu->gpr[11] + 32, cpu->gpr[10]);    /* sw SXY2,32(t3) */
         gte_execute(cpu, 0x0180001);                 /* RTPS */
-        cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;         /* sx0 = SXY0 & 0xffff */
+        cpu->gpr[25] = cpu->gpr[8] & 0xffffu;         /* sx0 = SXY0 & 0xffff */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
         cpu->gpr[8]  = (int32_t)cpu->gpr[8] >> 16;
         cpu->gpr[8]  = (cpu->gpr[8] < (uint32_t)480) ? 1u : 0u;
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok += */
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;
         cpu->gpr[9]  = (cpu->gpr[9] < (uint32_t)480) ? 1u : 0u;
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];    /* sy_ok += */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;
@@ -11636,7 +11636,7 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
         cpu->gpr[9]  = cpu->gte_data[14];             /* post-RTPS SXY2 */
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[10];    /* sy_ok += */
         br2_st32(cpu->gpr[11] + 44, cpu->gpr[9]);     /* sw SXY2',44(t3) */
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok 4th */
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;    /* delay: SXY2' >> 16 (unconditional) */
@@ -11645,11 +11645,11 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
           cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];  /* sy_ok 4th */
           if (cpu->gpr[8] != 0) {                     /* beq sy_ok,zero -> skip */
             gte_execute(cpu, 0x168002E);             /* AVSZ4 -> OTZ */
-            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* lw t2,0xC(t3) attr */
+            cpu->gpr[10] = br2_ld32(cpu->gpr[11] + 12);   /* lw t2,0xc(t3) attr */
             cpu->gpr[8]  = gte_read_data(cpu, 7);         /* mfc2 t0,OTZ */
-            cpu->gpr[9]  = 0x03C00000u;                   /* lui t1,0x03C0 */
+            cpu->gpr[9]  = 0x03c00000u;                   /* lui t1,0x03c0 */
             cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)256) ? 1u : 0u;
-            cpu->gpr[8]  = cpu->gpr[8] + 0xFFFFFF00u;     /* delay: t0 -= 256 (unconditional) */
+            cpu->gpr[8]  = cpu->gpr[8] + 0xffffff00u;     /* delay: t0 -= 256 (unconditional) */
             uint32_t shade_emit = 0;
             if (cpu->gpr[25] != 0) {                      /* z < 256 */
               cpu->gpr[9]  = ~cpu->gpr[9];
@@ -11659,7 +11659,7 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
               cpu->gpr[25] = (cpu->gpr[8] < (uint32_t)1024) ? 1u : 0u;
               cpu->gpr[8]  = cpu->gpr[8] << 16;           /* delay: t0 <<= 16 (unconditional) */
               if (cpu->gpr[25] != 0) {                    /* 256 <= z < 1280 */
-                cpu->gpr[8]  = cpu->gpr[8] & cpu->gpr[9]; /* t0 &= 0x03C00000 */
+                cpu->gpr[8]  = cpu->gpr[8] & cpu->gpr[9]; /* t0 &= 0x03c00000 */
                 cpu->gpr[9]  = ~cpu->gpr[9];              /* not mask */
                 cpu->gpr[10] = cpu->gpr[10] & cpu->gpr[9];/* mem &= ~mask */
                 cpu->gpr[9]  = cpu->gpr[8] | cpu->gpr[10];/* attr = shade|mem */
@@ -11668,7 +11668,7 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
               /* z >= 1280: beq -> loop tail, emit skipped entirely */
             }
             if (shade_emit) {
-              br2_st32(cpu->gpr[11] + 12, cpu->gpr[9]); /* sw attr,0xC(t3) */
+              br2_st32(cpu->gpr[11] + 12, cpu->gpr[9]); /* sw attr,0xc(t3) */
               cpu->gpr[9]  = cpu->gpr[11] << 8;         /* sll t1,t3,8 */
               cpu->gpr[8]  = br2_ld32(cpu->gpr[5]);     /* lw t0,(a1) old OT */
               swl_guest(cpu->gpr[5] + 2, cpu->gpr[9]);  /* swl (t3<<8),2(a1) */
@@ -11691,13 +11691,13 @@ uint32_t prim_depth_shade_emit_88(uint32_t a0, uint32_t a1, uint32_t a2, uint32_
 
 /* prim_nclip_cull_emit_48 — NCLIP-gated screen-cull OT emitter, input
  * record stride 72 (0x48), out stride 4, out-delta t4 = 24 when a2==0
- * else 48 (24+t6=24). MULTI-ENTRY guest fn: only entry 0x8018B380 is
- * ported (t6=24, t7=72, t8=4); sibling entries 0x8018B390/B3A0/B3B0/B3C0
+ * else 48 (24+t6=24). MULTI-ENTRY guest fn: only entry 0x8018b380 is
+ * ported (t6=24, t7=72, t8=4); sibling entries 0x8018b390/B3A0/B3B0/B3C0
  * remain generated-authoritative.
  * a0 = record cursor, a1 = OT base, a2 = out-delta select, a3 = count.
  *
  * Per record: lwc2 gte[0..5]; a3--; RTPT; cfc2 FLAG; NCLIP;
- * FLAG&0x7FC40000 != 0 skips (t3=a0+t4 in delay slot). NO secondary
+ * FLAG&0x7fc40000 != 0 skips (t3=a0+t4 in delay slot). NO secondary
  * vector mtc2, NO attr loads. out = base+8; MAC0<=0 skips (sx0
  * pre-computed in the blez delay slot). SXY1/SXY2 = gte[13]/[14];
  * three-way screen cull (sx via psx_ws_cull_sltiu, sy via >>16 <480);
@@ -11710,7 +11710,7 @@ uint32_t prim_nclip_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018B380: t6=24, t7=72, t8=4 */
+  /* entry 0x8018b380: t6=24, t7=72, t8=4 */
   cpu->gpr[14] = 24;
   cpu->gpr[15] = 72;
   cpu->gpr[24] = 4;
@@ -11730,7 +11730,7 @@ uint32_t prim_nclip_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
     gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20));
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                  /* a3-- */
     gte_execute(cpu, 0x0280030);                     /* RTPT */
-    cpu->gpr[25] = 0x7FC40000u;                       /* lui t9,0x7FC4 */
+    cpu->gpr[25] = 0x7fc40000u;                       /* lui t9,0x7fc4 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);            /* cfc2 v0,FLAG */
     gte_execute(cpu, 0x1400006);                     /* NCLIP */
     /* nop delay slot */
@@ -11740,15 +11740,15 @@ uint32_t prim_nclip_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
       cpu->gpr[11] = cpu->gpr[11] + 8;                /* out = base+8 */
       cpu->gpr[9]  = cpu->gte_data[24];               /* mfc2 t1,MAC0 */
       cpu->gpr[8]  = cpu->gte_data[12];               /* mfc2 t0,SXY0 */
-      cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;           /* delay: t9 = sx0 (unconditional) */
+      cpu->gpr[25] = cpu->gpr[8] & 0xffffu;           /* delay: t9 = sx0 (unconditional) */
       if ((int32_t)cpu->gpr[9] > 0) {                 /* blez t1 -> skip */
         cpu->gpr[9]  = cpu->gte_data[13];             /* mfc2 t1,SXY1 */
         cpu->gpr[10] = cpu->gte_data[14];             /* mfc2 t2,SXY2 */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok (3 verts) */
         int sx_ok = (cpu->gpr[25] != cpu->gpr[0]);    /* beq sx_ok,zero (pre-delay value) */
@@ -11787,13 +11787,13 @@ uint32_t prim_nclip_cull_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
 
 /* prim_rtps_cull_emit_58 — RTPS secondary-vector screen-cull OT emitter,
  * input record stride 88 (0x58), out stride 4, out-delta t4 = 32 when
- * a2==0 else 60 (32+t6=32). MULTI-ENTRY guest fn: only entry 0x8018B4B8
+ * a2==0 else 60 (32+t6=32). MULTI-ENTRY guest fn: only entry 0x8018b4b8
  * is ported (t6=28, t7=88, t8=4); sibling entries
- * 0x8018B4C8/B4D8/B4E8/B4F8 remain generated-authoritative.
+ * 0x8018b4c8/B4D8/B4E8/B4F8 remain generated-authoritative.
  * a0 = record cursor, a1 = OT base, a2 = out-delta select, a3 = count.
  *
  * Per record: lwc2 gte[0..5]; a3--; RTPT; t1=lw(a0+24), t2=lw(a0+28);
- * cfc2 FLAG; NCLIP; FLAG&0x7FC40000 != 0 skips (t3=a0+t4 in delay
+ * cfc2 FLAG; NCLIP; FLAG&0x7fc40000 != 0 skips (t3=a0+t4 in delay
  * slot). out = base+8; mtc2 gte[0]=t1, gte[1]=t2; MAC0<=0 skips but
  * SXY0 is STILL stored at out+0 in the blez delay slot. SXY1/SXY2 at
  * out+t8/+2*t8; RTPS; four-way screen cull (post-RTPS gte[14]-reload as
@@ -11805,7 +11805,7 @@ uint32_t prim_rtps_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t 
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018B4B8: t6=28, t7=88, t8=4 */
+  /* entry 0x8018b4b8: t6=28, t7=88, t8=4 */
   cpu->gpr[14] = 28;
   cpu->gpr[15] = 88;
   cpu->gpr[24] = 4;
@@ -11826,8 +11826,8 @@ uint32_t prim_rtps_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t 
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                  /* a3-- */
     gte_execute(cpu, 0x0280030);                     /* RTPT */
     cpu->gpr[9]  = br2_ld32(cpu->gpr[4] + 24);        /* lw t1,0x18(a0) */
-    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);        /* lw t2,0x1C(a0) */
-    cpu->gpr[25] = 0x7FC40000u;                       /* lui t9,0x7FC4 */
+    cpu->gpr[10] = br2_ld32(cpu->gpr[4] + 28);        /* lw t2,0x1c(a0) */
+    cpu->gpr[25] = 0x7fc40000u;                       /* lui t9,0x7fc4 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);            /* cfc2 v0,FLAG */
     gte_execute(cpu, 0x1400006);                     /* NCLIP */
     /* nop delay slot */
@@ -11848,17 +11848,17 @@ uint32_t prim_rtps_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t 
         cpu->gpr[11] = cpu->gpr[11] + cpu->gpr[24];    /* out += t8 */
         br2_st32(cpu->gpr[11], cpu->gpr[10]);         /* sw SXY2,(t3) */
         gte_execute(cpu, 0x0180001);                 /* RTPS */
-        cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;         /* sx0 = SXY0 & 0xffff */
+        cpu->gpr[25] = cpu->gpr[8] & 0xffffu;         /* sx0 = SXY0 & 0xffff */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
         cpu->gpr[8]  = (int32_t)cpu->gpr[8] >> 16;
         cpu->gpr[8]  = (cpu->gpr[8] < (uint32_t)480) ? 1u : 0u;
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok += */
         cpu->gpr[9]  = (int32_t)cpu->gpr[9] >> 16;
         cpu->gpr[9]  = (cpu->gpr[9] < (uint32_t)480) ? 1u : 0u;
         cpu->gpr[8]  = cpu->gpr[8] + cpu->gpr[9];    /* sy_ok += */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;
@@ -11867,7 +11867,7 @@ uint32_t prim_rtps_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t 
         cpu->gpr[10] = cpu->gte_data[14];             /* post-RTPS SXY2 */
         cpu->gpr[11] = cpu->gpr[11] + cpu->gpr[24];   /* out += t8 */
         br2_st32(cpu->gpr[11], cpu->gpr[10]);         /* sw SXY2',(t3) */
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok 4th */
         cpu->gpr[10] = (int32_t)cpu->gpr[10] >> 16;   /* delay: SXY2' >> 16 (unconditional) */
@@ -11900,11 +11900,11 @@ uint32_t prim_rtps_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t 
  * select, a3 = count.
  *
  * Per record: lwc2 gte[0..5]; a3--; RTPT; cfc2 FLAG; NCLIP;
- * FLAG&0x7FC40000 != 0 skips (t3=a0+t4 in delay slot). out = base+8;
+ * FLAG&0x7fc40000 != 0 skips (t3=a0+t4 in delay slot). out = base+8;
  * MAC0<=0 skips (sx0 pre-computed in blez delay slot). SXY1/SXY2 =
  * gte[13]/[14]; three-way screen cull; SXY0 stored at out+0 in the
  * sy-beq DELAY SLOT; SXY1/SXY2 at out+t8/+2*t8; AVSZ3 (0x158002D);
- * OTZ < 2048 -> TAIL-DISPATCH to 0x8018B884 (the shared
+ * OTZ < 2048 -> TAIL-DISPATCH to 0x8018b884 (the shared
  * prim_persp_ot_emit loop tail — remaining records continue under the
  * B76C emit body with the live t4/t7/t8); OTZ >= 2048 -> inline OT swl
  * pair then loop. Returns final cursor.
@@ -11914,7 +11914,7 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
   CPUState *cpu = clean_cpu_state();
   (void)a0; (void)a1; (void)a2; (void)a3;
 
-  /* entry 0x8018B628: t6=32, t7=88, t8=8 */
+  /* entry 0x8018b628: t6=32, t7=88, t8=8 */
   cpu->gpr[14] = 32;
   cpu->gpr[15] = 88;
   cpu->gpr[24] = 8;
@@ -11934,7 +11934,7 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
     gte_write_data(cpu, 5, psx_cyc_lwc2_read(cpu, cpu->gpr[4] + 20));
     cpu->gpr[7]  = cpu->gpr[7] - 1u;                  /* a3-- */
     gte_execute(cpu, 0x0280030);                     /* RTPT */
-    cpu->gpr[25] = 0x7FC40000u;                       /* lui t9,0x7FC4 */
+    cpu->gpr[25] = 0x7fc40000u;                       /* lui t9,0x7fc4 */
     cpu->gpr[2]  = gte_read_ctrl(cpu, 31);            /* cfc2 v0,FLAG */
     gte_execute(cpu, 0x1400006);                     /* NCLIP */
     /* nop delay slot */
@@ -11944,15 +11944,15 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
       cpu->gpr[11] = cpu->gpr[11] + 8;                /* out = base+8 */
       cpu->gpr[9]  = cpu->gte_data[24];               /* mfc2 t1,MAC0 */
       cpu->gpr[8]  = cpu->gte_data[12];               /* mfc2 t0,SXY0 */
-      cpu->gpr[25] = cpu->gpr[8] & 0xFFFFu;           /* delay: t9 = sx0 (unconditional) */
+      cpu->gpr[25] = cpu->gpr[8] & 0xffffu;           /* delay: t9 = sx0 (unconditional) */
       if ((int32_t)cpu->gpr[9] > 0) {                 /* blez t1 -> skip */
         cpu->gpr[9]  = cpu->gte_data[13];             /* mfc2 t1,SXY1 */
         cpu->gpr[10] = cpu->gte_data[14];             /* mfc2 t2,SXY2 */
         cpu->gpr[25] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[25], 512u);
-        cpu->gpr[13] = cpu->gpr[9] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[9] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];
-        cpu->gpr[13] = cpu->gpr[10] & 0xFFFFu;
+        cpu->gpr[13] = cpu->gpr[10] & 0xffffu;
         cpu->gpr[13] = (uint32_t)psx_ws_cull_sltiu(cpu->gpr[13], 512u);
         cpu->gpr[25] = cpu->gpr[25] + cpu->gpr[13];   /* sx_ok (3 verts) */
         int sx_ok = (cpu->gpr[25] != cpu->gpr[0]);    /* beq sx_ok,zero (pre-delay value) */
@@ -11976,7 +11976,7 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
             /* nop delay slot */
             cpu->gpr[8]  = ((int32_t)cpu->gpr[8] < 2048) ? 1u : 0u;/* slti t0,otz,2048 */
             if (cpu->gpr[8] != cpu->gpr[0]) {
-              /* CPS taken split: tail-dispatch to 0x8018B884 (shared emit tail).
+              /* CPS taken split: tail-dispatch to 0x8018b884 (shared emit tail).
                * Direct call into prim_emit_tail_advance — identical observable
                * behavior (it advances a0 by t7 then re-enters the B76C emit loop
                * while a3 > 0, else returns the cursor). */
@@ -12004,14 +12004,14 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
 /* ======== 0x8018b100 ======== */
 
 /* prim_xform3_task_run — dual-buffer primitive-list transform + task
- * runner (guest 0x8018B100, 264B, 12 CPS blocks — clean CPS coroutine;
+ * runner (guest 0x8018b100, 264B, 12 CPS blocks — clean CPS coroutine;
  * all 12 addrs registered in clean_cps.map). Walks `count` 0x28-int8_t
- * records at a0; per record with lh(rec+0xC)==0 and lw(rec)!=0 it runs
+ * records at a0; per record with lh(rec+0xc)==0 and lw(rec)!=0 it runs
  * gte_xform3_t_ip twice around GTE cmd 0x0480012, stashing live
- * t4-t8 + MAC1-3 into scratchpad 0x1F8003C0..0x3DC, then jalr's the
+ * t4-t8 + MAC1-3 into scratchpad 0x1f8003c0..0x3dc, then jalr's the
  * record's 16-int8_t task entries (count at [s2], entries at s2+4 stride
  * 16: a3=ent[1], a0=ent[2], fn=ent[3]). Caller s0-s6+ra saved to
- * scratchpad 0x1F8003E0..0x3FC and restored on exit; $v0 = final record
+ * scratchpad 0x1f8003e0..0x3fc and restored on exit; $v0 = final record
  * pointer (a0 + 0x28*count), or a0 when count <= 0.
  *
  * All three call sites are CPS tail-dispatches ($ra = continuation,
@@ -12026,43 +12026,43 @@ uint32_t prim_xform3_task_run(void)
   uint32_t pc;
   if (!c) return 0;
   pc = c->pc;
-  if (pc != 0u && pc != 0x8018B100u) {
+  if (pc != 0u && pc != 0x8018b100u) {
     switch (pc) {
-    case 0x8018B108u: goto b108;
-    case 0x8018B13Cu: goto b13C;
-    case 0x8018B14Cu: goto b14C;
-    case 0x8018B154u: goto b154;
-    case 0x8018B15Cu: goto b15C;
-    case 0x8018B198u: goto b198;
-    case 0x8018B1B0u: goto b1B0;
-    case 0x8018B1C4u: goto b1C4;
-    case 0x8018B1CCu: goto b1CC;
-    case 0x8018B1D8u: goto b1D8;
-    case 0x8018B200u: goto b200;
+    case 0x8018b108u: goto b108;
+    case 0x8018b13cu: goto b13C;
+    case 0x8018b14cu: goto b14C;
+    case 0x8018b154u: goto b154;
+    case 0x8018b15cu: goto b15C;
+    case 0x8018b198u: goto b198;
+    case 0x8018b1b0u: goto b1B0;
+    case 0x8018b1c4u: goto b1C4;
+    case 0x8018b1ccu: goto b1CC;
+    case 0x8018b1d8u: goto b1D8;
+    case 0x8018b200u: goto b200;
     default: break;
     }
   }
 
   /* block_8018B100 — entry: blez a3 -> shared epilogue; delay t0 = SPAD */
-  c->gpr[8] = 0x1F800000u;                        /* delay: t0 = 0x1F800000 (unconditional) */
+  c->gpr[8] = 0x1f800000u;                        /* delay: t0 = 0x1f800000 (unconditional) */
   if ((int32_t)c->gpr[7] <= 0) {                   /* blez a3 */
-    psx_check_interrupts_at(c, 0x8018B200u);
+    psx_check_interrupts_at(c, 0x8018b200u);
     goto b200;
   } else {
-    psx_check_interrupts_at(c, 0x8018B108u);
+    psx_check_interrupts_at(c, 0x8018b108u);
     goto b108;
   }
 
 b108:
-  /* save caller s0-s6 + ra into scratchpad 0x1F8003E0..0x3FC */
-  br2_st32(c->gpr[8] + 1020, c->gpr[31]);            /* ra  -> 0x1F8003FC */
-  br2_st32(c->gpr[8] + 1016, c->gpr[16]);            /* s0  -> 0x1F8003F8 */
-  br2_st32(c->gpr[8] + 1012, c->gpr[17]);            /* s1  -> 0x1F8003F4 */
-  br2_st32(c->gpr[8] + 1008, c->gpr[18]);            /* s2  -> 0x1F8003F0 */
-  br2_st32(c->gpr[8] + 1004, c->gpr[19]);            /* s3  -> 0x1F8003EC */
-  br2_st32(c->gpr[8] + 1000, c->gpr[20]);            /* s4  -> 0x1F8003E8 */
-  br2_st32(c->gpr[8] +  996, c->gpr[21]);            /* s5  -> 0x1F8003E4 */
-  br2_st32(c->gpr[8] +  992, c->gpr[22]);            /* s6  -> 0x1F8003E0 */
+  /* save caller s0-s6 + ra into scratchpad 0x1f8003e0..0x3fc */
+  br2_st32(c->gpr[8] + 1020, c->gpr[31]);            /* ra  -> 0x1f8003fc */
+  br2_st32(c->gpr[8] + 1016, c->gpr[16]);            /* s0  -> 0x1f8003f8 */
+  br2_st32(c->gpr[8] + 1012, c->gpr[17]);            /* s1  -> 0x1f8003f4 */
+  br2_st32(c->gpr[8] + 1008, c->gpr[18]);            /* s2  -> 0x1f8003f0 */
+  br2_st32(c->gpr[8] + 1004, c->gpr[19]);            /* s3  -> 0x1f8003ec */
+  br2_st32(c->gpr[8] + 1000, c->gpr[20]);            /* s4  -> 0x1f8003e8 */
+  br2_st32(c->gpr[8] +  996, c->gpr[21]);            /* s5  -> 0x1f8003e4 */
+  br2_st32(c->gpr[8] +  992, c->gpr[22]);            /* s6  -> 0x1f8003e0 */
   c->gpr[16] = c->gpr[4];                            /* s0 = a0 */
   c->gpr[17] = c->gpr[5];                            /* s1 = a1 */
   c->gpr[19] = c->gpr[7];                            /* s3 = a3 */
@@ -12075,63 +12075,63 @@ b13C:                                               /* record loop head */
   c->gpr[5] = br2_ld32(c->gpr[16]);                  /* delay: a1 = lw(s0) prim */
   c->gpr[4] = c->gpr[21];                          /* delay: a0 = s5 (unconditional) */
   if (c->gpr[8] != c->gpr[0]) {                     /* bne t0,zero -> skip */
-    psx_check_interrupts_at(c, 0x8018B1CCu);
+    psx_check_interrupts_at(c, 0x8018b1ccu);
     goto b1CC;
   } else {
-    psx_check_interrupts_at(c, 0x8018B14Cu);
+    psx_check_interrupts_at(c, 0x8018b14cu);
     goto b14C;
   }
 
 b14C:
   if (c->gpr[5] == c->gpr[0]) {                    /* beq a1,zero -> skip (nop delay) */
-    psx_check_interrupts_at(c, 0x8018B1CCu);
+    psx_check_interrupts_at(c, 0x8018b1ccu);
     goto b1CC;
   } else {
-    psx_check_interrupts_at(c, 0x8018B154u);
+    psx_check_interrupts_at(c, 0x8018b154u);
     goto b154;
   }
 
 b154:
-  c->gpr[31] = 0x8018B15Cu;                          /* jal link */
+  c->gpr[31] = 0x8018b15cu;                          /* jal link */
   c->gpr[5]  = c->gpr[5] + 32;                       /* delay: a1 = prim+0x20 */
-  psx_check_interrupts_at(c, 0x80186F5Cu);           /* jal gte_xform3_t_ip */
-  c->pc = 0x80186F5Cu;
+  psx_check_interrupts_at(c, 0x80186f5cu);           /* jal gte_xform3_t_ip */
+  c->pc = 0x80186f5cu;
   return c->gpr[2];
 
 b15C:
   c->gte_data[0] = psx_cyc_lwc2_read(c, c->gpr[16] + 4);    /* lwc2 gte[0] */
   gte_write_data(c, 1, psx_cyc_lwc2_read(c, c->gpr[16] + 8)); /* lwc2 gte[1] */
-  c->gpr[11] = 0x1F800000u;                          /* t3 = 0x1F800000 */
+  c->gpr[11] = 0x1f800000u;                          /* t3 = 0x1f800000 */
   gte_execute(c, 0x0480012);                        /* GTE cmd 0x12 */
-  br2_st32(c->gpr[11] + 960, c->gpr[14]);             /* sw t6 -> 0x1F8003C0 */
-  br2_st32(c->gpr[11] + 964, c->gpr[12]);             /* sw t4 -> 0x1F8003C4 */
-  br2_st32(c->gpr[11] + 968, c->gpr[15]);             /* sw t7 -> 0x1F8003C8 */
-  br2_st32(c->gpr[11] + 972, c->gpr[24]);             /* sw t8 -> 0x1F8003CC */
-  br2_st32(c->gpr[11] + 976, c->gpr[13]);             /* sw t5 -> 0x1F8003D0 */
-  c->gpr[5]  = c->gpr[11] + 960;                      /* a1 = 0x1F8003C0 */
+  br2_st32(c->gpr[11] + 960, c->gpr[14]);             /* sw t6 -> 0x1f8003c0 */
+  br2_st32(c->gpr[11] + 964, c->gpr[12]);             /* sw t4 -> 0x1f8003c4 */
+  br2_st32(c->gpr[11] + 968, c->gpr[15]);             /* sw t7 -> 0x1f8003c8 */
+  br2_st32(c->gpr[11] + 972, c->gpr[24]);             /* sw t8 -> 0x1f8003cc */
+  br2_st32(c->gpr[11] + 976, c->gpr[13]);             /* sw t5 -> 0x1f8003d0 */
+  c->gpr[5]  = c->gpr[11] + 960;                      /* a1 = 0x1f8003c0 */
   br2_st32(c->gpr[11] + 980, c->gte_data[25]);        /* swc2 gte[25] -> 3D4 */
   gte_precision_store_word(c->gpr[11] + 980, 25);
   br2_st32(c->gpr[11] + 984, c->gte_data[26]);        /* swc2 gte[26] -> 3D8 */
   gte_precision_store_word(c->gpr[11] + 984, 26);
   br2_st32(c->gpr[11] + 988, c->gte_data[27]);        /* swc2 gte[27] -> 3DC */
   gte_precision_store_word(c->gpr[11] + 988, 27);
-  c->gpr[31] = 0x8018B198u;                          /* jal link */
+  c->gpr[31] = 0x8018b198u;                          /* jal link */
   c->gpr[4]  = c->gpr[20];                            /* delay: a0 = s4 */
-  psx_check_interrupts_at(c, 0x80186F5Cu);            /* jal gte_xform3_t_ip */
-  c->pc = 0x80186F5Cu;
+  psx_check_interrupts_at(c, 0x80186f5cu);            /* jal gte_xform3_t_ip */
+  c->pc = 0x80186f5cu;
   return c->gpr[2];
 
 b198:
-  c->gpr[18] = br2_ld32(c->gpr[16] + 28);             /* s2 = lw(s0+0x1C) tasks */
+  c->gpr[18] = br2_ld32(c->gpr[16] + 28);             /* s2 = lw(s0+0x1c) tasks */
   c->gpr[5]  = c->gpr[17];                            /* a1 = s1 */
   c->gpr[22] = br2_ld32(c->gpr[18]);                  /* s6 = lw(s2) count */
   /* nop delay slot */
   c->gpr[18] = c->gpr[18] + 4;                      /* delay: s2 += 4 (entries, unconditional) */
   if (c->gpr[22] == c->gpr[0]) {                     /* beq s6,zero -> next rec */
-    psx_check_interrupts_at(c, 0x8018B1CCu);
+    psx_check_interrupts_at(c, 0x8018b1ccu);
     goto b1CC;
   } else {
-    psx_check_interrupts_at(c, 0x8018B1B0u);
+    psx_check_interrupts_at(c, 0x8018b1b0u);
     goto b1B0;
   }
 
@@ -12139,8 +12139,8 @@ b1B0:                                               /* task-entry loop */
   c->gpr[7] = br2_ld32(c->gpr[18] + 4);               /* a3 = ent[1] */
   c->gpr[8] = br2_ld32(c->gpr[18] + 12);              /* t0 = ent[3] fn */
   c->gpr[4] = br2_ld32(c->gpr[18] + 8);               /* a0 = ent[2] */
-  c->gpr[31] = 0x8018B1C4u;                           /* jalr link */
-  c->gpr[22] = c->gpr[22] + 0xFFFFFFFFu;              /* delay: s6-- */
+  c->gpr[31] = 0x8018b1c4u;                           /* jalr link */
+  c->gpr[22] = c->gpr[22] + 0xffffffffu;              /* delay: s6-- */
   { uint32_t _jt = c->gpr[8];                         /* jalr $ra,$t0 */
     psx_check_interrupts_at(c, _jt);
     c->pc = _jt;
@@ -12149,35 +12149,35 @@ b1B0:                                               /* task-entry loop */
 b1C4:
   c->gpr[18] = c->gpr[18] + 16;                     /* delay: s2 += 16 (unconditional) */
   if ((int32_t)c->gpr[22] > 0) {                     /* bgtz s6 -> next entry */
-    psx_check_interrupts_at(c, 0x8018B1B0u);
+    psx_check_interrupts_at(c, 0x8018b1b0u);
     goto b1B0;
   } else {
-    psx_check_interrupts_at(c, 0x8018B1CCu);
+    psx_check_interrupts_at(c, 0x8018b1ccu);
     goto b1CC;
   }
 
 b1CC:                                               /* record loop tail */
-  c->gpr[19] = c->gpr[19] + 0xFFFFFFFFu;              /* s3-- */
+  c->gpr[19] = c->gpr[19] + 0xffffffffu;              /* s3-- */
   c->gpr[16] = c->gpr[16] + 40;                     /* delay: s0 += 0x28 (unconditional) */
   if ((int32_t)c->gpr[19] > 0) {                     /* bgtz s3 -> next record */
-    psx_check_interrupts_at(c, 0x8018B13Cu);
+    psx_check_interrupts_at(c, 0x8018b13cu);
     goto b13C;
   } else {
-    psx_check_interrupts_at(c, 0x8018B1D8u);
+    psx_check_interrupts_at(c, 0x8018b1d8u);
     goto b1D8;
   }
 
 b1D8:                                               /* epilogue: restore SPAD */
   c->gpr[4]  = c->gpr[16];                            /* a0 = final record ptr */
-  c->gpr[8]  = 0x1F800000u;                           /* t0 = 0x1F800000 */
-  c->gpr[31] = br2_ld32(c->gpr[8] + 1020);            /* ra  <- 0x1F8003FC */
-  c->gpr[16] = br2_ld32(c->gpr[8] + 1016);            /* s0  <- 0x1F8003F8 */
-  c->gpr[17] = br2_ld32(c->gpr[8] + 1012);            /* s1  <- 0x1F8003F4 */
-  c->gpr[18] = br2_ld32(c->gpr[8] + 1008);            /* s2  <- 0x1F8003F0 */
-  c->gpr[19] = br2_ld32(c->gpr[8] + 1004);            /* s3  <- 0x1F8003EC */
-  c->gpr[20] = br2_ld32(c->gpr[8] + 1000);            /* s4  <- 0x1F8003E8 */
-  c->gpr[21] = br2_ld32(c->gpr[8] +  996);            /* s5  <- 0x1F8003E4 */
-  c->gpr[22] = br2_ld32(c->gpr[8] +  992);            /* s6  <- 0x1F8003E0 */
+  c->gpr[8]  = 0x1f800000u;                           /* t0 = 0x1f800000 */
+  c->gpr[31] = br2_ld32(c->gpr[8] + 1020);            /* ra  <- 0x1f8003fc */
+  c->gpr[16] = br2_ld32(c->gpr[8] + 1016);            /* s0  <- 0x1f8003f8 */
+  c->gpr[17] = br2_ld32(c->gpr[8] + 1012);            /* s1  <- 0x1f8003f4 */
+  c->gpr[18] = br2_ld32(c->gpr[8] + 1008);            /* s2  <- 0x1f8003f0 */
+  c->gpr[19] = br2_ld32(c->gpr[8] + 1004);            /* s3  <- 0x1f8003ec */
+  c->gpr[20] = br2_ld32(c->gpr[8] + 1000);            /* s4  <- 0x1f8003e8 */
+  c->gpr[21] = br2_ld32(c->gpr[8] +  996);            /* s5  <- 0x1f8003e4 */
+  c->gpr[22] = br2_ld32(c->gpr[8] +  992);            /* s6  <- 0x1f8003e0 */
   /* fall through */
 
 b200:
