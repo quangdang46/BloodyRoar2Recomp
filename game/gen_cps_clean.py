@@ -98,6 +98,8 @@ _ALIAS_CALL_RE = re.compile(
 _LWC2_RE = re.compile(r'psx_cyc_lwc2_read\s*\(\s*cpu\s*,\s*(.+?)\s*\)')
 # temp decl inside a _pgx brace group:  uint32_t _pgxa = EXPR;  /  _pgxv = ...
 _PGX_DECL_RE = re.compile(r'uint32_t\s+(_pgx\w+)\s*=\s*([^;]+);')
+# per-instruction anchor emitted on PGXP probe lines: /* 0xADDR: 0xENC */
+_ANCHOR_RE = re.compile(r'/\* 0x[0-9A-Fa-f]+: 0x[0-9A-Fa-f]+\s*\*/')
 
 
 def _sub_temps(expr, tmap):
@@ -131,6 +133,10 @@ def unwrap_pgx_group(text):
         name, expr = m.group(1), m.group(2).strip()
         expr = _sub_temps(expr, tmap)
         tmap[name] = _conv(expr).strip()
+    # salvage per-instruction anchors off the PGXP probe lines before
+    # stripping them (probe i annotates real op i, in order)
+    anchors = _ANCHOR_RE.findall(text)
+    text = _ANCHOR_RE.sub('', text)
     # strip temp decls, PGXP_* probes, debug/barrier lines
     body = _PGX_DECL_RE.sub('', text)
     body = re.sub(r'PGXP_\w+\s*\([^;]*\)\s*;?', '', body)
@@ -154,6 +160,12 @@ def unwrap_pgx_group(text):
             continue
         if re.match(keep_re, st):
             stmts.append(_sub_loads(_sub_temps(st, tmap)).strip() + ';')
+    # re-attach salvaged anchors: probe i documents op i; extras go on the last
+    for k, a in enumerate(anchors):
+        if k < len(stmts):
+            stmts[k] = stmts[k].rstrip() + '  ' + a
+        elif stmts:
+            stmts[-1] = stmts[-1].rstrip() + '  ' + a
     return stmts
 
 
@@ -328,8 +340,14 @@ def transform(body):
                 out.append('    ' + st)
             i = j + 1
             continue
-        # bare PGXP continuation line (safety)
+        # bare PGXP continuation line (safety). The probe's trailing
+        # '/* 0xADDR: 0xENC */' anchor documents the guest instruction the
+        # preceding real op implements — salvage it onto that op so regen
+        # keeps the per-instruction traceability anchors.
         if 'PGXP_' in ln:
+            m = _ANCHOR_RE.search(ln)
+            if m and out and out[-1].strip():
+                out[-1] = out[-1].rstrip() + '  ' + m.group(0)
             i += 1
             continue
         op = rewrite_line(ln)
