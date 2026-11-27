@@ -16719,7 +16719,7 @@ extern void spr_desc_b(uint32_t,uint32_t);
 extern void spr_desc_c(uint32_t,uint32_t);
 extern uint32_t cd_cmd_retry(uintptr_t);
 
-/* announce_param_block_init — round/announce parameter block init @0x1f80038c.
+/* announce_param_block_init @0x8012e58c — round/announce parameter block init @0x1f80038c.
  * All fields u16 (sh) except +0x1c u32 (sw); verified vs disasm. */
 void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
                   uint32_t a3,uint32_t arg5,int32_t arg6)
@@ -16880,7 +16880,7 @@ void sprite_desc_table_init(uint32_t tbl)
   }
 }
 
-/* announce_param_block_init_alt — variant of announce_param_block_init: same param block @0x1f80038c
+/* announce_param_block_init_alt @0x8012e6a8 — variant of announce_param_block_init: same param block @0x1f80038c
  * but field +0xc preset to 0x1e (vs 0xf). Disasm-verified widths. */
 void announce_param_block_init_alt(uint32_t tbl,uint32_t a1,const void *a2,
                   uint32_t a3,uint32_t arg5,int32_t arg6)
