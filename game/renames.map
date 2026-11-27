@@ -307,6 +307,7 @@
 80190cc4 text_format_measure_string_fragment
 80190ce4 text_format_width_check_fragment
 80179ae0 skeleton_init
+80179a60 part_field4c_clear
 80179a6c part_record_reset
 80179964 part_link_unlink
 8017a6e8 action_switch_guest
