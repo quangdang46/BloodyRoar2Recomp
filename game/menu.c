@@ -8392,20 +8392,20 @@ L_case0:                                      /* 0x8014cf38 */
 
 L_case1:                                      /* 0x8014d03c */
     {
-      int32_t s3;
-      uint8_t *s0 = T;
+      int32_t side;
+      uint8_t *rec = T;
       gpu_side_packet_emit(B36_32(0x118),0,2);
-      for (s3 = 0; s3 < 2; s3++, s0 += 0x30) {
-        uint32_t a0, a1, idx;
-        if (s3 == 1 && *(uint32_t *)(T + 0x4c) == 5) {
-          a0 = B36_32(0x114); a1 = 1;
+      for (side = 0; side < 2; side++, rec += 0x30) {
+        uint32_t pk, sel, idx;
+        if (side == 1 && *(uint32_t *)(T + 0x4c) == 5) {
+          pk = B36_32(0x114); sel = 1;
         } else {
-          idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-          a0 = B36_32(0xe8 + idx * 4); a1 = (uint32_t)s3;
+          idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+          pk = B36_32(0xe8 + idx * 4); sel = (uint32_t)side;
         }
-        gpu_side_packet_emit(a0,(int32_t)a1,0);
-        idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-        gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)s3,1);
+        gpu_side_packet_emit(pk,(int32_t)sel,0);
+        idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+        gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)side,1);
       }
     }
     side_flag_merge(0x1f800000,(uint8_t *)b36_sp + 0x18);
@@ -8455,14 +8455,14 @@ L_case6:                                      /* 0x8014d18c */
     }
     /* ---------- per-player battle update @0x8014d20c ---------- */
     {
-      int32_t s3;
-      uint8_t *s0;
-      uint32_t s1, s2;
-      for (s3 = 0; s3 < 2; s3++) {
-        s0 = T + (uint32_t)s3 * 0x30;
-        s1 = (uint32_t)s3 * 0x28;
-        s2 = (uint32_t)s3 * 4;
-        switch (*(uint32_t *)(s0 + 0x24)) {
+      int32_t side;
+      uint8_t *rec;
+      uint32_t eoff, doff;
+      for (side = 0; side < 2; side++) {
+        rec = T + (uint32_t)side * 0x30;
+        eoff = (uint32_t)side * 0x28;
+        doff = (uint32_t)side * 4;
+        switch (*(uint32_t *)(rec + 0x24)) {
         case 0: goto L_st0;
         case 1: goto L_st1;
         case 2: goto L_st2;
@@ -8471,41 +8471,41 @@ L_case6:                                      /* 0x8014d18c */
         goto L_next;
 
 L_st0:                                         /* 0x8014d258 */
-        if (*(uint32_t *)(s0 + 0x10) != 0) goto L_next;
-        if ((*(uint32_t *)(s0 + 8) & 0x8000u) != 0) {
+        if (*(uint32_t *)(rec + 0x10) != 0) goto L_next;
+        if ((*(uint32_t *)(rec + 8) & 0x8000u) != 0) {
           /* downward scan, step -2, clamp parity -> 0xd/0xe */
           uint32_t pm = MB32(0x801f10b8);
-          int32_t v1;
+          int32_t cv;
           for (;;) {
-            v1 = (int32_t)*(uint32_t *)(s0 + 0x1c) - 2;
-            *(uint32_t *)(s0 + 0x1c) = (uint32_t)v1;
-            if (v1 < 0) {
-              *(uint32_t *)(s0 + 0x1c) = (uint32_t)((v1 & 1) ? 0xd : 0xe);
+            cv = (int32_t)*(uint32_t *)(rec + 0x1c) - 2;
+            *(uint32_t *)(rec + 0x1c) = (uint32_t)cv;
+            if (cv < 0) {
+              *(uint32_t *)(rec + 0x1c) = (uint32_t)((cv & 1) ? 0xd : 0xe);
               continue;
             }
-            if (pm & (1u << (v1 & 31))) break;
-            if (((0xff8u >> (v1 & 31)) & 1u) != 0) break;
+            if (pm & (1u << (cv & 31))) break;
+            if (((0xff8u >> (cv & 31)) & 1u) != 0) break;
           }
         }
-        if ((*(uint32_t *)(s0 + 8) & 0x2000u) != 0) {
+        if ((*(uint32_t *)(rec + 8) & 0x2000u) != 0) {
           /* upward scan, step +2, clamp parity -> 1/0 */
           uint32_t pm = MB32(0x801f10b8);
-          int32_t v1;
+          int32_t cv;
           for (;;) {
-            v1 = (int32_t)*(uint32_t *)(s0 + 0x1c) + 2;
-            *(uint32_t *)(s0 + 0x1c) = (uint32_t)v1;
-            if (v1 >= 0xf) {
-              *(uint32_t *)(s0 + 0x1c) = (uint32_t)((v1 & 1) ? 1 : 0);
+            cv = (int32_t)*(uint32_t *)(rec + 0x1c) + 2;
+            *(uint32_t *)(rec + 0x1c) = (uint32_t)cv;
+            if (cv >= 0xf) {
+              *(uint32_t *)(rec + 0x1c) = (uint32_t)((cv & 1) ? 1 : 0);
               continue;
             }
-            if (pm & (1u << (v1 & 31))) break;
-            if (((0xff8u >> (v1 & 31)) & 1u) != 0) break;
+            if (pm & (1u << (cv & 31))) break;
+            if (((0xff8u >> (cv & 31)) & 1u) != 0) break;
           }
         }
         /* d39c/d3d4 gates -> d410 inc+downscan, d504 dec+upscan.
          * s3==0 wants (f1c&1)==0; s3==1 wants (f1c&1)!=0 and the
          * flag bits are swapped between the two checks. */
-        if (s3 == 0) {
+        if (side == 0) {
           if ((*(uint32_t *)(T + 8) & 0x1000u) != 0 &&
               (*(uint32_t *)(T + 0x1c) & 1u) == 0) goto L_d410;
         } else {
@@ -8516,27 +8516,27 @@ L_st0:                                         /* 0x8014d258 */
 L_d410:                                       /* 0x8014d410 */
         {
           uint32_t pm;
-          int32_t v0, v1;
-          v0 = (int32_t)*(uint32_t *)(s0 + 0x1c) + 1;
-          *(uint32_t *)(s0 + 0x1c) = (uint32_t)v0;
-          if (v0 >= 0xf) *(uint32_t *)(s0 + 0x1c) = 0xe;
+          int32_t nx, cv;
+          nx = (int32_t)*(uint32_t *)(rec + 0x1c) + 1;
+          *(uint32_t *)(rec + 0x1c) = (uint32_t)nx;
+          if (nx >= 0xf) *(uint32_t *)(rec + 0x1c) = 0xe;
           pm = MB32(0x801f10b8);
-          v1 = (int32_t)*(uint32_t *)(s0 + 0x1c);
-          if ((pm & (1u << (v1 & 31))) == 0 &&
-              ((0xff8u >> (v1 & 31)) & 1u) == 0) {
-            v0 = v1 - 2;
+          cv = (int32_t)*(uint32_t *)(rec + 0x1c);
+          if ((pm & (1u << (cv & 31))) == 0 &&
+              ((0xff8u >> (cv & 31)) & 1u) == 0) {
+            nx = cv - 2;
             for (;;) {
-              *(uint32_t *)(s0 + 0x1c) = (uint32_t)v0;
-              if (v0 < 0) *(uint32_t *)(s0 + 0x1c) = 0xe;
-              v1 = (int32_t)*(uint32_t *)(s0 + 0x1c);
-              if (pm & (1u << (v1 & 31))) break;
-              if (((0xff8u >> (v1 & 31)) & 1u) != 0) break;
-              v0 = v1 - 2;
+              *(uint32_t *)(rec + 0x1c) = (uint32_t)nx;
+              if (nx < 0) *(uint32_t *)(rec + 0x1c) = 0xe;
+              cv = (int32_t)*(uint32_t *)(rec + 0x1c);
+              if (pm & (1u << (cv & 31))) break;
+              if (((0xff8u >> (cv & 31)) & 1u) != 0) break;
+              nx = cv - 2;
             }
           }
         }
 L_d490:                                       /* 0x8014d490 */
-        if (s3 == 0) {
+        if (side == 0) {
           if ((*(uint32_t *)(T + 8) & 0x4000u) != 0 &&
               (*(uint32_t *)(T + 0x1c) & 1u) != 0) goto L_d504;
         } else {
@@ -8547,72 +8547,72 @@ L_d490:                                       /* 0x8014d490 */
 L_d504:                                       /* 0x8014d504 */
         {
           uint32_t pm;
-          int32_t v0, v1;
-          v0 = (int32_t)*(uint32_t *)(s0 + 0x1c) - 1;
-          *(uint32_t *)(s0 + 0x1c) = (v0 < 0) ? 1u : (uint32_t)v0;
+          int32_t nx, cv;
+          nx = (int32_t)*(uint32_t *)(rec + 0x1c) - 1;
+          *(uint32_t *)(rec + 0x1c) = (nx < 0) ? 1u : (uint32_t)nx;
           pm = MB32(0x801f10b8);
-          v1 = (int32_t)*(uint32_t *)(s0 + 0x1c);
-          if ((pm & (1u << (v1 & 31))) == 0 &&
-              ((0xff8u >> (v1 & 31)) & 1u) == 0) {
+          cv = (int32_t)*(uint32_t *)(rec + 0x1c);
+          if ((pm & (1u << (cv & 31))) == 0 &&
+              ((0xff8u >> (cv & 31)) & 1u) == 0) {
             for (;;) {
-              v0 = v1 + 2;
-              *(uint32_t *)(s0 + 0x1c) = (uint32_t)v0;
-              if (v0 >= 0xf) *(uint32_t *)(s0 + 0x1c) = 0;
-              v1 = (int32_t)*(uint32_t *)(s0 + 0x1c);
-              if (pm & (1u << (v1 & 31))) break;
-              if (((0xff8u >> (v1 & 31)) & 1u) != 0) break;
+              nx = cv + 2;
+              *(uint32_t *)(rec + 0x1c) = (uint32_t)nx;
+              if (nx >= 0xf) *(uint32_t *)(rec + 0x1c) = 0;
+              cv = (int32_t)*(uint32_t *)(rec + 0x1c);
+              if (pm & (1u << (cv & 31))) break;
+              if (((0xff8u >> (cv & 31)) & 1u) != 0) break;
             }
           }
         }
 L_d584:                                       /* 0x8014d584 */
-        if (*(uint32_t *)(s0 + 0x1c) != *(uint32_t *)(s0 + 0x20)) {
-          uint32_t a0, idx;
+        if (*(uint32_t *)(rec + 0x1c) != *(uint32_t *)(rec + 0x20)) {
+          uint32_t idx;
           deferred_cmd_post(0x400,0x40,0);
-          *(uint32_t *)(s0 + 0x20) = *(uint32_t *)(s0 + 0x1c);
-          if (s3 == 1 && *(uint32_t *)(T + 0x4c) == 5) {
-            gpu_side_packet_emit(B36_32(0x114),(int32_t)s3,0);
+          *(uint32_t *)(rec + 0x20) = *(uint32_t *)(rec + 0x1c);
+          if (side == 1 && *(uint32_t *)(T + 0x4c) == 5) {
+            gpu_side_packet_emit(B36_32(0x114),(int32_t)side,0);
           } else {
-            idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-            gpu_side_packet_emit(B36_32(0xe8 + idx * 4),(int32_t)s3,0);
+            idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+            gpu_side_packet_emit(B36_32(0xe8 + idx * 4),(int32_t)side,0);
           }
-          idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-          gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)s3,1);
+          idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+          gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)side,1);
           engine_record_pair_update(0x1f800000,(uint8_t *)b36_sp + 0x18);
         }
         if (B36_32(0x2c) == 0) {
           /* scan rec+0x1c upward until a pad bit is set */
-          int32_t v0;
+          int32_t nx;
           for (;;) {
-            v0 = (int32_t)*(uint32_t *)(s0 + 0x1c);
-            if (MB32(0x801f10b8) & (1u << (v0 & 31))) break;
-            v0 = v0 + 1;
-            *(uint32_t *)(s0 + 0x1c) = (uint32_t)v0;
-            if (v0 >= 0xf) *(uint32_t *)(s0 + 0x1c) = 0;
+            nx = (int32_t)*(uint32_t *)(rec + 0x1c);
+            if (MB32(0x801f10b8) & (1u << (nx & 31))) break;
+            nx = nx + 1;
+            *(uint32_t *)(rec + 0x1c) = (uint32_t)nx;
+            if (nx >= 0xf) *(uint32_t *)(rec + 0x1c) = 0;
           }
-          *(uint32_t *)(s0 + 8) |= 0x80u;
+          *(uint32_t *)(rec + 8) |= 0x80u;
         }
         /* confirm/select @0x8014d6bc */
         if ((MB32(0x801f10b8) &
-             (1u << (*(uint32_t *)(s0 + 0x1c) & 31))) != 0) {
-          if ((*(uint32_t *)(s0 + 8) & 0xe0u) != 0 ||
-              (*(uint32_t *)(s0 + 8) & 0x800u) != 0) {
-            if ((*(uint32_t *)(s0 + 8) & 0xe0u) != 0 ||
+             (1u << (*(uint32_t *)(rec + 0x1c) & 31))) != 0) {
+          if ((*(uint32_t *)(rec + 8) & 0xe0u) != 0 ||
+              (*(uint32_t *)(rec + 8) & 0x800u) != 0) {
+            if ((*(uint32_t *)(rec + 8) & 0xe0u) != 0 ||
                 ((MB32(MB32(0x1f8000c0) + 0x50) >>
-                  (MB8(0x801b239c + *(uint32_t *)(s0 + 0x1c)) & 31)) & 1u) != 0) {
+                  (MB8(0x801b239c + *(uint32_t *)(rec + 0x1c)) & 31)) & 1u) != 0) {
               B36_32(0x10) = 0;
-              select_confirm_handler(0x1f800000,(uint32_t)s3,T,
-                           *(uint32_t *)(s0 + 8),0);
+              select_confirm_handler(0x1f800000,(uint32_t)side,T,
+                           *(uint32_t *)(rec + 8),0);
               deferred_cmd_post(0x400,0x41,0);
-              *(uint32_t *)(s0 + 0x24) = 1;
-              copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),s1,
-                            (uint8_t *)guest_at(0x801b252c + s2));
-              if (s3 == 0)
-                task_alloc_wrap_c(MB32(0x801f10c0) + s1 + 0x266,
-                             MB32(0x801f10c4) + s1 + 0x266,
+              *(uint32_t *)(rec + 0x24) = 1;
+              copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),eoff,
+                            (uint8_t *)guest_at(0x801b252c + doff));
+              if (side == 0)
+                task_alloc_wrap_c(MB32(0x801f10c0) + eoff + 0x266,
+                             MB32(0x801f10c4) + eoff + 0x266,
                              0x801b3054,0x801b30dc);
               else
-                task_alloc_wrap_c(MB32(0x801f10c0) + s1 + 0x28e,
-                             MB32(0x801f10c4) + s1 + 0x28e,
+                task_alloc_wrap_c(MB32(0x801f10c0) + eoff + 0x28e,
+                             MB32(0x801f10c4) + eoff + 0x28e,
                              0x801b3054,0x801b312c);
             }
           }
@@ -8620,27 +8620,27 @@ L_d584:                                       /* 0x8014d584 */
         goto L_next;
 
 L_st1:                                         /* 0x8014d8f8 */
-        if (*(uint32_t *)(s0 + 0x10) == 0) {
+        if (*(uint32_t *)(rec + 0x10) == 0) {
           /* copy other->f24 rule: other f10==1, or f10==0 with
            * other->f24>0, forces rec->f24 = 2 (v0 preset to 2 in the
            * delay slots — the stored value is always 2). */
-          uint8_t *o = T + (uint32_t)(s3 ^ 1) * 0x30;
+          uint8_t *o = T + (uint32_t)(side ^ 1) * 0x30;
           uint32_t f10 = *(uint32_t *)(o + 0x10);
           if (f10 == 1 ||
               (f10 == 0 && (int32_t)*(uint32_t *)(o + 0x24) > 0))
-            *(uint32_t *)(s0 + 0x24) = 2;
-          if (*(uint32_t *)(s0 + 0x24) != 2) goto L_next;
-          copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),s1,
-                        (uint8_t *)guest_at(0x801b2534 + s2));
+            *(uint32_t *)(rec + 0x24) = 2;
+          if (*(uint32_t *)(rec + 0x24) != 2) goto L_next;
+          copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),eoff,
+                        (uint8_t *)guest_at(0x801b2534 + doff));
           goto L_next;
         }
-        if (*(uint32_t *)(s0 + 0x10) == 1) {
+        if (*(uint32_t *)(rec + 0x10) == 1) {
           /* gate on the OPPONENT record T+(s3^1)*0x30: f24>0 or
            * (f0>>1)&1 (generated 0x8014DAC4: xori $2,$s3,1 -> *3 ->
            * <<4 -> +T). Hardcoding T+0x30 only matches s3==0; for the
            * P2 pass it must read P1's record or P2's confirm is
            * gated on its own not-yet-ready f24 and never completes. */
-          uint8_t *a2r = T + (uint32_t)(s3 ^ 1) * 0x30;
+          uint8_t *a2r = T + (uint32_t)(side ^ 1) * 0x30;
           if ((int32_t)*(uint32_t *)(a2r + 0x24) <= 0 &&
               ((*(uint32_t *)(a2r + 0) >> 1) & 1u) == 0) goto L_next;
           {
@@ -8648,31 +8648,31 @@ L_st1:                                         /* 0x8014d8f8 */
             int32_t si = (int16_t)MB16(0x1f8000a2);
             uint8_t v = MB8(MB32(0x1f8000a8) + (uint32_t)si);
             v = MB8(0x801b23ac + v);
-            *(uint32_t *)(s0 + 0)    |= 8u;
-            *(uint32_t *)(s0 + 0x24) = 2;
-            *(uint32_t *)(s0 + 0x1c) = v;
+            *(uint32_t *)(rec + 0)    |= 8u;
+            *(uint32_t *)(rec + 0x24) = 2;
+            *(uint32_t *)(rec + 0x1c) = v;
           }
-          copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),s1,
-                        (uint8_t *)guest_at(0x801b2534 + s2));
+          copy8_rec(MB32(0x801f10c0),MB32(0x801f10c4),eoff,
+                        (uint8_t *)guest_at(0x801b2534 + doff));
           if (((*(uint32_t *)(a2r + 0) >> 1) & 1u) == 0) {
-            if (s3 == 0)
-              task_alloc_wrap_c(MB32(0x801f10c0) + s1 + 0x266,
-                           MB32(0x801f10c4) + s1 + 0x266,
+            if (side == 0)
+              task_alloc_wrap_c(MB32(0x801f10c0) + eoff + 0x266,
+                           MB32(0x801f10c4) + eoff + 0x266,
                            0x801b3054,0x801b30dc);
             else
-              task_alloc_wrap_c(MB32(0x801f10c0) + s1 + 0x28e,
-                           MB32(0x801f10c4) + s1 + 0x28e,
+              task_alloc_wrap_c(MB32(0x801f10c0) + eoff + 0x28e,
+                           MB32(0x801f10c4) + eoff + 0x28e,
                            0x801b3054,0x801b312c);
           }
-          if (s3 == 1 && *(uint32_t *)(T + 0x4c) == 5) {
+          if (side == 1 && *(uint32_t *)(T + 0x4c) == 5) {
             gpu_side_packet_emit(B36_32(0x114),1,0);
           } else {
-            uint32_t idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-            gpu_side_packet_emit(B36_32(0xe8 + idx * 4),(int32_t)s3,0);
+            uint32_t idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+            gpu_side_packet_emit(B36_32(0xe8 + idx * 4),(int32_t)side,0);
           }
           {
-            uint32_t idx = MB8(0x801b238c + *(uint32_t *)(s0 + 0x1c));
-            gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)s3,1);
+            uint32_t idx = MB8(0x801b238c + *(uint32_t *)(rec + 0x1c));
+            gpu_side_packet_emit(B36_32(0xb8 + idx * 4),(int32_t)side,1);
           }
           engine_record_pair_update(0x1f800000,(uint8_t *)b36_sp + 0x18);
         }
@@ -8713,24 +8713,24 @@ L_case8:                                      /* 0x8014ddf8 */
 
 L_case9:                                      /* 0x8014de74 */
     if ((int8_t)B36_8(0x3c) != 0) {
-      uint32_t s0 = B36_8(0x3d);
-      uint8_t *a0;
-      uint32_t v1;
+      uint32_t side = B36_8(0x3d);
+      uint8_t *rec;
+      uint32_t aidx;
       confirm_bookkeeping(0x1f800000);
       task_heads_clear(1);
       task_heads_clear(2);
       print_mode_dispatch_b(2,0,0);
       post_confirm_config_build(0x1f800000,(uint8_t *)b36_sp + 0x18,0);
       record_init_sweep(0x1f800000,0);              /* a1 indeterminate */
-      a0 = T + s0 * 0x30;
-      v1 = MB8(MB32(0x1f8000c0) + s0 + 0x1b);
-      v1 = MB8(0x801b23ac + v1);
-      s0 ^= 1;
-      *(uint32_t *)(a0 + 0)    = 0x59;
-      *(uint32_t *)(a0 + 0x24) = 0;
-      *(uint32_t *)(a0 + 0x10) = 0;
-      *(uint32_t *)(a0 + 0x1c) = v1;
-      *(uint32_t *)(T + s0 * 0x30 + 0x24) = 1;
+      rec = T + side * 0x30;
+      aidx = MB8(MB32(0x1f8000c0) + side + 0x1b);
+      aidx = MB8(0x801b23ac + aidx);
+      side ^= 1;
+      *(uint32_t *)(rec + 0)    = 0x59;
+      *(uint32_t *)(rec + 0x24) = 0;
+      *(uint32_t *)(rec + 0x10) = 0;
+      *(uint32_t *)(rec + 0x1c) = aidx;
+      *(uint32_t *)(T + side * 0x30 + 0x24) = 1;
       MW8(0x1f800001,1);
     }
     goto L_tail;
@@ -8748,14 +8748,14 @@ L_tail:                                       /* 0x8014df6c */
     task_pools_tick(2);
     if (MB8(0x1f800001) >= 5 && (B36_32(0x34) & 0x800u) != 0) {
       /* frame timer -> sp+0x138 text, then descblk_variant_e banner */
-      int32_t a1;
+      int32_t secs;
       {
-        int32_t v0 = (int32_t)B36_32(0x2c);
-        int64_t prod = (int64_t)v0 * (int64_t)(int32_t)0x51eb851f;
+        int32_t fcnt = (int32_t)B36_32(0x2c);
+        int64_t prod = (int64_t)fcnt * (int64_t)(int32_t)0x51eb851f;
         int32_t mulhi = (int32_t)(prod >> 32);
-        a1 = (mulhi >> 4) - (v0 >> 31);
+        secs = (mulhi >> 4) - (fcnt >> 31);
       }
-      width3_num_format((uint8_t *)b36_sp + 0x138,a1,1);
+      width3_num_format((uint8_t *)b36_sp + 0x138,secs,1);
       B36_32(0x10) = (MB8(0x1f800015) != 0) ? 0xf0u : 0x78u;
       B36_32(0x14) = 0xe;
       descblk_variant_e(MB32(0x1f800008),MB32(0x1f80000c),
@@ -8781,43 +8781,43 @@ L_tail:                                       /* 0x8014df6c */
        * s7=T+0x30i, fp=0xaa0+0x28i, s1=0x28i, s4=ctx+4i,
        * S32(0x148)=0x30i, S32(0x14c)=2i. */
       int32_t i;
-      uint32_t fp = 0xaa0, s1 = 0;
+      uint32_t poff = 0xaa0, eoff = 0;
       B36_32(0x144) = guest_of(ctx);
       B36_32(0x148) = 0;
       B36_32(0x14c) = 0;
       for (i = 0; i < 2; i++) {
-        uint8_t *s7 = T + (uint32_t)i * 0x30;
-        uint8_t *s0;
-        uint32_t s2;
-        int32_t f24 = (int32_t)*(uint32_t *)(s7 + 0x24);
+        uint8_t *rec = T + (uint32_t)i * 0x30;
+        uint8_t *ent;
+        uint32_t ga;
+        int32_t f24 = (int32_t)*(uint32_t *)(rec + 0x24);
         B36_32(0x148) = (uint32_t)i * 0x30;
         B36_32(0x14c) = (uint32_t)i * 2;
         if ((*(uint32_t *)(ctx + (uint32_t)i * 0x30 + 0x28) & 8u) != 0) {
           /* rec_i->f0 & 8 (ctx+0x30i+0x28 == T+0x30i) */
-          int32_t f1c = (int32_t)*(uint32_t *)(s7 + 0x1c);
-          s0 = (uint8_t *)guest_at(0x801b268c + (uint32_t)f1c * 8);
-          s2 = 0x801b2684 + (uint32_t)f1c * 8;
-          B36_32(0x10) = (uint32_t)(int32_t)*(int16_t *)(s0 + 4);
-          B36_32(0x14) = (uint32_t)(int32_t)*(int16_t *)(s0 + 6);
-          sprite_place_centered(B36_ENG() + fp,0x1f800000,
-                       (int32_t)*(int16_t *)(s0 + 0),
-                       (int32_t)*(int16_t *)(s0 + 2),
+          int32_t f1c = (int32_t)*(uint32_t *)(rec + 0x1c);
+          ent = (uint8_t *)guest_at(0x801b268c + (uint32_t)f1c * 8);
+          ga = 0x801b2684 + (uint32_t)f1c * 8;
+          B36_32(0x10) = (uint32_t)(int32_t)*(int16_t *)(ent + 4);
+          B36_32(0x14) = (uint32_t)(int32_t)*(int16_t *)(ent + 6);
+          sprite_place_centered(B36_ENG() + poff,0x1f800000,
+                       (int32_t)*(int16_t *)(ent + 0),
+                       (int32_t)*(int16_t *)(ent + 2),
                        (int32_t)B36_32(0x10),(int32_t)B36_32(0x14));
           if (i == 0) {
             B36_32(0x10) = 0x20; B36_32(0x14) = 0x18;
             sprite_place_centered(B36_ENG() + 0xb90,0x1f800000,
-                         (int16_t)(MB16(s2 + 0) + 0xd),
-                         (int16_t)(MB16(s2 + 2) - 0x11),0x20,0x18);
+                         (int16_t)(MB16(ga + 0) + 0xd),
+                         (int16_t)(MB16(ga + 2) - 0x11),0x20,0x18);
           } else {
             B36_32(0x10) = 0x20; B36_32(0x14) = 0x18;
-            sprite_place_centered(B36_ENG() + s1 + 0xb90,0x1f800000,
-                         (int16_t)(MB16(s2 + 0) - 0xc),
-                         (int16_t)(MB16(s2 + 2) + 0x14),0x20,0x18);
+            sprite_place_centered(B36_ENG() + eoff + 0xb90,0x1f800000,
+                         (int16_t)(MB16(ga + 0) - 0xc),
+                         (int16_t)(MB16(ga + 2) + 0x14),0x20,0x18);
           }
-          if (*(uint32_t *)(s7 + 0x10) == 0) {
+          if (*(uint32_t *)(rec + 0x10) == 0) {
             /* src = s2 + S32(0x14c); bytes 0/1 */
-            uint8_t *src = (uint8_t *)guest_at(s2 + B36_32(0x14c));
-            uint32_t dg = B36_ENG() + s1;
+            uint8_t *src = (uint8_t *)guest_at(ga + B36_32(0x14c));
+            uint32_t dg = B36_ENG() + eoff;
             MW8(dg + 0xb9c, src[0]);
             MW8(dg + 0xb9d, src[1]);
             MW8(dg + 0xba4, (uint8_t)(src[0] + 0x20));
@@ -8826,10 +8826,10 @@ L_tail:                                       /* 0x8014df6c */
             MW8(dg + 0xbad, (uint8_t)(src[1] + 0x18));
             MW8(dg + 0xbb4, (uint8_t)(src[0] + 0x20));
             MW8(dg + 0xbb5, (uint8_t)(src[1] + 0x18));
-          } else if (*(uint32_t *)(s7 + 0x10) == 1) {
+          } else if (*(uint32_t *)(rec + 0x10) == 1) {
             /* s2 bytes 4/5 */
-            uint8_t *src = (uint8_t *)guest_at(s2);
-            uint32_t dg = B36_ENG() + s1;
+            uint8_t *src = (uint8_t *)guest_at(ga);
+            uint32_t dg = B36_ENG() + eoff;
             MW8(dg + 0xb9c, src[4]);
             MW8(dg + 0xb9d, src[5]);
             MW8(dg + 0xba4, (uint8_t)(src[4] + 0x20));
@@ -8845,12 +8845,12 @@ L_tail:                                       /* 0x8014df6c */
             uint16_t tag;
             if (h0 != 0) { task_node_free(h0); B36_32(0x1c + 4 * i) = 0; }
             if (h1 != 0) { task_node_free(h1); B36_32(0x24 + 4 * i) = 0; }
-            if (*(uint32_t *)(s7 + 0x10) == 0) tag = 0x7c1f;
-            else if (*(uint32_t *)(s7 + 0x10) == 1) tag = 0x79db;
+            if (*(uint32_t *)(rec + 0x10) == 0) tag = 0x7c1f;
+            else if (*(uint32_t *)(rec + 0x10) == 1) tag = 0x79db;
             else goto L_f20_ot;
             {
-              uint8_t *d0 = (uint8_t *)guest_at(MB32(0x801f10c0) + s1);
-              uint8_t *d1 = (uint8_t *)guest_at(MB32(0x801f10c4) + s1);
+              uint8_t *d0 = (uint8_t *)guest_at(MB32(0x801f10c0) + eoff);
+              uint8_t *d1 = (uint8_t *)guest_at(MB32(0x801f10c4) + eoff);
               uint32_t g0 = guest_of(d0), g1 = guest_of(d1);
               MW16(g0 + 0xaae, tag);
               MW16(g1 + 0xaae, tag);
@@ -8858,22 +8858,22 @@ L_tail:                                       /* 0x8014df6c */
               MW16(g1 + 0xb9e, tag);
             }
           } else {
-            int32_t f1c = (int32_t)*(uint32_t *)(s7 + 0x1c);
+            int32_t f1c = (int32_t)*(uint32_t *)(rec + 0x1c);
             if ((MB32(0x801f10b8) & (1u << (f1c & 31))) != 0) {
               record_flag_byte_set(B36_32(0x1c + 4 * i));
               record_flag_byte_set(B36_32(0x24 + 4 * i));
             } else {
-              uint32_t dg = B36_ENG() + s1;
+              uint32_t dg = B36_ENG() + eoff;
               MW16(dg + 0xaae, 0x7a9c);
               record_flag_byte_clear(B36_32(0x1c + 4 * i));
               record_flag_byte_clear(B36_32(0x24 + 4 * i));
             }
           }
 L_f20_ot:
-          ot_push(B36_ENG() + s1 + 0xaa0, B36_16S(0xac));
-          ot_push(B36_ENG() + s1 + 0xb90, B36_16S(0xac));
+          ot_push(B36_ENG() + eoff + 0xaa0, B36_16S(0xac));
+          ot_push(B36_ENG() + eoff + 0xb90, B36_16S(0xac));
         }
-        fp += 0x28; s1 += 0x28;
+        poff += 0x28; eoff += 0x28;
       }
     }
     if ((B36_32(0x34) & 0x40u) != 0) {
@@ -8893,10 +8893,10 @@ L_f20_ot:
        * +0xa0 and (i==1) eng+0xf0. slot lh 0xa4. */
       int32_t i;
       for (i = 0; i < 2; i++) {
-        uint8_t *a1 = ctx + (uint32_t)i * 0x30;
+        uint8_t *crec = ctx + (uint32_t)i * 0x30;
         uint32_t io = (uint32_t)i * 0x28;
-        uint32_t f0 = *(uint32_t *)(a1 + 0x28);
-        uint32_t f2c = *(uint32_t *)(a1 + 0x54);
+        uint32_t f0 = *(uint32_t *)(crec + 0x28);
+        uint32_t f2c = *(uint32_t *)(crec + 0x54);
         if ((f0 & 0x10u) != 0 && f2c == 0) {
           ot_push(B36_ENG() + io + 0x0,  B36_16S(0xa4));
           ot_push(B36_ENG() + io + 0x50, B36_16S(0xa4));
@@ -8906,7 +8906,7 @@ L_f20_ot:
           if (i == 1)
             ot_push(B36_ENG() + 0xf0, B36_16S(0xa4));
         }
-        if (f2c != 0) *(uint32_t *)(a1 + 0x54) = 0;
+        if (f2c != 0) *(uint32_t *)(crec + 0x54) = 0;
       }
     }
     if ((B36_32(0x34) & 4u) != 0) {
@@ -8915,11 +8915,11 @@ L_f20_ot:
        * (f10==1 && f24<2 && !((other->f0>>1)&1)); else single push at
        * eng+0x28i+0x258. Simple path runs 8x sprite_rect_set_c + pushes. */
       int32_t i;
-      uint32_t t0 = 0x258;
-      uint8_t *s7 = T;
-      for (i = 0; i < 2; i++, s7 += 0x30, t0 += 0x28) {
-        uint32_t f10 = *(uint32_t *)(s7 + 0x10);
-        uint32_t f24 = *(uint32_t *)(s7 + 0x24);
+      uint32_t eoff = 0x258;
+      uint8_t *rec = T;
+      for (i = 0; i < 2; i++, rec += 0x30, eoff += 0x28) {
+        uint32_t f10 = *(uint32_t *)(rec + 0x10);
+        uint32_t f24 = *(uint32_t *)(rec + 0x24);
         int simple;
         if (f10 == 0) {
           simple = (f24 == 0);
@@ -8935,23 +8935,23 @@ L_f20_ot:
                       B36_16S(0xa6));
         } else {
           /* s0 = (12*B36_32(0x2c) mod 272) + 0x50 via mult 0x78787879 */
-          int32_t a0 = (int32_t)B36_32(0x2c) * 12;
-          int64_t prod = (int64_t)a0 * (int64_t)(int32_t)0x78787879;
+          int32_t raw = (int32_t)B36_32(0x2c) * 12;
+          int64_t prod = (int64_t)raw * (int64_t)(int32_t)0x78787879;
           int32_t mulhi = (int32_t)(prod >> 32);
-          int32_t q = (mulhi >> 7) - (a0 >> 31);
-          int32_t s0 = a0 - q * 272 + 0x50;
+          int32_t q = (mulhi >> 7) - (raw >> 31);
+          int32_t pos = raw - q * 272 + 0x50;
           int j;
           uint32_t base = (i == 0) ? 0x2a8 : 0x410;
           int32_t attr1 = (i == 0) ? 0 : 0x100;
           int32_t attr3 = (i == 0) ? 0x100 : 0x102;
           for (j = 0; j < 8; j++) {
-            if (s0 >= 0x161) s0 -= 0x110;
-            B36_32(0x150) = t0;
+            if (pos >= 0x161) pos -= 0x110;
+            B36_32(0x150) = eoff;
             sprite_rect_set_c(B36_ENG() + base + (uint32_t)j * 0x28,
-                         attr1,s0,attr3,0x22);
+                         attr1,pos,attr3,0x22);
             ot_push(B36_ENG() + (uint32_t)j * 0x28 + base,
                         B36_16S(0xa6));
-            s0 += 0x22;
+            pos += 0x22;
           }
         }
       }
