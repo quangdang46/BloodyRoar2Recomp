@@ -500,7 +500,7 @@ void unlock_progress_scene_entry(void)
 
 {
   uint char_idx;
-  
+
   char_idx = 0xffffffff;
   if ((_DAT_1f8000b4 & 0xf00) == 0xa00) {
     char_idx = (uint)DAT_1f8000eb;
@@ -561,7 +561,7 @@ void battle_flow_state_machine(intptr_t in_rec)
   undefined4 scr, pidx, gaddr;
   int res, otidx;
   int qres, otdp, sbyte;
-  
+
   battle_ran = false;
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
     if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
@@ -1027,7 +1027,7 @@ undefined4 system_config_menu_a(void)
 #define local_36 (*(uint16_t *)&step_desc_a[0x2a])
 #define local_34 (*(uint16_t *)&step_desc_a[0x2c])
 #define local_32 (*(uint16_t *)&step_desc_a[0x2e])
-  
+
   pad_buf = _g_pad_buffer;
   ret = 0;
   _DAT_1f80008c = 0;
@@ -1206,7 +1206,7 @@ undefined4 system_config_menu_b(void)
 #define local_46 (*(uint16_t *)&step_desc_b[0x22])
 #define local_44 (*(uint16_t *)&step_desc_b[0x24])
 #define local_42 (*(uint16_t *)&step_desc_b[0x26])
-  
+
   cfg_base = (intptr_t)_g_system_config_ptr;
   ret = 0;
   step_arg = 0;
@@ -1381,7 +1381,7 @@ void results_scoreboard(int mode)
   int local_38;
   undefined1 *local_34;
   undefined1 *local_30;
-  
+
   if (mode == 1) {
     local_30 = (undefined1 *)guest_at(0x801c13a4);
     goto LAB_80164714;
@@ -1658,7 +1658,7 @@ void player_name_entry(void)
   undefined1 *records;
   undefined1 *fmt_buf;
   undefined4 *name_ptr;
-  
+
   char_sel = 0;
   local_4c = &DAT_1f8000e8;
   local_48 = &DAT_1f8001f0;
@@ -1945,7 +1945,7 @@ void transition_screen_flow(int mode)
   uint gray;
   undefined4 spr_code;
   int fade_ctr;
-  
+
   if ((mode != 0) || (_DAT_801c4578 == 1)) {
     fade_acc = memcard_err_sentinel();
     if (fade_acc < 0) {
@@ -2226,7 +2226,7 @@ void display_frame_present(int *env,int ticks)
 {
 
   int w;
-  
+
   gpu_draw_sync(0);
   memcard_tick();
   deferred_cmd_drain();
@@ -2295,7 +2295,7 @@ void tile_stream_job_init(undefined4 *job,undefined2 w0,undefined2 w1,undefined2
   undefined4 hdr2;
   undefined4 hdr3;
   undefined2 flg;
-  
+
   job = (undefined4 *)guest_at((uint32_t)(uintptr_t)job);
   hdr3 = _DAT_801f4750;
   hdr2 = _DAT_801f474c;
@@ -2361,7 +2361,7 @@ void tile_stream_pump(void)
   undefined4 off_y;
   extern uint32_t g_cdfn_log[24];
   g_cdfn_log[13]++;   /* CDFN_TILE_STREAM_PUMP */
-  
+
   if ((_DAT_801f4738 != 0) && (_DAT_801fc68c != 0)) {
     cd_mc_state_machine();
     _DAT_801fc68c = 0;
@@ -2415,7 +2415,7 @@ void tile_decode_wait(intptr_t job)
   uint next_buf;
   int done;
   int timeout;
-  
+
   job = (intptr_t)guest_at((uint32_t)job);
   done = *(int *)(job + 0x34);
   timeout = 0x800000;
@@ -2700,7 +2700,7 @@ void boot_globals_init(void)
   undefined1 *chan_flag;
   int i;
   int mask;
-  
+
   cd_chan_boot_fwd();
   mc_init_reset();
   mc_mode_nibble_rw(2);
@@ -2750,7 +2750,7 @@ undefined4 attract_stage_load_step(int state_g,int *out)
   /* state_g is a GUEST base (0x1f800000 scratchpad state block), not a host
    * pointer — dereference via guest_at() or the raw 0x1f80008c access faults. */
   short *st8c = (short *)guest_at((uint32_t)state_g + 0x8cu);
-  
+
   phase = *st8c;
   if (phase < 0) {
     return 0xffffffff;
@@ -2825,7 +2825,7 @@ undefined4 attract_menu_dispatch(intptr_t ctx,uint btn)
 
 {
   int st;
-  
+
   btn = btn & 0xffff;
   if (btn == 6) {
     if ((_DAT_1f80007c & 0x840) == 0) {
@@ -2967,7 +2967,7 @@ uint pad_state_refresh(intptr_t pad)
   intptr_t rec;
   int i;
   uint btns_old;
-  
+
   if ((DAT_801befa8 != '\0') || (btns = attr_word_decode(&DAT_801befa8), (int)btns < 0)) {
     btns = 0;
   }
