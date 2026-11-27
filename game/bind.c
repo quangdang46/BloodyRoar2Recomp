@@ -2482,11 +2482,15 @@ __attribute__((weak)) void hud_text_d() { return; }
 __attribute__((weak)) void sprite_node_emit_a() { return; }
 __attribute__((weak)) void sprite_node_emit_b() { return; }
 
-/* printf rodata: hex-digit strings + guest ctype bitmap @0x801b6701
- * (extracted verbatim from the payload image). */
+/* printf rodata: hex-digit strings + guest char-class table
+ * @0x801b6701 (extracted verbatim from the payload image). */
 char s_0123456789abcdef_80124fe8[] = "0123456789abcdef";
 char s_0123456789ABCDEF_80125004[] = "0123456789ABCDEF";
 char s__null__80124ffc[] = "(null)";
+/* char-class table @0x801b6701: bit2 (&4) = nonzero decimal digit
+ * (printf width/precision scans in gfx.c printf_core); &0x97 =
+ * printable-glyph class (console_emit column advance); high half
+ * indexes SJIS double-byte classes. */
 uint8_t DAT_801b6701[256] = {32, 32, 32, 32, 32, 32, 32, 32, 32, 8, 8, 8, 8, 8, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 16, 16, 16, 16, 16, 16, 16, 65, 65, 65, 65, 65, 65, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 16, 16, 16, 16, 16, 16, 66, 66, 66, 66, 66, 66, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 16, 16, 16, 16, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 64, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26, 27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38, 37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83, 2, 16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26};
 /* bios_tramp_b035 — guest 0x8018EF50: BIOS B035 debug-output
  * trampoline fronting the line-buffer flush. a1 arrives as a host
