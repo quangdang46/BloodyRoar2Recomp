@@ -1322,7 +1322,7 @@ void deferred_cmd_drain(uint32_t a0,int a1)
         }
       }
       else {
-        rec_s[1] = rec_s[1] - 1;
+        rec_s[1]--;
       }
     }
 bb_80156ebc:
@@ -2057,8 +2057,8 @@ void mc_slot_action(uint8_t *a0,int32_t a1)
   chan_b[4] = 0;
   q[0x1b] = 0;
   q[0x1c] = 2;
-  q[0x19] = q[0x19] & 3;
-  q[0x1a] = q[0x1a] & 3;
+  q[0x19] &= 3;
+  q[0x1a] &= 3;
   picker_table_shuffle(a0);
   chan_blocks_reset(0x1f8000e8,0,0);
   chan_blocks_reset(0x1f8001f0,0,0);
