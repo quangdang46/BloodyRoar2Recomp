@@ -1255,3 +1255,26 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 - Structuring path confirmed next: with fallthrough gotos gone, the
   remaining `goto block_` sites are the real CFG edges — Phoenix-style
   region analysis on the DAG is the next generator milestone.
+
+### Session update 25b (fold rollout + pointer-cast audit)
+
+- `fold_fallthrough_gotos` rolled out beyond cps_clean.c/cd_irq_probe.c:
+  - cd_irq_probe.c regenerated --timing: 2743 gotos removed (`ad16bdf1`).
+  - 29 ad-hoc transliteration files (w2_*/w3_*/w4_*/w5_*/gfx_*/recon_*/
+    ev.c) post-processed with the same rule: 1092 gotos (`13b4626c`).
+  - Second pass with comment/string-aware brace matching (col-0 `}`
+    bare-block style in menu.c/w3_e06/w3_e08 truncated pass 1): +165
+    (`a0fdec9a`). Fold is idempotent; remaining `goto block_` are all
+    load-bearing forward edges.
+- Structuring rescope: 84% of all 4550 cps_clean blocks are `_cont`
+  resume entries (even cps_8012fce0: 354/355) — labels are intrinsic to
+  the coroutine model, not accidental mess. Phoenix-style nesting can't
+  remove them; true readability = reconstructing whole guest functions
+  across piece boundaries (the per-function hand-port frontier).
+- Warning audit (`3d379871`): **real bug** — confetti_burst_update
+  else-branch did `*(uint16_t*)(guest_addr_int)` raw host derefs (3
+  sites) -> wrapped in guest_at; generated uses psx_cyc_load_half.
+  All -Wint-to-pointer/-Wpointer-to-int sites now audited: remaining
+  are the verified guest-address-valued pointer convention
+  (br2_gaddr round-trips guest addrs; (u32)(intptr_t) containers).
+  -Wpointer-sign (~28) are pointee-signedness mismatches, benign.
