@@ -234,6 +234,7 @@
 801524b0 please_wait_announce
 80166f64 fighter_reinit_tail
 80166eb0 fighter_respawn_init
+80166a60 battle_slot_draw
 8012e97c rec_copy_init
 80161c54 pad_handler_a
 80162280 pad_handler_b
