@@ -3729,7 +3729,7 @@ block_80126828:
 
 /* cps_80126840 — clean CPS transliteration of br2eu_func_80126840 (guest 0x80126840)
  * from SLES_017.22_full_00.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — empty leaf: immediate jr ra */
 void cps_80126840(void)
 {
 /* empty leaf: immediate jr ra. */
@@ -5114,7 +5114,7 @@ block_80126EEC:
 
 /* cps_801279c0 — clean CPS transliteration of br2eu_func_801279C0 (guest 0x801279c0)
  * from SLES_017.22_full_00.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — bare jr $ra (delay-slot nop) */
 void cps_801279c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -5133,7 +5133,7 @@ block_801279C0:
 
 /* cps_80127b4c — clean CPS transliteration of br2eu_func_80127B4C (guest 0x80127b4c)
  * from SLES_017.22_full_00.c.
- * single half store to a0+6 */
+ * single half store to a0+6 — halfword refcount bump: word[a0+6]++, jr ra */
 void cps_80127b4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -7274,7 +7274,7 @@ block_80128EDC:
 
 /* cps_80128ee4 — clean CPS transliteration of br2eu_func_80128EE4 (guest 0x80128ee4)
  * from SLES_017.22_full_01.c.
- * single half store to v0 */
+ * single half store to v0 — results leaf/terminal piece */
 void cps_80128ee4(void)
 {
 /* results leaf/terminal piece. */
@@ -10676,7 +10676,7 @@ block_80129EF0:
 
 /* cps_80129f70 — clean CPS transliteration of br2eu_func_80129F70 (guest 0x80129f70)
  * from SLES_017.22_full_01.c.
- * single byte store to v0 + -31824 */
+ * single byte store to v0 + -31824 — menu leaf/terminal piece (jr/jr $ra exit of the menu cluster) */
 void cps_80129f70(void)
 {
 /* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
@@ -10721,7 +10721,7 @@ block_80129FA8:
 
 /* cps_8012a00c — clean CPS transliteration of br2eu_func_8012A00C (guest 0x8012a00c)
  * from SLES_017.22_full_01.c.
- * single byte store to v1 */
+ * single byte store to v1 — UI/print leaf/terminal piece */
 void cps_8012a00c(void)
 {
 /* UI/print leaf/terminal piece. */
@@ -12343,7 +12343,7 @@ block_8012AA8C:
 
 /* cps_8012aac0 — clean CPS transliteration of br2eu_func_8012AAC0 (guest 0x8012aac0)
  * from SLES_017.22_full_01.c.
- * single byte store to v1+16 */
+ * single byte store to v1+16 — UI/print fragment: continues at 0x8012AAD4 */
 void cps_8012aac0(void)
 {
 /* UI/print fragment: continues at 0x8012AAD4 */
@@ -12403,7 +12403,7 @@ block_8012AAD4:
 
 /* cps_8012aadc — clean CPS transliteration of br2eu_func_8012AADC (guest 0x8012aadc)
  * from SLES_017.22_full_01.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — UI/print leaf/terminal piece */
 void cps_8012aadc(void)
 {
 /* UI/print leaf/terminal piece. */
@@ -18516,7 +18516,7 @@ block_8012CE10:
 
 /* cps_8012ea9c — clean CPS transliteration of br2eu_func_8012EA9C (guest 0x8012ea9c)
  * from SLES_017.22_full_03.c.
- * single half store to v0+48 */
+ * single half store to v0+48 — halfword[v0+48]=a3 */
 void cps_8012ea9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -18536,7 +18536,7 @@ block_8012EA9C:
 
 /* cps_8012edf4 — clean CPS transliteration of br2eu_func_8012EDF4 (guest 0x8012edf4)
  * from SLES_017.22_full_03.c.
- * single half store to a0+6 */
+ * single half store to a0+6 — halfword[a0+6]=a1 */
 void cps_8012edf4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -18558,7 +18558,7 @@ block_8012EDF4:
 
 /* cps_8012ee40 — clean CPS transliteration of br2eu_func_8012EE40 (guest 0x8012ee40)
  * from SLES_017.22_full_03.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — empty/branch piece */
 void cps_8012ee40(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26326,7 +26326,7 @@ block_8013392C:
 
 /* cps_8013393c — clean CPS transliteration of br2eu_func_8013393C (guest 0x8013393c)
  * from SLES_017.22_full_06.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — math leaf/terminal piece */
 void cps_8013393c(void)
 {
 /* math leaf/terminal piece. */
@@ -29764,7 +29764,7 @@ block_801357DC:
 
 /* cps_80135804 — clean CPS transliteration of br2eu_func_80135804 (guest 0x80135804)
  * from SLES_017.22_full_06.c.
- * single half store to a0+38 */
+ * single half store to a0+38 — particle leaf/terminal piece */
 void cps_80135804(void)
 {
 /* particle leaf/terminal piece. */
@@ -30525,7 +30525,7 @@ block_80136074:
 
 /* cps_8013610c — clean CPS transliteration of br2eu_func_8013610C (guest 0x8013610c)
  * from SLES_017.22_full_06.c.
- * single word store to v0+1184 */
+ * single word store to v0+1184 — vec/GTE leaf/terminal piece */
 void cps_8013610c(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32735,7 +32735,7 @@ block_80136F3C:
 
 /* cps_80136f88 — clean CPS transliteration of br2eu_func_80136F88 (guest 0x80136f88)
  * from SLES_017.22_full_07.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — vec/GTE leaf/terminal piece */
 void cps_80136f88(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32755,7 +32755,7 @@ block_80136F88:
 
 /* cps_80136f90 — clean CPS transliteration of br2eu_func_80136F90 (guest 0x80136f90)
  * from SLES_017.22_full_07.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — vec/GTE leaf/terminal piece */
 void cps_80136f90(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32775,7 +32775,7 @@ block_80136F90:
 
 /* cps_80136f98 — clean CPS transliteration of br2eu_func_80136F98 (guest 0x80136f98)
  * from SLES_017.22_full_07.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — vec/GTE leaf/terminal piece */
 void cps_80136f98(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32795,7 +32795,7 @@ block_80136F98:
 
 /* cps_80136fa0 — clean CPS transliteration of br2eu_func_80136FA0 (guest 0x80136fa0)
  * from SLES_017.22_full_07.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — vec/GTE leaf/terminal piece */
 void cps_80136fa0(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32815,7 +32815,7 @@ block_80136FA0:
 
 /* cps_80136fa8 — clean CPS transliteration of br2eu_func_80136FA8 (guest 0x80136fa8)
  * from SLES_017.22_full_07.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — vec/GTE thunk -> noop_a */
 void cps_80136fa8(void)
 {
 /* vec/GTE thunk -> noop_a */
@@ -47750,7 +47750,7 @@ block_80140198:
 
 /* cps_80140c98 — clean CPS transliteration of br2eu_func_80140C98 (guest 0x80140c98)
  * from SLES_017.22_full_10.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_80140c98(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -48478,7 +48478,7 @@ block_80143D28:
 
 /* cps_80143d30 — clean CPS transliteration of br2eu_func_80143D30 (guest 0x80143d30)
  * from SLES_017.22_full_11.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_80143d30(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -49715,7 +49715,7 @@ block_801479BC:
 
 /* cps_80147de4 — clean CPS transliteration of br2eu_func_80147DE4 (guest 0x80147de4)
  * from SLES_017.22_full_13.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_80147de4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -49733,7 +49733,7 @@ block_80147DE4:
 
 /* cps_80147dec — clean CPS transliteration of br2eu_func_80147DEC (guest 0x80147dec)
  * from SLES_017.22_full_13.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_80147dec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62346,7 +62346,7 @@ block_801688C8:
 
 /* cps_80172a2c — clean CPS transliteration of br2eu_func_80172A2C (guest 0x80172a2c)
  * from SLES_017.22_full_32.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — leaf stub: returns constant 2 (v0 set in the jr delay slot) */
 void cps_80172a2c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62461,7 +62461,7 @@ void cps_80179a60(void)
 
 /* cps_8017a6e0 — clean CPS transliteration of br2eu_func_8017A6E0 (guest 0x8017a6e0)
  * from SLES_017.22_full_34.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_8017a6e0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62885,7 +62885,7 @@ void cps_8017ae00(void)
 
 /* cps_8017ae10 — clean CPS transliteration of br2eu_func_8017AE10 (guest 0x8017ae10)
  * from SLES_017.22_full_34.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_8017ae10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -64439,7 +64439,7 @@ block_8017BD84:
 
 /* cps_8017bd8c — clean CPS transliteration of br2eu_func_8017BD8C (guest 0x8017bd8c)
  * from SLES_017.22_full_35.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — desc_flagbit_dispatch piece: continues at 0x8017C3B4 */
 void cps_8017bd8c(void)
 {
 /* desc_flagbit_dispatch piece: continues at 0x8017C3B4 */
@@ -65582,7 +65582,7 @@ store:
 
 /* cps_8017c9bc — clean CPS transliteration of br2eu_func_8017C9BC (guest 0x8017c9bc)
  * from SLES_017.22_full_35.c.
- * single byte store to a0+39 */
+ * single byte store to a0+39 — slot_byte_commit piece: continues at return */
 void cps_8017c9bc(void)
 {
 /* slot_byte_commit piece: continues at return */
@@ -67822,7 +67822,7 @@ ret:
 
 /* cps_8017e4cc — clean CPS transliteration of br2eu_func_8017E4CC (guest 0x8017e4cc)
  * from SLES_017.22_full_36.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_8017e4cc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -87531,7 +87531,7 @@ block_80194940:
 
 /* cps_8019494c — clean CPS transliteration of br2eu_func_8019494C (guest 0x8019494c)
  * from SLES_017.22_full_44.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_8019494c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -87784,7 +87784,7 @@ block_80195B64:
 
 /* cps_80195bb8 — clean CPS transliteration of br2eu_func_80195BB8 (guest 0x80195bb8)
  * from SLES_017.22_full_45.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — cd_bios_cmd40_b piece: continues at return */
 void cps_80195bb8(void)
 {
 /* cd_bios_cmd40_b piece: continues at return */
@@ -89812,7 +89812,7 @@ block_801971F8:
 
 /* cps_801979ec — clean CPS transliteration of br2eu_func_801979EC (guest 0x801979ec)
  * from SLES_017.22_full_45.c.
- * single word store to at + -13584 */
+ * single word store to at + -13584 — 0x801C0000 */
 void cps_801979ec(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98830,7 +98830,7 @@ block_801A0780:
 
 /* cps_801a0b10 — clean CPS transliteration of br2eu_func_801A0B10 (guest 0x801a0b10)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4208 */
+ * single word store to at + -4208 — 0x80200000 */
 void cps_801a0b10(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98851,7 +98851,7 @@ block_801A0B10:
 
 /* cps_801a0b24 — clean CPS transliteration of br2eu_func_801A0B24 (guest 0x801a0b24)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4204 */
+ * single word store to at + -4204 — 0x80200000 */
 void cps_801a0b24(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98872,7 +98872,7 @@ block_801A0B24:
 
 /* cps_801a0b38 — clean CPS transliteration of br2eu_func_801A0B38 (guest 0x801a0b38)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4200 */
+ * single word store to at + -4200 — 0x80200000 */
 void cps_801a0b38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98893,7 +98893,7 @@ block_801A0B38:
 
 /* cps_801a0b4c — clean CPS transliteration of br2eu_func_801A0B4C (guest 0x801a0b4c)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4196 */
+ * single word store to at + -4196 — 0x80200000 */
 void cps_801a0b4c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98914,7 +98914,7 @@ block_801A0B4C:
 
 /* cps_801a0b60 — clean CPS transliteration of br2eu_func_801A0B60 (guest 0x801a0b60)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4192 */
+ * single word store to at + -4192 — 0x80200000 */
 void cps_801a0b60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98935,7 +98935,7 @@ block_801A0B60:
 
 /* cps_801a0b74 — clean CPS transliteration of br2eu_func_801A0B74 (guest 0x801a0b74)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4188 */
+ * single word store to at + -4188 — 0x80200000 */
 void cps_801a0b74(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98956,7 +98956,7 @@ block_801A0B74:
 
 /* cps_801a0b88 — clean CPS transliteration of br2eu_func_801A0B88 (guest 0x801a0b88)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4184 */
+ * single word store to at + -4184 — 0x80200000 */
 void cps_801a0b88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -98977,7 +98977,7 @@ block_801A0B88:
 
 /* cps_801a0b9c — clean CPS transliteration of br2eu_func_801A0B9C (guest 0x801a0b9c)
  * from SLES_017.22_full_49.c.
- * single word store to at + -4180 */
+ * single word store to at + -4180 — 0x80200000 */
 void cps_801a0b9c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -99427,7 +99427,7 @@ block_801A0E80:
 
 /* cps_801a11d0 — clean CPS transliteration of br2eu_func_801A11D0 (guest 0x801a11d0)
  * from SLES_017.22_full_49.c.
- * single word store to v1 */
+ * single word store to v1 — 0x80200000 */
 void cps_801a11d0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104623,7 +104623,7 @@ block_801A4E10:
 
 /* cps_801a4fb8 — clean CPS transliteration of br2eu_func_801A4FB8 (guest 0x801a4fb8)
  * from SLES_017.22_full_50.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a4fb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105054,7 +105054,7 @@ block_801A54EC:
 
 /* cps_801a5a04 — clean CPS transliteration of br2eu_func_801A5A04 (guest 0x801a5a04)
  * from SLES_017.22_full_50.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a5a04(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105468,7 +105468,7 @@ block_801A7568:
 
 /* cps_801a861c — clean CPS transliteration of br2eu_func_801A861C (guest 0x801a861c)
  * from SLES_017.22_full_51.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a861c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105486,7 +105486,7 @@ block_801A861C:
 
 /* cps_801a8624 — clean CPS transliteration of br2eu_func_801A8624 (guest 0x801a8624)
  * from SLES_017.22_full_51.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a8624(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105504,7 +105504,7 @@ block_801A8624:
 
 /* cps_801a862c — clean CPS transliteration of br2eu_func_801A862C (guest 0x801a862c)
  * from SLES_017.22_full_51.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a862c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -105522,7 +105522,7 @@ block_801A862C:
 
 /* cps_801a8634 — clean CPS transliteration of br2eu_func_801A8634 (guest 0x801a8634)
  * from SLES_017.22_full_51.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801a8634(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108862,7 +108862,7 @@ block_801AA95C:
 
 /* cps_801aad18 — clean CPS transliteration of br2eu_func_801AAD18 (guest 0x801aad18)
  * from SLES_017.22_full_52.c.
- * single word store to v0 */
+ * single word store to v0 — latch indirect target before delay slot */
 void cps_801aad18(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110519,7 +110519,7 @@ block_801AC9A0:
 
 /* cps_801ad208 — clean CPS transliteration of br2eu_func_801AD208 (guest 0x801ad208)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801ad208(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110558,7 +110558,7 @@ block_801AD210:
 
 /* cps_801ad2dc — clean CPS transliteration of br2eu_func_801AD2DC (guest 0x801ad2dc)
  * from SLES_017.22_full_53.c.
- * single word store to v0 */
+ * single word store to v0 — latch indirect target before delay slot */
 void cps_801ad2dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110682,7 +110682,7 @@ block_801AD588:
 
 /* cps_801ad5c0 — clean CPS transliteration of br2eu_func_801AD5C0 (guest 0x801ad5c0)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801ad5c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110700,7 +110700,7 @@ block_801AD5C0:
 
 /* cps_801ad5c8 — clean CPS transliteration of br2eu_func_801AD5C8 (guest 0x801ad5c8)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801ad5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -110740,7 +110740,7 @@ block_801AD650:
 
 /* cps_801ad73c — clean CPS transliteration of br2eu_func_801AD73C (guest 0x801ad73c)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801ad73c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111125,7 +111125,7 @@ block_801AD8D0:
 
 /* cps_801ad8e8 — clean CPS transliteration of br2eu_func_801AD8E8 (guest 0x801ad8e8)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — latch indirect target before delay slot */
 void cps_801ad8e8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111187,7 +111187,7 @@ block_801AD908:
 
 /* cps_801ad938 — clean CPS transliteration of br2eu_func_801AD938 (guest 0x801ad938)
  * from SLES_017.22_full_53.c.
- * single byte store to a1 */
+ * single byte store to a1 — latch indirect target before delay slot */
 void cps_801ad938(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111206,7 +111206,7 @@ block_801AD938:
 
 /* cps_801ad944 — clean CPS transliteration of br2eu_func_801AD944 (guest 0x801ad944)
  * from SLES_017.22_full_53.c.
- * single half store to a1 */
+ * single half store to a1 — latch indirect target before delay slot */
 void cps_801ad944(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111225,7 +111225,7 @@ block_801AD944:
 
 /* cps_801ad950 — clean CPS transliteration of br2eu_func_801AD950 (guest 0x801ad950)
  * from SLES_017.22_full_53.c.
- * single word store to a1 */
+ * single word store to a1 — latch indirect target before delay slot */
 void cps_801ad950(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -111244,7 +111244,7 @@ block_801AD950:
 
 /* cps_801ad95c — clean CPS transliteration of br2eu_func_801AD95C (guest 0x801ad95c)
  * from SLES_017.22_full_53.c.
- * single byte store to a1 */
+ * single byte store to a1 — latch indirect target before delay slot */
 void cps_801ad95c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113042,7 +113042,7 @@ block_801AE424:
 
 /* cps_801ae44c — clean CPS transliteration of br2eu_func_801AE44C (guest 0x801ae44c)
  * from SLES_017.22_full_53.c.
- * single byte store to a1 */
+ * single byte store to a1 — latch indirect target before delay slot */
 void cps_801ae44c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113063,7 +113063,7 @@ block_801AE44C:
 
 /* cps_801ae460 — clean CPS transliteration of br2eu_func_801AE460 (guest 0x801ae460)
  * from SLES_017.22_full_53.c.
- * single half store to v0 */
+ * single half store to v0 — latch indirect target before delay slot */
 void cps_801ae460(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -113085,7 +113085,7 @@ block_801AE460:
 
 /* cps_801ae478 — clean CPS transliteration of br2eu_func_801AE478 (guest 0x801ae478)
  * from SLES_017.22_full_53.c.
- * single word store to v0 */
+ * single word store to v0 — latch indirect target before delay slot */
 void cps_801ae478(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114427,7 +114427,7 @@ block_801AEFE8:
 
 /* cps_801af088 — clean CPS transliteration of br2eu_func_801AF088 (guest 0x801af088)
  * from SLES_017.22_full_53.c.
- * leaf reg-op / return-value helper */
+ * leaf reg-op / return-value helper — break(1031) — trap, no-op in recompiler */
 void cps_801af088(void)
 {
   CPUState *cpu = clean_cpu_state();
