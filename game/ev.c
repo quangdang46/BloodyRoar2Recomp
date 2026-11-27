@@ -1186,7 +1186,6 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
     (void)ctrl; (void)motion;
     return pc + 6;
 }
-extern void fighter_anim_advance(int,int);
 extern void action_switch_guest(int,int*,int);
 /* ev5_action_select — opcode-5 handler: decodes the action-select
  * sub-op stream, advances fighter anim / switches action. */
