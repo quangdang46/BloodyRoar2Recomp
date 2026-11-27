@@ -1614,7 +1614,7 @@ void player_name_entry(void)
 
 {
   bool more;
-  int tmp_i;
+
   undefined4 aux_mode;
   char *name_ch;
   int disp_i;
@@ -1690,22 +1690,22 @@ void player_name_entry(void)
       if (DAT_1f800001 == 3) {
 LAB_801652bc:
         banner_stripe_scroll(2,1,3,0);
-        tmp_i = slot_idx * 2;
-        if ((*(ushort *)(&DAT_1f800074 + tmp_i) & 0x8000) != 0) {
+        int32_t tab_off = slot_idx * 2;
+        if ((*(ushort *)(&DAT_1f800074 + tab_off) & 0x8000) != 0) {
           deferred_cmd_post(0x400,0xb,0);
           char_sel = char_sel + -1;
         }
-        if ((*(ushort *)(&DAT_1f800074 + tmp_i) & 0x2000) != 0) {
+        if ((*(ushort *)(&DAT_1f800074 + tab_off) & 0x2000) != 0) {
           deferred_cmd_post(0x400,0xb,0);
           char_sel = char_sel + 1;
         }
-        tmp_i = (char_sel + 0x2b) % 0x2b;
-        char_sel = tmp_i;
+        int32_t csel = (char_sel + 0x2b) % 0x2b;
+        char_sel = csel;
         if (2 < name_len) {
-          if (tmp_i < 0x1f) {
+          if (csel < 0x1f) {
             char_sel = 0x1f;
           }
-          if (0x20 < tmp_i) {
+          if (0x20 < csel) {
             char_sel = 0x20;
           }
         }
@@ -1743,12 +1743,12 @@ LAB_801652bc:
         }
 LAB_801654c0:
         scroll_offset_set(0x20,0x30);
-        tmp_i = 0;
+        int ri = 0;
         name_tbl = &PTR_DAT_801b4254;
         rec_ptr = records;
         do {
-          sprintf_core((char *)fmt_buf,&DAT_80121fe0,tmp_i + 1);
-          if (rec_idx == tmp_i) {
+          sprintf_core((char *)fmt_buf,&DAT_80121fe0,ri + 1);
+          if (rec_idx == ri) {
             scroll_offset_accumulate(0,0xfffffffc);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,fmt_buf,0x20,0x1000,3);
             announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),0x1000,0x1000,0);
@@ -1797,9 +1797,9 @@ LAB_801654c0:
           }
           rec_ptr = rec_ptr + 0x10;
           scroll_offset_accumulate(0,aux_mode);
-          tmp_i = tmp_i + 1;
+          ri = ri + 1;
           name_tbl = name_tbl + 1;
-        } while (tmp_i < 10);
+        } while (ri < 10);
         scroll_offset_set(0x20,0x18);
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_NAME_ENTRY_80122080,0x1000,0x1000,0);
         banner_stripe_scroll(0,0,4,7);
@@ -1808,11 +1808,12 @@ LAB_801658b4:
         frame_tick(0x1f800000);
       }
       else {
+        int32_t res;
         if (DAT_1f800001 < 4) {
           if (DAT_1f800001 == 1) {
 LAB_80165090:
-            tmp_i = menu_sprite_load_sm(0x1f800000,0x8d,0x12,2,1);
-            if (tmp_i == 0) goto LAB_801658b4;
+            res = menu_sprite_load_sm(0x1f800000,0x8d,0x12,2,1);
+            if (res == 0) goto LAB_801658b4;
             _DAT_801e8508 = 0;
             _DAT_801e8518 = 0x30;
             DAT_1f800001 = 2;
@@ -1820,8 +1821,8 @@ LAB_80165090:
             _DAT_801e851c = _DAT_1f800022 + -0x3c;
           }
           else if (DAT_1f800001 < 2) {
-            if (((DAT_1f800001 != 0) || (tmp_i = frame_divisor_get(), tmp_i != 0)) ||
-               (tmp_i = intro_movie_state(0), tmp_i == 0)) goto LAB_801658b4;
+            if (((DAT_1f800001 != 0) || (res = frame_divisor_get(), res != 0)) ||
+               (res = intro_movie_state(0), res == 0)) goto LAB_801658b4;
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
             _DAT_1f80008c = 0;
@@ -1915,7 +1916,7 @@ LAB_801651e8:
           banner_stripe_scroll(1,1,3,3);
           goto LAB_801654c0;
         }
-        if ((DAT_1f800001 != 0xf1) || (tmp_i = frame_divisor_get(), tmp_i != 0)) goto LAB_801658b4;
+        if ((DAT_1f800001 != 0xf1) || (res = frame_divisor_get(), res != 0)) goto LAB_801658b4;
         DAT_1f800001 = 0xff;
       }
     } while (DAT_1f800001 != 0xff);
