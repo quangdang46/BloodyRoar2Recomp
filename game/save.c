@@ -21,6 +21,7 @@ extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
+extern void br2_guest_frame_abandon(void);
 extern int br2_bail_pending(void);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
 extern uint16_t psx_read_half(uint32_t addr);
@@ -756,7 +757,7 @@ int memcard_file_flow(int a0)
   wait_cnt = 0;
   _DAT_1f80008c = 0;
   do {
-    if (br2_bail_pending()) { br2_guest_frame_free(); return sm_ret; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return sm_ret; }
     if (sm_state != 1) {
       if (sm_state < 2) {
         if ((sm_state == 0) && (rc = frame_divisor_get(), rc == 0)) {
@@ -2293,7 +2294,7 @@ int32_t mc_date_serial_cmp(uint8_t *a0,void *a1)
                                  (uint32_t *)guest_at(fr + 28));
     if (!(rc)) break;
     if (--tries == 0) { br2_guest_frame_free(); return 0; }
-    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
     br2_irq_poll();
   }
 
@@ -3480,7 +3481,7 @@ int menu_stepper_sm(uint8_t *pad)
   desc = (uint8_t *)guest_at(br2_guest_frame(0x40));
   memset(desc,0,0x38);
   for (;;) {
-    if (br2_bail_pending()) { br2_guest_frame_free(); return sm_ret; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return sm_ret; }
     if (sm_state == 1) goto body;
     if (sm_state < 2) {
       if (!(sm_state)) {
@@ -9551,7 +9552,7 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
     /* wait for state change */
     if (cblk[0] == 0 && cblk[2] == 0) {
       while (*(uint32_t *)guest_at(0x801febe8) == 0) {
-        if (br2_bail_pending()) { br2_guest_frame_free(); return -1; }
+        if (br2_bail_pending()) { br2_guest_frame_abandon(); return -1; }
         br2_irq_poll();
       }
     }

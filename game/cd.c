@@ -480,7 +480,7 @@ uint32_t cd_timer_read(int mode)
     snap = br2_ld32(p_tick);
     cur  = br2_ld32(p_tick);
     if (snap == cur) break;
-    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
     br2_irq_poll();
   }
 
@@ -516,7 +516,7 @@ uint32_t cd_timer_read(int mode)
     for (;;) {
       cur = br2_ld32(pp);
       if (((s0 ^ cur) & 0x80000000u) != 0) break;
-      if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+      if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
       br2_irq_poll();
     }
   }
@@ -532,7 +532,7 @@ uint32_t cd_timer_read(int mode)
     cur = br2_ld32(0x801bccb0);
     v0  = br2_ld32(p_tick);
     if (cur == v0) break;
-    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
     br2_irq_poll();
   }
 
@@ -2286,16 +2286,16 @@ int cd_mode_set_0e(uint32_t s0)
   fr = br2_guest_frame(0x20);
   br2_st8(fr + 16, (uint8_t)s0);
   (void)cd_mode_flag_set(14, (int)(fr + 16), 0);
-  if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+  if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
   if ((s0 & 0x100u) == 0) {
     ret = (int)cd_mode_flag_set(27, 0, 0);
   } else {
     /* guest: v0 = (s0 & 0x20) ? 0 : 1 -> sw @0x8020c6f8 (delay-slot li 1) */
     br2_st32(0x8020c6f8, (s0 & 0x20u) ? 0u : 1u);
     (void)cd_cmd_dispatch3(0x801990f0u);
-    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
     (void)mc_session_b(0x80198fe4u);
-    if (br2_bail_pending()) { br2_guest_frame_free(); return 0; }
+    if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
     ret = (int)cd_mode_flag_set(27, 0, 0);
   }
   br2_guest_frame_free();

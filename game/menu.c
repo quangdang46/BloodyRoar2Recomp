@@ -1408,7 +1408,7 @@ joined_r0x80164744:
      * match_loop after the caller's gs->5 transition (same hazard as
      * battle_flow_state_machine — see its loop head). */
     {
-      if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
+      if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return; } }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
