@@ -52,6 +52,7 @@ def _configure_stdio() -> None:
 
 
 def _build_edc_table() -> list[int]:
+    """Build the EDC lookup table for MODE2 sectors.."""
     table = []
     for i in range(256):
         x = i
@@ -65,6 +66,7 @@ _EDC_TABLE = _build_edc_table()
 
 
 def _adjust_edc(buf: bytearray, start: int, length: int) -> None:
+    """Run the EDC correction pass over a sector.."""
     x = 0
     end = start + length
     for i in range(start, end):
@@ -73,6 +75,7 @@ def _adjust_edc(buf: bytearray, start: int, length: int) -> None:
 
 
 def encode_mode2_form1(user: bytes, lba: int, submode: int = 0x08) -> bytes:
+    """Encode 2048 user bytes into a MODE2/Form1 sector.."""
     if len(user) != USER:
         raise ValueError("user data must be 2048 bytes")
     sector = bytearray(DST_SEC)
@@ -111,6 +114,7 @@ class PrepareConfig:
 
 
 def file_hashes(path: Path) -> tuple[str, str, int]:
+    """Streaming MD5+SHA1+size hasher for a file.."""
     h_md5 = hashlib.md5()
     h_sha1 = hashlib.sha1()
     size = 0
@@ -126,6 +130,7 @@ def file_hashes(path: Path) -> tuple[str, str, int]:
 
 
 def _parse_array_items(inner: str) -> list[object]:
+    """Parse TOML-array inner text into items.."""
     items: list[object] = []
     if not inner.strip():
         return items
@@ -198,6 +203,7 @@ def _parse_toml_simple(text: str) -> dict[str, dict[str, str]]:
 
 def load_config(project_root: Path, config_path: Path | None, out_dir_cli: str | None,
                 skip_hash: bool) -> PrepareConfig:
+    """Load game.toml prepare_disc config.."""
     project_root = project_root.resolve()
     game: dict = {}
     prep: dict = {}
@@ -297,6 +303,7 @@ def stage_multitrack_cue(
         # source used absolute/relative paths with directories.
         text = cue_src.read_text(encoding="utf-8", errors="replace")
         def _basename_file(m: re.Match[str]) -> str:
+            """Rewrite FILE paths to basenames in cue text.."""
             return f'FILE "{Path(m.group(1)).name}" BINARY'
         text = re.sub(
             r'FILE\s+"([^"]+)"\s+BINARY', _basename_file, text, flags=re.I
@@ -313,6 +320,7 @@ def stage_multitrack_cue(
 
 
 def detect_kind(path: Path, size: int) -> str:
+    """Detect disc image kind from extension/content.."""
     suf = path.suffix.lower()
     if suf == ".cue":
         return "cue"
@@ -354,6 +362,7 @@ def detect_kind(path: Path, size: int) -> str:
 
 
 def read_user_bin(data: bytes, lba: int) -> bytes:
+    """Read a user-data sector from a .bin image.."""
     off = lba * DST_SEC
     if off + DST_SEC > len(data):
         raise KeyError(lba)
@@ -363,6 +372,7 @@ def read_user_bin(data: bytes, lba: int) -> bytes:
 
 
 def read_user_iso(data: bytes, lba: int) -> bytes:
+    """Read a user-data sector from an .iso image.."""
     off = lba * USER
     if off + USER > len(data):
         raise KeyError(lba)
@@ -370,6 +380,7 @@ def read_user_iso(data: bytes, lba: int) -> bytes:
 
 
 def parse_root_entries(root: bytes) -> dict[str, tuple[int, int]]:
+    """Parse ISO9660 root directory entries.."""
     entries: dict[str, tuple[int, int]] = {}
     i = 0
     while i < len(root):
@@ -396,6 +407,7 @@ def parse_root_entries(root: bytes) -> dict[str, tuple[int, int]]:
 def extract_via(
     read_user, data: bytes, boot_exe: str
 ) -> tuple[dict[str, tuple[int, int]], dict[str, bytes]]:
+    """Extract files via ISO9660 PVD walk.."""
     pvd = read_user(data, 16)
     if pvd[1:6] != b"CD001":
         raise SystemExit("PVD not found at LBA 16 (expected CD001)")
@@ -442,6 +454,7 @@ def extract_via(
 
 
 def iso_to_bin(iso_data: bytes) -> bytes:
+    """Convert an ISO image to raw .bin sectors.."""
     if len(iso_data) % USER != 0:
         raise SystemExit(f"ISO size {len(iso_data)} is not a multiple of 2048")
     n = len(iso_data) // USER
@@ -453,6 +466,7 @@ def iso_to_bin(iso_data: bytes) -> bytes:
 
 
 def raw2448_to_bin(src: Path) -> bytes:
+    """Convert 2448-byte raw sectors to .bin.."""
     out = bytearray()
     n = 0
     with open(src, "rb") as inf:
@@ -469,6 +483,7 @@ def raw2448_to_bin(src: Path) -> bytes:
 
 
 def matches_known(cfg: PrepareConfig, size: int, md5: str, sha1: str) -> bool:
+    """True if file hashes match a known-good digest.."""
     if not cfg.known:
         return False
     md5 = md5.lower()
@@ -484,6 +499,7 @@ def matches_known(cfg: PrepareConfig, size: int, md5: str, sha1: str) -> bool:
 
 
 def main() -> int:
+    """prepare_disc CLI entry point.."""
     _configure_stdio()
     here = Path(__file__).resolve().parent
     # tools/ -> psxrecomp/ -> often game root is parent of psxrecomp
@@ -602,6 +618,7 @@ def main() -> int:
     cfg.out_dir.mkdir(parents=True, exist_ok=True)
 
     def finish(cue_path: Path) -> None:
+        """Write the companion staging receipt.."""
         report = stage_companion(cue_path, companion, companion_data)
         receipt = {
             "schema": "psxrecomp-disc-preparation-v1",

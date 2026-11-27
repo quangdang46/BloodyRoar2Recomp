@@ -74,6 +74,7 @@ IMMOPS = {
 
 
 def _r(n: int) -> str:
+    """Register name for index.."""
     return REGS[n & 0x1f]
 
 
@@ -99,6 +100,7 @@ def mnemonic(w: int) -> str:
 
 
 def dis(pc: int, w: int) -> str:
+    """Disassemble one MIPS word.."""
     if w == 0:
         return 'nop'
     op = (w >> 26) & 0x3f
@@ -185,9 +187,11 @@ class Capture:
 
     @property
     def hi(self):
+        """End address of the capture.."""
         return self.lo + self.size
 
     def word(self, va):
+        """Read a word at guest va within this capture.."""
         off = va - self.lo
         if off < 0 or off + 4 > len(self.data):
             return None
@@ -199,6 +203,7 @@ CACHE_VERSION = 2
 
 class CaptureSet:
     def __init__(self, directory, want_exec=True, cache=True):
+        """CaptureSet ctor: index all captures in a dir.."""
         self.dir = directory
         self.caps: list[Capture] = []
         files = sorted(glob.glob(os.path.join(directory, '*.json')))
@@ -215,11 +220,13 @@ class CaptureSet:
 
     # -- cache -------------------------------------------------------------
     def _fingerprint(self, files):
+        """Cache fingerprint: version+file count+max mtime.."""
         return (CACHE_VERSION, len(files),
                 max((os.path.getmtime(f) for f in files), default=0.0),
                 sum(os.path.getsize(f) for f in files))
 
     def _load_cache(self, path, files):
+        """Load the pickle cache if fingerprint matches.."""
         if not os.path.exists(path):
             return False
         try:
@@ -234,6 +241,7 @@ class CaptureSet:
         return True
 
     def _save_cache(self, path, files):
+        """Write the pickle cache.."""
         try:
             import pickle
             payload = (self._fingerprint(files),
@@ -247,11 +255,13 @@ class CaptureSet:
             print(f'# cache write failed: {exc}', file=sys.stderr)
 
     def _index_phys(self):
+        """Build phys->captures index.."""
         self._by_phys = defaultdict(list)
         for c in self.caps:
             self._by_phys[c.lo & 0x1fffffff].append(c)
 
     def _parse(self, files, want_exec):
+        """Parse all capture files into Capture objects.."""
         for path in files:
             cid = os.path.splitext(os.path.basename(path))[0]
             try:
@@ -280,6 +290,7 @@ class CaptureSet:
                                          data, pcs))
 
     def covering(self, va):
+        """Captures whose range covers va.."""
         phys = va & 0x1fffffff
         out = []
         for c in self.caps:
@@ -298,6 +309,7 @@ class CaptureSet:
         return out
 
     def executed(self, va):
+        """Captures where va was actually executed.."""
         phys = va & 0x1fffffff
         return [c for c in self.caps if phys in c.exec_pcs]
 
@@ -322,6 +334,7 @@ class CaptureSet:
 # ---------------------------------------------------------------------------
 
 def cmd_index(cs, args):
+    """index subcommand: print capture summary.."""
     print(f'captures      : {len(cs.caps)}')
     lows = sorted({c.lo for c in cs.caps})
     print(f'distinct bases: {len(lows)}')
@@ -338,6 +351,7 @@ def cmd_index(cs, args):
 
 
 def _fmt_caps(caps, limit=6):
+    """Format a capture-id list compactly.."""
     ids = [c.cid[:8] for c in caps]
     if len(ids) > limit:
         return ', '.join(ids[:limit]) + f', +{len(ids) - limit} more'
@@ -345,6 +359,7 @@ def _fmt_caps(caps, limit=6):
 
 
 def cmd_word(cs, args):
+    """word subcommand: dump word variants at vas.."""
     for va in args.vas:
         vs = cs.variants(va)
         ex = cs.executed(va)
@@ -363,6 +378,7 @@ def cmd_word(cs, args):
 
 
 def cmd_cover(cs, args):
+    """cover subcommand: list captures covering vas.."""
     for va in args.vas:
         caps = cs.covering(va)
         print(f'0x{va:08X}: {len(caps)} capture(s)')
@@ -400,6 +416,7 @@ def _listing(cs, va, n, variant_words=None):
 
 
 def cmd_dis(cs, args):
+    """dis subcommand: disassemble at vas.."""
     for va in args.vas:
         print(f'=== dis 0x{va:08X} n={args.n} ===')
         _listing(cs, va, args.n)
@@ -438,6 +455,7 @@ def cmd_func(cs, args):
 
 
 def cmd_scan(cs, args):
+    """scan subcommand: find insns matching op/imm filters.."""
     want = set(args.op)
     lo = args.imm_min
     hi = args.imm_max
@@ -458,6 +476,7 @@ def cmd_scan(cs, args):
 
 
 def cmd_imm(cs, args):
+    """imm subcommand: find insns with a given immediate.."""
     target = args.value
     seen = defaultdict(lambda: defaultdict(int))
     for va, w, c in cs.iter_words(exec_only=args.exec_only):
@@ -501,6 +520,7 @@ def cmd_window(cs, args):
         return False
 
     def writes(v, dst):
+        """True if insn word writes register rd.."""
         op = (v >> 26) & 0x3f
         if op == 0:
             fn = v & 0x3f
@@ -640,6 +660,7 @@ def cmd_ramimage(cs, args):
 
 
 def cmd_callers(cs, args):
+    """callers subcommand: find call sites targeting vas.."""
     for va in args.vas:
         tgt = (va >> 2) & 0x3ffffff
         hits = defaultdict(lambda: defaultdict(int))
@@ -654,6 +675,7 @@ def cmd_callers(cs, args):
 
 
 def main():
+    """overlay_xref CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('-d', '--dir', required=True,
@@ -663,6 +685,7 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
 
     def va_list(p):
+        """Add positional va args to a subparser.."""
         p.add_argument('vas', nargs='+', type=lambda s: int(s, 16))
 
     sub.add_parser('index').set_defaults(fn=cmd_index)

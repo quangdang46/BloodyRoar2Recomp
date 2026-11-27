@@ -36,10 +36,12 @@ _ASSET = {
 
 
 def sys_platform_is_windows() -> bool:
+    """True on Windows.."""
     return sys.platform == "win32"
 
 
 def host_artifact() -> str:
+    """Host platform tag for toolchain artifacts.."""
     if sys_platform_is_windows():
         return "windows-x64"
     if sys.platform == "darwin":
@@ -48,14 +50,17 @@ def host_artifact() -> str:
 
 
 def cmake_name() -> str:
+    """CMake binary name for this platform.."""
     return "cmake.exe" if sys_platform_is_windows() else "cmake"
 
 
 def bin_looks_usable(bin_dir: Path) -> bool:
+    """True if dir/bin contains a runnable cmake.."""
     return bin_dir.is_dir() and (bin_dir / cmake_name()).is_file()
 
 
 def pack_root_looks_usable(root: Path) -> bool:
+    """True if a toolchain pack root has a usable bin/.."""
     return bin_looks_usable(root / "bin")
 
 
@@ -84,6 +89,7 @@ def toolchain_bin_runs(bin_dir: Path, log=None) -> bool:
 
 
 def clear_project_toolchain_stamp(project_root: Optional[Path]) -> None:
+    """Remove the project's toolchain stamp file.."""
     if project_root is None:
         return
     stamp = project_root / "toolchain" / STAMP_NAME
@@ -190,6 +196,7 @@ def unwrap_pack_root(path: Path) -> Path:
 
 
 def resolve_embedded_bin(project_root: Path) -> Optional[Path]:
+    """Find the toolchain bin dir embedded in the project.."""
     root = project_root / "toolchain"
     if not root.is_dir():
         return None
@@ -212,6 +219,7 @@ def resolve_embedded_bin(project_root: Path) -> Optional[Path]:
 
 
 def env_toolchain_roots() -> list[Path]:
+    """Toolchain roots from env vars.."""
     out: list[Path] = []
     for key in ("RETCOMM_TOOLCHAIN_DIR", "PSXRECOMP_TOOLCHAIN_DIR", "TOOLCHAIN_DIR",
                 "BPE_TOOLCHAIN_DIR"):
@@ -222,6 +230,7 @@ def env_toolchain_roots() -> list[Path]:
 
 
 def _dedupe_paths(paths: list[Path]) -> list[Path]:
+    """Dedupe paths preserving order.."""
     seen: set[str] = set()
     uniq: list[Path] = []
     for r in paths:
@@ -297,6 +306,7 @@ def preferred_install_root() -> Path:
 
 
 def read_pack_version(root: Path) -> str:
+    """Read version from a pack's retcomm-toolchain.json.."""
     meta = unwrap_pack_root(root) / "retcomm-toolchain.json"
     try:
         data = json.loads(meta.read_text(encoding="utf-8"))
@@ -307,6 +317,7 @@ def read_pack_version(root: Path) -> str:
 
 
 def parse_version_tuple(ver: str) -> tuple[int, ...]:
+    """Parse a version string to an int tuple.."""
     s = ver.strip()
     if s.lower().startswith("v") and len(s) > 1 and s[1].isdigit():
         s = s[1:]
@@ -324,6 +335,7 @@ def parse_version_tuple(ver: str) -> tuple[int, ...]:
 
 
 def version_satisfies(have: str, need: str) -> bool:
+    """True if `have` satisfies `need` (semver-ish).."""
     if not need:
         return True
     if not have:
@@ -357,6 +369,7 @@ def default_min_version() -> str:
 
 
 def pack_satisfies_min(root: Path, min_version: str = "") -> bool:
+    """True if the pack at root meets min_version.."""
     need = min_version or default_min_version()
     if not need:
         return True
@@ -364,6 +377,7 @@ def pack_satisfies_min(root: Path, min_version: str = "") -> bool:
 
 
 def _best_pack_under(base: Path, min_version: str = "") -> Optional[Path]:
+    """Best usable pack under base meeting min_version.."""
     if not base.is_dir():
         return None
     if pack_root_looks_usable(base) and pack_satisfies_min(base, min_version):
@@ -388,6 +402,7 @@ def _best_pack_under(base: Path, min_version: str = "") -> Optional[Path]:
         return None
 
     def sort_key(p: Path) -> tuple:
+        """Sort key: (version, mtime) for pack selection.."""
         ver = read_pack_version(p)
         return (parse_version_tuple(ver), p.stat().st_mtime)
 
@@ -462,6 +477,7 @@ def materialize_into_project(
 
 
 def find_cached_pack(min_version: str = "") -> Optional[Path]:
+    """Find a cached toolchain pack under shared cache roots.."""
     for base in shared_cache_roots():
         found = _best_pack_under(base, min_version=min_version)
         if found is not None:
@@ -472,6 +488,7 @@ def find_cached_pack(min_version: str = "") -> Optional[Path]:
 def resolve_toolchain_bin(
     project_root: Optional[Path] = None, *, min_version: str = ""
 ) -> Optional[Path]:
+    """Resolve the toolchain bin dir from env/embedded/cache.."""
     for env_root in env_toolchain_roots():
         root = unwrap_pack_root(env_root)
         if pack_root_looks_usable(root) and pack_satisfies_min(root, min_version):
@@ -523,6 +540,7 @@ def pack_python_exe(pack_root: Path) -> Optional[Path]:
 
 
 def activate_toolchain_bin(bin_dir: Path, log=None) -> None:
+    """Prepend bin_dir to PATH for this process.."""
     prefix = str(bin_dir)
     pack_root = bin_dir.parent
     cur = os.environ.get("PATH", "")
@@ -599,6 +617,7 @@ _MARKER_END = f"# <<< retcomm-toolchain ({PACK_ID}) <<<"
 
 
 def _strip_marker_block(text: str) -> str:
+    """Strip auto-generated marker blocks from a file's text.."""
     lines = text.splitlines(keepends=True)
     out: list[str] = []
     skip = False
@@ -616,6 +635,7 @@ def _strip_marker_block(text: str) -> str:
 
 
 def _upsert_profile_block(path: Path, block: str) -> None:
+    """Insert/replace a marker block in a profile file.."""
     body = ""
     if path.is_file():
         try:
@@ -633,6 +653,7 @@ def _upsert_profile_block(path: Path, block: str) -> None:
 
 
 def _paths_equal(a: Path, b: Path) -> bool:
+    """True if two paths resolve equal.."""
     try:
         return a.resolve() == b.resolve()
     except OSError:
@@ -642,6 +663,7 @@ def _paths_equal(a: Path, b: Path) -> bool:
 
 
 def _is_under(child: Path, parent: Path) -> bool:
+    """True if child resolves under parent.."""
     try:
         child.resolve().relative_to(parent.resolve())
         return True
@@ -683,6 +705,7 @@ def _set_latest_pointer(cache_root: Path, pack_root: Path) -> Path:
 
 
 def _register_user_path_windows(bin_dir: Path, pack_root: Path, log=None) -> None:
+    """Add bin_dir to the user PATH via winreg.."""
     try:
         import winreg  # type: ignore
     except ImportError:
@@ -729,6 +752,7 @@ def _register_user_path_windows(bin_dir: Path, pack_root: Path, log=None) -> Non
 
 
 def _register_user_path_unix(cache_root: Path, latest: Path, log=None) -> None:
+    """Write a shell hook adding bin_dir to PATH.."""
     hook = cache_root / "path.sh"
     hook.write_text(
         "# Auto-generated by psxrecomp ensure-toolchain — do not edit.\n"
@@ -843,6 +867,7 @@ def unpack_zip_to(zip_path: Path, dest: Path) -> Path:
 
 
 def _install_tag_for_root(root: Path, fallback: str) -> str:
+    """Compute the install tag for a pack root.."""
     ver = read_pack_version(root)
     if ver:
         safe = re.sub(r"[^\w.\-]+", "_", ver.strip())
@@ -858,6 +883,7 @@ def install_from_zip(
     min_version: str = "",
     log=None,
 ) -> Path:
+    """Install a toolchain pack from a zip archive.."""
     zip_path = zip_path.expanduser().resolve()
     if not zip_path.is_file():
         raise FileNotFoundError(f"toolchain zip not found: {zip_path}")
@@ -910,6 +936,7 @@ def download_latest_pack(
     project_root: Optional[Path] = None,
     min_version: str = "",
 ) -> Path:
+    """Download the latest toolchain pack artifact.."""
     import urllib.error
 
     art = artifact or host_artifact()

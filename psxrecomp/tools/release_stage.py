@@ -84,10 +84,12 @@ class StageError(Exception):
 
 
 def _die(msg):
+    """Raise StageError with message.."""
     raise StageError(msg)
 
 
 def _mkdirs(path):
+    """makedirs exist_ok and return path.."""
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -111,6 +113,7 @@ def _url_basename(url):
 # already agreed on it (the PowerShell -Include list and the shell find's
 # -name set both carried it) and they must keep agreeing.
 def _shippable_suffixes(shared_ext):
+    """File suffixes safe to ship in a release.."""
     return (shared_ext, '.ranges', '.resident')
 
 
@@ -156,6 +159,7 @@ _FORBIDDEN_PATTERNS = (
 
 
 def _forbidden_reason(name):
+    """Return why a filename is forbidden, or None.."""
     for pat, why in _FORBIDDEN_PATTERNS:
         if pat.search(name):
             return why
@@ -178,6 +182,7 @@ _FLAVOR_FILE = 'psxrecomp_overlay_flavor-%s.txt'
 
 
 def _flavor_from_build(build_dir, target):
+    """Read the build flavor marker for a target.."""
     path = os.path.join(build_dir, _FLAVOR_FILE % target)
     if not os.path.isfile(path):
         _die("cannot read the overlay codegen flavor for target '%s': %s does "
@@ -228,6 +233,7 @@ def _require_built_codegen_hash(runtime_include):
 
 
 def cmd_cg_tag(args):
+    """Stage/verify the codegen tag include dir.."""
     inc = os.path.abspath(args.runtime_include)
     _require_built_codegen_hash(inc)
     if args.flavor is None:
@@ -249,6 +255,7 @@ def cmd_cg_tag(args):
 # stage-cache
 # ---------------------------------------------------------------------------
 def _split_rel(rel):
+    """Split a relpath into components.."""
     return [p for p in rel.replace('\\', '/').split('/') if p not in ('', '.')]
 
 
@@ -381,6 +388,7 @@ def stage_cache(game_id, cache_src_root, stage, cg_tag,
 
 def _no_cache_message(cache_src, cg_tag, cache_src_root, arch_abi, shared_ext,
                       found_any, other_tags=(), wrong_arch=()):
+    """Build the no-overlay-cache explanation message.."""
     detail = []
     if not found_any:
         detail.append('There is no directory at %s at all.' % cache_src)
@@ -418,6 +426,7 @@ def _no_cache_message(cache_src, cg_tag, cache_src_root, arch_abi, shared_ext,
 
 
 def cmd_stage_cache(args):
+    """Stage the overlay cache into the release.."""
     reason = args.ship_without_overlay_cache_because
     n, _tags = stage_cache(args.game_id, args.cache_src_root, args.stage,
                            args.cg_tag, arch_abi=args.arch_abi,
@@ -483,6 +492,7 @@ def get_pinned_archive(url, sha256, destination, retries=4, log=print):
     want = sha256.lower()
 
     def digest(path):
+        """SHA256 hex digest of a file.."""
         h = hashlib.sha256()
         with open(path, 'rb') as f:
             for chunk in iter(lambda: f.read(1 << 20), b''):
@@ -696,6 +706,7 @@ def stage_toolchain(stage, recomp_dir, recomp_tools, recomp_include, dl_cache,
 
 
 def cmd_fetch_pinned(args):
+    """Fetch a pinned archive by url+sha256.."""
     get_pinned_archive(args.url, args.sha256, args.destination,
                        retries=args.retries)
     print(args.destination)
@@ -703,6 +714,7 @@ def cmd_fetch_pinned(args):
 
 
 def cmd_stage_toolchain(args):
+    """Stage the pinned toolchain into the release.."""
     stage_toolchain(args.stage, args.recomp_dir, args.recomp_tools,
                     args.recomp_include, args.dl_cache,
                     platform_tag=args.platform, mingw_bin=args.mingw_bin)
@@ -749,6 +761,7 @@ def _find_catalog_manifest(build_path, runtime_target):
 
 def stage_mods(build_path, stage, runtime_target=None, catalog_manifest=None,
                extra_sources=(), log=print):
+    """Copy staged mods into the release tree.."""
     mods_src = os.path.join(build_path, 'mods')
     if not os.path.isdir(os.path.join(mods_src, 'bundled')):
         _die('no mod catalog staged at %s - build the runtime target first (the '
@@ -818,6 +831,7 @@ def stage_mods(build_path, stage, runtime_target=None, catalog_manifest=None,
 
 
 def cmd_stage_mods(args):
+    """CLI handler for stage-mods.."""
     n = stage_mods(args.build_path, args.stage,
                    runtime_target=args.runtime_target,
                    catalog_manifest=args.catalog_manifest,
@@ -830,6 +844,7 @@ def cmd_stage_mods(args):
 
 # ---------------------------------------------------------------------------
 def main(argv=None):
+    """release_stage CLI entry point.."""
     ap = argparse.ArgumentParser(
         prog='release_stage.py',
         description='Shared release staging for every psxrecomp title, on every '
