@@ -3600,7 +3600,6 @@ LAB_80150610:
         DAT_1f800098 = (uint8_t)local_c8;
       }
       DAT_1f800001 = 0;
-      if (local_c0 == 0) local_c0 = 0;
       br2_guest_frame_free();
       return local_c0;
     }
