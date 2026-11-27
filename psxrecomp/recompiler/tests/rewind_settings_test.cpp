@@ -26,6 +26,7 @@ namespace fs = std::filesystem;
 
 static int failures = 0;
 
+/* check: if (!cond)  */
 static void check(bool cond, const char* what) {
     if (!cond) {
         std::fprintf(stderr, "FAIL: %s\n", what);
@@ -33,6 +34,7 @@ static void check(bool cond, const char* what) {
     }
 }
 
+/* write temp: fs::path p = fs::temp_directory_path() / name */
 static fs::path write_temp(const std::string& name, const std::string& body) {
     fs::path p = fs::temp_directory_path() / name;
     std::ofstream f(p, std::ios::binary | std::ios::trunc);
@@ -57,6 +59,7 @@ static void test_default_off() {
     fs::remove(p);
 }
 
+/* test opt in and explicit off: fs::path on = write_temp("psxrecomp_rewind_on.toml", */
 static void test_opt_in_and_explicit_off() {
     fs::path on = write_temp("psxrecomp_rewind_on.toml",
         "[video]\n"
@@ -77,6 +80,7 @@ static void test_opt_in_and_explicit_off() {
     fs::remove(off);
 }
 
+/* test round trip: PSXRecompV4::UserSettings out */
 static void test_round_trip() {
     PSXRecompV4::UserSettings out;
     out.rewind = true;            out.has_rewind = true;

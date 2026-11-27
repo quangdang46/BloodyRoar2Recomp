@@ -39,6 +39,7 @@ static uint32_t ref_normalize(uint32_t addr) {
     return phys;
 }
 
+/* ref ram alias to rom: uint32_t phys = addr & 0x1FFFFFFFu */
 static uint32_t ref_ram_alias_to_rom(uint32_t addr) {
     uint32_t phys = addr & 0x1FFFFFFFu;
     if (phys >= 0x00000500u && phys < 0x00008500u) {
@@ -50,6 +51,7 @@ static uint32_t ref_ram_alias_to_rom(uint32_t addr) {
     return addr;
 }
 
+/* ref runtime pc: uint32_t phys = rom_pc & 0x1FFFFFFFu */
 static uint32_t ref_runtime_pc(uint32_t rom_pc) {
     uint32_t phys = rom_pc & 0x1FFFFFFFu;
     if (phys >= 0x1FC18000u && phys <= 0x1FC42FFFu) {
@@ -61,6 +63,7 @@ static uint32_t ref_runtime_pc(uint32_t rom_pc) {
     return rom_pc;
 }
 
+/* ref relocate j target: uint32_t phys = rom_addr & 0x1FFFFFFFu */
 static uint32_t ref_relocate_j_target(uint32_t rom_addr, uint32_t target) {
     uint32_t phys = rom_addr & 0x1FFFFFFFu;
     if (phys >= 0x1FC10000u && phys <= 0x1FC17FFFu) {
@@ -74,6 +77,7 @@ static uint32_t ref_relocate_j_target(uint32_t rom_addr, uint32_t target) {
     return target;
 }
 
+/* ref rom to ram phys: uint32_t phys = rom_addr & 0x1FFFFFFFu */
 static uint32_t ref_rom_to_ram_phys(uint32_t rom_addr) {
     uint32_t phys = rom_addr & 0x1FFFFFFFu;
     if (phys >= 0x1FC10000u && phys <= 0x1FC17FFFu) {
@@ -86,6 +90,7 @@ static uint32_t ref_rom_to_ram_phys(uint32_t rom_addr) {
 
 static int g_failures = 0;
 
+/* expect eq: if (got != want)  */
 static void expect_eq(uint32_t got, uint32_t want, const char* what, uint32_t at) {
     if (got != want) {
         std::fprintf(stderr, "FAIL %s(0x%08X): got 0x%08X want 0x%08X\n",
@@ -97,6 +102,7 @@ static void expect_eq(uint32_t got, uint32_t want, const char* what, uint32_t at
     }
 }
 
+/* expect throw: try  */
 static void expect_throw(const char* what, void (*fn)(BiosConfig&), BiosConfig base) {
     try {
         fn(base);
@@ -108,6 +114,7 @@ static void expect_throw(const char* what, void (*fn)(BiosConfig&), BiosConfig b
     }
 }
 
+/* minimal cfg: BiosConfig cfg */
 static BiosConfig minimal_cfg() {
     BiosConfig cfg{};
     cfg.config_path  = "test://synthetic";
@@ -116,6 +123,7 @@ static BiosConfig minimal_cfg() {
     return cfg;
 }
 
+/* mk: BiosAddrCopy c */
 static BiosAddrCopy mk(const char* name, uint32_t rom_lo, uint32_t rom_hi,
                        uint32_t ram_lo, uint32_t runtime_base,
                        bool key_is_ram, bool bless) {

@@ -21,6 +21,7 @@ namespace {
 
 int failures = 0;
 
+/* check: if (condition)  */
 void check(bool condition, const std::string& name) {
     if (condition) {
         fmt::print("PASS  {}\n", name);
@@ -31,6 +32,7 @@ void check(bool condition, const std::string& name) {
 }
 
 template <typename Fn>
+/* check throws: try  */
 void check_throws(Fn&& fn, const std::string& needle,
                   const std::string& name) {
     try {
@@ -42,6 +44,7 @@ void check_throws(Fn&& fn, const std::string& needle,
     }
 }
 
+/* append word */
 void append_word(std::vector<uint8_t>& bytes, uint32_t word) {
     bytes.push_back(static_cast<uint8_t>(word));
     bytes.push_back(static_cast<uint8_t>(word >> 8));
@@ -49,6 +52,7 @@ void append_word(std::vector<uint8_t>& bytes, uint32_t word) {
     bytes.push_back(static_cast<uint8_t>(word >> 24));
 }
 
+/* write word: exe.code_data[offset + 0] = static_cast<uint8_t>(word) */
 void write_word(PSXRecomp::PS1Executable& exe, uint32_t address,
                 uint32_t word) {
     const size_t offset = static_cast<size_t>(address - exe.header.load_address);
@@ -58,6 +62,7 @@ void write_word(PSXRecomp::PS1Executable& exe, uint32_t address,
     exe.code_data[offset + 3] = static_cast<uint8_t>(word >> 24);
 }
 
+/* generate first instruction: PSXRecomp::PS1Executable exe */
 std::string generate_first_instruction(uint32_t first_word,
                                        std::vector<RecompilerPatch> patches,
                                        bool overlay_mode,
@@ -89,6 +94,7 @@ std::string generate_first_instruction(uint32_t first_word,
     return generator.generate_function(function, cfg).full_code;
 }
 
+/* base config: return R"toml([game] */
 std::string base_config() {
     return R"toml([game]
 name = "Patch Test"
@@ -105,6 +111,7 @@ out_dir = "generated"
 )toml";
 }
 
+/* write config: return path */
 fs::path write_config(const fs::path& root, const std::string& suffix,
                       const std::string& patch_tables) {
     const fs::path path = root / ("game-" + suffix + ".toml");
@@ -114,6 +121,7 @@ fs::path write_config(const fs::path& root, const std::string& suffix,
     return path;
 }
 
+/* parser tests: [[recompiler.patch]] */
 void parser_tests(const fs::path& root) {
     const auto valid = write_config(root, "valid", R"toml(
 [[recompiler.patch]]
@@ -525,6 +533,7 @@ expected = "0x28620370"
         "parser rejects incomplete aspect-cone queue metadata");
 }
 
+/* capture history config tests: [runtime] */
 void capture_history_config_tests(const fs::path& root) {
     const auto valid = write_config(root, "capture-history", R"toml(
 [runtime]
@@ -610,6 +619,7 @@ overlay_capture_persist_dir = ".aot_capture_history/..keep/TEST-00000"
           "parser accepts a capture history component that merely starts with dots");
 }
 
+/* codegen tests: "gameplay-rate", 0x00010000u, original, replacement, "" */
 void codegen_tests() {
     constexpr uint32_t original = 0x24020002u;    // addiu v0, zero, 2
     constexpr uint32_t replacement = 0x24020001u; // addiu v0, zero, 1
@@ -868,6 +878,7 @@ void codegen_tests() {
           "codegen supports exact per-child SLT cone metadata");
 }
 
+/* gte codegen classification tests: bool all_ok = true */
 void gte_codegen_classification_tests() {
     bool all_ok = true;
     for (uint8_t reg = 0; reg < 32; ++reg) {
@@ -931,6 +942,7 @@ void gte_codegen_classification_tests() {
     check(all_ok, "full-game GTE helper classification covers all registers");
 }
 
+/* jump table producer codegen test: PSXRecomp::PS1Executable exe */
 void jump_table_producer_codegen_test() {
     constexpr uint32_t base = 0x80010000u;
     constexpr uint32_t entry = base + 0x500u;
@@ -1024,6 +1036,7 @@ void jump_table_producer_codegen_test() {
           "alias regression fixture reaches the table when ownership is absent");
 }
 
+/* cfg codegen load delay test: PSXRecomp::PS1Executable exe */
 void cfg_codegen_load_delay_test() {
     constexpr uint32_t base = 0x80003590u;
     PSXRecomp::PS1Executable exe{};

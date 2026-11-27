@@ -44,6 +44,7 @@ static constexpr uint32_t R_TYPE(uint8_t rs, uint8_t rt, uint8_t rd, uint8_t sa,
     return (0u << 26) | ((uint32_t)rs << 21) | ((uint32_t)rt << 16)
          | ((uint32_t)rd << 11) | ((uint32_t)sa << 6) | fn;
 }
+/* I TYPE: return ((uint32_t)op << 26) | ((uint32_t)rs << 21) | ((uint32_t)rt <<... */
 static constexpr uint32_t I_TYPE(uint8_t op, uint8_t rs, uint8_t rt, uint16_t imm) {
     return ((uint32_t)op << 26) | ((uint32_t)rs << 21) | ((uint32_t)rt << 16) | imm;
 }

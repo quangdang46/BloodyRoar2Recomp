@@ -26,6 +26,7 @@ namespace {
 constexpr uint32_t kBase = 0xBFC00000u;
 int failures = 0;
 
+/* expect: if (!condition)  */
 void expect(bool condition, const char* message) {
     if (!condition) {
         std::fprintf(stderr, "FAIL: %s\n", message);
@@ -33,6 +34,7 @@ void expect(bool condition, const char* message) {
     }
 }
 
+/* append word */
 void append_word(std::vector<uint8_t>& rom, uint32_t word) {
     rom.push_back(static_cast<uint8_t>(word));
     rom.push_back(static_cast<uint8_t>(word >> 8));
@@ -40,6 +42,7 @@ void append_word(std::vector<uint8_t>& rom, uint32_t word) {
     rom.push_back(static_cast<uint8_t>(word >> 24));
 }
 
+/* function at: DiscoveredFunction fn */
 DiscoveredFunction function_at(uint32_t entry, uint32_t end,
                                std::initializer_list<uint32_t> leaders) {
     DiscoveredFunction fn{};
@@ -53,6 +56,7 @@ DiscoveredFunction function_at(uint32_t entry, uint32_t end,
     return fn;
 }
 
+/* read file: return std::string(std::istreambuf_iterator<char>(in), */
 std::string read_file(const std::filesystem::path& path) {
     std::ifstream in(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(in),
@@ -64,6 +68,7 @@ struct RunResult {
     std::string dispatch;
 };
 
+/* run case: std::vector<uint8_t> rom */
 RunResult run_case(const char* name, const std::vector<uint32_t>& words,
                    std::vector<DiscoveredFunction> functions) {
     std::vector<uint8_t> rom;
@@ -90,6 +95,7 @@ RunResult run_case(const char* name, const std::vector<uint32_t>& words,
     return result;
 }
 
+/* expect entry absent: char needle[96] */
 void expect_entry_absent(const RunResult& result, uint32_t normalized,
                          const char* message) {
     char needle[96];
@@ -98,6 +104,7 @@ void expect_entry_absent(const RunResult& result, uint32_t normalized,
     expect(result.dispatch.find(needle) == std::string::npos, message);
 }
 
+/* expect dispatch key absent: char needle[32] */
 void expect_dispatch_key_absent(const RunResult& result, uint32_t normalized,
                                 const char* message) {
     char needle[32];
@@ -105,6 +112,7 @@ void expect_dispatch_key_absent(const RunResult& result, uint32_t normalized,
     expect(result.dispatch.find(needle) == std::string::npos, message);
 }
 
+/* delay slot load falls back: "delay-slot", */
 void delay_slot_load_falls_back() {
     const auto result = run_case(
         "delay-slot",
@@ -126,6 +134,7 @@ void delay_slot_load_falls_back() {
                                "delay-slot successor continuation is absent from dispatch");
 }
 
+/* label split load falls back: "label-split", */
 void label_split_load_falls_back() {
     const auto result = run_case(
         "label-split",
@@ -144,6 +153,7 @@ void label_split_load_falls_back() {
                                "label-split continuation is absent from dispatch");
 }
 
+/* fragment split load falls back: "fragment-split", */
 void fragment_split_load_falls_back() {
     const auto result = run_case(
         "fragment-split",
@@ -165,6 +175,7 @@ void fragment_split_load_falls_back() {
                         "fragment-split load owner is absent from dispatch");
 }
 
+/* noncomplementary lwl falls back: "lwl-dependent", */
 void noncomplementary_lwl_falls_back() {
     const auto result = run_case(
         "lwl-dependent",
@@ -181,6 +192,7 @@ void noncomplementary_lwl_falls_back() {
                         "non-complementary LWL function is absent from dispatch");
 }
 
+/* complementary lwl lwr stays native: "lwl-lwr", */
 void complementary_lwl_lwr_stays_native() {
     const auto result = run_case(
         "lwl-lwr",
