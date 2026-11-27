@@ -1377,7 +1377,7 @@ void cps_8019a8ec(void);
 
 /* cps_80126178 — clean CPS transliteration of br2eu_func_80126178 (guest 0x80126178)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126188 */
+ * CPS fallthrough stub — continues at 0x80126188 — scene-thunk fragment: continues at 0x80126188 */
 void cps_80126178(void)
 {
 /* scene-thunk fragment: continues at 0x80126188 */
@@ -1433,7 +1433,7 @@ void cps_80126194(void)
 
 /* cps_80126198 — clean CPS transliteration of br2eu_func_80126198 (guest 0x80126198)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012619C */
+ * CPS fallthrough stub — continues at 0x8012619C — scene-thunk fragment: continues at 0x8012619c */
 void cps_80126198(void)
 {
 /* scene-thunk fragment: continues at 0x8012619c */
@@ -1539,7 +1539,7 @@ block_8012620C:
 
 /* cps_8012621c — clean CPS transliteration of br2eu_func_8012621C (guest 0x8012621c)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126220 */
+ * CPS fallthrough stub — continues at 0x80126220 — scene-thunk fragment: continues at 0x80126220 */
 void cps_8012621c(void)
 {
 /* scene-thunk fragment: continues at 0x80126220 */
@@ -1622,7 +1622,7 @@ block_80126258:
 
 /* cps_8012625c — clean CPS transliteration of br2eu_func_8012625C (guest 0x8012625c)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126260 */
+ * CPS fallthrough stub — continues at 0x80126260 — scene-thunk fragment: continues at 0x80126260 */
 void cps_8012625c(void)
 {
 /* scene-thunk fragment: continues at 0x80126260 */
@@ -1727,7 +1727,7 @@ block_801262BC:
 
 /* cps_801262c0 — clean CPS transliteration of br2eu_func_801262C0 (guest 0x801262c0)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801262C4 */
+ * CPS fallthrough stub — continues at 0x801262C4 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_801262c0(void)
 {
 /* scene-thunk fragment: continues at 0x801262c4 */
@@ -1838,7 +1838,7 @@ block_80126314:
 
 /* cps_80126324 — clean CPS transliteration of br2eu_func_80126324 (guest 0x80126324)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126328 */
+ * CPS fallthrough stub — continues at 0x80126328 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126324(void)
 {
 /* scene-thunk fragment: continues at 0x80126328 */
@@ -2061,7 +2061,7 @@ block_801263B0:
 
 /* cps_801263bc — clean CPS transliteration of br2eu_func_801263BC (guest 0x801263bc)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801263C0 */
+ * CPS fallthrough stub — continues at 0x801263C0 — root: byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801263bc(void)
 {
 /* scene-thunk fragment: continues at 0x801263c0 */
@@ -2475,7 +2475,7 @@ block_801264EC:
 
 /* cps_80126518 — clean CPS transliteration of br2eu_func_80126518 (guest 0x80126518)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012651C */
+ * CPS fallthrough stub — continues at 0x8012651C — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126518(void)
 {
 /* scene-thunk fragment: continues at 0x8012651c */
@@ -2566,7 +2566,7 @@ block_80126534:
 
 /* cps_80126548 — clean CPS transliteration of br2eu_func_80126548 (guest 0x80126548)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012654C */
+ * CPS fallthrough stub — continues at 0x8012654C — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126548(void)
 {
 /* scene-thunk fragment: continues at 0x8012654c */
@@ -2825,7 +2825,7 @@ block_801265C8:
 
 /* cps_801265dc — clean CPS transliteration of br2eu_func_801265DC (guest 0x801265dc)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801265E0 */
+ * CPS fallthrough stub — continues at 0x801265E0 — root: match_frame_tick: frame_tick + match_loop + memcard_poll_frame — per-frame match loop with memcard poll. */
 void cps_801265dc(void)
 {
 /* scene-thunk fragment: continues at 0x801265e0 */
@@ -3074,7 +3074,7 @@ block_8012666C:
 
 /* cps_80126670 — clean CPS transliteration of br2eu_func_80126670 (guest 0x80126670)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126674 */
+ * CPS fallthrough stub — continues at 0x80126674 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_80126670(void)
 {
 /* scene-thunk fragment: continues at 0x80126674 */
@@ -3165,7 +3165,7 @@ block_8012669C:
 
 /* cps_801266a0 — clean CPS transliteration of br2eu_func_801266A0 (guest 0x801266a0)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801266A4 */
+ * CPS fallthrough stub — continues at 0x801266A4 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_801266a0(void)
 {
 /* scene-thunk fragment: continues at 0x801266a4 */
@@ -3268,7 +3268,7 @@ block_801266C8:
 
 /* cps_801266d4 — clean CPS transliteration of br2eu_func_801266D4 (guest 0x801266d4)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801266D8 */
+ * CPS fallthrough stub — continues at 0x801266D8 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_801266d4(void)
 {
 /* scene-thunk fragment: continues at 0x801266d8 */
@@ -3423,7 +3423,7 @@ block_80126704:
 
 /* cps_80126734 — clean CPS transliteration of br2eu_func_80126734 (guest 0x80126734)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126740 */
+ * CPS fallthrough stub — continues at 0x80126740 — scene-thunk fragment: continues at 0x80126740 */
 void cps_80126734(void)
 {
 /* scene-thunk fragment: continues at 0x80126740 */
@@ -3589,7 +3589,7 @@ block_801267C0:
 
 /* cps_801267c8 — clean CPS transliteration of br2eu_func_801267C8 (guest 0x801267c8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801267CC */
+ * CPS fallthrough stub — continues at 0x801267CC — root: save_init_seq: save_defaults_fill + save_tables_commit + save_block_init + dbg_marker_mode_set — save-system init sequence. */
 void cps_801267c8(void)
 {
 /* scene-thunk fragment: continues at 0x801267cc */
@@ -3628,7 +3628,7 @@ block_801267CC:
 
 /* cps_801267f8 — clean CPS transliteration of br2eu_func_801267F8 (guest 0x801267f8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801267FC */
+ * CPS fallthrough stub — continues at 0x801267FC — scene-thunk fragment: continues at 0x801267fc */
 void cps_801267f8(void)
 {
 /* scene-thunk fragment: continues at 0x801267fc */
@@ -3684,7 +3684,7 @@ block_80126804:
 
 /* cps_80126814 — clean CPS transliteration of br2eu_func_80126814 (guest 0x80126814)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126828 */
+ * CPS fallthrough stub — continues at 0x80126828 — scene-thunk fragment: continues at 0x80126828 */
 void cps_80126814(void)
 {
 /* scene-thunk fragment: continues at 0x80126828 */
@@ -3903,7 +3903,7 @@ block_801268B4:
 
 /* cps_801268b8 — clean CPS transliteration of br2eu_func_801268B8 (guest 0x801268b8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801268BC */
+ * CPS fallthrough stub — continues at 0x801268BC — root: ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268b8(void)
 {
 /* scene-thunk fragment: continues at 0x801268bc */
@@ -6482,7 +6482,7 @@ block_80128BDC:
 
 /* cps_80128c0c — clean CPS transliteration of br2eu_func_80128C0C (guest 0x80128c0c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128C10 */
+ * CPS fallthrough stub — continues at 0x80128C10 — results fragment: continues at 0x80128c10 */
 void cps_80128c0c(void)
 {
 /* results fragment: continues at 0x80128c10 */
@@ -6867,7 +6867,7 @@ block_80128D64:
 
 /* cps_80128d74 — clean CPS transliteration of br2eu_func_80128D74 (guest 0x80128d74)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128D78 */
+ * CPS fallthrough stub — continues at 0x80128D78 — root: record_half_read_leaf: s16 field read step. */
 void cps_80128d74(void)
 {
 /* results fragment: continues at 0x80128d78 */
@@ -7371,7 +7371,7 @@ block_80128F84:
 
 /* cps_80128f9c — clean CPS transliteration of br2eu_func_80128F9C (guest 0x80128f9c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FA0 */
+ * CPS fallthrough stub — continues at 0x80128FA0 — results fragment: continues at 0x80128fa0 */
 void cps_80128f9c(void)
 {
 /* results fragment: continues at 0x80128fa0 */
@@ -7450,7 +7450,7 @@ block_80128FA8:
 
 /* cps_80128fac — clean CPS transliteration of br2eu_func_80128FAC (guest 0x80128fac)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FB0 */
+ * CPS fallthrough stub — continues at 0x80128FB0 — results fragment: continues at 0x80128fb0 */
 void cps_80128fac(void)
 {
 /* results fragment: continues at 0x80128fb0 */
@@ -7487,7 +7487,7 @@ block_80128FB0:
 
 /* cps_80128fb8 — clean CPS transliteration of br2eu_func_80128FB8 (guest 0x80128fb8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FD4 */
+ * CPS fallthrough stub — continues at 0x80128FD4 — root: ui_leaf_step_g: leaf state step, no calls. */
 void cps_80128fb8(void)
 {
 /* results fragment: continues at 0x80128fd4 */
@@ -9155,7 +9155,7 @@ block_80129774:
 
 /* cps_80129778 — clean CPS transliteration of br2eu_func_80129778 (guest 0x80129778)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012977C */
+ * CPS fallthrough stub — continues at 0x8012977C — root: menu_row_paint_wrap: menu_row_paint caller. */
 void cps_80129778(void)
 {
 /* menu-piece fragment: continues at 0x8012977c */
@@ -9420,7 +9420,7 @@ block_80129870:
 
 /* cps_8012987c — clean CPS transliteration of br2eu_func_8012987C (guest 0x8012987c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012988C */
+ * CPS fallthrough stub — continues at 0x8012988C — menu-piece fragment: continues at 0x8012988c */
 void cps_8012987c(void)
 {
 /* menu-piece fragment: continues at 0x8012988c */
@@ -9868,7 +9868,7 @@ block_80129A3C:
 
 /* cps_80129ac8 — clean CPS transliteration of br2eu_func_80129AC8 (guest 0x80129ac8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129AE0 */
+ * CPS fallthrough stub — continues at 0x80129AE0 — root: deferred_cmd_wrap_g: deferred_cmd_post caller. */
 void cps_80129ac8(void)
 {
 /* menu-piece fragment: continues at 0x80129ae0 */
@@ -10116,7 +10116,7 @@ block_80129BE0:
 
 /* cps_80129be8 — clean CPS transliteration of br2eu_func_80129BE8 (guest 0x80129be8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129BEC */
+ * CPS fallthrough stub — continues at 0x80129BEC — root: menu_deferred_wrap_c: deferred_cmd_post caller. */
 void cps_80129be8(void)
 {
 /* menu-piece fragment: continues at 0x80129bec */
@@ -10161,7 +10161,7 @@ block_80129BEC:
 
 /* cps_80129c7c — clean CPS transliteration of br2eu_func_80129C7C (guest 0x80129c7c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129C80 */
+ * CPS fallthrough stub — continues at 0x80129C80 — menu-piece fragment: continues at 0x80129c80 */
 void cps_80129c7c(void)
 {
 /* menu-piece fragment: continues at 0x80129c80 */
@@ -10350,7 +10350,7 @@ block_80129D00:
 
 /* cps_80129d10 — clean CPS transliteration of br2eu_func_80129D10 (guest 0x80129d10)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129D14 */
+ * CPS fallthrough stub — continues at 0x80129D14 — root: deferred_cmd_wrap_h: deferred_cmd_post caller. */
 void cps_80129d10(void)
 {
 /* menu-piece fragment: continues at 0x80129d14 */
@@ -10458,7 +10458,7 @@ block_80129D3C:
 
 /* cps_80129da8 — clean CPS transliteration of br2eu_func_80129DA8 (guest 0x80129da8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129DAC */
+ * CPS fallthrough stub — continues at 0x80129DAC — menu-piece fragment: continues at 0x80129dac */
 void cps_80129da8(void)
 {
 /* menu-piece fragment: continues at 0x80129dac */
@@ -10604,7 +10604,7 @@ block_80129E14:
 
 /* cps_80129ed8 — clean CPS transliteration of br2eu_func_80129ED8 (guest 0x80129ed8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129EF0 */
+ * CPS fallthrough stub — continues at 0x80129EF0 — menu-piece fragment: continues at 0x80129ef0 */
 void cps_80129ed8(void)
 {
 /* menu-piece fragment: continues at 0x80129ef0 */
@@ -11385,7 +11385,7 @@ block_8012A634:
 
 /* cps_8012a664 — clean CPS transliteration of br2eu_func_8012A664 (guest 0x8012a664)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012A668 */
+ * CPS fallthrough stub — continues at 0x8012A668 — root: ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a664(void)
 {
 /* UI/print fragment: continues at 0x8012a668 */
@@ -11500,7 +11500,7 @@ block_8012A69C:
 
 /* cps_8012a6a4 — clean CPS transliteration of br2eu_func_8012A6A4 (guest 0x8012a6a4)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012A6BC */
+ * CPS fallthrough stub — continues at 0x8012A6BC — root: byte_leaf_step: byte-read leaf step. */
 void cps_8012a6a4(void)
 {
 /* UI/print fragment: continues at 0x8012a6bc */
@@ -13197,7 +13197,7 @@ block_8012AED4:
 
 /* cps_8012af90 — clean CPS transliteration of br2eu_func_8012AF90 (guest 0x8012af90)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012AF94 */
+ * CPS fallthrough stub — continues at 0x8012AF94 — UI/print fragment: continues at 0x8012af94 */
 void cps_8012af90(void)
 {
 /* UI/print fragment: continues at 0x8012af94 */
@@ -13734,7 +13734,7 @@ block_8012B1C4:
 
 /* cps_8012b1dc — clean CPS transliteration of br2eu_func_8012B1DC (guest 0x8012b1dc)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012B1E0 */
+ * CPS fallthrough stub — continues at 0x8012B1E0 — root: debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup + scroll_offset_set — debug stat print + OT fixup + scroll. */
 void cps_8012b1dc(void)
 {
 /* GPU/pad fragment: continues at 0x8012b1e0 */
@@ -15300,7 +15300,7 @@ block_8012B9FC:
 
 /* cps_8012bae0 — clean CPS transliteration of br2eu_func_8012BAE0 (guest 0x8012bae0)
  * from SLES_017.22_full_02.c.
- * CPS fallthrough stub — continues at 0x8012BAE4 */
+ * CPS fallthrough stub — continues at 0x8012BAE4 — root: ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bae0(void)
 {
 /* GPU/pad fragment: continues at 0x8012bae4 */
@@ -17560,7 +17560,7 @@ block_8012C50C:
 
 /* cps_8012c510 — clean CPS transliteration of br2eu_func_8012C510 (guest 0x8012c510)
  * from SLES_017.22_full_02.c.
- * CPS fallthrough stub — continues at 0x8012C514 */
+ * CPS fallthrough stub — continues at 0x8012C514 — root: ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c510(void)
 {
 /* hud/sprite fragment: continues at 0x8012c514 */
@@ -18577,7 +18577,7 @@ block_8012EE40:
 
 /* cps_8012f160 — clean CPS transliteration of br2eu_func_8012F160 (guest 0x8012f160)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012F164 */
+ * CPS fallthrough stub — continues at 0x8012F164 — cps_8012f188 — clean CPS transliteration of br2eu_func_8012F188 (guest 0x8012f188) */
 void cps_8012f160(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -18592,7 +18592,7 @@ block_8012F160:
 
 /* cps_8012f188 — clean CPS transliteration of br2eu_func_8012F188 (guest 0x8012f188)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012F1B0 */
+ * CPS fallthrough stub — continues at 0x8012F1B0 — root: print_dispatch_wrap: print_dispatch_guest caller — routed debug print. */
 void cps_8012f188(void)
 {
 /* status_text_dump piece -> print_dispatch_guest */
@@ -18776,7 +18776,7 @@ block_8012F298:
 
 /* cps_8012fb54 — clean CPS transliteration of br2eu_func_8012FB54 (guest 0x8012fb54)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012FB58 */
+ * CPS fallthrough stub — continues at 0x8012FB58 — root: vec3_step_dispatch: fans out to vec3_step_toward / _spd / _q _q_spd — velocity-step variant selector. */
 void cps_8012fb54(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23988,7 +23988,7 @@ block_8013205C:
 
 /* cps_80132864 — clean CPS transliteration of br2eu_func_80132864 (guest 0x80132864)
  * from SLES_017.22_full_05.c.
- * CPS fallthrough stub — continues at 0x80132868 */
+ * CPS fallthrough stub — continues at 0x80132868 — root: gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single instruction GTE transform entry. */
 void cps_80132864(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26134,7 +26134,7 @@ block_80133820:
 
 /* cps_801338ac — clean CPS transliteration of br2eu_func_801338AC (guest 0x801338ac)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x801338B4 */
+ * CPS fallthrough stub — continues at 0x801338B4 — math fragment: continues at 0x801338b4 */
 void cps_801338ac(void)
 {
 /* math fragment: continues at 0x801338b4 */
@@ -26207,7 +26207,7 @@ block_801338BC:
 
 /* cps_801338fc — clean CPS transliteration of br2eu_func_801338FC (guest 0x801338fc)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x80133900 */
+ * CPS fallthrough stub — continues at 0x80133900 — math fragment: continues at 0x80133900 */
 void cps_801338fc(void)
 {
 /* math fragment: continues at 0x80133900 */
@@ -30545,7 +30545,7 @@ block_8013610C:
 
 /* cps_801361a4 — clean CPS transliteration of br2eu_func_801361A4 (guest 0x801361a4)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x801361A8 */
+ * CPS fallthrough stub — continues at 0x801361A8 — vec/GTE fragment: continues at 0x801361a8 */
 void cps_801361a4(void)
 {
 /* vec/GTE fragment: continues at 0x801361a8 */
@@ -31886,7 +31886,7 @@ block_80136964:
 
 /* cps_80136970 — clean CPS transliteration of br2eu_func_80136970 (guest 0x80136970)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80136974 */
+ * CPS fallthrough stub — continues at 0x80136974 — root: vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136970(void)
 {
 /* vec/GTE fragment: continues at 0x80136974 */
@@ -32291,7 +32291,7 @@ block_80136B34:
 
 /* cps_80136b70 — clean CPS transliteration of br2eu_func_80136B70 (guest 0x80136b70)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80136B78 */
+ * CPS fallthrough stub — continues at 0x80136B78 — vec/GTE fragment: continues at 0x80136b78 */
 void cps_80136b70(void)
 {
 /* vec/GTE fragment: continues at 0x80136b78 */
@@ -32882,7 +32882,7 @@ block_80137088:
 
 /* cps_80137528 — clean CPS transliteration of br2eu_func_80137528 (guest 0x80137528)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x8013752C */
+ * CPS fallthrough stub — continues at 0x8013752C — battle_intro_fsm_alias piece: continues at 0x80137868 */
 void cps_80137528(void)
 {
 /* battle_intro_fsm_alias piece: continues at 0x80137868 */
@@ -32949,7 +32949,7 @@ block_80137548:
 
 /* cps_8013783c — clean CPS transliteration of br2eu_func_8013783C (guest 0x8013783c)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x8013784C */
+ * CPS fallthrough stub — continues at 0x8013784C — script_stream_tick piece: continues at 0x80137878 */
 void cps_8013783c(void)
 {
 /* script_stream_tick piece: continues at 0x80137878 */
@@ -35013,7 +35013,7 @@ void cps_801385b0(void)
 
 /* cps_801388dc — clean CPS transliteration of br2eu_func_801388DC (guest 0x801388dc)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x801388EC */
+ * CPS fallthrough stub — continues at 0x801388EC — s0+14 halfword countdown */
 void cps_801388dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35071,7 +35071,7 @@ block_801388FC:
 
 /* cps_8013890c — clean CPS transliteration of br2eu_func_8013890C (guest 0x8013890c)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80138910 */
+ * CPS fallthrough stub — continues at 0x80138910 — cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910) */
 void cps_8013890c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37202,7 +37202,7 @@ void cps_80139d98(void)
 
 /* cps_80139f1c — clean CPS transliteration of br2eu_func_80139F1C (guest 0x80139f1c)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x80139F20 */
+ * CPS fallthrough stub — continues at 0x80139F20 — impact_fx_emit_tick piece: continues at 0x80139f20 */
 void cps_80139f1c(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f20 */
@@ -37287,7 +37287,7 @@ block_80139F38:
 
 /* cps_80139f40 — clean CPS transliteration of br2eu_func_80139F40 (guest 0x80139f40)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x80139F58 */
+ * CPS fallthrough stub — continues at 0x80139F58 — impact_fx_emit_tick piece: continues at 0x80139f58 */
 void cps_80139f40(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f58 */
@@ -38606,7 +38606,7 @@ block_8013AB7C:
 
 /* cps_8013ac6c — clean CPS transliteration of br2eu_func_8013AC6C (guest 0x8013ac6c)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x8013AC70 */
+ * CPS fallthrough stub — continues at 0x8013AC70 — root: fx_spawn_init: projectile/FX spawn — word[a1]=s1, unaligned 24B record build, range gates (v0<46, v0<401), s2&0x80 flag select, tables @0x801B0000+off; continues 0x8013AD9C. */
 void cps_8013ac6c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -41966,7 +41966,7 @@ block_8013C508:
 
 /* cps_8013c50c — clean CPS transliteration of br2eu_func_8013C50C (guest 0x8013c50c)
  * from SLES_017.22_full_09.c.
- * CPS fallthrough stub — continues at 0x8013C510 */
+ * CPS fallthrough stub — continues at 0x8013C510 — root: gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE ops — loads rotation+translation into GTE for a transform. */
 void cps_8013c50c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62429,7 +62429,7 @@ void cps_801796e4(void)
 
 /* cps_80179a5c — clean CPS transliteration of br2eu_func_80179A5C (guest 0x80179a5c)
  * from SLES_017.22_full_34.c.
- * CPS fallthrough stub — continues at 0x80179A60 */
+ * CPS fallthrough stub — continues at 0x80179A60 — cps_80179a60 — clean CPS transliteration of br2eu_func_80179A60 (guest 0x80179a60) */
 void cps_80179a5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -86185,7 +86185,7 @@ block_80191E08:
 
 /* cps_80191e0c — clean CPS transliteration of br2eu_func_80191E0C (guest 0x80191e0c)
  * from SLES_017.22_full_43.c.
- * CPS fallthrough stub — continues at 0x80191E14 */
+ * CPS fallthrough stub — continues at 0x80191E14 — root: env-table lookup — reads a1-31976 and a1+16 */
 void cps_80191e0c(void)
 {
 /* gpu/cd-pkt chain piece: continues at 0x80191e14 */
@@ -86210,7 +86210,7 @@ block_80191E0C:
 
 /* cps_80191e14 — clean CPS transliteration of br2eu_func_80191E14 (guest 0x80191e14)
  * from SLES_017.22_full_43.c.
- * CPS fallthrough stub — continues at 0x80191E18 */
+ * CPS fallthrough stub — continues at 0x80191E18 — root: env-table lookup — reads a1-31976 and a1+16 */
 void cps_80191e14(void)
 {
 /* gpu/cd-pkt chain piece: continues at 0x80191e18 */
@@ -87619,7 +87619,7 @@ block_80195AA4:
 
 /* cps_80195adc — clean CPS transliteration of br2eu_func_80195ADC (guest 0x80195adc)
  * from SLES_017.22_full_45.c.
- * CPS fallthrough stub — continues at 0x80195AE0 */
+ * CPS fallthrough stub — continues at 0x80195AE0 — root: frame epilogue — restores ra, frees 24B stack */
 void cps_80195adc(void)
 {
 /* cd_probe_retry piece: continues at 0x80195ae0 */
@@ -87636,7 +87636,7 @@ block_80195ADC:
 
 /* cps_80195ae0 — clean CPS transliteration of br2eu_func_80195AE0 (guest 0x80195ae0)
  * from SLES_017.22_full_45.c.
- * CPS fallthrough stub — continues at 0x80195B00 */
+ * CPS fallthrough stub — continues at 0x80195B00 — root: frame epilogue — restores ra, frees 24B stack */
 void cps_80195ae0(void)
 {
 /* cd_probe_retry thunk -> printf_forward_guest */
@@ -87846,7 +87846,7 @@ block_80195BF0:
 
 /* cps_80195bfc — clean CPS transliteration of br2eu_func_80195BFC (guest 0x80195bfc)
  * from SLES_017.22_full_45.c.
- * CPS fallthrough stub — continues at 0x80195C00 */
+ * CPS fallthrough stub — continues at 0x80195C00 — root: Conditional two-stage probe: calls 0x801974B8 — nonzero result exits via 0x80195C78; zero result with s0==1 then calls 0x8019737C and returns 1 only when that also yields 0. */
 void cps_80195bfc(void)
 {
 /* cd_mode_byte_read piece: continues at 0x80195c00 */
@@ -87904,7 +87904,7 @@ block_80195C10:
 
 /* cps_80195c40 — clean CPS transliteration of br2eu_func_80195C40 (guest 0x80195c40)
  * from SLES_017.22_full_45.c.
- * CPS fallthrough stub — continues at 0x80195C44 */
+ * CPS fallthrough stub — continues at 0x80195C44 — root: Conditional two-stage probe: calls 0x801974B8 — nonzero result exits via 0x80195C78; zero result with s0==1 then calls 0x8019737C and returns 1 only when that also yields 0. */
 void cps_80195c40(void)
 {
 /* cd_init_mode_dispatch piece: continues at 0x80195c44 */
@@ -88023,7 +88023,7 @@ block_80195C78:
 
 /* cps_80195c84 — clean CPS transliteration of br2eu_func_80195C84 (guest 0x80195c84)
  * from SLES_017.22_full_45.c.
- * CPS fallthrough stub — continues at 0x80195C88 */
+ * CPS fallthrough stub — continues at 0x80195C88 — root: cd_cmd_reset_wrap — see renames.map canonical name. */
 void cps_80195c84(void)
 {
 /* cd_init_mode_dispatch piece: continues at 0x80195c88 */
@@ -100563,7 +100563,7 @@ block_801A1D4C:
 
 /* cps_801a1d50 — clean CPS transliteration of br2eu_func_801A1D50 (guest 0x801a1d50)
  * from SLES_017.22_full_49.c.
- * CPS fallthrough stub — continues at 0x801A1D54 */
+ * CPS fallthrough stub — continues at 0x801A1D54 — root: stream_chan_kick: sets bit4 in half @v1+10, waits while bit9 (@v1+4&0x200) via fifo_space_check(0x801A4230,2000); writes flag byte 1 through cell @0x801BE858, then calls 0x801A4210(1)/0x801A23FC/0x801A248C/0x801A4210(430) and tails into 0x801A1D5C. */
 void cps_801a1d50(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100752,7 +100752,7 @@ block_801A1DD0:
 
 /* cps_801a1dd4 — clean CPS transliteration of br2eu_func_801A1DD4 (guest 0x801a1dd4)
  * from SLES_017.22_full_49.c.
- * CPS fallthrough stub — continues at 0x801A1DD8 */
+ * CPS fallthrough stub — continues at 0x801A1DD8 — root: stream_wait_poll: polls status cell @0x801BE878 bit 0x80 (busy), arms byte @0x801BE858=1, then 0x801A4210(60)/0x801A23FC poll; on ok calls 0x801A248C and returns byte@0x801BE858 into v0 (0/-3 paths split). */
 void cps_801a1dd4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -100977,7 +100977,7 @@ block_801A1E70:
 
 /* cps_801a1edc — clean CPS transliteration of br2eu_func_801A1EDC (guest 0x801a1edc)
  * from SLES_017.22_full_49.c.
- * CPS fallthrough stub — continues at 0x801A1EE0 */
+ * CPS fallthrough stub — continues at 0x801A1EE0 — root: stream_status_pump: if byte@(*(s0+60))==0x80 skip to tail; else 0x801A4210(60) + 0x801A23FC, and on nonzero jalr cell @0x801BE840(-3). Tail loads cell @0x801BE854 into v1 for the split piece. */
 void cps_801a1edc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104435,7 +104435,7 @@ block_801A4BD4:
 
 /* cps_801a4c88 — clean CPS transliteration of br2eu_func_801A4C88 (guest 0x801a4c88)
  * from SLES_017.22_full_50.c.
- * CPS fallthrough stub — continues at 0x801A4C9C */
+ * CPS fallthrough stub — continues at 0x801A4C9C — root: node_pair_dump: three 0x80190A04 printf calls — fmt @0x80125C18 (a1=s0), @0x80125C28 (*s0), @0x80125C38 (*(s0+4)). */
 void cps_801a4c88(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104641,7 +104641,7 @@ block_801A4FB8:
 
 /* cps_801a4fc0 — clean CPS transliteration of br2eu_func_801A4FC0 (guest 0x801a4fc0)
  * from SLES_017.22_full_50.c.
- * CPS fallthrough stub — continues at 0x801A4FC8 */
+ * CPS fallthrough stub — continues at 0x801A4FC8 — cps_801a4fc8 — clean CPS transliteration of br2eu_func_801A4FC8 (guest 0x801a4fc8) */
 void cps_801a4fc0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -106712,7 +106712,7 @@ block_801A983C:
 
 /* cps_801a9b1c — clean CPS transliteration of br2eu_func_801A9B1C (guest 0x801a9b1c)
  * from SLES_017.22_full_52.c.
- * CPS fallthrough stub — continues at 0x801A9B20 */
+ * CPS fallthrough stub — continues at 0x801A9B20 — root: pair_match_dispatch: for i in 0..1 over *(s1+52) ptr array, node matches when s16[node+14]==*(node+48) and s16[node+10]==*(node+44); on match jal 0x801A9C24(node, s2, s3). */
 void cps_801a9b1c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -107452,7 +107452,7 @@ block_801A9E34:
 
 /* cps_801a9e38 — clean CPS transliteration of br2eu_func_801A9E38 (guest 0x801a9e38)
  * from SLES_017.22_full_52.c.
- * CPS fallthrough stub — continues at 0x801A9E3C */
+ * CPS fallthrough stub — continues at 0x801A9E3C — root: tween_range_check: a1<v1 → load entry *(t2+24)[a1*5]+4, negate s16@+10 into sp+24, t6=-1,t4=0; else t6=0,t4=2 and bound t7-s16@+10 → sp+32; continues at 0x801A9D10. */
 void cps_801a9e38(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108135,7 +108135,7 @@ block_801AA5C4:
 
 /* cps_801aa5c8 — clean CPS transliteration of br2eu_func_801AA5C8 (guest 0x801aa5c8)
  * from SLES_017.22_full_52.c.
- * CPS fallthrough stub — continues at 0x801AA5CC */
+ * CPS fallthrough stub — continues at 0x801AA5CC — root: stream_type_classify: idx1=s16[s0+56] into *(s0+52), idx2=s16[s0+58]*2 into entry; reads byte@entry + half&0xFF00 classifying ranges (0x2000/256/512/0x4000/0x8000) into split-piece dispatches. */
 void cps_801aa5c8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -114107,7 +114107,7 @@ block_801AEDAC:
 
 /* cps_801aedb8 — clean CPS transliteration of br2eu_func_801AEDB8 (guest 0x801aedb8)
  * from SLES_017.22_full_53.c.
- * CPS fallthrough stub — continues at 0x801AEDBC */
+ * CPS fallthrough stub — continues at 0x801AEDBC — root: jalr_store_result_c: two-index variant — a0/a1 resolved from a3 via s16@a0+4/+6 when s16@a2!=0 (result stored *(gp+76)+8+s16), else plain jalr *t0. */
 void cps_801aedb8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -115187,7 +115187,7 @@ block_801AF748:
 
 /* cps_801af938 — clean CPS transliteration of br2eu_func_801AF938 (guest 0x801af938)
  * from SLES_017.22_full_53.c.
- * CPS fallthrough stub — continues at 0x801AF93C */
+ * CPS fallthrough stub — continues at 0x801AF93C — root: dual-field transform op: resolves s16[a0+2] and s16[a0+4] into two entries of *(v0+8); calls gte_rtps_xform3(0x80194960) with (a0=a1, a1=*entry1, a2=*entry2). */
 void cps_801af938(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -115249,7 +115249,7 @@ block_801AF96C:
 
 /* cps_801af97c — clean CPS transliteration of br2eu_func_801AF97C (guest 0x801af97c)
  * from SLES_017.22_full_53.c.
- * CPS fallthrough stub — continues at 0x801AF980 */
+ * CPS fallthrough stub — continues at 0x801AF980 — root: dual-field transform op twin: same prologue, calls gte_rtps_xform3_t (0x80194C50) with (a0=a1, a1=*entry1, a2=*entry2). */
 void cps_801af97c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -115310,7 +115310,7 @@ block_801AF9B0:
 
 /* cps_801af9c0 — clean CPS transliteration of br2eu_func_801AF9C0 (guest 0x801af9c0)
  * from SLES_017.22_full_53.c.
- * CPS fallthrough stub — continues at 0x801AF9C4 */
+ * CPS fallthrough stub — continues at 0x801AF9C4 — root: lut_sin_q12 wrapper: offset = s16[a0]+s16[a0+2] into *(v0+8) table; jal lut_sin_q12(0x8018D29C); stores result word at resolved ptr. */
 void cps_801af9c0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -115368,7 +115368,7 @@ block_801AF9E4:
 
 /* cps_801af9f8 — clean CPS transliteration of br2eu_func_801AF9F8 (guest 0x801af9f8)
  * from SLES_017.22_full_54.c.
- * CPS fallthrough stub — continues at 0x801AF9FC */
+ * CPS fallthrough stub — continues at 0x801AF9FC — root: lut_cos_q12 wrapper: same offset prologue, jal lut_cos_q12(0x8018D298); stores result word at resolved ptr. */
 void cps_801af9f8(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -115571,7 +115571,7 @@ block_801AFB10:
 
 /* cps_801afb24 — clean CPS transliteration of br2eu_func_801AFB24 (guest 0x801afb24)
  * from SLES_017.22_full_54.c.
- * CPS fallthrough stub — continues at 0x801AFB28 */
+ * CPS fallthrough stub — continues at 0x801AFB28 — root: scene_node_walk: 25-half-read traversal calling scene_node_walk recursively — scene graph node iteration. */
 void cps_801afb24(void)
 {
   CPUState *cpu = clean_cpu_state();
