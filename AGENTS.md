@@ -1482,3 +1482,53 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   cd_timer_read retry loop or it reintroduces the starvation wedge.
   Also documented dormant in observed traces — low runtime payoff.
 - clean_cps.map now ~10100 wrappers; session total ~520 rows retired.
+
+### Session update 32 (cps_8015b190 ported + committed)
+
+- **cps_8015b190 -> menu_stepper_row_dispatch** (`3345663e`): the 175-block
+  menu stepper row/callback dispatcher is now a clean C port in
+  game/save.c (~5798-5936, beside dialog_sel_dispatch_wide). Dual-ABI a0
+  normalized via br2_gaddr; sel = a1 & 0xffff. Covers sel 1-17 counter
+  steps (u16_counter_step_pad_a), 0x100+ print paths (varargs marshaled
+  identically to wrap_8012cf64: a2/a3 = live gpr[6]/gpr[7], stack words
+  sp+0x10..0x1c), four guest jump tables @0x80121158/198/1D8/1F0
+  (bounds 15/6, verified against disc/SLES_017.22 EXE), sel 0x10e
+  config-string path, sel-14 MMIO/scratchpad commit path. All paths
+  return 0. All 175 clean_cps.map rows retired; renames.map:541;
+  clean_table regenerated (wrap_8015b190 -> clean call, gpr[4]/gpr[5]
+  args, gpr[2] v0). Headless versus_fight_mash verified frames
+  33k->44k.
+- **Cluster audit in flight**: hit_react_apply_cps (~165 rows,
+  battle.c:3722 port already live — likely pure deletion),
+  memcard_dialog_cps (~145 rows, save.c:320 memcard_tick port — delete
+  after save/load dialog runtime pass), fighter_script_fsm_cps
+  (~146 rows — HOLD pending battle.c:6031 audit + coverage check).
+- **3 verify-runtime conflicts** under insn-level diff
+  (0x80188200/0x80188308 prim twins, 0x80194470 gte_screen_init).
+- **3 verify-runtime conflicts RESOLVED** (`517946b9`, `4156e34b`):
+  insn-level diff proved the non-timing CPS transformer was silently
+  dropping psx_swl/swr (keep_re whitelist) — prim_poly_emit_54a/5ca +
+  prim_point_emit_48a CPS bodies lost their OT-link stores. Retired 21
+  map rows + stale renames; fnmap now routes 0x80188200/0x80188308 to
+  prim_quad_emit_54/5c and 0x80188434 to prim_emit_48 (previously
+  unregistered). 0x80194470 gte_screen_init_defer_mfhi map row KEPT —
+  CLEAN_ENT_CPS is required for the cpu->pc=0x80194478 fallthrough.
+- **GENERATOR BUG FIXED** (`b82af604`): keep_re in
+  gen_cps_clean.py unwrap_pgx_group now whitelists
+  psx_(lwl|lwr|swl|swr); cps_clean.c regenerated restoring 152 dropped
+  br2_swl/br2_swr stores (76+76). Sweep proved no other live CPS body
+  affected: cd_irq_probe.c TIMING mode always emitted cpst_*, and no
+  w*.c/recon CPS body covers a generated func containing psx_swl/swr
+  (the only victims were the dead prim trio).
+- **hit_react_apply_cps RETIRED** (`191559da`): full coordinated
+  deletion — 165 map rows + 6 alt fnmap/renames + w3_e02.c body
+  (~2900 lines). Clean port battle.c:3722 already covers all semantics.
+- **8 _alt/_alias clusters RETIRED** (`ac607b52`): 729 map rows +
+  16 renames + ~11k lines of w3 CPS bodies (battle_flow_state_machine_
+  alt, player_name_entry_alt, hud_score_draw_alt, action_from_input_
+  alias, ev_cmd_dispatch_alias, hud_announce_cps, cmd_input_parse_*,
+  battle_bringup_a_*). All were residual scaffolding inside already-
+  clean-ported fn spans; piece addrs now fall back to generated alias
+  bodies. battle_slot_draw stays (deliberate IRQ-yield CPS port).
+- clean_cps.map now ~7894 rows (was 8623 at session start);
+  clean_table 9031 wrappers.
