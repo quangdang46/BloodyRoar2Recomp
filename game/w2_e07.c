@@ -2245,4 +2245,3 @@ uint32_t scriptop_chk_cps_80183cf0(void)
   scriptop_chk_cps_body(c);
   return c->gpr[2];
 }
-
