@@ -16,15 +16,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);

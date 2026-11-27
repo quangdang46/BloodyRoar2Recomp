@@ -17476,11 +17476,11 @@ void pad_record_init(void)
   int tb;
   int ent;
   int nd;
-  byte abStack_28 [4];
-  undefined4 auStack_10 [8];
-  abStack_28[0] = 0x80;
+  byte cdbuf [4];
+  undefined4 sent [8];
+  cdbuf[0] = 0x80;
   do {
-    t = cd_mode_flag_set(0xe,abStack_28,0);
+    t = cd_mode_flag_set(0xe,cdbuf,0);
   } while (t == 0);
   if (*(byte *)guest_at(0x801c4580) == 0) {
     cd_timer_read(3);
@@ -17509,10 +17509,10 @@ void pad_record_init(void)
         ent = tb * 8 + 0x801b5b94;
       }
       nd = *(int *)guest_at((uint32_t)(uintptr_t)ent);
-      if ((*(int *)guest_at((uint32_t)(uintptr_t)nd) != 0) && (cd_search_file(auStack_10,nd) != 0)) {
-        *(undefined4 *)guest_at((uint32_t)(uintptr_t)nd) = auStack_10[0];
+      if ((*(int *)guest_at((uint32_t)(uintptr_t)nd) != 0) && (cd_search_file(sent,nd) != 0)) {
+        *(undefined4 *)guest_at((uint32_t)(uintptr_t)nd) = sent[0];
         *(int *)guest_at((uint32_t)(uintptr_t)(ent + 4)) =
-          (int)(((uint)auStack_10[1] + 0x7ff) >> 0xb);
+          (int)(((uint)sent[1] + 0x7ff) >> 0xb);
       }
       t = t - 1;
       off = off + 2;
@@ -17696,15 +17696,15 @@ void node_list_collect(int head,int out)
 void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1)
 {
   int t;
-  short asStack_10 [4];
+  short rect [4];
   t = spr;
   if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
     t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
-  asStack_10[0] = (short)x0;
-  asStack_10[1] = (short)y0;
-  asStack_10[2] = (short)x1;
-  asStack_10[3] = (short)y1;
+  rect[0] = (short)x0;
+  rect[1] = (short)y0;
+  rect[2] = (short)x1;
+  rect[3] = (short)y1;
   t = t + ((idx + mul * (int)*(short *)guest_at((uint32_t)(uintptr_t)(t + 0x10))) << 1) + 0x14;
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
@@ -17712,7 +17712,7 @@ void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t cec_frm = br2_guest_frame(0x20);
-    memcpy(guest_at(cec_frm + 0x10), asStack_10, 8);
+    memcpy(guest_at(cec_frm + 0x10), rect, 8);
     gpu_load_image_cmd(cec_frm + 0x10,t);
     br2_guest_frame_free();
   }
@@ -17724,28 +17724,28 @@ void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1
 void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 {
   int t;
-  short asStack_10 [4];
+  short rect [4];
   t = spr;
   if ((*(int *)guest_at((uint32_t)(uintptr_t)(spr + 4)) & 8) != 0) {
     t = spr + *(int *)guest_at((uint32_t)(uintptr_t)(spr + 8));
   }
   if (abs != 0) {
-    asStack_10[0] = (short)x0;
-    asStack_10[1] = (short)y0;
+    rect[0] = (short)x0;
+    rect[1] = (short)y0;
   }
   else {
-    asStack_10[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + x0);
-    asStack_10[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + y0);
+    rect[0] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xc)) + x0);
+    rect[1] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0xe)) + y0);
   }
-  asStack_10[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + dx);
-  asStack_10[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + dy);
+  rect[2] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x10)) + dx);
+  rect[3] = (short)(*(ushort *)guest_at((uint32_t)(uintptr_t)(t + 0x12)) + dy);
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018be28) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t cev_frm = br2_guest_frame(0x20);
-    memcpy(guest_at(cev_frm + 0x10), asStack_10, 8);
+    memcpy(guest_at(cev_frm + 0x10), rect, 8);
     gpu_load_image_cmd(cev_frm + 0x10,t + 0x14);
     br2_guest_frame_free();
   }

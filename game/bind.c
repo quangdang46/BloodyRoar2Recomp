@@ -991,7 +991,8 @@ extern void br2_bios_tramp(uint32_t,uint32_t);
 extern void gpu_state_patch_defer(void);
 extern /* canonical guest name: cpu_critical_enter (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
 void FUN_8018e300(void);
-extern void FUN_8018e310(uint32_t);
+extern /* canonical guest name: cpu_critical_exit (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
+void FUN_8018e310(uint32_t);
 extern int psx_syscall(CPUState *cpu, uint32_t code);
 uint32_t br2_ld32(uint32_t addr);
 uint16_t br2_ld16(uint32_t addr);
@@ -1385,7 +1386,6 @@ void halt_baddata(void) { for(;;) { } }
 
 /* ---- UNPORTED weak stubs (game.c callees) ----
  * Guest functions not yet ported. Weak defs keep the tree
- * linkable; strong ports override. Return values are fake. */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1399,10 +1399,6 @@ __attribute__((weak))
 #endif
 /* guest 0x80195290 = gte_ofs_set (renames.map). */
 void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
-
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 
 uint8_t *g_DAT_801e40b7, *g_DAT_801e40b8;
 uint8_t *g_DAT_801e6206, *g_DAT_801e6207, *g_DAT_801e6208;
@@ -2483,12 +2479,6 @@ int32_t cd_seek_state_machine(uint32_t arg)
 }
 
 /* ---- round-3 unported callees ---- */
-
-/* ---- cd-batch32 callees ---- */
-
-/* ---- cd 99440 callees ---- */
-
-/* ---- menu batch32 callees ---- */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2784,9 +2774,6 @@ int ret_zero_e(int32_t arg)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 /* guest 0x801948C0 = fixed_recip_lut (renames.map). */
 int32_t FUN_801948c0(uint32_t val) { return (int32_t)fixed_recip_lut(val); }
 #if defined(__GNUC__) || defined(__clang__)
@@ -2811,6 +2798,7 @@ int FUN_80195370(uint32_t *in, uint32_t *out)
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* no renames.map entry — unnamed guest fn (eight-channel DI/EI B0:09 sweep). */
 void FUN_8019a0ddc(void)
 {
     /* guest 0x801A0DDC: DI ($v0 = old IEc saved to s0); for i=0..7

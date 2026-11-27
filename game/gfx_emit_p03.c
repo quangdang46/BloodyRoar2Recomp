@@ -17,15 +17,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
@@ -204,7 +195,7 @@ void dir_emit_ret_t5(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D47C:
+block_8018D47C:;
     uint32_t jr_target = t5;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D480: 0x00000000 */
@@ -276,7 +267,7 @@ void emit_tail_ra(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D668:
+block_8018D668:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D66C: 0x00000000 */
@@ -327,7 +318,7 @@ void emit_tail_zero(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D694:
+block_8018D694:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = zero;
