@@ -11562,7 +11562,7 @@ uint32_t spr_attr_alloc_c(uint32_t head_addr,uint32_t x0,uint32_t y0,
   uint32_t g;
   int32_t tex;
   rec = (uint8_t *)spr_pool_a_alloc();
-  if (rec == (uint8_t *)0) return 0xffffffffu;
+  if (rec == (uint8_t *)0) return 0;  /* guest v0 = 0 on alloc failure */
   *(int16_t *)(rec + 8)  = (int16_t)x0;
   *(int16_t *)(rec + 10) = (int16_t)y0;
   *(int16_t *)(rec + 12) = (int16_t)(x0 + w);
@@ -11587,7 +11587,116 @@ uint32_t spr_attr_alloc_c(uint32_t head_addr,uint32_t x0,uint32_t y0,
   *head = g & 0xffffffu;
   *(uint32_t *)(rec + 0x18) = (g & 0xffffffu) | 0x02000000u;
   *head = (g + 0x18) & 0xffffffu;
-  return 0;
+  return g;  /* guest v0 = s1 = record guest address on success */
+}
+
+/* hud_gauge_frame_emit — per-fighter HUD gauge/frame emitter
+ * @0x801587C0 (46 blocks, synchronous). Draws two text labels
+ * ("L:"/"R:" rodata @0x80120DC0/C4) then a mode-selected sprite
+ * emit driven by stack arg `variant`: bits[7:4] = layout
+ * {0x00 quad bar, 0x10 vertical strip A, 0x20 vertical strip B},
+ * bits[3:0] = color index into the 5-entry table @0x80120DCC.
+ * Faithful notes:
+ *  - scale t0: mode==0 -> 128, ==0x10 -> 208, otherwise the
+ *    live-in guest $t0 (cpu->gpr[8]); metrics
+ *    m0..m3 = (MB32(0x801F46F8/36E8/36E4/46F0) * t0) >> 15.
+ *  - color index >=5 skips the jr table: s1/s5/s2/s7/s6/fp stay
+ *    live-in guest regs (gpr[17]/[21]/[18]/[23]/[22]/[30]).
+ *  - mode 0x20 uses y0 = incoming a1 (flags) for all four
+ *    spr_attr_alloc_c calls and w = -m0/-m2 (left col, x-2) vs
+ *    +m1/+m3 (right col, x+16) — verified against CPS blocks.
+ *  - spr_attr_alloc_c returns the record guest addr (fixed
+ *    contract); a 0 return aborts the whole chain to epilogue. */
+void hud_gauge_frame_emit(uint32_t head,uint32_t flags,uint32_t x,
+                       uint32_t y,uint32_t variant)
+{
+  CPUState *cpu = clean_cpu_state();
+  uint32_t mode = variant & 0xf0u;
+  uint32_t ci = variant & 0x0fu;
+  uint32_t t0, m0, m1, m2, m3;
+  uint32_t s1, s5, s2, s7, s6, fp;
+  uint32_t color1, color2;
+  int32_t sx, sy;
+  uint32_t rec;
+  static const uint8_t _rgb[5][3] = {
+    {255,255,0},{128,255,128},{255,128,128},{128,128,128},{128,128,255}};
+
+  if (mode == 0x00u) t0 = 128;
+  else if (mode == 0x10u) t0 = 208;
+  else t0 = cpu ? cpu->gpr[8] : 0;
+  m0 = (MB32(0x801f46f8u) * t0) >> 15;
+  m1 = (MB32(0x801f36e8u) * t0) >> 15;
+  m2 = (MB32(0x801f36e4u) * t0) >> 15;
+  m3 = (MB32(0x801f46f0u) * t0) >> 15;
+
+  if (ci < 5u) {
+    s1 = _rgb[ci][0]; s5 = _rgb[ci][1]; s2 = _rgb[ci][2];
+    s7 = 0x60; s6 = 0; fp = 0;
+  } else if (cpu) {
+    s1 = cpu->gpr[17]; s5 = cpu->gpr[21]; s2 = cpu->gpr[18];
+    s7 = cpu->gpr[23]; s6 = cpu->gpr[22]; fp = cpu->gpr[30];
+  } else {
+    s1 = s5 = s2 = s7 = s6 = fp = 0;
+  }
+  color1 = (s1 & 0xffu) | ((s5 & 0xffu) << 8) | ((s2 & 0xffu) << 16);
+  color2 = (s7 & 0xffu) | ((s6 & 0xffu) << 8) | ((fp & 0xffu) << 16);
+
+  sx = (int32_t)(x << 16) >> 16;
+  sy = (int32_t)(y << 16) >> 16;
+  hud_text_d(head, flags, (const void *)guest_at(0x80120dc0u),
+             sx, sy, m2 < 1u);
+  hud_text_d(head, flags, (const void *)guest_at(0x80120dc4u),
+             sx, (int32_t)(((y + 9u) << 16)) >> 16, m3 < 1u);
+
+  if (mode == 0x00u) {
+    /* 2x2 gauge bar: top row y+2 (m0,m2), bottom row y+11 (m1,m3);
+     * color1/color2 alternate per column, variant 0/2 per tag. */
+    spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 2u),
+                     (int16_t)m0, 4, color1, 0);
+    spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 2u),
+                     (int16_t)m2, 4, color2, 2);
+    spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 11u),
+                     (int16_t)m1, 4, color1, 0);
+    spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 11u),
+                     (int16_t)m3, 4, color2, 2);
+  } else if (mode == 0x10u) {
+    /* vertical strip at x+16: top half y+2 (color1 m0, color2 m2),
+     * bottom half y+11 (color1 m1, color2 m3); each alloc patches
+     * the previous record's box edge by metric>>3. */
+    rec = spr_attr_alloc_c(head, x + 16u, y + 2u, m0, 4, color1, 0);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m0 >> 3)));
+    rec = spr_attr_alloc_c(head, x + 16u, y + 2u, m2, 4, color2, 2);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m2 >> 3)));
+    rec = spr_attr_alloc_c(head, x + 16u, y + 11u, m1, 4, color1, 0);
+    if (!rec) return;
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m1 >> 3)));
+    rec = spr_attr_alloc_c(head, x + 16u, y + 11u, m3, 4, color2, 2);
+    if (!rec) return;
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m3 >> 3)));
+  } else if (mode == 0x20u) {
+    /* two-column strip: left col x-2 with w=-m0/-m2 (color1/color2),
+     * right col x+16 with w=+m1/+m3; y0 = flags (a1) for all four;
+     * every record gets both box edges nudged by metric>>3. */
+    uint32_t y0 = flags;
+    rec = spr_attr_alloc_c(head, x - 2u, y0, 0u - m0, 4, color1, 0);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m0 >> 3)));
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m0 >> 3)));
+    rec = spr_attr_alloc_c(head, x - 2u, y0, 0u - m2, 4, color2, 2);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m2 >> 3)));
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m2 >> 3)));
+    rec = spr_attr_alloc_c(head, x + 16u, y0, m1, 4, color1, 0);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m1 >> 3)));
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m1 >> 3)));
+    rec = spr_attr_alloc_c(head, x + 16u, y0, m3, 4, color2, 2);
+    if (!rec) return;
+    MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m3 >> 3)));
+    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m3 >> 3)));
+  }
 }
 
 /* mode_select_commit — mode-select commit @0x8015e8c4 (77 insns; real
