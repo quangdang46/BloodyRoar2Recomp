@@ -119,8 +119,6 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
 #define disp_width   (*(uint16_t *)g_DAT_801b8324)
 #define disp_height   (*(uint16_t *)g_DAT_801b8326)
-#define draw_env   ((uint32_t *)guest_at(0x801b8330))
-#define disp_env_shadow   ((uint32_t *)guest_at(0x801b838c))
 #define otag_r_tag   (GP32(0x801b83e0))
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
