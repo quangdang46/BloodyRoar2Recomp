@@ -1136,3 +1136,34 @@ semantically — merge will reconcile); `DAT_X` vs `_DAT_X` spellings
 are both live (`&DAT_X` = host ptr to cell, `_DAT_X` = value);
 register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 `goto LAB_*` structure are deliberate faithful-port artifacts.
+
+### Session update 23 (uninit-local sweep COMPLETE + Ghidra-ism rename campaign)
+
+- **Uninitialized-local sweep finished** (commits `51d8e99f`..`1e4a12ab`):
+  strict `-Wconditional-uninitialized`/`-Wuninitialized` went 32+14 -> 0
+  across all of `game/`. Several were REAL bugs, not cosmetics:
+  `results_scoreboard` tally state lost across per-frame calls (now
+  `br2_guest_frame(0x88)` slots); `prim_list_gte_invoke` merged two guest
+  counters (`num_out`=$s3 vs `num_in`=$s6) truncating the outer list loop;
+  `vec3_step_toward`/`_spd` result-pack high halves are genuinely stale
+  guest stack (never written) — backed by `br2_guest_frame` halfword
+  slots; `slot_height_proj at_val` round-trips the live GTE regfile.
+- **Ghidra-ism identifier sweep COMPLETE** in game/*.c: `local_*`/`param_*`/
+  `uVar*`/`iVar*`/`in_*`/`unaff_*` live uses are now zero outside
+  provenance comments. Renames landed: `memcard_file_flow` stepper desc
+  (`3f5921c3`), `select_screen_tick` (`6b449d99`), `results_scoreboard`
+  tally (`a56fdb1f`), `battle_flow_state_machine` two step_desc blocks —
+  same `local_*` names reused per block, renamed per-block to
+  `desc_a_fNN`/`desc_b_fNN` offset names (`41cbcd25`),
+  `player_name_entry` string slots (`0704e504`), battle.c `in_*`/`unaff_*`
+  spill locals -> `cop2_idxN`/`sN_in`/`gp_in` (`31542ea2`).
+- **Deliberately kept**: `in_stride`/`out_stride` (gfx.c) and `in_g`/`out_g`
+  (bind.c) — meaningful in/out pairs, not opaque temporaries.
+- **Coverage re-verified**: 0 dispatch functions lack clean_table
+  coverage; `cd_irq_probe.c` (`gen_cps_clean.py --timing`, 1116 bodies)
+  already carries the §4-faithful CD/IRQ transliterations.
+- **Remaining frontier**: the ~10 large entangled `cps_` bodies in
+  cps_clean.c (largest `cps_8012fce0` 4767 lines) need gen_cps_clean.py
+  template work to restructure into named clean C.
+- Headless verify post-commits: frame 33,915+ advancing, no crash.
+  master ~26 ahead of mine/master, unpushed.
