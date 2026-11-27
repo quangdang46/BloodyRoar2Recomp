@@ -7595,10 +7595,10 @@ void state_word_set_ffff(void)
 void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
                   uint32_t rec)
 {
-  uint32_t s1 = cursor;
-  uint32_t s3 = rec;
-  uint32_t s2 = MB16(s3 + 0x68);
-  uint32_t s0 = MB16(s3 + 0x6c);
+
+
+  uint32_t btns = MB16(rec + 0x68);
+  uint32_t dirs = MB16(rec + 0x6c);
   uint32_t v0, v1, idx, e;
   uint32_t dv[2];                              /* sp+0x10..0x17, u16 lanes */
   uint16_t *dvh;
@@ -7607,40 +7607,40 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
   (void)unused_a; (void)unused_b;
 
   /* ---- held-button auto-repeat bytes ---- */
-  if (s2 & 4) {
-    uint32_t b = (uint32_t)MB8(s1 + 0x80) + 1u;
-    MW8(s1 + 0x80,(uint8_t)b);
-    if ((int32_t)(int8_t)(uint8_t)b >= 0x11) MW8(s1 + 0x80,0xff);
+  if (btns & 4) {
+    uint32_t b = (uint32_t)MB8(cursor + 0x80) + 1u;
+    MW8(cursor + 0x80,(uint8_t)b);
+    if ((int32_t)(int8_t)(uint8_t)b >= 0x11) MW8(cursor + 0x80,0xff);
   }
-  if (s2 & 1) {
-    uint32_t b = (uint32_t)MB8(s1 + 0x81) + 1u;
-    MW8(s1 + 0x81,(uint8_t)b);
-    if ((int32_t)(int8_t)(uint8_t)b >= 0x11) MW8(s1 + 0x81,0xff);
+  if (btns & 1) {
+    uint32_t b = (uint32_t)MB8(cursor + 0x81) + 1u;
+    MW8(cursor + 0x81,(uint8_t)b);
+    if ((int32_t)(int8_t)(uint8_t)b >= 0x11) MW8(cursor + 0x81,0xff);
   }
-  if (s2 & 0x20) {
+  if (btns & 0x20) {
     /* signed mod-4 of (u16 @s1+0x76 + 1) into battle_field_set */
-    v0 = (uint32_t)MB16(s1 + 0x76) + 1u;
+    v0 = (uint32_t)MB16(cursor + 0x76) + 1u;
     v1 = (uint32_t)(int32_t)(int16_t)(v0 << 16 >> 16);
-    MW16(s1 + 0x76,(uint16_t)v0);
+    MW16(cursor + 0x76,(uint16_t)v0);
     {
       int32_t field_val = (int32_t)v1;
       if (field_val < 0) field_val += 3;
       field_val = field_val >> 2;                          /* sra */
       field_val = (int32_t)v1 - (field_val << 2);
       field_val = (int32_t)(int16_t)(field_val << 16 >> 16);
-      battle_field_set(s1,field_val);
+      battle_field_set(cursor,field_val);
     }
   }
-  if (s0 & 8) {
+  if (dirs & 8) {
     /* s0&0x80 -> unconditional +0x10; s0&0x40 -> -0x10 (delay-slot flag) */
-    if (s0 & 0x80)
-      MW16(s3 + 0x24,(uint16_t)(MB16(s3 + 0x24) + 0x10));
-    if (s0 & 0x40)
-      MW16(s3 + 0x24,(uint16_t)(MB16(s3 + 0x24) - 0x10));
-    gte_cw_d000_set((int32_t)MBS16(s3 + 0x24),0);
+    if (dirs & 0x80)
+      MW16(rec + 0x24,(uint16_t)(MB16(rec + 0x24) + 0x10));
+    if (dirs & 0x40)
+      MW16(rec + 0x24,(uint16_t)(MB16(rec + 0x24) - 0x10));
+    gte_cw_d000_set((int32_t)MBS16(rec + 0x24),0);
   }
 
-  idx = (uint32_t)MB16(s1 + 0x76) & 0x7f;
+  idx = (uint32_t)MB16(cursor + 0x76) & 0x7f;
   if (idx >= 0x25) goto L_end;
   switch (idx) {
   case 0: case 1: goto L_case408;
@@ -7652,138 +7652,138 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
   }
 
 L_case408:                                     /* 0x8012f408 */
-  if (s2 & 2) {
-    MW16(s1 + 0x7e,(uint16_t)((MB16(s1 + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(s1 + 0x7e) * 8u;
-    MW16(s1 + 0x52,(uint16_t)MB16(0x8011f944u + e));
-    MW16(s1 + 0x54,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(s1 + 0x56,(uint16_t)MB16(0x8011f944u + e + 4));
+  if (btns & 2) {
+    MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
+    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + e));
+    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + e + 2));
+    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + e + 4));
   }
   /* shared velocity block 0x8012f46c */
   dv[0] = dv[1] = 0;                            /* sp+0x10..0x17 = 0 */
   dvh = (uint16_t *)dv;
-  if (s0 & 0x80) {
-    if (s0 & 0x1000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) + 8));
-    if (s0 & 0x4000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) - 8));
-    if (s0 & 0x8000) MW16(s1 + 0x32,(uint16_t)(MB16(s1 + 0x32) - 0x10));
-    if (s0 & 0x2000) MW16(s1 + 0x32,(uint16_t)(MB16(s1 + 0x32) + 0x10));
-  } else if (s0 & 0x10) {
-    if (s0 & 0x1000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) + 0x1a));
-    if (s0 & 0x4000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) - 0x1a));
-  } else if (s0 & 0x40) {
-    if (s0 & 0x1000) dvh[2] = 0x1a;
-    if (s0 & 0x4000) dvh[2] = (uint16_t)-0x1a;
+  if (dirs & 0x80) {
+    if (dirs & 0x1000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) + 8));
+    if (dirs & 0x4000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) - 8));
+    if (dirs & 0x8000) MW16(cursor + 0x32,(uint16_t)(MB16(cursor + 0x32) - 0x10));
+    if (dirs & 0x2000) MW16(cursor + 0x32,(uint16_t)(MB16(cursor + 0x32) + 0x10));
+  } else if (dirs & 0x10) {
+    if (dirs & 0x1000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) + 0x1a));
+    if (dirs & 0x4000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) - 0x1a));
+  } else if (dirs & 0x40) {
+    if (dirs & 0x1000) dvh[2] = 0x1a;
+    if (dirs & 0x4000) dvh[2] = (uint16_t)-0x1a;
   } else {
-    if (s0 & 0x8000) dvh[0] = (uint16_t)-0x1a;
-    if (s0 & 0x2000) dvh[0] = 0x1a;
-    if (s0 & 0x1000) dvh[1] = (uint16_t)-0x1a;
-    if (s0 & 0x4000) dvh[1] = 0x1a;
+    if (dirs & 0x8000) dvh[0] = (uint16_t)-0x1a;
+    if (dirs & 0x2000) dvh[0] = 0x1a;
+    if (dirs & 0x1000) dvh[1] = (uint16_t)-0x1a;
+    if (dirs & 0x4000) dvh[1] = 0x1a;
   }
   /* dead stores to sp+0x38..0x43 in original omitted (never read) */
-  m = angle_pair_rotmat((uint32_t)(-(int32_t)MBS16(s1 + 0x28)),
-                   (uint32_t)MBS16(s1 + 0x2a),
-                   (uint32_t *)guest_at(s3 + 0x48));
+  m = angle_pair_rotmat((uint32_t)(-(int32_t)MBS16(cursor + 0x28)),
+                   (uint32_t)MBS16(cursor + 0x2a),
+                   (uint32_t *)guest_at(rec + 0x48));
   gte_rtps_xform1(m,(uint32_t *)dv,dvh);
-  MW16(s1 + 0x52,(uint16_t)(MB16(s1 + 0x52) + dvh[0]));
-  MW16(s1 + 0x54,(uint16_t)(MB16(s1 + 0x54) + dvh[1]));
-  MW16(s1 + 0x56,(uint16_t)(MB16(s1 + 0x56) + dvh[2]));
+  MW16(cursor + 0x52,(uint16_t)(MB16(cursor + 0x52) + dvh[0]));
+  MW16(cursor + 0x54,(uint16_t)(MB16(cursor + 0x54) + dvh[1]));
+  MW16(cursor + 0x56,(uint16_t)(MB16(cursor + 0x56) + dvh[2]));
   goto L_end;
 
 L_case608:                                     /* 0x8012f608 */
-  if (s0 & 0x40) {
-    if (s0 & 8) {
-      if (s0 & 0x1000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) - 0x33));
-      if (s0 & 0x4000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) + 0x33));
+  if (dirs & 0x40) {
+    if (dirs & 8) {
+      if (dirs & 0x1000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) - 0x33));
+      if (dirs & 0x4000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) + 0x33));
     } else {
-      if (s0 & 0x1000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) - 0xc));
-      if (s0 & 0x4000) MW16(s1 + 0x68,(uint16_t)(MB16(s1 + 0x68) + 0xc));
+      if (dirs & 0x1000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) - 0xc));
+      if (dirs & 0x4000) MW16(cursor + 0x68,(uint16_t)(MB16(cursor + 0x68) + 0xc));
     }
-  } else if (s0 & 8) {
-    if (s0 & 0x1000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) + 0x40));
-    if (s0 & 0x4000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) - 0x40));
-    if (s0 & 0x8000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) + 0x40));
-    if (s0 & 0x2000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) - 0x40));
+  } else if (dirs & 8) {
+    if (dirs & 0x1000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) + 0x40));
+    if (dirs & 0x4000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) - 0x40));
+    if (dirs & 0x8000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) + 0x40));
+    if (dirs & 0x2000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) - 0x40));
   } else {
-    if (s0 & 0x1000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) + 0x10));
-    if (s0 & 0x4000) MW16(s1 + 0x30,(uint16_t)(MB16(s1 + 0x30) - 0x10));
-    if (s0 & 0x8000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) + 0x10));
-    if (s0 & 0x2000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) - 0x10));
+    if (dirs & 0x1000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) + 0x10));
+    if (dirs & 0x4000) MW16(cursor + 0x30,(uint16_t)(MB16(cursor + 0x30) - 0x10));
+    if (dirs & 0x8000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) + 0x10));
+    if (dirs & 0x2000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) - 0x10));
   }
   goto L_end;
 
 L_case774:                                     /* 0x8012f774 */
   dv[0] = dv[1] = 0;
   dvh = (uint16_t *)dv;
-  MW16(s1 + 0x60,0);
-  MW16(s1 + 0x5e,0);
-  MW16(s1 + 0x5c,0);
-  if (s0 & 0x80) {
-    if (s0 & 0x1000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) + 8));
-    if (s0 & 0x4000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) - 8));
-    if (s0 & 0x8000) MW16(s1 + 0x2a,(uint16_t)(MB16(s1 + 0x2a) - 0x10));
-    if (s0 & 0x2000) MW16(s1 + 0x2a,(uint16_t)(MB16(s1 + 0x2a) + 0x10));
-  } else if (s0 & 0x40) {
-    if (s0 & 0x1000) dvh[2] = 0x1a;
-    if (s0 & 0x4000) dvh[2] = (uint16_t)-0x1a;
+  MW16(cursor + 0x60,0);
+  MW16(cursor + 0x5e,0);
+  MW16(cursor + 0x5c,0);
+  if (dirs & 0x80) {
+    if (dirs & 0x1000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) + 8));
+    if (dirs & 0x4000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) - 8));
+    if (dirs & 0x8000) MW16(cursor + 0x2a,(uint16_t)(MB16(cursor + 0x2a) - 0x10));
+    if (dirs & 0x2000) MW16(cursor + 0x2a,(uint16_t)(MB16(cursor + 0x2a) + 0x10));
+  } else if (dirs & 0x40) {
+    if (dirs & 0x1000) dvh[2] = 0x1a;
+    if (dirs & 0x4000) dvh[2] = (uint16_t)-0x1a;
   } else {
-    if (s0 & 0x8000) dvh[0] = (uint16_t)-0x1a;
-    if (s0 & 0x2000) dvh[0] = 0x1a;
-    if (s0 & 0x1000) dvh[1] = (uint16_t)-0x1a;
-    if (s0 & 0x4000) dvh[1] = 0x1a;
+    if (dirs & 0x8000) dvh[0] = (uint16_t)-0x1a;
+    if (dirs & 0x2000) dvh[0] = 0x1a;
+    if (dirs & 0x1000) dvh[1] = (uint16_t)-0x1a;
+    if (dirs & 0x4000) dvh[1] = 0x1a;
   }
-  m = angle_pair_rotmat((uint32_t)(-(int32_t)MBS16(s1 + 0x28)),
-                   (uint32_t)MBS16(s1 + 0x2a),
-                   (uint32_t *)guest_at(s3 + 0x48));
+  m = angle_pair_rotmat((uint32_t)(-(int32_t)MBS16(cursor + 0x28)),
+                   (uint32_t)MBS16(cursor + 0x2a),
+                   (uint32_t *)guest_at(rec + 0x48));
   gte_rtps_xform1(m,(uint32_t *)dv,dvh);
-  MW16(s1 + 0x4a,(uint16_t)(MB16(s1 + 0x4a) + dvh[0]));
-  MW16(s1 + 0x4c,(uint16_t)(MB16(s1 + 0x4c) + dvh[1]));
-  MW16(s1 + 0x4e,(uint16_t)(MB16(s1 + 0x4e) + dvh[2]));
+  MW16(cursor + 0x4a,(uint16_t)(MB16(cursor + 0x4a) + dvh[0]));
+  MW16(cursor + 0x4c,(uint16_t)(MB16(cursor + 0x4c) + dvh[1]));
+  MW16(cursor + 0x4e,(uint16_t)(MB16(cursor + 0x4e) + dvh[2]));
   goto L_end;
 
 L_case8e4:                                     /* 0x8012f8e4 */
-  if (s2 & 2) {
-    MW16(s1 + 0x2c,0);
-    MW16(s1 + 0x2a,0);
-    MW16(s1 + 0x28,0);
-    MW16(s1 + 0x60,0);
-    MW16(s1 + 0x5e,0);
-    MW16(s1 + 0x5c,0);
-    MW16(s1 + 0x7e,(uint16_t)((MB16(s1 + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(s1 + 0x7e) * 8u;
-    MW16(s1 + 0x4a,(uint16_t)MB16(0x8011f944u + e));
-    MW16(s1 + 0x4c,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(s1 + 0x4e,(uint16_t)MB16(0x8011f944u + e + 4));
+  if (btns & 2) {
+    MW16(cursor + 0x2c,0);
+    MW16(cursor + 0x2a,0);
+    MW16(cursor + 0x28,0);
+    MW16(cursor + 0x60,0);
+    MW16(cursor + 0x5e,0);
+    MW16(cursor + 0x5c,0);
+    MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
+    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + e));
+    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + e + 2));
+    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + e + 4));
   }
   goto L_end;
 
 L_case960:                                     /* 0x8012f960 */
-  if (s0 & 0x40) {
-    if (s0 & 8) {
-      if (s0 & 0x1000) MW16(s1 + 0x60,(uint16_t)(MB16(s1 + 0x60) - 0x33));
-      if (s0 & 0x4000) MW16(s1 + 0x60,(uint16_t)(MB16(s1 + 0x60) + 0x33));
+  if (dirs & 0x40) {
+    if (dirs & 8) {
+      if (dirs & 0x1000) MW16(cursor + 0x60,(uint16_t)(MB16(cursor + 0x60) - 0x33));
+      if (dirs & 0x4000) MW16(cursor + 0x60,(uint16_t)(MB16(cursor + 0x60) + 0x33));
     } else {
-      if (s0 & 0x1000) MW16(s1 + 0x60,(uint16_t)(MB16(s1 + 0x60) - 0xc));
-      if (s0 & 0x4000) MW16(s1 + 0x60,(uint16_t)(MB16(s1 + 0x60) + 0xc));
+      if (dirs & 0x1000) MW16(cursor + 0x60,(uint16_t)(MB16(cursor + 0x60) - 0xc));
+      if (dirs & 0x4000) MW16(cursor + 0x60,(uint16_t)(MB16(cursor + 0x60) + 0xc));
     }
-  } else if (s0 & 8) {
-    if (s0 & 0x1000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) + 0x40));
-    if (s0 & 0x4000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) - 0x40));
-    if (s0 & 0x8000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) + 0x40));
-    if (s0 & 0x2000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) - 0x40));
+  } else if (dirs & 8) {
+    if (dirs & 0x1000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) + 0x40));
+    if (dirs & 0x4000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) - 0x40));
+    if (dirs & 0x8000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) + 0x40));
+    if (dirs & 0x2000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) - 0x40));
   } else {
-    if (s0 & 0x1000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) + 0x10));
-    if (s0 & 0x4000) MW16(s1 + 0x28,(uint16_t)(MB16(s1 + 0x28) - 0x10));
-    if (s0 & 0x8000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) + 0x10));
-    if (s0 & 0x2000) MW16(s1 + 0x8a,(uint16_t)(MB16(s1 + 0x8a) - 0x10));
+    if (dirs & 0x1000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) + 0x10));
+    if (dirs & 0x4000) MW16(cursor + 0x28,(uint16_t)(MB16(cursor + 0x28) - 0x10));
+    if (dirs & 0x8000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) + 0x10));
+    if (dirs & 0x2000) MW16(cursor + 0x8a,(uint16_t)(MB16(cursor + 0x8a) - 0x10));
   }
-  if (s0 & 0x80) {                               /* 0x8012fac0 reset block */
-    MW16(s1 + 0x2c,0);
-    MW16(s1 + 0x2a,0);
-    MW16(s1 + 0x28,0);
-    MW16(s1 + 0x5e,0);
-    MW16(s1 + 0x5c,0);
-    MW16(s1 + 0x60,0x300);
-    MW16(s1 + 0x8a,0);
+  if (dirs & 0x80) {                               /* 0x8012fac0 reset block */
+    MW16(cursor + 0x2c,0);
+    MW16(cursor + 0x2a,0);
+    MW16(cursor + 0x28,0);
+    MW16(cursor + 0x5e,0);
+    MW16(cursor + 0x5c,0);
+    MW16(cursor + 0x60,0x300);
+    MW16(cursor + 0x8a,0);
   }
   goto L_end;
 
