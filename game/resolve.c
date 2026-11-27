@@ -25,7 +25,7 @@
  *
  * motion (per-fighter motion/anim state):
  *   +0x80 current action, +0x82 next/pending action, +0x84 event
- *   stream pc, +0x88 blend timer, +0x90 stream countdown
+ *   stream pc, +0x90 stream countdown
  *   (context-shared: launch x-vel during trig attacks),
  *   +0x92 anim channel, +0x98 anim channel / launch z-vel
  *   (same sharing), +0xb0 keyframe table guest ptr,
