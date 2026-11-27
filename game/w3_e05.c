@@ -52,45 +52,45 @@ uint32_t ptab_ptr_case_set(void)
   if (!c) return 0;
   pc = c->pc;
   switch (pc) {
-  case 0x80156864u: goto b864;
-  case 0x80156870u: goto b870;
-  case 0x80156888u: goto b888;
-  case 0x80156894u: goto b894;
-  case 0x801568E4u: goto bE4;
-  case 0x801568ECu: goto bEC;
+  case 0x80156864u: goto block_80156864;
+  case 0x80156870u: goto block_80156870;
+  case 0x80156888u: goto block_80156888;
+  case 0x80156894u: goto block_80156894;
+  case 0x801568E4u: goto block_801568E4;
+  case 0x801568ECu: goto block_801568EC;
   default: return c->gpr[2];
   }
 
-b864:
+block_80156864:
   c->gpr[2] = 0x801B0000u;                     /* lui v0,0x801B */
   c->gpr[6] = c->gpr[2] + 0x38D0u;             /* delay: a2 = &DAT_801b38d0 */
-  goto chkE4;
+  goto dispatch_801568E4;
 
-b870:
+block_80156870:
   c->gpr[2] = 0x801B0000u;
   c->gpr[6] = c->gpr[2] + 0x3968u;             /* delay: a2 = &DAT_801b3968 */
-  goto chkE4;
+  goto dispatch_801568E4;
 
-b888:
+block_80156888:
   c->gpr[2] = 0x801B0000u;
   c->gpr[6] = c->gpr[2] + 0x3A84u;             /* delay: a2 = &DAT_801b3a84 */
-  goto chkE4;
+  goto dispatch_801568E4;
 
-b894:
+block_80156894:
   c->gpr[2] = 0x801B0000u;
   c->gpr[6] = c->gpr[2] + 0x3B08u;             /* delay: a2 = &DAT_801b3b08 */
-  goto chkE4;
+  goto dispatch_801568E4;
 
-chkE4:
+dispatch_801568E4:
   psx_check_interrupts_at(c, 0x801568E4u);
-  goto bE4;
+  goto block_801568E4;
 
-bE4:
+block_801568E4:
   c->gpr[3] = 0x801F0000u;                     /* lui v1,0x801F */
   c->gpr[3] = c->gpr[3] + 0x35E0u;             /* delay: v1 = 0x801F35E0 */
   /* fall through — generated has no interrupt check between E4 and EC */
 
-bEC:
+block_801568EC:
   c->gpr[2] = c->gpr[5] << 2;                  /* sll v0,a1,2 */
   c->gpr[2] = c->gpr[2] + c->gpr[3];           /* addu v0,v0,v1 */
   { uint32_t jr_target = c->gpr[31];                 /* latch jr target */
@@ -123,67 +123,67 @@ uint32_t confirm_code_tail_set(void)
   if (!c) return 0;
   pc = c->pc;
   switch (pc) {
-  case 0x80157910u: goto b910;
-  case 0x80157918u: goto b918;
-  case 0x80157920u: goto b920;
-  case 0x80157928u: goto b928;
-  case 0x80157930u: goto b930;
-  case 0x80157938u: goto b938;
-  case 0x80157940u: goto b940;
-  case 0x80157964u: goto b964;
-  case 0x801579E0u: goto b9E0;
-  case 0x801579E4u: goto b9E4;
-  case 0x801579F0u: goto b9F0;
+  case 0x80157910u: goto block_80157910;
+  case 0x80157918u: goto block_80157918;
+  case 0x80157920u: goto block_80157920;
+  case 0x80157928u: goto block_80157928;
+  case 0x80157930u: goto block_80157930;
+  case 0x80157938u: goto block_80157938;
+  case 0x80157940u: goto block_80157940;
+  case 0x80157964u: goto block_80157964;
+  case 0x801579E0u: goto block_801579E0;
+  case 0x801579E4u: goto block_801579E4;
+  case 0x801579F0u: goto block_801579F0;
   default: return c->gpr[2];
   }
 
-b910:
+block_80157910:
   c->gpr[5] = c->gpr[0];                     /* delay: move a1,zero */
-  goto chk964;
-b918:
+  goto dispatch_80157964;
+block_80157918:
   c->gpr[5] = 1;                             /* delay: li a1,1 */
-  goto chk964;
-b920:
+  goto dispatch_80157964;
+block_80157920:
   c->gpr[5] = 2;
-  goto chk964;
-b928:
+  goto dispatch_80157964;
+block_80157928:
   c->gpr[5] = 5;
-  goto chk964;
-b930:
+  goto dispatch_80157964;
+block_80157930:
   c->gpr[5] = 3;
-  goto chk964;
-b938:
+  goto dispatch_80157964;
+block_80157938:
   c->gpr[5] = 6;
-  goto chk964;
-b940:
+  goto dispatch_80157964;
+block_80157940:
   c->gpr[5] = 4;
-  goto chk964;
+  goto dispatch_80157964;
 
-chk964:
+dispatch_80157964:
   psx_check_interrupts_at(c, 0x80157964u);
-  goto b964;
+  goto block_80157964;
 
-b964:
+block_80157964:
   c->gpr[5] = c->gpr[5] + 20;                /* delay: addiu a1,a1,0x14 */
   psx_check_interrupts_at(c, 0x801579E4u);
-  goto b9E4;
+  goto block_801579E4;
 
-b9E0:
+block_801579E0:
   c->gpr[5] = c->gpr[5] + 10;                /* addiu a1,a1,0xa */
   /* fall through — generated has no interrupt check between E0 and E4 */
 
-b9E4:
+block_801579E4:
   c->gpr[4] = c->gpr[5];                     /* move a0,a1 */
   /* fall through — generated has no interrupt check between E4 and E8 */
 
-b9E8:
+block_801579E8:
   c->gpr[31] = 0x801579F0u;                  /* jal link */
   c->gpr[5] = 1;                             /* delay: li a1,1 */
   psx_check_interrupts_at(c, 0x801577BCu);
   c->pc = 0x801577BCu;                       /* CPS jal -> mc_confirm_dispatch */
   return c->gpr[2];
 
-b9F0:
+block_801579F0:
   c->gpr[31] = c->read_word(c->gpr[29] + 16);/* lw ra,16(sp) */
   /* nop @0x801579F4 */
   { uint32_t jr_target = c->gpr[31];               /* latch jr target */
