@@ -4440,7 +4440,7 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
    * re-reads it through nested frames, so the write->draw span inside the
    * subrec[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t a2, txt_y;
+  int32_t tot, txt_y;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   subrec = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
   if (subrec[1] != 0) {
@@ -4450,28 +4450,28 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
       0x80151e4c,0x80151ed0,0x80151ed0,0x80151ea8,0x80151ea8,0x80151ed0 };
-    a2 = (int32_t)*(int16_t *)(b + 0xa2) + 1;
+    int32_t wins = (int32_t)*(int16_t *)(b + 0xa2) + 1;
     crecs = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
     {
       uint32_t mode = b[0x9c];
       if (mode < 6) {
         uint32_t tgt = jt[mode];
         if (tgt == 0x80151e4c) {                 /* case 0 */
-          if (a2 == 9) {
+          if (wins == 9) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208c0));
-          } else if (a2 < (int32_t)crecs[0x10]) {
-            sprintf_core((char *)buf,(char *)guest_at(0x801208dc),a2);
+          } else if (wins < (int32_t)crecs[0x10]) {
+            sprintf_core((char *)buf,(char *)guest_at(0x801208dc),wins);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208d0));
           }
         } else if (tgt == 0x80151ea8) {          /* cases 3,4 */
-          if (a2 < (int32_t)crecs[0x10]) {
-            sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
+          if (wins < (int32_t)crecs[0x10]) {
+            sprintf_core((char *)buf,(char *)guest_at(0x801208f4),wins);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208e8));
           }
         } else {                                /* cases 1,2,5 */
-          sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
+          sprintf_core((char *)buf,(char *)guest_at(0x801208f4),wins);
         }
       }
     }
@@ -4488,10 +4488,10 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     return;
   }
   /* obj+1 clear path */
-  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(subrec + 0xe2);
-  if (a2 == 0 &&
-      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
-  if (a2 != 0) {
+  tot = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(subrec + 0xe2);
+  if (tot == 0 &&
+      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) tot = 1;
+  if (tot != 0) {
     champion_win_announce(battle_g,side,side[2]);
     return;
   }
@@ -6797,7 +6797,7 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
   (void)unused;
   for (i = 0; i < 2; i++) {
     uint32_t eng = MB32(0x801f10c0 + (uint32_t)i * 4);
-    uint32_t rcur, it, srca, tba, tbb, pkta, pktb, k, rowp, s2;
+    uint32_t rcur, it, srca, tba, tbb, pkta, pktb, k, rowp, srcb;
 
     /* ---- prologue: 76 records stride 0x28 ---- */
     rcur = eng; it = 0;
@@ -6816,12 +6816,12 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     rcur = eng + 0x578; it = 0;
     do {
       /* phase 1: byte table s1 */
-      rowp = rcur + 0x25;  s2 = srca + 6; k = 0;
+      rowp = rcur + 0x25;  srcb = srca + 6; k = 0;
       do {
         BR2_E70(rcur,srca);
         MW16(rowp - 0x17,MB16(pkta)); MW16(rowp - 0xf,MB16(pktb));
         BR2_YROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
-        srca += 8; rcur += 0x28; rowp += 0x28; s2 += 8; k++;
+        srca += 8; rcur += 0x28; rowp += 0x28; srcb += 8; k++;
       } while (k < 2);
       /* phase 2: byte table t0 */
       rowp = rcur + 0x25;  k = 0;
@@ -6829,31 +6829,31 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
         BR2_E70(rcur,srca);
         MW16(rowp - 0x17,MB16(pkta)); MW16(rowp - 0xf,MB16(pktb + 2));
         BR2_YROW(rowp,MB8(tbb),MB8(tbb+1),MB8(tbb+2),MB8(tbb+3));
-        srca += 8; rcur += 0x28; rowp += 0x28; s2 += 8; k++;
+        srca += 8; rcur += 0x28; rowp += 0x28; srcb += 8; k++;
       } while (k < 2);
        tba += 4;  tbb += 4; it++;
     } while (it < 4);
 
     /* ---- block @eng+0xa0: 3 iters, packedA+packedB ---- */
     pktb = 0x801b24c0; srca = 0x801b24a8; pkta = 0x801b24cc; tba = 0x801b24d8;
-    s2 = tba + 3; rcur = eng + 0xa0; rowp = eng + 0xb6; it = 0;
+    srcb = tba + 3; rcur = eng + 0xa0; rowp = eng + 0xb6; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 3);
 
     /* ---- block @eng+0x118: 4 iters ---- */
     pktb = 0x801b2504; srca = 0x801b24e4; pkta = 0x801b2508; tba = 0x801b250c;
-    s2 = srca + 6; rcur = eng + 0x118; rowp = eng + 0x12e; it = 0;
+    srcb = srca + 6; rcur = eng + 0x118; rowp = eng + 0x12e; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8; rcur += 0x28; it++; s2 += 8; tba += 4; rowp += 0x28;
+      srca += 8; rcur += 0x28; it++; srcb += 8; tba += 4; rowp += 0x28;
     } while (it < 4);
 
     /* ---- block @eng+0x1ce: 4 iters, constant tables ---- */
@@ -6870,33 +6870,33 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
 
     /* ---- block @eng+0x258: 2 iters ---- */
     pktb = 0x801b2520; srca = 0x801b2510; pkta = 0x801b253c; tba = 0x801b2524;
-    s2 = tba + 3;  rcur = eng + 0x258; rowp = eng + 0x26e; it = 0;
+    srcb = tba + 3;  rcur = eng + 0x258; rowp = eng + 0x26e; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x00: 2 iters, packedB only ---- */
     pktb = 0x801b257c; srca = 0x801b254c; tba = 0x801b255c;
-    s2 = tba + 3;  rcur = eng; rowp = eng + 0x16; it = 0;
+    srcb = tba + 3;  rcur = eng; rowp = eng + 0x16; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp,BR2_PKB(pktb));
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x50: 2 iters, packedB const table ---- */
     srca = 0x801b2564; tba = 0x801b2574;
-    s2 = tba + 3;  rcur = eng + 0x50; rowp = eng + 0x66; it = 0;
+    srcb = tba + 3;  rcur = eng + 0x50; rowp = eng + 0x66; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp,BR2_PKB(0x801b257c));
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x2be: 18 iters, no E70, +0x40/+7 consts ---- */
@@ -6930,7 +6930,7 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     }
 
     /* ---- block @eng+0xaf0: 2 iters, const byte table ---- */
-    srca = 0x801b25ec; s2 = srca + 6; tba = 0x801b25fc;
+    srca = 0x801b25ec; srcb = srca + 6; tba = 0x801b25fc;
     pkta = 0x801b2650; pktb = 0x801b2600;
     rcur = eng + 0xaf0; rowp = eng + 0xb06; it = 0;
     do {
@@ -6938,18 +6938,18 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta));
       MW16(rowp,BR2_PKB(pktb));
-      srca += 8; s2 += 8; rcur += 0x28; it++; rowp += 0x28;
+      srca += 8; srcb += 8; rcur += 0x28; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x7f8: 15 iters, E70 zero args, +0x38/+0x3f ---- */
     pktb = 0x801b2704; pkta = 0x801b2708; tba = 0x801b2744;
-    s2 = tba + 1; rcur = eng + 0x7f8; rowp = eng + 0x80e; it = 0;
+    srcb = tba + 1; rcur = eng + 0x7f8; rowp = eng + 0x80e; it = 0;
     do {
       sprite_place_centered(rcur,p1,0,0,0,0);
-      BR2_ZROW(rowp,MB8(tba),MB8(s2),0x38,0x3f);
+      BR2_ZROW(rowp,MB8(tba),MB8(srcb),0x38,0x3f);
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB80(pktb));
-      rcur += 0x28; it++; tba += 2; s2 += 2; rowp += 0x28;
+      rcur += 0x28; it++; tba += 2; srcb += 2; rowp += 0x28;
     } while (it < 0xf);
 
     /* ---- block @eng+0xab6: 2 iters, no E70, const tables ---- */
