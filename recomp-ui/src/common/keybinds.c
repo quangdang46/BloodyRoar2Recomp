@@ -112,6 +112,7 @@ static void trim(char *s) {
     if (start != s) memmove(s, start, strlen(start) + 1);
 }
 
+/* name to scancode: if (!name || !*name) return SDL_SCANCODE_UNKNOWN */
 static SDL_Scancode name_to_scancode(const char *name) {
     if (!name || !*name) return SDL_SCANCODE_UNKNOWN;
     SDL_Scancode sc = SDL_GetScancodeFromName(name);
@@ -135,6 +136,7 @@ static SDL_Scancode name_to_scancode(const char *name) {
     return SDL_SCANCODE_UNKNOWN;
 }
 
+/* scancode to name: if (sc == SDL_SCANCODE_UNKNOWN) return "None" */
 static const char *scancode_to_name(SDL_Scancode sc) {
     if (sc == SDL_SCANCODE_UNKNOWN) return "None";
     const char *name = SDL_GetScancodeName(sc);
@@ -145,6 +147,7 @@ static const char *scancode_to_name(SDL_Scancode sc) {
 
 static char s_ini_path[512] = {0};
 
+/* derive ini path: if (!exe_path || !*exe_path)  */
 static void derive_ini_path(const char *exe_path) {
     if (!exe_path || !*exe_path) {
         strcpy(s_ini_path, "keybinds.ini");
@@ -164,6 +167,7 @@ static void derive_ini_path(const char *exe_path) {
     strcpy(s_ini_path, "keybinds.ini");
 }
 
+/* write player section: for (const ButtonDef *bd = s_buttons; bd->name; bd++)  */
 static void write_player_section(FILE *f, const char *section, const PlayerBinds *pb) {
     fprintf(f, "[%s]\n", section);
     for (const ButtonDef *bd = s_buttons; bd->name; bd++) {
@@ -173,6 +177,7 @@ static void write_player_section(FILE *f, const char *section, const PlayerBinds
     fprintf(f, "\n");
 }
 
+/* write defaults: FILE *f = fopen(path, "w") */
 static void write_defaults(const char *path) {
     FILE *f = fopen(path, "w");
     if (!f) return;
@@ -196,6 +201,7 @@ static void write_defaults(const char *path) {
     printf("[Keybinds] Wrote %s\n", path);
 }
 
+/* load ini: FILE *f = fopen(path, "r") */
 static void load_ini(const char *path) {
     FILE *f = fopen(path, "r");
     if (!f) return;
@@ -250,6 +256,7 @@ void recompui_keybinds_init(const char *exe_path) {
     }
 }
 
+/* recompui keybinds get: return &s_binds */
 const KeyBinds *recompui_keybinds_get(void) {
     return &s_binds;
 }
@@ -260,29 +267,35 @@ int recompui_keybinds_button_count(void) {
     return (int)(sizeof(s_buttons) / sizeof(s_buttons[0])) - 1;  /* minus NULL terminator */
 }
 
+/* recompui keybinds button name: if (button < 0 || button >= recompui_keybinds_button_count()) return ... */
 const char *recompui_keybinds_button_name(int button) {
     if (button < 0 || button >= recompui_keybinds_button_count()) return "?";
     return s_buttons[button].name;
 }
 
+/* player binds: return (player == 2) ? &s_binds.p2 : &s_binds.p1 */
 static PlayerBinds *player_binds(int player) {
     return (player == 2) ? &s_binds.p2 : &s_binds.p1;
 }
 
+/* recompui keybinds get button: if (button < 0 || button >= recompui_keybinds_button_count()) return ... */
 SDL_Scancode recompui_keybinds_get_button(int player, int button) {
     if (button < 0 || button >= recompui_keybinds_button_count()) return SDL_SCANCODE_UNKNOWN;
     return *(SDL_Scancode *)((char *)player_binds(player) + s_buttons[button].offset);
 }
 
+/* recompui keybinds set button: if (button < 0 || button >= recompui_keybinds_button_count()) return */
 void recompui_keybinds_set_button(int player, int button, SDL_Scancode sc) {
     if (button < 0 || button >= recompui_keybinds_button_count()) return;
     *(SDL_Scancode *)((char *)player_binds(player) + s_buttons[button].offset) = sc;
 }
 
+/* recompui keybinds reset player */
 void recompui_keybinds_reset_player(int player) {
     *player_binds(player) = (player == 2) ? s_default_binds.p2 : s_default_binds.p1;
 }
 
+/* recompui keybinds save: if (!s_ini_path[0]) */
 void recompui_keybinds_save(void) {
     if (!s_ini_path[0])
         strcpy(s_ini_path, "keybinds.ini");

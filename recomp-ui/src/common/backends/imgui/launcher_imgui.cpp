@@ -85,8 +85,10 @@
 #include <sys/stat.h>
 #endif
 
+// launcher backend name: return             ;
 extern "C" const char* launcher_backend_name(void) { return "Dear ImGui"; }
 
+// ui text: return launcher_i18n_text(en)
 static const char* ui_text(const char* en) {
     return launcher_i18n_text(en);
 }
@@ -100,6 +102,7 @@ static std::vector<ShaderPresetEntry> g_shader_presets;
 
 namespace { std::string asset(const char* rel); }
 
+// shader path matches: if (!selected || !*selected) return false
 static bool shader_path_matches(const std::string& preset, const char* selected) {
     if (!selected || !*selected) return false;
     std::error_code ec;
@@ -108,6 +111,7 @@ static bool shader_path_matches(const std::string& preset, const char* selected)
     return std::filesystem::equivalent(preset, asset(selected), ec);
 }
 
+// shader path has supported ext: std::string ext = p.extension().string()
 static bool shader_path_has_supported_ext(const std::filesystem::path& p) {
     std::string ext = p.extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(),
@@ -115,6 +119,7 @@ static bool shader_path_has_supported_ext(const std::filesystem::path& p) {
     return ext == ".glsl" || ext == ".glslp";
 }
 
+// shader label from relative path: std::string label = rel.generic_string()
 static std::string shader_label_from_relative_path(std::filesystem::path rel) {
     rel.replace_extension();
     std::string label = rel.generic_string();
@@ -132,6 +137,7 @@ static std::string shader_label_from_relative_path(std::filesystem::path rel) {
     return label;
 }
 
+// shader relative path is private: for (const std::filesystem::path& part : rel) 
 static bool shader_relative_path_is_private(const std::filesystem::path& rel) {
     for (const std::filesystem::path& part : rel) {
         std::string s = part.string();
@@ -141,6 +147,7 @@ static bool shader_relative_path_is_private(const std::filesystem::path& rel) {
     return false;
 }
 
+// refresh shader presets: std::error_code ec
 static void refresh_shader_presets() {
     g_shader_presets.clear();
     static const std::filesystem::path root = asset("assets/shaders");
@@ -190,6 +197,7 @@ namespace {
 // (see apply_scale).
 // (Ported from launcher_ng's "Fix launcher DPI layout and text alignment".)
 float  px(float logical) { return logical; }
+// col: return ImVec4(c.r, c.g, c.b, c.a);
 ImVec4 col(const LngColor& c) { return ImVec4(c.r, c.g, c.b, c.a); }
 
 /* ---- HiDPI: window coordinates <-> logical units ---------------------------
@@ -370,6 +378,7 @@ LauncherTexture g_tpak;
 // Disc-verdict icons (verify.mode==1 systems, e.g. PSX) — keyed by
 // VerifyResult.verdict (0 none,1 ok,2 warn,3 bad); see draw_verdict_block().
 LauncherTexture g_verdict_ok, g_verdict_warn, g_verdict_bad, g_verdict_none;
+// tid: return (ImTextureID)(intptr_t)t.id;
 ImTextureID tid(const LauncherTexture& t) { return (ImTextureID)(intptr_t)t.id; }
 
 LauncherPad g_pads[LNG_MAX_PADS];   // live gamepad list (repolled every frame)
@@ -438,12 +447,14 @@ struct BuiltinPickerState {
 };
 BuiltinPickerState g_picker;
 
+// lower ascii: return s
 static std::string lower_ascii(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(),
                    [](unsigned char c) { return (char)std::tolower(c); });
     return s;
 }
 
+// builtin picker matches: if (g_picker.patterns.empty()) return true
 static bool builtin_picker_matches(const std::filesystem::path& path) {
     if (g_picker.patterns.empty()) return true;
     const std::string filename = lower_ascii(path.filename().string());
@@ -512,6 +523,7 @@ static bool builtin_file_picker_should_be_offered(void) {
     return g_native_picker_failed || !launcher_native_file_picker_available();
 }
 
+// open builtin picker: g_picker = BuiltinPickerState
 static void open_builtin_picker(LauncherModel* m, PickRequest&& req) {
     g_picker = BuiltinPickerState{};
     g_picker.active = true;
@@ -609,6 +621,7 @@ static void ui_pick_file(LauncherModel* m, const char* title,
     ui_pick(m, std::move(req));
 }
 
+// ui pick save file: PickRequest req
 static void ui_pick_save_file(LauncherModel* m, const char* title,
                               std::vector<std::string> patterns,
                               const char* description,
@@ -622,6 +635,7 @@ static void ui_pick_save_file(LauncherModel* m, const char* title,
     ui_pick(m, std::move(req));
 }
 
+// ui pick folder: PickRequest req
 static void ui_pick_folder(LauncherModel* m, const char* title,
                            std::function<void(const char*)> on_pick) {
     PickRequest req;
@@ -645,6 +659,7 @@ static std::string rom_picker_start_path(LauncherModel* m) {
     return std::string();
 }
 
+// rom pick request: PickRequest req
 static PickRequest rom_pick_request(LauncherModel* m, const char* title,
                                     const char* const* patterns,
                                     int pattern_count, const char* description,
@@ -659,6 +674,7 @@ static PickRequest rom_pick_request(LauncherModel* m, const char* title,
     return req;
 }
 
+// request rom picker: PickRequest req = rom_pick_request(m, title, patterns, pattern_count,
 static void request_rom_picker(LauncherModel* m, const char* title,
                                const char* const* patterns, int pattern_count,
                                const char* description, bool from_setup) {
@@ -686,6 +702,7 @@ static void request_disc_slot_picker(LauncherModel* m, int slot,
     ui_pick(m, std::move(req));
 }
 
+// request bios picker: PickRequest req
 static void request_bios_picker(LauncherModel* m, const char* title,
                                 bool from_setup) {
     PickRequest req;
@@ -700,6 +717,7 @@ static void request_bios_picker(LauncherModel* m, const char* title,
     ui_pick(m, std::move(req));
 }
 
+// draw builtin rom picker contents: namespace fs = std::filesystem
 static void draw_builtin_rom_picker_contents(LauncherModel* m,
                                              const LauncherTheme& th,
                                              bool standalone_popup) {
@@ -897,6 +915,7 @@ static void draw_builtin_rom_picker_contents(LauncherModel* m,
     }
 }
 
+// draw standalone builtin rom picker: if (!g_picker.active || g_picker.from_setup) return
 static void draw_standalone_builtin_rom_picker(LauncherModel* m,
                                                 const LauncherTheme& th) {
     if (!g_picker.active || g_picker.from_setup) return;
@@ -996,6 +1015,7 @@ static const int     kEmojiPuaSlots = 0x1900;
 static const size_t kEmojiMaxSprites = 1024;
 static const size_t kEmojiMaxSpriteBytes = 8u * 1024u * 1024u;
 
+// emoji cache has room: return g_emoji_sprites.size() < ceiling &&
 static bool emoji_cache_has_room(void) {
     const size_t ceiling = (size_t)kEmojiPuaSlots < kEmojiMaxSprites
                                ? (size_t)kEmojiPuaSlots : kEmojiMaxSprites;
@@ -1038,6 +1058,7 @@ static ImWchar emoji_register(const char* seq, size_t len) {
     return g_emoji_sprites.back().ok ? g_emoji_sprites.back().cp : 0;
 }
 
+// utf8 encode: if (cp < 0x80) { out[0] = (char)cp; return 1; 
 static size_t utf8_encode(ImWchar cp, char* out) {
     if (cp < 0x80) { out[0] = (char)cp; return 1; }
     if (cp < 0x800) { out[0] = (char)(0xC0 | (cp >> 6)); out[1] = (char)(0x80 | (cp & 0x3F)); return 2; }
@@ -1086,6 +1107,7 @@ static void emoji_display(const char* in, char* out, size_t cap) {
     out[o] = '\0';
 }
 
+// emoji utf8 decode: if (len == 0) { *cp = 0; return 1; 
 static size_t emoji_utf8_decode(const char* s, size_t len, unsigned int* cp) {
     const unsigned char* p = (const unsigned char*)s;
     if (len == 0) { *cp = 0; return 1; }
@@ -1291,6 +1313,7 @@ static void np_player_menu(LauncherModel* m, const LauncherTheme& th,
     ImGui::EndPopup();
 }
 
+// np draw country flag: if (!cc || !cc[0] || !cc[1]) return
 static void np_draw_country_flag(const LauncherTheme& th, const char* cc) {
     if (!cc || !cc[0] || !cc[1]) return;
     const char a = (char)std::toupper((unsigned char)cc[0]);
@@ -1354,6 +1377,7 @@ static void emoji_atlas_reserve(ImFontAtlas* atlas, ImFont* font, float body) {
     }
 }
 
+// emoji atlas blit: unsigned char* pixels = nullptr
 static void emoji_atlas_blit(ImFontAtlas* atlas) {
     unsigned char* pixels = nullptr;
     int tw = 0, th = 0;
@@ -1602,6 +1626,7 @@ void draw_check(const LngColor& c) {   // green check, advances cursor like text
     dl->AddLine(ImVec2(p.x + s*0.40f, y + s*0.28f), ImVec2(p.x + s*0.85f, y - s*0.28f), u, px(2.0f));
     ImGui::Dummy(ImVec2(s, s)); ImGui::SameLine(0, px(6));
 }
+// draw dot: ImDrawList* dl = ImGui::GetWindowDrawList()
 void draw_dot(bool on, const LngColor& good, const LngColor& off) {
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 p = ImGui::GetCursorScreenPos();
@@ -1708,6 +1733,7 @@ void image_fit_centered(const LauncherTexture& t, float box_w, float box_h, floa
     image_fit(t, box_w, box_h);
 }
 
+// eyebrow: eyebrow_tracked(ui_text(s));
 void eyebrow(const char* s) { eyebrow_tracked(ui_text(s)); }
 // A card: filled + bordered. Hugs its content by default; `fill_h` stretches it
 // to the remaining height (used by the dashboard columns so the layout doesn't
@@ -1726,6 +1752,7 @@ bool begin_panel(const char* id, float logical_w = 0.0f, bool fill_h = false,
                                         : 0;
     return ImGui::BeginChild(id, ImVec2(px(logical_w), 0.0f), flags, wflags);
 }
+// end panel: ImGui::EndChild();
 void end_panel() { ImGui::EndChild(); }
 
 // A layout container: no fill, no border. Without this a nested child inherits
@@ -1736,6 +1763,7 @@ bool begin_container(const char* id, ImVec2 size, ImGuiChildFlags flags = ImGuiC
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
     return ImGui::BeginChild(id, size, flags, wflags);
 }
+// end container: ImGui::EndChild(); ImGui::PopStyleColor();
 void end_container() { ImGui::EndChild(); ImGui::PopStyleColor(); }
 
 void state_mark(bool ok, const LauncherTheme& th);   // fwd
@@ -1924,12 +1952,14 @@ void row_window_scale(LauncherModel* m, const LauncherTheme& th) {
                               m->s.window_scale < 1 ? 1 : m->s.window_scale));
 }
 
+// row fullscreen: kFullscreenChoices, 3, m->s.fullscreen))
 void row_fullscreen(LauncherModel* m, const LauncherTheme& th) {
     launcher_model_set_fullscreen(
         m, settings_combo_row("Fullscreen", th, "##fullscreen",
                               kFullscreenChoices, 3, m->s.fullscreen));
 }
 
+// row run ahead: RECOMP_LAUNCHER_RUN_AHEAD_MAX + 1,
 void row_run_ahead(LauncherModel* m, const LauncherTheme& th) {
     launcher_model_set_run_ahead(
         m, settings_combo_row("Run-ahead", th, "##run_ahead", kRunAheadChoices,
@@ -2145,6 +2175,7 @@ void draw_verdict_block(LauncherModel* m, const LauncherTheme& th, float availw)
     }
 }
 
+// draw game panel: if (!begin_panel("game", 0, fill_h)) { end_panel(); return; 
 void draw_game_panel(LauncherModel* m, const LauncherTheme& th, bool fill_h = false) {
     if (!begin_panel("game", 0, fill_h)) { end_panel(); return; }
     // No "GAME" eyebrow: the box art itself tells the user this is the game.
@@ -2630,6 +2661,7 @@ static float dash_card_width(float availw, float gap, int count) {
     return cardw;
 }
 
+// dash card columns: if (count < 1) return 1
 static int dash_card_columns(float availw, float gap, float cardw, int count) {
     if (count < 1) return 1;
     int cols = (int)((availw + gap) / (cardw + gap));
@@ -2638,6 +2670,7 @@ static int dash_card_columns(float availw, float gap, float cardw, int count) {
     return cols;
 }
 
+// panel save draw: if (kind == SAVE_MEMCARD) 
 void panel_save_draw(LauncherModel* m, const LauncherTheme* th) {
     const SystemProfile* prof = (const SystemProfile*)m->profile;
     const SaveKind kind = prof ? prof->save.kind : SAVE_NONE;
@@ -2709,6 +2742,7 @@ void draw_tpak_cart(int cart_kind, bool present, float box) {
     image_fit(g_cart[idx], box, box);   // image_fit Dummies when the texture is absent
 }
 
+// rui basename: for (const char* q = path; *q; ++q)
 static const char* rui_basename(const char* path) {
     const char* base = path;
     for (const char* q = path; *q; ++q)
@@ -2774,6 +2808,7 @@ static const PakKindDef* pak_kind_def(int kind) {
     return &kPakKinds[0];
 }
 
+// pak kind of: return launcher_model_tpak_enabled(m, port) ? PAK_TRANSFER : PAK_NONE
 static int pak_kind_of(const LauncherModel* m, int port) {
     return launcher_model_tpak_enabled(m, port) ? PAK_TRANSFER : PAK_NONE;
 }
@@ -3284,6 +3319,7 @@ static int np_guess_local_seat(const LauncherModel* m) {
     return 0;
 }
 
+// draw player panel: char eb[40]
 void draw_player_panel(LauncherModel* m, const LauncherTheme& th, int p, float w) {
     char id[24];  snprintf(id, sizeof(id), "player%d", p);
     char eb[40];
@@ -3423,6 +3459,7 @@ void draw_controllers_row(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// panel controller draw
 void panel_controller_draw(LauncherModel* m, const LauncherTheme* th) {
     draw_controllers_row(m, *th);
 }
@@ -3579,11 +3616,13 @@ static const char* elide_left(const char* s, float max_w, char* out, size_t cap)
     return out;
 }
 
+// has display aspect row: return m && ((m->aspect_labels && m->num_aspect_labels > 0) ||
 static bool has_display_aspect_row(const LauncherModel* m) {
     return m && ((m->aspect_labels && m->num_aspect_labels > 0) ||
                  m->aspect_mask != 0);
 }
 
+// draw aspect row: if (!has_display_aspect_row(m)) return
 static void draw_aspect_row(LauncherModel* m, const LauncherTheme& th) {
     if (!has_display_aspect_row(m)) return;
     /* px(180) rather than the shared column, for the Screen layout reason:
@@ -3656,6 +3695,7 @@ bool video_card_grows(const LauncherModel* m) {
     return false;
 }
 
+// draw shader row: if (!m || !m->has_shader) return
 void draw_shader_row(LauncherModel* m, const LauncherTheme& th, float col_w = 0.0f) {
     if (!m || !m->has_shader) return;
     row_label("Shader", th, col_w);
@@ -3730,6 +3770,7 @@ void draw_shader_row(LauncherModel* m, const LauncherTheme& th, float col_w = 0.
     ImGui::EndDisabled();
 }
 
+// draw display controls: if (!any_deep_display(m)) 
 void draw_display_controls(LauncherModel* m, const LauncherTheme& th) {
     eyebrow("DISPLAY");
 
@@ -4176,6 +4217,7 @@ void panel_video_draw(LauncherModel* m, const LauncherTheme* th) {
     }
 }
 
+// draw audio controls: if (!audio_prof || !audio_prof->hide_audio_freq) 
 void draw_audio_controls(LauncherModel* m, const LauncherTheme& th) {
     eyebrow("AUDIO");
     // Labels at the card's left edge, controls at its right (row_label_right),
@@ -4293,6 +4335,7 @@ int avail_input(const LauncherModel* m) {
            launcher_model_multitap_analog_available(m) ||
            launcher_model_virtual_stylus_available(m);
 }
+// draw input controls: bool previous_row = false
 void draw_input_controls(LauncherModel* m, const LauncherTheme& th) {
     eyebrow("INPUT");
     bool previous_row = false;
@@ -4341,6 +4384,7 @@ void draw_input_controls(LauncherModel* m, const LauncherTheme& th) {
             launcher_model_toggle_virtual_stylus(m);
     }
 }
+// panel input draw: if (begin_panel("input", 0)) draw_input_controls(m, *th)
 void panel_input_draw(LauncherModel* m, const LauncherTheme* th) {
     if (begin_panel("input", 0)) draw_input_controls(m, *th);
     end_panel();
@@ -4352,6 +4396,7 @@ void panel_input_draw(LauncherModel* m, const LauncherTheme* th) {
 // needs one (has_bios) — composition + availability, both layers, matching
 // the architecture.
 int avail_system(const LauncherModel* m) { return m->has_bios; }
+// draw system controls: float avail = ImGui::GetContentRegionAvail().x - browse_w - px(th.spa...
 void draw_system_controls(LauncherModel* m, const LauncherTheme& th) {
     eyebrow("SYSTEM");
     const SystemProfile* prof = (const SystemProfile*)m->profile;
@@ -4443,6 +4488,7 @@ void draw_system_controls(LauncherModel* m, const LauncherTheme& th) {
     }
     ImGui::PopStyleVar();
 }
+// panel system draw: if (begin_panel("system", 0)) draw_system_controls(m, *th)
 void panel_system_draw(LauncherModel* m, const LauncherTheme* th) {
     if (begin_panel("system", 0)) draw_system_controls(m, *th);
     end_panel();
@@ -4458,6 +4504,7 @@ void panel_system_draw(LauncherModel* m, const LauncherTheme* th) {
 // and the row still shows the working value while editing is abandoned.
 int avail_solar(const LauncherModel* m) { return m->has_solar_sensor; }
 
+// draw solar controls
 void draw_solar_controls(LauncherModel* m, const LauncherTheme& th) {
     eyebrow("SOLAR SENSOR");
 
@@ -4586,6 +4633,7 @@ void draw_solar_controls(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// panel solar draw: if (begin_panel("solar", 0)) draw_solar_controls(m, *th)
 void panel_solar_draw(LauncherModel* m, const LauncherTheme* th) {
     if (begin_panel("solar", 0)) draw_solar_controls(m, *th);
     end_panel();
@@ -4647,6 +4695,7 @@ void draw_hotkeys_controls(LauncherModel* m, const LauncherTheme& th) {
         ImGui::EndTable();
     }
 }
+// panel hotkeys draw: if (begin_panel("hotkeys", 0)) draw_hotkeys_controls(m, *th)
 void panel_hotkeys_draw(LauncherModel* m, const LauncherTheme* th) {
     if (begin_panel("hotkeys", 0)) draw_hotkeys_controls(m, *th);
     end_panel();
@@ -4798,6 +4847,7 @@ void draw_settings(LauncherModel* m, const LauncherTheme& th) {
     if (hotkeys_p && !stacked_hotkeys) hotkeys_p->draw(m, &th);
 }
 
+// enabled camera controls: if (!mods || !mods->feature_count || !mods->feature_get) return false
 static bool enabled_camera_controls(const LauncherModel* m) {
     const auto* mods = m ? m->mods : nullptr;
     if (!mods || !mods->feature_count || !mods->feature_get) return false;
@@ -4811,12 +4861,14 @@ static bool enabled_camera_controls(const LauncherModel* m) {
     return false;
 }
 
+// settings key label: if (scancode <= 0) return "(unbound)"
 const char* settings_key_label(int scancode) {
     if (scancode <= 0) return "(unbound)";
     const char* name = SDL_GetScancodeName((SDL_Scancode)scancode);
     return (name && name[0]) ? name : "(unbound)";
 }
 
+// settings pad button label: if (!name || !name[0]) return "button"
 static const char* settings_pad_button_label(int code) {
     const char* name = SDL_GetGamepadStringForButton((LNG_GamepadButton)code);
     if (!name || !name[0]) return "button";
@@ -4828,10 +4880,12 @@ static const char* settings_pad_button_label(int code) {
     return name;
 }
 
+// settings pad button is select: return std::strcmp(settings_pad_button_label(code), "select") == 0
 static bool settings_pad_button_is_select(int code) {
     return std::strcmp(settings_pad_button_label(code), "select") == 0;
 }
 
+// button mask count: int n = 0
 static int button_mask_count(uint32_t mask) {
     int n = 0;
     while (mask) {
@@ -4841,6 +4895,7 @@ static int button_mask_count(uint32_t mask) {
     return n;
 }
 
+// settings pad label: if (!out || !capacity) return
 void settings_pad_label(int binding, char* out, size_t capacity) {
     if (!out || !capacity) return;
     const char* name = nullptr;
@@ -4872,6 +4927,7 @@ void settings_pad_label(int binding, char* out, size_t capacity) {
     snprintf(out, capacity, "%s", text);
 }
 
+// draw assist binding editor: if (m->assist_binding_count <= 0 || !m->assist_binding_labels)
 void draw_assist_binding_editor(LauncherModel* m, const LauncherTheme& th,
                                 const char* table_id, int action_limit,
                                 bool show_reset) {
@@ -4949,6 +5005,7 @@ void draw_assist_binding_editor(LauncherModel* m, const LauncherTheme& th,
         ImGui::TextColored(col(th.warn), "Listening... (Esc cancels, Backspace unbinds)");
 }
 
+// draw controller assist shortcuts: m->has_assist_tools
 void draw_controller_assist_shortcuts(LauncherModel* m,
                                       const LauncherTheme& th) {
     ImGui::PushStyleColor(ImGuiCol_Text, col(th.accent2));
@@ -5004,6 +5061,7 @@ void draw_controller_assist_shortcuts(LauncherModel* m,
         ImGui::TextColored(col(th.warn), "Listening... (Esc cancels, Backspace unbinds)");
 }
 
+// draw assist tools: if (!begin_panel("assist_tools_page", 0, false)) 
 void draw_assist_tools(LauncherModel* m, const LauncherTheme& th) {
     if (!begin_panel("assist_tools_page", 0, false)) {
         end_panel();
@@ -5048,6 +5106,7 @@ void draw_assist_tools(LauncherModel* m, const LauncherTheme& th) {
     end_panel();
 }
 
+// draw credits: if (!begin_panel("credits_page", 0, false)) 
 void draw_credits(LauncherModel* m, const LauncherTheme& th) {
     if (!begin_panel("credits_page", 0, false)) {
         end_panel();
@@ -6129,6 +6188,7 @@ void draw_controller_config_view(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// panel controller config draw
 void panel_controller_config_draw(LauncherModel* m, const LauncherTheme* th) {
     draw_controller_config_view(m, *th);
 }
@@ -6144,15 +6204,18 @@ void draw_controller(LauncherModel* m, const LauncherTheme& th) {
     if (p) p->draw(m, &th);
 }
 
+// np cb: return (m && m->netplay_supported) ? m->netplay : nullptr
 const RecompLauncherCNetplayCallbacks* np_cb(LauncherModel* m) {
     return (m && m->netplay_supported) ? m->netplay : nullptr;
 }
 
+// np connected: return np && np->connected && np->connected(np->ctx)
 bool np_connected(LauncherModel* m) {
     const auto* np = np_cb(m);
     return np && np->connected && np->connected(np->ctx);
 }
 
+// np valid port: if (!text || !text[0]) return false
 bool np_valid_port(const char* text) {
     if (!text || !text[0]) return false;
     unsigned value = 0;
@@ -6164,6 +6227,7 @@ bool np_valid_port(const char* text) {
     return value != 0;
 }
 
+// np prepare guest bind: if (launcher_udp_prepare_guest_bind(out, cap) != 0) 
 bool np_prepare_guest_bind(char* out, size_t cap, char* status, size_t status_cap) {
     if (launcher_udp_prepare_guest_bind(out, cap) != 0) {
         if (status && status_cap)
@@ -6173,6 +6237,7 @@ bool np_prepare_guest_bind(char* out, size_t cap, char* status, size_t status_ca
     return true;
 }
 
+// np connect and list: if (!np) return
 void np_connect_and_list(LauncherModel* m) {
     const auto* np = np_cb(m);
     if (!np) return;
@@ -6231,6 +6296,7 @@ static bool mod_commit_netplay_launch(LauncherModel* m) {
     return true;
 }
 
+// np try launch: if (!np || !np->fill_launch) return
 void np_try_launch(LauncherModel* m) {
     const auto* np = np_cb(m);
     if (!np || !np->fill_launch) return;
@@ -6243,6 +6309,7 @@ void np_try_launch(LauncherModel* m) {
     }
 }
 
+// np refresh host ip: if (!np) return
 void np_refresh_host_ip(LauncherModel* m) {
     const auto* np = np_cb(m);
     if (!np) return;
@@ -6304,6 +6371,7 @@ void np_refresh_host_ip(LauncherModel* m) {
     std::snprintf(m->netplay_host_ip, sizeof(m->netplay_host_ip), "Unavailable");
 }
 
+// np format local address: if (address.label[0])
 void np_format_local_address(const RecompLauncherCNetplayLocalAddress& address,
                              char* out, size_t out_len) {
     if (address.label[0])
@@ -6318,6 +6386,7 @@ static const char kNpDefaultLobbyUrl[] =
 /* Persisted next to guest netplay saves (cwd-relative). */
 static const char kNpNetworkSettingsPath[] = "saves/netplay/network settings";
 
+// np ensure netplay dir
 static void np_ensure_netplay_dir(void) {
 #if defined(_WIN32)
     _mkdir("saves");
@@ -6345,6 +6414,7 @@ static void np_copyable_readonly_input(const char* id, char* buf, size_t buf_len
     ImGui::PopStyleColor(4);
 }
 
+// np save network settings: if (!m) return
 static void np_save_network_settings(const LauncherModel* m) {
     if (!m) return;
     np_ensure_netplay_dir();
@@ -6358,6 +6428,7 @@ static void np_save_network_settings(const LauncherModel* m) {
     std::fclose(f);
 }
 
+// np load network settings: if (!m) return
 static void np_load_network_settings(LauncherModel* m) {
     if (!m) return;
     FILE* f = std::fopen(kNpNetworkSettingsPath, "rb");
@@ -6393,6 +6464,7 @@ static void np_load_network_settings(LauncherModel* m) {
         np->set_lobby_url(np->ctx, m->netplay_lobby_url);
 }
 
+// np ensure public ip: if (!m || m->netplay_public_ip_resolved) return
 static void np_ensure_public_ip(LauncherModel* m) {
     if (!m || m->netplay_public_ip_resolved) return;
     const auto* np = np_cb(m);
@@ -6500,6 +6572,7 @@ static bool draw_account_section(LauncherModel* m, const LauncherTheme& th) {
 static const char* np_effective_name(LauncherModel* m);
 static void np_open_name_modal(LauncherModel* m);
 
+// draw netplay player modal: if (m->netplay_name_modal_open) ImGui::OpenPopup("Player Name")
 void draw_netplay_player_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->netplay_name_modal_open) ImGui::OpenPopup("Player Name");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -6663,6 +6736,7 @@ static int np_rb_prediction_frames_from_rtt_ms(int rtt_ms, int delay_frames) {
     return p;
 }
 
+// np lobby max peer rtt ms: int max_rtt = 0
 static int np_lobby_max_peer_rtt_ms(LauncherModel* m,
                                     const RecompLauncherCNetplayCallbacks* np) {
     int max_rtt = 0;
@@ -6678,6 +6752,7 @@ static int np_lobby_max_peer_rtt_ms(LauncherModel* m,
     return max_rtt;
 }
 
+// np game max players: int n = (m && m->player_count > 0) ? m->player_count : 2
 static int np_game_max_players(const LauncherModel* m) {
     int n = (m && m->player_count > 0) ? m->player_count : 2;
     if (n < 2) n = 2;
@@ -6686,6 +6761,7 @@ static int np_game_max_players(const LauncherModel* m) {
     return n;
 }
 
+// np clamp host max players: ? game_max : RECOMP_LAUNCHER_NETPLAY_MAX_MEMBERS
 static int np_clamp_host_max_players(LauncherModel* m) {
     const int game_max = np_game_max_players(m);
     /* Lobby/delay-sync ceiling: RECOMP_LAUNCHER_NETPLAY_MAX_MEMBERS / RNET_MAX_SLOTS. */
@@ -6713,6 +6789,7 @@ static void np_automatch_queue(LauncherModel* m, const char* ruleset_id) {
                   why && why[0] ? why : "Could not join the automatch queue.");
 }
 
+// np automatch state: return (np && np->automatch_state) ? np->automatch_state(np->ctx)
 static int np_automatch_state(const RecompLauncherCNetplayCallbacks* np) {
     return (np && np->automatch_state) ? np->automatch_state(np->ctx)
                                        : RECOMP_LAUNCHER_AUTOMATCH_IDLE;
@@ -7008,6 +7085,7 @@ void draw_netplay_report_modal(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndPopup();
 }
 
+// draw netplay direct modal: if (m->netplay_direct_modal_open) ImGui::OpenPopup("Join Direct")
 void draw_netplay_direct_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->netplay_direct_modal_open) ImGui::OpenPopup("Join Direct");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -7080,6 +7158,7 @@ void draw_netplay_direct_modal(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// draw netplay network modal: if (m->netplay_network_modal_open) ImGui::OpenPopup("Network Settings")
 void draw_netplay_network_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->netplay_network_modal_open) ImGui::OpenPopup("Network Settings");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -7118,6 +7197,7 @@ void draw_netplay_network_modal(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// draw netplay host modal: if (m->netplay_host_modal_open) ImGui::OpenPopup("Host Lobby")
 void draw_netplay_host_modal(LauncherModel* m, const LauncherTheme& th) {
     /* Create errors stay in this modal — not m->netplay_status (list banner). */
     static char host_create_status[160] = "";
@@ -7444,6 +7524,7 @@ void draw_netplay_host_modal(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// draw netplay password modal: if (m->netplay_password_modal_open) ImGui::OpenPopup("Join Lobby")
 void draw_netplay_password_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->netplay_password_modal_open) ImGui::OpenPopup("Join Lobby");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -7509,6 +7590,7 @@ static void table_row_vcenter(float row_h, float content_h) {
     ImGui::SetCursorScreenPos(ImVec2(p.x, y));
 }
 
+// np ingest last error: if (!m || !np || !np->last_error) return
 static void np_ingest_last_error(LauncherModel* m, const RecompLauncherCNetplayCallbacks* np) {
     if (!m || !np || !np->last_error) return;
     const char* err = np->last_error(np->ctx);
@@ -7808,6 +7890,7 @@ static void draw_lobby_memcard_toggle(LauncherModel* m, const LauncherTheme& th,
     }
 }
 
+// draw lobby seat row: RecompLauncherCNetplayMember& row = view.rows[pos]
 static void draw_lobby_seat_row(LauncherModel* m,
                                 const LauncherTheme& th,
                                 const RecompLauncherCNetplayCallbacks* np,
@@ -8123,6 +8206,7 @@ static bool np_lobby_seated(const LauncherModel* m,
  * of the host's caps. */
 static bool g_lobby_settings_synced = false;
 
+// np lobby snapshot: s->is_host = np->is_host && np->is_host(np->ctx)
 static void np_lobby_snapshot(LauncherModel* m,
                               const RecompLauncherCNetplayCallbacks* np,
                               LobbySnapshot* s) {
@@ -8254,6 +8338,7 @@ static void np_lobby_start(LauncherModel* m,
     }
 }
 
+// np lobby leave: m->netplay_local_room = false
 static void np_lobby_leave(LauncherModel* m,
                            const RecompLauncherCNetplayCallbacks* np) {
     m->netplay_local_room = false;
@@ -9209,6 +9294,7 @@ struct ChatPanelIo {
     int (*get)(void* ctx, int index, RecompLauncherCNetplayChatMessage* out);
 };
 
+// draw chat panel: uint32_t newest = 0
 static void draw_chat_panel(LauncherModel* m, const LauncherTheme& th,
                             const ChatPanelIo& io, const char* id,
                             const char* title, const char* empty_hint,
@@ -9297,6 +9383,7 @@ static void draw_chat_panel(LauncherModel* m, const LauncherTheme& th,
     ImGui::PopID();
 }
 
+// draw lobby chat: if (!np->chat_send || !np->chat_count || !np->chat_get) 
 static void draw_lobby_chat(LauncherModel* m, const LauncherTheme& th,
                             const RecompLauncherCNetplayCallbacks* np) {
     if (!np->chat_send || !np->chat_count || !np->chat_get) {
@@ -9329,6 +9416,7 @@ static bool np_server_chat_available(const RecompLauncherCNetplayCallbacks* np) 
            np->connected && np->connected(np->ctx);
 }
 
+// draw server chat: np->server_chat_get
 static void draw_server_chat(LauncherModel* m, const LauncherTheme& th,
                              const RecompLauncherCNetplayCallbacks* np) {
     const ChatPanelIo io{np->ctx, np->server_chat_send, np->server_chat_count,
@@ -9564,6 +9652,7 @@ static void draw_lobby_footer(LauncherModel* m, const LauncherTheme& th,
     (void)th;
 }
 
+// np join selected: if (!np) return
 void np_join_selected(LauncherModel* m) {
     const auto* np = np_cb(m);
     if (!np) return;
@@ -9793,6 +9882,7 @@ static bool np_mode_card(const LauncherTheme& th, const char* id, const char* ti
     return pressed;
 }
 
+// draw netplay mode page
 void draw_netplay_mode_page(LauncherModel* m, const LauncherTheme& th) {
     /* Pump here too, not only on the browser page. The backend does its own
      * lazy setup from the pump -- parsing the lobby host, loading a stored
@@ -9908,6 +9998,7 @@ void draw_netplay_mode_page(LauncherModel* m, const LauncherTheme& th) {
  * out if it drags. Zero means "not waiting". */
 static double s_signin_waiting_since = 0.0;
 
+// draw netplay signin page: if (np && np->pump) np->pump(np->ctx)
 void draw_netplay_signin_page(LauncherModel* m, const LauncherTheme& th) {
     const auto* np = np_cb(m);
     /* Same reason as the chooser, plus this page needs the backend live to
@@ -9995,6 +10086,7 @@ void draw_netplay_signin_page(LauncherModel* m, const LauncherTheme& th) {
         launcher_model_set_view(m, LNG_VIEW_NETPLAY_MODE);
 }
 
+// draw netplay: if (!np) return
 void draw_netplay(LauncherModel* m, const LauncherTheme& th) {
     const auto* np = np_cb(m);
     if (!np) return;
@@ -10208,6 +10300,7 @@ void draw_netplay(LauncherModel* m, const LauncherTheme& th) {
     }
 }
 
+// mod text matches: if (!search || !search[0]) return true
 static bool mod_text_matches(const char* search, const RecompLauncherCModPackage& package) {
     if (!search || !search[0]) return true;
     std::string needle(search), haystack = std::string(package.name) + " " +
@@ -10234,6 +10327,7 @@ static const char* mod_channel_tag_short(int channel) {
     }
 }
 
+// mod channel tag: switch (channel) 
 static const char* mod_channel_tag(int channel) {
     switch (channel) {
         case RECOMP_MOD_CHANNEL_EXPERIMENTAL: return ui_text("EXPERIMENTAL");
@@ -10242,6 +10336,7 @@ static const char* mod_channel_tag(int channel) {
     }
 }
 
+// mod channel blurb: switch (channel) 
 static const char* mod_channel_blurb(int channel) {
     switch (channel) {
         case RECOMP_MOD_CHANNEL_EXPERIMENTAL:
@@ -10264,6 +10359,7 @@ static LngColor mod_channel_color(int channel, const LauncherTheme& th) {
     return channel == RECOMP_MOD_CHANNEL_DEVELOPER ? th.accent2 : th.warn;
 }
 
+// mod feature text matches: if (!search || !search[0]) return true
 static bool mod_feature_text_matches(const char* search,
                                      const RecompLauncherCModFeature& feature) {
     if (!search || !search[0]) return true;
@@ -10281,6 +10377,7 @@ static bool mod_feature_text_matches(const char* search,
     return haystack.find(needle) != std::string::npos;
 }
 
+// mod note error: error && error[0] ? error : "The mod operation failed.")
 static void mod_note_error(LauncherModel* m) {
     const auto* mods = m ? m->mods : nullptr;
     const char* error = mods && mods->last_error ? mods->last_error(mods->ctx) : nullptr;
@@ -10288,6 +10385,7 @@ static void mod_note_error(LauncherModel* m) {
                   error && error[0] ? error : "The mod operation failed.");
 }
 
+// mod commit launch: if (!m || !m->mods || !m->mods->commit ||
 static bool mod_commit_launch(LauncherModel* m) {
     if (!m || !m->mods || !m->mods->commit ||
         m->mods->commit(m->mods->ctx, launcher_model_effective_rom_path(m))) {
@@ -10302,6 +10400,7 @@ struct ModIntegerEditState {
     std::string provider_value;
 };
 
+// draw linkified mod author: if (!author_text || !author_text[0]) return
 static void draw_linkified_mod_author(
     const char* author_text,
     const RecompLauncherCModAuthorLink* author_links,
@@ -10367,6 +10466,7 @@ static bool draw_mod_text_option(const RecompLauncherCModOption& option,
     return changed;
 }
 
+// draw mod integer option: errno = 0
 static bool draw_mod_integer_option(const RecompLauncherCModOption& option,
                                     char* next, size_t next_size) {
     ImGui::TextUnformatted(option.label);
@@ -10412,6 +10512,7 @@ static bool draw_mod_integer_option(const RecompLauncherCModOption& option,
     return true;
 }
 
+// draw mod packages: if (!mods || !mods->package_count || !mods->package_get) return
 static void draw_mod_packages(LauncherModel* m, const LauncherTheme& th) {
     const auto* mods = m ? m->mods : nullptr;
     if (!mods || !mods->package_count || !mods->package_get) return;
@@ -10652,6 +10753,7 @@ struct ModFeatureListItem {
     RecompLauncherCModFeature feature;
 };
 
+// mod feature less: if (group != 0) return group < 0
 static bool mod_feature_less(const ModFeatureListItem& lhs,
                              const ModFeatureListItem& rhs) {
     const int group = std::strcmp(lhs.feature.group, rhs.feature.group);
@@ -10663,6 +10765,7 @@ static bool mod_feature_less(const ModFeatureListItem& lhs,
     return std::strcmp(lhs.feature.id, rhs.feature.id) < 0;
 }
 
+// draw mod feature option: bool changed = false
 static void draw_mod_feature_option(LauncherModel* m,
                                     const RecompLauncherCModFeature& feature,
                                     const RecompLauncherCModOption& option) {
@@ -10745,6 +10848,7 @@ static void draw_mod_feature_option(LauncherModel* m,
     ImGui::PopID();
 }
 
+// draw mod feature diagnostics: if (feature.status[0]) 
 static void draw_mod_feature_diagnostics(
     LauncherModel* m, const LauncherTheme& th,
     const RecompLauncherCModFeature& feature) {
@@ -10786,6 +10890,7 @@ static void draw_mod_feature_diagnostics(
     }
 }
 
+// set all mod features: if (!mods || !mods->feature_count || !mods->feature_get ||
 static bool set_all_mod_features(LauncherModel* m, bool enabled) {
     const auto* mods = m ? m->mods : nullptr;
     if (!mods || !mods->feature_count || !mods->feature_get ||
@@ -10885,6 +10990,7 @@ static void draw_mod_catalog_diagnostics(LauncherModel* m,
     ImGui::Spacing();
 }
 
+// draw mod features: if (!mods || !mods->feature_count || !mods->feature_get ||
 static void draw_mod_features(LauncherModel* m, const LauncherTheme& th) {
     const auto* mods = m ? m->mods : nullptr;
     if (!mods || !mods->feature_count || !mods->feature_get ||
@@ -11256,6 +11362,7 @@ static void draw_mod_features(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndChild();
 }
 
+// draw rom patch: if (!m || !m->rom_patch_supported) return
 static void draw_rom_patch(LauncherModel* m, const LauncherTheme& th) {
     if (!m || !m->rom_patch_supported) return;
 
@@ -11298,6 +11405,7 @@ static void draw_rom_patch(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndChild();
 }
 
+// draw mods: if (!m || (!mods && !m->rom_patch_supported)) return
 void draw_mods(LauncherModel* m, const LauncherTheme& th) {
     const auto* mods = m ? m->mods : nullptr;
     if (!m || (!mods && !m->rom_patch_supported)) return;
@@ -11344,6 +11452,7 @@ void draw_mods(LauncherModel* m, const LauncherTheme& th) {
 // titles have no online play and never see this card (owner directive:
 // shared launcher features are per-game opt-in).
 int avail_identity(const LauncherModel* m) { return m->has_player_name; }
+// panel identity draw: if (!begin_panel("identity")) { end_panel(); return; 
 void panel_identity_draw(LauncherModel* m, const LauncherTheme* th) {
     if (!begin_panel("identity")) { end_panel(); return; }
     eyebrow("ONLINE");
@@ -11718,6 +11827,7 @@ enum SetupPlatKind {
     SETUP_PLAT_SNES,
 };
 
+// setup plat contains ci: if (!hay || !needle || !needle[0]) return false
 static bool setup_plat_contains_ci(const char* hay, const char* needle) {
     if (!hay || !needle || !needle[0]) return false;
     for (const char* h = hay; *h; ++h) {
@@ -11736,6 +11846,7 @@ static bool setup_plat_contains_ci(const char* hay, const char* needle) {
     return false;
 }
 
+// setup platform kind: if (setup_plat_contains_ci(platform, "PLAYSTATION") ||
 static SetupPlatKind setup_platform_kind(const char* platform) {
     if (setup_plat_contains_ci(platform, "PLAYSTATION") ||
         setup_plat_contains_ci(platform, "PSX") ||
@@ -12002,6 +12113,7 @@ static void draw_setup_disc_frame(LauncherModel* m, const LauncherTheme& th,
         ImGui::SetTooltip("Pick one disc first, then this looks for the rest.");
 }
 
+// draw setup wizard modal: if (!m->setup_wizard_supported) return
 void draw_setup_wizard_modal(LauncherModel* m, const LauncherTheme& th) {
     if (!m->setup_wizard_supported) return;
     if (!m->setup_wizard_open && !m->setup_preparing) return;
@@ -12624,6 +12736,7 @@ void draw_setup_wizard_modal(LauncherModel* m, const LauncherTheme& th) {
 }
 
 
+// generate disabled reason: if (!m) return "Generate is unavailable."
 static const char* generate_disabled_reason(const LauncherModel* m) {
     if (!m) return "Generate is unavailable.";
     const bool has_prep =
@@ -12638,6 +12751,7 @@ static const char* generate_disabled_reason(const LauncherModel* m) {
     return "Generate is unavailable.";
 }
 
+// draw bios confirm modal: if (m->bios_confirm_open) ImGui::OpenPopup("Switch BIOS?")
 void draw_bios_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->bios_confirm_open) ImGui::OpenPopup("Switch BIOS?");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -12687,6 +12801,7 @@ void draw_bios_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndPopup();
 }
 
+// draw bios play modal: if (m->bios_play_modal_open) ImGui::OpenPopup("BIOS not ready to Play")
 void draw_bios_play_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->bios_play_modal_open) ImGui::OpenPopup("BIOS not ready to Play");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -12733,6 +12848,7 @@ void draw_bios_play_modal(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndPopup();
 }
 
+// draw pgo confirm modal: if (m->pgo_confirm_open) ImGui::OpenPopup("Optimize FMV Playback?")
 void draw_pgo_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->pgo_confirm_open) ImGui::OpenPopup("Optimize FMV Playback?");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -12765,6 +12881,7 @@ void draw_pgo_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndPopup();
 }
 
+// draw fmv timing confirm modal: if (m->fmv_timing_confirm_open)
 void draw_fmv_timing_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     if (m->fmv_timing_confirm_open)
         ImGui::OpenPopup("Apply FMV Timing Opt?");
@@ -12797,6 +12914,7 @@ void draw_fmv_timing_confirm_modal(LauncherModel* m, const LauncherTheme& th) {
     ImGui::EndPopup();
 }
 
+// draw skip modal: if (m->skip_modal_open) ImGui::OpenPopup("Skip the launcher on boot?")
 void draw_skip_modal(LauncherModel* m) {
     if (m->skip_modal_open) ImGui::OpenPopup("Skip the launcher on boot?");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -12818,6 +12936,7 @@ void draw_skip_modal(LauncherModel* m) {
     }
 }
 
+// draw restore defaults modal: if (m->defaults_modal_open) ImGui::OpenPopup("Restore default setting...
 void draw_restore_defaults_modal(LauncherModel* m) {
     if (m->defaults_modal_open) ImGui::OpenPopup("Restore default settings?");
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -12841,6 +12960,7 @@ void draw_restore_defaults_modal(LauncherModel* m) {
     }
 }
 
+// draw ui: ImGuiViewport* vp = ImGui::GetMainViewport()
 void draw_ui(LauncherModel* m, const LauncherTheme& th, int logical_w, int logical_h) {
     ImGuiViewport* vp = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(vp->Pos);
@@ -13059,6 +13179,7 @@ void draw_ui(LauncherModel* m, const LauncherTheme& th, int logical_w, int logic
     (void)logical_h;
 }
 
+// is modifier scancode: return sc == SDL_SCANCODE_LCTRL || sc == SDL_SCANCODE_RCTRL ||
 bool is_modifier_scancode(SDL_Scancode sc) {
     return sc == SDL_SCANCODE_LCTRL || sc == SDL_SCANCODE_RCTRL ||
            sc == SDL_SCANCODE_LALT  || sc == SDL_SCANCODE_RALT  ||
@@ -13384,6 +13505,7 @@ bool try_capture(LauncherModel* m, const SDL_Event& ev) {
     return true;
 }
 
+// is absolute path: if (path.empty()) return false
 bool is_absolute_path(const std::string& path) {
     if (path.empty()) return false;
     if (path[0] == '/' || path[0] == '\\') return true;
@@ -13393,6 +13515,7 @@ bool is_absolute_path(const std::string& path) {
     return false;
 }
 
+// normalized path: std::string out = path ? path : ""
 std::string normalized_path(const char* path) {
     std::string out = path ? path : "";
     for (char& ch : out)
@@ -13400,6 +13523,7 @@ std::string normalized_path(const char* path) {
     return out;
 }
 
+// asset: std::string path = normalized_path(rel)
 std::string asset(const char* rel) {
     std::string path = normalized_path(rel);
     if (is_absolute_path(path)) return path;
@@ -13425,6 +13549,7 @@ extern "C" const LauncherPanel* launcher_panels_all(void) {
     return kPanelRegistry;   // {id=NULL}-sentinel-terminated
 }
 
+// launcher panel find: if (!id) return nullptr
 extern "C" const LauncherPanel* launcher_panel_find(const char* id) {
     if (!id) return nullptr;
     for (int i = 0; kPanelRegistry[i].id; ++i)
@@ -13432,11 +13557,13 @@ extern "C" const LauncherPanel* launcher_panel_find(const char* id) {
     return nullptr;
 }
 
+// launcher panel available: if (!p) return false
 extern "C" bool launcher_panel_available(const LauncherPanel* p, const LauncherModel* m) {
     if (!p) return false;
     return p->available ? (p->available(m) != 0) : true;
 }
 
+// launcher backend run: ImGuiIO& io = ImGui::GetIO()
 extern "C" LngAction launcher_backend_run(LauncherPlatform* p,
                                           LauncherModel* m,
                                           const LauncherTheme* th) {

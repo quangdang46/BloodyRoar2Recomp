@@ -63,6 +63,7 @@ static int proto_bios_verify(const char* path, RecompLauncherCBiosVerify* out) {
     return 1;
 }
 
+// proto prepare: if (on_progress) on_progress(progress_ctx, 0.5f, "Harness: no real SD...
 static int proto_prepare(const char* source_path, char* out_path, size_t out_cap,
                          char* err_msg, size_t err_cap,
                          RecompLauncherCPrepareProgressFn on_progress,
@@ -87,8 +88,11 @@ static int demo_lobby_allow = 1;  /* host allows guest cards */
 static int demo_lobby_delay = 6;
 static int demo_lobby_pred  = 10;
 static int demo_lobby_rb    = 1;
+// dl default url: (void)c; return                                ;
 static const char* dl_default_url(void* c) { (void)c; return "ws://netplay.retcomm.net:8765"; }
+// dl set lobby url: (void)c; (void)u;
 static void dl_set_lobby_url(void* c, const char* u) { (void)c; (void)u; }
+// dl connect: (void)c; return 0;
 static int  dl_connect(void* c) { (void)c; return 0; }
 /* Seats are mutable so self-moves and swaps show. Reimu watches from the
  * gallery (base 64, two seats). Swaps: an ask of ours is accepted by the
@@ -103,15 +107,19 @@ static double demo_swap_out_at = 0.0;
 static int    demo_swap_in = 0;
 static double demo_swap_ask_every = 0.0;
 static double demo_swap_next_ask = 0.0;
+// demo local index: return demo_lobby_host ? 0 : 1;
 static int demo_local_index(void) { return demo_lobby_host ? 0 : 1; }
+// demo index at seat: for (int i = 0; i < 3; ++i) if (demo_seats[i] == seat) return i
 static int demo_index_at_seat(int seat) {
     for (int i = 0; i < 3; ++i) if (demo_seats[i] == seat) return i;
     return -1;
 }
+// demo swap seats: if (a < 0 || b < 0 || a > 2 || b > 2) return
 static void demo_swap_seats(int a, int b) {
     if (a < 0 || b < 0 || a > 2 || b > 2) return;
     int t = demo_seats[a]; demo_seats[a] = demo_seats[b]; demo_seats[b] = t;
 }
+// demo lobby pump: if (demo_swap_out == 1 && now >= demo_swap_out_at) 
 static void demo_lobby_pump(void) {
     const double now = (double)SDL_GetTicks() / 1000.0;
     if (demo_swap_out == 1 && now >= demo_swap_out_at) {
@@ -123,6 +131,7 @@ static void demo_lobby_pump(void) {
         demo_swap_next_ask = now + demo_swap_ask_every;
     }
 }
+// dl seat move self: if (demo_index_at_seat(to) >= 0) return -1
 static int dl_seat_move_self(void* c, int to) {
     (void)c;
     if (demo_index_at_seat(to) >= 0) return -1;
@@ -130,6 +139,7 @@ static int dl_seat_move_self(void* c, int to) {
     demo_seats[demo_local_index()] = to;
     return 0;
 }
+// dl seat swap request: if (demo_swap_out == 1) return -1
 static int dl_seat_swap_request(void* c, int to) {
     (void)c;
     if (demo_swap_out == 1) return -1;
@@ -139,6 +149,7 @@ static int dl_seat_swap_request(void* c, int to) {
     demo_swap_out_at = (double)SDL_GetTicks() / 1000.0 + 1.5;
     return 0;
 }
+// dl seat swap incoming: if (!demo_swap_in) return 0
 static int dl_seat_swap_incoming(void* c, char* who, size_t cap, int* from) {
     (void)c;
     if (!demo_swap_in) return 0;
@@ -146,6 +157,7 @@ static int dl_seat_swap_incoming(void* c, char* who, size_t cap, int* from) {
     if (from) *from = demo_seats[2];
     return 1;
 }
+// dl seat swap respond: if (!demo_swap_in) return -1
 static int dl_seat_swap_respond(void* c, int accept) {
     (void)c;
     if (!demo_swap_in) return -1;
@@ -154,21 +166,32 @@ static int dl_seat_swap_respond(void* c, int accept) {
     if (accept) demo_swap_seats(demo_local_index(), 2);
     return 0;
 }
+// dl seat swap outgoing: (void)c; return demo_swap_out;
 static int  dl_seat_swap_outgoing(void* c) { (void)c; return demo_swap_out; }
+// dl seat swap clear: (void)c; if (demo_swap_out != 1) demo_swap_out = 0;
 static void dl_seat_swap_clear(void* c) { (void)c; if (demo_swap_out != 1) demo_swap_out = 0; }
+// dl host can spectate: (void)c; return 1;
 static int  dl_host_can_spectate(void* c) { (void)c; return 1; }
+// dl lobby allow spectators: (void)c; return 1;
 static int  dl_lobby_allow_spectators(void* c) { (void)c; return 1; }
+// dl lobby max spectators: (void)c; return 2;
 static int  dl_lobby_max_spectators(void* c) { (void)c; return 2; }
+// dl lobby spectator count: int n = 0
 static int  dl_lobby_spectator_count(void* c) {
     (void)c;
     int n = 0;
     for (int i = 0; i < 3; ++i) if (demo_seats[i] >= DEMO_SPEC_BASE) ++n;
     return n;
 }
+// dl local is spectator: (void)c; return demo_seats[demo_local_index()] >= DEMO_SPEC_BASE;
 static int  dl_local_is_spectator(void* c) { (void)c; return demo_seats[demo_local_index()] >= DEMO_SPEC_BASE; }
+// dl spectator slot: (void)c; return DEMO_SPEC_BASE + index;
 static int  dl_spectator_slot(void* c, int index) { (void)c; return DEMO_SPEC_BASE + index; }
+// dl connected: (void)c; return 1;
 static int  dl_connected(void* c) { (void)c; return 1; }
+// dl pump: (void)c; demo_lobby_pump();
 static void dl_pump(void* c) { (void)c; demo_lobby_pump(); }
+// dl set player name: (void)c; (void)n;
 static void dl_set_player_name(void* c, const char* n) { (void)c; (void)n; }
 static int demo_acct_preview = 0; /* LNG_DEMO_ACCOUNT set: leave the name empty
                                    * so the Player Name modal opens by itself
@@ -178,8 +201,11 @@ static const char* dl_player_name(void* c) {
     if (demo_acct_preview) return "";
     return demo_lobby_host ? "Alex" : "Marisa";
 }
+// dl request list: (void)c;
 static void dl_request_list(void* c) { (void)c; }
+// dl list count: (void)c; return 1;
 static int  dl_list_count(void* c) { (void)c; return 1; }
+// dl list get: if (i != 0 || !o) return 0
 static int  dl_list_get(void* c, int i, RecompLauncherCNetplayLobby* o) {
     (void)c;
     if (i != 0 || !o) return 0;
@@ -194,6 +220,7 @@ static int  dl_list_get(void* c, int i, RecompLauncherCNetplayLobby* o) {
 }
 /* Players online: a few names so the browser's side panel has rows. */
 static int  dl_online_count(void* c) { (void)c; return 4; }
+// dl online get: if (i < 0 || i >= 4 || !o) return 0
 static int  dl_online_get(void* c, int i, RecompLauncherCNetplayOnlinePlayer* o) {
     static const char* names[4] = { "Reimu", "Marisa", "Alex", "Sakuya" };
     static const char* countries[4] = { "JP", "JP", "CA", "DE" };
@@ -210,6 +237,7 @@ static int  dl_online_get(void* c, int i, RecompLauncherCNetplayOnlinePlayer* o)
 /* Server chat: its own small ring; a send lands locally as if echoed. */
 static struct { char from[64]; char text[256]; int is_local; } demo_schat[32];
 static int demo_schat_n = 0;
+// demo schat push: if (demo_schat_n >= 32) { memmove(&demo_schat[0], &demo_schat[1], siz...
 static void demo_schat_push(const char* from, const char* text, int is_local) {
     if (demo_schat_n >= 32) { memmove(&demo_schat[0], &demo_schat[1], sizeof(demo_schat[0]) * 31); demo_schat_n = 31; }
     snprintf(demo_schat[demo_schat_n].from, sizeof(demo_schat[demo_schat_n].from), "%s", from);
@@ -217,8 +245,11 @@ static void demo_schat_push(const char* from, const char* text, int is_local) {
     demo_schat[demo_schat_n].is_local = is_local;
     ++demo_schat_n;
 }
+// dl schat send: (void)c; demo_schat_push(      , t, 1); return 0;
 static int  dl_schat_send(void* c, const char* t) { (void)c; demo_schat_push("Alex", t, 1); return 0; }
+// dl schat count: (void)c; return demo_schat_n;
 static int  dl_schat_count(void* c) { (void)c; return demo_schat_n; }
+// dl schat get: if (i < 0 || i >= demo_schat_n || !out) return 0
 static int  dl_schat_get(void* c, int i, RecompLauncherCNetplayChatMessage* out) {
     (void)c;
     if (i < 0 || i >= demo_schat_n || !out) return 0;
@@ -229,10 +260,15 @@ static int  dl_schat_get(void* c, int i, RecompLauncherCNetplayChatMessage* out)
     out->seq = (uint32_t)(i + 1);
     return 1;
 }
+// dl leave: (void)c; demo_lobby_in = 0; return 0;
 static int  dl_leave(void* c) { (void)c; demo_lobby_in = 0; return 0; }
+// dl in lobby: (void)c; return demo_lobby_in;
 static int  dl_in_lobby(void* c) { (void)c; return demo_lobby_in; }
+// dl is host: (void)c; return demo_lobby_host;
 static int  dl_is_host(void* c) { (void)c; return demo_lobby_host; }
+// dl member count: (void)c; return 3;
 static int  dl_member_count(void* c) { (void)c; return 3; }
+// dl member get: if (i < 0 || i >= 3 || !out) return 0
 static int  dl_member_get(void* c, int i, RecompLauncherCNetplayMember* out) {
     static const char* names[3] = { "Alex", "Marisa", "Reimu" };
     (void)c;
@@ -259,33 +295,53 @@ static int  dl_member_get(void* c, int i, RecompLauncherCNetplayMember* out) {
     }
     return 1;
 }
+// dl move member: (void)c; (void)a; (void)b; return 0;
 static int  dl_move_member(void* c, int a, int b) { (void)c; (void)a; (void)b; return 0; }
+// dl local ready: (void)c; return 1;
 static int  dl_local_ready(void* c) { (void)c; return 1; }
+// dl all ready: (void)c; return 1;
 static int  dl_all_ready(void* c) { (void)c; return 1; }
+// dl set ready: (void)c; (void)r; return 0;
 static int  dl_set_ready(void* c, int r) { (void)c; (void)r; return 0; }
+// dl request start: (void)c; (void)s; return -1;
 static int  dl_request_start(void* c, const RecompLauncherCSettings* s) { (void)c; (void)s; return -1; }
+// dl launch pending: (void)c; return 0;
 static int  dl_launch_pending(void* c) { (void)c; return 0; }
+// dl clear launch pending: (void)c;
 static void dl_clear_launch_pending(void* c) { (void)c; }
+// dl fill launch: (void)c; (void)o; return 0;
 static int  dl_fill_launch(void* c, RecompLauncherCNetplayLaunch* o) { (void)c; (void)o; return 0; }
+// dl kick member: (void)c; (void)s; return 0;
 static int  dl_kick_member(void* c, int s) { (void)c; (void)s; return 0; }
+// dl input delay get: (void)c; return demo_lobby_delay;
 static int  dl_input_delay_get(void* c) { (void)c; return demo_lobby_delay; }
+// dl input delay set: (void)c; demo_lobby_delay = d; return 0;
 static int  dl_input_delay_set(void* c, int d) { (void)c; demo_lobby_delay = d; return 0; }
+// dl lobby max slots: (void)c; return 4;
 static int  dl_lobby_max_slots(void* c) { (void)c; return 4; }
+// dl rollback get: (void)c; return demo_lobby_rb;
 static int  dl_rollback_get(void* c) { (void)c; return demo_lobby_rb; }
+// dl rollback set: (void)c; demo_lobby_rb = e ? 1 : 0; return 0;
 static int  dl_rollback_set(void* c, int e) { (void)c; demo_lobby_rb = e ? 1 : 0; return 0; }
+// dl input prediction get: (void)c; return demo_lobby_pred;
 static int  dl_input_prediction_get(void* c) { (void)c; return demo_lobby_pred; }
+// dl input prediction set: (void)c; demo_lobby_pred = p; return 0;
 static int  dl_input_prediction_set(void* c, int p) { (void)c; demo_lobby_pred = p; return 0; }
+// dl memcard offer set: if (share >= 0) demo_lobby_share = share ? 1 : 0
 static int  dl_memcard_offer_set(void* c, int has_card, int share) {
     (void)c; (void)has_card;
     if (share >= 0) demo_lobby_share = share ? 1 : 0;
     return 0;
 }
+// dl guest memcard get: (void)c; return demo_lobby_allow;
 static int  dl_guest_memcard_get(void* c) { (void)c; return demo_lobby_allow; }
+// dl guest memcard set: (void)c; demo_lobby_allow = a ? 1 : 0; return 0;
 static int  dl_guest_memcard_set(void* c, int a) { (void)c; demo_lobby_allow = a ? 1 : 0; return 0; }
 /* A few chat lines so the panel has something to show; sends append locally
  * (a real backend appends on the server echo instead). */
 static struct { char from[64]; char text[256]; int is_local; } demo_chat[64];
 static int demo_chat_n = 0;
+// demo chat push: if (demo_chat_n >= 64) return
 static void demo_chat_push(const char* from, const char* text, int is_local) {
     if (demo_chat_n >= 64) return;
     snprintf(demo_chat[demo_chat_n].from, 64, "%s", from);
@@ -293,6 +349,7 @@ static void demo_chat_push(const char* from, const char* text, int is_local) {
     demo_chat[demo_chat_n].is_local = is_local;
     ++demo_chat_n;
 }
+// dl chat send: for (const unsigned char* q = (const unsigned char*)text; *q; ++q) fp...
 static int dl_chat_send(void* c, const char* text) {
     (void)c;
     /* What a real backend would put on the wire: must be plain UTF-8, never
@@ -303,7 +360,9 @@ static int dl_chat_send(void* c, const char* text) {
     demo_chat_push(demo_lobby_host ? "Alex" : "Marisa", text, 1);
     return 0;
 }
+// dl chat count: (void)c; return demo_chat_n;
 static int dl_chat_count(void* c) { (void)c; return demo_chat_n; }
+// dl chat get: if (i < 0 || i >= demo_chat_n || !out) return 0
 static int dl_chat_get(void* c, int i, RecompLauncherCNetplayChatMessage* out) {
     (void)c;
     if (i < 0 || i >= demo_chat_n || !out) return 0;
@@ -322,25 +381,33 @@ static int dl_chat_get(void* c, int i, RecompLauncherCNetplayChatMessage* out) {
 static int  demo_acct_state = RECOMP_LAUNCHER_ACCOUNT_GUEST;
 static int  demo_acct_avail = 1;
 static char demo_acct_handle[64] = "Reimu";
+// dl account available: (void)c; return demo_acct_avail;
 static int  dl_account_available(void* c) { (void)c; return demo_acct_avail; }
+// dl account state: (void)c; return demo_acct_state;
 static int  dl_account_state(void* c) { (void)c; return demo_acct_state; }
+// dl account handle: (void)c; return demo_acct_handle;
 static const char* dl_account_handle(void* c) { (void)c; return demo_acct_handle; }
+// dl account username: (void)c; return          ;
 static const char* dl_account_username(void* c) { (void)c; return "reimu_h"; }
+// dl account error: return "Discord did not complete the sign-in. Try again."
 static const char* dl_account_error(void* c) {
     (void)c;
     return "Discord did not complete the sign-in. Try again.";
 }
+// dl account login begin: demo_acct_state = RECOMP_LAUNCHER_ACCOUNT_WAITING
 static int dl_account_login_begin(void* c) {
     (void)c;
     demo_acct_state = RECOMP_LAUNCHER_ACCOUNT_WAITING;
     fprintf(stderr, "[demo] would open the browser at the server's authorize URL\n");
     return 0;
 }
+// dl account sign out: demo_acct_state = RECOMP_LAUNCHER_ACCOUNT_GUEST
 static int dl_account_sign_out(void* c) {
     (void)c;
     demo_acct_state = RECOMP_LAUNCHER_ACCOUNT_GUEST;
     return 0;
 }
+// dl account set handle: if (!h || !h[0]) return -1
 static int dl_account_set_handle(void* c, const char* h) {
     (void)c;
     /* The real host asks the server, which refuses a name on the word list. */
@@ -352,6 +419,7 @@ static int dl_account_set_handle(void* c, const char* h) {
 
 static RecompLauncherCNetplayCallbacks demo_lobby_cb;
 
+// demo lobby install: demo_lobby_host = !(mode && strcmp(mode, "guest") == 0)
 static void demo_lobby_install(RecompLauncherCGameInfo* gi, const char* mode) {
     demo_lobby_host = !(mode && strcmp(mode, "guest") == 0);
     /* "browse": connected, not seated -- the lobby browser with the demo row. */

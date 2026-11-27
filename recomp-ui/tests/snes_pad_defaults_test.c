@@ -27,68 +27,128 @@
  * test drives only the SNES paths, so the rest resolve to empty bodies. */
 
 SDL_Scancode recompui_keybinds_get_button(int player, int button) { (void)player; (void)button; return 0; }
+/* recompui keybinds init: (void)exe_path; */
 void recompui_keybinds_init(const char *exe_path) { (void)exe_path; }
+/* recompui keybinds reset player: (void)player; */
 void recompui_keybinds_reset_player(int player) { (void)player; }
+/* recompui keybinds save */
 void recompui_keybinds_save(void) { }
+/* recompui keybinds set button: (void)player; (void)button; (void)sc; */
 void recompui_keybinds_set_button(int player, int button, SDL_Scancode sc) { (void)player; (void)button; (void)sc; }
+/* rui gb binds get: (void)path; (void)b; return 0; */
 int rui_gb_binds_get(const char* path, int b) { (void)path; (void)b; return 0; }
+/* rui gb binds get slot: (void)path; (void)b; (void)slot; return 0; */
 int rui_gb_binds_get_slot(const char* path, int b, int slot) { (void)path; (void)b; (void)slot; return 0; }
+/* rui gb binds init: (void)path; */
 void rui_gb_binds_init(const char* path) { (void)path; }
+/* rui gb binds reset: (void)path; */
 void rui_gb_binds_reset(const char* path) { (void)path; }
+/* rui gb binds set: (void)path; (void)b; (void)scancode; */
 void rui_gb_binds_set(const char* path, int b, int scancode) { (void)path; (void)b; (void)scancode; }
+/* rui gb binds set slot: (void)path; (void)b; (void)slot; (void)scancode; */
 void rui_gb_binds_set_slot(const char* path, int b, int slot, int scancode) { (void)path; (void)b; (void)slot; (void)scancode; }
+/* rui genesis binds get key: (void)path; (void)player; (void)b; return 0; */
 int rui_genesis_binds_get_key(const char* path, int player, int b) { (void)path; (void)player; (void)b; return 0; }
+/* rui genesis binds get pad: (void)path; (void)player; (void)b; (void)kind; (void)code; (void)axis_dir; */
 void rui_genesis_binds_get_pad(const char* path, int player, int b, int* kind, int* code, int* axis_dir) { (void)path; (void)player; (void)b; (void)kind; (void)code; (void)axis_dir; }
+/* rui genesis binds init: (void)path; */
 void rui_genesis_binds_init(const char* path) { (void)path; }
+/* rui genesis binds reset: (void)path; (void)player; */
 void rui_genesis_binds_reset(const char* path, int player) { (void)path; (void)player; }
+/* rui genesis binds set key: (void)path; (void)player; (void)b; (void)scancode; */
 void rui_genesis_binds_set_key(const char* path, int player, int b, int scancode) { (void)path; (void)player; (void)b; (void)scancode; }
+/* rui genesis binds set pad: (void)path; (void)player; (void)b; (void)kind; (void)code; (void)axis_dir; */
 void rui_genesis_binds_set_pad(const char* path, int player, int b, int kind, int code, int axis_dir) { (void)path; (void)player; (void)b; (void)kind; (void)code; (void)axis_dir; }
+/* rui n64 binds get: (void)path; (void)device; (void)b; (void)slot; (void)out_type; (void)out_id; */
 void rui_n64_binds_get(const char* path, int device, int b, int slot, int* out_type, int* out_id) { (void)path; (void)device; (void)b; (void)slot; (void)out_type; (void)out_id; }
+/* rui n64 binds init: (void)path; */
 void rui_n64_binds_init(const char* path) { (void)path; }
+/* rui n64 binds label: (void)type; (void)id; (void)out; (void)cap; */
 void rui_n64_binds_label(int type, int id, char* out, size_t cap) { (void)type; (void)id; (void)out; (void)cap; }
+/* rui n64 binds reset device: (void)path; (void)device; */
 void rui_n64_binds_reset_device(const char* path, int device) { (void)path; (void)device; }
+/* rui n64 binds set: (void)path; (void)device; (void)b; (void)slot; (void)type; (void)id; */
 void rui_n64_binds_set(const char* path, int device, int b, int slot, int type, int id) { (void)path; (void)device; (void)b; (void)slot; (void)type; (void)id; }
+/* rui n64 pad binds init: (void)path; */
 void rui_n64_pad_binds_init(const char* path) { (void)path; }
+/* rui n64 pad binds path: (void)bind_cfg_path; (void)out; (void)cap; */
 void rui_n64_pad_binds_path(const char* bind_cfg_path, char* out, int cap) { (void)bind_cfg_path; (void)out; (void)cap; }
+/* rui n64 pad binds remember: (void)path; (void)guid; (void)name; (void)deadzone_pct; */
 void rui_n64_pad_binds_remember(const char* path, const char* guid, const char* name, int deadzone_pct) { (void)path; (void)guid; (void)name; (void)deadzone_pct; }
+/* rui n64 pad binds save profile: (void)path; (void)guid; (void)name; (void)name_custom; (void)deadzone_pct; */
 void rui_n64_pad_binds_save_profile(const char* path, const char* guid, const char* name, int name_custom, int deadzone_pct) { (void)path; (void)guid; (void)name; (void)name_custom; (void)deadzone_pct; }
+/* rui n64 pad binds rename: (void)path; (void)guid; (void)name; */
 void rui_n64_pad_binds_rename(const char* path, const char* guid, const char* name) { (void)path; (void)guid; (void)name; }
+/* rui n64 pad binds delete: (void)path; (void)guid; */
 void rui_n64_pad_binds_delete(const char* path, const char* guid) { (void)path; (void)guid; }
+/* rui n64 pad binds name is custom: (void)path; (void)guid; return 0; */
 int rui_n64_pad_binds_name_is_custom(const char* path, const char* guid) { (void)path; (void)guid; return 0; }
+/* rui n64 pad binds reset: (void)path; (void)guid; */
 void rui_n64_pad_binds_reset(const char* path, const char* guid) { (void)path; (void)guid; }
+/* rui n64 pad binds set: (void)path; (void)guid; (void)b; (void)kind; (void)code; (void)axis_dir; */
 void rui_n64_pad_binds_set(const char* path, const char* guid, int b, int kind, int code, int axis_dir) { (void)path; (void)guid; (void)b; (void)kind; (void)code; (void)axis_dir; }
+/* rui n64 pad binds source: (void)path; (void)guid; (void)b; (void)out; (void)cap; */
 void rui_n64_pad_binds_source(const char* path, const char* guid, int b, char* out, int cap) { (void)path; (void)guid; (void)b; (void)out; (void)cap; }
+/* rui nes binds get: (void)path; (void)player; (void)b; return 0; */
 int rui_nes_binds_get(const char* path, int player, int b) { (void)path; (void)player; (void)b; return 0; }
+/* rui nes binds init: (void)path; */
 void rui_nes_binds_init(const char* path) { (void)path; }
+/* rui nes binds reset: (void)path; (void)player; */
 void rui_nes_binds_reset(const char* path, int player) { (void)path; (void)player; }
+/* rui nes binds set: (void)path; (void)player; (void)b; (void)scancode; */
 void rui_nes_binds_set(const char* path, int player, int b, int scancode) { (void)path; (void)player; (void)b; (void)scancode; }
+/* rui nes camera bind get: (void)path; (void)action; return 0; */
 int rui_nes_camera_bind_get(const char* path, int action) { (void)path; (void)action; return 0; }
+/* rui nes camera bind reset: (void)path; */
 void rui_nes_camera_bind_reset(const char* path) { (void)path; }
+/* rui nes camera bind set: (void)path; (void)action; (void)scancode; */
 void rui_nes_camera_bind_set(const char* path, int action, int scancode) { (void)path; (void)action; (void)scancode; }
+/* rui nes zapper get: (void)path; (void)mouse_enabled; (void)crosshair; */
 void rui_nes_zapper_get(const char* path, int* mouse_enabled, int* crosshair) { (void)path; (void)mouse_enabled; (void)crosshair; }
+/* rui nes zapper set: (void)path; (void)mouse_enabled; (void)crosshair; */
 void rui_nes_zapper_set(const char* path, int mouse_enabled, int crosshair) { (void)path; (void)mouse_enabled; (void)crosshair; }
+/* rui pad binds sibling path: (void)ref; (void)file; (void)out; (void)cap; */
 void rui_pad_binds_sibling_path(const char* ref, const char* file, char* out, int cap) { (void)ref; (void)file; (void)out; (void)cap; }
+/* rui psx binds get slot: (void)path; (void)player; (void)b; (void)slot; return 0; */
 int rui_psx_binds_get_slot(const char* path, int player, int b, int slot) { (void)path; (void)player; (void)b; (void)slot; return 0; }
+/* rui psx binds init: (void)path; */
 void rui_psx_binds_init(const char* path) { (void)path; }
+/* rui psx binds reset: (void)path; (void)player; */
 void rui_psx_binds_reset(const char* path, int player) { (void)path; (void)player; }
+/* rui psx binds save: (void)path; */
 void rui_psx_binds_save(const char* path) { (void)path; }
+/* rui psx binds set slot: (void)path; (void)player; (void)b; (void)slot; (void)scancode; */
 void rui_psx_binds_set_slot(const char* path, int player, int b, int slot, int scancode) { (void)path; (void)player; (void)b; (void)slot; (void)scancode; }
+/* rui psx pad binds deadzone: (void)path; (void)guid; return 0; */
 int rui_psx_pad_binds_deadzone(const char* path, const char* guid) { (void)path; (void)guid; return 0; }
+/* rui psx pad binds delete: (void)path; (void)guid; */
 void rui_psx_pad_binds_delete(const char* path, const char* guid) { (void)path; (void)guid; }
+/* rui psx pad binds init: (void)path; */
 void rui_psx_pad_binds_init(const char* path) { (void)path; }
+/* rui psx pad binds known at: (void)path; (void)index; (void)guid; (void)guid_cap; (void)name; (void)name_cap; return 0; */
 int rui_psx_pad_binds_known_at(const char* path, int index, char* guid, int guid_cap, char* name, int name_cap) { (void)path; (void)index; (void)guid; (void)guid_cap; (void)name; (void)name_cap; return 0; }
+/* rui psx pad binds known count: (void)path; return 0; */
 int rui_psx_pad_binds_known_count(const char* path) { (void)path; return 0; }
+/* rui psx pad binds label: (void)path; (void)guid; (void)b; (void)out; (void)cap; */
 void rui_psx_pad_binds_label(const char* path, const char* guid, int b, char* out, int cap) { (void)path; (void)guid; (void)b; (void)out; (void)cap; }
+/* rui psx pad binds name: (void)path; (void)guid; (void)out; (void)cap; */
 void rui_psx_pad_binds_name(const char* path, const char* guid, char* out, int cap) { (void)path; (void)guid; (void)out; (void)cap; }
+/* rui psx pad binds name is custom: (void)path; (void)guid; return 0; */
 int rui_psx_pad_binds_name_is_custom(const char* path, const char* guid) { (void)path; (void)guid; return 0; }
+/* rui psx pad binds remember: (void)path; (void)guid; (void)name; (void)deadzone_pct; */
 void rui_psx_pad_binds_remember(const char* path, const char* guid, const char* name, int deadzone_pct) { (void)path; (void)guid; (void)name; (void)deadzone_pct; }
+/* rui psx pad binds rename: (void)path; (void)guid; (void)name; */
 void rui_psx_pad_binds_rename(const char* path, const char* guid, const char* name) { (void)path; (void)guid; (void)name; }
+/* rui psx pad binds reset: (void)path; (void)guid; */
 void rui_psx_pad_binds_reset(const char* path, const char* guid) { (void)path; (void)guid; }
+/* rui psx pad binds save profile: (void)path; (void)guid; (void)name; (void)name_custom; (void)deadzone_pct; */
 void rui_psx_pad_binds_save_profile(const char* path, const char* guid, const char* name, int name_custom, int deadzone_pct) { (void)path; (void)guid; (void)name; (void)name_custom; (void)deadzone_pct; }
+/* rui psx pad binds set: (void)path; (void)guid; (void)b; (void)kind; (void)code; (void)axis_dir; */
 void rui_psx_pad_binds_set(const char* path, const char* guid, int b, int kind, int code, int axis_dir) { (void)path; (void)guid; (void)b; (void)kind; (void)code; (void)axis_dir; }
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
@@ -97,6 +157,7 @@ static void expect(int cond, const char* what) {
 
 static SystemProfile g_snes_prof;
 
+/* make model: g_snes_prof = kSystemProfileSnes */
 static void make_model(LauncherModel* m) {
     memset(m, 0, sizeof(*m));
     g_snes_prof = kSystemProfileSnes;

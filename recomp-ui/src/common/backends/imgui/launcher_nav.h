@@ -19,6 +19,7 @@
 
 #include "imgui.h"
 
+/* rui nav rehome to play: if (ImGui::GetIO().WantTextInput || ImGui::IsAnyItemActive()) return ... */
 static inline bool rui_nav_rehome_to_play(void) {
     /* WantTextInput is computed at EndFrame, so mid-frame it is the PREVIOUS
      * frame's answer: on the frame an InputText first becomes active it still

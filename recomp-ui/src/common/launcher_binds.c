@@ -85,6 +85,7 @@ static int is_nes_profile(const LauncherModel* m) {
     return prof && prof->id && !strcmp(prof->id, "nes");
 }
 
+// keybinds file path: return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
 static const char* keybinds_file_path(void) {
     return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
              ? g_launcher_keybinds_path : "keybinds.ini";
@@ -100,6 +101,7 @@ static const char* psx_input_ini_path(void) {
     return buf;
 }
 
+// psx player guid: if (!m || player < 1 || player > LNG_MAX_PLAYERS) return ""
 static const char* psx_player_guid(const LauncherModel* m, int player /*1-based*/) {
     if (!m || player < 1 || player > LNG_MAX_PLAYERS) return "";
     return m->s.player_gamepad_guid[player - 1];
@@ -120,6 +122,7 @@ static int is_n64_profile(const LauncherModel* m) {
     return prof && prof->id && !strcmp(prof->id, "n64");
 }
 
+// n64 binds file path: return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
 static const char* n64_binds_file_path(void) {
     return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
              ? g_launcher_keybinds_path : "input.cfg";
@@ -156,6 +159,7 @@ static void n64_mirror_pad_bind_to_cfg(int b, int kind, int code, int axis_dir) 
                       type == RUI_N64_FIELD_NONE ? -1 : code);
 }
 
+// n64 player guid: if (!m || player < 1 || player > LNG_MAX_PLAYERS) return ""
 static const char* n64_player_guid(const LauncherModel* m, int player /*1-based*/) {
     if (!m || player < 1 || player > LNG_MAX_PLAYERS) return "";
     return m->s.player_gamepad_guid[player - 1];
@@ -184,6 +188,7 @@ static int is_gb_profile(const LauncherModel* m) {
     return prof && prof->id && (!strcmp(prof->id, "gb") || !strcmp(prof->id, "gbc"));
 }
 
+// gb binds file path: return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
 static const char* gb_binds_file_path(void) {
     // gb-recompiled drives input from runtime_prefs.ini keyboard.<btn>.0 lines
     // (keybinds.ini [controls] is vestigial). The seam points keybinds_path at
@@ -192,6 +197,7 @@ static const char* gb_binds_file_path(void) {
              ? g_launcher_keybinds_path : "runtime_prefs.ini";
 }
 
+// genesis binds file path: return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
 static const char* genesis_binds_file_path(void) {
     return (g_launcher_keybinds_path && g_launcher_keybinds_path[0])
              ? g_launcher_keybinds_path : "settings.ini";
@@ -221,6 +227,7 @@ typedef char kHotkeyKey_covers_every_hotkey[
 typedef char kHotkeyDef_covers_every_hotkey[
     (sizeof(kHotkeyDef) / sizeof(kHotkeyDef[0]) == LNG_HK_COUNT) ? 1 : -1];
 
+// copy str: if (!d || !cap) return
 static void copy_str(char* d, size_t cap, const char* s) {
     if (!d || !cap) return;
     if (!s) { d[0] = 0; return; }
@@ -228,6 +235,7 @@ static void copy_str(char* d, size_t cap, const char* s) {
     memcpy(d, s, n); d[n] = 0;
 }
 
+// scancode label: if (sc == SDL_SCANCODE_UNKNOWN) return "(unbound)"
 static const char* scancode_label(SDL_Scancode sc) {
     if (sc == SDL_SCANCODE_UNKNOWN) return "(unbound)";
     /* Mouse buttons are bound as pseudo-scancodes ABOVE SDL keyboard space
@@ -243,6 +251,7 @@ static const char* scancode_label(SDL_Scancode sc) {
     return (n && n[0]) ? n : "(unbound)";
 }
 
+// is snes profile: return prof && prof->id && !strcmp(prof->id, "snes")
 static int is_snes_profile(const LauncherModel* m) {
     const SystemProfile* prof = m ? (const SystemProfile*)m->profile : NULL;
     return prof && prof->id && !strcmp(prof->id, "snes");
@@ -271,6 +280,7 @@ static void genesis_pad_label(int kind, int code, int axis_dir, char* out, size_
     }
 }
 
+// reload player display: if (is_psx_profile(m)) 
 static void reload_player_display(LauncherModel* m, int player) {
     if (is_psx_profile(m)) {
         if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -354,6 +364,7 @@ static void reload_player_display(LauncherModel* m, int player) {
     }
 }
 
+// launcher binds refresh camera: if (!m || !is_nes_profile(m)) return
 void launcher_binds_refresh_camera(LauncherModel* m) {
     if (!m || !is_nes_profile(m)) return;
     for (int action = 0; action < LNG_CAMERA_BIND_COUNT; ++action) {
@@ -374,6 +385,7 @@ static int ieq(const char* a, size_t alen, const char* b) {
     return 1;
 }
 
+// read whole: FILE* f = fopen(path, "rb")
 static char* read_whole(const char* path, long* out_len) {
     FILE* f = fopen(path, "rb");
     if (!f) { *out_len = 0; return NULL; }
@@ -384,6 +396,7 @@ static char* read_whole(const char* path, long* out_len) {
     return buf;
 }
 
+// config path: return (g_launcher_config_path && g_launcher_config_path[0])
 static const char* config_path(void) {
     return (g_launcher_config_path && g_launcher_config_path[0])
              ? g_launcher_config_path : "config.ini";
@@ -445,10 +458,12 @@ static const char* const kSnesGamepadDefaultControls[LNG_SNES_PAD_BUTTON_COUNT] 
     "B", "A", "Y", "X", "Lb", "Rb",
 };
 
+// snes gamepad config key: return player == 1 ? "ControlsP2" : "Controls"
 static const char* snes_gamepad_config_key(int player) {
     return player == 1 ? "ControlsP2" : "Controls";
 }
 
+// trim token: while (*s == ' ' || *s == '\t') ++s
 static char* trim_token(char* s) {
     while (*s == ' ' || *s == '\t') ++s;
     char* end = s + strlen(s);
@@ -457,10 +472,12 @@ static char* trim_token(char* s) {
     return s;
 }
 
+// token eq: return ieq(a, strlen(a), b)
 static int token_eq(const char* a, const char* b) {
     return ieq(a, strlen(a), b);
 }
 
+// snes gamepad read config order: for (int i = 0; i < LNG_SNES_PAD_BUTTON_COUNT; ++i)
 static void snes_gamepad_read_config_order(int player,
                                            char out[LNG_SNES_PAD_BUTTON_COUNT][48]) {
     for (int i = 0; i < LNG_SNES_PAD_BUTTON_COUNT; ++i)
@@ -511,6 +528,7 @@ static void snes_gamepad_read_config_order(int player,
     free(text);
 }
 
+// snes gamepad read controls: char config_order[LNG_SNES_PAD_BUTTON_COUNT][48]
 static void snes_gamepad_read_controls(int player,
                                        char out[LNG_SNES_PAD_BUTTON_COUNT][48]) {
     char config_order[LNG_SNES_PAD_BUTTON_COUNT][48];
@@ -519,6 +537,7 @@ static void snes_gamepad_read_controls(int player,
         copy_str(out[b], sizeof(out[b]), config_order[kSnesUiToGamepadConfig[b]]);
 }
 
+// snes gamepad write config order: char value[768] = 
 static void snes_gamepad_write_config_order(int player,
                                             char controls[LNG_SNES_PAD_BUTTON_COUNT][48]) {
     char value[768] = {};
@@ -530,6 +549,7 @@ static void snes_gamepad_write_config_order(int player,
                           snes_gamepad_config_key(player), value);
 }
 
+// snes gamepad label: if (!token || !token[0]) { copy_str(out, cap, "(unbound)"); return; 
 static void snes_gamepad_label(const char* token, char* out, size_t cap) {
     if (!token || !token[0]) { copy_str(out, cap, "(unbound)"); return; }
     if (token_eq(token, "DpadUp"))    { copy_str(out, cap, "D-Pad Up"); return; }
@@ -548,6 +568,7 @@ static void snes_gamepad_label(const char* token, char* out, size_t cap) {
     copy_str(out, cap, token);
 }
 
+// snes gamepad token for capture: if (kind == LNG_PADBIND_BUTTON) 
 static const char* snes_gamepad_token_for_capture(int kind, int code, int axis_dir) {
     if (kind == LNG_PADBIND_BUTTON) {
 #if defined(LNG_SDL3)
@@ -602,6 +623,7 @@ static const char* snes_gamepad_token_for_capture(int kind, int code, int axis_d
     return NULL;
 }
 
+// snes gamepad set button: if (!m || player < 0 || player > 1 || b < 0 || b >= LNG_SNES_PAD_BUTT...
 static int snes_gamepad_set_button(LauncherModel* m, int player, int b,
                                    int kind, int code, int axis_dir) {
     if (!m || player < 0 || player > 1 || b < 0 || b >= LNG_SNES_PAD_BUTTON_COUNT)
@@ -686,6 +708,7 @@ static int snes_profile_get(const char* guid, const char* key,
     return found;
 }
 
+// launcher binds snes profile exists: char v[64]
 int launcher_binds_snes_profile_exists(LauncherModel* m, int player) {
     char v[64];
     if (!m || !is_snes_profile(m) || player < 1 || player > 2) return 0;
@@ -752,6 +775,7 @@ void launcher_binds_hydrate_snes_pad_names(LauncherModel* m,
     }
 }
 
+// launcher binds save snes gamepad: char sect[96]
 void launcher_binds_save_snes_gamepad(LauncherModel* m, int player) {
     char sect[96];
     char value[768] = {0};
@@ -785,6 +809,7 @@ void launcher_binds_save_snes_gamepad(LauncherModel* m, int player) {
                               m->player_pad_name[player - 1]);
 }
 
+// launcher binds rename snes gamepad: char sect[96]
 void launcher_binds_rename_snes_gamepad(LauncherModel* m, int player,
                                         const char* name) {
     char sect[96];
@@ -801,6 +826,7 @@ void launcher_binds_rename_snes_gamepad(LauncherModel* m, int player,
              sizeof(m->player_pad_name[player - 1]), name);
 }
 
+// launcher binds delete snes gamepad: char sect[96]
 void launcher_binds_delete_snes_gamepad(LauncherModel* m, int player) {
     char sect[96];
     const char* guid;
@@ -854,6 +880,7 @@ void launcher_binds_apply_snes_pad_profile(LauncherModel* m, int player) {
     reload_player_display(m, player);
 }
 
+// snes gamepad reset player: char controls[LNG_SNES_PAD_BUTTON_COUNT][48]
 static void snes_gamepad_reset_player(int player) {
     char controls[LNG_SNES_PAD_BUTTON_COUNT][48];
     for (int i = 0; i < LNG_SNES_PAD_BUTTON_COUNT; ++i)
@@ -907,6 +934,7 @@ void launcher_binds_load(LauncherModel* m, const char* config_path_in, const cha
     reload_hotkey_display(m);
 }
 
+// launcher binds refresh: for (int p = 1; p <= LNG_MAX_PLAYERS; ++p)
 void launcher_binds_refresh(LauncherModel* m) {
     for (int p = 1; p <= LNG_MAX_PLAYERS; ++p)
         reload_player_display(m, p);
@@ -919,6 +947,7 @@ void launcher_binds_set_zapper(int mouse_enabled, int crosshair) {
     rui_nes_zapper_set(keybinds_file_path(), mouse_enabled, crosshair);
 }
 
+// launcher binds set camera: if (!m || !is_nes_profile(m) ||
 void launcher_binds_set_camera(LauncherModel* m, int action, int scancode) {
     if (!m || !is_nes_profile(m) ||
         action < 0 || action >= LNG_CAMERA_BIND_COUNT)
@@ -928,6 +957,7 @@ void launcher_binds_set_camera(LauncherModel* m, int action, int scancode) {
              scancode_label((SDL_Scancode)scancode));
 }
 
+// launcher binds reset camera: if (!m || !is_nes_profile(m)) return
 void launcher_binds_reset_camera(LauncherModel* m) {
     if (!m || !is_nes_profile(m)) return;
     rui_nes_camera_bind_reset(keybinds_file_path());
@@ -964,6 +994,7 @@ void launcher_binds_set_button_slot(LauncherModel* m, int player, int b,
     }
 }
 
+// launcher binds set button: if (is_n64_profile(m)) 
 void launcher_binds_set_button(LauncherModel* m, int player, int b, int scancode) {
     if (is_n64_profile(m)) {
         // Keyboard capture into the N64 store routes through the field API
@@ -1004,6 +1035,7 @@ void launcher_binds_set_button(LauncherModel* m, int player, int b, int scancode
              scancode_label((SDL_Scancode)scancode));
 }
 
+// launcher binds set field: if (!is_n64_profile(m)) return; // field binds exist only in the N64 ...
 void launcher_binds_set_field(LauncherModel* m, int player, int b, int slot,
                               int type, int id) {
     if (!is_n64_profile(m)) return;   // field binds exist only in the N64 store
@@ -1020,6 +1052,7 @@ void launcher_binds_set_field(LauncherModel* m, int player, int b, int slot,
     launcher_binds_refresh(m);
 }
 
+// launcher binds set pad button: if (player < 1 || player > LNG_MAX_PLAYERS) return
 void launcher_binds_set_pad_button(LauncherModel* m, int player, int b,
                                    int kind, int code, int axis_dir) {
     if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1091,6 +1124,7 @@ static void n64_fallback_pad_label(const char* guid, char* out, size_t cap) {
     copy_str(out, cap, "Controller");
 }
 
+// launcher binds save n64 gamepad: if (!m || !is_n64_profile(m)) return
 void launcher_binds_save_n64_gamepad(LauncherModel* m, int player) {
     if (!m || !is_n64_profile(m)) return;
     if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1113,6 +1147,7 @@ void launcher_binds_save_n64_gamepad(LauncherModel* m, int player) {
     launcher_binds_refresh(m);
 }
 
+// launcher binds rename n64 gamepad: if (!m || !is_n64_profile(m) || !name || !name[0]) return
 void launcher_binds_rename_n64_gamepad(LauncherModel* m, int player,
                                        const char* name) {
     if (!m || !is_n64_profile(m) || !name || !name[0]) return;
@@ -1124,6 +1159,7 @@ void launcher_binds_rename_n64_gamepad(LauncherModel* m, int player,
     copy_str(m->player_pad_name[p], sizeof(m->player_pad_name[p]), name);
 }
 
+// launcher binds delete n64 gamepad: if (!m || !is_n64_profile(m)) return
 void launcher_binds_delete_n64_gamepad(LauncherModel* m, int player) {
     if (!m || !is_n64_profile(m)) return;
     if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1143,6 +1179,7 @@ void launcher_binds_delete_n64_gamepad(LauncherModel* m, int player) {
     launcher_binds_refresh(m);
 }
 
+// psx guid claimed by other: if (!m || !guid || !guid[0]) return 0
 static int psx_guid_claimed_by_other(const LauncherModel* m, int self,
                                      const char* guid) {
     if (!m || !guid || !guid[0]) return 0;
@@ -1155,6 +1192,7 @@ static int psx_guid_claimed_by_other(const LauncherModel* m, int self,
     return 0;
 }
 
+// psx fallback pad label: if (!out || !cap) return
 static void psx_fallback_pad_label(const char* guid, char* out, size_t cap) {
     if (!out || !cap) return;
     if (guid && guid[0]) {
@@ -1168,6 +1206,7 @@ static void psx_fallback_pad_label(const char* guid, char* out, size_t cap) {
     copy_str(out, cap, "Controller");
 }
 
+// launcher binds hydrate psx pad names: if (!m || !is_psx_profile(m)) return
 void launcher_binds_hydrate_psx_pad_names(LauncherModel* m) {
     if (!m || !is_psx_profile(m)) return;
     const char* path = psx_input_ini_path();
@@ -1187,6 +1226,7 @@ void launcher_binds_hydrate_psx_pad_names(LauncherModel* m) {
     }
 }
 
+// launcher binds sync psx pad sources: if (!m || !is_psx_profile(m)) return
 void launcher_binds_sync_psx_pad_sources(LauncherModel* m,
                                          const LauncherPad* pads, int pad_count) {
     if (!m || !is_psx_profile(m)) return;
@@ -1273,6 +1313,7 @@ void launcher_binds_sync_psx_pad_sources(LauncherModel* m,
     }
 }
 
+// launcher binds apply psx pad profile: if (!m || !is_psx_profile(m)) return
 void launcher_binds_apply_psx_pad_profile(LauncherModel* m, int player) {
     if (!m || !is_psx_profile(m)) return;
     player = (player < 0) ? 0 : (player >= LNG_MAX_PLAYERS ? LNG_MAX_PLAYERS - 1
@@ -1290,6 +1331,7 @@ void launcher_binds_apply_psx_pad_profile(LauncherModel* m, int player) {
     reload_player_display(m, player + 1);
 }
 
+// launcher binds rename psx gamepad: if (!m || !is_psx_profile(m) || !name || !name[0]) return
 void launcher_binds_rename_psx_gamepad(LauncherModel* m, int player,
                                        const char* name) {
     if (!m || !is_psx_profile(m) || !name || !name[0]) return;
@@ -1301,6 +1343,7 @@ void launcher_binds_rename_psx_gamepad(LauncherModel* m, int player,
     copy_str(m->player_pad_name[p], sizeof(m->player_pad_name[p]), name);
 }
 
+// launcher binds save psx gamepad: if (!m || !is_psx_profile(m)) return
 void launcher_binds_save_psx_gamepad(LauncherModel* m, int player) {
     if (!m || !is_psx_profile(m)) return;
     if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1335,6 +1378,7 @@ void launcher_binds_save_psx_keyboard(LauncherModel* m, int player) {
     reload_player_display(m, player);
 }
 
+// launcher binds delete psx gamepad: if (!m || !is_psx_profile(m)) return
 void launcher_binds_delete_psx_gamepad(LauncherModel* m, int player) {
     if (!m || !is_psx_profile(m)) return;
     if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1352,6 +1396,7 @@ void launcher_binds_delete_psx_gamepad(LauncherModel* m, int player) {
     launcher_binds_refresh(m);
 }
 
+// launcher binds prepare psx launch: if (!m || !is_psx_profile(m)) return
 void launcher_binds_prepare_psx_launch(LauncherModel* m,
                                        const LauncherPad* pads, int pad_count) {
     if (!m || !is_psx_profile(m)) return;
@@ -1412,21 +1457,25 @@ void launcher_binds_prepare_psx_launch(LauncherModel* m,
     }
 }
 
+// launcher binds psx known count: return rui_psx_pad_binds_known_count(psx_input_ini_path())
 int launcher_binds_psx_known_count(void) {
     return rui_psx_pad_binds_known_count(psx_input_ini_path());
 }
 
+// launcher binds psx known at: return rui_psx_pad_binds_known_at(psx_input_ini_path(), index,
 int launcher_binds_psx_known_at(int index, char* guid, int guid_cap,
                                 char* name, int name_cap) {
     return rui_psx_pad_binds_known_at(psx_input_ini_path(), index,
                                       guid, guid_cap, name, name_cap);
 }
 
+// launcher binds psx name is custom: if (!guid || !guid[0]) return 0
 int launcher_binds_psx_name_is_custom(const char* guid) {
     if (!guid || !guid[0]) return 0;
     return rui_psx_pad_binds_name_is_custom(psx_input_ini_path(), guid);
 }
 
+// launcher binds reset player: if (is_n64_profile(m)) 
 void launcher_binds_reset_player(LauncherModel* m, int player) {
     if (is_n64_profile(m)) {
         if (player < 1 || player > LNG_MAX_PLAYERS) return;
@@ -1485,6 +1534,7 @@ void launcher_binds_reset_player(LauncherModel* m, int player) {
     reload_player_display(m, player);
 }
 
+// launcher binds set hotkey: if (h < 0 || h >= LNG_HK_COUNT) return
 void launcher_binds_set_hotkey(LauncherModel* m, LngHotkey h, int keycode, int kmod) {
     if (h < 0 || h >= LNG_HK_COUNT) return;
     char val[64];

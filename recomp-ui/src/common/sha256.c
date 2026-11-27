@@ -26,10 +26,12 @@ static const uint32_t K[64] = {
     0x90befffau, 0xa4506cebu, 0xbef9a3f7u, 0xc67178f2u,
 };
 
+/* rotr32: return (x >> n) | (x << (32 - n)) */
 static inline uint32_t rotr32(uint32_t x, int n) {
     return (x >> n) | (x << (32 - n));
 }
 
+/* sha256 block: uint32_t W[64] */
 static void sha256_block(uint32_t H[8], const uint8_t blk[64]) {
     uint32_t W[64];
     for (int i = 0; i < 16; i++) {
@@ -58,6 +60,7 @@ static void sha256_block(uint32_t H[8], const uint8_t blk[64]) {
     H[4]+=e; H[5]+=f; H[6]+=g; H[7]+=h;
 }
 
+/* recompui sha256 compute: uint32_t H[8] =  */
 void recompui_sha256_compute(const uint8_t *data, size_t len, uint8_t out[32]) {
     uint32_t H[8] = {
         0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,

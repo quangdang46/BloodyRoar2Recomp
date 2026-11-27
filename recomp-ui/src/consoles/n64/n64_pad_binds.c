@@ -58,33 +58,40 @@ static const RuiPadSpec kN64PadSpec = {
     4,                                   /* ... starting at dpad_up, index 4  */
 };
 
+// rui n64 pad binds path
 void rui_n64_pad_binds_path(const char* bind_cfg_path, char* out, int cap) {
     rui_pad_binds_sibling_path(bind_cfg_path, "input.ini", out, cap);
 }
 
+// rui n64 pad binds init
 void rui_n64_pad_binds_init(const char* path) {
     rui_pad_binds_init(&kN64PadSpec, path);
 }
 
+// rui n64 pad binds source
 void rui_n64_pad_binds_source(const char* path, const char* guid, int b,
                               char* out, int cap) {
     rui_pad_binds_label(&kN64PadSpec, path, guid, b, out, cap);
 }
 
+// rui n64 pad binds set
 void rui_n64_pad_binds_set(const char* path, const char* guid, int b,
                            int kind, int code, int axis_dir) {
     rui_pad_binds_set(&kN64PadSpec, path, guid, b, kind, code, axis_dir);
 }
 
+// rui n64 pad binds reset
 void rui_n64_pad_binds_reset(const char* path, const char* guid) {
     rui_pad_binds_reset(&kN64PadSpec, path, guid);
 }
 
+// rui n64 pad binds remember
 void rui_n64_pad_binds_remember(const char* path, const char* guid,
                                 const char* name, int deadzone_pct) {
     rui_pad_binds_remember(&kN64PadSpec, path, guid, name, deadzone_pct);
 }
 
+// rui n64 pad binds save profile: deadzone_pct)
 void rui_n64_pad_binds_save_profile(const char* path, const char* guid,
                                     const char* name, int name_custom,
                                     int deadzone_pct) {
@@ -92,19 +99,23 @@ void rui_n64_pad_binds_save_profile(const char* path, const char* guid,
                                deadzone_pct);
 }
 
+// rui n64 pad binds rename
 void rui_n64_pad_binds_rename(const char* path, const char* guid,
                               const char* name) {
     rui_pad_binds_rename(&kN64PadSpec, path, guid, name);
 }
 
+// rui n64 pad binds delete
 void rui_n64_pad_binds_delete(const char* path, const char* guid) {
     rui_pad_binds_delete(&kN64PadSpec, path, guid);
 }
 
+// rui n64 pad binds known count: return rui_pad_binds_known_count(&kN64PadSpec, path)
 int rui_n64_pad_binds_known_count(const char* path) {
     return rui_pad_binds_known_count(&kN64PadSpec, path);
 }
 
+// rui n64 pad binds known at: return rui_pad_binds_known_at(&kN64PadSpec, path, index, guid, guid_cap,
 int rui_n64_pad_binds_known_at(const char* path, int index,
                                char* guid, int guid_cap,
                                char* name, int name_cap) {
@@ -112,15 +123,18 @@ int rui_n64_pad_binds_known_at(const char* path, int index,
                                   name, name_cap);
 }
 
+// rui n64 pad binds name
 void rui_n64_pad_binds_name(const char* path, const char* guid,
                             char* out, int cap) {
     rui_pad_binds_name(&kN64PadSpec, path, guid, out, cap);
 }
 
+// rui n64 pad binds name is custom: return rui_pad_binds_name_is_custom(&kN64PadSpec, path, guid)
 int rui_n64_pad_binds_name_is_custom(const char* path, const char* guid) {
     return rui_pad_binds_name_is_custom(&kN64PadSpec, path, guid);
 }
 
+// rui n64 pad binds deadzone: return rui_pad_binds_deadzone(&kN64PadSpec, path, guid)
 int rui_n64_pad_binds_deadzone(const char* path, const char* guid) {
     return rui_pad_binds_deadzone(&kN64PadSpec, path, guid);
 }

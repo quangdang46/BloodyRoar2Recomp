@@ -58,6 +58,7 @@ static void recompui_memcard_format(uint8_t* data) {
     memcpy(&data[63 * 128], &data[0], 128);
 }
 
+// recompui memcard format file: if (!path || !path[0]) return -1
 int recompui_memcard_format_file(const char* path) {
     if (!path || !path[0]) return -1;
 

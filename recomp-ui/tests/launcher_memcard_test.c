@@ -19,10 +19,12 @@
 
 /* Pulled in by the model TU; unrelated to memory cards. */
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
@@ -35,6 +37,7 @@ static int  inspect_result;      /* what the fake host returns */
 static int  inspect_used_blocks; /* blocks 0..n-1 reported occupied */
 static int  inspect_valid;
 
+/* fake inspect: ++inspect_calls */
 static int fake_inspect(const char* card_path, RecompLauncherCMemcard* out) {
     ++inspect_calls;
     snprintf(inspect_last_path, sizeof(inspect_last_path), "%s", card_path);
@@ -48,6 +51,7 @@ static int fake_inspect(const char* card_path, RecompLauncherCMemcard* out) {
 
 static LauncherModel g_m;
 
+/* reset model: inspect_calls = 0 */
 static void reset_model(void) {
     memset(&g_m, 0, sizeof(g_m));
     inspect_calls = 0;
@@ -57,6 +61,7 @@ static void reset_model(void) {
     inspect_valid = 1;
 }
 
+/* test blocks used inspected wins: g_m.memcard_inspect_cb = fake_inspect */
 static void test_blocks_used_inspected_wins(void) {
     reset_model();
     g_m.memcard_inspect_cb = fake_inspect;
@@ -71,6 +76,7 @@ static void test_blocks_used_inspected_wins(void) {
            "blocks_used: inspected slot paints exactly the reported blocks");
 }
 
+/* test blocks used empty path with inspector is blank: g_m.memcard_inspect_cb = fake_inspect */
 static void test_blocks_used_empty_path_with_inspector_is_blank(void) {
     reset_model();
     g_m.memcard_inspect_cb = fake_inspect;
@@ -87,6 +93,7 @@ static void test_blocks_used_empty_path_with_inspector_is_blank(void) {
            "never the placeholder pattern");
 }
 
+/* test blocks used declined inspect is blank: g_m.memcard_inspect_cb = fake_inspect */
 static void test_blocks_used_declined_inspect_is_blank(void) {
     reset_model();
     g_m.memcard_inspect_cb = fake_inspect;
@@ -99,6 +106,7 @@ static void test_blocks_used_declined_inspect_is_blank(void) {
            "blocks_used: a declined inspect paints blank on an inspecting host");
 }
 
+/* test blocks used freshly formatted is blank: g_m.memcard_freshly_formatted[0] = true */
 static void test_blocks_used_freshly_formatted_is_blank(void) {
     reset_model();
     /* No inspector at all (proto launcher), but the card was just formatted. */
@@ -108,6 +116,7 @@ static void test_blocks_used_freshly_formatted_is_blank(void) {
            "blocks_used: a freshly formatted card paints blank");
 }
 
+/* test blocks used placeholder only without inspector: expect(launcher_model_memcard_blocks_used(&g_m, 0) == 0x0025u && */
 static void test_blocks_used_placeholder_only_without_inspector(void) {
     reset_model();
     /* Proto launcher: no inspector, no profile probe -> representative pattern. */
@@ -119,6 +128,7 @@ static void test_blocks_used_placeholder_only_without_inspector(void) {
            "blocks_used: out-of-range slot / NULL model paint nothing");
 }
 
+/* test enabled tristate: expect(lm_memcard_enabled_from_host(0) == 1, */
 static void test_enabled_tristate(void) {
     expect(lm_memcard_enabled_from_host(0) == 1,
            "enabled: 0 (host predates the field) defaults to on");

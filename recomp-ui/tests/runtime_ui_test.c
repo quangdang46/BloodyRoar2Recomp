@@ -13,6 +13,7 @@ typedef struct TestState {
     int visible;
 } TestState;
 
+/* get value: TestState *state = (TestState *)context */
 static int get_value(void *context, const RecompRuntimeUiItem *item, int *out) {
     TestState *state = (TestState *)context;
     if (!strcmp(item->key, "enabled")) *out = state->enabled;
@@ -22,6 +23,7 @@ static int get_value(void *context, const RecompRuntimeUiItem *item, int *out) {
     return 1;
 }
 
+/* set value: TestState *state = (TestState *)context */
 static int set_value(void *context, const RecompRuntimeUiItem *item, int value) {
     TestState *state = (TestState *)context;
     if (!strcmp(item->key, "enabled")) state->enabled = value;
@@ -31,6 +33,7 @@ static int set_value(void *context, const RecompRuntimeUiItem *item, int value) 
     return 1;
 }
 
+/* run action: TestState *state = (TestState *)context */
 static int run_action(void *context, const RecompRuntimeUiItem *item) {
     TestState *state = (TestState *)context;
     if (strcmp(item->key, "reset")) return 0;
@@ -38,7 +41,9 @@ static int run_action(void *context, const RecompRuntimeUiItem *item) {
     return 1;
 }
 
+/* save: ++((TestState *)context)->save_count; */
 static void save(void *context) { ++((TestState *)context)->save_count; }
+/* visible: ((TestState *)context)->visible = open */
 static void visible(void *context, int open) {
     ((TestState *)context)->visible = open;
 }

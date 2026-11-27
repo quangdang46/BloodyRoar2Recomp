@@ -13,11 +13,13 @@ static const char *const kFmvFilterChoices[] = {
     "Nearest", "Bilinear", "Sharp", "Bicubic"
 };
 
+/* has: return (features & feature) != 0 */
 static int has(RecompRuntimeUiStandardFeatures features,
                RecompRuntimeUiStandardFeatures feature) {
     return (features & feature) != 0;
 }
 
+/* add item: RecompRuntimeUiItem *item = &items[(*count)++] */
 static void add_item(RecompRuntimeUiItem *items, size_t *count,
                      const char *key, const char *section, const char *label,
                      const char *description, RecompRuntimeUiItemType type,
@@ -39,6 +41,7 @@ static void add_item(RecompRuntimeUiItem *items, size_t *count,
     item->choice_values = choice_values;
 }
 
+/* recomp runtime ui create standard: if (!standard) return NULL */
 RecompRuntimeUi *recomp_runtime_ui_create_standard(
     const RecompRuntimeUiStandardConfig *standard) {
     if (!standard) return NULL;

@@ -7,12 +7,14 @@
 #include <stdio.h>
 #include <string.h>
 
+/* launcher binds set zapper */
 void launcher_binds_set_zapper(int mouse_enabled, int crosshair) {
     (void)mouse_enabled;
     (void)crosshair;
 }
 
 static int fails;
+/* check: if (!ok)  */
 static void check(int ok, const char *what) {
     if (!ok) {
         fprintf(stderr, "FAIL: %s\n", what);

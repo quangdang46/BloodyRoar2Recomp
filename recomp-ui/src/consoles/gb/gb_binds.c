@@ -143,6 +143,7 @@ static int gb_line_is_key(const char* line, const char* key) {
     return *i == '=';
 }
 
+// gb write prefs: long len = 0; char* text = gb_read_whole(path, &len)
 static void gb_write_prefs(const char* path) {
     long len = 0; char* text = gb_read_whole(path, &len);
 
@@ -196,6 +197,7 @@ void rui_gb_binds_init(const char* path) {
     s_gb_binds_init = 1;
 }
 
+// rui gb binds get slot: if (!s_gb_binds_init) rui_gb_binds_init(path)
 int rui_gb_binds_get_slot(const char* path, int b, int slot) {
     if (!s_gb_binds_init) rui_gb_binds_init(path);
     if (b < 0 || b >= LNG_GB_PAD_BUTTON_COUNT) return SDL_SCANCODE_UNKNOWN;
@@ -203,10 +205,12 @@ int rui_gb_binds_get_slot(const char* path, int b, int slot) {
     return (int)s_gb_binds[b][slot];
 }
 
+// rui gb binds get: return rui_gb_binds_get_slot(path, b, 0)
 int rui_gb_binds_get(const char* path, int b) {
     return rui_gb_binds_get_slot(path, b, 0);
 }
 
+// rui gb binds set slot: if (b < 0 || b >= LNG_GB_PAD_BUTTON_COUNT) return
 void rui_gb_binds_set_slot(const char* path, int b, int slot, int scancode) {
     if (b < 0 || b >= LNG_GB_PAD_BUTTON_COUNT) return;
     if (slot < 0 || slot >= RUI_GB_BIND_SLOTS) return;
@@ -219,10 +223,12 @@ void rui_gb_binds_set_slot(const char* path, int b, int slot, int scancode) {
     if (path) gb_write_prefs(path);
 }
 
+// rui gb binds set
 void rui_gb_binds_set(const char* path, int b, int scancode) {
     rui_gb_binds_set_slot(path, b, 0, scancode);
 }
 
+// rui gb binds reset: if (!s_gb_binds_init) rui_gb_binds_init(path)
 void rui_gb_binds_reset(const char* path) {
     if (!s_gb_binds_init) rui_gb_binds_init(path);
     memcpy(s_gb_binds, kGbDefaults, sizeof(kGbDefaults));

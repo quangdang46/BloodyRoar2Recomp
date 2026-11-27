@@ -25,10 +25,12 @@
 
 /* Pulled in by the model TU; unrelated to setup. */
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
@@ -39,6 +41,7 @@ static void expect(int cond, const char* what) {
 static int  persist_calls;
 static char persist_rom[512];
 static char persist_bios[512];
+/* fake persist: return 0 */
 static int fake_persist(void* ctx, const char* rom, const char* bios) {
     ++*(int*)ctx;
     snprintf(persist_rom, sizeof(persist_rom), "%s", rom ? rom : "(null)");
@@ -46,6 +49,7 @@ static int fake_persist(void* ctx, const char* rom, const char* bios) {
     return 0;
 }
 
+/* read first line: FILE* f = fopen(path, "r") */
 static int read_first_line(const char* path, char* out, size_t cap) {
     FILE* f = fopen(path, "r");
     if (!f) return 0;
@@ -71,6 +75,7 @@ static LauncherModel* make_model(void) {
     return m;
 }
 
+/* test nothing to confirm persists nothing: LauncherModel* m = make_model() */
 static void test_nothing_to_confirm_persists_nothing(void) {
     LauncherModel* m = make_model();
     if (!m) { fprintf(stderr, "FAIL: out of memory\n"); ++fails; return; }
@@ -85,6 +90,7 @@ static void test_nothing_to_confirm_persists_nothing(void) {
     free(m);
 }
 
+/* test confirm records the pick: char rom[512] */
 static void test_confirm_records_the_pick(const char* dir) {
     char rom[512];
     char line[512];
@@ -120,6 +126,7 @@ static void test_confirm_records_the_pick(const char* dir) {
 static int   discs_calls;
 static int   discs_count;
 static char  discs_first[512];
+/* fake persist discs: ++discs_calls */
 static int fake_persist_discs(void* ctx, const char* const* paths, int n,
                               const char* bios) {
     (void)ctx; (void)bios;
@@ -130,6 +137,7 @@ static int fake_persist_discs(void* ctx, const char* const* paths, int n,
     return 0;
 }
 
+/* test confirm flushes a roster through discs cb: LauncherModel* m = make_model() */
 static void test_confirm_flushes_a_roster_through_discs_cb(const char* dir) {
     static char p1[512], p2[512];
     static RecompLauncherCDisc roster[2];

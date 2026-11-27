@@ -6,12 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* expect: if (condition) return 1 */
 static int expect(int condition, const char* message) {
     if (condition) return 1;
     fprintf(stderr, "FAIL: %s\n", message);
     return 0;
 }
 
+/* write le32: out[0] = (uint8_t)value */
 static void write_le32(uint8_t* out, uint32_t value) {
     out[0] = (uint8_t)value;
     out[1] = (uint8_t)(value >> 8);
@@ -19,6 +21,7 @@ static void write_le32(uint8_t* out, uint32_t value) {
     out[3] = (uint8_t)(value >> 24);
 }
 
+/* test bps checksums and actions: uint8_t patch[24] =  */
 static int test_bps_checksums_and_actions(void) {
     const uint8_t source[] = {'a','b','c','d','e'};
     const uint8_t expected[] = {'a','b','X','Y','e'};
@@ -53,6 +56,7 @@ static int test_bps_checksums_and_actions(void) {
         wrong_source, sizeof(wrong_source), patch, sizeof(patch),
         &output, &output_len), "BPS rejects the wrong source ROM");
 }
+/* test bps relative copy actions: uint8_t patch[23] =  */
 static int test_bps_relative_copy_actions(void) {
     const uint8_t source[] = {'a','b','c','d','e','f'};
     const uint8_t expected[] = {'c','d','c','d','c','d'};
@@ -86,6 +90,7 @@ static int test_bps_relative_copy_actions(void) {
 }
 
 
+/* test classic literal and rle: 'P','A','T','C','H', */
 static int test_classic_literal_and_rle(void) {
     const uint8_t source[] = {0x10, 0x20, 0x30, 0x40};
     const uint8_t patch[] = {
@@ -110,6 +115,7 @@ static int test_classic_literal_and_rle(void) {
     return pass;
 }
 
+/* test ips32 high offset: 'I','P','S','3','2', */
 static int test_ips32_high_offset(void) {
     const uint8_t patch[] = {
         'I','P','S','3','2',
@@ -131,6 +137,7 @@ static int test_ips32_high_offset(void) {
     return pass;
 }
 
+/* test rejects truncated record: 'P','A','T','C','H', 0x00,0x00,0x01, 0x00,0x02, 0xAA */
 static int test_rejects_truncated_record(void) {
     const uint8_t patch[] = {
         'P','A','T','C','H', 0x00,0x00,0x01, 0x00,0x02, 0xAA

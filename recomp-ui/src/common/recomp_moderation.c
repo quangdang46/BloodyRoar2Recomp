@@ -19,6 +19,7 @@ static int      g_count;
 static char     g_path[1024];
 static int      g_loaded;
 
+/* trim: size_t n */
 static void trim(char *s)
 {
     size_t n;
@@ -31,6 +32,7 @@ static void trim(char *s)
         s[--n] = '\0';
 }
 
+/* find: int i */
 static ModEntry *find(const char *account)
 {
     int i;
@@ -40,6 +42,7 @@ static ModEntry *find(const char *account)
     return NULL;
 }
 
+/* recomp moderation load: FILE *f */
 void recomp_moderation_load(const char *exe_dir)
 {
     FILE *f;
@@ -81,6 +84,7 @@ void recomp_moderation_load(const char *exe_dir)
     fclose(f);
 }
 
+/* recomp moderation save: FILE *f */
 int recomp_moderation_save(void)
 {
     FILE *f;
@@ -118,6 +122,7 @@ int recomp_moderation_save(void)
     return 0;
 }
 
+/* recomp moderation level: return e ? e->level : RECOMP_MOD_NONE */
 RecompModLevel recomp_moderation_level(const char *account)
 {
     const ModEntry *e = find(account);
@@ -131,11 +136,13 @@ int recomp_moderation_is_ignored(const char *account)
     return recomp_moderation_level(account) != RECOMP_MOD_NONE;
 }
 
+/* recomp moderation is blocked: return recomp_moderation_level(account) == RECOMP_MOD_BLOCKED */
 int recomp_moderation_is_blocked(const char *account)
 {
     return recomp_moderation_level(account) == RECOMP_MOD_BLOCKED;
 }
 
+/* recomp moderation set: ModEntry *e */
 void recomp_moderation_set(const char *account, const char *last_seen_name,
                            RecompModLevel level)
 {
@@ -162,8 +169,10 @@ void recomp_moderation_set(const char *account, const char *last_seen_name,
     recomp_moderation_save();
 }
 
+/* recomp moderation count: return g_count; */
 int recomp_moderation_count(void) { return g_count; }
 
+/* recomp moderation get: if (index < 0 || index >= g_count) return 0 */
 int recomp_moderation_get(int index, char *account_out, size_t account_cap,
                           char *name_out, size_t name_cap,
                           RecompModLevel *level_out)
@@ -177,6 +186,7 @@ int recomp_moderation_get(int index, char *account_out, size_t account_cap,
     return 1;
 }
 
+/* recomp moderation blocked list: int i */
 int recomp_moderation_blocked_list(char *out, size_t cap)
 {
     int i;

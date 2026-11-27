@@ -26,8 +26,10 @@ static int   g_cmd_index = 0;
 static int   g_wait_frames = 0;
 static bool  g_active = false;
 
+// launcher debug active: return g_active;
 bool launcher_debug_active(void) { return g_active; }
 
+// launcher debug init: if (!s || !s[0]) return
 void launcher_debug_init(void) {
     const char* s = SDL_getenv("LNG_SCRIPT");
     if (!s || !s[0]) return;
@@ -44,6 +46,7 @@ void launcher_debug_init(void) {
     if (g_active) fprintf(stderr, "[dbg] script: %d commands\n", g_cmd_count);
 }
 
+// launcher capture png: if (w <= 0 || h <= 0) return false
 bool launcher_capture_png(const char* path, int w, int h) {
     if (w <= 0 || h <= 0) return false;
     unsigned char* px = (unsigned char*)malloc((size_t)w * h * 4);
@@ -126,6 +129,7 @@ static void synth_click(LauncherPlatform* p, float x, float y) {
     SDL_PushEvent(&e);
 }
 
+// synth key: SDL_Scancode sc = SDL_GetScancodeFromKey(key
 static void synth_key(SDL_Keycode key) {
     SDL_Scancode sc = SDL_GetScancodeFromKey(key
 #if defined(LNG_SDL3)
@@ -154,6 +158,7 @@ static void synth_key(SDL_Keycode key) {
     SDL_PushEvent(&e);
 }
 
+// launcher debug step: if (!g_active) return
 void launcher_debug_step(LauncherPlatform* p, LauncherModel* m) {
     if (!g_active) return;
 

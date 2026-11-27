@@ -63,6 +63,7 @@ struct RecompFlashGuard {
     int      peak_step;
 };
 
+/* recomp flash guard create: RecompFlashGuard *guard = */
 RecompFlashGuard *recomp_flash_guard_create(void) {
     RecompFlashGuard *guard =
         (RecompFlashGuard *)calloc(1, sizeof(RecompFlashGuard));
@@ -70,12 +71,14 @@ RecompFlashGuard *recomp_flash_guard_create(void) {
     return guard;
 }
 
+/* recomp flash guard destroy: if (!guard) return */
 void recomp_flash_guard_destroy(RecompFlashGuard *guard) {
     if (!guard) return;
     free(guard->prev);
     free(guard);
 }
 
+/* recomp flash guard set limit: if (!guard) return */
 void recomp_flash_guard_set_limit(RecompFlashGuard *guard, int limit) {
     if (!guard) return;
     if (limit < 0)   limit = 0;
@@ -83,10 +86,12 @@ void recomp_flash_guard_set_limit(RecompFlashGuard *guard, int limit) {
     guard->limit = limit;
 }
 
+/* recomp flash guard get limit: return guard ? guard->limit : 0 */
 int recomp_flash_guard_get_limit(const RecompFlashGuard *guard) {
     return guard ? guard->limit : 0;
 }
 
+/* recomp flash guard reset: if (!guard) return */
 void recomp_flash_guard_reset(RecompFlashGuard *guard) {
     if (!guard) return;
     guard->valid = 0;
@@ -171,6 +176,7 @@ static int mean_step(const int a[3], const int b[3], int *sign_out) {
     return step;
 }
 
+/* recomp flash guard apply: unsigned char *base = (unsigned char *)frame */
 int recomp_flash_guard_apply(RecompFlashGuard *guard, void *frame,
                              int width, int height, size_t pitch_bytes) {
     unsigned char *base = (unsigned char *)frame;
@@ -298,6 +304,7 @@ pass_through:
     return 0;
 }
 
+/* recomp flash guard get stats: if (!out) return */
 void recomp_flash_guard_get_stats(const RecompFlashGuard *guard,
                                   RecompFlashGuardStats *out) {
     if (!out) return;

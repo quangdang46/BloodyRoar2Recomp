@@ -17,21 +17,25 @@
 
 /* Pulled in by the model TU; unrelated to disc paths. */
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
     ++fails;
 }
 
+/* touch: FILE* f = fopen(path, "wb") */
 static void touch(const char* path) {
     FILE* f = fopen(path, "wb");
     if (f) { fputc('x', f); fclose(f); }
 }
 
+/* test token rewriting: char out[512] */
 static void test_token_rewriting(void) {
     char out[512];
 
@@ -55,6 +59,7 @@ static void test_token_rewriting(void) {
            "Disc 1 does not match inside Disc 12");
 }
 
+/* test autofill: char p[3][512] */
 static void test_autofill(const char* dir) {
     static RecompLauncherCDisc roster[3];
     char p[3][512];
@@ -105,6 +110,7 @@ static void test_autofill(const char* dir) {
 }
 
 static int fixture_sbi_status;
+/* fixture verify: out->sbi_status = fixture_sbi_status */
 static int fixture_verify(const char* path, RecompLauncherCDiscVerify* out) {
     (void)path;
     out->sbi_status = fixture_sbi_status;
@@ -114,6 +120,7 @@ static int fixture_verify(const char* path, RecompLauncherCDiscVerify* out) {
 }
 
 static int fixture_import_ok;
+/* fixture import: if (fixture_import_ok == 2)  */
 static int fixture_import(const char* disc, const char* sbi, char* out, size_t cap, char* error, size_t error_cap) {
     expect(!strcmp(disc, "selected.cue"), "SBI callback receives the selected disc");
     expect(!strcmp(sbi, "matching.SBI"), "SBI suffix accepts uppercase");
@@ -134,6 +141,7 @@ static int fixture_import(const char* disc, const char* sbi, char* out, size_t c
     return 1;
 }
 
+/* test sbi verification refresh: LauncherModel* m = (LauncherModel*)calloc(1, sizeof(LauncherModel)) */
 static void test_sbi_verification_refresh(void) {
     LauncherModel* m = (LauncherModel*)calloc(1, sizeof(LauncherModel));
     SystemProfile profile = {0};

@@ -12,14 +12,17 @@
 
 namespace {
 
+// col: return ImVec4(c.r, c.g, c.b, c.a * alpha)
 ImVec4 col(const LngColor &c, float alpha = 1.0f) {
     return ImVec4(c.r, c.g, c.b, c.a * alpha);
 }
 
+// u32: return ImGui::ColorConvertFloat4ToU32(col(c, alpha))
 ImU32 u32(const LngColor &c, float alpha = 1.0f) {
     return ImGui::ColorConvertFloat4ToU32(col(c, alpha));
 }
 
+// value text: if (item->type == RECOMP_RUNTIME_UI_ACTION) 
 void value_text(RecompRuntimeUi *ui, const RecompRuntimeUiItem *item,
                 char *out, size_t out_size) {
     if (item->type == RECOMP_RUNTIME_UI_ACTION) {
@@ -60,6 +63,7 @@ void value_text(RecompRuntimeUi *ui, const RecompRuntimeUiItem *item,
     }
 }
 
+// draw sections: for (size_t index = 0; index < ui->section_count; ++index) 
 void draw_sections(RecompRuntimeUi *ui, const LauncherTheme &theme,
                    bool enter_on_click) {
     for (size_t index = 0; index < ui->section_count; ++index) {
@@ -75,6 +79,7 @@ void draw_sections(RecompRuntimeUi *ui, const LauncherTheme &theme,
     }
 }
 
+// draw items: ui, ui->section_index)
 void draw_items(RecompRuntimeUi *ui, const LauncherTheme &theme,
                 bool touch_friendly) {
     const size_t count = recomp_runtime_ui_section_item_count(
@@ -204,6 +209,7 @@ void draw_items(RecompRuntimeUi *ui, const LauncherTheme &theme,
     }
 }
 
+// push runtime style: ImGuiStyleVar_ScrollbarSize,
 void push_runtime_style(const LauncherTheme &theme, bool touch_friendly) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, theme.radius_lg);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, theme.radius_sm);
@@ -233,6 +239,7 @@ void push_runtime_style(const LauncherTheme &theme, bool touch_friendly) {
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, col(theme.accent_dim));
 }
 
+// pop runtime style
 void pop_runtime_style() {
     ImGui::PopStyleColor(11);
     ImGui::PopStyleVar(7);
@@ -240,6 +247,7 @@ void pop_runtime_style() {
 
 } // namespace
 
+// recomp runtime ui render imgui: if (!ui || !ui->open || ImGui::GetCurrentContext() == nullptr) return
 extern "C" void recomp_runtime_ui_render_imgui(RecompRuntimeUi *ui) {
     if (!ui || !ui->open || ImGui::GetCurrentContext() == nullptr) return;
 

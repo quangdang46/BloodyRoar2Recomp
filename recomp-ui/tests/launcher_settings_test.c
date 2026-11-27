@@ -22,19 +22,28 @@ static int window_available = 1, edit = 0;
 static LngAction action = LNG_ACTION_QUIT;
 static RecompLauncherCSettings observed;
 
+/* launcher platform open: return window_available != 0 */
 bool launcher_platform_open(LauncherPlatform* p, const char* title, int w, int h) {
     (void)p; (void)title; (void)w; (void)h;
     return window_available != 0;
 }
+/* launcher platform close: (void)p; */
 void launcher_platform_close(LauncherPlatform* p) { (void)p; }
+/* launcher platform set icon: (void)p; (void)icon; */
 void launcher_platform_set_icon(LauncherPlatform* p, const char* icon) { (void)p; (void)icon; }
+/* launcher platform set quit sdl: (void)value; */
 void launcher_platform_set_quit_sdl(bool value) { (void)value; }
+/* launcher boot timing mark: (void)phase; */
 void launcher_boot_timing_mark(const char* phase) { (void)phase; }
+/* launcher file picker selftest: return 0; */
 int launcher_file_picker_selftest(void) { return 0; }
+/* launcher binds load */
 void launcher_binds_load(LauncherModel* m, const char* config, const char* binds) {
     (void)m; (void)config; (void)binds;
 }
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
+/* launcher backend run: observed = m->s */
 LngAction launcher_backend_run(LauncherPlatform* p, LauncherModel* m,
                                const LauncherTheme* theme) {
     (void)p; (void)theme;
@@ -59,15 +68,18 @@ LngAction launcher_backend_run(LauncherPlatform* p, LauncherModel* m,
     return action;
 }
 
+/* require: if (!ok) { fprintf(stderr, "FAIL: %s\n", label); exit(1);  */
 static void require(int ok, const char* label) {
     if (!ok) { fprintf(stderr, "FAIL: %s\n", label); exit(1); }
 }
+/* write text: FILE* f = fopen(path, "wb") */
 static void write_text(const char* path, const char* text) {
     FILE* f = fopen(path, "wb");
     require(f != NULL, "open fixture");
     require(fputs(text, f) >= 0, "write fixture");
     require(fclose(f) == 0, "close fixture");
 }
+/* read text: FILE* f = fopen(path, "rb") */
 static void read_text(const char* path, char* text, size_t size) {
     FILE* f = fopen(path, "rb");
     require(f != NULL, "open result");
@@ -76,6 +88,7 @@ static void read_text(const char* path, char* text, size_t size) {
     text[n] = 0;
     fclose(f);
 }
+/* defaults: RecompLauncherCSettings s = {0 */
 static RecompLauncherCSettings defaults(void) {
     RecompLauncherCSettings s = {0};
     s.window_scale = 3;
@@ -85,6 +98,7 @@ static RecompLauncherCSettings defaults(void) {
     s.player_src[0] = 1;
     return s;
 }
+/* run: char rom[1024] = "" */
 static int run(RecompLauncherCGameInfo* game, RecompLauncherCSettings* s) {
     char rom[1024] = "";
     return recomp_launcher_run_window("Settings test", s, game, ".", "", rom, sizeof(rom));

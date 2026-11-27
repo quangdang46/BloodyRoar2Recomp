@@ -23,12 +23,14 @@
 
 static int fails;
 
+/* check: if (!ok) ++fails */
 static void check(const char *what, int ok)
 {
     printf("  %-58s %s\n", what, ok ? "ok" : "FAIL");
     if (!ok) ++fails;
 }
 
+/* fill: int i */
 static void fill(uint32_t *f, int r, int g, int b)
 {
     int i;

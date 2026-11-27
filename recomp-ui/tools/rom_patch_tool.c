@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* read file: FILE* file = fopen(path, "rb") */
 static int read_file(const char* path, uint8_t** data, size_t* size) {
     FILE* file = fopen(path, "rb");
     if (!file) return 0;
@@ -26,6 +27,7 @@ static int read_file(const char* path, uint8_t** data, size_t* size) {
     return 1;
 }
 
+/* format name: switch (format)  */
 static const char* format_name(IpsPatchFormat format) {
     switch (format) {
         case IPS_PATCH_CLASSIC: return "IPS";
@@ -35,6 +37,7 @@ static const char* format_name(IpsPatchFormat format) {
     }
 }
 
+/* byte changed: if (offset >= source_size || offset >= target_size) */
 static int byte_changed(const uint8_t* source, size_t source_size,
                         const uint8_t* target, size_t target_size,
                         size_t offset) {
@@ -43,6 +46,7 @@ static int byte_changed(const uint8_t* source, size_t source_size,
     return source[offset] != target[offset];
 }
 
+/* print change summary: size_t changed = 0, runs = 0, first = 0, last = 0 */
 static void print_change_summary(const uint8_t* source, size_t source_size,
                                  const uint8_t* target, size_t target_size) {
     const size_t span = source_size > target_size ? source_size : target_size;

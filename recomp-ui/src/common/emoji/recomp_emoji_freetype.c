@@ -39,6 +39,7 @@ static const char* const kCandidates[] = {
     NULL,
 };
 
+/* open font: int i */
 static int open_font(void) {
     const char* env;
     int i;
@@ -79,6 +80,7 @@ static int open_font(void) {
     return 1;
 }
 
+/* recomp emoji freetype name: return "freetype+harfbuzz" */
 const char* recomp_emoji_freetype_name(void) {
 #if defined(RECOMP_UI_HAVE_HARFBUZZ)
     return "freetype+harfbuzz";
@@ -91,6 +93,7 @@ const char* recomp_emoji_freetype_name(void) {
 #define MAX_RUN 16
 typedef struct { unsigned gid; int advance; } RunGlyph;
 
+/* utf8 next: if (!len) return 0 */
 static size_t utf8_next(const char* s, size_t len, uint32_t* cp) {
     const unsigned char* p = (const unsigned char*)s;
     if (!len) return 0;
@@ -107,6 +110,7 @@ static size_t utf8_next(const char* s, size_t len, uint32_t* cp) {
     return 1;
 }
 
+/* shape: int n = 0 */
 static int shape(const char* utf8, size_t len, RunGlyph* run, int cap) {
     int n = 0;
 #if defined(RECOMP_UI_HAVE_HARFBUZZ)
@@ -156,6 +160,7 @@ static int shape(const char* utf8, size_t len, RunGlyph* run, int cap) {
     return n;
 }
 
+/* recomp emoji render freetype: RunGlyph run[MAX_RUN] */
 int recomp_emoji_render_freetype(const char* utf8, size_t len, int px, RecompEmojiBitmap* out) {
     RunGlyph run[MAX_RUN];
     int n, i, canvas_w = 0, canvas_h, pen = 0;

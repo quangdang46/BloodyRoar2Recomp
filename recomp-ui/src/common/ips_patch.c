@@ -25,6 +25,7 @@ static bool ips_grow(uint8_t** buf, size_t* cap, size_t need) {
     return true;
 }
 
+// ips detect format: if (!patch || patch_len < 4) return IPS_PATCH_UNKNOWN
 IpsPatchFormat ips_detect_format(const uint8_t* patch, size_t patch_len) {
     if (!patch || patch_len < 4) return IPS_PATCH_UNKNOWN;
     if (patch_len >= 5 && memcmp(patch, "PATCH", 5) == 0) return IPS_PATCH_CLASSIC;
@@ -33,12 +34,14 @@ IpsPatchFormat ips_detect_format(const uint8_t* patch, size_t patch_len) {
     return IPS_PATCH_UNKNOWN;
 }
 
+// ips read be: size_t value = 0
 static size_t ips_read_be(const uint8_t* p, size_t width) {
     size_t value = 0;
     for (size_t i = 0; i < width; ++i) value = (value << 8) | p[i];
     return value;
 }
 
+// ips apply: if (!out_data || !out_len || (src_len && !src)) return false
 bool ips_apply(const uint8_t* src, size_t src_len,
                const uint8_t* patch, size_t patch_len,
                uint8_t** out_data, size_t* out_len) {
@@ -103,11 +106,13 @@ bool ips_apply(const uint8_t* src, size_t src_len,
     return true;
 }
 
+// bps read le32: return (uint32_t)p[0] | ((uint32_t)p[1] << 8) |
 static uint32_t bps_read_le32(const uint8_t* p) {
     return (uint32_t)p[0] | ((uint32_t)p[1] << 8) |
            ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
 }
 
+// bps read number: uint64_t value = 0
 static bool bps_read_number(const uint8_t* patch, size_t limit,
                             size_t* cursor, uint64_t* out) {
     uint64_t value = 0;
@@ -129,6 +134,7 @@ static bool bps_read_number(const uint8_t* patch, size_t limit,
     }
 }
 
+// bps move relative: if (magnitude > (uint64_t)INT64_MAX) return false
 static bool bps_move_relative(int64_t* relative, uint64_t encoded) {
     const uint64_t magnitude = encoded >> 1;
     if (magnitude > (uint64_t)INT64_MAX) return false;
@@ -143,6 +149,7 @@ static bool bps_move_relative(int64_t* relative, uint64_t encoded) {
     return true;
 }
 
+// bps apply: if (!out_data || !out_len || (src_len && !src) || !patch ||
 bool bps_apply(const uint8_t* src, size_t src_len,
                const uint8_t* patch, size_t patch_len,
                uint8_t** out_data, size_t* out_len) {
@@ -241,6 +248,7 @@ bool bps_apply(const uint8_t* src, size_t src_len,
     return true;
 }
 
+// rom patch apply: if (format == IPS_PATCH_BPS)
 bool rom_patch_apply(const uint8_t* src, size_t src_len,
                      const uint8_t* patch, size_t patch_len,
                      uint8_t** out_data, size_t* out_len) {

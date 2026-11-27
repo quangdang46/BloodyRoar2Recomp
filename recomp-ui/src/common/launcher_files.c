@@ -56,6 +56,7 @@ static int launcher_path_matches_patterns(const char* path,
     return 0;
 }
 
+/* launcher reject if pattern mismatch: if (num_patterns <= 0 || !patterns) return 0 */
 static int launcher_reject_if_pattern_mismatch(const char* title,
                                                const char* const* patterns,
                                                int num_patterns,
@@ -130,6 +131,7 @@ static const char* const kLinuxSpawnDropPrefixes[] = {
 
 #define LINUX_HOST_LDPATH_VAR "RECOMP_HOST_LD_LIBRARY_PATH"
 
+/* linux env should drop: if (!entry) return 1 */
 static int linux_env_should_drop(const char* entry) {
     if (!entry) return 1;
     const size_t n = sizeof(kLinuxSpawnDropPrefixes) /
@@ -141,6 +143,7 @@ static int linux_env_should_drop(const char* entry) {
     return 0;
 }
 
+/* linux free spawn env: if (!env) return */
 static void linux_free_spawn_env(char** env) {
     if (!env) return;
     for (char** e = env; *e; e++) free(*e);
@@ -196,6 +199,7 @@ static void linux_picker_unusable(const char* backend, const char* why,
     fflush(stderr);
 }
 
+/* linux str has ci: if (!hay || !needle || !needle[0]) return 0 */
 static int linux_str_has_ci(const char* hay, const char* needle) {
     if (!hay || !needle || !needle[0]) return 0;
     for (const char* p = hay; *p; p++) {
@@ -213,6 +217,7 @@ static int linux_str_has_ci(const char* hay, const char* needle) {
     return 0;
 }
 
+/* linux desktop prefers kdialog: if (!d || !d[0]) d = getenv("XDG_CURRENT_DESKTOP") */
 static int linux_desktop_prefers_kdialog(void) {
     const char* d = getenv("XDG_SESSION_DESKTOP");
     if (!d || !d[0]) d = getenv("XDG_CURRENT_DESKTOP");
@@ -224,6 +229,7 @@ static int linux_desktop_prefers_kdialog(void) {
     return 0;
 }
 
+/* linux have cmd: if (!path || !name || !name[0]) return 0 */
 static int linux_have_cmd(const char* name) {
     const char* path = getenv("PATH");
     if (!path || !name || !name[0]) return 0;
@@ -238,6 +244,7 @@ static int linux_have_cmd(const char* name) {
     return 0;
 }
 
+/* linux trim trailing ws: if (!s) return */
 static void linux_trim_trailing_ws(char* s) {
     if (!s) return;
     size_t n = strlen(s);
@@ -418,6 +425,7 @@ static int linux_spawn_capture(char* const argv[], char* out, size_t out_cap) {
     return -1;
 }
 
+/* linux append patterns: dst[0] = '\0' */
 static void linux_append_patterns(char* dst, size_t dst_cap,
                                   const char* const* patterns, int num_patterns) {
     dst[0] = '\0';
@@ -436,6 +444,7 @@ static void linux_append_patterns(char* dst, size_t dst_cap,
     if (!dst[0]) snprintf(dst, dst_cap, "*");
 }
 
+/* linux pick open zenity: char title_arg[640] */
 static int linux_pick_open_zenity(const char* title, const char* const* patterns,
                                   int num_patterns, const char* desc,
                                   char* out, size_t out_cap) {
@@ -473,6 +482,7 @@ static int linux_pick_open_zenity(const char* title, const char* const* patterns
     return linux_spawn_capture(argv, out, out_cap);
 }
 
+/* linux pick open kdialog: char filter[768] */
 static int linux_pick_open_kdialog(const char* title, const char* const* patterns,
                                    int num_patterns, const char* desc,
                                    char* out, size_t out_cap) {
@@ -499,6 +509,7 @@ static int linux_pick_open_kdialog(const char* title, const char* const* pattern
     return linux_spawn_capture(argv, out, out_cap);
 }
 
+/* linux pick save zenity: char title_arg[640] */
 static int linux_pick_save_zenity(const char* title, const char* const* patterns,
                                   int num_patterns, const char* desc,
                                   char* out, size_t out_cap) {
@@ -538,6 +549,7 @@ static int linux_pick_save_zenity(const char* title, const char* const* patterns
     return linux_spawn_capture(argv, out, out_cap);
 }
 
+/* linux pick save kdialog: char filter[768] */
 static int linux_pick_save_kdialog(const char* title, const char* const* patterns,
                                    int num_patterns, const char* desc,
                                    char* out, size_t out_cap) {
@@ -564,6 +576,7 @@ static int linux_pick_save_kdialog(const char* title, const char* const* pattern
     return linux_spawn_capture(argv, out, out_cap);
 }
 
+/* linux pick folder zenity: char title_arg[640] */
 static int linux_pick_folder_zenity(const char* title, char* out, size_t out_cap) {
     char title_arg[640];
     snprintf(title_arg, sizeof(title_arg), "--title=%s",
@@ -578,6 +591,7 @@ static int linux_pick_folder_zenity(const char* title, char* out, size_t out_cap
     return linux_spawn_capture(argv, out, out_cap);
 }
 
+/* linux pick folder kdialog: char title_buf[512] */
 static int linux_pick_folder_kdialog(const char* title, char* out, size_t out_cap) {
     char title_buf[512];
     snprintf(title_buf, sizeof(title_buf), "%s",
@@ -616,6 +630,7 @@ static int linux_pick_open(const char* title, const char* const* patterns,
     return -1;
 }
 
+/* linux pick save: int r */
 static int linux_pick_save(const char* title, const char* const* patterns,
                            int num_patterns, const char* desc,
                            char* out, size_t out_cap) {
@@ -638,6 +653,7 @@ static int linux_pick_save(const char* title, const char* const* patterns,
     return -1;
 }
 
+/* linux pick folder: int r */
 static int linux_pick_folder(const char* title, char* out, size_t out_cap) {
     const int want_kd = linux_desktop_prefers_kdialog();
     const int have_kd = linux_have_cmd("kdialog");
@@ -667,6 +683,7 @@ bool launcher_native_file_picker_available(void) {
 #endif
 }
 
+/* launcher pick rom: if (!out_path || out_cap == 0) return false */
 bool launcher_pick_rom(char* out_path, size_t out_cap) {
     if (!out_path || out_cap == 0) return false;
     out_path[0] = '\0';
@@ -695,6 +712,7 @@ bool launcher_pick_rom(char* out_path, size_t out_cap) {
 #endif
 }
 
+/* launcher try pick folder: if (!out_path || out_cap == 0) return -1 */
 int launcher_try_pick_folder(const char* title, char* out_path, size_t out_cap) {
     if (!out_path || out_cap == 0) return -1;
     out_path[0] = '\0';
@@ -712,10 +730,12 @@ int launcher_try_pick_folder(const char* title, char* out_path, size_t out_cap) 
 #endif
 }
 
+/* launcher pick folder: return launcher_try_pick_folder(title, out_path, out_cap) == 1 */
 bool launcher_pick_folder(const char* title, char* out_path, size_t out_cap) {
     return launcher_try_pick_folder(title, out_path, out_cap) == 1;
 }
 
+/* launcher try pick file: if (!out_path || out_cap == 0) return -1 */
 int launcher_try_pick_file(const char* title, const char* const* patterns,
                            int num_patterns, const char* desc,
                            char* out_path, size_t out_cap) {
@@ -749,6 +769,7 @@ int launcher_try_pick_file(const char* title, const char* const* patterns,
 #endif
 }
 
+/* launcher pick file: out_path, out_cap) */
 bool launcher_pick_file(const char* title, const char* const* patterns, int num_patterns,
                         const char* desc, char* out_path, size_t out_cap) {
     const int r = launcher_try_pick_file(title, patterns, num_patterns, desc,
@@ -756,6 +777,7 @@ bool launcher_pick_file(const char* title, const char* const* patterns, int num_
     return r == 1;
 }
 
+/* launcher file picker selftest: if (!req || !req[0] || strcmp(req, "0") == 0 || strcmp(req, "false") ... */
 bool launcher_file_picker_selftest(void) {
     const char* req = getenv("RECOMP_UI_PICKER_SELFTEST");
     if (!req || !req[0] || strcmp(req, "0") == 0 || strcmp(req, "false") == 0)
@@ -777,6 +799,7 @@ bool launcher_file_picker_selftest(void) {
     return true;
 }
 
+/* launcher try pick save file: if (!out_path || out_cap == 0) return -1 */
 int launcher_try_pick_save_file(const char* title, const char* const* patterns,
                                 int num_patterns, const char* desc,
                                 char* out_path, size_t out_cap) {
@@ -801,6 +824,7 @@ int launcher_try_pick_save_file(const char* title, const char* const* patterns,
 #endif
 }
 
+/* launcher pick save file: return launcher_try_pick_save_file(title, patterns, num_patterns, desc, */
 bool launcher_pick_save_file(const char* title, const char* const* patterns, int num_patterns,
                              const char* desc, char* out_path, size_t out_cap) {
     return launcher_try_pick_save_file(title, patterns, num_patterns, desc,
