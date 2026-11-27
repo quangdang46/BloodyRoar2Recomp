@@ -1,7 +1,4 @@
 #include <stdint.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "cpu_state.h"
 
 extern CPUState *clean_cpu_state(void);
