@@ -365,7 +365,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
       return;
     case 0x14:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc == 2) {
         /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
          * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. The buf is handed
@@ -386,7 +386,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case 0x15:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc == 2) {
         brightness_packet_send(0xffffffffu);
         cd_cmd_issue_async(0x1b,0);
@@ -399,7 +399,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case 0x16:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc == 2) {
         cd_cmd_issue_async(1,0);
         DAT_801bef6d++;
@@ -411,7 +411,7 @@ void memcard_tick(void)
       DAT_801bef6d = 0x20;
       return;
     case 0x17:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -430,7 +430,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
       return;
     case 0x19:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -459,7 +459,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
       return;
     case 0x22:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -478,7 +478,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
       return;
     case 0x24:
-      cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+      cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
       if (cd_rc != 2) {
         if (cd_rc != 5) {
           return;
@@ -507,7 +507,7 @@ void memcard_tick(void)
     DAT_801bef6d++;
     break;
   case 0x14:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc == 2) {
       /* disasm-verified: sprintf/cd buf = $sp+0x10, frame -0x28
        * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
@@ -524,7 +524,7 @@ void memcard_tick(void)
     }
     break;
   case 0x15:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc == 2) {
       brightness_packet_send(0xffffffffu);
       cd_cmd_issue_async(3,0);
@@ -534,7 +534,7 @@ void memcard_tick(void)
     }
     break;
   case 0x16:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc == 2) {
       DAT_801bef6d++;
     } else if (cd_rc == 5) {
@@ -576,7 +576,7 @@ bb_80157c80:
     }
     break;
   case 0x18:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc == 2) {
       DAT_801bef6d--;
     } else if (cd_rc == 5) {
@@ -597,7 +597,7 @@ bb_80157c80:
     DAT_801bef6d++;
     break;
   case 0x22:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d++;
@@ -613,7 +613,7 @@ bb_80157c80:
     DAT_801bef6d++;
     break;
   case 0x24:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
@@ -627,7 +627,7 @@ bb_80157c80:
     DAT_801bef6d++;
     break;
   case 0x31:
-    cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
+    cd_rc = cd_sync_wait_a(1,(uint8_t *)&DAT_801bef64);
     if (cd_rc != 2) {
       if (cd_rc != 5) {
         return;
