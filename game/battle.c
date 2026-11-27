@@ -5389,7 +5389,7 @@ void action_from_input(int ctrl_g)
 {
   short prev;
   int t2;
-  ushort u3;
+  ushort fl3;
   int bi;
   uint fl;
   uint fl2;
@@ -5454,8 +5454,8 @@ LAB_80142fa0:
                 *(uint *)guest_at((uint32_t)(uintptr_t)((st + 0x30) ))= fl;
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x34) ))= (short)rec[-1];
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x36) ))= *(short *)((intptr_t)rec + -2);
-                u3 = *(ushort *)((intptr_t)rec + 2);
-                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= u3;
+                fl3 = *(ushort *)((intptr_t)rec + 2);
+                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= fl3;
                 fl = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x54)));
               }
               else {
@@ -5465,13 +5465,13 @@ LAB_801431cc:
                 *(uint *)guest_at((uint32_t)(uintptr_t)((st + 0x30) ))= fl;
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x34) ))= (short)rec[-1];
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x36) ))= *(short *)((intptr_t)rec + -2);
-                u3 = *(ushort *)((intptr_t)rec + 2);
-                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= u3;
+                fl3 = *(ushort *)((intptr_t)rec + 2);
+                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= fl3;
                 fl = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x54)));
               }
               if ((fl & 8) == 0) {
                 if ((fl & 0x10) != 0) {
-                  t2 = (short)u3 * 7;
+                  t2 = (short)fl3 * 7;
                   if (t2 < 0) {
                     t2 = t2 + 7;
                   }
@@ -5480,8 +5480,8 @@ LAB_801431cc:
               }
               else {
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))=
-                     (short)((((int)((uint)u3 << 0x10) >> 0x10) -
-                             ((int)((uint)u3 << 0x10) >> 0x1f)) >> 1);
+                     (short)((((int)((uint)fl3 << 0x10) >> 0x10) -
+                             ((int)((uint)fl3 << 0x10) >> 0x1f)) >> 1);
               }
               goto LAB_801434b4;
             }
@@ -5527,8 +5527,8 @@ LAB_801431cc:
           break;
         case 7:
           t3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
-          u3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
-          if ((u3 == 0xc0) || (u3 == 0x88)) break;
+          fl3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
+          if ((fl3 == 0xc0) || (fl3 == 0x88)) break;
           goto LAB_80143448;
         }
         if (((*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 5) ))& 1) == 0) && (*(short *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xd6) ))< 0x1e00)) {
@@ -7768,51 +7768,51 @@ uint * rotmat_rtps_build(uint ang,uint *m)
 
 }
 
-uint * rotmat2_pair_build(uint a,uint b,uint *out)
+uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 {
-  int i0;
-  int i1;
-  int i2;
-  int i3;
-  uint v0;
-  uint v1;
-  uint v2;
-  int i4;
-  i0 = (a & 0x3ff) * 2;
-  i4 = (a & 0x3ff) * -2 + 0x800;
-  i3 = i0;
-  if ((a & 0x400) != 0) {
-    i3 = i4;
-    i4 = i0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
+  uint g0;
+  uint g1;
+  uint g2;
+  int t4;
+  t0 = (ang0 & 0x3ff) * 2;
+  t4 = (ang0 & 0x3ff) * -2 + 0x800;
+  t3 = t0;
+  if ((ang0 & 0x400) != 0) {
+    t3 = t4;
+    t4 = t0;
   }
-  i3 = (int)*(short *)(&DAT_801247a8 + i3);
-  if ((a & 0x800) != 0) {
-    i3 = -i3;
+  t3 = (int)*(short *)(&DAT_801247a8 + t3);
+  if ((ang0 & 0x800) != 0) {
+    t3 = -t3;
   }
-  i1 = (b & 0x3ff) * 2;
-  i2 = (b & 0x3ff) * -2 + 0x800;
-  i0 = i1;
-  if ((b & 0x400) != 0) {
-    i0 = i2;
-    i2 = i1;
+  t1 = (ang1 & 0x3ff) * 2;
+  t2 = (ang1 & 0x3ff) * -2 + 0x800;
+  t0 = t1;
+  if ((ang1 & 0x400) != 0) {
+    t0 = t2;
+    t2 = t1;
   }
-  v1 = (uint)*(short *)(&DAT_801247a8 + i0);
-  if ((b & 0x800) != 0) {
-    v1 = -v1;
+  g1 = (uint)*(short *)(&DAT_801247a8 + t0);
+  if ((ang1 & 0x800) != 0) {
+    g1 = -g1;
   }
-  v2 = (uint)*(short *)(&DAT_801247a8 + i2);
-  if ((b + 0x400 & 0x800) != 0) {
-    v2 = -v2;
+  g2 = (uint)*(short *)(&DAT_801247a8 + t2);
+  if ((ang1 + 0x400 & 0x800) != 0) {
+    g2 = -g2;
   }
-  v0 = (uint)*(short *)(&DAT_801247a8 + i4);
-  if ((a + 0x400 & 0x800) != 0) {
-    v0 = -v0;
+  g0 = (uint)*(short *)(&DAT_801247a8 + t4);
+  if ((ang0 + 0x400 & 0x800) != 0) {
+    g0 = -g0;
   }
-  out[1] = v1 & 0xffff | ((int)(v1 * i3) >> 0xc) << 0x10;
-  out[2] = v0 & 0xffff | ((int)(v2 * -i3) >> 0xc) << 0x10;
-  *out = v2 & 0xffff;
-  out[3] = i3 << 0x10 | -((int)(v1 * v0) >> 0xc) & 0xffffU;
-  *(short *)(out + 4) = (short)((int)(v2 * v0) >> 0xc);
+  out[1] = g1 & 0xffff | ((int)(g1 * t3) >> 0xc) << 0x10;
+  out[2] = g0 & 0xffff | ((int)(g2 * -t3) >> 0xc) << 0x10;
+  *out = g2 & 0xffff;
+  out[3] = t3 << 0x10 | -((int)(g1 * g0) >> 0xc) & 0xffffU;
+  *(short *)(out + 4) = (short)((int)(g2 * g0) >> 0xc);
   return out;
 
 }
@@ -8387,13 +8387,13 @@ void task_pools_tick(int pool)
 
 }
 
-void noop_a(int u0,undefined4 u1,undefined4 u2,undefined4 u3)
+void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 {
   int datap;
-  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= u2;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 0xc) ))= u3;
+  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= w0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= w1;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 0xc) ))= w2;
   return;
 
 }
@@ -8417,19 +8417,19 @@ int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 
 }
 
-void noop_b(int u0,undefined4 u1,undefined4 u2)
+void noop_b(int node,undefined4 w0,undefined4 w1)
 {
   int datap;
-  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= u2;
+  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= w0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= w1;
   return;
 
 }
 
-undefined4 noop_c(int u0)
+undefined4 noop_c(int node)
 {
-  return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
+  return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
 
 }
 
@@ -8804,7 +8804,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   int off;
   undefined4 res;
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   int tmp;
   int scl;
   undefined4 at_val;
@@ -8832,7 +8832,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   }
   at_val = (at_val & 0xffff0000) | (uint16_t)(short)(tmp >> 0xc);
   setCopReg(2,in_zero,res);
-  setCopReg(2,extraout_at,at_val);
+  setCopReg(2,at_out,at_val);
   copFunction(2,0x180001);
   tmp = getCopReg(2,0xe);
   if (tmp < 0) {
@@ -9989,7 +9989,7 @@ void dual_target_track(int tgt,int f_a,int f_b)
 void dual_target_track_b(int cam,int fa,int fb)
 {
   short s1;
-  ushort u2;
+  ushort wang;
   int t;
   int az;
   int bz;
@@ -10052,10 +10052,10 @@ LAB_80132e74:
   nang = -(short)tmp;
   s1 = *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x82)));
   if (s1 == -2) {
-    u2 = nang + 0x800;
+    wang = nang + 0x800;
 LAB_80132f40:
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x32) ))= u2;
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x2a) ))= u2;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x32) ))= wang;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x2a) ))= wang;
   }
   else {
     if (s1 < -1) {
@@ -10067,9 +10067,9 @@ LAB_80132f40:
       if (tmp < 0) {
         tmp = -tmp;
       }
-      u2 = nang & 0xfff;
+      wang = nang & 0xfff;
       if (0x400 < tmp) {
-        u2 = nang + 0x800 & 0xfff;
+        wang = nang + 0x800 & 0xfff;
       }
       goto LAB_80132f40;
     }
@@ -12047,7 +12047,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   undefined4 t0;
   undefined4 t1;
   undefined4 t2;
@@ -12077,7 +12077,7 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
         gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         setCopReg(2,in_zero,lst[1]);
-        setCopReg(2,extraout_at,lst[2]);
+        setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         num = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
@@ -13606,7 +13606,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   int t;
   int vp;
   int sz;
@@ -13644,7 +13644,7 @@ int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
         vp = *lst + 0x20;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)xf),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         setCopReg(2,in_zero,lst[1]);
-        setCopReg(2,extraout_at,lst[2]);
+        setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         t = getCopReg(2,0xc800);
         sz = getCopReg(2,0xd800);
@@ -13722,51 +13722,51 @@ int * gte_xform_add_off(int x,undefined4 *y,int *z)
 
 }
 
-uint * angle_pair_rotmat(uint x,uint y,uint *z)
+uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 {
-  int i0;
-  int i1;
-  int i2;
-  int i3;
-  uint v0;
-  uint v1;
-  int i4;
-  i0 = (x & 0x3ff) * 2;
-  i4 = (x & 0x3ff) * -2 + 0x800;
-  i3 = i0;
-  if ((x & 0x400) != 0) {
-    i3 = i4;
-    i4 = i0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
+  uint g0;
+  uint g1;
+  int t4;
+  t0 = (ang0 & 0x3ff) * 2;
+  t4 = (ang0 & 0x3ff) * -2 + 0x800;
+  t3 = t0;
+  if ((ang0 & 0x400) != 0) {
+    t3 = t4;
+    t4 = t0;
   }
-  i3 = (int)*(short *)(&DAT_801247a8 + i3);
-  if ((x & 0x800) != 0) {
-    i3 = -i3;
+  t3 = (int)*(short *)(&DAT_801247a8 + t3);
+  if ((ang0 & 0x800) != 0) {
+    t3 = -t3;
   }
-  i1 = (y & 0x3ff) * 2;
-  i2 = (y & 0x3ff) * -2 + 0x800;
-  i0 = i1;
-  if ((y & 0x400) != 0) {
-    i0 = i2;
-    i2 = i1;
+  t1 = (ang1 & 0x3ff) * 2;
+  t2 = (ang1 & 0x3ff) * -2 + 0x800;
+  t0 = t1;
+  if ((ang1 & 0x400) != 0) {
+    t0 = t2;
+    t2 = t1;
   }
-  i0 = (int)*(short *)(&DAT_801247a8 + i0);
-  if ((y & 0x800) != 0) {
-    i0 = -i0;
+  t0 = (int)*(short *)(&DAT_801247a8 + t0);
+  if ((ang1 & 0x800) != 0) {
+    t0 = -t0;
   }
-  v1 = (uint)*(short *)(&DAT_801247a8 + i2);
-  if ((y + 0x400 & 0x800) != 0) {
-    v1 = -v1;
+  g1 = (uint)*(short *)(&DAT_801247a8 + t2);
+  if ((ang1 + 0x400 & 0x800) != 0) {
+    g1 = -g1;
   }
-  v0 = (uint)*(short *)(&DAT_801247a8 + i4);
-  if ((x + 0x400 & 0x800) != 0) {
-    v0 = -v0;
+  g0 = (uint)*(short *)(&DAT_801247a8 + t4);
+  if ((ang0 + 0x400 & 0x800) != 0) {
+    g0 = -g0;
   }
-  z[3] = -i0 & 0xffffU | ((int)(v1 * i3) >> 0xc) << 0x10;
-  *z = v1 & 0xffff | (i0 * i3 >> 0xc) << 0x10;
-  z[1] = (int)(i0 * v0) >> 0xc & 0xffff;
-  z[2] = v0 & 0xffff | i3 * -0x10000;
-  *(short *)(z + 4) = (short)((int)(v1 * v0) >> 0xc);
-  return z;
+  out[3] = -t0 & 0xffffU | ((int)(g1 * t3) >> 0xc) << 0x10;
+  *out = g1 & 0xffff | (t0 * t3 >> 0xc) << 0x10;
+  out[1] = (int)(t0 * g0) >> 0xc & 0xffff;
+  out[2] = g0 & 0xffff | t3 * -0x10000;
+  *(short *)(out + 4) = (short)((int)(g1 * g0) >> 0xc);
+  return out;
 
 }
 
@@ -13977,30 +13977,30 @@ int trig_sin_lookup(uint ang)
 
 uint * angle_vec_build(uint ang,uint *out)
 {
-  int i0;
-  int i2;
-  uint v0;
-  int i1;
-  uint v1;
+  int t0;
+  int t2;
+  uint g0;
+  int t1;
+  uint g1;
   *(undefined2 *)(out + 4) = 0x1000;
-  i0 = (ang & 0x3ff) * 2;
-  i1 = (ang & 0x3ff) * -2 + 0x800;
-  i2 = i0;
+  t0 = (ang & 0x3ff) * 2;
+  t1 = (ang & 0x3ff) * -2 + 0x800;
+  t2 = t0;
   if ((ang & 0x400) != 0) {
-    i2 = i1;
-    i1 = i0;
+    t2 = t1;
+    t1 = t0;
   }
-  v0 = (uint)*(ushort *)(&DAT_801247a8 + i2);
+  g0 = (uint)*(ushort *)(&DAT_801247a8 + t2);
   if ((ang & 0x800) != 0) {
-    v0 = -v0;
+    g0 = -g0;
   }
-  v1 = (uint)*(ushort *)(&DAT_801247a8 + i1);
+  g1 = (uint)*(ushort *)(&DAT_801247a8 + t1);
   if ((ang + 0x400 & 0x800) != 0) {
-    v1 = -v1 & 0xffff;
+    g1 = -g1 & 0xffff;
   }
-  *out = v1 | v0 * -0x10000;
-  out[1] = v0 * 0x10000;
-  out[2] = v1;
+  *out = g1 | g0 * -0x10000;
+  out[1] = g0 * 0x10000;
+  out[2] = g1;
   out[3] = 0;
   return out;
 
@@ -18213,19 +18213,19 @@ void sprite_prim_build(int ot,int pos,int dim,int uv,int sw,int sh,int col)
   int spr;
   int w;
   int h;
-  int u0;
-  int v0;
+  int t2;
+  int t3;
   int t0;
   int t1;
   spr = spr_pool_b_alloc(ot,pos,dim,uv);
   if (spr != 0) {
     w = ((dim >> 0x10) & 0xff) + 1;
     h = (int)((uint32_t)dim >> 0x18) + 1;
-    u0 = uv & 0xff;
-    v0 = (uv >> 8) & 0xff;
+    t2 = uv & 0xff;
+    t3 = (uv >> 8) & 0xff;
     t0 = w * (int)(short)sw;
     t1 = h * (int)(short)sh;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x15)) = (byte)v0;
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x15)) = (byte)t3;
     if (t0 < 0) {
       t0 = t0 + 0xfff;
     }
@@ -18236,27 +18236,27 @@ void sprite_prim_build(int ot,int pos,int dim,int uv,int sw,int sh,int col)
     h = t1 >> 0xc;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = uv;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x16)) = (short)dim;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) = (byte)(u0 + w);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1c)) = (byte)u0;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1d)) = (byte)(v0 + h);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x24)) = (byte)(u0 + w);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x25)) = (byte)(v0 + h);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) = (byte)(t2 + w);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1c)) = (byte)t2;
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1d)) = (byte)(t3 + h);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x24)) = (byte)(t2 + w);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x25)) = (byte)(t3 + h);
     /* corner halves: negated values use sign of the negated operand,
      * positive use sign of the adjusted raw product (t0/t1) */
-    u0 = pos + (((-w) + (int)((uint32_t)(-w) >> 0x1f)) >> 1);
-    v0 = (pos >> 0x10) + (((-h) + (int)((uint32_t)(-h) >> 0x1f)) >> 1);
+    t2 = pos + (((-w) + (int)((uint32_t)(-w) >> 0x1f)) >> 1);
+    t3 = (pos >> 0x10) + (((-h) + (int)((uint32_t)(-h) >> 0x1f)) >> 1);
     t0 = pos + ((w + (int)((uint32_t)t0 >> 0x1f)) >> 1);
     t1 = (pos >> 0x10) + ((h + (int)((uint32_t)t1 >> 0x1f)) >> 1);
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)u0;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x18)) = (short)u0;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)t2;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x18)) = (short)t2;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x1a)) = (short)t1;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x22)) = (short)t1;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)v0;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) = (short)v0;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)t3;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) = (short)t3;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x10)) = (short)t0;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x20)) = (short)t0;
-    u0 = ((col & 0xff) * 0x010101) | 0x2e000000;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = u0;
+    t2 = ((col & 0xff) * 0x010101) | 0x2e000000;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = t2;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)ot) =
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)ot) | 0x09000000;
     *(int *)guest_at((uint32_t)(uintptr_t)ot) = spr & 0xffffff;
