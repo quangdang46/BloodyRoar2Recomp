@@ -86,9 +86,11 @@ class DebugConn:
         self._next_id = 1
 
     def __enter__(self) -> "DebugConn":
+        """Context-manager enter.."""
         return self
 
     def __exit__(self, *exc: Any) -> None:
+        """Context-manager exit: close.."""
         self.close()
 
     def connect(self) -> None:
@@ -162,6 +164,7 @@ class DebugConn:
     # -- convenience wrappers used by the CLIs ------------------------------
 
     def frame(self) -> int:
+        """Current frame counter via ping.."""
         return int(self.cmd("ping").get("frame", 0))
 
     def ring_span(self) -> Dict[str, Any]:
@@ -220,14 +223,17 @@ def _sx11(v: int) -> int:
 
 
 def parse_vertex(word: int) -> Tuple[int, int]:
+    """Parse a vertex word into sx/sy.."""
     return _sx11(word & 0xFFFF), _sx11((word >> 16) & 0xFFFF)
 
 
 def parse_color(word: int) -> Tuple[int, int, int]:
+    """Parse a color word into r,g,b.."""
     return word & 0xFF, (word >> 8) & 0xFF, (word >> 16) & 0xFF
 
 
 def poly_flags(op: int) -> Dict[str, bool]:
+    """Decode polygon attribute flags from op word.."""
     return {
         "gouraud": bool(op & 0x10),
         "quad": bool(op & 0x08),
@@ -238,12 +244,14 @@ def poly_flags(op: int) -> Dict[str, bool]:
 
 
 def poly_words(op: int) -> int:
+    """Word count for a polygon primitive.."""
     f = poly_flags(op)
     n = 4 if f["quad"] else 3
     return 1 + n * (2 if f["textured"] else 1) + (n - 1 if f["gouraud"] else 0)
 
 
 def rect_words(op: int) -> int:
+    """Word count for a rect/sprite primitive.."""
     variable = ((op >> 3) & 3) == 0
     return 1 + 1 + (1 if op & 0x04 else 0) + (1 if variable else 0)
 
@@ -307,6 +315,7 @@ def op_name(op: int) -> str:
 
 
 def op_kind(op: int) -> str:
+    """Classify a GPU op word into a primitive kind.."""
     if 0x20 <= op <= 0x3F:
         return "poly"
     if 0x40 <= op <= 0x5F:
@@ -332,6 +341,7 @@ class GpuState:
     """
 
     def __init__(self) -> None:
+        """GpuState ctor: default offsets/clip area.."""
         self.offset = (0, 0)
         self.area_tl = (0, 0)
         self.area_br = (1023, 511)
@@ -343,12 +353,14 @@ class GpuState:
         self.mask_check = False
 
     def set_tpage(self, tpage_word: int) -> None:
+        """Set texture page from a tpage word.."""
         self.texpage_x = tpage_word & 0xF
         self.texpage_y = (tpage_word >> 4) & 1
         self.stp = (tpage_word >> 5) & 3
         self.tex_colors = (tpage_word >> 7) & 3
 
     def apply_env(self, op: int, w0: int) -> None:
+        """Apply a GPU env command word to state.."""
         if op == 0xE1:
             self.set_tpage(w0 & 0xFFFF)
         elif op == 0xE3:
@@ -362,6 +374,7 @@ class GpuState:
             self.mask_check = bool(w0 & 2)
 
     def snapshot(self) -> Dict[str, Any]:
+        """Return current GPU state as a dict.."""
         return {
             "offset": list(self.offset),
             "area": [self.area_tl[0], self.area_tl[1], self.area_br[0], self.area_br[1]],
@@ -372,6 +385,7 @@ class GpuState:
 
 
 def _hexw(words: Sequence[Any]) -> List[int]:
+    """Normalize a word list to ints.."""
     out = []
     for w in words:
         out.append(int(w, 16) if isinstance(w, str) else int(w))
@@ -593,6 +607,7 @@ def attribute(prims: Sequence[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
 
 
 def prim_bbox(p: Dict[str, Any]) -> Optional[List[int]]:
+    """Bounding box of a primitive's verts.."""
     verts = p.get("verts") or []
     if not verts:
         return None
@@ -607,6 +622,7 @@ def prim_bbox(p: Dict[str, Any]) -> Optional[List[int]]:
 
 
 def _union(a: Sequence[int], b: Sequence[int]) -> List[int]:
+    """Union of two bboxes.."""
     return [min(a[0], b[0]), min(a[1], b[1]), max(a[2], b[2]), max(a[3], b[3])]
 
 
@@ -709,6 +725,7 @@ def summarise_dump(dump: Dict[str, Any], dump_name: str = "") -> Dict[str, Any]:
 
 
 def save_summary(dump: Dict[str, Any], path: str, dump_name: str = "") -> Dict[str, Any]:
+    """Write a JSON summary of a dump.."""
     summary = summarise_dump(dump, dump_name)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=1)
@@ -716,11 +733,13 @@ def save_summary(dump: Dict[str, Any], path: str, dump_name: str = "") -> Dict[s
 
 
 def save_dump(dump: Dict[str, Any], path: str) -> None:
+    """Write a raw dump JSON.."""
     with open(path, "w", encoding="utf-8") as f:
         json.dump(dump, f, indent=1)
 
 
 def load_dump(path: str) -> Dict[str, Any]:
+    """Load a dump JSON with validation.."""
     with open(path, "r", encoding="utf-8") as f:
         dump = json.load(f)
     if dump.get("kind") != DUMP_KIND:
