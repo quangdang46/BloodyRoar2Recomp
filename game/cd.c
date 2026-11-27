@@ -415,12 +415,16 @@ bool cd_read_setup(uint32_t count,uint32_t pos,uint32_t mode)
                                   (uint32_t)pos,(uint32_t)mode,0);
 }
 
+
 #if 0
   /* DEAD — superseded clean-port attempt of the CD read-setup body
    * (0x80198C90 region): kept for reference only; the live path above
+   * delegates via call_guest4 because the clean-C spin could not supply
+   * the live $ra/resume-PC the generated CPS frame provides (see the
+   * cd_read_poll note). Do not re-enable without re-verifying IRQ timing. */
   int t1;
+  int t2;
   uint32_t status;
-  uint status;
 
   if (CD_RD_DONE != 0) {
     t1 = cd_timer_read(0xffffffff);
@@ -458,6 +462,7 @@ L_80198d0c:
   return 0 < t1;
 }
 #endif
+
 
 /* ======== 0x8019a460 ======== */
 
