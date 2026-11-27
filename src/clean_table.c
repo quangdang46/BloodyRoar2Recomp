@@ -23844,8 +23844,8 @@ extern void part_desc_clear(uint32_t desc_g);
     part_desc_clear(((uint32_t)cpu->gpr[8]));
 }
 static void wrap_8017a6e0(CPUState *cpu) {
-extern void cps_8017a6e0(void);
-    cps_8017a6e0();
+extern void desc_ret_empty_a(void);
+    desc_ret_empty_a();
 }
 static void wrap_8017a6e8(CPUState *cpu) {
 extern void action_switch_guest(int ctrl_g,int *motion,int idx);
@@ -23873,12 +23873,12 @@ extern void cps_8017a990(void);
     cps_8017a990();
 }
 static void wrap_8017a9b8(CPUState *cpu) {
-extern void cps_8017a9b8(void);
-    cps_8017a9b8();
+extern void desc_f88_get(void);
+    desc_f88_get();
 }
 static void wrap_8017a9c4(CPUState *cpu) {
-extern void cps_8017a9c4(void);
-    cps_8017a9c4();
+extern void desc_f88_set_a2p2(void);
+    desc_f88_set_a2p2();
 }
 static void wrap_8017a9d0(CPUState *cpu) {
 extern void cps_8017a9d0(void);
@@ -23889,12 +23889,12 @@ extern void cps_8017a9d0(void);
     cps_8017a9d0();
 }
 static void wrap_8017a9fc(CPUState *cpu) {
-extern void cps_8017a9fc(void);
-    cps_8017a9fc();
+extern void desc_ret_a2p2(void);
+    desc_ret_a2p2();
 }
 static void wrap_8017aa04(CPUState *cpu) {
-extern void cps_8017aa04(void);
-    cps_8017aa04();
+extern void desc_ret_zero(void);
+    desc_ret_zero();
 }
 static void wrap_8017aa0c(CPUState *cpu) {
 extern uint32_t ev2_hitstun_gate_dispatch(uint32_t ctrl, uint32_t motion,
@@ -23910,16 +23910,16 @@ extern void cps_8017ab30(void);
     cps_8017ab30();
 }
 static void wrap_8017ab5c(CPUState *cpu) {
-extern void cps_8017ab5c(void);
-    cps_8017ab5c();
+extern void desc_f84_f90_commit(void);
+    desc_f84_f90_commit();
 }
 static void wrap_8017ab74(CPUState *cpu) {
 extern uint32_t ev4_branch_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc);
     cpu->gpr[2] = (uint32_t)(ev4_branch_dispatch(((uint32_t)cpu->gpr[4]), ((uint32_t)cpu->gpr[5]), ((uint32_t)cpu->gpr[6])));
 }
 static void wrap_8017ac44(CPUState *cpu) {
-extern void cps_8017ac44(void);
-    cps_8017ac44();
+extern void desc_ret_a2p4(void);
+    desc_ret_a2p4();
 }
 static void wrap_8017ac4c(CPUState *cpu) {
 extern void cps_8017ac4c(void);
@@ -23958,12 +23958,12 @@ extern void cps_8017adb8(void);
     cps_8017adb8();
 }
 static void wrap_8017ae00(CPUState *cpu) {
-extern void cps_8017ae00(void);
-    cps_8017ae00();
+extern void desc_h2_f30_sum(void);
+    desc_h2_f30_sum();
 }
 static void wrap_8017ae10(CPUState *cpu) {
-extern void cps_8017ae10(void);
-    cps_8017ae10();
+extern void desc_ret_empty_b(void);
+    desc_ret_empty_b();
 }
 static void wrap_8017ae18(CPUState *cpu) {
 extern ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream);
@@ -24000,8 +24000,8 @@ extern void cps_8017b5f4(void);
     cps_8017b5f4();
 }
 static void wrap_8017b648(CPUState *cpu) {
-extern void cps_8017b648(void);
-    cps_8017b648();
+extern void desc_ret_a2p4_b(void);
+    desc_ret_a2p4_b();
 }
 static void wrap_8017b650(CPUState *cpu) {
 extern void cps_8017b650(void);
@@ -24184,8 +24184,8 @@ extern void cps_8017b860(void);
     cps_8017b860();
 }
 static void wrap_8017b8b4(CPUState *cpu) {
-extern void cps_8017b8b4(void);
-    cps_8017b8b4();
+extern void desc_ret_a2p6(void);
+    desc_ret_a2p6();
 }
 static void wrap_8017b8bc(CPUState *cpu) {
 extern void cps_8017b8bc(void);
@@ -24304,8 +24304,8 @@ extern void cps_8017ba3c(void);
     cps_8017ba3c();
 }
 static void wrap_8017baac(CPUState *cpu) {
-extern void cps_8017baac(void);
-    cps_8017baac();
+extern void desc_ret_a2p6_b(void);
+    desc_ret_a2p6_b();
 }
 static void wrap_8017bab4(CPUState *cpu) {
 extern void cps_8017bab4(void);
@@ -24489,8 +24489,8 @@ extern void cps_8017bad4(void);
     cps_8017bad4();
 }
 static void wrap_8017bd8c(CPUState *cpu) {
-extern void cps_8017bd8c(void);
-    cps_8017bd8c();
+extern void desc_ret_a2p2_b(void);
+    desc_ret_a2p2_b();
 }
 static void wrap_8017bd94(CPUState *cpu) {
 extern uint32_t stat_field_dispatch(uint32_t src,uint32_t dst,

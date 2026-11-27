@@ -1142,7 +1142,7 @@
 
 8017b8a0 cps_8017b860
 
-8017bd8c cps_8017bd8c
+8017bd8c desc_ret_a2p2_b
 
 8017a9d0 cps_8017a9d0
 
@@ -1232,7 +1232,7 @@
 
 8017c810 cps_8017c7b0
 
-8017ac44 cps_8017ac44
+8017ac44 desc_ret_a2p4
 
 8017e6ac cps_8017e6ac
 
@@ -1360,7 +1360,7 @@
 
 8017c660 cps_8017c61c
 
-8017ae00 cps_8017ae00
+8017ae00 desc_h2_f30_sum
 
 801796e4 cps_801796e4
 
@@ -1398,7 +1398,7 @@
 
 8017c840 cps_8017c840
 
-8017ab5c cps_8017ab5c
+8017ab5c desc_f84_f90_commit
 
 8017e4cc cps_8017e4cc
 
@@ -1418,7 +1418,7 @@
 
 8017da44 cps_8017da44
 
-8017b8b4 cps_8017b8b4
+8017b8b4 desc_ret_a2p6
 
 8017da68 cps_8017da68
 
@@ -1444,7 +1444,7 @@
 
 8017c900 cps_8017c900
 
-8017a9c4 cps_8017a9c4
+8017a9c4 desc_f88_set_a2p2
 
 8017c850 cps_8017c850
 
@@ -1640,7 +1640,7 @@
 
 8017da30 cps_8017d9dc
 
-8017aa04 cps_8017aa04
+8017aa04 desc_ret_zero
 
 8017c3d0 cps_8017c3d0
 
@@ -1708,7 +1708,7 @@
 
 8017c5b0 cps_8017c3d0
 
-8017a9b8 cps_8017a9b8
+8017a9b8 desc_f88_get
 
 8017baf0 cps_8017bad4
 
@@ -1808,7 +1808,7 @@
 
 8017d244 cps_8017d244
 
-8017baac cps_8017baac
+8017baac desc_ret_a2p6_b
 
 80172a2c cps_80172a2c
 
@@ -1942,7 +1942,7 @@
 
 8017b8bc cps_8017b8bc
 
-8017b648 cps_8017b648
+8017b648 desc_ret_a2p4_b
 
 8017b8d0 cps_8017b8d0
 
@@ -1950,7 +1950,7 @@
 
 8017e694 cps_8017e694
 
-8017ae10 cps_8017ae10
+8017ae10 desc_ret_empty_b
 
 8017d23c cps_8017d23c
 
@@ -2042,9 +2042,9 @@
 
 8017c600 cps_8017c600
 
-8017a6e0 cps_8017a6e0
+8017a6e0 desc_ret_empty_a
 
-8017a9fc cps_8017a9fc
+8017a9fc desc_ret_a2p2
 
 8017d5c8 cps_8017d5c8
 

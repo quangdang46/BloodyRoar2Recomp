@@ -2245,3 +2245,16 @@
 80192e24 gpu_tag_cmd_byte_get
 80192e38 gpu_command_words_send
 80194470 gte_screen_init_hi_entry
+8017a6e0 desc_ret_empty_a
+8017a9b8 desc_f88_get
+8017a9c4 desc_f88_set_a2p2
+8017a9fc desc_ret_a2p2
+8017aa04 desc_ret_zero
+8017ab5c desc_f84_f90_commit
+8017ac44 desc_ret_a2p4
+8017ae00 desc_h2_f30_sum
+8017ae10 desc_ret_empty_b
+8017b648 desc_ret_a2p4_b
+8017b8b4 desc_ret_a2p6
+8017baac desc_ret_a2p6_b
+8017bd8c desc_ret_a2p2_b
