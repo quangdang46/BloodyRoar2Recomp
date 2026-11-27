@@ -80,7 +80,7 @@ extern int mc_init_reset(void);
 extern int mc_mode_nibble_rw(int32_t a0);
 extern int32_t mc_dialog_bit4(int32_t);
 extern int mc_confirm_dispatch(int32_t a0,uint32_t a1);
-extern int confirm_code_select();
+extern void confirm_code_select(uint32_t,uint32_t);
 extern int select_phase_update(uint32_t a0);
 extern int match_setup_apply(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3);
 extern int menu_sprite_load_sm(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t a4);
@@ -172,7 +172,7 @@ extern void rec_timer_pair_clear(intptr_t);
 extern void gauge_scale_fixed(short,short);
 extern void brightness_commit(uint16_t);
 extern int deferred_cmd_reset(void);
-extern void deferred_cmd_drain();
+extern void deferred_cmd_drain(uint32_t,int);
 extern void deferred_cmd_post(uint32_t cmd,int arg,short aux);
 extern void memcard_slot_poll(void);
 extern void memcard_tick(void);
@@ -752,7 +752,7 @@ L_dat1_3:
   case '\x05':
 L_dat1_5:
     se_value_select((char)DAT_1f800098);
-    confirm_code_select(0x1f800000);
+    confirm_code_select(0x1f800000,0x1f8000e8);
     battle_struct_init(_DAT_1f8000bc,0x1f800000);
     task_table_init(0);
     sprite_desc_table_init(0);
@@ -1302,7 +1302,7 @@ LAB_8015bbd8:
         step_arg = *(uint32_t *)(cfg_base + 0x44);
         step_arg = (step_arg & 1) << 2 | 0xc03 | step_arg >> 0xd & 8 | step_arg >> 9 & 0x10 | step_arg >> 9 & 0x20
                 | step_arg >> 9 & 0x40 | (step_arg & 0x40) << 1 | step_arg >> 3 & 0x100 | step_arg >> 1 & 0x200;
-        sprite_desc_table_init();
+        sprite_desc_table_init(1);
         print_mode_dispatch_b(2,0,0);
         _DAT_801e8508 = 0;
         _DAT_801e8518 = 0x30;
@@ -2157,7 +2157,7 @@ LAB_8016767c:
           if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
         if ((res != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
-            confirm_code_select(0x1f800000);
+            confirm_code_select(0x1f800000,0x1f8000e8);
           }
           intro_timer = 9000;
           se_value_select(DAT_1f800098);
@@ -2240,7 +2240,7 @@ void display_frame_present(int *env,int ticks)
 
   gpu_draw_sync(0);
   memcard_tick();
-  deferred_cmd_drain();
+  deferred_cmd_drain((uint32_t)clean_cpu_state()->gpr[4],(int32_t)clean_cpu_state()->gpr[5]);
   memcard_slot_poll();
   int tticks = 0;
   if (-1 < ticks) {
@@ -2450,18 +2450,24 @@ void cd_stream_mode_init(uint32_t cfg_g)
 
 {
   int st;
-  uint8_t arg_buf [8];
+  /* guest frame 0x28: ra@sp+32, s0@sp+24, param byte @sp+16 (disasm
+   * 0x80159CF0-0x80159CFC: li v0,0x80; sb v0,16(sp)). The param block
+   * must live in guest RAM — cd_mode_flag_set forwards param_addr to
+   * cd_cmd_issue as a guest address, so a host stack buffer was a wild
+   * pointer. */
+  uint32_t fr = br2_guest_frame(0x28);
+  uint32_t arg_g = fr + 16;
   uint32_t cfg_w0 = *(uint32_t *)guest_at(cfg_g);
   g_cdfn_log[14]++;   /* CDFN_STREAM_MODE_INIT */
   cd_seek_note(4, cfg_w0, (uint32_t)cd_stamp_to_sector(guest_at(cfg_g)));
 
-  arg_buf[0] = 0x80;
+  *(uint8_t *)guest_at(arg_g) = 0x80;
   do {
     do {
       st = cd_mode_flag_set(2,cfg_g,0);
     } while (st == 0);
     do {
-      st = cd_mode_flag_set(0xe,arg_buf,0);
+      st = cd_mode_flag_set(0xe,(int)arg_g,0);
     } while (st == 0);
     if (DAT_801c4580 == '\0') {
       cd_timer_read(3);
@@ -2469,6 +2475,7 @@ void cd_stream_mode_init(uint32_t cfg_g)
     DAT_801c4580 = '\x01';
     st = cd_mode_set_0e(0x1e0);
   } while (st == 0);
+  br2_guest_frame_free();
   return;
 }
 
@@ -2721,7 +2728,7 @@ void boot_globals_init(void)
   _DAT_801f2664 = 0;
   _DAT_801f2678 = 7;
   _DAT_801f267c = 7;
-  cd_chan_attr_push();
+  cd_chan_attr_push(0x801f2650u);
   blk_1f26c0_init_b();
   match_mode_set(0);
   deferred_cmd_reset();
@@ -11094,9 +11101,9 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
   MW8(obj + 5, 0);
   MW16(obj + 0xae, MB16(obj + 0xac));
   slot_apply_guest((int)obj, 0);
-  hit_chain_clear(obj);
-  pending_hit_a_clear(obj);
-  pending_hit_b_clear(obj);
+  hit_chain_clear((uint8_t *)guest_at(obj));
+  pending_hit_a_clear((uint8_t *)guest_at(obj));
+  pending_hit_b_clear((uint8_t *)guest_at(obj));
   return desc + 2u;
 }
 
@@ -12220,9 +12227,9 @@ uint32_t condition_word_dispatch(uint32_t obj,uint32_t st,
     case 3: MW32(st + 0x94, MB16(obj + 0x80) & MB16(desc + 2)); break;
     case 4: MW32(st + 0x94, MB16(obj + 0x84) & MB16(desc + 2)); break;
     case 5: MW32(st + 0x94, MB16(obj + 0x82) & MB16(desc + 2)); break;
-    case 6: hit_chain_clear(obj, st); return desc + 6;
-    case 7: pending_hit_a_clear(obj, st); return desc + 6;
-    case 8: pending_hit_b_clear(obj, st); return desc + 6;
+    case 6: hit_chain_clear((uint8_t *)guest_at(obj)); return desc + 6;
+    case 7: pending_hit_a_clear((uint8_t *)guest_at(obj)); return desc + 6;
+    case 8: pending_hit_b_clear((uint8_t *)guest_at(obj)); return desc + 6;
     }
     return desc + 6;
   }

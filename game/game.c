@@ -358,8 +358,9 @@ extern void guest_main(void);
 
 
 /* ---- callee externs (ported in later batches; weak-bound meanwhile) ---- */
+extern CPUState *clean_cpu_state(void);
 extern void memcard_tick(void);
-extern void deferred_cmd_drain();
+extern void deferred_cmd_drain(uint32_t,int);
 extern void cursor_sprite_anim(uint8_t *);
 extern void memcard_slot_poll(void);
 extern uint32_t cd_timer_read(int);
@@ -1533,7 +1534,7 @@ void frame_tick(intptr_t ctx)
     env_ptr = *(int *)(ctx + 4);
     ot_ptr = *(int *)(ctx + 8);
     memcard_tick();
-    deferred_cmd_drain();
+    deferred_cmd_drain((uint32_t)clean_cpu_state()->gpr[4],(int32_t)clean_cpu_state()->gpr[5]);
     cursor_sprite_anim((uint8_t *)ctx);
     memcard_slot_poll();
     tmp = cd_timer_read(1);
@@ -1955,7 +1956,7 @@ void frame_present(intptr_t ctx)
   
   env_ptr = *(int *)(ctx + 4);
   memcard_tick();
-  deferred_cmd_drain();
+  deferred_cmd_drain((uint32_t)clean_cpu_state()->gpr[4],(int32_t)clean_cpu_state()->gpr[5]);
   cursor_sprite_anim((uint8_t *)ctx);
   memcard_slot_poll();
   pad_state_refresh(ctx);
