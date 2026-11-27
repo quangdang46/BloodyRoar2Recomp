@@ -721,7 +721,6 @@ extern uint32_t gpu_status_cmd(uint32_t);
 extern void cd_chan_reg_init(int);
 extern void cd_ext_init_once(void);
 extern void cd_u16_table_store(int,uint32_t,int);
-uint32_t bios_call(uint32_t,uint32_t);
 
 extern char *s__s_bad_RECT_801254c8;
 extern char *s___d__d____d__d__801254d4;
