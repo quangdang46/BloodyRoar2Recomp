@@ -199,7 +199,7 @@ extern void debug_strike_fx_a(short*pos,int x,int y,undefined4 unused,int f);
 extern void debug_strike_fx_b(short*pos,undefined4 x,undefined4 y,ushort ang,int f);
 extern void noop_fn();
 extern undefined2 *rtps_pt_xform(ushort*pt,undefined2*out);
-extern undefined4 FUN_80194660(undefined2*in,undefined2*out);
+extern int32_t FUN_80194660(const void *in,void *out);
 extern void node_xform_apply(int node,undefined4 mat,undefined4 flg);
 extern ushort attr_flag_mask(uint node);
 extern undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags);
@@ -246,7 +246,7 @@ extern int fixed_approach_s16(ushort *cur,short *tgt,uint step);
 extern void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec);
 extern bool burst_slot_active(int slot);
 extern void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex);
-extern undefined4 FUN_80194630(undefined4 *in,undefined4 *out);
+extern int32_t FUN_80194630(const void *in,void *out);
 extern void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr);
 extern uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out);
 extern uint * gte_xform3_nold(ushort *in,uint *out);
@@ -16694,10 +16694,10 @@ extern void *guest_at(uint32_t addr);
 #define BA32(a)  (*(uint32_t *)guest_at(a))
 #define BA16S(a) (*(int16_t  *)guest_at(a))
 extern char *s_Print_mode_error_8011f140;
-extern undefined4 text_win_init(uint32_t w,uint32_t h);
-extern uint32_t text_widget_alloc(uint32_t x,uint32_t y,uint32_t attr,uint32_t aux,uint32_t mode,uint32_t count);
-extern undefined4 text_line_select(uint32_t line);
-extern undefined4 printf_forward(const char *fmt, ...);
+extern void text_win_init(uint32_t w,int32_t h);
+extern int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,uint16_t aux,int32_t mode,int32_t count);
+extern void text_line_select(int32_t line);
+extern void printf_forward(const char *fmt, ...);
 extern void bitfield_or_write(void *p, uint32_t val);
 extern void spr_desc_a(uint32_t slot_g);
 extern void spr_desc_b(uint32_t slot_g,uint32_t on);
@@ -16898,7 +16898,7 @@ extern void hud_text_a(undefined4 ot_ptr,undefined2 flags,const void *str,undefi
 extern void hud_text_b(undefined4 ot_ptr,undefined4 flags,const void *str,undefined4 attr,undefined2 attr_b,short tile_row);
 extern void hud_text_c(undefined4 ot_ptr,undefined4 flags,const void *str,undefined4 attr,undefined2 attr_b,undefined4 tile_row);
 extern void print_dispatch(const char *fmt,...);
-extern void slot_name_measure(char *a0,uint32_t a1);
+extern int slot_name_measure(void *a0,int32_t a1);
 /* hud_time_score_draw @0x80163e38 — draw the time/score readout: split the
  * frame counter into mm:ss:ff (clamped), sprintf_core into a reserved
  * guest-frame buffer, then render via the hud_text/announce helpers. */
@@ -17013,11 +17013,11 @@ LAB_801645f8:
   br2_guest_frame_free();
 }
 
-extern void flow_cfg_init(int a0);
-extern int battle_struct_init(uint32_t battle_g,uint32_t env_g);
+extern void flow_cfg_init(uint8_t a0);
+extern void battle_struct_init(uint32_t battle_g,uint32_t env_g);
 extern void record_copy_1a(int idx);
 extern int per_side_setup(int side,int flag);
-extern int sprite_anim_chain_build(uint32_t a0);
+extern void sprite_anim_chain_build(uint32_t a0);
 extern void clear_f0300_records(void);
 
 /* rec_copy_init — if byte @0x1f800099 == 0: copy 0x44-byte record
@@ -18135,7 +18135,7 @@ void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 
 /* ======== batch31: debug putc + emit chains + vec lerp + record init ===== */
 /* externs for batch31 callees */
-extern int  console_emit(int c);
+extern void console_emit(uint32_t c);
 extern int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2);
 extern int  rotate_xy_pairs(int n,uint32_t ang);  /* guest 0x80195570 — battle.c */
 extern void * spr_pool_b_alloc();  /* gfx.c def — returns host ptr; guest_of() it */
