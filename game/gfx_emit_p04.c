@@ -4,14 +4,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -28,19 +20,19 @@ extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
 
-extern undefined2 *euler_rotmat(uint a0, uint a1, uint a2, undefined2 *a3);
-extern uint *rotmat_rtps_build(uint a0, uint *a1);
-extern uint *rotmat2_pair_build(uint a0, uint a1, uint *a2);
-extern uint *angle_vec_build(uint a0, uint *a1);
+extern uint16_t *euler_rotmat(uint32_t a0, uint32_t a1, uint32_t a2, uint16_t *a3);
+extern uint32_t *rotmat_rtps_build(uint32_t a0, uint32_t *a1);
+extern uint32_t *rotmat2_pair_build(uint32_t a0, uint32_t a1, uint32_t *a2);
+extern uint32_t *angle_vec_build(uint32_t a0, uint32_t *a1);
 
-undefined2 *euler_rotmat_unpack(uint32_t src, undefined2 *out)
+uint16_t *euler_rotmat_unpack(uint32_t src, uint16_t *out)
 {
   uint32_t w = br2_ld32(src);
   int32_t a3 = (int32_t)(int16_t)br2_ld16(src + 4);
   return euler_rotmat(w, (uint32_t)((int32_t)w >> 16), (uint32_t)a3, out);
 }
 
-undefined2 *euler_rotmat_neg(uint32_t src, undefined2 *out)
+uint16_t *euler_rotmat_neg(uint32_t src, uint16_t *out)
 {
   uint32_t w = br2_ld32(src);
   int32_t a3 = (int32_t)(int16_t)br2_ld16(src + 4);
@@ -48,24 +40,24 @@ undefined2 *euler_rotmat_neg(uint32_t src, undefined2 *out)
   return euler_rotmat(w, (uint32_t)(0 - a2), (uint32_t)(0 - a3), out);
 }
 
-undefined2 *euler_rotmat_core(uint32_t a0, uint32_t a1, uint32_t a2, undefined2 *out)
+uint16_t *euler_rotmat_core(uint32_t a0, uint32_t a1, uint32_t a2, uint16_t *out)
 {
   return euler_rotmat(a0, a1, a2, out);
 }
 
-uint *rotmat_rtps_build_half(uint32_t src, uint *out)
+uint32_t *rotmat_rtps_build_half(uint32_t src, uint32_t *out)
 {
   uint32_t a0 = (uint32_t)(int32_t)(int16_t)br2_ld16(src + 2);
   return rotmat_rtps_build(a0, out);
 }
 
-uint *rotmat2_pair_build_word(uint32_t src, uint *out)
+uint32_t *rotmat2_pair_build_word(uint32_t src, uint32_t *out)
 {
   uint32_t w = br2_ld32(src);
   return rotmat2_pair_build(w, (uint32_t)((int32_t)w >> 16), out);
 }
 
-uint *angle_vec_build_half(uint32_t src, uint *out)
+uint32_t *angle_vec_build_half(uint32_t src, uint32_t *out)
 {
   uint32_t a0 = (uint32_t)(int32_t)(int16_t)br2_ld16(src + 4);
   return angle_vec_build(a0, out);
@@ -101,7 +93,7 @@ static int32_t mul_q12(int32_t a, int32_t b)
   return (int32_t)((int64_t)a * (int64_t)b) >> 12;
 }
 
-uint *rotmat_half_euler_a(uint32_t src, uint *out)
+uint32_t *rotmat_half_euler_a(uint32_t src, uint32_t *out)
 {
   int32_t raw1 = (int32_t)(int16_t)br2_ld16(src);
   int32_t raw2 = (int32_t)(int16_t)br2_ld16(src + 4);
@@ -127,7 +119,7 @@ uint *rotmat_half_euler_a(uint32_t src, uint *out)
   return out;
 }
 
-uint *rotmat_half_euler_b(uint32_t src, uint *out)
+uint32_t *rotmat_half_euler_b(uint32_t src, uint32_t *out)
 {
   int32_t raw1 = (int32_t)(int16_t)br2_ld16(src);
   int32_t raw2 = (int32_t)(int16_t)br2_ld16(src + 4);
