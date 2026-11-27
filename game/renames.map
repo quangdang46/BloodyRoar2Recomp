@@ -1303,6 +1303,7 @@
 801ad180 verts_sub_apply
 
 8013ab8c popup_spawn
+8013ab40 popup_field_update
 
 8013da2c confetti_burst_spawn
 
