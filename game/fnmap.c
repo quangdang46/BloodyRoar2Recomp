@@ -1373,6 +1373,7 @@ extern void printf_arg_hex(void);
 extern void printf_arg_oct(void);
 extern void printf_arg_oct_l(void);
 extern void printf_arg_word(void);
+extern void printf_core(void);
 extern void printf_core_piece_e86c(void);
 extern void printf_core_piece_e8cc(void);
 extern void printf_core_piece_e8d0(void);
@@ -2804,6 +2805,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8018e500, (void *)rand_seed },
   { 0x8018e510, (void *)str_len },
   { 0x8018e550, (void *)printf_forward_guest },
+  { 0x8018e590, (void *)printf_core },
   { 0x8018e63c, (void *)printf_cps_8018e63c },
   { 0x8018e64c, (void *)printf_cps_8018e64c },
   { 0x8018e654, (void *)printf_cps_8018e654 },
