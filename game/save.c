@@ -6980,9 +6980,9 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
 #define CAA8_E58C(str,sz,x) \
   announce_param_block_init(ctx8,ctxc,(const void *)guest_at(str),(sz),0x1000,(x))
 #define CAA8_STATUS() do { BR2_W32(0x801c15f0, 1); return 0; } while (0)
-#define CAA8_GATE() do { \
-    if ((g16(0x1f80007c) & 0xe0) == 0) return 0; \
-    deferred_cmd_post(0x400,0xc,0); \
+#define CAA8_GATE() do {                           \
+    if ((g16(0x1f80007c) & 0xe0) == 0) return 0;   \
+    deferred_cmd_post(0x400,0xc,0);                \
   } while (0)
 
   scroll_offset_set(0x20,0xffffffffu);
