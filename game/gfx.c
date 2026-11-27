@@ -1773,7 +1773,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
         count = count + (intptr_t)need;
       }
     }
-    fmt = fmt + 1;                                /* LAB_8018ebec_d */
+    fmt = fmt + 1;                                /* 0x8018EBEC */
   }
   console_pct();                                /* 0x8018EBC0 */
   return (uint32_t)count;
@@ -12038,15 +12038,14 @@ uint32_t prim_xform3_task_run(void)
   }
 
   /* block_8018B100 — entry: blez a3 -> shared epilogue; delay t0 = SPAD */
-  { int _bc = ((int32_t)c->gpr[7] <= 0);
-    c->gpr[8] = 0x1F800000u;                        /* delay: t0 = 0x1F800000 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B200u);
-      goto b200;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B108u);
-      goto b108;
-    } }
+  c->gpr[8] = 0x1F800000u;                        /* delay: t0 = 0x1F800000 (unconditional) */
+  if ((int32_t)c->gpr[7] <= 0) {                   /* blez a3 */
+    psx_check_interrupts_at(c, 0x8018B200u);
+    goto b200;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B108u);
+    goto b108;
+  }
 
 b108:
   /* save caller s0-s6 + ra into scratchpad 0x1F8003E0..0x3FC */
@@ -12068,26 +12067,23 @@ b108:
 b13C:                                               /* record loop head */
   c->gpr[8] = (uint32_t)(int32_t)(int16_t)br2_ld16(c->gpr[16] + 12); /* lh sx16 */
   c->gpr[5] = br2_ld32(c->gpr[16]);                  /* delay: a1 = lw(s0) prim */
-  { int _bc = (c->gpr[8] != c->gpr[0]);              /* bne t0,zero -> skip */
-    c->gpr[4] = c->gpr[21];                          /* delay: a0 = s5 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B14Cu);
-      goto b14C;
-    } }
+  c->gpr[4] = c->gpr[21];                          /* delay: a0 = s5 (unconditional) */
+  if (c->gpr[8] != c->gpr[0]) {                     /* bne t0,zero -> skip */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B14Cu);
+    goto b14C;
+  }
 
 b14C:
-  { int _bc = (c->gpr[5] == c->gpr[0]);              /* beq a1,zero -> skip */
-    /* nop delay slot */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B154u);
-      goto b154;
-    } }
+  if (c->gpr[5] == c->gpr[0]) {                    /* beq a1,zero -> skip (nop delay) */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B154u);
+    goto b154;
+  }
 
 b154:
   c->gpr[31] = 0x8018B15Cu;                          /* jal link */
@@ -12124,15 +12120,14 @@ b198:
   c->gpr[5]  = c->gpr[17];                            /* a1 = s1 */
   c->gpr[22] = br2_ld32(c->gpr[18]);                  /* s6 = lw(s2) count */
   /* nop delay slot */
-  { int _bc = (c->gpr[22] == c->gpr[0]);              /* beq s6,zero -> next rec */
-    c->gpr[18] = c->gpr[18] + 4;                      /* delay: s2 += 4 (entries) */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1B0u);
-      goto b1B0;
-    } }
+  c->gpr[18] = c->gpr[18] + 4;                      /* delay: s2 += 4 (entries, unconditional) */
+  if (c->gpr[22] == c->gpr[0]) {                     /* beq s6,zero -> next rec */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1B0u);
+    goto b1B0;
+  }
 
 b1B0:                                               /* task-entry loop */
   c->gpr[7] = br2_ld32(c->gpr[18] + 4);               /* a3 = ent[1] */
@@ -12146,27 +12141,25 @@ b1B0:                                               /* task-entry loop */
     return c->gpr[2]; }
 
 b1C4:
-  { int _bc = ((int32_t)c->gpr[22] > 0);              /* bgtz s6 -> next entry */
-    c->gpr[18] = c->gpr[18] + 16;                     /* delay: s2 += 16 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1B0u);
-      goto b1B0;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } }
+  c->gpr[18] = c->gpr[18] + 16;                     /* delay: s2 += 16 (unconditional) */
+  if ((int32_t)c->gpr[22] > 0) {                     /* bgtz s6 -> next entry */
+    psx_check_interrupts_at(c, 0x8018B1B0u);
+    goto b1B0;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  }
 
 b1CC:                                               /* record loop tail */
   c->gpr[19] = c->gpr[19] + 0xFFFFFFFFu;              /* s3-- */
-  { int _bc = ((int32_t)c->gpr[19] > 0);              /* bgtz s3 -> next record */
-    c->gpr[16] = c->gpr[16] + 40;                     /* delay: s0 += 0x28 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B13Cu);
-      goto b13C;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1D8u);
-      goto b1D8;
-    } }
+  c->gpr[16] = c->gpr[16] + 40;                     /* delay: s0 += 0x28 (unconditional) */
+  if ((int32_t)c->gpr[19] > 0) {                     /* bgtz s3 -> next record */
+    psx_check_interrupts_at(c, 0x8018B13Cu);
+    goto b13C;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1D8u);
+    goto b1D8;
+  }
 
 b1D8:                                               /* epilogue: restore SPAD */
   c->gpr[4]  = c->gpr[16];                            /* a0 = final record ptr */
