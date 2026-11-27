@@ -1221,3 +1221,15 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
     br2eu_func_801ACF34; printf-family callers audited consistent.
 - Headless verify: frames 40k->67k advancing post-fixes, no crash.
   master ~42 ahead of mine/master, unpushed.
+- **cps_ structuring FEASIBILITY PROVEN** (analysis, no code yet):
+  SCC analysis of the 10 largest cps_ bodies shows the intra-function
+  CFG is essentially a DAG — cps_8012fce0 (355 blocks) has ZERO
+  non-trivial SCCs, 8015d69c (332) zero, most others 0-4 tiny SCCs
+  (max 7). "Loops" run through cpu->pc self-dispatch across
+  invocations (the coroutine model — semantically REQUIRED, IRQ
+  yield points), not intra-function gotos. So classic reducible-
+  flow structuring (Phoenix-style if/else intervals) applies almost
+  everywhere; only the dispatch exits + _cont resume switch must
+  stay. Much more tractable than decompiler-grade CFG recovery.
+- versus_fight_mash.py driving headless build for deep-path
+  verification of the session-24 fixes (frame 300k+ and climbing).
