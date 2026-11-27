@@ -1099,6 +1099,7 @@ void spr_desc_a(uint32_t slot_g)
   p[7] = 0x2c;
 }
 
+/* spr_desc_b — sprite-desc bit1 set/clear (p[7] bit1) by on. */
 void spr_desc_b(uint32_t slot_g,uint32_t on)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -1806,6 +1807,8 @@ void console_emit(uint32_t c)
   *(int32_t *)guest_at(0x801b6794) = cnt + 1;
 }
 
+/* console_pct — flush console string buffer: bios_tramp_b035(1,
+ * buf@0x801f68f0,cnt) then reset the count cell @0x801b6794. */
 void console_pct(void)
 {
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
@@ -2563,12 +2566,15 @@ static uint32_t coord_clamp(uint32_t v, uint32_t dimaddr)
   if (n - 1 < x) return nu - 1;
   return v;
 }
+/* gpu_coord_clamp_a — pack clamped x/y (10-bit each) into a GPU
+ * coord word | 0xE3000000. */
 uint32_t gpu_coord_clamp_a(uint32_t a0,uint32_t a1)
 {
   uint32_t x = coord_clamp(a0,0x801b8324);
   uint32_t y = coord_clamp(a1,0x801b8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe3000000;
 }
+/* gpu_coord_clamp_b — same pack as _a but tag 0xE4000000. */
 uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 {
   uint32_t x = coord_clamp(a0,0x801b8324);
@@ -3354,6 +3360,8 @@ uint32_t gte_screen_init_defer(void)
   return 0;
 }
 
+/* gpu_state_patch_defer — deferred GPU-state patch: EnterCritical-
+ * Section + B0/0x56 kernel call, walks the BIOS $v0 table (+24,+40). */
 void gpu_state_patch_defer(void)
 {
   CPUState *c = clean_cpu_state();

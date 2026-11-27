@@ -3454,6 +3454,8 @@ void dir_rotate_acc(int angle,int mag,byte *vec,byte *acc)
   }
 }
 
+/* dir_rotate_set — dir_rotate_wrap result stored as s16 (x,z) pair
+ * into out (absolute store, no accumulate). */
 void dir_rotate_set(int angle,int mag,byte *vec,byte *out)
 {
   unsigned long long r = dir_rotate_wrap(angle,mag,(short *)vec);

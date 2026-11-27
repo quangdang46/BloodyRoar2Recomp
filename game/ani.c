@@ -27,6 +27,7 @@
 static uint16_t rd16(const uint8_t *p) { uint16_t v; memcpy(&v, p, 2); return v; }
 static uint32_t rd32(const uint8_t *p) { uint32_t v; memcpy(&v, p, 4); return v; }
 
+/* ani_header — animation blob header sits at offset 0. */
 const AniHeader *ani_header(const uint8_t *blob)
 {
     return (const AniHeader *)blob;

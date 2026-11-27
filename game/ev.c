@@ -154,6 +154,7 @@ static uint8_t *foe_of(uint8_t *ctrl)
      * guest_at(0) reproduces the low-memory read, never return NULL. */
     return (uint8_t *)guest_at(GU32(ctrl, FC_FOE));
 }
+/* mof — motion-object ptr: ctrl+0x38 deref, sibling of foe_of. */
 static uint8_t *mof(uint8_t *ctrl)
 {
     return (uint8_t *)guest_at(GU32(ctrl, 0x38));
@@ -1194,6 +1195,8 @@ static uint8_t *ev21_skip(uint8_t *ctrl, uint8_t *motion, uint8_t *pc)
 }
 extern void fighter_anim_advance(int,int);
 extern void action_switch_guest(int,int*,int);
+/* ev5_action_select — opcode-5 handler: decodes the action-select
+ * sub-op stream, advances fighter anim / switches action. */
 ushort * ev5_action_select(int ctrl_g,int foe_g,ushort *stream)
 {
   short act_idx;
@@ -1545,6 +1548,7 @@ ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
   return stream + 2;
 }
 
+/* w23 — event-op 23 thunk -> ev_cmd_dispatch(c,0,pc). */
 static uint8_t *w23(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev_cmd_dispatch(
@@ -1554,11 +1558,13 @@ static uint8_t *w23(uint8_t *c, uint8_t *m, uint32_t pc_g)
     static uint8_t *nm(uint8_t *c, uint8_t *m, uint32_t pc_g) \
     { return fn(c, m, (uint8_t *)guest_at(pc_g)); }
 EVWRAP(w0,  ev0_branch)
+/* w1 — event-op 1 thunk -> ev1_altstream(m,pc); ctrl unused. */
 static uint8_t *w1(uint8_t *c, uint8_t *m, uint32_t pc_g)
 { (void)c; return ev1_altstream(m, (uint8_t *)guest_at(pc_g)); }
 EVWRAP(w2,  ev2_hitstun_gate)
 EVWRAP(w3,  ev3_wait)
 EVWRAP(w4,  ev4_branch)
+/* w5 — event-op 5 thunk -> ev5_action_select(c,m,pc). */
 static uint8_t *w5(uint8_t *c, uint8_t *m, uint32_t pc_g)
 {
     return (uint8_t *)ev5_action_select(
@@ -1570,6 +1576,7 @@ EVWRAP(w7,  ev7_position)
 EVWRAP(w8,  ev8_motion_param)
 EVWRAP(w9,  ev9_physics)
 EVWRAP(w10, ev10_flags)
+/* w11 — event-op 11 thunk: skip 2-byte operand, return pc+2. */
 static uint8_t *w11(uint8_t *c, uint8_t *m, uint32_t pc_g)
 { (void)c; return (uint8_t *)guest_at(pc_g + 2); }
 EVWRAP(w12, ev12_damage)
