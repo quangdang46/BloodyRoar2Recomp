@@ -21,18 +21,6 @@ extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
 
-/* swl_guest — unaligned word store: RMW of the aligned word,
- * byte lane selected by addr&3 (guest swl semantics). */
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
 /* GPU display-list command case-entries of the packet interpreter at guest
  * 0x8018EF6C. The function's opcode dispatcher tail-jumps (`jr v0` through a
  * 45-entry table at 0x80120000) into per-command blocks; each of these guest

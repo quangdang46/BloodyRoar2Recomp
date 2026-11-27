@@ -18,8 +18,9 @@ static uint8_t  guest_arena[0x200000];
 static uint8_t  guest_scratch[0x10000];
 void *guest_at(uint32_t addr);
 uint32_t guest_of(const void *p);
-/* guest_for — recover the guest address embedded in a binding symbol
- * name: scans `name` for hex-digit runs, keeps the longest run >=6
+/* guest_for — resolve a bound symbol name to its guest address:
+ * scans the name for the largest embedded hex value (>=6 digits),
+ * falls back to guest_arena when none is present. */
 static uint8_t *guest_for(const char *name)
 {
     char hexbuf[64]; int ndx=0; unsigned long best_addr=0; int have_addr=0;
