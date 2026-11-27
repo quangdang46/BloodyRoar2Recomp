@@ -42,6 +42,7 @@ struct BiosProfile {
     std::string out_stem;
 };
 
+/* usage: "Usage:\n" */
 void usage(const char* program) {
     fmt::print(
         "Usage:\n"
@@ -53,6 +54,7 @@ void usage(const char* program) {
         program);
 }
 
+/* toml string: std::string out */
 std::string toml_string(std::string value) {
     std::string out;
     out.reserve(value.size());
@@ -64,6 +66,7 @@ std::string toml_string(std::string value) {
     return out;
 }
 
+/* trim: while (!value.empty() && std::isspace((unsigned char)value.back())) v... */
 std::string trim(std::string value) {
     while (!value.empty() && std::isspace((unsigned char)value.back())) value.pop_back();
     size_t first = 0;
@@ -71,6 +74,7 @@ std::string trim(std::string value) {
     return value.substr(first);
 }
 
+/* parse boot path: std::string lower = cnf */
 std::string parse_boot_path(const std::string& cnf) {
     std::string lower = cnf;
     std::transform(lower.begin(), lower.end(), lower.begin(),
@@ -90,6 +94,7 @@ std::string parse_boot_path(const std::string& cnf) {
     return path;
 }
 
+/* safe stem: std::string out */
 std::string safe_stem(std::string value) {
     std::string out;
     for (char c : value) {
@@ -100,6 +105,7 @@ std::string safe_stem(std::string value) {
     return out.empty() ? "PSXGameRecomp" : out;
 }
 
+/* write file: if (!out) throw std::runtime_error("cannot write " + path.string()) */
 void write_file(const fs::path& path, const std::string& contents) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary | std::ios::trunc);
@@ -108,6 +114,7 @@ void write_file(const fs::path& path, const std::string& contents) {
     if (!out) throw std::runtime_error("write failed for " + path.string());
 }
 
+/* write bytes: if (!out) throw std::runtime_error("cannot write " + path.string()) */
 void write_bytes(const fs::path& path, const std::vector<uint8_t>& contents) {
     fs::create_directories(path.parent_path());
     std::ofstream out(path, std::ios::binary | std::ios::trunc);
@@ -116,6 +123,7 @@ void write_bytes(const fs::path& path, const std::vector<uint8_t>& contents) {
     if (!out) throw std::runtime_error("write failed for " + path.string());
 }
 
+/* executable dir: std::error_code ec */
 fs::path executable_dir(const char* argv0) {
     std::error_code ec;
     fs::path path = fs::absolute(argv0, ec);
@@ -124,6 +132,7 @@ fs::path executable_dir(const char* argv0) {
     return (ec ? fs::path(argv0) : path).parent_path();
 }
 
+/* find helper: for (const fs::path& candidate :  */
 fs::path find_helper(const fs::path& exe_dir, const std::string& name) {
 #ifdef _WIN32
     const std::string filename = name + ".exe";
@@ -139,6 +148,7 @@ fs::path find_helper(const fs::path& exe_dir, const std::string& name) {
     throw std::runtime_error("missing packaged helper: " + filename);
 }
 
+/* find framework: for (const fs::path& candidate :  */
 fs::path find_framework(const fs::path& exe_dir) {
     for (const fs::path& candidate : {
              exe_dir / "framework",
@@ -150,6 +160,7 @@ fs::path find_framework(const fs::path& exe_dir) {
     throw std::runtime_error("packaged framework sources are missing");
 }
 
+/* select bios profile: {"OPENBIOS", {"OpenBIOS.toml", "OpenBIOS"}}, */
 const BiosProfile& select_bios_profile(const fs::path& bios_path) {
     static const std::vector<std::pair<std::string, BiosProfile>> profiles = {
         {"OPENBIOS", {"OpenBIOS.toml", "OpenBIOS"}},
@@ -166,6 +177,7 @@ const BiosProfile& select_bios_profile(const fs::path& bios_path) {
         "' (expected openbios.bin, SCPH1001.BIN, SCPH101.BIN, or SCPH5552.BIN)");
 }
 
+/* find bios profile: for (const fs::path& candidate :  */
 fs::path find_bios_profile(const fs::path& framework,
                            const BiosProfile& profile) {
     for (const fs::path& candidate : {
@@ -178,6 +190,7 @@ fs::path find_bios_profile(const fs::path& framework,
         "packaged BIOS profile is missing: " + profile.filename);
 }
 
+/* run process: std::vector<char*> raw */
 int run_process(const std::vector<std::string>& args) {
     std::vector<char*> raw;
     raw.reserve(args.size() + 1);
@@ -216,6 +229,7 @@ private:
     fs::path original_;
 };
 
+/* copy framework: for (const auto& entry : fs::directory_iterator(source))  */
 void copy_framework(const fs::path& source, const fs::path& destination) {
     fs::create_directories(destination);
     for (const auto& entry : fs::directory_iterator(source)) {
@@ -224,6 +238,7 @@ void copy_framework(const fs::path& source, const fs::path& destination) {
     }
 }
 
+/* parse options: Options options */
 Options parse_options(int argc, char** argv) {
     Options options;
     for (int i = 2; i < argc; ++i) {
@@ -251,6 +266,7 @@ Options parse_options(int argc, char** argv) {
     return options;
 }
 
+/* build project: if (!fs::is_regular_file(options.disc)) */
 int build_project(const Options& options, const fs::path& exe_dir) {
     if (!fs::is_regular_file(options.disc))
         throw std::runtime_error("disc image not found: " + options.disc.string());

@@ -7,8 +7,10 @@
 
 namespace PSXRecomp {
 
+/* Function Analyzer: if (addr >= exe_.header.load_address && addr < exe_.analysis_end_addr... */
 FunctionAnalyzer::FunctionAnalyzer(const PS1Executable& exe) : exe_(exe) {}
 
+/* add forced entry: if (addr >= exe_.header.load_address && addr < exe_.analysis_end_addr... */
 void FunctionAnalyzer::add_forced_entry(uint32_t addr) {
     // Validate address is within the EXE range
     if (addr >= exe_.header.load_address && addr < exe_.analysis_end_address()) {
@@ -16,6 +18,7 @@ void FunctionAnalyzer::add_forced_entry(uint32_t addr) {
     }
 }
 
+/* is jr ra: return instr == 0x03E00008 */
 bool FunctionAnalyzer::is_jr_ra(uint32_t instr) {
     // jr $ra: opcode=0, rs=31 ($ra), rt=0, rd=0, shamt=0, funct=8 (jr)
     // Format: 000000 11111 00000 00000 00000 001000
@@ -23,6 +26,7 @@ bool FunctionAnalyzer::is_jr_ra(uint32_t instr) {
     return instr == 0x03E00008;
 }
 
+/* is prologue: uint32_t opcode = (instr >> 26) & 0x3F */
 bool FunctionAnalyzer::is_prologue(uint32_t instr, int32_t& stack_size) {
     // addiu $sp, $sp, -N
     // Format: 001001 11101 11101 <16-bit signed immediate>
@@ -39,6 +43,7 @@ bool FunctionAnalyzer::is_prologue(uint32_t instr, int32_t& stack_size) {
     return false;
 }
 
+/* is epilogue: uint32_t opcode = (instr >> 26) & 0x3F */
 bool FunctionAnalyzer::is_epilogue(uint32_t instr, int32_t& stack_size) {
     // addiu $sp, $sp, +N
     uint32_t opcode = (instr >> 26) & 0x3F;
@@ -53,6 +58,7 @@ bool FunctionAnalyzer::is_epilogue(uint32_t instr, int32_t& stack_size) {
     return false;
 }
 
+/* is valid mips word: if (instr == 0xFFFFFFFFu || instr == 0xFFFFFFFDu) return false */
 bool FunctionAnalyzer::is_valid_mips_word(uint32_t instr) {
     if (instr == 0xFFFFFFFFu || instr == 0xFFFFFFFDu) return false;
 
@@ -96,6 +102,7 @@ bool FunctionAnalyzer::is_valid_mips_word(uint32_t instr) {
     }
 }
 
+/* is branch or jump: uint32_t opcode = (instr >> 26) & 0x3F */
 bool FunctionAnalyzer::is_branch_or_jump(uint32_t instr) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     // J, JAL
@@ -114,6 +121,7 @@ bool FunctionAnalyzer::is_branch_or_jump(uint32_t instr) {
     return false;
 }
 
+/* is load imm zero u16: uint32_t opcode = (instr >> 26) & 0x3F */
 static bool is_load_imm_zero_u16(uint32_t instr, uint32_t& rt_out, uint32_t& imm_out) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t rs = (instr >> 21) & 0x1F;
@@ -125,6 +133,7 @@ static bool is_load_imm_zero_u16(uint32_t instr, uint32_t& rt_out, uint32_t& imm
     return true;
 }
 
+/* is bios dispatch thunk: auto w0 = exe_.read_word(addr) */
 bool FunctionAnalyzer::is_bios_dispatch_thunk(uint32_t addr, uint32_t& jr_addr_out) const {
     auto w0 = exe_.read_word(addr);
     auto w1 = exe_.read_word(addr + 4);
@@ -159,6 +168,7 @@ bool FunctionAnalyzer::is_bios_dispatch_thunk(uint32_t addr, uint32_t& jr_addr_o
     return true;
 }
 
+/* is sw reg base: uint32_t opcode = (instr >> 26) & 0x3F */
 static bool is_sw_reg_base(uint32_t instr, uint32_t base_reg, uint32_t value_reg) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t rs = (instr >> 21) & 0x1F;
@@ -166,10 +176,12 @@ static bool is_sw_reg_base(uint32_t instr, uint32_t base_reg, uint32_t value_reg
     return opcode == 0x2B && rs == base_reg && rt == value_reg;
 }
 
+/* is sw reg sp: return is_sw_reg_base(instr, 29, value_reg) */
 static bool is_sw_reg_sp(uint32_t instr, uint32_t value_reg) {
     return is_sw_reg_base(instr, 29, value_reg);
 }
 
+/* is lui: uint32_t opcode = (instr >> 26) & 0x3F */
 static bool is_lui(uint32_t instr, uint32_t& rt_out) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     if (opcode != 0x0F) return false;
@@ -177,10 +189,12 @@ static bool is_lui(uint32_t instr, uint32_t& rt_out) {
     return true;
 }
 
+/* is nop: return instr == 0 */
 static bool is_nop(uint32_t instr) {
     return instr == 0;
 }
 
+/* skip leading padding nops: uint32_t addr = start_addr */
 static uint32_t skip_leading_padding_nops(const PS1Executable& exe,
                                           uint32_t start_addr,
                                           uint32_t limit_addr) {
@@ -200,6 +214,7 @@ static uint32_t skip_leading_padding_nops(const PS1Executable& exe,
     return addr;
 }
 
+/* is load from reg base: uint32_t opcode = (instr >> 26) & 0x3F */
 static bool is_load_from_reg_base(uint32_t instr, uint32_t base_reg, uint32_t& rt_out) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t rs = (instr >> 21) & 0x1F;
@@ -221,6 +236,7 @@ static bool is_load_from_reg_base(uint32_t instr, uint32_t base_reg, uint32_t& r
     return true;
 }
 
+/* is load imm zero: uint32_t opcode = (instr >> 26) & 0x3F */
 static bool is_load_imm_zero(uint32_t instr, uint32_t& rt_out) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t rs = (instr >> 21) & 0x1F;
@@ -229,6 +245,7 @@ static bool is_load_imm_zero(uint32_t instr, uint32_t& rt_out) {
     return rt_out != 0;
 }
 
+/* preprologue window is valid: if (start_addr >= prologue_addr) return false */
 static bool preprologue_window_is_valid(const PS1Executable& exe,
                                         uint32_t start_addr,
                                         uint32_t prologue_addr,
@@ -282,6 +299,7 @@ static bool preprologue_window_is_valid(const PS1Executable& exe,
     return saw_global_load;
 }
 
+/* find preprologue setup start: bool found = false */
 static bool find_preprologue_setup_start(const PS1Executable& exe,
                                          uint32_t prologue_addr,
                                          uint32_t exe_start,
@@ -305,6 +323,7 @@ static bool find_preprologue_setup_start(const PS1Executable& exe,
     return true;
 }
 
+/* pointer target has near prologue: for (uint32_t addr = target */
 static bool pointer_target_has_near_prologue(const PS1Executable& exe,
                                              uint32_t target,
                                              uint32_t exe_start,
@@ -335,6 +354,7 @@ static bool pointer_target_has_near_prologue(const PS1Executable& exe,
     return false;
 }
 
+/* find function start: uint32_t search_addr = return_addr */
 uint32_t FunctionAnalyzer::find_function_start(uint32_t return_addr) {
     // Scan backward from jr $ra to find function start
     // Heuristic: Look for prologue or function alignment (16-byte boundary after prev function)
@@ -411,6 +431,7 @@ uint32_t FunctionAnalyzer::find_function_start(uint32_t return_addr) {
     return return_addr - (max_search * 4);
 }
 
+/* is likely data section: uint32_t size = end_addr - start_addr */
 bool FunctionAnalyzer::is_likely_data_section(uint32_t start_addr, uint32_t end_addr) const {
     uint32_t size = end_addr - start_addr;
     if (size < 100) return false;  // Minimum check size
@@ -500,10 +521,12 @@ struct ExactWalkResult {
 
 static ExactCf exact_classify_cf(uint32_t pc, uint32_t instr);
 
+/* exact is jr ra word: return instr == 0x03E00008u */
 static bool exact_is_jr_ra_word(uint32_t instr) {
     return instr == 0x03E00008u;
 }
 
+/* exact is addiu sp neg: uint32_t opcode = (instr >> 26) & 0x3Fu */
 static bool exact_is_addiu_sp_neg(uint32_t instr) {
     uint32_t opcode = (instr >> 26) & 0x3Fu;
     uint32_t rs = (instr >> 21) & 0x1Fu;
@@ -512,19 +535,23 @@ static bool exact_is_addiu_sp_neg(uint32_t instr) {
     return opcode == 0x09u && rs == 29u && rt == 29u && imm < 0;
 }
 
+/* exact is valid mips word: return FunctionAnalyzer::is_valid_mips_word(instr) */
 static bool exact_is_valid_mips_word(uint32_t instr) {
     return FunctionAnalyzer::is_valid_mips_word(instr);
 }
 
+/* exact branch target: int16_t imm = static_cast<int16_t>(instr & 0xFFFFu) */
 static uint32_t exact_branch_target(uint32_t pc, uint32_t instr) {
     int16_t imm = static_cast<int16_t>(instr & 0xFFFFu);
     return pc + 4u + (static_cast<int32_t>(imm) << 2);
 }
 
+/* exact jump target: return ((pc + 4u) & 0xF0000000u) | ((instr & 0x03FFFFFFu) << 2) */
 static uint32_t exact_jump_target(uint32_t pc, uint32_t instr) {
     return ((pc + 4u) & 0xF0000000u) | ((instr & 0x03FFFFFFu) << 2);
 }
 
+/* exact instruction writes gpr: if (reg == 0u) return false */
 static bool exact_instruction_writes_gpr(uint32_t instr, uint32_t reg) {
     if (reg == 0u) return false;
 
@@ -653,6 +680,7 @@ static bool exact_resolve_constant_transfer(const PS1Executable& exe,
     return false;
 }
 
+/* exact classify cf: ExactCf cf */
 static ExactCf exact_classify_cf(uint32_t pc, uint32_t instr) {
     ExactCf cf;
     uint32_t opcode = (instr >> 26) & 0x3Fu;
@@ -759,6 +787,7 @@ static ExactCf exact_classify_cf(uint32_t pc, uint32_t instr) {
 
 } // namespace
 
+/* resolve exact bounded jump table: table =  */
 bool resolve_exact_bounded_jump_table(
     const PS1Executable& exe,
     uint32_t entry,
@@ -1106,6 +1135,7 @@ bool resolve_exact_bounded_jump_table(
     return true;
 }
 
+/* analyze exact entries: FunctionAnalysisResult result */
 FunctionAnalysisResult FunctionAnalyzer::analyze_exact_entries(
     const std::vector<uint32_t>& entries,
     const std::vector<std::pair<uint32_t, uint32_t>>& producer_ranges,
@@ -1476,6 +1506,7 @@ FunctionAnalysisResult FunctionAnalyzer::analyze_exact_entries(
 }
 
 
+/* analyze: FunctionAnalysisResult result */
 FunctionAnalysisResult FunctionAnalyzer::analyze() {
     FunctionAnalysisResult result;
     result.total_instructions = 0;

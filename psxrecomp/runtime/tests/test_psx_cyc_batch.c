@@ -19,15 +19,18 @@ int g_psx_load_delay = 1;
 
 static int service_count;
 
+/* psx devices service to now: service_count++ */
 void psx_devices_service_to_now(void) {
     service_count++;
     psx_next_service_cycle = psx_cycle_count + 1000u;
 }
 
+/* psx advance cycles slow: psx_cycle_count += cycles */
 void psx_advance_cycles_slow(uint32_t cycles) {
     psx_cycle_count += cycles;
 }
 
+/* reset clock: psx_cycle_count = 0 */
 static void reset_clock(uint64_t deadline) {
     psx_cycle_count = 0;
     psx_next_service_cycle = deadline;

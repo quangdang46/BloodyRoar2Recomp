@@ -29,6 +29,7 @@ static inline uint32_t psx_display_present_height(
     return depth24 && canvas_height != 0u ? canvas_height : source_height;
 }
 
+/* psx display interlaced rows: return interlaced ? rows * 2u : rows */
 static inline uint32_t psx_display_interlaced_rows(
     uint32_t rows, int interlaced)
 {

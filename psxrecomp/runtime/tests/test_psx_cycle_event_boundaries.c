@@ -21,8 +21,10 @@ static uint32_t s_cd_cycles_remaining = 5;
 static int s_cd_ready = 0;
 static uint32_t s_dma_ready_cycles = 0;
 
+/* sio advance: (void)cycles; */
 void sio_advance(uint32_t cycles) { (void)cycles; }
 
+/* cdrom advance: if (s_cd_ready) return */
 void cdrom_advance(uint32_t cycles) {
     if (s_cd_ready) return;
     if (cycles >= s_cd_cycles_remaining) {
@@ -33,38 +35,57 @@ void cdrom_advance(uint32_t cycles) {
     }
 }
 
+/* dma advance: if (s_cd_ready) s_dma_ready_cycles += cycles */
 void dma_advance(uint32_t cycles) {
     if (s_cd_ready) s_dma_ready_cycles += cycles;
 }
 
+/* timers advance: (void)cycles; */
 void timers_advance(uint32_t cycles) { (void)cycles; }
+/* interrupts advance cycles: (void)cycles; */
 void interrupts_advance_cycles(uint32_t cycles) { (void)cycles; }
+/* interrupts service scheduled events: return s_cd_ready ? UINT32_MAX : s_cd_cycles_remaining */
 void interrupts_service_scheduled_events(void) {}
 
+/* interrupts cycles to vblank: return UINT32_MAX; */
 uint32_t interrupts_cycles_to_vblank(void) { return UINT32_MAX; }
+/* timers cycles to irq: (void)mask; return UINT32_MAX; */
 uint32_t timers_cycles_to_irq(uint32_t mask) { (void)mask; return UINT32_MAX; }
+/* cdrom cycles to irq: return s_cd_ready ? UINT32_MAX : s_cd_cycles_remaining */
 uint32_t cdrom_cycles_to_irq(uint32_t mask) {
     (void)mask;
     return s_cd_ready ? UINT32_MAX : s_cd_cycles_remaining;
 }
+/* dma cycles to internal event: return UINT32_MAX; */
 uint32_t dma_cycles_to_internal_event(void) { return UINT32_MAX; }
+/* dma cycles to deliverable irq: return UINT32_MAX */
 uint32_t dma_cycles_to_deliverable_irq(uint32_t mask) {
     (void)mask;
     return UINT32_MAX;
 }
+/* sio cycles to irq: (void)mask; return UINT32_MAX; */
 uint32_t sio_cycles_to_irq(uint32_t mask) { (void)mask; return UINT32_MAX; }
 /* SPU sample-event scheduler (golden 1a973806): psx_cycles.c consults it; stub here. */
 static uint32_t s_spu_next_sample = UINT32_MAX;
+/* psx spu sample event cycles to next: return s_spu_next_sample; */
 uint32_t psx_spu_sample_event_cycles_to_next(void) { return s_spu_next_sample; }
+/* psx spu sample event service: if (psx_get_cycle_count() != 5)  */
 void psx_spu_sample_event_service(void) {}
+/* psx get in exception: return 0; */
 int psx_get_in_exception(void) { return 0; }
 
+/* starvation watchdog check: if (psx_get_cycle_count() != 5)  */
 void starvation_watchdog_check(void) {}
+/* starvation ring pc sample: if (psx_get_cycle_count() != 5)  */
 void starvation_ring_pc_sample(void) {}
 
+/* psx netplay active: return 0; */
 int  psx_netplay_active(void) { return 0; }
+/* psx selfcheck enabled: return 0; */
 int  psx_selfcheck_enabled(void) { return 0; }
+/* dirty ram ld delay discard: if (psx_get_cycle_count() != 5)  */
 void dirty_ram_ld_delay_discard(void) {}
+/* dirty ram irq ambient resync after restore: if (psx_get_cycle_count() != 5)  */
 void dirty_ram_irq_ambient_resync_after_restore(void) {}
 
 int main(void) {

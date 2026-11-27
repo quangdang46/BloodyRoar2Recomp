@@ -23,6 +23,7 @@ namespace fs = std::filesystem;
 
 static int failures = 0;
 
+/* check: if (!cond)  */
 static void check(bool cond, const char* what) {
     if (!cond) {
         std::fprintf(stderr, "FAIL: %s\n", what);
@@ -30,6 +31,7 @@ static void check(bool cond, const char* what) {
     }
 }
 
+/* write temp: fs::path p = fs::temp_directory_path() / name */
 static fs::path write_temp(const std::string& name, const std::string& body) {
     fs::path p = fs::temp_directory_path() / name;
     std::ofstream f(p, std::ios::binary | std::ios::trunc);
@@ -75,6 +77,7 @@ static void test_defaults_off() {
     fs::remove(p);
 }
 
+/* test game toml opt in: fs::path p = write_game_toml("psxrecomp_pgxp_on.toml", */
 static void test_game_toml_opt_in() {
     fs::path p = write_game_toml("psxrecomp_pgxp_on.toml",
         "[video]\n"
@@ -91,6 +94,7 @@ static void test_game_toml_opt_in() {
     fs::remove(p);
 }
 
+/* test game window width validation: fs::path p = write_game_toml("psxrecomp_window_too_small.toml", */
 static void test_game_window_width_validation() {
     fs::path p = write_game_toml("psxrecomp_window_too_small.toml",
         "[video]\n"
@@ -135,6 +139,7 @@ static void test_knobs_independent() {
     fs::remove(q);
 }
 
+/* test user settings read: fs::path p = write_temp("psxrecomp_pgxp_settings.toml", */
 static void test_user_settings_read() {
     fs::path p = write_temp("psxrecomp_pgxp_settings.toml",
         "[video]\n"
@@ -167,6 +172,7 @@ static void test_user_settings_absent_key() {
     fs::remove(p);
 }
 
+/* test user settings round trip: PSXRecompV4::UserSettings out */
 static void test_user_settings_round_trip() {
     PSXRecompV4::UserSettings out;
     out.geometry_correction = true;   out.has_geometry_correction = true;

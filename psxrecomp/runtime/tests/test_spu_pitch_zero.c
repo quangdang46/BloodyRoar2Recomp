@@ -27,30 +27,38 @@
 /* Dependencies owned by the surrounding runtime are inert in this unit test. */
 uint64_t s_frame_count;
 
+/* psx get cycle count: return 0; */
 uint64_t psx_get_cycle_count(void) { return 0; }
 
+/* audio trace pcm */
 void audio_trace_pcm(int tap, const int16_t *stereo, int frames) {
     (void)tap;
     (void)stereo;
     (void)frames;
 }
 
+/* audio trace event */
 void audio_trace_event(uint16_t kind, uint32_t a, uint32_t b) {
     (void)kind;
     (void)a;
     (void)b;
 }
 
+/* psx irq raise: (void)bit; (void)detail; */
 void psx_irq_raise(uint32_t bit, uint32_t detail) { (void)bit; (void)detail; }
 
+/* crc32 update: return crc */
 uint32_t crc32_update(uint32_t crc, const uint8_t *data, size_t len) {
     (void)data;
     (void)len;
     return crc;
 }
 
+/* spu shadow enabled: return false; */
 bool spu_shadow_enabled(void) { return false; }
+/* spu shadow reset */
 void spu_shadow_reset(void) {}
+/* spu shadow process */
 void spu_shadow_process(int16_t *canon, int frames) {
     (void)canon;
     (void)frames;
@@ -70,6 +78,7 @@ static int failures;
 
 #define VOICE_START 0x200u
 
+/* fill block: spu_ram[addr] = 0x00 (filter 0, shift 0) */
 static void fill_block(uint32_t addr, uint8_t flags, uint8_t packed) {
     spu_ram[addr] = 0x00; /* filter 0, shift 0 */
     spu_ram[addr + 1u] = flags;
@@ -105,6 +114,7 @@ static SpuVoice *stage_voice(uint16_t pitch) {
     return v;
 }
 
+/* test pitch zero holds the voice: SpuVoice *v = stage_voice(0x0000u) */
 static void test_pitch_zero_holds_the_voice(void) {
     spu_init();
     stage_ram();
@@ -137,6 +147,7 @@ static void test_pitch_zero_holds_the_voice(void) {
           "a held voice does not walk into the blocks that follow it");
 }
 
+/* test nonzero pitch still advances: stages a voice with nonzero pitch */
 static void test_nonzero_pitch_still_advances(void) {
     spu_init();
     stage_ram();
@@ -153,6 +164,7 @@ static void test_nonzero_pitch_still_advances(void) {
     CHECK(v->active, "a playing voice stays active");
 }
 
+/* test half pitch advances half as fast: stages a voice at half pitch rate */
 static void test_half_pitch_advances_half_as_fast(void) {
     spu_init();
     stage_ram();
@@ -166,6 +178,7 @@ static void test_half_pitch_advances_half_as_fast(void) {
           "pitch 0x0800 advances one sample every two outputs");
 }
 
+/* test pitch zero still steps the envelope: SpuVoice *v = stage_voice(0x0000u) */
 static void test_pitch_zero_still_steps_the_envelope(void) {
     spu_init();
     stage_ram();

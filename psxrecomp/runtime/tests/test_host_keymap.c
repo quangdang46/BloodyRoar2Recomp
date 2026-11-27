@@ -6,6 +6,7 @@
 
 static int failures = 0;
 
+/* check: if (!cond)  */
 static void check(int cond, const char *what) {
     if (!cond) {
         fprintf(stderr, "FAIL: %s\n", what);
@@ -13,7 +14,9 @@ static void check(int cond, const char *what) {
     }
 }
 
+/* mod ctrl: return (int)KMOD_CTRL; */
 static int mod_ctrl(void) { return (int)KMOD_CTRL; }
+/* mod alt: return (int)KMOD_ALT; */
 static int mod_alt(void) { return (int)KMOD_ALT; }
 
 int main(int argc, char **argv) {

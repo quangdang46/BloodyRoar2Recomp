@@ -152,6 +152,7 @@ struct Sha256 {
 
 constexpr uint32_t Sha256::K[64];
 
+/* sha256 hex: Sha256 s */
 std::string sha256_hex(const std::vector<uint8_t>& data) {
     Sha256 s;
     s.init();
@@ -185,6 +186,7 @@ std::vector<uint8_t> load_file_strict(const fs::path& p, size_t expected_size) {
     return buf;
 }
 
+/* write file */
 void write_file(const fs::path& p, const std::string& content) {
     // Preserve mtime when bytes match (Ninja incremental after regen).
     (void)write_file_if_changed(p, content);
@@ -212,6 +214,7 @@ std::string make_unsupported_json(const PSXRecompV4::WalkResult& w) {
     return os.str();
 }
 
+/* make manifest json: std::ostringstream os */
 std::string make_manifest_json(const PSXRecompV4::WalkResult& w,
                                const fs::path&               bios_path,
                                size_t                        bios_size,
@@ -246,6 +249,7 @@ std::string make_manifest_json(const PSXRecompV4::WalkResult& w,
     return os.str();
 }
 
+/* make boot slice c: std::ostringstream os */
 std::string make_boot_slice_c(const PSXRecompV4::WalkResult& w,
                               const std::string&             bios_sha256) {
     std::ostringstream os;
@@ -313,6 +317,7 @@ std::string find_c_compiler(const std::optional<std::string>& cli_override) {
         "self-validating boot_slice.c via -c. Install one or pass --cc <path>.");
 }
 
+/* self validate c file: std::string cmd */
 void self_validate_c_file(const fs::path& boot_slice_c, const fs::path& include_dir, const std::string& cc) {
     // Build a compile-only command. Use forward slashes; both gcc and cl accept them on Windows.
     std::string cmd;
@@ -438,6 +443,7 @@ std::vector<PSXRecompV4::Seed> load_seeds(const fs::path& seed_path) {
     return seeds;
 }
 
+/* add bios vector target seeds: std::set<uint32_t> known */
 size_t add_bios_vector_target_seeds(
     std::vector<PSXRecompV4::Seed>& seeds,
     const std::vector<uint8_t>& rom,
@@ -529,6 +535,7 @@ std::string make_function_manifest_json(const PSXRecompV4::DiscoveryResult& dr,
     return os.str();
 }
 
+/* make function edges json: std::ostringstream os */
 std::string make_function_edges_json(const PSXRecompV4::DiscoveryResult& dr) {
     std::ostringstream os;
     os << "{\n";
@@ -551,6 +558,7 @@ std::string make_function_edges_json(const PSXRecompV4::DiscoveryResult& dr) {
     return os.str();
 }
 
+/* make discovery log json: std::ostringstream os */
 std::string make_discovery_log_json(const PSXRecompV4::DiscoveryResult& dr,
                                     const std::vector<PSXRecompV4::Seed>& seeds) {
     std::ostringstream os;
@@ -645,6 +653,7 @@ std::string make_indirect_jumps_json(const PSXRecompV4::DiscoveryResult& dr) {
     return os.str();
 }
 
+/* make indirect jump classes json: std::map<std::string, std::vector<std::string>> classes */
 std::string make_indirect_jump_classes_json(const PSXRecompV4::DiscoveryResult& dr) {
     // Count sites per classification.
     std::map<std::string, std::vector<std::string>> classes;
@@ -679,6 +688,7 @@ std::string make_indirect_jump_classes_json(const PSXRecompV4::DiscoveryResult& 
     return os.str();
 }
 
+/* make unsupported json discovery: if (dr.unsupported.empty())  */
 std::string make_unsupported_json_discovery(const PSXRecompV4::DiscoveryResult& dr) {
     if (dr.unsupported.empty()) {
         return "[]\n";

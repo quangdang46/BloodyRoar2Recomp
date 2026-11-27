@@ -14,6 +14,7 @@ namespace PSXRecomp::Analysis {
 
 namespace {
 
+/* json escape: std::string out */
 std::string json_escape(const std::string& s) {
     std::string out;
     out.reserve(s.size() + 8);
@@ -34,8 +35,10 @@ std::string json_escape(const std::string& s) {
     return out;
 }
 
+/* q: return      + json_escape(s) +     ; */
 std::string q(const std::string& s) { return "\"" + json_escape(s) + "\""; }
 
+/* open out: std::error_code ec */
 bool open_out(const std::filesystem::path& p, std::ofstream& f,
               std::string& error) {
     std::error_code ec;
@@ -49,6 +52,7 @@ bool open_out(const std::filesystem::path& p, std::ofstream& f,
     return true;
 }
 
+/* saved regs str: "zero","at","v0","v1","a0","a1","a2","a3", */
 std::string saved_regs_str(uint32_t mask) {
     static const char* names[32] = {
         "zero","at","v0","v1","a0","a1","a2","a3",
@@ -65,6 +69,7 @@ std::string saved_regs_str(uint32_t mask) {
     return s;
 }
 
+/* tag string: std::string t */
 std::string tag_string(const FunctionRecord& f) {
     std::string t;
     auto put = [&](const char* s) { if (!t.empty()) t += "|"; t += s; };

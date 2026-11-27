@@ -7,8 +7,10 @@
 int g_ls_replay_active = 0;
 static uint64_t test_cycles = 0;
 
+/* psx advance cycles: test_cycles += cycles; */
 void psx_advance_cycles(uint32_t cycles) { test_cycles += cycles; }
 
+/* expect: if (condition) return 1 */
 static int expect(int condition, const char *message) {
     if (condition) return 1;
     fprintf(stderr, "FAIL: %s\n", message);

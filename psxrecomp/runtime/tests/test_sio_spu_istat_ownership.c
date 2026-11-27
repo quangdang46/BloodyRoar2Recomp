@@ -23,8 +23,11 @@ uint32_t i_stat = 0;
 uint32_t i_mask = 0;
 uint32_t g_debug_current_func_addr = 0;
 uint32_t g_debug_last_store_pc = 0;
+/* psx get in exception: return 0; */
 int psx_get_in_exception(void) { return 0; }
+/* psx read byte: (void)addr; return 0; */
 uint8_t psx_read_byte(uint32_t addr) { (void)addr; return 0; }
+/* psx read word: (void)addr; return 0; */
 uint32_t psx_read_word(uint32_t addr) { (void)addr; return 0; }
 /* sio.c gates card-transfer deferral on `psx_get_cycle_count() < deadline`
  * (s_card_ct_defer_until_cyc). A constant clock would defer forever and stall
@@ -33,11 +36,15 @@ uint64_t psx_get_cycle_count(void) {
     static uint64_t t;
     return t += 64;
 }
+/* memory get sr: return 0; */
 uint32_t memory_get_sr(void) { return 0; }
+/* debug server poll */
 void debug_server_poll(void) {}
+/* debug server log sio write */
 void debug_server_log_sio_write(uint32_t addr, uint32_t value, uint8_t width) {
     (void)addr; (void)value; (void)width;
 }
+/* starvation ring record */
 void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
                             uint16_t ctrl, uint16_t stat, uint8_t active_device,
                             uint8_t selected_slot, uint16_t mc_state,
@@ -47,6 +54,7 @@ void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
     (void)active_device; (void)selected_slot; (void)mc_state;
     (void)mc_cmd; (void)mc_sector; (void)mc_data_idx; (void)func_addr;
 }
+/* card read summary record */
 void card_read_summary_record(uint8_t slot, uint8_t cmd, uint16_t sector,
                               uint8_t end, uint8_t checksum,
                               uint8_t data0, uint8_t data1,
@@ -54,13 +62,16 @@ void card_read_summary_record(uint8_t slot, uint8_t cmd, uint16_t sector,
     (void)slot; (void)cmd; (void)sector; (void)end; (void)checksum;
     (void)data0; (void)data1; (void)func_addr;
 }
+/* card data writes arm */
 void card_data_writes_arm(uint8_t value, uint16_t mc_state,
                           uint8_t mc_data_idx, uint8_t slot) {
     (void)value; (void)mc_state; (void)mc_data_idx; (void)slot;
 }
+/* event ring record aux */
 void event_ring_record_aux(uint16_t kind, uint8_t detail, uint32_t aux) {
     (void)kind; (void)detail; (void)aux;
 }
+/* psx irq raise: i_stat |= 1u << bit */
 void psx_irq_raise(uint32_t bit, uint32_t detail) {
     (void)detail;
     i_stat |= 1u << bit;

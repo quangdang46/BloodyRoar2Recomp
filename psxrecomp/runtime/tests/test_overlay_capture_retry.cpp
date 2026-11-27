@@ -34,13 +34,16 @@ uint32_t g_dirty_pages[DIRTY_RAM_EXEC_PAGE_BITMAP_WORDS]{};
 int g_provider_calls = 0;
 int g_provider_accepts = 0;
 
+/* provider available: return 1; */
 int provider_available() { return 1; }
+/* provider request: ++g_provider_calls */
 int provider_request() {
     ++g_provider_calls;
     if (g_provider_calls == 1) return 0;  // inject one spawn failure
     ++g_provider_accepts;
     return 1;
 }
+/* provider busy: return 0; */
 int provider_busy() { return 0; }
 
 const CodeProvider kProvider = {
@@ -48,11 +51,13 @@ const CodeProvider kProvider = {
     provider_busy, nullptr,
 };
 
+/* bit is set: return ((bitmap[word >> 5] >> (word & 31u)) & 1u) != 0 */
 bool bit_is_set(const uint32_t *bitmap, uint32_t phys) {
     const uint32_t word = phys >> 2;
     return ((bitmap[word >> 5] >> (word & 31u)) & 1u) != 0;
 }
 
+/* set exec: g_dirty_ram_exec_pc_bitmap[word >> 5] |= 1u << (word & 31u) */
 void set_exec(uint32_t phys) {
     const uint32_t word = phys >> 2;
     g_dirty_ram_exec_pc_bitmap[word >> 5] |= 1u << (word & 31u);
@@ -62,11 +67,13 @@ void set_exec(uint32_t phys) {
     g_dirty_pages[page >> 5] |= 1u << (page & 31u);
 }
 
+/* set dirty page: g_dirty_pages[page >> 5] |= 1u << (page & 31u) */
 void set_dirty_page(uint32_t phys) {
     const uint32_t page = phys >> 12;
     g_dirty_pages[page >> 5] |= 1u << (page & 31u);
 }
 
+/* wait for failed write: for (int i = 0; i < 200; ++i)  */
 bool wait_for_failed_write() {
     for (int i = 0; i < 200; ++i) {
         overlay_autocapture_tick();
@@ -78,6 +85,7 @@ bool wait_for_failed_write() {
     return false;
 }
 
+/* wait for provider pending: for (int i = 0; i < 200; ++i)  */
 bool wait_for_provider_pending() {
     for (int i = 0; i < 200; ++i) {
         overlay_autocapture_tick();
@@ -87,12 +95,14 @@ bool wait_for_provider_pending() {
     return false;
 }
 
+/* read all: return std::string(std::istreambuf_iterator<char>(input), */
 std::string read_all(const std::filesystem::path &path) {
     std::ifstream input(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(input),
                        std::istreambuf_iterator<char>());
 }
 
+/* fail: std::error_code ignored */
 int fail(const char *message, const std::filesystem::path &root) {
     std::fprintf(stderr, "FAIL: %s\n", message);
     overlay_capture_wait_pending();
@@ -104,19 +114,28 @@ int fail(const char *message, const std::filesystem::path &root) {
 
 }  // namespace
 
+/* memory get ram ptr: return g_ram; */
 extern "C" uint8_t *memory_get_ram_ptr(void) { return g_ram; }
+/* dirty ram get bitmap word count: return DIRTY_RAM_EXEC_PAGE_BITMAP_WORDS */
 extern "C" uint32_t dirty_ram_get_bitmap_word_count(void) {
     return DIRTY_RAM_EXEC_PAGE_BITMAP_WORDS;
 }
+/* dirty ram get bitmap word: return index < DIRTY_RAM_EXEC_PAGE_BITMAP_WORDS ? g_dirty_pages[index... */
 extern "C" uint32_t dirty_ram_get_bitmap_word(uint32_t index) {
     return index < DIRTY_RAM_EXEC_PAGE_BITMAP_WORDS ? g_dirty_pages[index] : 0u;
 }
+/* cdrom load in progress: return 0; */
 extern "C" int cdrom_load_in_progress(void) { return 0; }
+/* fntrace is game started: return 1; */
 extern "C" int fntrace_is_game_started(void) { return 1; }
+/* overlay loader check cache: uint32_t hash = 2166136261u */
 extern "C" void overlay_loader_check_cache(uint32_t, uint32_t,
                                              const uint8_t *) {}
+/* overlay loader registered count: return 0; */
 extern "C" int overlay_loader_registered_count(void) { return 0; }
+/* code provider active: return &kProvider; */
 extern "C" const CodeProvider *code_provider_active(void) { return &kProvider; }
+/* crc32 compute: uint32_t hash = 2166136261u */
 extern "C" uint32_t crc32_compute(const uint8_t *data, size_t size) {
     uint32_t hash = 2166136261u;
     for (size_t i = 0; i < size; ++i) hash = (hash ^ data[i]) * 16777619u;

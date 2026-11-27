@@ -55,6 +55,7 @@ static bool br2_is_ident_char(char c) {
 // `psx_alias_body_<8 hex>` (both are non-static and would collide otherwise).
 static const char* const kGameSymBases[] = { "func_", "psx_alias_body_" };
 
+/* apply func prefix: if (prefix.empty()) return text */
 static std::string apply_func_prefix(const std::string& text,
                                      const std::string& prefix) {
     if (prefix.empty()) return text;
@@ -89,6 +90,7 @@ static std::string apply_func_prefix(const std::string& text,
     return out;
 }
 
+/* apply symbol prefix dispatch: if (prefix.empty()) return text */
 static std::string apply_symbol_prefix_dispatch(const std::string& text,
                                                  const std::string& prefix) {
     if (prefix.empty()) return text;

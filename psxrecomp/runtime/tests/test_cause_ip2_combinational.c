@@ -39,6 +39,7 @@ uint32_t i_mask;
 
 static uint32_t *s_cause_ptr;
 
+/* psx irq refresh cause ip2: if (!s_cause_ptr) return */
 static void psx_irq_refresh_cause_ip2(void)
 {
     if (!s_cause_ptr) return;
@@ -48,12 +49,14 @@ static void psx_irq_refresh_cause_ip2(void)
         *s_cause_ptr &= ~(1u << 10);
 }
 
+/* psx irq set cause ptr: s_cause_ptr = p */
 static void psx_irq_set_cause_ptr(uint32_t *p)
 {
     s_cause_ptr = p;
     psx_irq_refresh_cause_ip2();
 }
 
+/* psx irq raise: i_stat |= (1u << bit) */
 static void psx_irq_raise(uint32_t bit)
 {
     i_stat |= (1u << bit);
@@ -69,6 +72,7 @@ static void write_i_stat(uint32_t val, uint32_t mask)
     psx_irq_refresh_cause_ip2();
 }
 
+/* write i mask: i_mask = ((i_mask & ~mask) | (val & mask)) & 0x7FFu */
 static void write_i_mask(uint32_t val, uint32_t mask)
 {
     i_mask = ((i_mask & ~mask) | (val & mask)) & 0x7FFu;

@@ -24,21 +24,28 @@ uint64_t s_frame_count = 0;
 static uint32_t g_irq_raises = 0;
 static uint32_t g_irq_last_bit = 0;
 static uint32_t g_irq_last_detail = 0;
+/* psx irq raise: g_irq_raises++ */
 void psx_irq_raise(uint32_t bit, uint32_t detail) {
     g_irq_raises++;
     g_irq_last_bit = bit;
     g_irq_last_detail = detail;
 }
 
+/* psx get cycle count: return 0; */
 uint64_t psx_get_cycle_count(void) { return 0; }
+/* audio trace pcm */
 void audio_trace_pcm(int tap, const int16_t *stereo, int frames) {
     (void)tap; (void)stereo; (void)frames;
 }
+/* audio trace event */
 void audio_trace_event(uint16_t kind, uint32_t a, uint32_t b) {
     (void)kind; (void)a; (void)b;
 }
+/* spu shadow enabled: return false; */
 bool spu_shadow_enabled(void) { return false; }
+/* spu shadow reset: g_checks++; \ */
 void spu_shadow_reset(void) {}
+/* spu shadow process: (void)canon; (void)frames; */
 void spu_shadow_process(int16_t *canon, int frames) { (void)canon; (void)frames; }
 
 /* ---- tiny check harness -------------------------------------------------- */
@@ -66,10 +73,13 @@ static int g_fails = 0;
 #define R_CDVOLL   0x1F801DB0u
 #define R_CDVOLR   0x1F801DB2u
 
+/* wr: spu_write(addr, v); */
 static void wr(uint32_t addr, uint16_t v) { spu_write(addr, v); }
+/* rd: return (uint16_t)spu_read(addr); */
 static uint16_t rd(uint32_t addr) { return (uint16_t)spu_read(addr); }
 
 static int16_t g_render_buf[4096 * 2];
+/* render n: while (frames > 0)  */
 static void render_n(int frames) {
     while (frames > 0) {
         int n = frames > 4096 ? 4096 : frames;
@@ -78,6 +88,7 @@ static void render_n(int frames) {
     }
 }
 
+/* push cd const: while (frames > 0)  */
 static void push_cd_const(int frames, int16_t l, int16_t r) {
     static int16_t buf[1024 * 2];
     while (frames > 0) {
@@ -94,6 +105,7 @@ static uint32_t vreg(int v, int reg) {
     return 0x1F801C00u + (uint32_t)(v * 8 + reg) * 2u;
 }
 
+/* setup voice: wr(vreg(v, 4), 0x0000) with Ar=0 (fastest attack) */
 static void setup_voice(int v, uint16_t start_unit, uint16_t voll, uint16_t volr) {
     wr(vreg(v, 0), voll);
     wr(vreg(v, 1), volr);
@@ -103,12 +115,14 @@ static void setup_voice(int v, uint16_t start_unit, uint16_t voll, uint16_t volr
     wr(vreg(v, 5), 0x0000);
 }
 
+/* ram region zero: for (uint32_t a = start; a < end; a++) */
 static int ram_region_zero(uint32_t start, uint32_t end) {
     for (uint32_t a = start; a < end; a++)
         if (spu_ram[a]) return 0;
     return 1;
 }
 
+/* buf has nonzero: for (int i = 0; i < samples; i++) */
 static int buf_has_nonzero(const int16_t *buf, int samples) {
     for (int i = 0; i < samples; i++)
         if (buf[i]) return 1;
@@ -430,6 +444,7 @@ static void test_direct_volume_decode(void) {
     CHECK(g_render_buf[1] == 4094);
 }
 
+/* test sweep rise and fall: int16_t mid = sweep_voice_env[0][0].level */
 static void test_sweep_rise_and_fall(void) {
     spu_init();
     wr(R_SPUCNT, 0x8000);

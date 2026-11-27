@@ -7,6 +7,7 @@ namespace {
 
 int failures = 0;
 
+/* check: if (condition) return */
 void check(bool condition, const char* message) {
     if (condition) return;
     std::fprintf(stderr, "FAIL: %s\n", message);

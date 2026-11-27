@@ -20,6 +20,7 @@ int failures = 0;
     }                                                                          \
 } while (0)
 
+/* put32: data[offset + 0] = static_cast<uint8_t>(value) */
 void put32(std::vector<uint8_t>& data, size_t offset, uint32_t value) {
     data[offset + 0] = static_cast<uint8_t>(value);
     data[offset + 1] = static_cast<uint8_t>(value >> 8);
@@ -27,10 +28,12 @@ void put32(std::vector<uint8_t>& data, size_t offset, uint32_t value) {
     data[offset + 3] = static_cast<uint8_t>(value >> 24);
 }
 
+/* jal: return 0x0C000000u | ((target >> 2) & 0x03FFFFFFu) */
 uint32_t jal(uint32_t target) {
     return 0x0C000000u | ((target >> 2) & 0x03FFFFFFu);
 }
 
+/* make exe buffer: return data */
 std::vector<uint8_t> make_exe_buffer(uint32_t image_size,
                                      uint32_t entry = kLoad) {
     std::vector<uint8_t> data(2048u + image_size, 0);
@@ -41,6 +44,7 @@ std::vector<uint8_t> make_exe_buffer(uint32_t image_size,
     return data;
 }
 
+/* parse: std::string error */
 PSXRecomp::PS1Executable parse(std::vector<uint8_t> data) {
     std::string error;
     auto exe = PSXRecomp::PS1ExeParser::parse_buffer(data, error);
@@ -48,6 +52,7 @@ PSXRecomp::PS1Executable parse(std::vector<uint8_t> data) {
     return exe.value();
 }
 
+/* starts: std::set<uint32_t> out */
 std::set<uint32_t> starts(const PSXRecomp::FunctionAnalysisResult& result) {
     std::set<uint32_t> out;
     for (const auto& function : result.functions) out.insert(function.start_addr);
@@ -63,6 +68,7 @@ struct ApeSwitchFixture {
         kLoad + 0x540u, kLoad + 0x550u, kLoad + 0x560u};
 };
 
+/* make ape switch: ApeSwitchFixture f */
 ApeSwitchFixture make_ape_switch() {
     ApeSwitchFixture f;
     f.image = make_exe_buffer(0x1000u, f.entry);
@@ -91,6 +97,7 @@ ApeSwitchFixture make_ape_switch() {
     return f;
 }
 
+/* resolves ape switch: auto exe = parse(f.image) */
 bool resolves_ape_switch(const ApeSwitchFixture& f,
                          uint32_t entry,
                          uint32_t producer_lo = kLoad,

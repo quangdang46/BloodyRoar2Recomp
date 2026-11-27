@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdio>
 
+/* reference dep res mask: switch (op)  */
 static uint32_t reference_dep_res_mask(uint32_t insn) {
     const uint32_t op = insn >> 26;
     const uint32_t rs = (insn >> 21) & 0x1Fu;

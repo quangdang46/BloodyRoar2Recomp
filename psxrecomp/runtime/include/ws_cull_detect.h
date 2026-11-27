@@ -49,6 +49,7 @@
  * ========================================================================== */
 #include <stdint.h>
 
+/* psx ws cull imm in: for (int i = 0; i < n; i++) */
 static inline int psx_ws_cull_imm_in(uint32_t imm, const uint32_t *set, int n) {
     for (int i = 0; i < n; i++)
         if (set[i] == imm) return 1;

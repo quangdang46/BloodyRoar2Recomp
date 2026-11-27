@@ -31,6 +31,7 @@ static inline uint32_t psx_ram_canonical_offset(uint32_t address) {
     return (address & 0x1FFFFFFFu) & PSX_MAIN_RAM_MASK;
 }
 
+/* psx ram resolve: uint32_t off */
 static inline int psx_ram_resolve(uint32_t address, uint32_t width,
                                   uint32_t *offset) {
     const uint32_t phys = address & 0x1FFFFFFFu;

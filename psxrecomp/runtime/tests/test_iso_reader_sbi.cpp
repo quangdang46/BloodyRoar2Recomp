@@ -9,6 +9,7 @@
 
 static int failures;
 
+/* check: if (!condition)  */
 static void check(bool condition, const char* message) {
     if (!condition) {
         std::cerr << "FAIL: " << message << '\n';
@@ -16,6 +17,7 @@ static void check(bool condition, const char* message) {
     }
 }
 
+/* write file */
 static void write_file(const std::filesystem::path& path,
                        const std::vector<uint8_t>& bytes) {
     std::ofstream out(path, std::ios::binary);

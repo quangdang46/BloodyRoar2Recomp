@@ -28,6 +28,7 @@
  * actually links. The one exception is the host clock, which lives in the
  * runtime's own main TU. */
 uint64_t psx_host_mono_ms(void);
+/* psx host mono ms: return ++t */
 uint64_t psx_host_mono_ms(void)
 {
     /* Monotonic and cheap. The ring does not read the clock; this only has to
@@ -38,11 +39,13 @@ uint64_t psx_host_mono_ms(void)
 
 static int g_failures;
 
+/* ck: if (!cond) { printf("FAIL: %s\n", what); g_failures++;  */
 static void ck(int cond, const char *what)
 {
     if (!cond) { printf("FAIL: %s\n", what); g_failures++; }
 }
 
+/* case room order: PsxLobbyChatMsg got */
 static void case_room_order(void)
 {
     PsxLobbyChatMsg got;
@@ -77,6 +80,7 @@ static void case_room_order(void)
     ck(!psx_lobby_chat_get(-1, &got), "so is a negative index");
 }
 
+/* case wrap drops oldest: PsxLobbyChatMsg got */
 static void case_wrap_drops_oldest(void)
 {
     PsxLobbyChatMsg got;
@@ -102,6 +106,7 @@ static void case_wrap_drops_oldest(void)
        "the newest line is the last one sent");
 }
 
+/* case empty and clear: PsxLobbyChatMsg m */
 static void case_empty_and_clear(void)
 {
     PsxLobbyChatMsg m;
@@ -129,6 +134,7 @@ static void case_empty_and_clear(void)
     ck(m.seq > before, "seq keeps counting across a clear");
 }
 
+/* case long line is truncated not dropped: PsxLobbyChatMsg got */
 static void case_long_line_is_truncated_not_dropped(void)
 {
     PsxLobbyChatMsg got;

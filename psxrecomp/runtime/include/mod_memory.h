@@ -17,6 +17,7 @@ extern "C" {
 #define PSX_MOD_GPU_DMA_APERTURE_SIZE (1u * 1024u * 1024u)
 #define PSX_MOD_GPU_DMA_GUEST_BASE    0x80F00000u
 
+/* psx mod gpu dma aperture offset for: uint32_t canonical = address & 0x00FFFFFFu */
 static inline int psx_mod_gpu_dma_aperture_offset_for(
     uint32_t address, uint32_t width, uint32_t used, uint32_t *offset) {
     uint32_t canonical = address & 0x00FFFFFFu;

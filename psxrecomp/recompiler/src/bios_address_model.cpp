@@ -125,6 +125,7 @@ uint32_t BiosAddressModel::normalize(uint32_t addr) const {
     return phys;
 }
 
+/* ram alias to rom: uint32_t phys = addr & 0x1FFFFFFFu */
 uint32_t BiosAddressModel::ram_alias_to_rom(uint32_t addr) const {
     uint32_t phys = addr & 0x1FFFFFFFu;
     for (const BiosAddrCopy& c : copies_) {
@@ -134,6 +135,7 @@ uint32_t BiosAddressModel::ram_alias_to_rom(uint32_t addr) const {
     return addr;
 }
 
+/* runtime pc: uint32_t phys = rom_pc & 0x1FFFFFFFu */
 uint32_t BiosAddressModel::runtime_pc(uint32_t rom_pc) const {
     uint32_t phys = rom_pc & 0x1FFFFFFFu;
     for (const BiosAddrCopy& c : copies_) {
@@ -143,6 +145,7 @@ uint32_t BiosAddressModel::runtime_pc(uint32_t rom_pc) const {
     return rom_pc;
 }
 
+/* relocate j target: uint32_t phys = rom_addr & 0x1FFFFFFFu */
 uint32_t BiosAddressModel::relocate_j_target(uint32_t rom_addr, uint32_t target) const {
     uint32_t phys = rom_addr & 0x1FFFFFFFu;
     for (const BiosAddrCopy& c : copies_) {
@@ -154,6 +157,7 @@ uint32_t BiosAddressModel::relocate_j_target(uint32_t rom_addr, uint32_t target)
     return target;
 }
 
+/* rom to ram phys: uint32_t phys = rom_addr & 0x1FFFFFFFu */
 uint32_t BiosAddressModel::rom_to_ram_phys(uint32_t rom_addr) const {
     uint32_t phys = rom_addr & 0x1FFFFFFFu;
     for (const BiosAddrCopy& c : copies_) {
@@ -163,6 +167,7 @@ uint32_t BiosAddressModel::rom_to_ram_phys(uint32_t rom_addr) const {
     return phys;
 }
 
+/* remap relocated j target: uint32_t src_phys = source_rom_addr & 0x1FFFFFFFu */
 uint32_t BiosAddressModel::remap_relocated_j_target(uint32_t target,
                                                     uint32_t source_rom_addr) const {
     uint32_t src_phys = source_rom_addr & 0x1FFFFFFFu;
@@ -193,14 +198,18 @@ uint32_t BiosAddressModel::remap_relocated_j_target(uint32_t target,
 // ---------------------------------------------------------------------------
 
 uint32_t BiosAddressModel::kbless_ram_lo() const { return copies_[kbless_idx_].ram_lo; }
+/* kbless ram hi: return copies_[kbless_idx_].ram_hi(); */
 uint32_t BiosAddressModel::kbless_ram_hi() const { return copies_[kbless_idx_].ram_hi(); }
+/* kbless rom off: return copies_[kbless_idx_].rom_lo - rom_base_phys_ */
 uint32_t BiosAddressModel::kbless_rom_off() const {
     return copies_[kbless_idx_].rom_lo - rom_base_phys_;
 }
+/* in kbless: return has_kbless() && norm >= kbless_ram_lo() && norm < kbless_ram_h... */
 bool BiosAddressModel::in_kbless(uint32_t norm) const {
     return has_kbless() && norm >= kbless_ram_lo() && norm < kbless_ram_hi();
 }
 
+/* is install slot: for (uint32_t slot : install_slots_)  */
 bool BiosAddressModel::is_install_slot(uint32_t ram_pc) const {
     for (uint32_t slot : install_slots_) {
         if (ram_pc == slot) return true;
@@ -208,9 +217,11 @@ bool BiosAddressModel::is_install_slot(uint32_t ram_pc) const {
     return false;
 }
 
+/* rom keyed ram lo: return copies_[rom_keyed_idx_].ram_lo */
 uint32_t BiosAddressModel::rom_keyed_ram_lo() const {
     return copies_[rom_keyed_idx_].ram_lo;
 }
+/* rom keyed ram hi incl: return copies_[rom_keyed_idx_].ram_hi() - 1u */
 uint32_t BiosAddressModel::rom_keyed_ram_hi_incl() const {
     return copies_[rom_keyed_idx_].ram_hi() - 1u;
 }

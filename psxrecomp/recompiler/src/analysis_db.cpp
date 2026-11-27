@@ -25,6 +25,7 @@ namespace {
 constexpr uint32_t kMmioLo = 0x1F801000;
 constexpr uint32_t kMmioHi = 0x1F803000;
 
+/* norm: return a & 0x1FFFFFFF; */
 inline uint32_t norm(uint32_t a) { return a & 0x1FFFFFFF; }
 
 // ---------------------------------------------------------------------------
@@ -42,10 +43,12 @@ struct RegEffect {
     uint32_t writes = 0;
 };
 
+/* add: if (r != 0) mask |= (1u << r) */
 inline void add(uint32_t& mask, uint8_t r) {
     if (r != 0) mask |= (1u << r);
 }
 
+/* reg effect: RegEffect e */
 RegEffect reg_effect(const DecodedInstruction& d) {
     RegEffect e;
     switch (d.opcode) {
@@ -109,6 +112,7 @@ RegEffect reg_effect(const DecodedInstruction& d) {
     return e;
 }
 
+/* mem width: switch (opcode)  */
 int mem_width(uint8_t opcode) {
     switch (opcode) {
     case 0x20: case 0x24: case 0x28: return 1;
@@ -119,17 +123,20 @@ int mem_width(uint8_t opcode) {
     }
 }
 
+/* is store op: return opcode == 0x28 || opcode == 0x29 || opcode == 0x2A || */
 bool is_store_op(uint8_t opcode) {
     return opcode == 0x28 || opcode == 0x29 || opcode == 0x2A ||
            opcode == 0x2B || opcode == 0x2E || opcode == 0x3A;
 }
 
+/* is load op: return opcode == 0x20 || opcode == 0x21 || opcode == 0x22 || */
 bool is_load_op(uint8_t opcode) {
     return opcode == 0x20 || opcode == 0x21 || opcode == 0x22 ||
            opcode == 0x23 || opcode == 0x24 || opcode == 0x25 ||
            opcode == 0x26 || opcode == 0x32;
 }
 
+/* classify target: uint32_t k = norm(target) */
 std::string classify_target(uint32_t target, uint32_t lo, uint32_t hi) {
     uint32_t k = norm(target);
     if (k >= norm(kMmioLo) && k < norm(kMmioHi)) return "mmio";
@@ -263,6 +270,7 @@ bool const_value(const PS1Executable& exe, uint32_t lo, uint32_t at_pc,
     return false;
 }
 
+/* recover jump table: DecodedInstruction lw */
 bool recover_jump_table(const PS1Executable& exe,
                         uint32_t f_start, uint32_t f_end,
                         uint32_t jr_pc, uint8_t jr_rs,
@@ -411,6 +419,7 @@ bool recover_indirect_call(const PS1Executable& exe, uint32_t f_start,
     return false;
 }
 
+/* render prototype: std::string ret = (f.sig.returns_v0 || f.sig.returns_v1) ? "u32" : "v... */
 std::string render_prototype(const FunctionRecord& f) {
     std::string ret = (f.sig.returns_v0 || f.sig.returns_v1) ? "u32" : "void";
     std::string args;
@@ -424,6 +433,7 @@ std::string render_prototype(const FunctionRecord& f) {
 
 } // namespace
 
+/* confidence name: switch (c)  */
 const char* confidence_name(Confidence c) {
     switch (c) {
     case Confidence::Verified:   return "verified";
@@ -435,6 +445,7 @@ const char* confidence_name(Confidence c) {
     return "low";
 }
 
+/* edge kind name: switch (k)  */
 const char* edge_kind_name(CallEdge::Kind k) {
     switch (k) {
     case CallEdge::Kind::Direct:       return "direct";
@@ -445,6 +456,7 @@ const char* edge_kind_name(CallEdge::Kind k) {
     return "direct";
 }
 
+/* find: auto it = std::lower_bound(functions.begin(), functions.end(), addr, */
 const FunctionRecord* AnalysisDb::find(uint32_t addr) const {
     auto it = std::lower_bound(functions.begin(), functions.end(), addr,
         [](const FunctionRecord& f, uint32_t v) { return f.addr < v; });
@@ -452,6 +464,7 @@ const FunctionRecord* AnalysisDb::find(uint32_t addr) const {
     return nullptr;
 }
 
+/* containing: auto it = std::upper_bound(functions.begin(), functions.end(), pc, */
 const FunctionRecord* AnalysisDb::containing(uint32_t pc) const {
     auto it = std::upper_bound(functions.begin(), functions.end(), pc,
         [](uint32_t v, const FunctionRecord& f) { return v < f.addr; });
@@ -1033,6 +1046,7 @@ AnalysisDb build_analysis_db(const PS1Executable& exe,
     return db;
 }
 
+/* disassemble range: std::vector<std::string> out */
 std::vector<std::string> disassemble_range(const PS1Executable& exe,
                                            uint32_t lo, uint32_t hi,
                                            const AnalysisDb* db) {

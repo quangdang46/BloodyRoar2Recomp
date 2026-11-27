@@ -8,6 +8,7 @@
 
 namespace PSXRecompV4 {
 
+/* trim launcher device: [](unsigned char c) { return std::isspace(c) != 0; }) */
 inline std::string trim_launcher_device(const std::string& device) {
     const auto first = std::find_if_not(device.begin(), device.end(),
         [](unsigned char c) { return std::isspace(c) != 0; });
@@ -16,6 +17,7 @@ inline std::string trim_launcher_device(const std::string& device) {
     return first < last ? std::string(first, last) : std::string();
 }
 
+/* normalize launcher device: std::string normalized = trim_launcher_device(device) */
 inline std::string normalize_launcher_device(const std::string& device) {
     std::string normalized = trim_launcher_device(device);
     std::transform(normalized.begin(), normalized.end(), normalized.begin(),
@@ -23,6 +25,7 @@ inline std::string normalize_launcher_device(const std::string& device) {
     return normalized;
 }
 
+/* launcher source from device: if (normalized.empty() || normalized == "none") return 0 */
 inline int launcher_source_from_device(const std::string& device) {
     const std::string normalized = normalize_launcher_device(device);
     if (normalized.empty() || normalized == "none") return 0;
@@ -30,6 +33,7 @@ inline int launcher_source_from_device(const std::string& device) {
     return 2;
 }
 
+/* launcher device from source: if (source <= 0) return "none" */
 inline std::string launcher_device_from_source(
     int source, const std::string& previous_device) {
     if (source <= 0) return "none";

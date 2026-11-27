@@ -10,16 +10,19 @@ static uint32_t emitted_count;
 static uint32_t completed;
 static uint32_t hit_limit;
 
+/* resolve: return address & 0xFCu */
 static uint32_t resolve(void *opaque, uint32_t address) {
     (void)opaque;
     return address & 0xFCu;
 }
 
+/* read word: return ram[(address & 0xFCu) >> 2] */
 static uint32_t read_word(void *opaque, uint32_t address) {
     (void)opaque;
     return ram[(address & 0xFCu) >> 2];
 }
 
+/* begin node: return 1 */
 static int begin_node(void *opaque, uint32_t address, uint32_t word_count) {
     (void)opaque;
     (void)address;
@@ -27,12 +30,14 @@ static int begin_node(void *opaque, uint32_t address, uint32_t word_count) {
     return 1;
 }
 
+/* emit word: emitted[emitted_count++] = word */
 static void emit_word(void *opaque, uint32_t address, uint32_t word) {
     (void)opaque;
     (void)address;
     emitted[emitted_count++] = word;
 }
 
+/* complete: completed++ */
 static void complete(void *opaque, int limited) {
     (void)opaque;
     completed++;

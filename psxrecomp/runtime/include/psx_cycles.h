@@ -127,7 +127,9 @@ static inline void psx_advance_cycles(uint32_t cycles) {
  * their pending total in the callback shim rather than these host globals. */
 #if defined(PSX_OVERLAY_DLL_BUILD)
 void overlay_flush_cycles(void);
+/* psx cyc local publish: uint32_t *acc = g_psx_cyc_local_acc */
 static inline void psx_cyc_local_publish(void) { }
+/* psx cyc batch flush: overlay_flush_cycles(); */
 static inline void psx_cyc_batch_flush(void) { overlay_flush_cycles(); }
 #else
 /* Publish function-local charges into the normal batch/advance path while
@@ -145,6 +147,7 @@ static inline void psx_cyc_local_publish(void) {
 #endif
 }
 
+/* psx cyc batch flush: uint32_t b = g_psx_cyc_batch */
 static inline void psx_cyc_batch_flush(void) {
 #if !defined(PSX_COSIM)
     psx_cyc_local_publish();

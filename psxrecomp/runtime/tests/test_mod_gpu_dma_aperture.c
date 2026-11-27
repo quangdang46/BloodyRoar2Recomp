@@ -4,6 +4,7 @@
 
 static int failures;
 
+/* check: if (condition)  */
 static void check(int condition, const char *name) {
     if (condition) {
         printf("PASS  %s\n", name);

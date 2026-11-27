@@ -44,6 +44,7 @@ typedef struct {
     uint8_t* ram;  /* points to g_ram */
 } MockCPU;
 
+/* mock read byte: if (addr == 0x1F801040) return cpu->ram[0x1F801040 & 0x1FFFFF] */
 static uint8_t mock_read_byte(MockCPU* cpu, uint32_t addr) {
     /* SIO RX = 0x1F801040 — return controlled value */
     if (addr == 0x1F801040) return cpu->ram[0x1F801040 & 0x1FFFFF];
@@ -53,10 +54,12 @@ static uint8_t mock_read_byte(MockCPU* cpu, uint32_t addr) {
     return 0xFF;
 }
 
+/* mock read half: return (uint16_t)mock_read_byte(cpu, addr) | ((uint16_t)mock_read_byt... */
 static uint16_t mock_read_half(MockCPU* cpu, uint32_t addr) {
     return (uint16_t)mock_read_byte(cpu, addr) | ((uint16_t)mock_read_byte(cpu, addr+1) << 8);
 }
 
+/* mock read word: return (uint32_t)mock_read_byte(cpu, addr) */
 static uint32_t mock_read_word(MockCPU* cpu, uint32_t addr) {
     return (uint32_t)mock_read_byte(cpu, addr)
          | ((uint32_t)mock_read_byte(cpu, addr+1) << 8)
@@ -64,15 +67,18 @@ static uint32_t mock_read_word(MockCPU* cpu, uint32_t addr) {
          | ((uint32_t)mock_read_byte(cpu, addr+3) << 24);
 }
 
+/* mock write byte: if ((addr & 0x1FFFFFFFu) < 0x200000u) cpu->ram[addr & 0x1FFFFF] = val */
 static void mock_write_byte(MockCPU* cpu, uint32_t addr, uint8_t val) {
     if ((addr & 0x1FFFFFFFu) < 0x200000u) cpu->ram[addr & 0x1FFFFF] = val;
 }
 
+/* mock write half */
 static void mock_write_half(MockCPU* cpu, uint32_t addr, uint16_t val) {
     mock_write_byte(cpu, addr, (uint8_t)(val & 0xFF));
     mock_write_byte(cpu, addr+1, (uint8_t)(val >> 8));
 }
 
+/* mock write word */
 static void mock_write_word(MockCPU* cpu, uint32_t addr, uint32_t val) {
     mock_write_byte(cpu, addr, (uint8_t)(val & 0xFF));
     mock_write_byte(cpu, addr+1, (uint8_t)((val >> 8) & 0xFF));
@@ -123,6 +129,7 @@ static int g_failures = 0;
         }                                                                       \
     } while (0)
 
+/* setup cpu: cpu->ram = g_ram */
 static void setup_cpu(MockCPU* cpu, uint8_t rx_byte, uint32_t a2_sector,
                       uint32_t a3_slot, uint8_t per_slot_byte) {
     memset(cpu, 0, sizeof(*cpu));

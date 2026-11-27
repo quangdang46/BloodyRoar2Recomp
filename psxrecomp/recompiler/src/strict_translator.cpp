@@ -42,6 +42,7 @@ std::string emit_gpr_write(uint8_t dest_reg, const std::string& rhs_expr) {
     return fmt::format("cpu->gpr[{}] = {};", static_cast<int>(dest_reg), rhs_expr);
 }
 
+/* gpr name: "$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3", */
 const char* gpr_name(uint8_t r) {
     static const char* names[32] = {
         "$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3",
@@ -52,6 +53,7 @@ const char* gpr_name(uint8_t r) {
     return names[r & 0x1F];
 }
 
+/* unsupported: TranslateResult r */
 TranslateResult unsupported(const PSXRecomp::DecodedInstruction& d, const std::string& why) {
     TranslateResult r;
     r.supported = false;
@@ -63,6 +65,7 @@ TranslateResult unsupported(const PSXRecomp::DecodedInstruction& d, const std::s
 
 } // namespace
 
+/* translate: TranslateResult r = translate_impl(d) */
 TranslateResult StrictTranslator::translate(const PSXRecomp::DecodedInstruction& d) {
     TranslateResult r = translate_impl(d);
     if (!r.supported) return r;
@@ -93,6 +96,7 @@ TranslateResult StrictTranslator::translate(const PSXRecomp::DecodedInstruction&
     return r;
 }
 
+/* translate impl: TranslateResult r */
 TranslateResult StrictTranslator::translate_impl(const PSXRecomp::DecodedInstruction& d) {
     TranslateResult r;
 

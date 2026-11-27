@@ -33,6 +33,7 @@
 /* Stub boot_state so the MotK save/load glue links without the full runtime. */
 #ifdef NETPLAY_SNAP_RING_TEST_STUB_BOOT_STATE
 #include "cpu_state.h"
+/* boot state save buffer: if (!*out_data) return 0 */
 int boot_state_save_buffer(const CPUState* cpu, uint32_t bios_checksum,
                            uint32_t entry_pc, uint8_t** out_data,
                            size_t* out_len) {
@@ -43,19 +44,23 @@ int boot_state_save_buffer(const CPUState* cpu, uint32_t bios_checksum,
     *out_len = 4;
     return 1;
 }
+/* boot state save buffer raw: return boot_state_save_buffer(cpu, bios_checksum, entry_pc, out_data, */
 int boot_state_save_buffer_raw(const CPUState* cpu, uint32_t bios_checksum,
                                uint32_t entry_pc, uint8_t** out_data,
                                size_t* out_len) {
     return boot_state_save_buffer(cpu, bios_checksum, entry_pc, out_data,
                                   out_len);
 }
+/* boot state load buffer: return file && file_len == 4 && memcmp(file, "save", 4) == 0 */
 int boot_state_load_buffer(const uint8_t* file, size_t file_len,
                            uint32_t bios_checksum, uint32_t entry_pc,
                            CPUState* cpu) {
     (void)bios_checksum; (void)entry_pc; (void)cpu;
     return file && file_len == 4 && memcmp(file, "save", 4) == 0;
 }
+/* boot state last vram dirty rows: return 0; */
 uint32_t boot_state_last_vram_dirty_rows(void) { return 0; }
+/* boot state last vram incremental: return 0; */
 int boot_state_last_vram_incremental(void) { return 0; }
 #endif
 
@@ -69,6 +74,7 @@ static int failures;
     else         { printf("ok:   %s\n", msg); } \
 } while (0)
 
+/* mkblob: uint8_t* p = (uint8_t*)malloc(8) */
 static uint8_t* mkblob(uint32_t tick, size_t* out_len) {
     uint8_t* p = (uint8_t*)malloc(8);
     if (!p) return NULL;

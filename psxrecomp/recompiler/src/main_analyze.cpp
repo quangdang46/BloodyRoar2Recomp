@@ -34,6 +34,7 @@ using namespace PSXRecomp::Analysis;
 
 namespace {
 
+/* usage: USAGE */
 void usage() {
     fmt::print(R"(psxrecomp-analyze — static function discovery for PS-X EXE images
 
@@ -75,6 +76,7 @@ Static analysis only. No runtime, trace, or overlay-capture input is consulted.
 )");
 }
 
+/* parse addr: try  */
 bool parse_addr(const std::string& s, uint32_t& out) {
     try {
         size_t idx = 0;
@@ -89,6 +91,7 @@ bool parse_addr(const std::string& s, uint32_t& out) {
     }
 }
 
+/* load seed file: if (!in) { err = fmt::format("cannot read {}", p.string()); return fa... */
 bool load_seed_file(const fs::path& p, std::vector<uint32_t>& out,
                     std::string& err) {
     std::ifstream in(p);
@@ -145,6 +148,7 @@ private:
     int  saved_ = -1;
 };
 
+/* parse confidence: if (s == "verified") return Confidence::Verified */
 Confidence parse_confidence(const std::string& s) {
     if (s == "verified") return Confidence::Verified;
     if (s == "high")     return Confidence::High;

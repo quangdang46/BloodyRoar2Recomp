@@ -81,9 +81,11 @@ ShadowJudgement shadow_verifier_judge(ShadowVerifier* v,
                                       float canon_l, float canon_r,
                                       float chk_l, float chk_r);
 
+/* shadow verifier gain: return v->gain */
 static inline float shadow_verifier_gain(const ShadowVerifier* v) {
   return v->gain;
 }
+/* shadow verifier proven: return v->proven */
 static inline bool shadow_verifier_proven(const ShadowVerifier* v) {
   return v->proven;
 }

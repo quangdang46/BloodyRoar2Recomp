@@ -21,6 +21,7 @@
 
 static int s_fails = 0;
 
+/* expect: if (!cond)  */
 static void expect(int cond, const char *what) {
     if (!cond) {
         fprintf(stderr, "FAIL: %s\n", what);
@@ -43,6 +44,7 @@ static int has_root(const char *path, const char *root) {
     return path[n] == '/' || path[n] == '\\';
 }
 
+/* touch: FILE *f = fopen(path, "wb") */
 static void touch(const char *path) {
     FILE *f = fopen(path, "wb");
     if (f) {

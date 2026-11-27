@@ -15,6 +15,7 @@
 
 static int s_fails = 0;
 
+/* expect: if (!cond)  */
 static void expect(int cond, const char *what) {
     if (!cond) {
         fprintf(stderr, "FAIL: %s\n", what);
@@ -26,6 +27,7 @@ static void expect(int cond, const char *what) {
 #define RETAIL_ANCHORS   /* deliver_event_ret */ 1, /* shell_entry */ 1
 #define OPENBIOS_ANCHORS /* deliver_event_ret */ 0, /* shell_entry */ 1
 
+/* req: PsxBiosHleRequest r */
 static PsxBiosHleRequest req(int bios_hle, int keep_intro, int fast_boot,
                              int have_der, int have_shell, int have_game) {
     PsxBiosHleRequest r;

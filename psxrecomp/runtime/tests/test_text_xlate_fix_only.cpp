@@ -17,16 +17,21 @@ static std::array<uint16_t, 1024u * 512u> g_vram{};
 extern "C" {
 uint64_t s_frame_count;
 
+/* memory get ram ptr: return g_ram.data(); */
 uint8_t* memory_get_ram_ptr(void) { return g_ram.data(); }
+/* gr vram read: return g_vram[static_cast<size_t>(y) * 1024u + static_cast<size_t>(x)] */
 uint16_t gr_vram_read(int x, int y) {
     return g_vram[static_cast<size_t>(y) * 1024u + static_cast<size_t>(x)];
 }
+/* gr vram write: g_vram[static_cast<size_t>(y) * 1024u + static_cast<size_t>(x)] = pixel */
 void gr_vram_write(int x, int y, uint16_t pixel) {
     g_vram[static_cast<size_t>(y) * 1024u + static_cast<size_t>(x)] = pixel;
 }
+/* dirty ram text bless */
 void dirty_ram_text_bless(uint32_t, const uint8_t*, uint32_t) {}
 }
 
+/* set test language: return _putenv_s("PSX_LANG", "en") == 0 */
 static bool set_test_language(void) {
 #ifdef _WIN32
     return _putenv_s("PSX_LANG", "en") == 0;

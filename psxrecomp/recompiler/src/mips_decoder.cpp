@@ -10,25 +10,30 @@ static const char* kRegisterNames[32] = {
     "$t8",   "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra"
 };
 
+/* register name: if (reg >= 32) return "$??" */
 const char* MipsDecoder::register_name(uint8_t reg) {
     if (reg >= 32) return "$??";
     return kRegisterNames[reg];
 }
 
+/* is nop: return instr == 0 */
 bool MipsDecoder::is_nop(uint32_t instr) {
     return instr == 0;
 }
 
+/* compute branch target: return address + 4u + (uint32_t)((int32_t)imm16 << 2) */
 uint32_t MipsDecoder::compute_branch_target(uint32_t address, int16_t imm16) {
     // Branch target = PC + 4 + (sign_extended_offset << 2)
     return address + 4u + (uint32_t)((int32_t)imm16 << 2);
 }
 
+/* compute jump target: return ((address + 4u) & 0xF0000000u) | (target26 << 2u) */
 uint32_t MipsDecoder::compute_jump_target(uint32_t address, uint32_t target26) {
     // Jump target = ((PC+4) & 0xF0000000) | (target26 << 2)
     return ((address + 4u) & 0xF0000000u) | (target26 << 2u);
 }
 
+/* get mnemonic: return instr.mnemonic ? instr.mnemonic : "???" */
 const char* MipsDecoder::get_mnemonic(const DecodedInstruction& instr) {
     return instr.mnemonic ? instr.mnemonic : "???";
 }

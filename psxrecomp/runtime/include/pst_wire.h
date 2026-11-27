@@ -25,17 +25,20 @@ typedef struct PstR {
     const uint8_t *end;
 } PstR;
 
+/* pst w init: w->p = buf */
 static inline void pst_w_init(PstW *w, uint8_t *buf, size_t cap) {
     w->p = buf;
     w->end = buf ? buf + cap : NULL;
     w->written = 0;
 }
 
+/* pst r init: r->p = buf */
 static inline void pst_r_init(PstR *r, const uint8_t *buf, size_t len) {
     r->p = buf;
     r->end = buf + len;
 }
 
+/* pst w bytes: if (!w) return 0 */
 static inline int pst_w_bytes(PstW *w, const void *src, size_t n) {
     if (!w) return 0;
     if (w->p) {
@@ -47,6 +50,7 @@ static inline int pst_w_bytes(PstW *w, const void *src, size_t n) {
     return 1;
 }
 
+/* pst r bytes: if (!r || !r->p || (size_t)(r->end - r->p) < n) return 0 */
 static inline int pst_r_bytes(PstR *r, void *dst, size_t n) {
     if (!r || !r->p || (size_t)(r->end - r->p) < n) return 0;
     if (n && dst) memcpy(dst, r->p, n);
@@ -54,13 +58,17 @@ static inline int pst_r_bytes(PstR *r, void *dst, size_t n) {
     return 1;
 }
 
+/* pst w u8: return pst_w_bytes(w, &v, 1); */
 static inline int pst_w_u8(PstW *w, uint8_t v) { return pst_w_bytes(w, &v, 1); }
+/* pst r u8: return pst_r_bytes(r, v, 1); */
 static inline int pst_r_u8(PstR *r, uint8_t *v) { return pst_r_bytes(r, v, 1); }
 
+/* pst w u16: uint8_t b[2] = { (uint8_t)v, (uint8_t)(v >> 8)  */
 static inline int pst_w_u16(PstW *w, uint16_t v) {
     uint8_t b[2] = { (uint8_t)v, (uint8_t)(v >> 8) };
     return pst_w_bytes(w, b, 2);
 }
+/* pst r u16: uint8_t b[2] */
 static inline int pst_r_u16(PstR *r, uint16_t *v) {
     uint8_t b[2];
     if (!pst_r_bytes(r, b, 2)) return 0;
@@ -68,12 +76,14 @@ static inline int pst_r_u16(PstR *r, uint16_t *v) {
     return 1;
 }
 
+/* pst w u32: uint8_t b[4] =  */
 static inline int pst_w_u32(PstW *w, uint32_t v) {
     uint8_t b[4] = {
         (uint8_t)v, (uint8_t)(v >> 8), (uint8_t)(v >> 16), (uint8_t)(v >> 24)
     };
     return pst_w_bytes(w, b, 4);
 }
+/* pst r u32: uint8_t b[4] */
 static inline int pst_r_u32(PstR *r, uint32_t *v) {
     uint8_t b[4];
     if (!pst_r_bytes(r, b, 4)) return 0;
@@ -83,11 +93,13 @@ static inline int pst_r_u32(PstR *r, uint32_t *v) {
     return 1;
 }
 
+/* pst w u64: uint8_t b[8] */
 static inline int pst_w_u64(PstW *w, uint64_t v) {
     uint8_t b[8];
     for (int i = 0; i < 8; i++) b[i] = (uint8_t)(v >> (8 * i));
     return pst_w_bytes(w, b, 8);
 }
+/* pst r u64: uint8_t b[8] */
 static inline int pst_r_u64(PstR *r, uint64_t *v) {
     uint8_t b[8];
     if (!pst_r_bytes(r, b, 8)) return 0;
@@ -99,7 +111,9 @@ static inline int pst_r_u64(PstR *r, uint64_t *v) {
     return 1;
 }
 
+/* pst w i16: return pst_w_u16(w, (uint16_t)v); */
 static inline int pst_w_i16(PstW *w, int16_t v) { return pst_w_u16(w, (uint16_t)v); }
+/* pst r i16: uint16_t u */
 static inline int pst_r_i16(PstR *r, int16_t *v) {
     uint16_t u;
     if (!pst_r_u16(r, &u)) return 0;
@@ -107,7 +121,9 @@ static inline int pst_r_i16(PstR *r, int16_t *v) {
     return 1;
 }
 
+/* pst w i32: return pst_w_u32(w, (uint32_t)v); */
 static inline int pst_w_i32(PstW *w, int32_t v) { return pst_w_u32(w, (uint32_t)v); }
+/* pst r i32: uint32_t u */
 static inline int pst_r_i32(PstR *r, int32_t *v) {
     uint32_t u;
     if (!pst_r_u32(r, &u)) return 0;
@@ -119,6 +135,7 @@ static inline int pst_r_i32(PstR *r, int32_t *v) {
 static inline int pst_w_bool(PstW *w, int v) {
     return pst_w_u8(w, v ? 1u : 0u);
 }
+/* pst r bool: uint8_t b */
 static inline int pst_r_bool(PstR *r, int *v) {
     uint8_t b;
     if (!pst_r_u8(r, &b)) return 0;
@@ -156,6 +173,7 @@ static inline int pst_w_pod(PstW *w, const void *src, size_t nbytes, size_t elem
     return 1;
 }
 
+/* pst r pod: uint8_t *d = (uint8_t *)dst */
 static inline int pst_r_pod(PstR *r, void *dst, size_t nbytes, size_t elem) {
     uint8_t *d = (uint8_t *)dst;
     if (!elem || (nbytes % elem) != 0) return 0;

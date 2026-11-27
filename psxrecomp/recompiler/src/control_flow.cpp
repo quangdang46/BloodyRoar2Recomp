@@ -4,8 +4,10 @@
 
 namespace PSXRecomp {
 
+/* Control Flow Analyzer: uint32_t opcode = (instr >> 26) & 0x3F */
 ControlFlowAnalyzer::ControlFlowAnalyzer(const PS1Executable& exe) : exe_(exe) {}
 
+/* is control flow: uint32_t opcode = (instr >> 26) & 0x3F */
 bool ControlFlowAnalyzer::is_control_flow(uint32_t instr) {
     uint32_t opcode = (instr >> 26) & 0x3F;
 
@@ -38,6 +40,7 @@ bool ControlFlowAnalyzer::is_control_flow(uint32_t instr) {
     return false;
 }
 
+/* get branch target: int16_t offset = (int16_t)(instr & 0xFFFF) */
 uint32_t ControlFlowAnalyzer::get_branch_target(uint32_t pc, uint32_t instr) {
     // Branch target = (PC + 4) + (sign_extend(offset) << 2)
     int16_t offset = (int16_t)(instr & 0xFFFF);
@@ -45,6 +48,7 @@ uint32_t ControlFlowAnalyzer::get_branch_target(uint32_t pc, uint32_t instr) {
     return (pc + 4) + byte_offset;
 }
 
+/* get jump target: uint32_t instr_index = instr & 0x03FFFFFF */
 uint32_t ControlFlowAnalyzer::get_jump_target(uint32_t pc, uint32_t instr) {
     // Jump target = (PC+4)[31:28] | (instr_index << 2)
     uint32_t instr_index = instr & 0x03FFFFFF;
@@ -53,6 +57,7 @@ uint32_t ControlFlowAnalyzer::get_jump_target(uint32_t pc, uint32_t instr) {
     return upper_bits | target;
 }
 
+/* analyze instruction: ControlFlowInstr cf */
 ControlFlowInstr ControlFlowAnalyzer::analyze_instruction(uint32_t addr, uint32_t instr) {
     ControlFlowInstr cf;
     cf.address = addr;
@@ -175,6 +180,7 @@ ControlFlowInstr ControlFlowAnalyzer::analyze_instruction(uint32_t addr, uint32_
     return cf;
 }
 
+/* analysis walk hi: func.alias_walk_lo ? func.alias_walk_lo : func.start_addr */
 uint32_t ControlFlowAnalyzer::analysis_walk_hi(const Function& func) const {
     const uint32_t analysis_hi = exe_.analysis_end_address();
     const uint32_t walk_lo =
@@ -245,6 +251,7 @@ std::set<uint32_t> ControlFlowAnalyzer::find_block_boundaries(const Function& fu
     return boundaries;
 }
 
+/* build basic blocks: std::map<uint32_t, BasicBlock> blocks */
 std::map<uint32_t, BasicBlock> ControlFlowAnalyzer::build_basic_blocks(
     const Function& func,
     const std::set<uint32_t>& boundaries) {
@@ -300,6 +307,7 @@ std::map<uint32_t, BasicBlock> ControlFlowAnalyzer::build_basic_blocks(
     return blocks;
 }
 
+/* link basic blocks: for (auto& [addr, block] : blocks)  */
 void ControlFlowAnalyzer::link_basic_blocks(std::map<uint32_t, BasicBlock>& blocks) {
     for (auto& [addr, block] : blocks) {
         ControlFlowInstr& cf = block.exit_instr;
@@ -346,6 +354,7 @@ void ControlFlowAnalyzer::link_basic_blocks(std::map<uint32_t, BasicBlock>& bloc
     }
 }
 
+/* detect loops: std::vector<std::pair<uint32_t, uint32_t>> loops */
 std::vector<std::pair<uint32_t, uint32_t>> ControlFlowAnalyzer::detect_loops(
     const std::map<uint32_t, BasicBlock>& blocks) {
 
@@ -369,6 +378,7 @@ std::vector<std::pair<uint32_t, uint32_t>> ControlFlowAnalyzer::detect_loops(
     return loops;
 }
 
+/* analyze function: ControlFlowGraph cfg */
 ControlFlowGraph ControlFlowAnalyzer::analyze_function(const Function& func) {
     ControlFlowGraph cfg;
     // Alias entries cover their HOST's full range so backward branches, shared
@@ -514,6 +524,7 @@ ControlFlowGraph ControlFlowAnalyzer::analyze_function(const Function& func) {
     return cfg;
 }
 
+/* analyze all functions: std::map<uint32_t, ControlFlowGraph> all_cfgs */
 std::map<uint32_t, ControlFlowGraph> ControlFlowAnalyzer::analyze_all_functions(
     const std::vector<Function>& functions) {
 

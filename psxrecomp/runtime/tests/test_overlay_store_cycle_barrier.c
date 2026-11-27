@@ -9,17 +9,20 @@ static uint32_t published_cycles;
 static uint32_t read_observed_cycles;
 static uint32_t write_observed_cycles;
 
+/* overlay flush cycles: published_cycles += pending_cycles */
 void overlay_flush_cycles(void) {
     published_cycles += pending_cycles;
     pending_cycles = 0;
 }
 
+/* observed read word: read_observed_cycles = published_cycles */
 static uint32_t observed_read_word(uint32_t addr) {
     (void)addr;
     read_observed_cycles = published_cycles;
     return 0x11223344u;
 }
 
+/* observed write word: write_observed_cycles = published_cycles */
 static void observed_write_word(uint32_t addr, uint32_t value) {
     (void)addr;
     (void)value;
