@@ -5071,24 +5071,24 @@ static uint32_t desc_frag_store_pair(uint32_t off, uint32_t src,
   return src + 4;
 }
 
-uint32_t desc_frag_scale_store(uint32_t a0, uint32_t a1, uint32_t a2,
-                               uint32_t a3)
+uint32_t desc_frag_scale_store(uint32_t unused1, uint32_t unused2, uint32_t src,
+                               uint32_t owner)
 {
   CPUState *c = clean_cpu_state();
   uint32_t off;
-  (void)a0; (void)a1;
+  (void)unused1; (void)unused2;
   off = (uint32_t)c->gpr[3] * 40u;              /* (v1<<2 + v1) << 3 */
-  return desc_frag_store_pair(off, a2, a3);
+  return desc_frag_store_pair(off, src, owner);
 }
 
-uint32_t desc_frag_sum_store(uint32_t a0, uint32_t a1, uint32_t a2,
-                             uint32_t a3)
+uint32_t desc_frag_sum_store(uint32_t unused1, uint32_t unused2, uint32_t src,
+                             uint32_t owner)
 {
   CPUState *c = clean_cpu_state();
   uint32_t off;
-  (void)a0; (void)a1;
+  (void)unused1; (void)unused2;
   off = (uint32_t)(c->gpr[2] + c->gpr[3]) << 3;
-  return desc_frag_store_pair(off, a2, a3);
+  return desc_frag_store_pair(off, src, owner);
 }
 
 uint32_t desc_frag_tail(uint32_t unused1, uint32_t unused2, uint32_t cur, uint32_t unused4)
@@ -5484,7 +5484,7 @@ void battle_math_init(uint32_t dst, uint32_t src)
 extern void print_dispatch(const char *,...);
 void status_text_dump(uint32_t cam)
 {
-  uint8_t *s0 = (uint8_t *)guest_at(cam);
+  uint8_t *camp = (uint8_t *)guest_at(cam);
 #define F2(a) ((const char *)guest_at(a))
   print_dispatch(F2(0x8011fb5c),
                MB32(0x801b1494 + (uint32_t)((int32_t)MBS16(cam + 0x76) << 2)),
@@ -5508,7 +5508,7 @@ void status_text_dump(uint32_t cam)
   print_dispatch(F2(0x8011fc1c), MBS16(cam + 0x64), MBS16(cam + 0x66),
                MBS16(cam + 0x68));
 #undef F2
-  (void)s0;
+  (void)camp;
 }
 
 /* record_table_select — if a1 <= 0: store table ptr 0x801b15f4 + a0*8 into
@@ -8265,11 +8265,11 @@ static void ot_push(uint32_t pkt, int32_t slot)
  * sub-blocks: src[0..3] -> dst+{264,265,26c,26d,274,275,27c,27d} on
  * BOTH fixed engine tables (0x801f10c0 / 0x801f10c4 + s1). Byte
  * pattern per side: s0,s1,s0+s2,s1,s0,s1+s3,s0+s2,s1+s3. */
-static void copy8_rec(uint32_t e0, uint32_t e1, uint32_t s1,
+static void copy8_rec(uint32_t e0, uint32_t e1, uint32_t off,
                           const uint8_t *src)
 {
-  uint8_t *d0 = (uint8_t *)guest_at(e0 + s1);
-  uint8_t *d1 = (uint8_t *)guest_at(e1 + s1);
+  uint8_t *d0 = (uint8_t *)guest_at(e0 + off);
+  uint8_t *d1 = (uint8_t *)guest_at(e1 + off);
   uint32_t g0 = guest_of(d0), g1 = guest_of(d1);
   MW8(g0 + 0x264, src[0]);
   MW8(g0 + 0x265, src[1]);
@@ -9405,8 +9405,8 @@ void engine_record_pair_update(uint32_t battle,void *ctxp)
  * halfword pairs from table 0x801b253c indexed by a2-2. */
 void gpu_side_packet_emit(uint32_t rec,int32_t side,int32_t mode)
 {
-  uint32_t v1 = MB32(0x801f10bc) + (uint32_t)side * 3u * 0x10u;
-  MW32(v1 + 0x54,1);                           /* unconditional */
+  uint32_t spkt = MB32(0x801f10bc) + (uint32_t)side * 3u * 0x10u;
+  MW32(spkt + 0x54,1);                           /* unconditional */
 
   if (mode == 1) goto L_mode1;
   if (mode < 2) {
@@ -9582,10 +9582,10 @@ L_reca:                                     /* 0x80153d74 */
 /* shared scale step used by the two state-3 blocks: p = lh(side+0xb0)
  * * MBS16(s1+0x94); q = ((p*0x57619f1)>>32)>>7 - (p>>31); then
  * side+0xac = lhu(side+0xac) - q, clamped to 0 when bit15 set. */
-static void side_scale_ac(uint8_t *side,uint32_t s1)
+static void side_scale_ac(uint8_t *side,uint32_t rec)
 {
   int32_t prod = (int32_t)((int32_t)*(int16_t *)(side + 0xb0) *
-                        (int32_t)MBS16(s1 + 0x94));
+                        (int32_t)MBS16(rec + 0x94));
   int32_t mulhi = (int32_t)(((int64_t)prod * 0x57619f1LL) >> 32);
   int32_t quot = (mulhi >> 7) - (prod >> 31);
   int32_t new_val = (int32_t)*(uint16_t *)(side + 0xac) - quot;
@@ -10032,9 +10032,9 @@ void options_pages_reset(void)
 
 /* cursor_advance_thunk — motion_integrator_tail(a0,a1) then v0 = a2+2 @0x8017cfe0
  * (9 insns). a2 saved to s0 in the delay slot of the jal. */
-int32_t cursor_advance_thunk(uint32_t a0,uint32_t a1,uint32_t cur)
+int32_t cursor_advance_thunk(uint32_t arg0,uint32_t arg1,uint32_t cur)
 {
-  motion_integrator_tail((int)a0, (int)a1);
+  motion_integrator_tail((int)arg0, (int)arg1);
   return (int32_t)(cur + 2u);
 }
 
@@ -10091,11 +10091,11 @@ void chan_attr_rec_b(uint32_t ptr,uint32_t val)
  * v0 = s0+2. a1 (in) is dead. */
 int32_t slot_byte_commit(uint32_t obj,uint32_t unused,uint32_t cur)
 {
-  uint32_t s0 = cur;
-  int32_t a1 = (int32_t)(int8_t)(MB16(s0) >> 8);
-  MW8(obj + 5, (uint32_t)a1);
-  slot_apply_guest((int)obj, a1 & 1);
-  return (int32_t)(s0 + 2u);
+
+  int32_t op = (int32_t)(int8_t)(MB16(cur) >> 8);
+  MW8(obj + 5, (uint32_t)op);
+  slot_apply_guest((int)obj, op & 1);
+  return (int32_t)(cur + 2u);
 }
 
 /* elapsed_tick_clamp — elapsed-tick clamp @0x8012adf8 (16 insns):
@@ -10153,11 +10153,11 @@ int32_t pending_work_drain(uint32_t obj)
  * MB32(a1+0x10) + idx*28, a1); v0 = s0+4. */
 int32_t descriptor_fetch(uint32_t ctrl,uint32_t desc,uint32_t cur)
 {
-  uint32_t s0 = cur;
-  uint32_t idx = ((uint32_t)(int32_t)(int16_t)MBS16(s0 + 2) * 2u
+
+  uint32_t idx = ((uint32_t)(int32_t)(int16_t)MBS16(cur + 2) * 2u
                   + MB8(ctrl + 5)) & 1u;
   skeleton_init(ctrl, MB32(desc + 0x10) + idx * 28u, desc);
-  return (int32_t)(s0 + 4u);
+  return (int32_t)(cur + 4u);
 }
 
 /* byte2_probe_commit — signed-byte gate @0x8017cf6c (116B, 9 blocks):
@@ -10168,14 +10168,14 @@ int32_t descriptor_fetch(uint32_t ctrl,uint32_t desc,uint32_t cur)
  * if h<0 h+=15, MW16(0x801f02f6, h>>4); ret 0x801f0000. a1 dead. */
 int32_t byte2_probe_commit(uint32_t rec,uint32_t unused,uint32_t desc)
 {
-  int32_t s3 = (int32_t)MBS8(desc + 2);
-  if (s3 == 1) {
+  int32_t arg = (int32_t)MBS8(desc + 2);
+  if (arg == 1) {
     if (MBS8(0x1f8000b1u) != 0) return 0x801f0000;
     MW16(0x801f02f4u, MB16(rec + 36));
     return 0x801f0000;
   }
-  if (!(s3 < 2)) return 0;
-  if (s3 != 0) return 0x801f0000;
+  if (!(arg < 2)) return 0;
+  if (arg != 0) return 0x801f0000;
   {
     int32_t h = (int32_t)MBS16(rec + 36);
     if (h < 0) h += 15;
@@ -10189,8 +10189,8 @@ int32_t byte2_probe_commit(uint32_t rec,uint32_t unused,uint32_t desc)
  * return MB16(a2+2) + MB32(a0+0x30). a1 dead. */
 uint32_t desc_cursor_advance(uint32_t ctx,uint32_t unused,uint32_t cur)
 {
-  uint32_t s0 = MB16(cur) >> 8;
-  if ((int32_t)table_byte_next_a() < (int32_t)s0) return cur + 4u;
+  uint32_t lim = MB16(cur) >> 8;
+  if ((int32_t)table_byte_next_a() < (int32_t)lim) return cur + 4u;
   return MB16(cur + 2) + MB32(ctx + 0x30);
 }
 
@@ -10235,18 +10235,18 @@ void display_list_poke_redraw(void)
  * MB8(s0+0xf) = 1. */
 void one_shot_init(void)
 {
-  uint32_t s0 = 0x801bef60u;
-  int32_t v1;
+  uint32_t base = 0x801bef60u;
+  int32_t sub;
   extern int br2_bail_pending(void);
-  if (MB8(s0 + 0xf) != 0) return;
+  if (MB8(base + 0xf) != 0) return;
   brightness_packet_send(0);
-  v1 = MB8(s0 + 0xe) & 0xf;
-  if (v1 > 0 && v1 < 3) {
+  sub = MB8(base + 0xe) & 0xf;
+  if (sub > 0 && sub < 3) {
     while (cd_cmd_issue_sync(9, 0, 0) == 0) {
       if (br2_bail_pending()) return;
     }
   }
-  MW8(s0 + 0xf, 1);
+  MW8(base + 0xf, 1);
 }
 
 /* task_spawn_flag — task spawn + flag @0x8014c1d8 (31 insns):
@@ -10255,13 +10255,13 @@ void one_shot_init(void)
  * [MB32(0x801f10bc)+0x1c] |= 0x40. */
 void task_spawn_flag(void)
 {
-  int32_t v0 = task_alloc_wrap_e(4, 0x801b27bc, 0x801b27c0);
-  uint32_t v1;
-  if (v0 != 0) MW32((uint32_t)v0, 0);
+  int32_t task = task_alloc_wrap_e(4, 0x801b27bc, 0x801b27c0);
+  uint32_t dctx;
+  if (task != 0) MW32((uint32_t)task, 0);
   task_alloc_wrap_c(MB32(0x801f10c0u) + 0xb4eu, MB32(0x801f10c4u) + 0xb4eu,
                0x801b2f00u, 0x801b2f18u);
-  v1 = MB32(0x801f10bcu);
-  MW32(v1 + 0x1c, MB32(v1 + 0x1c) | 0x40u);
+  dctx = MB32(0x801f10bcu);
+  MW32(dctx + 0x1c, MB32(dctx + 0x1c) | 0x40u);
 }
 
 /* indexed_desc_dispatch — indexed descriptor dispatch @0x8014ca34 (31
@@ -10321,9 +10321,9 @@ extern void sprite_node_emit_a(uint32_t,int32_t,int32_t,int32_t,int32_t,
 
 /* shared tail of the four 0x1f80038c descriptor-init variants:
  * text_render_full((uint*)a0, a1 & 0xffff, 0x1f80038c). */
-static void hud_msg_draw(uint32_t a0,uint32_t a1)
+static void hud_msg_draw(uint32_t str,uint32_t attr)
 {
-  text_render_full((uint *)guest_at(a0), a1 & 0xffffu, 0x1f80038c);
+  text_render_full((uint *)guest_at(str), attr & 0xffffu, 0x1f80038c);
 }
 
 /* descblk_variant_a — descriptor variant @0x8012e214 (34 insns):
@@ -14081,7 +14081,7 @@ void anim_workblock_init(uint32_t ent,uint32_t aidx,uint32_t v3,
     MW32(rec + 0x940, aidx);
   }
   {
-    uint16_t t2 = MB8(ent + 2) != 0 ? 0x7bc7 : 0x7bc6;
+    uint16_t ptag = MB8(ent + 2) != 0 ? 0x7bc7 : 0x7bc6;
     MW16(rec + 0x968, 0);
     MW32(rec + 0x944, MB8(ent + 3) == 0xa ? 0x801b216cu : 0x801b2134u);
     for (j = 0; j < 2; j++) {
@@ -14096,7 +14096,7 @@ void anim_workblock_init(uint32_t ent,uint32_t aidx,uint32_t v3,
         wp += 0x28;
         MW8(rp + 7, 0x2e);
         MW16(rp + 0x16, 0x39);
-        MW16(rp + 0xe, t2);
+        MW16(rp + 0xe, ptag);
         MW8(rp + 4, MB8(pat));
         MW8(rp + 5, MB8(pat + 2));
         MW8(rp + 6, MB8(pat + 4));
@@ -15124,7 +15124,7 @@ extern void br2_guest_frame_free(void);
  * guest_at() to a bogus address and never reach sp20. */
 uint32_t heap_record_emit(uint32_t heap,uint32_t dst,uint32_t src,
                       uint32_t idx,uint32_t cnt0,uint32_t *out,
-                      uint32_t fp,uint32_t s7,uint32_t s6)
+                      uint32_t fp,uint32_t xoff,uint32_t yoff)
 {
   uint32_t dw = dst;          /* dst cursor */
   uint32_t srcw = src;          /* src (returned/advanced) */
@@ -15151,7 +15151,7 @@ uint32_t heap_record_emit(uint32_t heap,uint32_t dst,uint32_t src,
     uint32_t slot = MB32(slotp);
     if (slot != 0) {
       uint32_t old = srcw;
-      srcw = (uint32_t)heap_serialize(slot, srcw, dw, fp, fr, s7, s6);
+      srcw = (uint32_t)heap_serialize(slot, srcw, dw, fp, fr, xoff, yoff);
       outsz = MB32(fr);
       if (outsz != 0) {
         uint32_t wcur = dw + 0x24u;
