@@ -1229,7 +1229,7 @@ void memcard_slot_poll(void)
   uint8_t *rec;
   char *slot_flag;
   int slot_i;
-  char status_buf [24];
+  char status_buf[24];
 
   slot_status_fill(status_buf);
   slot_flag = &DAT_801f24d0;
