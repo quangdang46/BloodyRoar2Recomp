@@ -4440,7 +4440,7 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
    * re-reads it through nested frames, so the write->draw span inside the
    * subrec[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
-  int32_t a2, txt_y;
+  int32_t tot, txt_y;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   subrec = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
   if (subrec[1] != 0) {
@@ -4450,28 +4450,28 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
       0x80151e4c,0x80151ed0,0x80151ed0,0x80151ea8,0x80151ea8,0x80151ed0 };
-    a2 = (int32_t)*(int16_t *)(b + 0xa2) + 1;
+    int32_t wins = (int32_t)*(int16_t *)(b + 0xa2) + 1;
     crecs = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0));
     {
       uint32_t mode = b[0x9c];
       if (mode < 6) {
         uint32_t tgt = jt[mode];
         if (tgt == 0x80151e4c) {                 /* case 0 */
-          if (a2 == 9) {
+          if (wins == 9) {
             sprintf_core((char *)buf,(char *)guest_at(0x801208c0));
-          } else if (a2 < (int32_t)crecs[0x10]) {
-            sprintf_core((char *)buf,(char *)guest_at(0x801208dc),a2);
+          } else if (wins < (int32_t)crecs[0x10]) {
+            sprintf_core((char *)buf,(char *)guest_at(0x801208dc),wins);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208d0));
           }
         } else if (tgt == 0x80151ea8) {          /* cases 3,4 */
-          if (a2 < (int32_t)crecs[0x10]) {
-            sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
+          if (wins < (int32_t)crecs[0x10]) {
+            sprintf_core((char *)buf,(char *)guest_at(0x801208f4),wins);
           } else {
             sprintf_core((char *)buf,(char *)guest_at(0x801208e8));
           }
         } else {                                /* cases 1,2,5 */
-          sprintf_core((char *)buf,(char *)guest_at(0x801208f4),a2);
+          sprintf_core((char *)buf,(char *)guest_at(0x801208f4),wins);
         }
       }
     }
@@ -4488,10 +4488,10 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     return;
   }
   /* obj+1 clear path */
-  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(subrec + 0xe2);
-  if (a2 == 0 &&
-      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
-  if (a2 != 0) {
+  tot = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(subrec + 0xe2);
+  if (tot == 0 &&
+      (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) tot = 1;
+  if (tot != 0) {
     champion_win_announce(battle_g,side,side[2]);
     return;
   }
@@ -5638,13 +5638,13 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
         uint32_t ctab  = 0x801b25ec + ((uint32_t)pi << 3);
         uint32_t offb  = p13c;
         uint32_t offa = p138;
-        uint32_t fp  = MB8(0x801b23ac + cur[3]);
-        uint32_t ptab  = 0x801b260c + (fp << 2);
+        uint32_t pidx  = MB8(0x801b23ac + cur[3]);
+        uint32_t ptab  = 0x801b260c + (pidx << 2);
         int32_t  j;
         for (j = 0; j < 2; j++) {
           uint32_t base = MB32(0x801f10c0 + (uint32_t)j * 4);
           int32_t stk5, stk6;
-          palette_attr_record_write(battle,base + offa,pi,fp);
+          palette_attr_record_write(battle,base + offa,pi,pidx);
           stk5 = MBS16(ptab);     stk6 = MBS16(ptab + 2);
           sprite_place_centered(base + offa,battle,MBS16(p134),0x180,stk5,stk6);
           stk5 = MBS16(ctab + 4); stk6 = MBS16(ctab + 6);
@@ -6797,7 +6797,7 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
   (void)unused;
   for (i = 0; i < 2; i++) {
     uint32_t eng = MB32(0x801f10c0 + (uint32_t)i * 4);
-    uint32_t rcur, it, srca, tba, tbb, pkta, pktb, k, rowp, s2;
+    uint32_t rcur, it, srca, tba, tbb, pkta, pktb, k, rowp, srcb;
 
     /* ---- prologue: 76 records stride 0x28 ---- */
     rcur = eng; it = 0;
@@ -6816,12 +6816,12 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     rcur = eng + 0x578; it = 0;
     do {
       /* phase 1: byte table s1 */
-      rowp = rcur + 0x25;  s2 = srca + 6; k = 0;
+      rowp = rcur + 0x25;  srcb = srca + 6; k = 0;
       do {
         BR2_E70(rcur,srca);
         MW16(rowp - 0x17,MB16(pkta)); MW16(rowp - 0xf,MB16(pktb));
         BR2_YROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
-        srca += 8; rcur += 0x28; rowp += 0x28; s2 += 8; k++;
+        srca += 8; rcur += 0x28; rowp += 0x28; srcb += 8; k++;
       } while (k < 2);
       /* phase 2: byte table t0 */
       rowp = rcur + 0x25;  k = 0;
@@ -6829,31 +6829,31 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
         BR2_E70(rcur,srca);
         MW16(rowp - 0x17,MB16(pkta)); MW16(rowp - 0xf,MB16(pktb + 2));
         BR2_YROW(rowp,MB8(tbb),MB8(tbb+1),MB8(tbb+2),MB8(tbb+3));
-        srca += 8; rcur += 0x28; rowp += 0x28; s2 += 8; k++;
+        srca += 8; rcur += 0x28; rowp += 0x28; srcb += 8; k++;
       } while (k < 2);
        tba += 4;  tbb += 4; it++;
     } while (it < 4);
 
     /* ---- block @eng+0xa0: 3 iters, packedA+packedB ---- */
     pktb = 0x801b24c0; srca = 0x801b24a8; pkta = 0x801b24cc; tba = 0x801b24d8;
-    s2 = tba + 3; rcur = eng + 0xa0; rowp = eng + 0xb6; it = 0;
+    srcb = tba + 3; rcur = eng + 0xa0; rowp = eng + 0xb6; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 3);
 
     /* ---- block @eng+0x118: 4 iters ---- */
     pktb = 0x801b2504; srca = 0x801b24e4; pkta = 0x801b2508; tba = 0x801b250c;
-    s2 = srca + 6; rcur = eng + 0x118; rowp = eng + 0x12e; it = 0;
+    srcb = srca + 6; rcur = eng + 0x118; rowp = eng + 0x12e; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8; rcur += 0x28; it++; s2 += 8; tba += 4; rowp += 0x28;
+      srca += 8; rcur += 0x28; it++; srcb += 8; tba += 4; rowp += 0x28;
     } while (it < 4);
 
     /* ---- block @eng+0x1ce: 4 iters, constant tables ---- */
@@ -6870,33 +6870,33 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
 
     /* ---- block @eng+0x258: 2 iters ---- */
     pktb = 0x801b2520; srca = 0x801b2510; pkta = 0x801b253c; tba = 0x801b2524;
-    s2 = tba + 3;  rcur = eng + 0x258; rowp = eng + 0x26e; it = 0;
+    srcb = tba + 3;  rcur = eng + 0x258; rowp = eng + 0x26e; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB(pktb));     pktb += 4;
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x00: 2 iters, packedB only ---- */
     pktb = 0x801b257c; srca = 0x801b254c; tba = 0x801b255c;
-    s2 = tba + 3;  rcur = eng; rowp = eng + 0x16; it = 0;
+    srcb = tba + 3;  rcur = eng; rowp = eng + 0x16; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp,BR2_PKB(pktb));
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x50: 2 iters, packedB const table ---- */
     srca = 0x801b2564; tba = 0x801b2574;
-    s2 = tba + 3;  rcur = eng + 0x50; rowp = eng + 0x66; it = 0;
+    srcb = tba + 3;  rcur = eng + 0x50; rowp = eng + 0x66; it = 0;
     do {
       BR2_E70(rcur,srca);
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp,BR2_PKB(0x801b257c));
-      srca += 8;  rcur += 0x28; tba += 4; s2 += 4; it++; rowp += 0x28;
+      srca += 8;  rcur += 0x28; tba += 4; srcb += 4; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x2be: 18 iters, no E70, +0x40/+7 consts ---- */
@@ -6930,7 +6930,7 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
     }
 
     /* ---- block @eng+0xaf0: 2 iters, const byte table ---- */
-    srca = 0x801b25ec; s2 = srca + 6; tba = 0x801b25fc;
+    srca = 0x801b25ec; srcb = srca + 6; tba = 0x801b25fc;
     pkta = 0x801b2650; pktb = 0x801b2600;
     rcur = eng + 0xaf0; rowp = eng + 0xb06; it = 0;
     do {
@@ -6938,18 +6938,18 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
       BR2_XROW(rowp,MB8(tba),MB8(tba+1),MB8(tba+2),MB8(tba+3));
       MW16(rowp - 8,BR2_PKA(pkta));
       MW16(rowp,BR2_PKB(pktb));
-      srca += 8; s2 += 8; rcur += 0x28; it++; rowp += 0x28;
+      srca += 8; srcb += 8; rcur += 0x28; it++; rowp += 0x28;
     } while (it < 2);
 
     /* ---- block @eng+0x7f8: 15 iters, E70 zero args, +0x38/+0x3f ---- */
     pktb = 0x801b2704; pkta = 0x801b2708; tba = 0x801b2744;
-    s2 = tba + 1; rcur = eng + 0x7f8; rowp = eng + 0x80e; it = 0;
+    srcb = tba + 1; rcur = eng + 0x7f8; rowp = eng + 0x80e; it = 0;
     do {
       sprite_place_centered(rcur,p1,0,0,0,0);
-      BR2_ZROW(rowp,MB8(tba),MB8(s2),0x38,0x3f);
+      BR2_ZROW(rowp,MB8(tba),MB8(srcb),0x38,0x3f);
       MW16(rowp - 8,BR2_PKA(pkta)); pkta += 4;
       MW16(rowp,BR2_PKB80(pktb));
-      rcur += 0x28; it++; tba += 2; s2 += 2; rowp += 0x28;
+      rcur += 0x28; it++; tba += 2; srcb += 2; rowp += 0x28;
     } while (it < 0xf);
 
     /* ---- block @eng+0xab6: 2 iters, no E70, const tables ---- */
@@ -7599,7 +7599,7 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
 
   uint32_t btns = MB16(rec + 0x68);
   uint32_t dirs = MB16(rec + 0x6c);
-  uint32_t v0, v1, idx, e;
+  uint32_t nv, sv, mode, doff;
   uint32_t dv[2];                              /* sp+0x10..0x17, u16 lanes */
   uint16_t *dvh;
   uint32_t *m;
@@ -7619,14 +7619,14 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
   }
   if (btns & 0x20) {
     /* signed mod-4 of (u16 @s1+0x76 + 1) into battle_field_set */
-    v0 = (uint32_t)MB16(cursor + 0x76) + 1u;
-    v1 = (uint32_t)(int32_t)(int16_t)(v0 << 16 >> 16);
-    MW16(cursor + 0x76,(uint16_t)v0);
+    nv = (uint32_t)MB16(cursor + 0x76) + 1u;
+    sv = (uint32_t)(int32_t)(int16_t)(nv << 16 >> 16);
+    MW16(cursor + 0x76,(uint16_t)nv);
     {
-      int32_t field_val = (int32_t)v1;
+      int32_t field_val = (int32_t)sv;
       if (field_val < 0) field_val += 3;
       field_val = field_val >> 2;                          /* sra */
-      field_val = (int32_t)v1 - (field_val << 2);
+      field_val = (int32_t)sv - (field_val << 2);
       field_val = (int32_t)(int16_t)(field_val << 16 >> 16);
       battle_field_set(cursor,field_val);
     }
@@ -7640,9 +7640,9 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
     gte_cw_d000_set((int32_t)MBS16(rec + 0x24),0);
   }
 
-  idx = (uint32_t)MB16(cursor + 0x76) & 0x7f;
-  if (idx >= 0x25) goto L_end;
-  switch (idx) {
+  mode = (uint32_t)MB16(cursor + 0x76) & 0x7f;
+  if (mode >= 0x25) goto L_end;
+  switch (mode) {
   case 0: case 1: goto L_case408;
   case 2:        goto L_case608;
   case 31:       goto L_case774;
@@ -7654,10 +7654,10 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
 L_case408:                                     /* 0x8012f408 */
   if (btns & 2) {
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + e));
-    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + e + 4));
+    doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + doff));
+    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + doff + 4));
   }
   /* shared velocity block 0x8012f46c */
   dv[0] = dv[1] = 0;                            /* sp+0x10..0x17 = 0 */
@@ -7749,10 +7749,10 @@ L_case8e4:                                     /* 0x8012f8e4 */
     MW16(cursor + 0x5e,0);
     MW16(cursor + 0x5c,0);
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + e));
-    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + e + 4));
+    doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + doff));
+    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + doff + 4));
   }
   goto L_end;
 
