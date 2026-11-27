@@ -3200,7 +3200,7 @@ extern uint8_t *g_DAT_1f80006c, *g_DAT_1f8000b1, *g_DAT_1f80038c, *g_DAT_1f80039
 #define DAT_801f0ae0   (*g_DAT_801f0ae0)
 #define DAT_801f0db0   (*g_DAT_801f0db0)
 #define DAT_801f0fb0   (*g_DAT_801f0fb0)
-extern uint32_t *g__DAT_1f8000c4, *g__DAT_1f80038c, *g__DAT_1f800390, *g__DAT_1f800394, *g__DAT_1f800398, *g__DAT_1f80039c, *g__DAT_1f8003a0, *g__DAT_1f8003a4, *g__DAT_1f8003a8, *g__DAT_1f8003ac, *g__DAT_1f8003b0, *g__DAT_1f8003b2, *g__DAT_1f8003b4, *g__DAT_1f8003b6, *g__DAT_1f8003b8, *g__DAT_1f8003ba, *g__DAT_1f8003bc, *g__DAT_1f8003be, *g__DAT_1f8003c0, *g__DAT_801c4578, *g__DAT_801f0780, *g__DAT_801f0784, *g__DAT_801f0788, *g__DAT_801f0790, *g__DAT_801f0794, *g__DAT_801f0798;
+extern uint32_t *g__DAT_1f80038c, *g__DAT_1f800390, *g__DAT_1f800394, *g__DAT_1f800398, *g__DAT_1f80039c, *g__DAT_1f8003a0, *g__DAT_1f8003a4, *g__DAT_1f8003a8, *g__DAT_1f8003ac, *g__DAT_1f8003b0, *g__DAT_1f8003b2, *g__DAT_1f8003b4, *g__DAT_1f8003b6, *g__DAT_1f8003b8, *g__DAT_1f8003ba, *g__DAT_1f8003bc, *g__DAT_1f8003be, *g__DAT_1f8003c0, *g__DAT_801c4578, *g__DAT_801f0780, *g__DAT_801f0784, *g__DAT_801f0788, *g__DAT_801f0790, *g__DAT_801f0794, *g__DAT_801f0798;
 #define _DAT_1f80038c   (*g__DAT_1f80038c)
 #define _DAT_1f800390   (*g__DAT_1f800390)
 #define _DAT_1f800394   (*g__DAT_1f800394)
@@ -15480,8 +15480,6 @@ extern void spark_trail_task_update(int *rec);
 extern void confetti_burst_update(int rec);
 extern void LAB_8013e558(undefined4 *ctx);
 extern void LAB_80140510(int *ctx);
-extern uint8_t *g_DAT_801b180c;
-#define DAT_801b180c (*g_DAT_801b180c)
 extern void ring_effect_task_update(int rec);
 extern void firework_task_update(int rec);
 
@@ -16688,7 +16686,6 @@ LAB_80140624:
 }
 
 /* ---- batch28: HUD/announce/scroll helpers (disasm-verified widths) ---- */
-extern void *guest_at(uint32_t addr);
 #define BA8(a)   (*(uint8_t  *)guest_at(a))
 #define BA16(a)  (*(uint16_t *)guest_at(a))
 #define BA32(a)  (*(uint32_t *)guest_at(a))
@@ -16913,8 +16910,6 @@ void hud_time_score_draw(uint32_t tbl,uint16_t font,int32_t a2,int32_t clr,
    * re-read by announce_param_block_init_b / hud_text_* / slot_name_measure
    * across many nested calls, so reserve the guest frame window
    * (sp+0x18 -> frm+0x18) or callee frames overwrite it. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t htsd_frm = br2_guest_frame(0x60);
   char *line = (char *)guest_at(htsd_frm + 0x18);
   t5 = *(int32_t *)(rec + 8) / 0x32;
@@ -17700,7 +17695,6 @@ extern int cd_strncmp12_eq(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e08 */
 extern uint32_t cd_dir_scan(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e28 */
 extern uint32_t cd_mode_flag_set(int8_t opcode,int param_addr,uint32_t param_val);
 extern int  cd_timer_read(int mode);
-extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
 
 /* guest channel_script_emit_chain_tick @0x80134b34 — emit chain on 203c/2078/2074 bases;
@@ -17925,8 +17919,6 @@ int cd_search_file(undefined4 *path,uint32_t arg)
    * otherwise land on lbuf between the per-token rebuild and the
    * cd_strncmp12_eq scan. gpu_rect uses sp-0x10..sp-1, so the guest's
    * own sp-0x50..sp-0x11 scratch is reproduced by frm+0..frm+0x3f. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t csf_frm = br2_guest_frame(0x50);
   uint32_t lbuf_g = csf_frm;
   char *lbuf = (char *)guest_at(lbuf_g);
@@ -18090,8 +18082,6 @@ void corner_emit_cond_offset(int spr,int x0,int y0,int idx,int mul,int x1,int y1
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018bda4) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t cec_frm = br2_guest_frame(0x20);
     memcpy(guest_at(cec_frm + 0x10), rect, 8);
     gpu_load_image_cmd(cec_frm + 0x10,t);
@@ -18123,8 +18113,6 @@ void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
   /* guest rect = $sp+0x10 (frame 0x20, disasm 0x8018be28) -> frm+0x10;
    * reserved frame staging, see spr_draw_off in gfx.c. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t cev_frm = br2_guest_frame(0x20);
     memcpy(guest_at(cev_frm + 0x10), rect, 8);
     gpu_load_image_cmd(cev_frm + 0x10,t + 0x14);
