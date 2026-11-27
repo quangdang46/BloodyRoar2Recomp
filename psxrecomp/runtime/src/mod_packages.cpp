@@ -41,10 +41,12 @@ std::map<std::string, RegisteredPlugin>& registered_plugins() {
     return value;
 }
 
+/* Set *out to an error string (if out non-null). */
 void set_error(std::string* out, const std::string& value) {
     if (out) *out = value;
 }
 
+/* Validate a mod/package id (lowercase slug, <=96 chars). */
 bool valid_id(const std::string& value) {
     if (value.empty() || value.size() > 96) return false;
     for (unsigned char c : value) {
@@ -54,6 +56,7 @@ bool valid_id(const std::string& value) {
     return value.front() != '.' && value.back() != '.';
 }
 
+/* Validate a 64-char lowercase hex SHA-256 string. */
 bool valid_sha256(const std::string& value) {
     return value.size() == 64 &&
         std::all_of(value.begin(), value.end(), [](unsigned char c) {
@@ -61,6 +64,7 @@ bool valid_sha256(const std::string& value) {
         });
 }
 
+/* Validate an http(s) URL string. */
 bool valid_web_url(const std::string& value) {
     return value.rfind("https://", 0) == 0 || value.rfind("http://", 0) == 0;
 }
@@ -89,6 +93,7 @@ bool parse_hex_bytes(const std::string& text, std::vector<uint8_t>& out) {
     return true;
 }
 
+/* Parse a value-encoding name (u8/u16le/...) to enum. */
 bool parse_value_encoding(const std::string& text, ModValueEncoding& out) {
     static const std::pair<const char*, ModValueEncoding> values[] = {
         {"u8", ModValueEncoding::U8},
@@ -105,6 +110,7 @@ bool parse_value_encoding(const std::string& text, ModValueEncoding& out) {
     return false;
 }
 
+/* Parse an integer-predicate operator name to enum. */
 bool parse_integer_predicate_op(const std::string& text,
                                 ModIntegerPredicateOp& out) {
     static const std::pair<const char*, ModIntegerPredicateOp> values[] = {
@@ -124,6 +130,7 @@ bool parse_integer_predicate_op(const std::string& text,
     return false;
 }
 
+/* Byte size of a ModValueEncoding. */
 uint32_t value_encoding_size(ModValueEncoding encoding) {
     switch (encoding) {
     case ModValueEncoding::U8:
@@ -138,6 +145,7 @@ uint32_t value_encoding_size(ModValueEncoding encoding) {
     return 0;
 }
 
+/* Verify expected bytes at offset form a LUI/ORI pair guard. */
 bool valid_mips_lui_ori_guard(const std::vector<uint8_t>& expected,
                               uint64_t offset) {
     if (offset > expected.size() || expected.size() - offset < 8)
@@ -168,6 +176,7 @@ struct RelativeRange {
     uint64_t size = 0;
 };
 
+/* Compute [offset,size) ranges covered by a patch field. */
 std::vector<RelativeRange> patch_field_ranges(const ModPatchField& field) {
     if (!field.replacement.empty())
         return {{field.offset, field.replacement.size()}};
@@ -176,6 +185,7 @@ std::vector<RelativeRange> patch_field_ranges(const ModPatchField& field) {
     return {{field.offset, value_encoding_size(field.replace_encoding)}};
 }
 
+/* Format bytes as a hex string. */
 std::string hex_bytes(const std::vector<uint8_t>& bytes) {
     std::ostringstream out;
     for (uint8_t byte : bytes)
@@ -189,6 +199,7 @@ struct SemVer {
     bool valid = false;
 };
 
+/* Parse a semver string into SemVer (core + prerelease). */
 SemVer parse_semver(const std::string& text) {
     SemVer out;
     std::string core = text;
@@ -222,6 +233,7 @@ SemVer parse_semver(const std::string& text) {
     return out;
 }
 
+/* Compare two semver strings (invalid → plain string compare). */
 int compare_semver(const std::string& a, const std::string& b) {
     const SemVer av = parse_semver(a), bv = parse_semver(b);
     if (!av.valid || !bv.valid) return a.compare(b);
@@ -232,6 +244,7 @@ int compare_semver(const std::string& a, const std::string& b) {
     return av.suffix.compare(bv.suffix);
 }
 
+/* Check a version requirement (*, >=, ranges) against a version. */
 bool version_satisfies(const std::string& actual, const std::string& requirement) {
     if (requirement.empty() || requirement == "*") return true;
     if (requirement.rfind(">=", 0) == 0)
@@ -251,6 +264,7 @@ bool version_satisfies(const std::string& actual, const std::string& requirement
     return actual == requirement;
 }
 
+/* TOML-escape a string value. */
 std::string quote_toml(const std::string& value) {
     std::string out = "\"";
     for (unsigned char c : value) {
@@ -263,6 +277,7 @@ std::string quote_toml(const std::string& value) {
     return out;
 }
 
+/* Read a whole file into a string (binary-safe). */
 bool read_file(const fs::path& path, std::vector<uint8_t>& out, std::string* error) {
     std::ifstream in(path, std::ios::binary);
     if (!in) {
@@ -284,10 +299,12 @@ bool read_file(const fs::path& path, std::vector<uint8_t>& out, std::string* err
     return true;
 }
 
+/* Read a little-endian u16. */
 uint16_t le16(const uint8_t* p) {
     return (uint16_t)(p[0] | ((uint16_t)p[1] << 8));
 }
 
+/* Read a little-endian u32. */
 uint32_t le32(const uint8_t* p) {
     return (uint32_t)p[0] | ((uint32_t)p[1] << 8) |
            ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
@@ -303,6 +320,7 @@ struct ZipEntry {
     bool directory = false;
 };
 
+/* Validate a zip entry name (no traversal/absolute paths). */
 bool safe_archive_name(const std::string& name) {
     if (name.empty() || name.size() > 512 || name[0] == '/' || name[0] == '\\')
         return false;
@@ -316,6 +334,7 @@ bool safe_archive_name(const std::string& name) {
     return true;
 }
 
+/* Parse a ZIP archive central directory into ZipEntry list. */
 bool parse_zip(const std::vector<uint8_t>& bytes, std::vector<ZipEntry>& entries,
                std::string* error) {
     if (bytes.size() < 22) {
@@ -392,6 +411,7 @@ struct DeflateBits {
     uint64_t hold = 0;
     unsigned bits = 0;
 
+    /* BitReader: read count bits into hold. */
     bool read(unsigned count, uint32_t& out) {
         while (bits < count) {
             if (at == end) return false;
@@ -404,6 +424,7 @@ struct DeflateBits {
         bits -= count;
         return true;
     }
+    /* BitReader: discard bits to next byte boundary. */
     void align_byte() {
         const unsigned drop = bits & 7u;
         hold >>= drop;
@@ -416,6 +437,7 @@ struct DeflateHuffman {
     std::vector<uint16_t> symbols;
 };
 
+/* Build a Huffman decode table from code lengths. */
 bool build_huffman(const std::vector<uint8_t>& lengths, DeflateHuffman& out) {
     out = {};
     for (uint8_t length : lengths) {
@@ -439,6 +461,7 @@ bool build_huffman(const std::vector<uint8_t>& lengths, DeflateHuffman& out) {
     return true;
 }
 
+/* Huffman-decode one symbol from the bit stream. */
 bool decode_symbol(DeflateBits& bits, const DeflateHuffman& table, uint16_t& symbol) {
     uint32_t code = 0, first = 0, index = 0;
     for (uint32_t length = 1; length <= 15; ++length) {
@@ -459,6 +482,7 @@ bool decode_symbol(DeflateBits& bits, const DeflateHuffman& table, uint16_t& sym
     return false;
 }
 
+/* Raw-DEFLATE inflate into out (stored/fixed/dynamic blocks). */
 bool inflate_deflate(const uint8_t* data, size_t size, size_t expected,
                      std::vector<uint8_t>& out) {
     static const uint16_t length_base[29] = {
@@ -578,6 +602,7 @@ bool inflate_deflate(const uint8_t* data, size_t size, size_t expected,
     return out.size() == expected;
 }
 
+/* Extract zip entries to target dir with safe-name checks. */
 bool extract_zip(const std::vector<uint8_t>& bytes,
                  const std::vector<ZipEntry>& entries,
                  const fs::path& target, std::string* error) {
@@ -642,6 +667,7 @@ bool extract_zip(const std::vector<uint8_t>& bytes,
     return true;
 }
 
+/* Find the selected version of a package in selections map. */
 const ModPackage* find_selected(
     const std::map<std::string, std::map<std::string, ModPackage>>& packages,
     const std::string& id, const ModSelection& selection) {
@@ -657,6 +683,7 @@ const ModPackage* find_selected(
     return best;
 }
 
+/* True if package targets match the exe/disc identity. */
 bool target_matches(const ModPackage& package, const std::string& game,
                     const std::string& exe, const std::string& disc) {
     if (package.targets.empty()) return false;
@@ -674,6 +701,7 @@ bool target_matches(const ModPackage& package, const std::string& game,
     return false;
 }
 
+/* Build the canonical ModResolution from selections. */
 std::string canonical_resolution(const std::vector<const ModPackage*>& ordered,
                                  const std::map<std::string, ModSelection>& selections,
                                  const std::vector<ModResolution::Write>& writes,
@@ -761,12 +789,14 @@ std::string canonical_resolution(const std::vector<const ModPackage*>& ordered,
     return out.str();
 }
 
+/* Find a feature by id within a package. */
 const ModFeature* find_feature(const ModPackage& package, const std::string& id) {
     const auto found = std::find_if(package.features.begin(), package.features.end(),
         [&](const ModFeature& feature) { return feature.id == id; });
     return found == package.features.end() ? nullptr : &*found;
 }
 
+/* Find an option by id within a feature. */
 const ModOption* find_option(const ModPackage& package,
                              const std::string& feature_id,
                              const std::string& id) {
@@ -777,6 +807,7 @@ const ModOption* find_option(const ModPackage& package,
     return option == package.options.end() ? nullptr : &*option;
 }
 
+/* Find a resource by id within a feature. */
 const ModResource* find_resource(const ModPackage& package,
                                  const std::string& feature_id,
                                  const std::string& id) {
@@ -793,6 +824,7 @@ bool constraint_satisfied(
     const std::function<std::string(const std::string&)>& value_for,
     std::string* reason);
 
+/* Find the selection record for a feature. */
 const ModFeatureSelection* find_feature_selection(const ModPackage& package,
                                                   const ModSelection& selection,
                                                   const std::string& feature_id) {
@@ -803,6 +835,7 @@ const ModFeatureSelection* find_feature_selection(const ModPackage& package,
     return found == selection.features.end() ? nullptr : &found->second;
 }
 
+/* True if a feature is enabled under the selection. */
 bool is_feature_enabled(const ModPackage& package, const ModSelection& selection,
                         const ModFeature& feature) {
     if (feature.legacy) return selection.enabled;
@@ -812,6 +845,7 @@ bool is_feature_enabled(const ModPackage& package, const ModSelection& selection
         ? selected->enabled : feature.default_enabled;
 }
 
+/* True if any feature in the package is enabled. */
 bool has_enabled_feature(const ModPackage& package,
                          const ModSelection& selection) {
     return std::any_of(package.features.begin(), package.features.end(),
@@ -820,6 +854,7 @@ bool has_enabled_feature(const ModPackage& package,
         });
 }
 
+/* Resolve an option's effective value (default/override). */
 std::string effective_option_value(const ModPackage& package,
                                    const ModSelection& selection,
                                    const std::string& feature_id,
@@ -840,6 +875,7 @@ std::string effective_option_value(const ModPackage& package,
     return option ? option->default_value : std::string();
 }
 
+/* Resolve a resource's effective path. */
 fs::path effective_resource_path(const ModPackage& package,
                                  const ModSelection& selection,
                                  const std::string& feature_id,
@@ -854,6 +890,7 @@ fs::path effective_resource_path(const ModPackage& package,
                                                    fs::path(resource->second);
 }
 
+/* Would this feature be enabled if toggled (preview). */
 bool prospective_feature_enabled(
     const ModPackage& package, const ModSelection& selection,
     const std::string& feature_id, const std::string* override_feature_id,
@@ -865,6 +902,7 @@ bool prospective_feature_enabled(
     return feature && is_feature_enabled(package, selection, *feature);
 }
 
+/* Would this option value apply if changed (preview). */
 std::string prospective_option_value(
     const ModPackage& package, const ModSelection& selection,
     const std::string& feature_id, const std::string& option_id,
@@ -877,6 +915,7 @@ std::string prospective_option_value(
     return effective_option_value(package, selection, feature_id, option_id);
 }
 
+/* Check one runtime constraint against live state. */
 bool runtime_constraint_satisfied(
     const ModPackage& package, const ModSelection& selection,
     const ModConstraint& constraint,
@@ -938,6 +977,7 @@ bool runtime_constraint_satisfied(
     return false;
 }
 
+/* Check all package constraints (with override context). */
 bool package_constraints_satisfied(
     const ModPackage& package, const ModSelection& selection,
     const std::string* override_feature_id, const bool* override_enabled,
@@ -959,6 +999,7 @@ bool package_constraints_satisfied(
     return true;
 }
 
+/* Set a feature's enabled flag in the selection. */
 void set_feature_selected(ModSelection& selection,
                           const std::string& feature_id, bool enabled) {
     ModFeatureSelection& feature = selection.features[feature_id];
@@ -966,6 +1007,7 @@ void set_feature_selected(ModSelection& selection,
     feature.has_enabled = true;
 }
 
+/* Apply a feature's requires/forbids to the selection. */
 bool apply_feature_requirements(const ModPackage& package,
                                 ModSelection& selection,
                                 const std::string& feature_id,
@@ -1000,6 +1042,7 @@ bool apply_feature_requirements(const ModPackage& package,
     return true;
 }
 
+/* Cascade-disable features with unsatisfied reqs. */
 void cascade_unsatisfied_feature_requirements(const ModPackage& package,
                                               ModSelection& selection) {
     bool changed = false;
@@ -1023,6 +1066,7 @@ void cascade_unsatisfied_feature_requirements(const ModPackage& package,
     } while (changed);
 }
 
+/* Check a feature's when-conditions against active packages. */
 bool conditions_match(const ModPackage& package, const ModSelection& selection,
                       const std::string& feature_id,
                       const std::map<std::string, std::string>& conditions) {
@@ -1033,6 +1077,7 @@ bool conditions_match(const ModPackage& package, const ModSelection& selection,
     return true;
 }
 
+/* Evaluate an overlay feature predicate. */
 bool feature_predicate_matches(
     const ModOverlay::FeaturePredicate& predicate,
     const std::map<std::string, const ModPackage*>& active_packages,
@@ -1057,6 +1102,7 @@ bool feature_predicate_matches(
 
 bool valid_option_value(const ModOption& option, const std::string& value);
 
+/* Parse a when-condition map from TOML. */
 void read_conditions(const toml::value& value, const std::vector<ModOption>& options,
                      const std::string& feature_id,
                      std::map<std::string, std::string>& when,
@@ -1100,6 +1146,7 @@ bool ranges_overlap(ModPatchTarget a_target, uint64_t a_location, size_t a_size,
                     ModPatchTarget b_target, uint64_t b_location, size_t b_size);
 
 template <typename Fn>
+/* Invoke fn over each byte span a write owns. */
 void for_each_owned_span(const ModResolution::Write& write, Fn&& fn) {
     if (write.fields.empty()) {
         fn(write.location, write.expected.data(), write.replacement.data(),
@@ -1113,6 +1160,7 @@ void for_each_owned_span(const ModResolution::Write& write, Fn&& fn) {
     }
 }
 
+/* True if two writes touch overlapping bytes. */
 bool writes_overlap(const ModResolution::Write& a, const ModResolution::Write& b) {
     if (a.target != b.target) return false;
     bool overlap = false;
@@ -1130,6 +1178,7 @@ bool writes_overlap(const ModResolution::Write& a, const ModResolution::Write& b
     return overlap;
 }
 
+/* True if two [loc,size) ranges on a target overlap. */
 bool ranges_overlap(ModPatchTarget a_target, uint64_t a_location, size_t a_size,
                     ModPatchTarget b_target, uint64_t b_location, size_t b_size) {
     if (a_target != b_target) return false;
@@ -1138,6 +1187,7 @@ bool ranges_overlap(ModPatchTarget a_target, uint64_t a_location, size_t a_size,
     return a_location < b_end && b_location < a_end;
 }
 
+/* True if two writes are byte-identical. */
 bool identical_write(const ModResolution::Write& a, const ModResolution::Write& b) {
     if (a.target != b.target || a.location != b.location ||
         a.expected != b.expected || a.replacement != b.replacement ||
@@ -1151,6 +1201,7 @@ bool identical_write(const ModResolution::Write& a, const ModResolution::Write& 
     return true;
 }
 
+/* Find first mismatching byte between overlapping writes. */
 bool write_overlap_mismatch(const ModResolution::Write& a,
                             const ModResolution::Write& b,
                             uint64_t& mismatch) {
@@ -1181,6 +1232,7 @@ bool write_overlap_mismatch(const ModResolution::Write& a,
     return found;
 }
 
+/* Guard-aware overlap mismatch check. */
 bool write_guard_overlap_mismatch(const ModResolution::Write& a,
                                   const ModResolution::Write& b,
                                   uint64_t& mismatch) {
@@ -1198,6 +1250,7 @@ bool write_guard_overlap_mismatch(const ModResolution::Write& a,
     return false;
 }
 
+/* True if a write overlaps a target range. */
 bool write_overlaps_range(const ModResolution::Write& write,
                           ModPatchTarget target, uint64_t location,
                           size_t size) {
@@ -1213,6 +1266,7 @@ bool write_overlaps_range(const ModResolution::Write& write,
     return overlap;
 }
 
+/* Find mismatch between a write and an overlay patch. */
 bool write_overlay_mismatch(const ModResolution::Write& write,
                             const ModResolution::Overlay& overlay,
                             uint64_t& mismatch) {
@@ -1235,6 +1289,7 @@ bool write_overlay_mismatch(const ModResolution::Write& write,
     return found;
 }
 
+/* Find first mismatch between overlapping overlays. */
 bool overlay_overlap_mismatch(const ModResolution::Overlay& a,
                               const ModResolution::Overlay& b,
                               uint64_t& mismatch) {
@@ -1251,6 +1306,7 @@ bool overlay_overlap_mismatch(const ModResolution::Overlay& a,
     return false;
 }
 
+/* Byte-range overlap test on a patch target. */
 std::string overlap_resource(ModPatchTarget target,
                              uint64_t a_location, size_t a_size,
                              uint64_t b_location, size_t b_size) {
@@ -1265,10 +1321,12 @@ std::string overlap_resource(ModPatchTarget target,
     return out.str();
 }
 
+/* One-byte resource overlap helper. */
 std::string byte_resource(ModPatchTarget target, uint64_t location) {
     return overlap_resource(target, location, 1, location, 1);
 }
 
+/* Strict int64 parse (full-string, no trailing chars). */
 bool parse_canonical_int64(const std::string& value, int64_t& parsed) {
     try {
         size_t used = 0;
@@ -1279,6 +1337,7 @@ bool parse_canonical_int64(const std::string& value, int64_t& parsed) {
     }
 }
 
+/* True if value is on the step grid from minimum. */
 bool integer_step_aligned(int64_t value, int64_t minimum, int64_t step) {
     if (value < minimum || step <= 0) return false;
     const uint64_t distance =
@@ -1286,6 +1345,7 @@ bool integer_step_aligned(int64_t value, int64_t minimum, int64_t step) {
     return distance % static_cast<uint64_t>(step) == 0;
 }
 
+/* Validate an option value against its type/range. */
 bool valid_option_value(const ModOption& option, const std::string& value) {
     if (option.type == ModOptionType::Boolean)
         return value == "true" || value == "false";
@@ -1298,6 +1358,7 @@ bool valid_option_value(const ModOption& option, const std::string& value) {
            integer_step_aligned(parsed, option.min_value, option.step);
 }
 
+/* Evaluate an integer predicate against a value. */
 bool integer_predicate_matches(
     const ModPackage& package, const ModSelection& selection,
     const std::string& feature_id,
@@ -1326,6 +1387,7 @@ bool integer_predicate_matches(
     return false;
 }
 
+/* Evaluate a ModConstraint against resolved values. */
 bool constraint_satisfied(
     const ModPackage& package, const ModConstraint& constraint,
     const std::function<std::string(const std::string&)>& value_for,
@@ -1366,6 +1428,7 @@ bool constraint_satisfied(
     return true;
 }
 
+/* Overflow-checked int64 addition. */
 bool checked_add_int64(int64_t left, int64_t right, int64_t& out) {
     if ((right > 0 && left > std::numeric_limits<int64_t>::max() - right) ||
         (right < 0 && left < std::numeric_limits<int64_t>::min() - right))
@@ -1374,6 +1437,7 @@ bool checked_add_int64(int64_t left, int64_t right, int64_t& out) {
     return true;
 }
 
+/* Max value representable by an encoding. */
 uint64_t value_encoding_max(ModValueEncoding encoding) {
     switch (encoding) {
     case ModValueEncoding::U8:
@@ -1388,6 +1452,7 @@ uint64_t value_encoding_max(ModValueEncoding encoding) {
     return 0;
 }
 
+/* True if option range fits the value encoding. */
 bool option_range_fits_encoding(const ModOption& option,
                                 ModValueEncoding encoding,
                                 int64_t addend) {
@@ -1399,6 +1464,7 @@ bool option_range_fits_encoding(const ModOption& option,
            static_cast<uint64_t>(high) <= value_encoding_max(encoding);
 }
 
+/* Encode an unsigned value into bytes per encoding. */
 bool encode_unsigned_value(ModValueEncoding encoding, int64_t value,
                            std::vector<uint8_t>& out) {
     if (value < 0 ||
@@ -1413,6 +1479,7 @@ bool encode_unsigned_value(ModValueEncoding encoding, int64_t value,
     return true;
 }
 
+/* SHA-256 fingerprint of a text blob (hex). */
 std::string fingerprint_text(const std::string& text) {
     uint8_t digest[32];
     psx_sha256_compute((const uint8_t*)text.data(), text.size(), digest);
@@ -1429,10 +1496,12 @@ bool mod_register_builtin_resolver(const std::string& id, ModBuiltinResolver res
     return builtin_resolvers().emplace(id, std::move(resolver)).second;
 }
 
+/* Clear builtin resolver registry (tests). */
 void mod_clear_builtin_resolvers_for_tests() {
     builtin_resolvers().clear();
 }
 
+/* Register an activation-plugin callback by id. */
 bool mod_register_activation_plugin(const std::string& id, void (*callback)(void)) {
     if (!valid_id(id) || !callback) return false;
     RegisteredPlugin& plugin = registered_plugins()[id];
@@ -1441,6 +1510,7 @@ bool mod_register_activation_plugin(const std::string& id, void (*callback)(void
     return true;
 }
 
+/* Register a vblank-plugin callback by id. */
 bool mod_register_vblank_plugin(const std::string& id, void (*callback)(void)) {
     if (!valid_id(id) || !callback) return false;
     RegisteredPlugin& plugin = registered_plugins()[id];
@@ -1449,28 +1519,33 @@ bool mod_register_vblank_plugin(const std::string& id, void (*callback)(void)) {
     return true;
 }
 
+/* True if a plugin id is registered. */
 bool mod_plugin_registered(const std::string& id) {
     const auto found = registered_plugins().find(id);
     return found != registered_plugins().end() &&
         (found->second.activation || found->second.vblank);
 }
 
+/* Invoke the activation plugin for id (if any). */
 void mod_invoke_activation_plugin(const std::string& id) {
     const auto found = registered_plugins().find(id);
     if (found != registered_plugins().end() && found->second.activation)
         found->second.activation();
 }
 
+/* Invoke the vblank plugin for id (if any). */
 void mod_invoke_vblank_plugin(const std::string& id) {
     const auto found = registered_plugins().find(id);
     if (found != registered_plugins().end() && found->second.vblank)
         found->second.vblank();
 }
 
+/* Clear plugin registry (tests). */
 void mod_clear_plugins_for_tests() {
     registered_plugins().clear();
 }
 
+/* Channel enum → display name. */
 const char* mod_channel_name(ModChannel channel) {
     switch (channel) {
         case ModChannel::Experimental: return "experimental";
@@ -1480,6 +1555,7 @@ const char* mod_channel_name(ModChannel channel) {
     return "stable";
 }
 
+/* Display name → channel enum. */
 bool mod_channel_from_name(const std::string& name, ModChannel& out) {
     if (name == "stable")       { out = ModChannel::Stable;       return true; }
     if (name == "experimental") { out = ModChannel::Experimental; return true; }
@@ -1496,6 +1572,7 @@ namespace {
  *
  * Returns false when nothing is left, so the caller can drop the package
  * rather than list one with no features. */
+/* Drop developer-channel features; returns dropped ids. */
 bool strip_developer_features(ModPackage& package) {
     std::set<std::string> dropped;
     for (const ModFeature& feature : package.features)
@@ -1538,6 +1615,7 @@ void ModPackageManager::set_root(fs::path mods_root) {
     selections_.clear();
 }
 
+/* Read+parse a package manifest.toml. */
 bool ModPackageManager::read_manifest(const fs::path& path, ModPackage& out,
                                       std::string* error) {
     try {
@@ -1753,6 +1831,7 @@ bool ModPackageManager::read_manifest(const fs::path& path, ModPackage& out,
                     "resources require format_version 5");
             std::set<std::pair<std::string, std::string>> resource_ids;
             for (const toml::value& v :
+                 /* Find a resource by feature-style id. */
                  toml::find(cfg, "resource").as_array()) {
                 ModResource resource;
                 resource.feature_id = feature_style
@@ -2385,6 +2464,7 @@ bool ModPackageManager::read_manifest(const fs::path& path, ModPackage& out,
     }
 }
 
+/* Migrate legacy packages/ layout into versioned dirs. */
 void ModPackageManager::migrate_legacy_root() {
     std::error_code ec;
     const fs::path legacy = root_ / "packages";
@@ -2444,6 +2524,7 @@ void ModPackageManager::migrate_legacy_root() {
     fs::remove_all(legacy, ec);
 }
 
+/* Scan one mods root for packages (origin-tagged). */
 bool ModPackageManager::scan_root(const fs::path& packages_root,
                                   ModPackageOrigin origin, std::string* error) {
     std::error_code ec;
@@ -2498,6 +2579,7 @@ bool ModPackageManager::scan_root(const fs::path& packages_root,
     return true;
 }
 
+/* Rescan all configured roots; rebuilds package index. */
 bool ModPackageManager::scan(std::string* error) {
     packages_.clear();
     scan_errors_.clear();
@@ -2510,6 +2592,7 @@ bool ModPackageManager::scan(std::string* error) {
     return true;
 }
 
+/* Load state.toml selections into memory. */
 bool ModPackageManager::load_state(std::string* error) {
     selections_.clear();
     const fs::path path = root_ / "state.toml";
@@ -2593,6 +2676,7 @@ bool ModPackageManager::load_state(std::string* error) {
     }
 }
 
+/* Persist selections to state.toml. */
 bool ModPackageManager::save_state(std::string* error) const {
     std::error_code ec;
     fs::create_directories(root_, ec);
@@ -2670,6 +2754,7 @@ bool ModPackageManager::save_state(std::string* error) const {
     return true;
 }
 
+/* Install a .zip mod package; returns id+version. */
 bool ModPackageManager::install_archive(const fs::path& archive,
                                         std::string* installed_id,
                                         std::string* installed_version,
@@ -2742,6 +2827,7 @@ bool ModPackageManager::install_archive(const fs::path& archive,
     return true;
 }
 
+/* Remove an installed package version. */
 bool ModPackageManager::remove_version(const std::string& id, const std::string& version,
                                        std::string* error) {
     const auto sit = selections_.find(id);
@@ -2794,6 +2880,7 @@ bool ModPackageManager::remove_version(const std::string& id, const std::string&
     return true;
 }
 
+/* Enable/disable a package by id. */
 bool ModPackageManager::set_enabled(const std::string& id, bool enabled, std::string* error) {
     const auto pit = packages_.find(id);
     if (pit == packages_.end()) {
@@ -2814,6 +2901,7 @@ bool ModPackageManager::set_enabled(const std::string& id, bool enabled, std::st
     return true;
 }
 
+/* Select which version of a package is active. */
 bool ModPackageManager::select_version(const std::string& id, const std::string& version,
                                        std::string* error) {
     const auto pit = packages_.find(id);
@@ -2825,6 +2913,7 @@ bool ModPackageManager::select_version(const std::string& id, const std::string&
     return true;
 }
 
+/* Set an option value on a selection. */
 bool ModPackageManager::set_option(const std::string& id, const std::string& option_id,
                                    const std::string& value, std::string* error) {
     const auto sit = selections_.find(id);
@@ -2856,6 +2945,7 @@ bool ModPackageManager::set_option(const std::string& id, const std::string& opt
     return true;
 }
 
+/* Set a feature's enabled flag by package+feature id. */
 bool ModPackageManager::set_feature_enabled(const std::string& package_id,
                                             const std::string& feature_id,
                                             bool enabled,
@@ -2891,6 +2981,7 @@ bool ModPackageManager::set_feature_enabled(const std::string& package_id,
     return true;
 }
 
+/* Set a feature option value. */
 bool ModPackageManager::set_feature_option(const std::string& package_id,
                                            const std::string& feature_id,
                                            const std::string& option_id,
@@ -2926,6 +3017,7 @@ bool ModPackageManager::set_feature_option(const std::string& package_id,
     return true;
 }
 
+/* Set a feature resource override path. */
 bool ModPackageManager::set_feature_resource_path(
     const std::string& package_id,
     const std::string& feature_id,
@@ -2963,6 +3055,7 @@ bool ModPackageManager::set_feature_resource_path(
     return true;
 }
 
+/* Get the ModPackage for a selection id. */
 const ModPackage* ModPackageManager::selected_package(const std::string& id) const {
     const auto selection = selections_.find(id);
     const ModSelection blank;
@@ -2970,12 +3063,14 @@ const ModPackage* ModPackageManager::selected_package(const std::string& id) con
                          selection == selections_.end() ? blank : selection->second);
 }
 
+/* Get the ModFeature for package+feature id. */
 const ModFeature* ModPackageManager::selected_feature(
     const std::string& package_id, const std::string& feature_id) const {
     const ModPackage* package = selected_package(package_id);
     return package ? find_feature(*package, feature_id) : nullptr;
 }
 
+/* Query whether a feature is enabled. */
 bool ModPackageManager::feature_enabled(const std::string& package_id,
                                         const std::string& feature_id) const {
     const ModPackage* package = selected_package(package_id);
@@ -2988,6 +3083,7 @@ bool ModPackageManager::feature_enabled(const std::string& package_id,
         *package, found == selections_.end() ? blank : found->second, *feature);
 }
 
+/* Query a feature option's effective value. */
 std::string ModPackageManager::feature_option_value(
     const std::string& package_id, const std::string& feature_id,
     const std::string& option_id) const {
@@ -3000,6 +3096,7 @@ std::string ModPackageManager::feature_option_value(
         feature_id, option_id);
 }
 
+/* Query a feature resource's effective path. */
 fs::path ModPackageManager::feature_resource_path(
     const std::string& package_id,
     const std::string& feature_id,
@@ -3013,6 +3110,7 @@ fs::path ModPackageManager::feature_resource_path(
         feature_id, resource_id);
 }
 
+/* Resolve the full mod set for exe+disc SHA-256 identities. */
 ModResolution ModPackageManager::resolve(const std::string& game_id,
                                          const std::string& exe_sha256,
                                          const std::string& disc_sha256) const {
