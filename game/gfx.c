@@ -114,6 +114,7 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
  * payload). Entries are guest addrs of libgpu syscall impls;
  * dispatch via gpu_invoke (weak no-op until ported). */
 #define GPU_TBL()  ((uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318)))
+/* gpu_call — dispatch GPU_TBL()[off>>2] through gpu_invoke with a0-a3. */
 static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
                          uint32_t a2, uint32_t a3)
 {
@@ -129,6 +130,9 @@ uint32_t gpu_rect(const void *p)
     memcpy(guest_at((uint32_t)(guest_sp() - 0x10)), p, 8);
     return (uint32_t)(guest_sp() - 0x10);
 }
+/* gpu_dbg — debug/trace sink. PTR_FUN_801b831c points at the guest debug
+ * printf; the port intentionally drops the output (no guest-side effect),
+ * so GPU_DBG(...) calls compile to nothing observable. */
 static void gpu_dbg(const char *fmt, ...)
 {
     /* PTR_FUN_801b831c -> debug/trace printf (guest func addr) */
@@ -1099,6 +1103,7 @@ void spr_desc_a(uint32_t slot_g)
   p[7] = 0x2c;
 }
 
+/* spr_desc_b — toggle bit1 (0x2) of slot byte 7 (on ? set : clear). */
 void spr_desc_b(uint32_t slot_g,uint32_t on)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -1106,6 +1111,7 @@ void spr_desc_b(uint32_t slot_g,uint32_t on)
   else               p[7] |= 2;
 }
 
+/* spr_desc_c — toggle bit0 (0x1) of slot byte 7 (on ? set : clear). */
 void spr_desc_c(uint32_t slot_g,uint32_t on)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -1801,6 +1807,9 @@ void console_emit(uint32_t c)
   *(int32_t *)guest_at(0x801b6794) = cnt + 1;
 }
 
+/* console_pct — flush the pending console line: if count@0x801b6794 > 0,
+ * bios_tramp_b035(1, buf@0x801f68f0, count) then reset count. Called at
+ * end of printf_core output / on explicit flush. */
 void console_pct(void)
 {
   int32_t cnt = *(int32_t *)guest_at(0x801b6794);
@@ -2554,12 +2563,15 @@ static uint32_t coord_clamp(uint32_t v, uint32_t dimaddr)
   if (n - 1 < x) return nu - 1;
   return v;
 }
+/* gpu_coord_clamp_a — coord_clamp pair packed with tag 0xe3000000
+ * (primary/OT variant of the 0x801924e8 cluster). */
 uint32_t gpu_coord_clamp_a(uint32_t a0,uint32_t a1)
 {
   uint32_t x = coord_clamp(a0,0x801b8324);
   uint32_t y = coord_clamp(a1,0x801b8326);
   return ((y & 0x3ff) << 10) | (x & 0x3ff) | 0xe3000000;
 }
+/* gpu_coord_clamp_b — same pack with tag 0xe4000000 (secondary variant). */
 uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
 {
   uint32_t x = coord_clamp(a0,0x801b8324);
