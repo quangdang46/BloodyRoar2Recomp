@@ -612,3 +612,53 @@ coroutine-resume addrs may still need CPS). cpst_ bodies can stay as
 dead code or be swept later.
 
 Verified: clean build EU + USA; headless :4977 frame 21286+ advancing.
+
+## Batch 24 resolution + Batch 25 (orch/w5/e05)
+
+Shadowing audit RESOLVED (commit 3a6d01a): removed all 56 cpst_ map
+rows whose addrs resolve to non-delegate fnmap targets — verified each
+target body has no call_guest/br2_call/dispatch pattern. cd.c ports
+(cd_probe_retry, cd_bios_cmd20, cd_chan_attr_push, cd_intc_busy_read,
+cd_xchg_*, ...) and gfx_emit_p0*/gfx.c/save.c/menu.c/vm.c ports all
+win again at dispatch. Continuation rows not shadowing a peer port
+kept (CPS-resume coverage clean-C ports cannot provide). cps_clean.c
+dead defs left in place (harmless; peer sweep territory).
+
+Batch 25: pool re-enumerated WITH fnmap-target filter — 76 of 351
+remaining unrouted cps_ bodies >=0x8018 sit on peer-port addrs and are
+now excluded. Converted 14 filtered single-block leaves -> cpst_
+(80199b10, 801a4c88, 801ad650, 801ad8f0, 801ad908, 801ad9a4, 801ada40,
+801ada58, 801ada70, 801ae268, 801ae280, 801ae44c, 801ae460, 801ae478),
+14 entry-only rows appended to clean_cps.map, bodies spliced into
+game/cd_irq_probe.c.
+
+clean_table: 8851 wrappers (+14), 5 legit skips unchanged
+(no-def cps_80175964 + 4 self-delegate).
+Remaining filtered pool ~261 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4989 frames 6606 -> 12264+
+attract CD streaming, no wedge.
+
+## Batch 26 (orch/w5/e05) — 16 filtered leaves
+
+16 single-block leaves -> cpst_ (80195c00, 80199afc, 801a1e70,
+801ad8d0, 801ae674, 801adb24, 801adc00, 801ad9bc, 801ae4c4,
+801ae098, 801adae4, 8019a8dc, 801adb70, 801adbb8, 801adbd0,
+801afeb8), 16 entry-only rows. fnmap-target filter applied — no
+peer-port shadowing.
+
+clean_table: 8867 wrappers (+16), 5 legit skips unchanged.
+Remaining filtered pool ~245 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4993 frames 17955 -> 23805+
+attract CD streaming, no wedge.
+
+## Batch 27 (orch/w5/e05) — 16 filtered leaves
+
+16 single-block leaves -> cpst_ (801adb40, 801ae4a8, 801a9f48,
+8018dc00, 801adc18, 801adbe8, 801adc30, 80199d4c, 801ada88,
+801adb88, 801adb58, 801adba0, 801a1f50, 801aff04, 80199aa8,
+80199b9c). One was fnmap-covered already (+15 unique wrappers).
+
+clean_table: 8882 wrappers, 5 legit skips unchanged.
+Remaining filtered pool ~229 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :4997 frames 6648 -> 10254+
+attract CD streaming, no wedge.
