@@ -662,3 +662,14 @@ clean_table: 8882 wrappers, 5 legit skips unchanged.
 Remaining filtered pool ~229 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :4997 frames 6648 -> 10254+
 attract CD streaming, no wedge.
+
+## Batch 28 (orch/w5/e05) — 14 filtered leaves
+
+14 single-block leaves -> cpst_ (801ae298, 801ae300, 801ae5b0,
+801adb00, 8019ff30, 801ae4e0, 801ae524, 801ae2dc, 801ae344,
+801ae3b0, 801ae5f4, 801add14, 8019b26c, 801adcf4). fnmap-target
+filter applied.
+
+clean_table: wrappers +14 region, 5 legit skips unchanged.
+Verified: clean build EU + USA; headless :5001 frames 5575 -> 8633+
+attract CD streaming, no wedge.
