@@ -20,6 +20,7 @@ DELAY_PC = 0x80011000
 
 
 def make_psxexe(data: bytes) -> bytes:
+    """Build a minimal .psxexe image from entry+data."""
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
     struct.pack_into("<I", header, 0x10, LOAD)
@@ -31,6 +32,7 @@ def make_psxexe(data: bytes) -> bytes:
 def run_codegen(recompiler: str, include_delay: bool, root: str,
                 branch_word: int = 0x10800008,
                 case_name: Optional[str] = None):
+    """Run codegen."""
     case = case_name or ("complete" if include_delay else "truncated")
     case_dir = os.path.join(root, case)
     out_dir = os.path.join(case_dir, "out")
@@ -55,6 +57,7 @@ def run_codegen(recompiler: str, include_delay: bool, root: str,
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     default_recompiler = os.path.normpath(
         os.path.join(here, "..", "build", "psxrecomp-game.exe")

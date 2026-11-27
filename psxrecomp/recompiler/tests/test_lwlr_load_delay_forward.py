@@ -38,10 +38,12 @@ NOP = 0x00000000
 
 
 def w(words):
+    """W."""
     return b"".join(struct.pack("<I", x) for x in words)
 
 
 def make_psxexe(entry, load, data):
+    """Build a minimal .psxexe image from entry+data."""
     h = bytearray(2048)
     h[0:8] = b"PS-X EXE"
     struct.pack_into("<I", h, 0x10, entry)
@@ -57,6 +59,7 @@ def build_exe():
 
 
 def generate(recompiler, tmp):
+    """Generate."""
     psx = os.path.join(tmp, "t.psx")
     seeds = os.path.join(tmp, "seeds.txt")
     out = os.path.join(tmp, "out")
@@ -76,6 +79,7 @@ def generate(recompiler, tmp):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     ap.add_argument("--recompiler",

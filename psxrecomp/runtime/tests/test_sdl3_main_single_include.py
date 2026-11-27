@@ -10,6 +10,7 @@ SDL_MAIN_HEADER = "<SDL3/SDL_main.h>"
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     runtime = ROOT / "runtime"
     owners = []
     for pattern in ("*.c", "*.cpp", "*.h"):

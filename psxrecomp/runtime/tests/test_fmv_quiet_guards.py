@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def main():
+    """Entry point: run this guard/test script."""
     debug = (ROOT / "runtime/src/debug_server.c").read_text(encoding="utf-8")
     mdec = (ROOT / "runtime/src/mdec.c").read_text(encoding="utf-8")
     required = (

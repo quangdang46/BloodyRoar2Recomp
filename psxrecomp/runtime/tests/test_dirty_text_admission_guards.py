@@ -7,6 +7,7 @@ import sys
 
 
 def function_body(source: str, signature: str) -> str:
+    """Function body."""
     start = source.index(signature)
     brace = source.index("{", start)
     depth = 0
@@ -21,6 +22,7 @@ def function_body(source: str, signature: str) -> str:
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path,
                         default=Path(__file__).resolve().parents[2])

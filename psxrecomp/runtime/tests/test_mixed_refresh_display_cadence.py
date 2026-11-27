@@ -9,6 +9,7 @@ MAIN = (ROOT / "runtime" / "src" / "main.cpp").read_text(encoding="utf-8")
 
 
 def require(needle: str, message: str) -> None:
+    """Require."""
     if needle not in MAIN:
         raise AssertionError(message)
 

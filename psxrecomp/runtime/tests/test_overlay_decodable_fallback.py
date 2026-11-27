@@ -13,6 +13,7 @@ MEMORY = ROOT / "runtime" / "src" / "memory.c"
 
 
 def function_body(source: str, name: str) -> str:
+    """Function body."""
     match = re.search(
         rf"\bstatic\s+(?:inline\s+)?int\s+{re.escape(name)}\s*\([^;]*?\)\s*\{{",
         source,
@@ -33,6 +34,7 @@ def function_body(source: str, name: str) -> str:
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     source = SOURCE.read_text(encoding="utf-8")
     header = HEADER.read_text(encoding="utf-8")
     memory = MEMORY.read_text(encoding="utf-8")

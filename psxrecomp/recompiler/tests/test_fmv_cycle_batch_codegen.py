@@ -13,6 +13,7 @@ LOAD = 0x80010000
 
 
 def generate_source(recompiler):
+    """Generate source."""
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
     struct.pack_into("<I", header, 0x10, LOAD)
@@ -51,6 +52,7 @@ def generate_source(recompiler):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--recompiler", required=True)
     args = parser.parse_args()

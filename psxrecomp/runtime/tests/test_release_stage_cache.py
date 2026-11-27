@@ -52,6 +52,7 @@ EXT = '.so'
 
 
 def touch(path, content='x'):
+    """Write a file (mkdir -p) and return its path."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as f:
         f.write(content)
@@ -60,6 +61,7 @@ def touch(path, content='x'):
 
 class CacheStagingTest(unittest.TestCase):
     def setUp(self):
+        """Set up the temp fixture directory."""
         self.tmp = tempfile.mkdtemp(prefix='psx_relstage_')
         self.src = os.path.join(self.tmp, 'cachesrc')
         self.stage = os.path.join(self.tmp, 'stage')
@@ -72,17 +74,21 @@ class CacheStagingTest(unittest.TestCase):
         self.logged = []
 
     def tearDown(self):
+        """Tear down the temp fixture directory."""
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def log(self, *a):
+        """Append a line to the captured log."""
         self.logged.append(' '.join(str(x) for x in a))
 
     def stage_it(self, tag=TAG, **kw):
+        """Run stage_cache with test defaults."""
         return rs.stage_cache(GAME, self.src, self.stage, tag,
                               arch_abi=ARCH, shared_ext=EXT, log=self.log, **kw)
 
     # ---- the happy path ---------------------------------------------------
     def test_stages_every_shard_under_one_tag_dir(self):
+        """Test stages every shard under one tag dir."""
         n, tags = self.stage_it()
         self.assertEqual(n, 5)
         self.assertEqual(tags, [TAG])
@@ -119,6 +125,7 @@ class CacheStagingTest(unittest.TestCase):
 
     # ---- namespaces -------------------------------------------------------
     def test_foreign_tag_namespace_is_not_shipped(self):
+        """Test foreign tag namespace is not shipped."""
         other = os.path.join(self.src, GAME, 'gcc', ARCH, 'cg9_deadbeef_gc12345678_f0')
         for i in range(3):
             touch(os.path.join(other, 'aa%02x.so' % i))
@@ -127,6 +134,7 @@ class CacheStagingTest(unittest.TestCase):
         self.assertEqual(tags, [TAG])
 
     def test_foreign_arch_abi_is_not_shipped(self):
+        """Test foreign arch abi is not shipped."""
         win = os.path.join(self.src, GAME, 'gcc', 'win-x64', TAG)
         touch(os.path.join(win, 'ff01.dll'))
         touch(os.path.join(win, 'ff01.so'))     # same tag, wrong arch
@@ -136,6 +144,7 @@ class CacheStagingTest(unittest.TestCase):
             os.path.join(self.stage, 'cache', GAME, 'gcc', 'win-x64')))
 
     def test_sljit_tier_is_not_shipped(self):
+        """Test sljit tier is not shipped."""
         sl = os.path.join(self.src, GAME, 'sljit', ARCH, TAG)
         touch(os.path.join(sl, 'bb01.so'))
         n, _ = self.stage_it()
@@ -143,6 +152,7 @@ class CacheStagingTest(unittest.TestCase):
 
     # ---- artifacts that must never ship ----------------------------------
     def test_forbidden_artifacts_never_ship(self):
+        """Test forbidden artifacts never ship."""
         touch(os.path.join(self.tagdir, '.abi_%s.ok' % TAG))
         touch(os.path.join(self.tagdir, '80040000.c'))
         touch(os.path.join(self.tagdir, '80040000.pair-lock'))
@@ -185,11 +195,13 @@ class CacheStagingTest(unittest.TestCase):
 
     # ---- the escape hatch -------------------------------------------------
     def test_missing_cache_dir_fails_by_default(self):
+        """Test missing cache dir fails by default."""
         shutil.rmtree(os.path.join(self.src, GAME))
         with self.assertRaises(rs.StageError):
             self.stage_it()
 
     def test_escape_hatch_must_be_asked_for_by_name(self):
+        """Test escape hatch must be asked for by name."""
         shutil.rmtree(os.path.join(self.src, GAME))
         n, tags = self.stage_it(allow_empty_reason='pinning test')
         self.assertEqual((n, tags), (0, []))
@@ -206,6 +218,7 @@ class ModCatalogStagingTest(unittest.TestCase):
     go stale independently."""
 
     def setUp(self):
+        """Set up the temp fixture directory."""
         self.tmp = tempfile.mkdtemp(prefix='psx_relmods_')
         self.build = os.path.join(self.tmp, 'build')
         self.stage = os.path.join(self.tmp, 'stage')
@@ -220,12 +233,15 @@ class ModCatalogStagingTest(unittest.TestCase):
         self.logged = []
 
     def tearDown(self):
+        """Tear down the temp fixture directory."""
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def log(self, *a):
+        """Append a line to the captured log."""
         self.logged.append(' '.join(str(x) for x in a))
 
     def test_stages_and_verifies_against_the_build_manifest(self):
+        """Test stages and verifies against the build manifest."""
         n = rs.stage_mods(self.build, self.stage,
                           runtime_target='psx-runtime', log=self.log)
         self.assertEqual(n, 3)
@@ -234,6 +250,7 @@ class ModCatalogStagingTest(unittest.TestCase):
                 self.stage, 'mods', 'bundled', i, 'manifest.toml')))
 
     def test_a_package_the_build_declared_but_did_not_stage_fails(self):
+        """Test a package the build declared but did not stage fails."""
         shutil.rmtree(os.path.join(self.build, 'mods', 'bundled',
                                    'psx.enhancement.pgxp'))
         with self.assertRaises(rs.StageError) as cm:
@@ -242,6 +259,7 @@ class ModCatalogStagingTest(unittest.TestCase):
         self.assertIn('psx.enhancement.pgxp', str(cm.exception))
 
     def test_developer_state_never_ships(self):
+        """Test developer state never ships."""
         touch(os.path.join(self.build, 'mods', 'state.toml'), 'enabled = []\n')
         touch(os.path.join(self.build, 'mods', 'installed', 'mine',
                            'manifest.toml'))
@@ -255,6 +273,7 @@ class ModCatalogStagingTest(unittest.TestCase):
             os.path.join(self.stage, 'mods', 'installed')))
 
     def test_unverifiable_catalog_is_refused(self):
+        """Test unverifiable catalog is refused."""
         os.remove(self.manifest)
         with self.assertRaises(rs.StageError) as cm:
             rs.stage_mods(self.build, self.stage,
@@ -268,17 +287,21 @@ class FlavorTest(unittest.TestCase):
     packager must read what the build published rather than assume 0."""
 
     def setUp(self):
+        """Set up the temp fixture directory."""
         self.tmp = tempfile.mkdtemp(prefix='psx_relflavor_')
 
     def tearDown(self):
+        """Tear down the temp fixture directory."""
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_reads_the_published_flavor(self):
+        """Test reads the published flavor."""
         touch(os.path.join(self.tmp, 'psxrecomp_overlay_flavor-psx-runtime.txt'),
               '2\n')
         self.assertEqual(rs._flavor_from_build(self.tmp, 'psx-runtime'), 2)
 
     def test_missing_publication_fails_rather_than_defaulting(self):
+        """Test missing publication fails rather than defaulting."""
         with self.assertRaises(rs.StageError) as cm:
             rs._flavor_from_build(self.tmp, 'psx-runtime')
         self.assertIn('flavor', str(cm.exception))
@@ -295,12 +318,15 @@ class CodegenHashGuardTest(unittest.TestCase):
     """
 
     def setUp(self):
+        """Set up the temp fixture directory."""
         self.tmp = tempfile.mkdtemp(prefix='psx_relhash_')
 
     def tearDown(self):
+        """Tear down the temp fixture directory."""
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_unbuilt_include_tree_is_refused(self):
+        """Test unbuilt include tree is refused."""
         with self.assertRaises(rs.StageError) as cm:
             rs._require_built_codegen_hash(self.tmp)
         msg = str(cm.exception)
@@ -308,6 +334,7 @@ class CodegenHashGuardTest(unittest.TestCase):
         self.assertIn('00000000', msg)
 
     def test_built_include_tree_passes(self):
+        """Test built include tree passes."""
         touch(os.path.join(self.tmp, 'overlay_codegen_hash.h'),
               '#define PSX_OVERLAY_CODEGEN_HASH 0xecd487f7\n')
         rs._require_built_codegen_hash(self.tmp)     # must not raise
@@ -318,6 +345,7 @@ class ToolchainStagingTest(unittest.TestCase):
     needs to produce a shard, not only public C headers."""
 
     def setUp(self):
+        """Set up the temp fixture directory."""
         self.tmp = tempfile.mkdtemp(prefix='psx_reltool_')
         self.stage = os.path.join(self.tmp, 'stage')
         self.tools = os.path.join(self.tmp, 'tools')
@@ -356,11 +384,13 @@ class ToolchainStagingTest(unittest.TestCase):
         rs.get_pinned_archive = lambda url, _sha, _dest, log=print: url
 
     def tearDown(self):
+        """Tear down the temp fixture directory."""
         rs.TOOLCHAIN_PINS['win'] = self.orig_pins
         rs.get_pinned_archive = self.orig_fetch
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_stages_overlay_dispatch_preamble(self):
+        """Test stages overlay dispatch preamble."""
         rs.stage_toolchain(self.stage, self.recomp, self.tools, self.include,
                            self.cache, platform_tag='win',
                            mingw_bin=self.mingw, log=lambda *_a: None)

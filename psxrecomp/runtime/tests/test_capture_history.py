@@ -15,6 +15,7 @@ SPEC.loader.exec_module(MOD)
 
 
 def region(addr, payload, pcs):
+    """Region."""
     return {
         "schema": "psxrecomp overlay capture v2",
         "load_addr": addr,
@@ -28,6 +29,7 @@ def region(addr, payload, pcs):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     with tempfile.TemporaryDirectory() as td:
         root = pathlib.Path(td)
         addendum = root / "overlay_captures.addendum.jsonl"

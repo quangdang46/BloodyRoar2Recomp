@@ -16,14 +16,17 @@ LOAD = 0x80010000
 
 
 def jal(target):
+    """Encode a MIPS jal instruction word."""
     return 0x0C000000 | ((target >> 2) & 0x03FFFFFF)
 
 
 def put32(data, offset, value):
+    """Put32."""
     struct.pack_into("<I", data, offset, value)
 
 
 def make_psxexe():
+    """Build a minimal .psxexe image from entry+data."""
     size = 0x2000
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
@@ -55,6 +58,7 @@ def make_psxexe():
 
 
 def write_config(path, discovery="reachable", text_size="0x1000"):
+    """Write config."""
     discovery_line = (f'discovery = "{discovery}"\n'
                       if discovery is not None else "")
     with open(path, "w", encoding="utf-8") as f:
@@ -74,11 +78,13 @@ out_dir = "generated"
 
 
 def run(recompiler, config):
+    """Run a tool/recompiler subprocess and return the result."""
     return subprocess.run(
         [recompiler, "--config", config], capture_output=True, text=True)
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     default_recompiler = os.path.normpath(os.path.join(
         here, "..", "build", "psxrecomp-game.exe"))

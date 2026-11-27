@@ -23,6 +23,7 @@ LOBBY_H = (ROOT / "runtime/include/psx_lobby_client.h").read_text(encoding="utf-
 
 
 def require(needle: str, message: str, source: str) -> None:
+    """Require."""
     if needle not in source:
         raise AssertionError(message)
 

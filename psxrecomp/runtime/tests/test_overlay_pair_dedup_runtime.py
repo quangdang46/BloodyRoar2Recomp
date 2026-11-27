@@ -23,6 +23,7 @@ RESIDENT = "psxrecomp bios resident shard v1\n"
 
 
 def codegen_leaf() -> str:
+    """Codegen leaf."""
     api = (RUNTIME / "include" / "overlay_api.h")
     hash_header = (RUNTIME / "include" / "overlay_codegen_hash.h")
     version = "0"
@@ -41,6 +42,7 @@ def codegen_leaf() -> str:
 
 
 def arch_abi() -> str:
+    """Arch abi."""
     os_name = {"Windows": "win", "Linux": "linux", "Darwin": "macos"}[
         platform.system()
     ]
@@ -57,6 +59,7 @@ def arch_abi() -> str:
 
 
 def run(command: list[str], *, cwd: pathlib.Path | None = None) -> None:
+    """Run a tool/recompiler subprocess and return the result."""
     result = subprocess.run(command, cwd=cwd, text=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode:
@@ -69,6 +72,7 @@ def run(command: list[str], *, cwd: pathlib.Path | None = None) -> None:
 
 
 def manifest(entries: list[tuple[int, int]], provenance: str | None = None) -> str:
+    """Manifest."""
     lines = []
     if provenance:
         lines.append(f"# psxrecomp overlay provenance {provenance}\n")
@@ -82,6 +86,7 @@ def manifest(entries: list[tuple[int, int]], provenance: str | None = None) -> s
 
 def compile_fixture(gcc: str, out: pathlib.Path, *, instance: int,
                     partial: bool = False) -> None:
+    """Compile fixture."""
     command = [gcc, "-std=c11", "-O0", "-Wall", "-Wextra", "-Werror", "-shared",
                f"-I{RUNTIME / 'include'}", f"-DTEST_INSTANCE={instance}"]
     if platform.system() != "Windows":
@@ -93,6 +98,7 @@ def compile_fixture(gcc: str, out: pathlib.Path, *, instance: int,
 
 
 def compile_harness(gcc: str, out: pathlib) -> None:
+    """Compile harness."""
     platform_defines = ["-D_GNU_SOURCE"] if platform.system() != "Windows" else []
     command = [
         gcc, "-std=c11", "-O0", "-Wall", "-Wextra",
@@ -113,6 +119,7 @@ def compile_harness(gcc: str, out: pathlib) -> None:
 
 def publish(cache: pathlib.Path, tier: str, filename: str, library: pathlib.Path,
             text: str, *, pending: bool = False) -> pathlib.Path:
+    """Publish."""
     leaf = cache / GAME / tier / arch_abi() / codegen_leaf()
     leaf.mkdir(parents=True, exist_ok=True)
     target = leaf / filename
@@ -131,6 +138,7 @@ def publish(cache: pathlib.Path, tier: str, filename: str, library: pathlib.Path
 def scenario(tmp: pathlib.Path, harness: pathlib.Path, full_first: pathlib.Path,
              full_second: pathlib.Path,
              partial: pathlib.Path, name: str) -> None:
+    """Scenario."""
     ext = ".dll" if platform.system() == "Windows" else ".so"
     cache = tmp / f"cache-{name}"
     two = [(0x80010000, 4), (0x80010004, 4)]
@@ -163,6 +171,7 @@ def scenario(tmp: pathlib.Path, harness: pathlib.Path, full_first: pathlib.Path,
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--gcc", default=shutil.which("gcc") or shutil.which("cc"))
     args = parser.parse_args()

@@ -14,6 +14,7 @@ INCLUDE = ROOT / "runtime" / "include"
 
 
 def find_gcc() -> str:
+    """Find gcc."""
     candidates = [
         os.environ.get("CC"),
         shutil.which("gcc"),
@@ -27,6 +28,7 @@ def find_gcc() -> str:
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     source = r'''#include "cpu_state.h"
 #include "overlay_dispatch_preamble.c.inc"
 

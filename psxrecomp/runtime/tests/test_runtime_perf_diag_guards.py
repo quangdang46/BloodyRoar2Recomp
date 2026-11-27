@@ -9,11 +9,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def require(source, needle, message):
+    """Require."""
     if needle not in source:
         raise AssertionError(message)
 
 
 def main():
+    """Entry point: run this guard/test script."""
     main_cpp = (ROOT / "runtime/src/main.cpp").read_text(encoding="utf-8")
     interp = (ROOT / "runtime/src/dirty_ram_interp.c").read_text(encoding="utf-8")
     memory = (ROOT / "runtime/src/memory.c").read_text(encoding="utf-8")

@@ -15,6 +15,7 @@ SPEC.loader.exec_module(MOD)
 
 
 def main():
+    """Entry point: run this guard/test script."""
     recipe = json.loads((ROOT / 'tools' / 'aot_overlay_spike' /
                          'bios_resident_code.json').read_text(encoding='utf-8'))
     image = recipe['images'][0]

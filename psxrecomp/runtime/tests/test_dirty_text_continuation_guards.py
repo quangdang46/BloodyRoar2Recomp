@@ -6,6 +6,7 @@ import sys
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     root = Path(__file__).resolve().parents[2]
     memory = (root / "runtime/src/memory.c").read_text(encoding="utf-8")
     interp = (root / "runtime/src/dirty_ram_interp.c").read_text(encoding="utf-8")

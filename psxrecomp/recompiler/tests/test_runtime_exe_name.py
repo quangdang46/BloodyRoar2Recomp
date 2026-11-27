@@ -40,6 +40,7 @@ failures = 0
 
 
 def check(cond: bool, what: str) -> None:
+    """Check."""
     global failures
     if not cond:
         print(f"FAIL: {what}", file=sys.stderr)
@@ -47,6 +48,7 @@ def check(cond: bool, what: str) -> None:
 
 
 def load_cli():
+    """Load cli."""
     spec = importlib.util.spec_from_file_location(
         "psxrecomp_cli", ROOT / "psxrecomp_cli.py")
     mod = importlib.util.module_from_spec(spec)
@@ -55,6 +57,7 @@ def load_cli():
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     cli = load_cli()
 
     # runtime.cmake must actually publish the name, or every consumer below is

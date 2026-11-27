@@ -9,11 +9,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def require(source: str, needle: str, message: str) -> None:
+    """Require."""
     if needle not in source:
         raise AssertionError(message)
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     cli = (ROOT / "recompiler/src/main_cli.cpp").read_text(encoding="utf-8")
     bios = (ROOT / "recompiler/src/main_bios.cpp").read_text(encoding="utf-8")
     package = (ROOT / "tools/build_cli.py").read_text(encoding="utf-8")
