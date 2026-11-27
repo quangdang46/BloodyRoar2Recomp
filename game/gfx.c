@@ -200,7 +200,7 @@ void gpu_pkt_unlink_n(uint32_t *head,int count)
  * (the guest built it at $sp+0x10) and emit the GPU load-image command.
  * frame = the guest stack-frame size the original reserved (0x20/0x28/0x30
  * across callers); see spr_draw_off for why a reserved frame is required. */
-static void spr_rect_frame_emit(const uint16_t rect[4], uint32_t src, uint32_t frame)
+static void spr_rect_frame_emit(const void *rect, uint32_t src, uint32_t frame)
 {
   uint32_t frm = br2_guest_frame(frame);
   memcpy(guest_at(frm + 0x10), rect, 8);
