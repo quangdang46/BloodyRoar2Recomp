@@ -1268,7 +1268,7 @@ void battle_camera_step(uint32_t cam,uint8_t *f0,uint8_t *f1,int battle)
   uint32_t ti;
   int t4;
   int t0;
-  uint8_t *dst;
+  uint32_t *dst;
   int t2;
   uint32_t stp;
   /* ba/ff are guest $s2/$s5 (subu @0x80131750 -> gpr[18], lbu @0x80131748
@@ -1290,13 +1290,13 @@ void battle_camera_step(uint32_t cam,uint8_t *f0,uint8_t *f1,int battle)
   int dv [3];
   int pa [3];
   int pb [3];
-  uint8_t v0 [8];
-  uint8_t v1 [8];
-  uint8_t v2 [8];
-  uint8_t v3 [8];
-  uint8_t v4 [8];
-  uint8_t v5 [8];
-  uint8_t v6 [8];
+  uint32_t v0 [2];
+  uint32_t v1 [2];
+  uint32_t v2 [2];
+  uint32_t v3 [2];
+  uint32_t v4 [2];
+  uint32_t v5 [2];
+  uint32_t v6 [2];
   uint16_t lim [4];
 
   switch(*(uint16_t *)guest_at((uint32_t)(uintptr_t)((cam + 0x76) ))& 0x7f) {
