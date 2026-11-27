@@ -35,6 +35,18 @@ extern uint8_t  br2_ld8(uint32_t a);
 extern uint16_t br2_ld16(uint32_t a);
 extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void     br2_guest_frame_free(void);
+extern void     br2_guest_frame_abandon(void);
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
+extern int      br2_bail_pending(void);
+extern void     br2_irq_poll(void);
+extern void     FUN_8018e300(void);
+extern void     FUN_8018e310(uint32_t);
+extern void     br2_bios_tramp(uint32_t,uint32_t);
+extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void     gte_precision_store_word(uint32_t, uint8_t);
+extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
 void gpu_load_image_cmd(uint32_t,uint32_t);
 void prim_packet_init_tex(int,int,int,uint32_t,int8_t *);
@@ -206,8 +218,6 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   rect[2] = *(uint16_t *)(desc + 0x10);
   rect[3] = *(uint16_t *)(desc + 0x12);
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t frm = br2_guest_frame(0x20);
     memcpy(guest_at(frm + 0x10), rect, 8);
     gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
@@ -238,8 +248,6 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
     {
-      extern uint32_t br2_guest_frame(uint32_t);
-      extern void br2_guest_frame_free(void);
       uint32_t frm = br2_guest_frame(0x20);
       memcpy(guest_at(frm + 0x10), rect, 8);
       gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
@@ -910,7 +918,6 @@ void bios_call_a0(uint32_t arg)
 {
   /* guest 0x80193d30: `li t2,0xa0; jr t2; li t1,0x49` — BIOS svc A0/0x49
    * with a0 = arg (caller's arg register). */
-  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   bios_svc6(0xa0,0x49,arg,0,0,0);
   return;
 }
@@ -2036,8 +2043,6 @@ uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
   /* guest rect = $sp+0x10 (frame 0x28, disasm 0x80193e30) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t gre_frm = br2_guest_frame(0x28);
     memcpy(guest_at(gre_frm + 0x10), rect, 8);
     gpu_load_image_cmd(gre_frm + 0x10,src);
@@ -2075,8 +2080,6 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
   /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t grem_frm = br2_guest_frame(0x30);
     memcpy(guest_at(grem_frm + 0x10), rect, 8);
     gpu_load_image_cmd(grem_frm + 0x10,src);
@@ -3359,9 +3362,6 @@ void gpu_state_patch_defer(void)
   CPUState *c = clean_cpu_state();
   uint32_t v0, base;
   int i, same = 1;
-  extern void FUN_8018e300(void);
-  extern void FUN_8018e310(uint32_t);
-  extern void br2_bios_tramp(uint32_t,uint32_t);
   if (!c) return;
   GP32(0x801FC670) = c->gpr[31];        /* sw ra scratch slot */
   FUN_8018e300();                       /* jal 0x8018E300: EnterCriticalSection */
@@ -4491,12 +4491,6 @@ void scene_node_walk(uint32_t a0)
 {
   CPUState *c = clean_cpu_state();
   uint32_t sp, lt12;
-  extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void br2_guest_frame_abandon(void);
-  extern int br2_bail_pending(void);
-  extern void br2_irq_poll(void);
   if (!c) return;
   c->gpr[4] = a0;   /* guest $a0: ctx guest addr (task/save callers pass it raw) */
 #define SCN_GPR(n)   (c->gpr[n])
@@ -4742,9 +4736,6 @@ void scene_emit_xform(void)
   CPUState *c = clean_cpu_state();
   uint32_t sp;
   int32_t dvd, dvs;
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void gte_precision_store_word(uint32_t, uint8_t);
   if (!c) return;
 #define XF_G(n)     (c->gpr[n])
 #define XF_LD16S(a) ((uint32_t)(int32_t)(int16_t)br2_ld16((uint32_t)(a)))
@@ -5254,7 +5245,6 @@ uint32_t op_gp_cond_store(uint32_t a0, uint32_t a1)
   uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
   uint32_t v;
   if (br2_ld32(base + 0x14) != 0) {
-    extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
     return call_guest(0x801ad698u, a0, a1);
   }
   v = (uint32_t)(int32_t)(int16_t)br2_ld16(a0) +
@@ -5527,8 +5517,6 @@ uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
   uint32_t s0, ctx, e0, i2, e1, e2, e3, ret;
-  extern uint32_t call_guest(uint32_t, uint32_t, uint32_t);
-  extern int br2_bail_pending(void);
   if (!c) return 0;
   s0 = a0;
   ret = call_guest(0x801ad284u, br2_ld32(a1), a1);
@@ -12061,7 +12049,6 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018B100. */
 uint32_t prim_xform3_task_run(void)
 {
-  extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
   CPUState *c = clean_cpu_state();
   uint32_t pc;
   if (!c) return 0;
