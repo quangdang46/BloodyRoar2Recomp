@@ -1125,3 +1125,18 @@ gen_clean_table.py regen: committed file predated master's merged map
 rows — 10,321 -> 10,526 wrappers (+205), 0 skipped. All new targets
 resolve (cps_/cpst_/peer ports). Verified: clean build EU + USA;
 headless :5157 frame 30265, clean_fallback_stats count=0.
+
+## Batch 56 (orch/w5/e05) — fold_setcc: `? 1 : 0` ternary elimination
+
+New transformer pass: `X = (<cmp>) ? 1 : 0;` -> `X = <cmp>;` for the
+setcc-style ternaries generated code emits for slt/sltiu/sgt. Guarded
+by _is_pure_cmp — a depth-0 scan that only folds when the parenthesized
+condition is a pure comparison/logical expr (any top-level arithmetic,
+bitwise, comma, or ternary operator rejects; unary +/- allowed).
+
+Applied via full regen of all three pipeline files:
+- cps_clean.c: 420 sites, cd_irq_probe.c: 817, w3_e06.c: 3 — ~1240 total
+- `? 0xFFFFFFFF : 1` (sltu/slt variants with non-0/1 arms) untouched
+
+Verified: clean build EU + USA; headless :5159 frame 21530 attract CD
+streaming, clean_fallback_stats count=0, scratchpad live.
