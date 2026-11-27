@@ -172,12 +172,14 @@ static int          s_sdl_ssm_th;
 static SDL_Renderer *s_sdl_ren;
 #endif
 
+/* Clamp a percent to 0..100. */
 static int clamp_pct(int p) {
     if (p < 0) return 0;
     if (p > 100) return 100;
     return p;
 }
 
+/* True while the toast is live; expires it and flags a clear. */
 static int msg_visible(void) {
     if (!s_active) return 0;
     if ((int32_t)(SDL_GetTicks() - s_expire_ms) >= 0) {
@@ -190,6 +192,7 @@ static int msg_visible(void) {
     return 1;
 }
 
+/* True while the volume bar is live; expires it and flags a clear. */
 static int vol_visible(void) {
     if (!s_vol_active) return 0;
     if ((int32_t)(SDL_GetTicks() - s_vol_expire_ms) >= 0) {
@@ -201,6 +204,7 @@ static int vol_visible(void) {
     return 1;
 }
 
+/* Render msg into s_img via FONT8X8 at OSD_SCALE (dirty-flagged). */
 static void rasterize_text(const char *msg) {
     int n = (int)strlen(msg);
     if (n > OSD_MAX_CHARS) n = OSD_MAX_CHARS;
@@ -238,6 +242,7 @@ static void rasterize_text(const char *msg) {
     s_img_dirty = 0;
 }
 
+/* Render the volume bar into s_vol_img (fill height from s_vol_pct). */
 static void rasterize_volume(void) {
     s_vol_w = VOL_BAR_W;
     s_vol_h = VOL_BAR_H;
@@ -326,6 +331,7 @@ static void sdl_logical_size(SDL_Renderer *renderer, int *lw, int *lh) {
 }
 #endif
 
+/* Show a transient toast (default 2s). No-op without RECOMP_LAUNCHER. */
 void host_osd_push(const char *msg, int duration_ms) {
 #if !HOST_OSD_VISUAL
     (void)msg;
@@ -342,6 +348,7 @@ void host_osd_push(const char *msg, int duration_ms) {
 #endif
 }
 
+/* Show/clear a persistent status line (NULL/empty clears). */
 void host_osd_set_status(const char *msg) {
 #if !HOST_OSD_VISUAL
     (void)msg;
@@ -361,6 +368,7 @@ void host_osd_set_status(const char *msg) {
 #endif
 }
 
+/* Flash the volume bar for duration_ms (default 2s). */
 void host_osd_show_volume(int percent, int duration_ms) {
 #if !HOST_OSD_VISUAL
     (void)percent;
@@ -376,14 +384,17 @@ void host_osd_show_volume(int percent, int duration_ms) {
 #endif
 }
 
+/* Current host master volume, 0..100. */
 int host_volume_get(void) {
     return s_volume;
 }
 
+/* Set host master volume, clamped 0..100. */
 void host_volume_set(int percent) {
     s_volume = clamp_pct(percent);
 }
 
+/* Adjust volume by delta; shows the bar and returns new value. */
 int host_volume_adjust(int delta) {
     s_volume = clamp_pct(s_volume + delta);
 #if HOST_OSD_VISUAL
@@ -392,6 +403,7 @@ int host_volume_adjust(int delta) {
     return s_volume;
 }
 
+/* True if any OSD/rewind/savemenu overlay needs a present pass. */
 int host_osd_needs_present(void) {
     if (psx_rewind_needs_present()) return 1;
     if (psx_savestate_menu_needs_present()) return 1;
@@ -403,6 +415,7 @@ int host_osd_needs_present(void) {
 #endif
 }
 
+/* Fetch the toast/status ARGB bitmap (rasterizes if dirty). */
 int host_osd_image(const uint32_t **pixels, int *w, int *h) {
 #if !HOST_OSD_VISUAL
     if (pixels) *pixels = NULL;
@@ -432,6 +445,7 @@ int host_osd_image(const uint32_t **pixels, int *w, int *h) {
 #endif
 }
 
+/* Fetch the volume-bar ARGB bitmap (rasterizes if dirty). */
 int host_osd_volume_image(const uint32_t **pixels, int *w, int *h) {
 #if !HOST_OSD_VISUAL
     if (pixels) *pixels = NULL;
@@ -453,6 +467,7 @@ int host_osd_volume_image(const uint32_t **pixels, int *w, int *h) {
 #endif
 }
 
+/* Clear s_needs_clear once nothing is visible. */
 void host_osd_present_done(void) {
 #if !HOST_OSD_VISUAL
     return;
@@ -461,6 +476,7 @@ void host_osd_present_done(void) {
 #endif
 }
 
+/* SDL overlay pass: blit toast/volume/rewind/savemenu bitmaps. */
 void host_osd_draw_sdl(struct SDL_Renderer *renderer) {
 #ifndef PSX_SDL_NO_RENDER
     if (!renderer) return;

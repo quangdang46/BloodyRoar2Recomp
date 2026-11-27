@@ -117,6 +117,8 @@ static void memcard_ensure_dir(const char* dir) {
 #endif
 }
 
+/* Load both card slots from `dir`/per-slot paths; missing files are
+ * formatted fresh and written back. Empty dir entry = no card inserted. */
 void memcard_init_slots(const char* dir, const MemcardSlotConfig slots[2]) {
     memset(cards, 0, sizeof(cards));
     memcard_ensure_dir(dir);
@@ -160,11 +162,13 @@ void memcard_init_slots(const char* dir, const MemcardSlotConfig slots[2]) {
     }
 }
 
+/* Convenience: init both slots with default cardN.mcd paths under dir. */
 void memcard_init(const char* dir) {
     const MemcardSlotConfig both[2] = { { NULL, 1 }, { NULL, 1 } };
     memcard_init_slots(dir, both);
 }
 
+/* Format a fresh blank-card image at `path`. Returns 0 on success. */
 int memcard_format_file(const char* path) {
     if (!path || !path[0]) return -1;
     uint8_t* data = (uint8_t*)malloc(MEMCARD_SIZE);
@@ -182,6 +186,8 @@ int memcard_format_file(const char* path) {
     return ok ? 0 : -1;
 }
 
+/* Fill `out` with size/validity/used-block summary for a .mcd path.
+ * Missing file still returns 0 with exists=0 (not an error). */
 int memcard_summary_path(const char* path, MemcardSummary* out) {
     if (!out) return -1;
     memset(out, 0, sizeof(*out));
@@ -221,6 +227,7 @@ int memcard_summary_path(const char* path, MemcardSummary* out) {
     return 0;
 }
 
+/* Read one 128-byte sector from a card into buf. -1 on bad args/absent. */
 int memcard_read_sector(int card, int sector, uint8_t* buf) {
     if (card < 0 || card >= MAX_CARDS) return -1;
     if (!cards[card].present) return -1;
@@ -230,6 +237,7 @@ int memcard_read_sector(int card, int sector, uint8_t* buf) {
     return 0;
 }
 
+/* Write one 128-byte sector; marks the card dirty for next flush. */
 int memcard_write_sector(int card, int sector, const uint8_t* buf) {
     if (card < 0 || card >= MAX_CARDS) return -1;
     if (!cards[card].present) return -1;
@@ -240,6 +248,7 @@ int memcard_write_sector(int card, int sector, const uint8_t* buf) {
     return 0;
 }
 
+/* Write a dirty card image back to its filepath. */
 void memcard_flush(int card) {
     if (card < 0 || card >= MAX_CARDS) return;
     if (!cards[card].dirty) return;
@@ -256,17 +265,20 @@ void memcard_flush(int card) {
     }
 }
 
+/* Flush every dirty card (call on exit / savestate boundaries). */
 void memcard_flush_all(void) {
     for (int i = 0; i < MAX_CARDS; i++) {
         memcard_flush(i);
     }
 }
 
+/* 1 if the card slot has a loaded image, else 0. */
 int memcard_is_present(int card) {
     if (card < 0 || card >= MAX_CARDS) return 0;
     return cards[card].present;
 }
 
+/* Debug-server snapshot: path, magic bytes, present/dirty flags. */
 int memcard_debug_info(int card, const char **path_out,
                        uint8_t magic_out[2], int *present_out,
                        int *dirty_out) {
@@ -279,6 +291,7 @@ int memcard_debug_info(int card, const char **path_out,
     return 0;
 }
 
+/* Raw image read for the debug server (offset/len clamped to 128KB). */
 int memcard_debug_read_buffer(int card, uint32_t offset, uint32_t len,
                               uint8_t *dst) {
     if (card < 0 || card >= MAX_CARDS) return 0;
@@ -291,6 +304,7 @@ int memcard_debug_read_buffer(int card, uint32_t offset, uint32_t len,
     return (int)len;
 }
 
+/* Copy the full 128KB card image out to dst. */
 int memcard_export_raw(int card, uint8_t *dst) {
     if (card < 0 || card >= MAX_CARDS || !dst) return -1;
     if (!cards[card].present) return -1;
@@ -298,6 +312,7 @@ int memcard_export_raw(int card, uint8_t *dst) {
     return 0;
 }
 
+/* Replace a card image from src and flush to disk immediately. */
 int memcard_import_raw(int card, const uint8_t *src) {
     if (card < 0 || card >= MAX_CARDS || !src) return -1;
     if (cards[card].filepath[0] == '\0') return -1;
@@ -308,6 +323,7 @@ int memcard_import_raw(int card, const uint8_t *src) {
     return 0;
 }
 
+/* Repoint all bound cards at <dir>/cardN.mcd and flush current images. */
 int memcard_rebind_dir(const char *dir) {
     int i;
     if (!dir || !dir[0]) return -1;
@@ -325,6 +341,7 @@ int memcard_rebind_dir(const char *dir) {
     return 0;
 }
 
+/* Repoint card filepaths directly (netplay host paths). */
 int memcard_rebind_paths(const char *path0, const char *path1) {
     if (path0 && path0[0]) {
         snprintf(cards[0].filepath, sizeof(cards[0].filepath), "%s", path0);
@@ -335,6 +352,7 @@ int memcard_rebind_paths(const char *path0, const char *path1) {
     return 0;
 }
 
+/* Repoint one card; empty path unbinds the slot. Creates parent dirs. */
 int memcard_rebind_path(int card, const char *path) {
     if (card < 0 || card >= MAX_CARDS) return -1;
     if (path && path[0]) {
@@ -360,6 +378,7 @@ int memcard_rebind_path(int card, const char *path) {
     return 0;
 }
 
+/* Reload every bound card image from disk (post-netplay sync). */
 int memcard_reload_bound(void) {
     int i;
     for (i = 0; i < MAX_CARDS; i++) {
