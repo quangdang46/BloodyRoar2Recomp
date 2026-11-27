@@ -41,15 +41,12 @@ static void swl_guest(uint32_t addr, uint32_t v)
 
 /* prim_ot_link_indexed — ordering-table link: slot = ot +
  * (otz&0x1ffc); writes out<<8 into the slot and back-links the
- * old head into out+2. */
 static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 {
   uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
   swl_guest(slot + 2, out << 8);
   swl_guest(out + 2, old << 8);
 }
-
 /* ======== 0x801870A4 ======== */
 
 /* prim_xform3_task_run_b — sibling of prim_xform3_task_run (0x8018B100):

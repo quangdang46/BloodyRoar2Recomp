@@ -50,27 +50,13 @@ extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint
 static void swl_guest(uint32_t addr, uint32_t v)
 {
   uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
   switch (addr & 3u) {
   case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
   default: w = v; break;
   }
   DB32(al) = w;
-}
-
-/* prim_ot_link_indexed — ordering-table link: slot = ot +
- * (otz&0x1ffc); writes out<<8 into the slot and back-links the
- * old head into out+2. */
-static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
-{
-  uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
   swl_guest(slot + 2, out << 8);
   swl_guest(out + 2, old << 8);
-}
-
 /* ---- printf_core (0x8018E590) CPS piece entries — delegated ---- */
 
 /* 0x8018E86C: mid-body entry — s1+=4; s2=lw -4(s1); flag test chain. */
