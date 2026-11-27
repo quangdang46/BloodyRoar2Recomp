@@ -71,15 +71,15 @@ extern int hud_sprite_desc_init();
 extern int task_table_init();
 extern int reset_combat_slots();
 extern int FUN_801468ec();
-extern int battle_frame();
-extern int select_screen_tick();
+extern int battle_frame(void);
+extern int32_t select_screen_tick(int32_t entry_mode);
 void select_confirm_handler(uint32_t,uint32_t,uint8_t *,uint32_t,int32_t);
 void post_confirm_config_build(uint32_t,uint8_t *,int32_t);
-extern int battle_init();
-extern int confirm_bookkeeping();
+extern int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b);
+extern int confirm_bookkeeping(uint32_t battle_g);
 extern void battle_state_init(uint8_t *,uint8_t *,uint32_t);
 extern uint32_t mc_pad_button_handler(uint8_t *battle_g);
-extern int post_battle_dispatch();
+extern int32_t post_battle_dispatch(uint8_t *side_a,uint8_t *side_b,uint32_t battle);
 extern void battle_sides_commit(uint8_t *,uint8_t *,uint32_t);
 extern int blk_1f26c0_init_b();
 extern int blk_1f26c0_init();
@@ -4102,7 +4102,7 @@ extern void mode_name_announce(uint32_t,uint32_t,int32_t);
 extern int32_t bcfg_step_a(uint32_t,uint32_t,uint32_t);
 extern void stage_fight_announce(uint32_t,uint8_t *);
 extern void fight_timer_announce(uint32_t,uint8_t *,int32_t);
-extern int32_t continue_countdown();
+extern int32_t continue_countdown(uint32_t battle_g,uint32_t player);
 extern void bcfg_step_d(uint32_t,uint32_t);
 extern void bcfg_step_c(uint32_t,uint32_t);
 extern void bcfg_step_b(uint32_t,int32_t);
@@ -6996,7 +6996,7 @@ void record_init_sweep(uint32_t ctx,uint32_t unused)
  * optional 0x1000-bit arm + select_phase_gate gate; then switch on
  * u8 s1[0x92] (jump table 0x80120a48, 17 entries). Returns void-ish
  * (v0 unused by callers); result code stored to s1[1] on some exits. */
-extern void state_word_set_ffff();
+extern void state_word_set_ffff(void);
 extern int32_t subrecord_u16_rw(uint32_t,int32_t);
 extern void battle_subrecord_set2(uint32_t);
 extern void vs_confirm_c(uint8_t *,uint8_t *,uint32_t,uint32_t);
@@ -10019,7 +10019,7 @@ extern void cd_state_store(int32_t);
 extern void cd_reg_rw_d2(uint32_t);
 extern void cd_chan_attr_apply(uint32_t);
 extern void motion_integrator_tail(int,int);
-extern int skeleton_init();
+extern int32_t skeleton_init(uint32_t ctrl,uint32_t desc,uint32_t unused3);
 extern int memcard_file_flow(int32_t);
 extern int cd_cmd_issue_sync(int,int,int);
 extern void print_dispatch_selfdesc(void *,const char *,...);
@@ -11062,7 +11062,7 @@ void versus_state_init(uint32_t state)
 extern int hit_chain_clear();
 extern int pending_hit_a_clear();
 extern int pending_hit_b_clear();
-extern int options_menu_alloc();
+extern int32_t options_menu_alloc(void);
 extern int atan2_lut(int32_t,int32_t);
 extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);
 extern int fixed_recip_lut(uint32_t);
@@ -11070,7 +11070,7 @@ extern int fixed_recip_lut(uint32_t);
 #define FUN_801948c0 fixed_recip_lut
 extern undefined2 *vec2_rot(uint32_t,uint32_t,undefined2 *);
 extern uint *angle_gte_vec(uint32_t,uint32_t,uint *);
-extern int state_pair_init();
+extern int32_t state_pair_init(void);
 
 /* shared 4x redraw pair used by dual_redraw_a/8014cc00/8014c00c:
  * two loops of 4 task_alloc_wrap_c calls over the 0x801f10c0/0x801f10c4
