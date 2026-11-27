@@ -3829,13 +3829,13 @@ tick:
       goto poll;
     }
     if (fade_t < 0x32) {
-      bright = 0xff - (int32_t)((int32_t)(fade_t * 255) / 50);
+      bright = 0xff - (fade_t * 255) / 50;
       spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
                     (int16_t)*(uint16_t *)(ctx + 0x20),
                     (int16_t)*(uint16_t *)(ctx + 0x22),
                     (uint32_t)(bright * 0x10101),3);
     } else if (fade_t >= 0xfa && fade_t < 0x12c) {
-      bright = (int32_t)((int32_t)bright_acc / 50);
+      bright = bright_acc / 50;
       spr_attr_alloc_a(*(uint32_t *)(ctx + 8),0,0,
                     (int16_t)*(uint16_t *)(ctx + 0x20),
                     (int16_t)*(uint16_t *)(ctx + 0x22),
@@ -4231,17 +4231,17 @@ body:
     }
     if (!(fade_cnt)) goto icon;
     if (cd_num == 0x59) {
-      bright = (int32_t)((int32_t)(fade_cnt * 255) / 100);
+      bright = (fade_cnt * 255) / 100;
     } else {
-      bright = (int32_t)((int32_t)(cd_num - fade_cnt) / 50);
+      bright = (cd_num - fade_cnt) / 50;
     }
     fade_cnt--;
     goto draw;
 countdown:
     if (cd_num == 0x5c) {
-      bright = (int32_t)((int32_t)(cnt2 * 255) / 100);
+      bright = (cnt2 * 255) / 100;
     } else {
-      bright = (int32_t)((int32_t)(cd_num - cnt2) / 50);
+      bright = (cd_num - cnt2) / 50;
     }
     cnt2--;
     bright = 0xff - bright;
@@ -4253,9 +4253,9 @@ countdown:
 check_draw:
     if (!(fade_cnt)) goto icon;
     if (cd_num == 0x59) {
-      bright = (int32_t)((int32_t)(fade_cnt * 255) / 100);
+      bright = (fade_cnt * 255) / 100;
     } else {
-      bright = (int32_t)((int32_t)(cd_num - fade_cnt) / 50);
+      bright = (cd_num - fade_cnt) / 50;
     }
     fade_cnt--;
 draw:
