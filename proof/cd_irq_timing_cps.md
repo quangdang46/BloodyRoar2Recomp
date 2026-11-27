@@ -1007,3 +1007,34 @@ Result: 0x8018-0x801B entry-level coverage is now literally 100% —
 even the last embedded entry is timed. Remaining generated surface:
 0x8012-0x8017 game-logic band only (515 fully-uncovered func entries,
 peer-scope, untimed-by-convention).
+
+## Batch 50 (orch/w5/e05) — runtime-verified zero generated fallback
+
+Static audits had closed every *statically enumerable* dispatch source
+(literal cpu->pc targets, _cont cases, function/piece entries, map rows).
+The only remaining class was dynamic register-indirect dispatch (47
+non-ra _jt_ sites: jr v0/t2 loaded from runtime RAM tables) — values not
+statically enumerable.
+
+Two probes, both negative:
+1. RAM scan at frame ~26k (full 2MB dump): ZERO absolute pointers into
+   ANY code band — the game stores no absolute function pointers in RAM
+   at this point (tables hold offsets/struct fields, or those paths are
+   cold in attract).
+2. NEW INSTRUMENTATION: psx_dispatch_game_compiled is the single
+   dispatch funnel (top-level AND nested psx_dispatch_call via
+   dirty_ram_dispatch_inner). Added a band-scoped [0x80180000,0x801C0000)
+   miss counter + 128-addr ring in psx_game_backend.c, exposed as the
+   "clean_fallback_stats" debug command. Every generated/untimed
+   execution in-region increments it.
+
+Result: headless boot + ~60s attract CD streaming to frame 55213 —
+count = 0. ZERO untimed generated dispatches observed in the band.
+
+Files: psxrecomp/runtime/src/psx_game_backend.c,
+psxrecomp/runtime/src/debug_server.c. EU-only meaningful (clean table
+is SLES-only); US/Japan builds compile the counter but have no clean
+dispatch so it counts all band dispatches — diagnostic only.
+
+Verified: clean build EU + USA; headless :5129 frames -> 55213,
+clean_fallback_stats count=0, no wedge.

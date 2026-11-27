@@ -76,6 +76,35 @@ int psx_game_backend_select(const char* serial) {
 __attribute__((weak))
 int clean_try_dispatch(CPUState* cpu, uint32_t addr) { (void)cpu; (void)addr; return 0; }
 
+/* Generated-fallback observability for the timed CD/IRQ band
+ * [0x80180000,0x801C0000): every dispatch that clean_try_dispatch declines
+ * inside the band runs generated/untimed code. Count them and keep a small
+ * addr ring so coverage audits can name the exact residual entries instead
+ * of guessing. psx_dispatch_game_compiled is the single funnel — top-level
+ * dispatches AND nested psx_dispatch_call paths (clean_bridge call_guest/
+ * call_guest4/br2_call_clean, peer game/*.c helpers) all reach it via
+ * dirty_ram_dispatch_inner, so this counter sees every in-region generated
+ * execution. Read via the "clean_fallback_stats" debug command. */
+#define BR2_FB_LO 0x80180000u
+#define BR2_FB_HI 0x801C0000u
+#define BR2_FB_RING 128
+static uint64_t g_gen_fb_count;
+static uint32_t g_gen_fb_ring[BR2_FB_RING];
+static uint32_t g_gen_fb_pos;
+
+static void gen_fb_note(uint32_t addr) {
+    if (addr >= BR2_FB_LO && addr < BR2_FB_HI) {
+        g_gen_fb_count++;
+        g_gen_fb_ring[g_gen_fb_pos] = addr;
+        g_gen_fb_pos = (g_gen_fb_pos + 1) & (BR2_FB_RING - 1);
+    }
+}
+uint64_t psx_gen_fallback_inregion_count(void) { return g_gen_fb_count; }
+uint32_t psx_gen_fallback_inregion_at(uint32_t i) {
+    if (i >= BR2_FB_RING) return 0;
+    return g_gen_fb_ring[(g_gen_fb_pos + BR2_FB_RING - 1 - i) & (BR2_FB_RING - 1)];
+}
+
 /* Unprefixed interface: forwarded to the selected image. Returning the
  * fail-closed default before selection guarantees no regional code can run
  * against the wrong image during early boot. */
@@ -89,6 +118,7 @@ int psx_dispatch_game_compiled(CPUState* cpu, uint32_t addr) {
         _no_clean = (_s && _s[0] == '1');
     }
     if (!_no_clean && clean_try_dispatch(cpu, addr)) return 1;
+    gen_fb_note(addr);
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->dispatch_compiled(cpu, addr) : 0;
 }
