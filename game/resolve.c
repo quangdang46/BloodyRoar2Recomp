@@ -696,10 +696,10 @@ LAB_80177940:
                   if ((*(ushort *)(ctrl + 0x7c) & 0x200) != 0) {
                     cat = btn & 0xa000;
                     if ((btn & 0x1000) != 0) {
-                      cat = cat | 0x4000;
+                      cat |= 0x4000;
                     }
                     if ((btn & 0x4000) != 0) {
-                      cat = cat | 0x1000;
+                      cat |= 0x1000;
                     }
                   }
                   if ((f58 & 0x20000) == 0) {
@@ -1318,7 +1318,7 @@ LAB_80178118:
 LAB_80178120:
         *(undefined2 *)(motion_p + 0x34) = 0xffff;
       }
-      f58 = f58 & 0x2800;
+      f58 &= 0x2800;
       if ((((f58 == 0x800) || (((0x800 < f58 && (f58 != 0x2000)) && (f58 == 0x2800))))
           && ((((*(ushort *)(ctrl + 0x80) & 0x20) != 0 && (0x1dff < *(short *)(ctrl + 0xd6)))
               && ((ctrl[5] & 0x10) == 0)))) &&
@@ -1411,24 +1411,24 @@ LAB_801766e8:
                 fighter_combat_reset(ctrl);
                 return 0x5b;
               }
-              f68 = f68 | 0x800000;
+              f68 |= 0x800000;
               *(uint *)(ctrl + 0x68) = f68;
               trig_vel_diag(t2,ctrl);
             }
             else {
-              f68 = f68 | 0x800000;
+              f68 |= 0x800000;
               *(uint *)(ctrl + 0x68) = f68;
               trig_vel_up(t2,ctrl);
             }
           }
           else {
-            f68 = f68 | 0x800000;
+            f68 |= 0x800000;
             *(uint *)(ctrl + 0x68) = f68;
             trig_vel_flat(t2,ctrl);
           }
         }
         else {
-          f68 = f68 | 0x800000;
+          f68 |= 0x800000;
           *(uint *)(ctrl + 0x68) = f68;
           trig_lut_read(t2,ctrl);
         }
@@ -2069,7 +2069,7 @@ void action_commit(byte *ctrl, byte *motion)
     tv = (int)*(short *)(motion + 0x114);
     *(undefined2 *)(motion + 0x116) = 0;
     if ((-1 < tv) && (*(int *)(ctrl + 0x58) < 0)) {
-      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+      if ((tv < 0xc0) || (tv += 0x40, ctrl[2] == '\0')) {
         tv = (int)*(short *)(motion + 0x114);
       }
       deferred_cmd_post(0x400,tv,0);
@@ -2081,7 +2081,7 @@ void action_commit(byte *ctrl, byte *motion)
     tv = (int)*(short *)(motion + 0x10e);
     *(undefined2 *)(motion + 0x110) = 0;
     if (-1 < tv) {
-      if ((tv < 0xc0) || (tv = tv + 0x40, ctrl[2] == '\0')) {
+      if ((tv < 0xc0) || (tv += 0x40, ctrl[2] == '\0')) {
         tv = (int)*(short *)(motion + 0x10e);
       }
       deferred_cmd_post(0x400,tv,0);
@@ -2122,7 +2122,7 @@ void action_commit(byte *ctrl, byte *motion)
         bias = (-tv + 0x807) >> 3;
       }
     }
-    delta = delta - ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
+    delta -= ((lead + *(short *)(motion + 0x106)) * 0x100000 >> 0x14);
     tv = delta;
     if (delta < 0) {
       tv = -delta;
@@ -2150,7 +2150,7 @@ void action_commit(byte *ctrl, byte *motion)
     else if (0x1c7 < tv) {
       tv = 0x1c7;
     }
-    tv = tv - ((delta + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
+    tv -= ((delta + *(short *)(motion + 0x108)) * 0x100000 >> 0x14);
     delta = tv;
     if (tv < 0) {
       delta = -tv;
@@ -2662,7 +2662,7 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
       do {
         if (((*slotw & 0xfff) == (cmd & 0xfff)) && ((short)slotw[1] == arg)) {
           *slotw = 0;
-          _DAT_801f35f4 = _DAT_801f35f4 + -1;
+          _DAT_801f35f4--;
         }
         i++;
         slotw += 3;
@@ -2744,7 +2744,7 @@ void hitrec_table_clear(int slot)
 {
   int i;
   i = 0;
-  slot = slot << 8;
+  slot <<= 8;
   do {
     i++;
     *(undefined2 *)(&DAT_801f0db0 + slot) = 0;
@@ -3002,8 +3002,8 @@ void deferred_cmd_reset(void)
   ent = (undefined2 *)&DAT_801f36ba;
   do {
     *ent = 0;
-    i = i + -1;
-    ent = ent + -3;
+    i--;
+    ent -= 3;
   } while (-1 < i);
   return;
 
