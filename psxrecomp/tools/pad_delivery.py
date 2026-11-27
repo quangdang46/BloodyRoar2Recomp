@@ -87,6 +87,7 @@ def decode_polls(entries):
 
 
 def pressed(word, name):
+    """True if button `name` is pressed (active-low) in word.."""
     return (word & BUTTONS[name]) == 0
 
 
@@ -161,6 +162,7 @@ def resolve_frame(prev_frame, frame):
 
 
 def capture(host, port, seconds, count):
+    """Capture pad deliveries over `seconds` via pad_trace.."""
     import pad_trace
     link = pad_trace.Link(host, port)
     seen_max, entries, gaps = -1, [], 0
@@ -190,6 +192,7 @@ def capture(host, port, seconds, count):
 
 
 def main():
+    """Pad delivery CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")

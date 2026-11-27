@@ -8,6 +8,7 @@ REGS = ['zr','at','v0','v1','a0','a1','a2','a3','t0','t1','t2','t3','t4','t5','t
 def r(n): return REGS[n]
 
 def dis(pc, w):
+    """Disassemble one MIPS word at pc.."""
     op=(w>>26)&0x3f; rs=(w>>21)&0x1f; rt=(w>>16)&0x1f; rd=(w>>11)&0x1f; sh=(w>>6)&0x1f; fn=w&0x3f
     imm=w&0xffff; simm=imm-0x10000 if imm&0x8000 else imm
     tgt=(w&0x3ffffff)<<2
@@ -42,9 +43,11 @@ def dis(pc, w):
     return f'raw=0x{w:08X}'
 
 def load_rom(path='bios/SCPH1001.BIN'):
+    """Read the BIOS/ROM image bytes.."""
     with open(path,'rb') as f: return f.read()
 
 def dump(rom, pc_start, n):
+    """Disassemble n words starting at pc_start.."""
     for i in range(n):
         pc = pc_start + i*4
         off = pc - BASE

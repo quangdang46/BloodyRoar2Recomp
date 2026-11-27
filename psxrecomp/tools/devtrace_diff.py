@@ -38,6 +38,7 @@ KNOWN_DIVERGENCES = {
 }
 
 def query(port, cmd, **kw):
+    """Send a devtrace query command; return parsed reply.."""
     obj = {"cmd": cmd}; obj.update(kw)
     s = socket.create_connection(("127.0.0.1", port), timeout=15)
     try:
@@ -52,6 +53,7 @@ def query(port, cmd, **kw):
         s.close()
 
 def pull(port, cyc_lo, cyc_hi):
+    """Fetch devtrace events in a cycle window.."""
     kw = {"count": 1 << 20}
     if cyc_lo is not None: kw["cyc_lo"] = str(cyc_lo)
     if cyc_hi is not None: kw["cyc_hi"] = str(cyc_hi)
@@ -61,12 +63,14 @@ def pull(port, cyc_lo, cyc_hi):
     return r
 
 def by_source(events):
+    """Group events by source name.."""
     d = {}
     for e in events:
         d.setdefault(e["srcn"], []).append(e)
     return d
 
 def main():
+    """Devtrace diff CLI entry point.."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--native", type=int, default=4490)
     ap.add_argument("--beetle", type=int, default=4382)

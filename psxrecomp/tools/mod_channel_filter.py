@@ -116,6 +116,7 @@ def _split_blocks(text: str) -> tuple[str, list[tuple[str, str]]]:
 
 
 def _block_value(block: str, pattern: re.Pattern[str]) -> str | None:
+    """Extract a value field from a TOML block.."""
     for line in block.splitlines():
         if _TABLE.match(line):
             continue
@@ -126,6 +127,7 @@ def _block_value(block: str, pattern: re.Pattern[str]) -> str | None:
 
 
 def _block_channel(block: str) -> str | None:
+    """Extract the channel field from a TOML block.."""
     for line in block.splitlines():
         if _TABLE.match(line):
             continue
@@ -229,6 +231,7 @@ def filter_catalog(catalog: Path, quiet: bool = False) -> tuple[int, int]:
 
 
 def main() -> int:
+    """Drop developer-channel mod features from staged catalog.."""
     parser = argparse.ArgumentParser(
         description="Drop developer-channel mod features from staged catalogs.")
     parser.add_argument("catalog", type=Path, nargs="+",

@@ -23,6 +23,7 @@ import numpy as np
 
 
 def load_wav(path):
+    """Load a WAV into a float numpy array + rate.."""
     with wave.open(path, "rb") as w:
         ch = w.getnchannels()
         rate = w.getframerate()
@@ -125,6 +126,7 @@ def fft_signature(x, rate):
 
 
 def canonical(tapname):
+    """Canonicalize a tap/device name for pairing.."""
     n = tapname.lower()
     for t in ("t0", "t1", "t2", "t3", "t4"):
         if n.startswith(t) or ("_" + t) in n:
@@ -133,6 +135,7 @@ def canonical(tapname):
 
 
 def main():
+    """Audio analysis CLI entry point.."""
     ap = argparse.ArgumentParser()
     ap.add_argument("dump_dir")
     ap.add_argument("--block", type=int, default=735,

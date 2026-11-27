@@ -17,6 +17,7 @@ import zipfile
 
 
 def _zip_datetime(path: Path) -> tuple[int, int, int, int, int, int]:
+    """Clamp a file mtime into the zip-safe datetime range.."""
     stamp = dt.datetime.fromtimestamp(path.stat().st_mtime)
     if stamp.year < 1980:
         stamp = stamp.replace(year=1980, month=1, day=1, hour=0, minute=0, second=0)
@@ -24,6 +25,7 @@ def _zip_datetime(path: Path) -> tuple[int, int, int, int, int, int]:
 
 
 def create_release_zip(source: Path, output: Path) -> None:
+    """Zip a release folder with normalized timestamps.."""
     source = source.resolve()
     output = output.resolve()
     if not source.is_dir():
@@ -66,6 +68,7 @@ def create_release_zip(source: Path, output: Path) -> None:
 
 
 def main() -> int:
+    """Create release zip CLI entry point.."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)

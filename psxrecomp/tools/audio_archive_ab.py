@@ -16,6 +16,7 @@ import time
 SIDES = {"runtime": 4520, "beetle": 4382}
 
 def call(port, p, timeout=30):
+    """Send a JSON command to the runtime debug port.."""
     s = socket.create_connection(("127.0.0.1", port), timeout=timeout)
     try:
         s.sendall((json.dumps(p) + "\n").encode())
@@ -32,6 +33,7 @@ def call(port, p, timeout=30):
         s.close()
 
 def bmp_mean(path):
+    """Mean pixel value of a BMP screenshot.."""
     try:
         with open(path, "rb") as f:
             d = f.read()
@@ -42,6 +44,7 @@ def bmp_mean(path):
         return -1
 
 def main():
+    """Archive A/B audio CLI entry point.."""
     out = sys.argv[1]
     minutes = float(sys.argv[2]) if len(sys.argv) > 2 else 8.0
     if not (len(out) > 1 and out[1] == ":"):

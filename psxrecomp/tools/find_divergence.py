@@ -25,6 +25,7 @@ class DebugClient:
     """Persistent TCP connection to a debug server."""
 
     def __init__(self, host, port, timeout=10.0):
+        """SocketClient ctor: host/port/timeout.."""
         self.host = host
         self.port = port
         self.timeout = timeout
@@ -32,12 +33,14 @@ class DebugClient:
         self.buf = b''
 
     def connect(self):
+        """Open the TCP connection to the debug server.."""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(self.timeout)
         self.sock.connect((self.host, self.port))
         self.buf = b''
 
     def close(self):
+        """Close the socket if open.."""
         if self.sock:
             try:
                 self.sock.close()
@@ -167,6 +170,7 @@ def format_divergence(d):
 
 
 def main():
+    """Find first RAM divergence between recomp and oracle.."""
     parser = argparse.ArgumentParser(description='Find first RAM divergence between recomp and oracle')
     parser.add_argument('--lo', type=lambda x: int(x, 0), default=0x80060000,
                         help='Start address (default: 0x80060000)')

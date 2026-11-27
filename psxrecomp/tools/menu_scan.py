@@ -200,6 +200,7 @@ def decode_taps(entries, button):
 
 
 def read_ram(link, base, size):
+    """Chunked read_ram: fetch `size` bytes at `base` via the debug link.."""
     out = bytearray()
     for off in range(0, size, CHUNK):
         n = min(CHUNK, size - off)
@@ -257,6 +258,7 @@ def capture(host, port, snapshots, interval, ring_count=512):
 
 
 def main():
+    """Menu-scan CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")
@@ -315,6 +317,7 @@ def main():
     loose.sort(key=lambda h: -h["moves"])
 
     def show(rows, label):
+        """Print the top report rows with double-step flags.."""
         print("\n%d %s:" % (len(rows), label))
         for h in rows[:args.max_report]:
             flag = "  <-- DOUBLE STEP" if h.get("doubled") else ""
