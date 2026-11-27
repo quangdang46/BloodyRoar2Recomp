@@ -618,6 +618,70 @@ def _gpr_names(m):
     """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
 
+
+_WRAP_MAP = None
+
+
+def _wrap_name_map():
+    """guest addr -> called function name, from src/clean_table.c wrap_* bodies.
+
+    Each `static void wrap_<addr>(CPUState *cpu) { extern RET NAME(...); ... }`
+    dispatches guest addr <addr> to NAME (a cps_/cpst_ transliteration or a
+    clean-ported function). Used to resolve bare `0x<addr>` references in
+    carried-over comments to the function actually entered."""
+    global _WRAP_MAP
+    if _WRAP_MAP is not None:
+        return _WRAP_MAP
+    _WRAP_MAP = {}
+    path = os.path.join(ROOT, 'src', 'clean_table.c')
+    try:
+        src = open(path).read()
+    except OSError:
+        return _WRAP_MAP
+    for b in re.split(r'(?=static void wrap_[0-9a-fA-F]+\(CPUState \*cpu\) \{)', src):
+        m = re.match(r'static void wrap_([0-9a-fA-F]+)\(CPUState \*cpu\) \{', b)
+        if not m:
+            continue
+        em = re.search(r'extern\s+[\w\s\*]+?\b(\w+)\s*\(', b)
+        if em:
+            _WRAP_MAP[m.group(1).lower()] = em.group(1)
+    return _WRAP_MAP
+
+
+# Comment-only address refs worth naming: `-> 0xADDR` (also covers the
+# `CPS jal -> 0xADDR` tail comments), `continues at 0xADDR`, `jal 0xADDR`.
+# None of these patterns can appear in code (`->` is always followed by a
+# member name, C has no `jal`), and `guest 0x`/`Address: 0x`/`case 0x`
+# conventions are untouched.
+_COMMENT_ADDR_RES = [
+    re.compile(r'->\s*(0x[0-9A-Fa-f]{8})'),
+    re.compile(r'continues at (0x[0-9A-Fa-f]{8})'),
+    re.compile(r'\bjal (0x[0-9A-Fa-f]{8})'),
+]
+
+
+def name_comment_targets(text):
+    """Resolve bare guest addrs in carried-over comments to callee names."""
+    wraps = _wrap_name_map()
+    if not wraps:
+        return text
+    for rx in _COMMENT_ADDR_RES:
+        # preserve the matched keyword prefix; only swap the hex token
+        text = rx.sub(lambda m: _sub_addr(m, wraps), text)
+    return text
+
+
+def _sub_addr(m, wraps):
+    tok = m.group(1)                      # e.g. '0x8018E4D0'
+    addr = tok[2:].lower()
+    name = wraps.get(addr)
+    if not name:
+        return m.group(0)
+    if addr not in name.lower().replace('0x', ''):
+        name = f'{name} (0x{addr.upper()})'
+    return m.group(0)[:m.start(1) - m.start(0)] + name
+
+
 def emit_fn(addr):
     """Emit the clean-C wrapper for one guest function address."""
     found = find_body(addr)
@@ -642,7 +706,11 @@ def emit_fn(addr):
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
     core = rename_temps(core)
+<<<<<<< HEAD
     core = fold_idioms(core)
+=======
+    core = name_comment_targets(core)
+>>>>>>> orch/w5/e02
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the
