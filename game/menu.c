@@ -6169,122 +6169,122 @@ void ko_count_announce(uint32_t battle,uint32_t text_list)
  * mask&0x800 early-out. */
 int32_t pad_handler_a(uint32_t battle,uint32_t mask)
 {
-  uint32_t s3 = battle;
-  uint32_t fp = mask;                 /* lhu a1 */
-  uint32_t s7 = 1, s6, s5, s4, s2, s1, s0;
-  uint32_t a0, p84;
+
+  /* lhu a1 */
+  uint32_t en = 1, row, col, gap, dy, yb, xc, yc;
+  uint32_t btns, p84;
   int32_t  lb2;
 
   /* row = trunc2(lh20 - 0x40), col = trunc4(lh22) */
   {
-    int32_t x = (int32_t)MBS16(s3 + 0x20) - 0x40;
+    int32_t x = (int32_t)MBS16(battle + 0x20) - 0x40;
     x += (int32_t)((uint32_t)x >> 31);
-    s6 = (uint32_t)(x >> 1);             /* srav by s7 == 1 here */
+    row = (uint32_t)(x >> 1);             /* srav by s7 == 1 here */
     {
-      int32_t y = (int32_t)MBS16(s3 + 0x22);
+      int32_t y = (int32_t)MBS16(battle + 0x22);
       if (y < 0) y += 3;
-      s5 = (uint32_t)(y >> 2);
+      col = (uint32_t)(y >> 2);
     }
   }
-  s4 = (MB8(s3 + 0x15) != 0) ? 0x10 : 8;
-  a0 = MB16(s3 + 0x80);
-  if ((a0 & 0xe0) == 0xe0) s7 = 0;
-  if (a0 & 2) s7 = 0;
-  p84 = MB32(s3 + 0x84);
+  gap = (MB8(battle + 0x15) != 0) ? 0x10 : 8;
+  btns = MB16(battle + 0x80);
+  if ((btns & 0xe0) == 0xe0) en = 0;
+  if (btns & 2) en = 0;
+  p84 = MB32(battle + 0x84);
   if (MBS16(p84 + 0x14) != 0) goto L_dispatch;
-  if (s7 == 0) goto L_chk800;
+  if (en == 0) goto L_chk800;
 
   /* ---- announce init block ---- */
-  BR2_E078(s3,0x80121d50,(int32_t)(int16_t)(s6 + 0x10),s5,4);
-  s1 = s5 + s4;
-  s0 = s6 + 8;
-  lb2 = MBS8(MB32(s3 + 0x84) + 2);
-  BR2_E078(s3,0x80121d58,(int32_t)(int16_t)s0,
-           (int32_t)(int16_t)s1,(uint32_t)lb2 < 1);
-  s2 = s4 << 1;
-  BR2_E078(s3,0x80121d60,(int32_t)(int16_t)s0,
-           (int32_t)(int16_t)(s5 + s2),(uint32_t)(lb2 ^ 1) < 1);
-  s2 += s4;
-  BR2_E078(s3,0x80121d68,(int32_t)(int16_t)s0,
-           (int32_t)(int16_t)(s5 + s2),(uint32_t)(lb2 ^ 2) < 1);
+  BR2_E078(battle,0x80121d50,(int32_t)(int16_t)(row + 0x10),col,4);
+  yb = col + gap;
+  xc = row + 8;
+  lb2 = MBS8(MB32(battle + 0x84) + 2);
+  BR2_E078(battle,0x80121d58,(int32_t)(int16_t)xc,
+           (int32_t)(int16_t)yb,(uint32_t)lb2 < 1);
+  dy = gap << 1;
+  BR2_E078(battle,0x80121d60,(int32_t)(int16_t)xc,
+           (int32_t)(int16_t)(col + dy),(uint32_t)(lb2 ^ 1) < 1);
+  dy += gap;
+  BR2_E078(battle,0x80121d68,(int32_t)(int16_t)xc,
+           (int32_t)(int16_t)(col + dy),(uint32_t)(lb2 ^ 2) < 1);
   {
-    uint32_t c0 = MB32(s3 + 0xc0);
+    uint32_t c0 = MB32(battle + 0xc0);
     uint32_t dw_ent = MB32(0x801b4008 + (uint32_t)MB8(c0 + 0xb) * 4);
-    BR2_E078(s3,dw_ent,(int32_t)(int16_t)s0,
-             (int32_t)(int16_t)(s5 + s4 * 4),(uint32_t)(lb2 ^ 3) < 1);
+    BR2_E078(battle,dw_ent,(int32_t)(int16_t)xc,
+             (int32_t)(int16_t)(col + gap * 4),(uint32_t)(lb2 ^ 3) < 1);
   }
-  lb2 = MBS8(MB32(s3 + 0x84) + 2);
-  BR2_E078(s3,0x80121270,(int32_t)(int16_t)s6,
-           (int32_t)(int16_t)(s1 + s4 * (uint32_t)lb2),1);
-  BR2_CC6C(s3,s6 - 4,s5 - (s4 >> 1),0x48,s2 << 1,0x201010,0);
+  lb2 = MBS8(MB32(battle + 0x84) + 2);
+  BR2_E078(battle,0x80121270,(int32_t)(int16_t)row,
+           (int32_t)(int16_t)(yb + gap * (uint32_t)lb2),1);
+  BR2_CC6C(battle,row - 4,col - (gap >> 1),0x48,dy << 1,0x201010,0);
 
 L_chk800:
-  if (MBS16(MB32(s3 + 0x84) + 0x14) != 0) goto L_dispatch;
-  if (fp & 0x800) return 1;
+  if (MBS16(MB32(battle + 0x84) + 0x14) != 0) goto L_dispatch;
+  if (mask & 0x800) return 1;
 
 L_dispatch:
-  p84 = MB32(s3 + 0x84);
+  p84 = MB32(battle + 0x84);
   lb2 = MBS8(p84 + 2);
   if (lb2 == 1) {
     /* ---- case 1: partner record commit ---- */
-    menu_step_b(MB32(s3 + 0xbc),fp,0x1f8001f0,s3);
-    MW16(s3 + 0x96,MB16(MB32(s3 + 0xbc) + 0x76));
-    if (s7 != 0) {
+    menu_step_b(MB32(battle + 0xbc),mask,0x1f8001f0,battle);
+    MW16(battle + 0x96,MB16(MB32(battle + 0xbc) + 0x76));
+    if (en != 0) {
       print_dispatch((const char *)guest_at(0x80121d70));
-      status_text_dump(MB32(s3 + 0xbc));
+      status_text_dump(MB32(battle + 0xbc));
     }
     return 0;
   }
   if (lb2 == 0) {
     /* ---- case 0: confirm store ---- */
-    if (MBS16(MB32(s3 + 0xc8)) != 0 && (MB16(s3 + 0x7e) & 1) != 0)
+    if (MBS16(MB32(battle + 0xc8)) != 0 && (MB16(battle + 0x7e) & 1) != 0)
       MW8(p84 + 1,1);
     else
-      MW8(MB32(s3 + 0x84) + 1,0);
+      MW8(MB32(battle + 0x84) + 1,0);
     return 0;
   }
   if (lb2 == 2) {
     /* ---- case 2: held-dpad redraw ---- */
     int32_t lh12;
     if (MBS16(p84 + 0x14) == 0) goto L_2194;
-    if (fp & 0xa000) {
+    if (mask & 0xa000) {
       uint32_t sub84;
       deferred_cmd_post(0x400,0xa,0);
-      sub84 = MB32(s3 + 0x84);
+      sub84 = MB32(battle + 0x84);
       MW16(sub84 + 0x12,(uint16_t)(MB16(sub84 + 0x12) ^ 1));
     }
     {
-      int32_t x = (int32_t)MBS16(s3 + 0x20) - 0x40;
+      int32_t x = (int32_t)MBS16(battle + 0x20) - 0x40;
       int32_t y;
       x += (int32_t)((uint32_t)x >> 31);
-      s6 = (uint32_t)(x >> 1);
-      y = (int32_t)MBS16(s3 + 0x22);
+      row = (uint32_t)(x >> 1);
+      y = (int32_t)MBS16(battle + 0x22);
       if (y < 0) y += 3;
-      s5 = (uint32_t)(y >> 2);
+      col = (uint32_t)(y >> 2);
     }
-    BR2_E078(s3,0x80121d68,(int32_t)(int16_t)(s6 + 0x10),s5,4);
-    s0 = (int32_t)(int16_t)(s5 + s4);
-    lh12 = MBS16(MB32(s3 + 0x84) + 0x12);
-    BR2_E078(s3,0x8012181c,(int32_t)(int16_t)s6,s0,(uint32_t)lh12 < 1);
-    BR2_E078(s3,0x80121820,(int32_t)(int16_t)(s6 + 0x30),s0,
+    BR2_E078(battle,0x80121d68,(int32_t)(int16_t)(row + 0x10),col,4);
+    yc = (int32_t)(int16_t)(col + gap);
+    lh12 = MBS16(MB32(battle + 0x84) + 0x12);
+    BR2_E078(battle,0x8012181c,(int32_t)(int16_t)row,yc,(uint32_t)lh12 < 1);
+    BR2_E078(battle,0x80121820,(int32_t)(int16_t)(row + 0x30),yc,
              (uint32_t)lh12 != 0);
-    BR2_CC6C(s3,s6 - 4,s5 - (s4 >> 1),0x48,s4 * 3,0x201010,0);
-    if (fp & 0x10) {
+    BR2_CC6C(battle,row - 4,col - (gap >> 1),0x48,gap * 3,0x201010,0);
+    if (mask & 0x10) {
       uint32_t sub84;
       deferred_cmd_post(0x400,0xd,0);
-      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
-      sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
+      sub84 = MB32(battle + 0x84); MW16(sub84 + 0x14,0);
+      sub84 = MB32(battle + 0x84); MW16(sub84 + 0x12,0);
     }
-    if (fp & 0xe0) {
-      lh12 = MBS16(MB32(s3 + 0x84) + 0x12);
+    if (mask & 0xe0) {
+      lh12 = MBS16(MB32(battle + 0x84) + 0x12);
       if (lh12 == 0) {
         deferred_cmd_post(0x400,0xc,0);
-        MB8(s3 + 1) = 9;                  /* j delay slot */
+        MB8(battle + 1) = 9;                  /* j delay slot */
       } else {
         uint32_t sub84;
         deferred_cmd_post(0x400,0xd,0);
-        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,0);
-        sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,0);
+        sub84 = MB32(battle + 0x84); MW16(sub84 + 0x14,0);
+        sub84 = MB32(battle + 0x84); MW16(sub84 + 0x12,0);
       }
     }
     return 0;
@@ -6292,31 +6292,31 @@ L_dispatch:
   if (lb2 == 3) {
     /* ---- case 3: shoulder page cycle ---- */
     uint32_t d;
-    if (fp & 0x2000) {
+    if (mask & 0x2000) {
       deferred_cmd_post(0x400,0xa,0);
-      d = (uint32_t)(MB8(MB32(s3 + 0xc0) + 0xb) + 1);
-    } else if (fp & 0x8000) {
+      d = (uint32_t)(MB8(MB32(battle + 0xc0) + 0xb) + 1);
+    } else if (mask & 0x8000) {
       deferred_cmd_post(0x400,0xa,0);
-      d = (uint32_t)(MB8(MB32(s3 + 0xc0) + 0xb) - 1);
+      d = (uint32_t)(MB8(MB32(battle + 0xc0) + 0xb) - 1);
     } else {
       return 0;
     }
     d &= 7;
-    MW8(MB32(s3 + 0xc0) + 0xb,(uint8_t)d);
-    display_mode_setup(MB8(MB32(s3 + 0xc0) + 0xb));
+    MW8(MB32(battle + 0xc0) + 0xb,(uint8_t)d);
+    display_mode_setup(MB8(MB32(battle + 0xc0) + 0xb));
     frame_advance_helper();
-    battle_math_init(MB32(s3 + 0xbc),s3);
+    battle_math_init(MB32(battle + 0xbc),battle);
     return 0;
   }
   return 0;
 
 L_2194:                                        /* case2, lh14 == 0 */
-  if ((fp & 0xe0) == 0) return 0;
+  if ((mask & 0xe0) == 0) return 0;
   {
     uint32_t sub84;
     deferred_cmd_post(0x400,0xc,0);
-    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x14,1);
-    sub84 = MB32(s3 + 0x84); MW16(sub84 + 0x12,1);
+    sub84 = MB32(battle + 0x84); MW16(sub84 + 0x14,1);
+    sub84 = MB32(battle + 0x84); MW16(sub84 + 0x12,1);
   }
   return 0;
 }
