@@ -9496,7 +9496,6 @@ static int mc_issue(uint32_t a0,const void *a1,void *a2,
                         uint32_t a3,uint32_t a4,int state,uint32_t cb)
 {
   uint32_t *sblk = (uint32_t *)guest_at(0x801febe0);
-  uint8_t *blk = (uint8_t *)guest_at(0x801febe0 + 0x24);
   if ((int32_t)sblk[0] > 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     return 0;
@@ -9548,7 +9547,6 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   /* cmd blk crosses the BIOS boundary (bios_tramp_b032/b036 kernel
    * services) — must be guest RAM, so reserve a real guest frame. */
   uint32_t fr = br2_guest_frame(0x40);
-  uint8_t *blk = (uint8_t *)guest_at(fr + 0x10);
   uint32_t a2hi;
   int32_t tries = 0;
   uint32_t st;
