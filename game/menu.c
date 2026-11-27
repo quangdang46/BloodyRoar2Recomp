@@ -9126,7 +9126,7 @@ L_state8:                                     /* 0x80147eec */
   page_table_ptr_set(0x11,2,(undefined *)0);
   cd_timer_read(0);
 L_state10:                                    /* 0x80147f24 */
-  /* gen 0x80147F28: arr1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
+  /* gen 0x80147F28: a1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
    * o2[] offset table) loads INTO the heap data region, NOT the tag table.
    * Passing ttab (0x801c47c0) overwrote the master decode tag table, so the
    * offset_table_lookup below read foreign data -> wild +1.8MB cursor jump. */
