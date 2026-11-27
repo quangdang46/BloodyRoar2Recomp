@@ -195,7 +195,7 @@ void gpu_pkt_unlink_n(uint32_t *head, int count)
     if (count < 1) {
       return;
     }
-  } while( true );
+  } while (true);
 }
 
 /* ======== 0x8018bf40 ======== */
