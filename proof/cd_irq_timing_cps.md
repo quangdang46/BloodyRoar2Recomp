@@ -1118,3 +1118,10 @@ extern stays: generated/SLES_017.22_full_41.c does emit the call).
 
 Verified: clean build EU + USA; headless :5155 frame 35835, clean_fallback_stats
 count=0.
+
+## Batch 55 (orch/w5/e05) — clean_table.c regen (merged-map catch-up)
+
+gen_clean_table.py regen: committed file predated master's merged map
+rows — 10,321 -> 10,526 wrappers (+205), 0 skipped. All new targets
+resolve (cps_/cpst_/peer ports). Verified: clean build EU + USA;
+headless :5157 frame 30265, clean_fallback_stats count=0.
