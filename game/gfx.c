@@ -70,7 +70,7 @@ uint32_t gpu_mode_regs_apply(uint32_t);
 void  gpu_prim_pkt_build(int, uint16_t *);
 uint32_t gp_bde20_read(void);
 uint32_t gpu_invoke(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
-void  gpu_rect_bounds_dbg(uint32_t, short *);
+void  gpu_rect_bounds_dbg(uint32_t, int16_t *);
 
 /* ---- guest globals ---- */
 extern uint8_t *g_DAT_801b55dc;
@@ -210,7 +210,7 @@ static void spr_rect_frame_emit(const void *rect, uint32_t src, uint32_t frame)
   br2_guest_frame_free();
 }
 
-void spr_draw_off(int spr, short x, short y, int abs_coords)
+void spr_draw_off(int spr, int16_t x, int16_t y, int abs_coords)
 
 {
   /* Guest builds one contiguous 8-int8_t RECT at sp+0x10..0x17
@@ -232,8 +232,8 @@ void spr_draw_off(int spr, short x, short y, int abs_coords)
   rect[0] = (uint16_t)x;
   rect[1] = (uint16_t)y;
   if (abs_coords == 0) {
-    rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
-    rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
+    rect[0] = (uint16_t)(*(int16_t *)(desc + 0xc) + x);
+    rect[1] = (uint16_t)(*(int16_t *)(desc + 0xe) + y);
   }
   rect[2] = *(uint16_t *)(desc + 0x10);
   rect[3] = *(uint16_t *)(desc + 0x12);
@@ -243,7 +243,7 @@ void spr_draw_off(int spr, short x, short y, int abs_coords)
 
 /* ======== 0x8018bec0 ======== */
 
-void spr_draw_cond(int spr, short x, short y, int abs_coords)
+void spr_draw_cond(int spr, int16_t x, int16_t y, int abs_coords)
 
 {
   uint16_t rect[4];
@@ -255,8 +255,8 @@ void spr_draw_cond(int spr, short x, short y, int abs_coords)
     rect[0] = (uint16_t)x;
     rect[1] = (uint16_t)y;
     if (abs_coords == 0) {
-      rect[0] = (uint16_t)(*(short *)(desc + 0xc) + x);
-      rect[1] = (uint16_t)(*(short *)(desc + 0xe) + y);
+      rect[0] = (uint16_t)(*(int16_t *)(desc + 0xc) + x);
+      rect[1] = (uint16_t)(*(int16_t *)(desc + 0xe) + y);
     }
     rect[2] = *(uint16_t *)(desc + 0x10);
     rect[3] = *(uint16_t *)(desc + 0x12);
@@ -384,13 +384,13 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
     *(uint16_t *)(pkt + 4) = ((uint16_t)((uint32_t)col >> 0x10) & 0xff) + 1;
     pkt[3] = attr;
     *(uint16_t *)((char *)pkt + 0x12) = (int8_t)((uint32_t)col >> 0x18) + 1;
-    *(short *)(pkt + 2) = (short)pos;
-    *(short *)((char *)pkt + 10) = (short)((uint32_t)pos >> 0x10);
+    *(int16_t *)(pkt + 2) = (int16_t)pos;
+    *(int16_t *)((char *)pkt + 10) = (int16_t)((uint32_t)pos >> 0x10);
     *(int8_t *)((char *)pkt + 7) = *(int8_t *)((char *)pkt + 7) & 0xfd | 1;
     pkt[1] = 0x64808080;
     /* tex args = bytes @0x801e40b7/@0x801e40b6 — head of the per-fighter
      * attribute record (battle.c indexes it as base + slot*0x2150). */
-    prim_packet_init_tex((int)guest_of(pkt + 5), GP8(0x801e40b7), GP8(0x801e40b6), (int)(short)col, 0);
+    prim_packet_init_tex((int)guest_of(pkt + 5), GP8(0x801e40b7), GP8(0x801e40b6), (int)(int16_t)col, 0);
     ret = 0;
     *pkt = *cell | 0x4000000;
     *cell = pkt_g & 0xffffff;
@@ -407,7 +407,7 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
 void gpu_load_image_cmd(uint32_t rect, uint32_t src)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504), (short *)(uintptr_t)rect);
+  gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[8], rect, 8, src);
   return;
 }
@@ -417,7 +417,7 @@ void gpu_load_image_cmd(uint32_t rect, uint32_t src)
 void gpu_clear_image_cmd(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec), (short *)(uintptr_t)rect);
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[3], rect, 8,
                (b & 0xff) << 0x10 | (g & 0xff) << 8 | r & 0xff);
   return;
@@ -428,7 +428,7 @@ void gpu_clear_image_cmd(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
 void gpu_clear_image_cmd2(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
 
 {
-  gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8), (short *)(uintptr_t)rect);
+  gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[3], rect, 8,
                (b & 0xff) << 0x10 | (g & 0xff) << 8 | 0x80000000 | r & 0xff);
   return;
@@ -613,23 +613,23 @@ uint32_t draw_env_timing(uint32_t env_g)
       tc = tc | 0x80;
     }
     hgt = env[2];
-    if (0x118 < (short)hgt) {
-      if ((short)hgt < 0x161) {
+    if (0x118 < (int16_t)hgt) {
+      if ((int16_t)hgt < 0x161) {
         tc = tc | 1;
       }
-      else if ((short)hgt < 0x191) {
+      else if ((int16_t)hgt < 0x191) {
         tc = tc | 0x40;
       }
-      else if ((short)hgt < 0x231) {
+      else if ((int16_t)hgt < 0x231) {
         tc = tc | 2;
       }
       else {
         tc = tc | 3;
       }
     }
-    narrow = (short)env[3] < 0x121;
+    narrow = (int16_t)env[3] < 0x121;
     if ((char)env[9] == '\0') {
-      narrow = (short)env[3] < 0x101;
+      narrow = (int16_t)env[3] < 0x101;
     }
     if (!narrow) {
       tc = tc | 0x24;
@@ -641,18 +641,18 @@ uint32_t draw_env_timing(uint32_t env_g)
        ((GP16(0x801b8398) == env[6] && ((GP16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
-  tc = (int)(short)env[5] + 0x13;
+  tc = (int)(int16_t)env[5] + 0x13;
   if (gp_type == '\0') {
-    tc = (int)(short)env[5] + 0x10;
+    tc = (int)(int16_t)env[5] + 0x10;
   }
-  tot = tc + (int)(short)env[7];
-  if ((short)env[7] == 0) {
+  tot = tc + (int)(int16_t)env[7];
+  if ((int16_t)env[7] == 0) {
     tot = tc + 0xf0;
   }
   hgt = env[2];
   std_idx = 0;
-  if ((((0x118 < (short)hgt) && (std_idx = 1, 0x160 < (short)hgt)) &&
-      (std_idx = 2, 400 < (short)hgt)) && (std_idx = 4, (short)hgt < 0x231)) {
+  if ((((0x118 < (int16_t)hgt) && (std_idx = 1, 0x160 < (int16_t)hgt)) &&
+      (std_idx = 2, 400 < (int16_t)hgt)) && (std_idx = 4, (int16_t)hgt < 0x231)) {
     std_idx = 3;
   }
   tbl_off = ((uint32_t)(int8_t)env[9] * 5 + std_idx) * 4;
@@ -661,9 +661,9 @@ uint32_t draw_env_timing(uint32_t env_g)
    * not a u16 element index — divide by 2 for timing_tbl[] indexing. */
   delta = (int)timing_tbl[tbl_off / 2 + 1] - (int)timing_tbl[tbl_off / 2];
   ta = (uint32_t)timing_tbl[tbl_off / 2] +
-          (int)(short)env[4] * (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx];
-  if ((short)env[6] != 0) {
-    delta = delta * (short)env[6] >> 8;
+          (int)(int16_t)env[4] * (uint32_t)(int8_t)((uint8_t *)guest_at(0x801b841c))[std_idx];
+  if ((int16_t)env[6] != 0) {
+    delta = delta * (int16_t)env[6] >> 8;
   }
   td = ta + delta;
   if ((char)env[9] == '\0') {
@@ -817,12 +817,12 @@ void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
   uint32_t p2g = guest_of(env_p);
   dst = (uint8_t *)guest_at((uint32_t)pkt_g);
   env = (uint16_t *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)env_p);
-  word = gpu_coord_clamp_a((int)(short)env[0], (int)(short)env[1]);
+  word = gpu_coord_clamp_a((int)(int16_t)env[0], (int)(int16_t)env[1]);
   *(uint32_t *)(dst + 4) = word;
   word = gpu_coord_clamp_b((int)(((uint32_t)env[2] + (uint32_t)env[0] + -1) * 0x10000) >> 0x10,
                        (int)(((uint32_t)env[1] + (uint32_t)env[3] + -1) * 0x10000) >> 0x10);
   *(uint32_t *)(dst + 8) = word;
-  word = gpu_coord_pack((int)(short)env[4], (int)(short)env[5]);
+  word = gpu_coord_pack((int)(int16_t)env[4], (int)(int16_t)env[5]);
   *(uint32_t *)(dst + 0xc) = word;
   word = gpu_pkt_pack(*(uint8_t *)((char *)env + 0x17), (char)env[0xb], env[10]);
   *(uint32_t *)(dst + 0x10) = word;
@@ -835,15 +835,15 @@ void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
     h = env[2];
     h_raw = env[3];
     w = 0;
-    if ((-1 < (short)h) && (w = disp_width - 1, (int)(short)h <= disp_width + -1)) {
+    if ((-1 < (int16_t)h) && (w = disp_width - 1, (int)(int16_t)h <= disp_width + -1)) {
       w = h;
     }
-    if ((short)h_raw < 0) {
+    if ((int16_t)h_raw < 0) {
       h = 0;
     }
     else {
       h = disp_height - 1;
-      if ((int)(short)h_raw <= disp_height + -1) {
+      if ((int)(int16_t)h_raw <= disp_height + -1) {
         h = h_raw;
       }
     }
@@ -930,7 +930,7 @@ void bios_call_a0(uint32_t arg)
 
 /* ======== 0x801911e4 ======== */
 
-void gpu_rect_bounds_dbg(uint32_t name, short *rect)
+void gpu_rect_bounds_dbg(uint32_t name, int16_t *rect)
 
 {
   int y;
@@ -940,7 +940,7 @@ void gpu_rect_bounds_dbg(uint32_t name, short *rect)
    * (guest_at(gpr5)) but as a guest-address value from gpu_load_image_cmd
    * family callers — resolve either form. */
   uint32_t p2g = guest_of(rect);
-  short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
+  int16_t *rc = (int16_t *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
 
   if (gpu_dbg_level == '\x01') {
     x = (int)rc[2];
@@ -7689,7 +7689,7 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
 extern int *rtps_point_xform2(uint32_t *, uint32_t *, int *);
 extern uint16_t *gte_rtps_xform1(uint32_t *, uint32_t *, uint16_t *);
 extern uint32_t *gte_rtps_xform3(uint32_t *, uint16_t *, uint32_t *);
-extern void part_matrix_compute(uint32_t *, int8_t *, short *, uint32_t);
+extern void part_matrix_compute(uint32_t *, int8_t *, int16_t *, uint32_t);
 extern int atan2_lut(int, int);
 
 /* mult equivalent: signed 32x32 -> hi:lo product into the COP1 regs. */
@@ -7890,7 +7890,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   g[5] = g[5] + g[2];                     /* delay slot */
   part_matrix_compute((uint32_t *)guest_at(g[4]),
                       (int8_t *)guest_at(g[5]),
-                      (short *)guest_at(g[6]), g[7]);
+                      (int16_t *)guest_at(g[6]), g[7]);
 
   /* L_8018673C */
   g[4] = fr + 16;
@@ -8044,7 +8044,7 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
   br2_st16(g[23] + 4, (uint16_t)g[2]);    /* delay slot: sh a2+4 */
   part_matrix_compute((uint32_t *)guest_at(g[4]),
                       (int8_t *)guest_at(g[5]),
-                      (short *)guest_at(g[6]), g[7]);
+                      (int16_t *)guest_at(g[6]), g[7]);
 
   /* L_80186908 */
   g[5] = g[16];                           /* a1 + 4 */
