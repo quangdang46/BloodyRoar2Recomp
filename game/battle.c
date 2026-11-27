@@ -449,6 +449,9 @@ void battle_frame_tick(int battle,uint phase)
   return;
 
 }
+/* fighter_contact_resolve — per-frame contact pass for the fighter pair:
+ * state_tick both fighters against the battle camera, then run the
+ * contact/hit-resolution stages. */
 void fighter_contact_resolve(int f0,int f1,int battle)
 {
   int dir0;
@@ -663,6 +666,9 @@ void player_light_apply(byte *ctrl,int side)
   return;
 
 }
+/* fighter_pair_update — per-frame update driver for the fighter pair:
+ * heading/eligibility checks, height track, attach run, flash update and
+ * the contact resolve cascade. */
 void fighter_pair_update(int f0,int f1,int battle)
 {
   short head0;
@@ -852,6 +858,8 @@ LAB_80180f88:
 
 }
 
+/* fighter_flash_update — fighter hit-flash/invuln blink update: per-fidx
+ * record at DAT_801f4d70 (+0xbc stride) drives prim brightness/flags. */
 void fighter_flash_update(uint battle,uint slot,int ctx2,byte *rec)
 {
   int roff;
@@ -3272,6 +3280,9 @@ extern uint8_t  **g_PTR_DAT_801b19d4, **g_PTR_DAT_801b1e8c, **g_PTR_FUN_801b1ea8
 #define PTR_DAT_801b1e8c   (*g_PTR_DAT_801b1e8c)
 #define PTR_FUN_801b1ea8   (*g_PTR_FUN_801b1ea8)
 
+/* fighter_state_tick — per-fighter state tick: sample pad edge flags,
+ * update heading (ctrl pos vs state anim offset), advance timers and
+ * dispatch the state machine for this controller. */
 void fighter_state_tick(uint *ctrl,undefined4 pad,int ctx)
 {
   short tmr;
@@ -3533,6 +3544,8 @@ undefined4 hit_elig_check(int f0,int f1)
 
 }
 
+/* hitbox_pair_test — pairwise hitbox overlap test between two fighters;
+ * writes per-box results into out[] and returns the aggregated verdict. */
 undefined4 hitbox_pair_test(int f0,int f1,undefined2 *out)
 {
   char op;
@@ -4297,6 +4310,9 @@ LAB_80144d0c:
 
 }
 
+/* hitbox_wall_collide — hitbox vs stage wall collision resolve: push
+ * out, kill velocity components, set launch/knock flags on both
+ * fighters and return the collision mask. */
 uint hitbox_wall_collide(int f0,undefined2 *hits,int battle)
 {
   bool en_n0;
@@ -4481,6 +4497,8 @@ LAB_8014672c:
 
 }
 
+/* camera_aim_offset — compute camera aim offset angles from the fighter
+ * pair geometry; writes per-side pen/offset channels 0x801f04ec-0x4f2. */
 void camera_aim_offset(int f0,int f1,undefined4 ang)
 {
   bool rev;
@@ -4817,6 +4835,8 @@ void fighter_chan_delta_accum(uint32_t node, uint32_t dx,
 
 }
 
+/* fighter_attach_run — run the attach/bone-follow update for fighter f:
+ * propagate parent bone transforms into attached nodes. */
 void fighter_attach_run(int f)
 {
   int ent;
@@ -4892,6 +4912,8 @@ void fighter_height_track(int f,int st)
 
 }
 
+/* hitbox_corners_xform — transform both fighters' hitbox corner
+ * vertices through their world matrices into the shared corner buffer. */
 void hitbox_corners_xform(int f0,int f1)
 {
   short ez;
@@ -5139,6 +5161,9 @@ void hitbox_corners_xform(int f0,int f1)
 
 }
 
+/* pad_edge_scan — scan the 0x10 controller pad slots and build the
+ * per-button repeat and multi-press bitmasks at ctrl_g+0x80/+0x84,
+ * with per-button hold-time table walk. */
 void pad_edge_scan(int ctrl_g)
 {
   ushort cur;
@@ -5203,6 +5228,8 @@ void pad_edge_scan(int ctrl_g)
 
 }
 
+/* cmd_input_parse — parse raw pad state into the command stream for
+ * ctrl_g: per-button press/repeat timing produces command codes. */
 void cmd_input_parse(int ctrl_g)
 {
   bool pos;
@@ -5407,6 +5434,8 @@ switchD_801435e8_caseD_0:
 
 }
 
+/* action_from_input — map controller input to the action/state
+ * selection state machine (button timers, combo windows, state codes). */
 void action_from_input(int ctrl_g)
 {
   short prev;
@@ -5597,6 +5626,8 @@ LAB_801434b4:
 
 }
 
+/* seg_sphere_hit — segment vs sphere intersection test (two radii);
+ * on hit writes the contact point to hit[0..2] and returns 1. */
 undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *hit)
 {
   short sz;
@@ -5702,6 +5733,8 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
 
 }
 
+/* sphere_pt_hit — point vs dual-radius sphere test; writes the hit
+ * point offset to mid[] and returns the inside flag. */
 undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 {
   int ad;
@@ -5744,6 +5777,8 @@ undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 
 }
 
+/* debug_strike_fx_a — debug strike-FX variant A: spawn hit spark at pos
+ * with screen offsets (x,y) for fighter f. */
 void debug_strike_fx_a(short *pos,int x,int y,undefined4 unused,int f)
 {
   int en;
@@ -5767,6 +5802,8 @@ void debug_strike_fx_a(short *pos,int x,int y,undefined4 unused,int f)
 
 }
 
+/* debug_strike_fx_b — debug strike-FX variant B: spawn hit spark with
+ * packed offset args and heading ang for fighter f. */
 void debug_strike_fx_b(short *pos,undefined4 x,undefined4 y,ushort ang,int f)
 {
   char mode;
