@@ -17231,6 +17231,11 @@ LAB_80137c14:
                 uint32_t fn_g = *(uint32_t *)guest_at((uint32_t)(ctx[3] + rec[2] * 4));
                 void *fn = fn_lookup(fn_g);
                 if (fn != (void *)0x0) {
+                  /* Guest jalr passes a0 = ctx[0] (guest addr of the
+                   * channel state).  The clean handlers (LAB_80137590 /
+                   * LAB_80137680 / LAB_80137acc / LAB_80137cd0 family) take
+                   * host pointers into guest RAM, so resolve via guest_at;
+                   * the generated fallback below gets the raw guest addr. */
                   ((void (*)(uintptr_t))fn)(ctx[0] != 0 ? (uintptr_t)guest_at((uint32_t)ctx[0]) : 0);
                 }
                 else {
