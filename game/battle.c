@@ -5389,7 +5389,7 @@ void action_from_input(int ctrl_g)
 {
   short prev;
   int t2;
-  ushort u3;
+  ushort fl3;
   int bi;
   uint fl;
   uint fl2;
@@ -5454,8 +5454,8 @@ LAB_80142fa0:
                 *(uint *)guest_at((uint32_t)(uintptr_t)((st + 0x30) ))= fl;
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x34) ))= (short)rec[-1];
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x36) ))= *(short *)((intptr_t)rec + -2);
-                u3 = *(ushort *)((intptr_t)rec + 2);
-                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= u3;
+                fl3 = *(ushort *)((intptr_t)rec + 2);
+                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= fl3;
                 fl = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x54)));
               }
               else {
@@ -5465,13 +5465,13 @@ LAB_801431cc:
                 *(uint *)guest_at((uint32_t)(uintptr_t)((st + 0x30) ))= fl;
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x34) ))= (short)rec[-1];
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x36) ))= *(short *)((intptr_t)rec + -2);
-                u3 = *(ushort *)((intptr_t)rec + 2);
-                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= u3;
+                fl3 = *(ushort *)((intptr_t)rec + 2);
+                *(ushort *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))= fl3;
                 fl = *(uint *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x54)));
               }
               if ((fl & 8) == 0) {
                 if ((fl & 0x10) != 0) {
-                  t2 = (short)u3 * 7;
+                  t2 = (short)fl3 * 7;
                   if (t2 < 0) {
                     t2 = t2 + 7;
                   }
@@ -5480,8 +5480,8 @@ LAB_801431cc:
               }
               else {
                 *(short *)guest_at((uint32_t)(uintptr_t)((st + 0x38) ))=
-                     (short)((((int)((uint)u3 << 0x10) >> 0x10) -
-                             ((int)((uint)u3 << 0x10) >> 0x1f)) >> 1);
+                     (short)((((int)((uint)fl3 << 0x10) >> 0x10) -
+                             ((int)((uint)fl3 << 0x10) >> 0x1f)) >> 1);
               }
               goto LAB_801434b4;
             }
@@ -5527,8 +5527,8 @@ LAB_801431cc:
           break;
         case 7:
           t3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x80)));
-          u3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
-          if ((u3 == 0xc0) || (u3 == 0x88)) break;
+          fl3 = *(ushort *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x7a) ))& 0xe8;
+          if ((fl3 == 0xc0) || (fl3 == 0x88)) break;
           goto LAB_80143448;
         }
         if (((*(byte *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 5) ))& 1) == 0) && (*(short *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0xd6) ))< 0x1e00)) {
@@ -8387,13 +8387,13 @@ void task_pools_tick(int pool)
 
 }
 
-void noop_a(int u0,undefined4 u1,undefined4 u2,undefined4 u3)
+void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 {
   int datap;
-  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= u2;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 0xc) ))= u3;
+  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= w0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= w1;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 0xc) ))= w2;
   return;
 
 }
@@ -8417,19 +8417,19 @@ int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 
 }
 
-void noop_b(int u0,undefined4 u1,undefined4 u2)
+void noop_b(int node,undefined4 w0,undefined4 w1)
 {
   int datap;
-  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= u1;
-  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= u2;
+  datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 4) ))= w0;
+  *(undefined4 *)guest_at((uint32_t)(uintptr_t)((datap + 8) ))= w1;
   return;
 
 }
 
-undefined4 noop_c(int u0)
+undefined4 noop_c(int node)
 {
-  return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
+  return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
 
 }
 
@@ -9989,7 +9989,7 @@ void dual_target_track(int tgt,int f_a,int f_b)
 void dual_target_track_b(int cam,int fa,int fb)
 {
   short s1;
-  ushort u2;
+  ushort wang;
   int t;
   int az;
   int bz;
@@ -10052,10 +10052,10 @@ LAB_80132e74:
   nang = -(short)tmp;
   s1 = *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x82)));
   if (s1 == -2) {
-    u2 = nang + 0x800;
+    wang = nang + 0x800;
 LAB_80132f40:
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x32) ))= u2;
-    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x2a) ))= u2;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x32) ))= wang;
+    *(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x2a) ))= wang;
   }
   else {
     if (s1 < -1) {
@@ -10067,9 +10067,9 @@ LAB_80132f40:
       if (tmp < 0) {
         tmp = -tmp;
       }
-      u2 = nang & 0xfff;
+      wang = nang & 0xfff;
       if (0x400 < tmp) {
-        u2 = nang + 0x800 & 0xfff;
+        wang = nang + 0x800 & 0xfff;
       }
       goto LAB_80132f40;
     }
@@ -18213,19 +18213,19 @@ void sprite_prim_build(int ot,int pos,int dim,int uv,int sw,int sh,int col)
   int spr;
   int w;
   int h;
-  int u0;
-  int v0;
+  int t2;
+  int t3;
   int t0;
   int t1;
   spr = spr_pool_b_alloc(ot,pos,dim,uv);
   if (spr != 0) {
     w = ((dim >> 0x10) & 0xff) + 1;
     h = (int)((uint32_t)dim >> 0x18) + 1;
-    u0 = uv & 0xff;
-    v0 = (uv >> 8) & 0xff;
+    t2 = uv & 0xff;
+    t3 = (uv >> 8) & 0xff;
     t0 = w * (int)(short)sw;
     t1 = h * (int)(short)sh;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x15)) = (byte)v0;
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x15)) = (byte)t3;
     if (t0 < 0) {
       t0 = t0 + 0xfff;
     }
@@ -18236,27 +18236,27 @@ void sprite_prim_build(int ot,int pos,int dim,int uv,int sw,int sh,int col)
     h = t1 >> 0xc;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 0xc)) = uv;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x16)) = (short)dim;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) = (byte)(u0 + w);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1c)) = (byte)u0;
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1d)) = (byte)(v0 + h);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x24)) = (byte)(u0 + w);
-    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x25)) = (byte)(v0 + h);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x14)) = (byte)(t2 + w);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1c)) = (byte)t2;
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x1d)) = (byte)(t3 + h);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x24)) = (byte)(t2 + w);
+    *(byte *)guest_at((uint32_t)(uintptr_t)(spr + 0x25)) = (byte)(t3 + h);
     /* corner halves: negated values use sign of the negated operand,
      * positive use sign of the adjusted raw product (t0/t1) */
-    u0 = pos + (((-w) + (int)((uint32_t)(-w) >> 0x1f)) >> 1);
-    v0 = (pos >> 0x10) + (((-h) + (int)((uint32_t)(-h) >> 0x1f)) >> 1);
+    t2 = pos + (((-w) + (int)((uint32_t)(-w) >> 0x1f)) >> 1);
+    t3 = (pos >> 0x10) + (((-h) + (int)((uint32_t)(-h) >> 0x1f)) >> 1);
     t0 = pos + ((w + (int)((uint32_t)t0 >> 0x1f)) >> 1);
     t1 = (pos >> 0x10) + ((h + (int)((uint32_t)t1 >> 0x1f)) >> 1);
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)u0;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x18)) = (short)u0;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 8)) = (short)t2;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x18)) = (short)t2;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x1a)) = (short)t1;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x22)) = (short)t1;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)v0;
-    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) = (short)v0;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0xa)) = (short)t3;
+    *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x12)) = (short)t3;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x10)) = (short)t0;
     *(short *)guest_at((uint32_t)(uintptr_t)(spr + 0x20)) = (short)t0;
-    u0 = ((col & 0xff) * 0x010101) | 0x2e000000;
-    *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = u0;
+    t2 = ((col & 0xff) * 0x010101) | 0x2e000000;
+    *(undefined4 *)guest_at((uint32_t)(uintptr_t)(spr + 4)) = t2;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)ot) =
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)ot) | 0x09000000;
     *(int *)guest_at((uint32_t)(uintptr_t)ot) = spr & 0xffffff;
