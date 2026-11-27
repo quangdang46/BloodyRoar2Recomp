@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+/* main: runs the spu gaussian checks */
 int main(void)
 {
     int16_t previous[3] = { 1000, 2000, 3000 };

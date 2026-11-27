@@ -7,6 +7,7 @@
 #define PAL_VIDEO_CLOCK_HZ 53203425u
 #define PAL_TICKS_PER_FRAME (3406u * 314u)
 
+/* main: runs the psx vblank clock checks */
 int main(void) {
     PSXVBlankClock clock;
     const uint64_t numerator =
