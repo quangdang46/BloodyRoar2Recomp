@@ -6,6 +6,7 @@
 # stable: they appear in fnmap.c externs and clean_table.c wrappers.
 
 80126f04 boot
+80126234 guest_main
 80126870 cd_file_pump
 8012708c display_mode_setup
 8012aeec frame_tick

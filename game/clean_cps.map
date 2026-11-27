@@ -301,11 +301,8 @@
 
 # --- unnamed jal-target fns (non-CD) ---
 
-# fn 0x80126234 — 2 CPS addrs
-
-80126234 cps_80126234
-
-80126258 cps_80126234
+# fn 0x80126234 — retired: guest_main (game.c) is the clean port of the
+# whole main() chain; _start's jal 0x80126234 now dispatches to it.
 
 
 
