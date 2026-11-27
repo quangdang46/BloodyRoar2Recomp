@@ -37,6 +37,13 @@
  */
 #include <stdint.h>
 #include <stdbool.h>
+#include "cpu_state.h"
+
+extern CPUState *clean_cpu_state(void);
+/* Incoming guest register value for Ghidra register-model locals: the guest
+ * saves s0-s6/ra to the 0x1f8003e0 scratch area on entry, so the faithful
+ * host value is the live CPUState gpr at call time. */
+static uint32_t br2_gpr(int r){ CPUState *c = clean_cpu_state(); return c ? c->gpr[r] : 0; }
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -3320,15 +3327,15 @@ void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 ang
   int t2;
   int t;
   int t3;
-  undefined4 s0;
-  undefined4 s1;
-  undefined4 s2;
-  undefined4 s3;
-  undefined4 s4;
-  undefined4 s5;
-  undefined4 s6;
+  undefined4 s0 = br2_gpr(16);
+  undefined4 s1 = br2_gpr(17);
+  undefined4 s2 = br2_gpr(18);
+  undefined4 s3 = br2_gpr(19);
+  undefined4 s4 = br2_gpr(20);
+  undefined4 s5 = br2_gpr(21);
+  undefined4 s6 = br2_gpr(22);
   int t1;
-  undefined4 ra;
+  undefined4 ra = br2_gpr(31);
   ex = (int)*euler;
   ey = (int)euler[1];
   ez = (int)euler[2];

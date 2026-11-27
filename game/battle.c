@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>
+#include "cpu_state.h"
 
 typedef uint8_t  byte;
 typedef uint16_t ushort;
@@ -1240,6 +1241,11 @@ extern void     setCopReg(int fmt,int reg,int v);
 extern void     copFunction(int fmt,int op);
 extern int      getCopReg(int fmt,int reg);
 extern void     setCopControlWord(int fmt,int reg,int v);
+extern CPUState *clean_cpu_state(void);
+/* Incoming guest register value for the Ghidra "in_*" spill locals: the
+ * guest saves s0-s7/t0-t9/ra to the 0x1f8003e0 scratch area on entry, so the
+ * faithful host value is the live CPUState gpr at call time. */
+static uint32_t br2_gpr(int r){ CPUState *c = clean_cpu_state(); return c ? c->gpr[r] : 0; }
 extern int lut_cos_q12(int angle);
 extern int lut_sin_q12(uint angle);
 extern int FUN_80194500(uint32_t val, ...);
@@ -7809,8 +7815,8 @@ undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
  * no perspective divide in either. */
 int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;      /* lwc2 gte[0] */
+  undefined4 in_at = 0x800;    /* lwc2 gte[1] */
   int ty;
   int tz;
   int gx;
@@ -7842,8 +7848,8 @@ int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
  * (see rtps_point_xform). */
 int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   int ty;
   int tz;
   int gx;
@@ -8980,8 +8986,8 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   short ang;
   int off;
   undefined4 res;
-  undefined4 in_zero;
-  undefined4 at_out;
+  undefined4 in_zero = 0;
+  undefined4 at_out = 0x800;
   int tmp;
   int scl;
   undefined4 at_val;
@@ -11102,8 +11108,8 @@ int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 /* gte_rtps_xform1 @0x801951b0 — see gte_rtps_xform3 (single-output variant). */
 undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   undefined4 gx;
   undefined4 gy;
   undefined4 gz;
@@ -11175,9 +11181,9 @@ void gte_cw_d000_set(undefined4 cw)
 undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
   undefined4 res;
-  undefined4 r0;
-  undefined4 r1;
-  undefined4 r2;
+  undefined4 r0 = 0;
+  undefined4 r1 = 0x800;
+  undefined4 r2 = 0x1000;
   setCopReg(2,r0,*in);
   setCopReg(2,r1,in[1]);
   setCopReg(2,r2,in[2]);
@@ -12342,20 +12348,20 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
  * per element, then call_guest4 the record's emit callbacks. */
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 mtx_t ,undefined4 mtx_ip)
 {
-  undefined4 in_zero;
-  undefined4 at_out;
+  undefined4 in_zero = 0;
+  undefined4 at_out = 0x800;
   undefined4 t0;
   undefined4 t1;
   undefined4 t2;
-  undefined4 in_s0;
-  undefined4 in_s1;
-  undefined4 in_s2;
+  undefined4 in_s0 = br2_gpr(16);
+  undefined4 in_s1 = br2_gpr(17);
+  undefined4 in_s2 = br2_gpr(18);
   int *rp;
-  undefined4 in_s3;
-  undefined4 in_s4;
-  undefined4 in_s5;
-  undefined4 in_s6;
-  undefined4 in_ra;
+  undefined4 in_s3 = br2_gpr(19);
+  undefined4 in_s4 = br2_gpr(20);
+  undefined4 in_s5 = br2_gpr(21);
+  undefined4 in_s6 = br2_gpr(22);
+  undefined4 in_ra = br2_gpr(31);
   int num;
   if (0 < total) {
     setCopControlWord(2,0xe800,0x555);
@@ -13481,8 +13487,8 @@ LAB_80136b18:
 void radial_glow_draw(int *rec)
 {
   undefined4 xy;
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   short ox;
   short cy;
   short oy;
@@ -13815,14 +13821,14 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
   undefined4 sv_s2;
   undefined4 sv_s1;
   undefined4 sv_s0;
-  undefined4 in_s0;
-  undefined4 in_s1;
-  undefined4 in_s2;
+  undefined4 in_s0 = br2_gpr(16);
+  undefined4 in_s1 = br2_gpr(17);
+  undefined4 in_s2 = br2_gpr(18);
   int *pi;
-  undefined4 in_s3;
-  undefined4 in_s6;
+  undefined4 in_s3 = br2_gpr(19);
+  undefined4 in_s6 = br2_gpr(22);
   int n;
-  undefined4 in_ra;
+  undefined4 in_ra = br2_gpr(31);
   sv_ra = in_ra;
   sv_s6 = in_s6;
   sv_s3 = in_s3;
@@ -13929,26 +13935,26 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 /* prim_list_persp_step @0x8018b208 — see prim_list_gte_invoke. */
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
-  undefined4 in_zero;
-  undefined4 at_out;
+  undefined4 in_zero = 0;
+  undefined4 at_out = 0x800;
   int t;
   int vp;
   int sz;
-  undefined4 in_t4;
-  undefined4 in_t5;
-  undefined4 in_t6;
-  undefined4 in_t7;
-  undefined4 in_s0;
-  undefined4 in_s1;
-  undefined4 in_s2;
+  undefined4 in_t4 = br2_gpr(12);
+  undefined4 in_t5 = br2_gpr(13);
+  undefined4 in_t6 = br2_gpr(14);
+  undefined4 in_t7 = br2_gpr(15);
+  undefined4 in_s0 = br2_gpr(16);
+  undefined4 in_s1 = br2_gpr(17);
+  undefined4 in_s2 = br2_gpr(18);
   int *rp;
-  undefined4 in_s3;
-  undefined4 in_s4;
-  undefined4 in_s5;
-  undefined4 in_s6;
-  undefined4 in_s7;
-  undefined4 in_t8;
-  undefined4 in_ra;
+  undefined4 in_s3 = br2_gpr(19);
+  undefined4 in_s4 = br2_gpr(20);
+  undefined4 in_s5 = br2_gpr(21);
+  undefined4 in_s6 = br2_gpr(22);
+  undefined4 in_s7 = br2_gpr(23);
+  undefined4 in_t8 = br2_gpr(24);
+  undefined4 in_ra = br2_gpr(31);
   if (0 < n) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
@@ -14026,8 +14032,8 @@ void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 /* gte_xform_add_off @0x8018d568 — transform vec and add offset. */
 int * gte_xform_add_off(int x,undefined4 *y,int *z)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   int oy;
   int oz;
   int tx;
@@ -14116,8 +14122,8 @@ void vec_emit_spawn(undefined4 *rec)
 void iris_wipe_update(int *rec)
 {
   short cv;
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   int t;
   int t3;
   undefined2 *out;
@@ -14460,8 +14466,8 @@ undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 {
   undefined4 v;
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   setCopControlWord(2,0,*mtx);
   setCopControlWord(2,0x800,mtx[1]);
   setCopControlWord(2,0x1000,mtx[2]);
@@ -14912,8 +14918,8 @@ undefined4 cop2_clz(undefined4 v)
  * output streams. */
 void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
-  undefined4 in_zero;
-  undefined4 in_at;
+  undefined4 in_zero = 0;
+  undefined4 in_at = 0x800;
   uint code;
   undefined4 t0;
   undefined4 t1;
