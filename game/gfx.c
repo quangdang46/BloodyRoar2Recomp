@@ -1512,10 +1512,12 @@ extern char * strchr_bounded(char *, char, int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
-extern uint8_t ctype_bitmap_801b6701[];
-uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
 /* 256-byte char-class table (defined in bind.c): bit2 (&4) = nonzero
  * decimal digit — printf width/precision scans; &0x97 = printable-glyph
+ * class — console_emit column advance. High half indexes the SJIS
+ * double-byte classes. */
+extern uint8_t ctype_bitmap_801b6701[];
+uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
 {
   uint8_t c1, c2;
   char dig;
