@@ -5654,7 +5654,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
   _DAT_1f80039c = t5 - t3;
   _DAT_1f8003a0 = dz;
   gte_op_a00428(&DAT_1f800398,&DAT_1f8003a4);
-  if (_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac < r2) {
+  if ((int32_t)(_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac) < r2) {
     *hit = (short)*seg0 + (short)((t6 - t4) / 2);
     hit[1] = (short)seg0[1] + (short)((t5 - t3) / 2);
     sz = (short)seg0[2];
@@ -5677,7 +5677,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
     _DAT_1f8003a8 = t6 - t5;
     _DAT_1f8003ac = dz;
     gte_op_a00428(&DAT_1f8003a4,&DAT_1f8003a4);
-    if (r2 <= _DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac) {
+    if (r2 <= (int32_t)(_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac)) {
       _DAT_1f8003a4 = _DAT_1f800398 << 0xc;
       _DAT_1f8003b0 = _DAT_1f80038c;
       _DAT_1f8003c0 = 0;
@@ -5693,7 +5693,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
       gte_mvmva_add(&DAT_1f8003b0,&DAT_1f8003a4,&DAT_1f8003a4);
       t3 = _DAT_1f8003a4;
       gte_op_a00428(&DAT_1f80038c,&DAT_1f8003a4);
-      t4 = _DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac;
+      t4 = (int32_t)(_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac);
       if (t4 < t3) {
         return 0;
       }
@@ -5701,7 +5701,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
       if (t4 == 0) {
         return 0;
       }
-      q = (t3 << 4) / t4;
+      q = (int32_t)((uint32_t)t3 << 4) / t4;
       if (q < 0x1001) {
         _DAT_1f8003b0 = (undefined2)q;
         _DAT_1f8003b4 = 0;
@@ -5719,7 +5719,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
         _DAT_1f800390 = t4;
         _DAT_1f800394 = dz;
         gte_op_a00428(&DAT_1f80038c,&DAT_1f8003a4);
-        if (_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac < r2) {
+        if ((int32_t)(_DAT_1f8003a4 + _DAT_1f8003a8 + _DAT_1f8003ac) < r2) {
           *hit = (short)t5 + (short)(t3 / 2);
           hit[1] = (short)t6 + (short)(t4 / 2);
           hit[2] = (short)iz + (short)(dz / 2);
@@ -9867,12 +9867,12 @@ void target_depth_set(short *dst,int idx)
     gte_rtps_xform1_raw((undefined4 *)rm,(undefined4 *)(uintptr_t)&DAT_1f80038c,(undefined4 *)(uintptr_t)&DAT_1f800394);
   }
   dep = _DAT_1f800394;
-  if (_DAT_1f800394 < 0) {
-    dep = -_DAT_1f800394;
+  if ((int32_t)_DAT_1f800394 < 0) {
+    dep = -(int32_t)_DAT_1f800394;
   }
   dep2 = _DAT_1f800398;
-  if (_DAT_1f800398 < 0) {
-    dep2 = -_DAT_1f800398;
+  if ((int32_t)_DAT_1f800398 < 0) {
+    dep2 = -(int32_t)_DAT_1f800398;
   }
   dep = ((dep + 0x180) * 0x168) / 0x140;
   dep2 = ((dep2 + 0x180) * 0x168) / 0xf0;
@@ -9908,23 +9908,23 @@ void pair_depth_set(short *pa,short *pb,int idx)
   }
   gte_xform1_ir(&DAT_1f800394,&DAT_1f8003a8);
   ax = _DAT_1f80039c;
-  if (_DAT_1f80039c < 0) {
-    ax = -_DAT_1f80039c;
+  if ((int32_t)_DAT_1f80039c < 0) {
+    ax = -(int32_t)_DAT_1f80039c;
   }
   ay = _DAT_1f8003a8;
-  if (_DAT_1f8003a8 < 0) {
-    ay = -_DAT_1f8003a8;
+  if ((int32_t)_DAT_1f8003a8 < 0) {
+    ay = -(int32_t)_DAT_1f8003a8;
   }
   if (ay <= ax) {
     ay = ax;
   }
   ax = _DAT_1f8003a0;
-  if (_DAT_1f8003a0 < 0) {
-    ax = -_DAT_1f8003a0;
+  if ((int32_t)_DAT_1f8003a0 < 0) {
+    ax = -(int32_t)_DAT_1f8003a0;
   }
   az = _DAT_1f8003ac;
-  if (_DAT_1f8003ac < 0) {
-    az = -_DAT_1f8003ac;
+  if ((int32_t)_DAT_1f8003ac < 0) {
+    az = -(int32_t)_DAT_1f8003ac;
   }
   ay = ((ay * 2 + 0x180) * 0x168) / 0x140;
   if (az <= ax) {
@@ -9938,7 +9938,7 @@ void pair_depth_set(short *pa,short *pb,int idx)
   if (0x4a3 < ax) {
     ay = ax;
   }
-  if (_DAT_1f8003a4 < _DAT_1f8003b0) {
+  if ((int32_t)_DAT_1f8003a4 < (int32_t)_DAT_1f8003b0) {
     dmin = _DAT_1f8003a4;
   }
   else {
@@ -9977,8 +9977,8 @@ void target_angles_depth_set(short *dst,int idx)
   }
   dep = _DAT_1f80039c;
   t4 = _DAT_1f800394;
-  if (_DAT_1f800394 < 0) {
-    t4 = -_DAT_1f800394;
+  if ((int32_t)_DAT_1f800394 < 0) {
+    t4 = -(int32_t)_DAT_1f800394;
   }
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 0x66) ))= 0;
   *(undefined2 *)guest_at((uint32_t)(uintptr_t)((idx + 100) ))= 0;
@@ -10026,23 +10026,23 @@ void midpoint_angles_set(int *pa,int *pb,int idx)
   }
   gte_xform1_ir(&DAT_1f800394,&DAT_1f8003a8);
   ad = _DAT_1f80039c;
-  if (_DAT_1f80039c < 0) {
-    ad = -_DAT_1f80039c;
+  if ((int32_t)_DAT_1f80039c < 0) {
+    ad = -(int32_t)_DAT_1f80039c;
   }
   dep = _DAT_1f8003a8;
-  if (_DAT_1f8003a8 < 0) {
-    dep = -_DAT_1f8003a8;
+  if ((int32_t)_DAT_1f8003a8 < 0) {
+    dep = -(int32_t)_DAT_1f8003a8;
   }
   if (dep <= ad) {
     dep = ad;
   }
   ad = _DAT_1f8003a0;
-  if (_DAT_1f8003a0 < 0) {
-    ad = -_DAT_1f8003a0;
+  if ((int32_t)_DAT_1f8003a0 < 0) {
+    ad = -(int32_t)_DAT_1f8003a0;
   }
   ad2 = _DAT_1f8003ac;
-  if (_DAT_1f8003ac < 0) {
-    ad2 = -_DAT_1f8003ac;
+  if ((int32_t)_DAT_1f8003ac < 0) {
+    ad2 = -(int32_t)_DAT_1f8003ac;
   }
   dep = ((dep * 2 + 0x180) * 0x168) / 0x140;
   if (ad2 <= ad) {
@@ -10056,7 +10056,7 @@ void midpoint_angles_set(int *pa,int *pb,int idx)
   if (0x4a3 < ad) {
     dep = ad;
   }
-  if (_DAT_1f8003a4 < _DAT_1f8003b0) {
+  if ((int32_t)_DAT_1f8003a4 < (int32_t)_DAT_1f8003b0) {
     s1 = _DAT_1f8003a4;
   }
   else {
@@ -16559,8 +16559,8 @@ void LAB_8013e558(undefined4 *ctx)
     if (0x1000 < t) {
       node_tree_free(*ctx);
       task_slot_step();
-      if (-1 < _DAT_801f0930 + -1) {
-        _DAT_801f0930 = _DAT_801f0930 + -1;
+      _DAT_801f0930 = _DAT_801f0930 + -1;
+      if (-1 < (int32_t)_DAT_801f0930) {
         return;
       }
       _DAT_801f0930 = 0;

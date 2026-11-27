@@ -6794,7 +6794,7 @@ init:
         sw = *(int16_t *)(dims + 4);
         sh = *(int16_t *)(dims + 6);
         zneg = -(int32_t)zoff;
-        zq = (zneg < 0 ? zneg + 0xff : zneg) >> 8;
+        zq = (uint32_t)((int32_t)((int32_t)zneg < 0 ? zneg + 0xffu : zneg) >> 8);
         memset(blk, 0, sizeof(blk));
 
         /* call 1: a0 = s4+0xa0 */
