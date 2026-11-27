@@ -1736,7 +1736,7 @@ void fighter_frame(byte *ctrl, byte *motion)
       ic = (int)(short)(dv + *(short *)(ctrl + 0xf8));
       if (0xff < ic) {
         if (ic < 0) {
-          ic = ic + 0xff;
+          ic += 0xff;
         }
         ic = (uint)*(ushort *)(ctrl + 0xac) - (ic >> 8);
         *(short *)(ctrl + 0xac) = (short)ic;
@@ -1896,7 +1896,7 @@ LAB_80178f9c:
       auxv = 5;
     }
     else {
-      uv = uv + 0x40;
+      uv += 0x40;
     }
 LAB_80179238:
     deferred_cmd_post(0x400,uv,auxv);
@@ -1930,7 +1930,7 @@ LAB_80179238:
     }
     uv = (uint)fidx;
     if ((0xbf < uv) && (ctrl[2] != '\0')) {
-      uv = uv + 0x40;
+      uv += 0x40;
     }
     auxv = 0;
     goto LAB_80179238;
@@ -1989,7 +1989,7 @@ LAB_8017938c:
                  ctrl + 0x9a);
     ia = (int)*(short *)(ctrl + 0xb2) * (int)*(short *)(ctrl + 0xb4);
     if (ia < 0) {
-      ia = ia + 0x7f;
+      ia += 0x7f;
     }
     *(short *)(ctrl + 0xb2) = (short)(ia >> 7);
   }
@@ -1998,17 +1998,17 @@ LAB_8017938c:
   launch_vel_update(ctrl,motion_p);
   ia = (int)*(short *)(ctrl + 0x9a) * (int)*(short *)(ctrl + 0x88);
   if (ia < 0) {
-    ia = ia + 0xf;
+    ia += 0xf;
   }
   ib = (int)*(short *)(ctrl + 0x9c) * (int)*(short *)(ctrl + 0x88);
   *(short *)(ctrl + 0x9a) = (short)(ia >> 4);
   if (ib < 0) {
-    ib = ib + 0xf;
+    ib += 0xf;
   }
   ia = (int)*(short *)(ctrl + 0x9e) * (int)*(short *)(ctrl + 0x88);
   *(short *)(ctrl + 0x9c) = (short)(ib >> 4);
   if (ia < 0) {
-    ia = ia + 0xf;
+    ia += 0xf;
   }
   *(short *)(ctrl + 0x9e) = (short)(ia >> 4);
   return;
@@ -2285,7 +2285,7 @@ void trig_lut_read(uint32_t ctrl_g, byte *motion)
   angle = (((int)((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 0x60) >> 3) + 0x200) *
           (0x41 - (uint)*(byte *)guest_at(ctrl_g + 0xdd));
   if (angle < 0) {
-    angle = angle + 0x3f;
+    angle += 0x3f;
   }
   *(undefined2 *)(motion + 0xb4) = 0x78;
   *(undefined2 *)(motion + 0xb2) = 0;
@@ -2293,19 +2293,19 @@ void trig_lut_read(uint32_t ctrl_g, byte *motion)
   vel = lut_cos_q12(angle >> 6);
   vel = vel * 0xd00;
   if (vel < 0) {
-    vel = vel + 0xfff;
+    vel += 0xfff;
   }
   *(short *)(motion + 0x90) = (short)(vel >> 0xc);
   angle = lut_sin_q12(angle >> 6);
   angle = angle * -0x500;
   if (angle < 0) {
-    angle = angle + 0xfff;
+    angle += 0xfff;
   }
   *(short *)(motion + 0x98) = (short)(angle >> 0xc);
   if (((*(byte *)guest_at(ctrl_g + 5) & 0x10) != 0) && ((*(uint *)guest_at(ctrl_g + 100) & 0x480000) != 0)) {
     angle = *(short *)(motion + 0x90) * 0x140;
     if (angle < 0) {
-      angle = angle + 0xff;
+      angle += 0xff;
     }
     *(short *)(motion + 0x90) = (short)((uint)angle >> 8);
   }
@@ -2326,7 +2326,7 @@ void trig_vel_flat(uint32_t ctrl_g, byte *motion)
 
   angle = ((uint)*(byte *)guest_at(ctrl_g + 0xdb) * 8 + 0x400) * (0x41 - (uint)*(byte *)guest_at(ctrl_g + 0xdd));
   if (angle < 0) {
-    angle = angle + 0x3f;
+    angle += 0x3f;
   }
   *(undefined2 *)(motion + 0xb4) = 0x78;
   *(undefined2 *)(motion + 0xb2) = 0;
@@ -2437,7 +2437,7 @@ LAB_8017957c:
   if (((*(uint *)(ctrl + 0x60) & 0x800) == 0) && (vx < 1)) {
     vy = vy * *(short *)(ctrl + 0x88);
     if (vy < 0) {
-      vy = vy + 0xf;
+      vy += 0xf;
     }
     vy = vx + (vy >> 4);
   }
@@ -2445,7 +2445,7 @@ LAB_8017957c:
     if (((*(uint *)(ctrl + 0x60) & 0x1000) != 0) || (vx < 1)) goto LAB_80179618;
     vy = vy * *(short *)(ctrl + 0x88);
     if (vy < 0) {
-      vy = vy + 0xf;
+      vy += 0xf;
     }
     vy = vx + (vy >> 4);
     if (vy < -0x8000) {
@@ -2611,12 +2611,12 @@ LAB_8018604c:
   jsrc = (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c);
   do {
     jdst[-2] = jsrc[-4];
-    t = t + 1;
+    t++;
     jdst[-1] = jsrc[-2];
     w = *jsrc;
-    jsrc = jsrc + 0x28;
+    jsrc += 0x28;
     *jdst = w;
-    jdst = jdst + 0xe;
+    jdst += 0xe;
   } while (t < 0x11);
   skeleton_pose_step((byte *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x50,
                (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x1c),
@@ -2658,7 +2658,7 @@ LAB_8018604c:
       }
       obj_g = *(short *)((char *)guest_at((uint32_t)t) + 0x6a) * 7;
       if (obj_g < 0) {
-        obj_g = obj_g + 7;
+        obj_g += 7;
       }
       *(short *)((char *)guest_at((uint32_t)t) + 0x6a) = (short)(obj_g >> 3);
       return;
@@ -2690,14 +2690,14 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
       if (_DAT_801f35f4 < 0x20) {
         slot = (short *)&DAT_801f3600;
         do {
-          i = i + 1;
+          i++;
           if (*slot == 0) break;
-          slot = slot + 3;
+          slot += 3;
         } while (i < 0x20);
         *slot = (short)cmd;
         slot[1] = (short)arg;
         slot[2] = aux;
-        _DAT_801f35f4 = _DAT_801f35f4 + 1;
+        _DAT_801f35f4++;
       }
     }
     else {
@@ -2708,8 +2708,8 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
           *slotw = 0;
           _DAT_801f35f4 = _DAT_801f35f4 + -1;
         }
-        i = i + 1;
-        slotw = slotw + 3;
+        i++;
+        slotw += 3;
       } while (i < 0x20);
     }
   }
@@ -2790,12 +2790,12 @@ void hitrec_table_clear(int slot)
   i = 0;
   slot = slot << 8;
   do {
-    i = i + 1;
+    i++;
     *(undefined2 *)(&DAT_801f0db0 + slot) = 0;
     *(undefined2 *)((char *)guest_at((uint32_t)slot + 0x801f0db2)) = 0;
     *(undefined2 *)(&DAT_801f0db4 + slot) = 0;
     *(undefined2 *)((char *)guest_at((uint32_t)slot + 0x801f0db6)) = 0;
-    slot = slot + 8;
+    slot += 8;
   } while (i < 0x20);
   return;
 
@@ -2921,7 +2921,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
   skel = *(int *)(ctrl + 0x40);
   adata = *(int *)(motion + 0xb8);
   anim_lerp_packed4((short *)guest_at((uint32_t)(skel + 0x1c)),(ushort *)guest_at((uint32_t)(adata + 0x14 + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + 1) * 6)),0,alpha);
-  skel = skel + 0x38;
+  skel += 0x38;
   i = 2;
   do {
     j = i;
@@ -2948,7 +2948,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
     }
     anim_lerp_packed3((short *)guest_at((uint32_t)(skel + (uint)*(byte *)((char *)guest_at((uint32_t)krec) + (uint)tag) * 0x1c + 0x24)),(ushort *)rec,slot,alpha);
     tag = rec[4];
-    rec = rec + 4;
+    rec += 4;
   }
   krec = 1;  /* reused as loop counter (was keyframe rec ptr) */
   pdst = (short *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x6c);
@@ -2956,15 +2956,15 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
   mp = (int *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(motion + 0x10)) + (*(byte *)(ctrl + 5) & 1) * 0x1c + 8) +
                   *(uint32_t *)(ctrl + 0x30));
   do {
-    krec = krec + 1;
+    krec++;
     alpha = *mp;
-    mp = mp + 1;
+    mp++;
     pdst[-2] = (short)((alpha << 0x16) >> 0x16) + (psrc[-2] >> 4);
     pdst[-1] = (short)((alpha << 0xc) >> 0x16) + (psrc[-1] >> 4);
     w = *psrc;
-    psrc = psrc + 0xe;
+    psrc += 0xe;
     *pdst = (short)((alpha << 2) >> 0x16) + (w >> 4);
-    pdst = pdst + 0x28;
+    pdst += 0x28;
   } while (krec < 0x13);
   return;
 
@@ -3016,16 +3016,16 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
       pp[5] = *(ushort *)(jp + 0x34);
       pp[6] = *(ushort *)(jp + 0x38);
       _DAT_1f80038c = *pose;
-      i = i + 1;
+      i++;
       _DAT_1f80038e = pp[-2];
       _DAT_1f800390 = pp[-1];
       w = *pp;
-      pp = pp + 0xe;
+      pp += 0xe;
       part_matrix_compute((undefined4 *)jp,parts,(short *)&DAT_1f80038c,(int)((uint)w << 0x10) >> 0x11);
-      joints = joints + 0x50;
-      pose = pose + 0xe;
-      parts = parts + 0x20;
-      jp = jp + 0x50;
+      joints += 0x50;
+      pose += 0xe;
+      parts += 0x20;
+      jp += 0x50;
     } while (i < count + -2);
   }
   rotmat_rtps_build(-(int)(short)pose[3] >> 1,(uint *)(joints + 4));
@@ -3064,7 +3064,7 @@ void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
   }
   alpha = (d0 - *dst) * alpha;
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   *dst = *dst + (short)(alpha >> 0xc);
   return;
@@ -3091,17 +3091,17 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
   dx = (dx - *dst) * alpha;
   sz = src[2];
   if (dx < 0) {
-    dx = dx + 0xfff;
+    dx += 0xfff;
   }
   dy = (dy - dst[1]) * alpha;
   *dst = *dst + (short)(dx >> 0xc);
   if (dy < 0) {
-    dy = dy + 0xfff;
+    dy += 0xfff;
   }
   alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   dst[2] = dst[2] + (short)(alpha >> 0xc);
   return;
@@ -3124,17 +3124,17 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
   dx = ((int)*src - (int)*dst) * alpha;
   sz = src[2];
   if (dx < 0) {
-    dx = dx + 0xfff;
+    dx += 0xfff;
   }
   dy = (dy - dst[1]) * alpha;
   *dst = *dst + (short)(dx >> 0xc);
   if (dy < 0) {
-    dy = dy + 0xfff;
+    dy += 0xfff;
   }
   alpha = ((int)sz - (int)dst[2]) * alpha;  /* alpha reused as z-delta */
   dst[1] = dst[1] + (short)(dy >> 0xc);
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   dst[2] = dst[2] + (short)(alpha >> 0xc);
   return;
@@ -3167,22 +3167,22 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
   }
   d0 = (d0 - *dst) * alpha;
   if (d0 < 0) {
-    d0 = d0 + 0xfff;
+    d0 += 0xfff;
   }
   d1 = ((d2 * 0x1000 >> 0x16) * 0x20 - (int)dst[1]) * alpha;
   *dst = *dst + (short)(d0 >> 0xc);
   if (d1 < 0) {
-    d1 = d1 + 0xfff;
+    d1 += 0xfff;
   }
   d2 = ((d2 * 4 >> 0x16) * 0x20 - (int)dst[2]) * alpha;
   dst[1] = dst[1] + (short)(d1 >> 0xc);
   if (d2 < 0) {
-    d2 = d2 + 0xfff;
+    d2 += 0xfff;
   }
   alpha = (d3 * 2 - (int)dst[3]) * alpha;  /* alpha reused as last-channel delta */
   dst[2] = dst[2] + (short)(d2 >> 0xc);
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   dst[3] = dst[3] + (short)(alpha >> 0xc);
   return;
@@ -3200,7 +3200,7 @@ void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
   }
   alpha = (sv - *(short *)(dst + 6)) * alpha;
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   *(short *)(dst + 6) = *(short *)(dst + 6) + (short)(alpha >> 0xc);
   return;
@@ -3227,17 +3227,17 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
   }
   d0 = (d0 - *dst) * alpha;
   if (d0 < 0) {
-    d0 = d0 + 0xfff;
+    d0 += 0xfff;
   }
   q = (((int)((uint)hi << 0x18) >> 0x14) - (int)dst[1]) * alpha;
   *dst = *dst + (short)(d0 >> 0xc);
   if (q < 0) {
-    q = q + 0xfff;
+    q += 0xfff;
   }
   alpha = (((int)((uint)hi << 0x10) >> 0x18) * 0x10 - (int)dst[2]) * alpha;  /* alpha reused as last-channel delta */
   dst[1] = dst[1] + (short)(q >> 0xc);
   if (alpha < 0) {
-    alpha = alpha + 0xfff;
+    alpha += 0xfff;
   }
   dst[2] = dst[2] + (short)(alpha >> 0xc);
   return;
