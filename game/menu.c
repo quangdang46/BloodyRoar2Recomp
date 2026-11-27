@@ -9598,13 +9598,13 @@ static void side_scale_ac(uint8_t *side,uint32_t rec)
 
 void vs_confirm_b(uint32_t battle,uint8_t *blk_a,uint8_t *blk_b,int32_t flag)
 {
-  uint32_t v1;
+  uint32_t mode, ph, crec;
   int32_t ac, b0;
   uint32_t b0u;
 
-  v1 = MB8(battle + 0x9c);
-  if (v1 >= 6) goto L_ecc;
-  switch (v1) {
+  mode = MB8(battle + 0x9c);
+  if (mode >= 6) goto L_ecc;
+  switch (mode) {
   case 0: goto L_case0;
   case 1: case 2: goto L_d10;
   case 3: goto L_case3;
@@ -9614,15 +9614,15 @@ void vs_confirm_b(uint32_t battle,uint8_t *blk_a,uint8_t *blk_b,int32_t flag)
   return;
 
 L_case0:                                      /* 0x80152c30 */
-  v1 = MB16(battle + 0x92) & 0xf00u;
-  if (v1 == 0x200u) {
+  ph = MB16(battle + 0x92) & 0xf00u;
+  if (ph == 0x200u) {
     if (flag != 0) goto L_ecc;
     if ((int32_t)MBS16(battle + 0xa4) <
         (int32_t)MB8(MB32(battle + 0xc0) + 0x10)) goto L_ecc;
     goto L_3058;
   }
-  if (v1 < 0x201u) {
-    if (v1 != 0x100u) goto L_ecc;
+  if (ph < 0x201u) {
+    if (ph != 0x100u) goto L_ecc;
     if (flag == 0) goto L_ecc;
     if ((int32_t)MBS16(battle + 0xa4) <
         (int32_t)MB8(MB32(battle + 0xc0) + 0x10)) goto L_ecc;
@@ -9632,8 +9632,8 @@ L_case0:                                      /* 0x80152c30 */
 
 L_case5:                                      /* 0x80152cb0 */
   if (MB8(battle + 0x9b) != 0) goto L_d10;
-  v1 = MB16(battle + 0x92) & 0xf00u;
-  if ((v1 == 0x100u && flag != 0) || (v1 == 0x200u && flag == 0)) {
+  ph = MB16(battle + 0x92) & 0xf00u;
+  if ((ph == 0x100u && flag != 0) || (ph == 0x200u && flag == 0)) {
     MW8(battle + 1,9);
     MW8(battle + 0,0xb);
     MW8(battle + 2,4);
@@ -9652,9 +9652,9 @@ L_d10:                                        /* 0x80152d10 (cases 1/2,
   deferred_cmd_post(0x204,0,0);
   frame_present(battle);
   scroll_cfg_set(2,8);
-  v1 = MB32(battle + 0xc0);
-  MW8(v1 + 0x19,(uint8_t)(MB8(v1 + 0x19) & 3));
-  MW8(v1 + 0x1a,(uint8_t)(MB8(v1 + 0x1a) & 3));
+  crec = MB32(battle + 0xc0);
+  MW8(crec + 0x19,(uint8_t)(MB8(crec + 0x19) & 3));
+  MW8(crec + 0x1a,(uint8_t)(MB8(crec + 0x1a) & 3));
   if ((MB16(battle + 0x80) & 0xfu) != 0) {
     confirm_bookkeeping(battle);
     battle_state_init(blk_a,blk_b,battle);
@@ -9667,13 +9667,13 @@ L_d10:                                        /* 0x80152d10 (cases 1/2,
   return;
 
 L_case3:                                      /* 0x80152df8 */
-  v1 = MB16(battle + 0x92) & 0xf00u;
-  if (v1 == 0x200u) {
+  ph = MB16(battle + 0x92) & 0xf00u;
+  if (ph == 0x200u) {
     if (flag == 0) goto L_3058;
     goto L_ecc;
   }
-  if (v1 >= 0x201u) goto L_ecc;
-  if (v1 != 0x100u) goto L_ecc;
+  if (ph >= 0x201u) goto L_ecc;
+  if (ph != 0x100u) goto L_ecc;
   if (flag == 0) goto L_ecc;
   goto L_2f38;
 
@@ -9690,13 +9690,13 @@ L_case4:                                      /* 0x80152e40 */
 
 L_ecc:                                        /* 0x80152ecc shared tail */
   if (MB8(battle + 0x9b) != 0) return;
-  v1 = MB16(battle + 0x92) & 0xf00u;
-  if (v1 == 0x200u) goto L_3040;
-  if (v1 < 0x201u) {
-    if (v1 != 0x100u) return;
+  ph = MB16(battle + 0x92) & 0xf00u;
+  if (ph == 0x200u) goto L_3040;
+  if (ph < 0x201u) {
+    if (ph != 0x100u) return;
     goto L_2f20;
   }
-  if (v1 == 0x300u) goto L_316c;
+  if (ph == 0x300u) goto L_316c;
   return;
 
 L_2f20:                                       /* phase 0x100 arm */
