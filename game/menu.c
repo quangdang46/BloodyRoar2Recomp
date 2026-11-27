@@ -1375,38 +1375,38 @@ void results_scoreboard(int mode)
    * (sp+0x18 -> frm+0x20) for the function's lifetime. */
   uint32_t rsb_frm = br2_guest_frame(0x88);
   undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
-  /* The tally state (local_60 slots, slide offsets, fill index, fade, name
+  /* The tally state (tally slots, slide offsets, fill index, fade, name
    * table pointers) lives in the guest frame (sp+0x28..0x58 -> frm+0x30..0x60,
    * +8 skew from the 0x88->0x90 align) so it survives across per-frame calls;
-   * local_34/local_30 hold guest addresses, translated at the hud call. */
+   * names_a/names_b hold guest addresses, translated at the hud call. */
   int32_t *rsb_slots = (int32_t *)guest_at(rsb_frm + 0x30);
-#define local_60   rsb_slots
-#define local_48   rsb_slots[6]
-#define local_44   rsb_slots[7]
-#define local_40   rsb_slots[8]
-#define local_3c   rsb_slots[9]
-#define local_38   rsb_slots[10]
-#define local_34   (*(uint32_t *)guest_at(rsb_frm + 0x5c))
-#define local_30   (*(uint32_t *)guest_at(rsb_frm + 0x60))
+#define tally   rsb_slots
+#define countdown   rsb_slots[6]
+#define fade_level   rsb_slots[7]
+#define slide_a   rsb_slots[8]
+#define slide_b   rsb_slots[9]
+#define fill_idx   rsb_slots[10]
+#define names_a   (*(uint32_t *)guest_at(rsb_frm + 0x5c))
+#define names_b   (*(uint32_t *)guest_at(rsb_frm + 0x60))
   uint32_t name_g;
 
   if (mode == 1) {
-    local_30 = 0x801c13a4;
+    names_b = 0x801c13a4;
     goto LAB_80164714;
   }
   if (mode < 2) {
     if (mode != 0) goto LAB_80164714;
-    local_34 = 0x801c1264;
+    names_a = 0x801c1264;
   }
   else {
     if (mode == 2) {
-      local_30 = 0x801c1304;
+      names_b = 0x801c1304;
       goto LAB_80164714;
     }
     if (mode != 3) goto LAB_80164714;
-    local_34 = 0x801c13a4;
+    names_a = 0x801c13a4;
   }
-  local_30 = 0x801c1304;
+  names_b = 0x801c1304;
 LAB_80164714:
   res = memcard_err_sentinel();
   if (res < 0) {
@@ -1422,25 +1422,25 @@ joined_r0x80164744:
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
 LAB_80164830:
-        local_48 = local_48 + -1;
-        if (local_48 == 0) {
+        countdown = countdown + -1;
+        if (countdown == 0) {
           DAT_1f800001 = 0xf0;
         }
-        if ((((-1 < mode) && (mode < 2)) && (local_48 < 0x1f5)) && (local_3c != 0)) {
-          local_40 = local_40 + -4;
-          local_3c = local_3c + -4;
+        if ((((-1 < mode) && (mode < 2)) && (countdown < 0x1f5)) && (slide_b != 0)) {
+          slide_a = slide_a + -4;
+          slide_b = slide_b + -4;
         }
-        if (-1 < local_38) {
-          if (local_38 < 5) {
-            local_60[local_38] = 0;
-            local_38 = local_38 + 1;
+        if (-1 < fill_idx) {
+          if (fill_idx < 5) {
+            tally[fill_idx] = 0;
+            fill_idx = fill_idx + 1;
           }
-          else if (local_38 == 5) {
-            if (local_44 < 0xff) {
-              local_44 = local_44 + 4;
+          else if (fill_idx == 5) {
+            if (fade_level < 0xff) {
+              fade_level = fade_level + 4;
             }
-            if (0xff < local_44) {
-              local_44 = 0xff;
+            if (0xff < fade_level) {
+              fade_level = 0xff;
             }
           }
         }
@@ -1460,7 +1460,7 @@ LAB_80164830:
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (ty / 2 + local_40) * 0x10000 >> 0x10,attr,1);
+                       (ty / 2 + slide_a) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
@@ -1471,7 +1471,7 @@ LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
         ri = rec_off;
-        name_g = local_34;
+        name_g = names_a;
         do {
           if (DAT_1f800015 == '\0') {
             rowy = row_off + 0x30;
@@ -1479,13 +1479,13 @@ LAB_80164a2c:
           else {
             rowy = (row_off + 0x30) * 2;
           }
-          if (-1 < *(int *)((char *)local_60 + rec_off)) {
+          if (-1 < *(int *)((char *)tally + rec_off)) {
             sprintf_core((char *)num_buf,&DAT_80121fe0,ri + 1);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
-                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)rowy,3);
+                         (slide_a + 0x38) * 0x10000 >> 0x10,(int)(short)rowy,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)rowy,4);
+                         (slide_a + 0x48) * 0x10000 >> 0x10,(int)(short)rowy,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1494,12 +1494,12 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,rowy,(uint8_t *)guest_at(name_g),draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,slide_a + 0x70,rowy,(uint8_t *)guest_at(name_g),draw_mode);
             }
 LAB_80164b68:
-            fv = *(int *)((char *)local_60 + rec_off);
+            fv = *(int *)((char *)tally + rec_off);
             if (fv < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)local_60 + rec_off) = fv + 0x10;
+              *(int *)((char *)tally + rec_off) = fv + 0x10;
             }
           }
           rec_off = rec_off + 4;
@@ -1516,7 +1516,7 @@ LAB_80164b68:
           ty = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (ty / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
+                       (ty / 2 + slide_b) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
@@ -1526,7 +1526,7 @@ LAB_80164c38:
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
         ry = 0;
-        name_g = local_30;
+        name_g = names_b;
         do {
           if (DAT_1f800015 == '\0') {
             row_off = ry + 0x30;
@@ -1536,13 +1536,13 @@ LAB_80164c38:
           }
           sprintf_core((char *)num_buf,&DAT_80121fe0,rec_off + 1);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
-                       (local_3c + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
+                       (slide_b + 0x38) * 0x10000 >> 0x10,(int)(short)row_off,3);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,(const void *)guest_at((uint32_t)(uintptr_t)*name_tbl),
-                       (local_3c + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
+                       (slide_b + 0x48) * 0x10000 >> 0x10,(int)(short)row_off,4);
           if (mode == 1) {
             draw_mode = 5;
 LAB_80164d80:
-            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_3c + 0x70,row_off,(uint8_t *)guest_at(name_g),draw_mode);
+            hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,slide_b + 0x70,row_off,(uint8_t *)guest_at(name_g),draw_mode);
           }
           else if (mode < 2) {
             if (mode == 0) {
@@ -1557,7 +1557,7 @@ LAB_80164d68:
           rec_off = rec_off + 1;
           ry = ry + 0x20;
         } while (rec_off < 5);
-        if (local_44 != 0) {
+        if (fade_level != 0) {
           fighter_reinit_tail(0x1f800000);
         }
         *(short *)guest_at(_DAT_1f8000bc + 0x32) = *(short *)guest_at(_DAT_1f8000bc + 0x32) + 1;
@@ -1582,18 +1582,18 @@ LAB_80164d68:
             mc_confirm_dispatch(draw_mode,1);
           }
           fighter_respawn_init(0x1f800000);
-          local_38 = 0;
-          local_44 = 0;
-          local_40 = 0;
-          local_3c = 0x200;
+          fill_idx = 0;
+          fade_level = 0;
+          slide_a = 0;
+          slide_b = 0x200;
           battle_field_set(_DAT_1f8000bc,0x1e);
-          local_60[4] = 0xffffffff;
-          local_60[3] = 0xffffffff;
-          local_60[2] = 0xffffffff;
-          local_60[1] = 0xffffffff;
-          local_60[0] = -1;
+          tally[4] = 0xffffffff;
+          tally[3] = 0xffffffff;
+          tally[2] = 0xffffffff;
+          tally[1] = 0xffffffff;
+          tally[0] = -1;
           battle_session_arm(0x1f800000,0);
-          local_48 = 1000;
+          countdown = 1000;
           DAT_1f800001 = DAT_1f800001 + 1;
           goto LAB_80164830;
         }
@@ -1611,14 +1611,14 @@ LAB_80164e34:
   }
   DAT_1f800001 = 0;
   br2_guest_frame_free();
-#undef local_60
-#undef local_48
-#undef local_44
-#undef local_40
-#undef local_3c
-#undef local_38
-#undef local_34
-#undef local_30
+#undef tally
+#undef countdown
+#undef fade_level
+#undef slide_a
+#undef slide_b
+#undef fill_idx
+#undef names_a
+#undef names_b
   return;
 }
 
