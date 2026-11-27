@@ -680,48 +680,49 @@ int memcard_file_flow(int a0)
    * sp+0x38..0x5b passed to menu_stepper_state_advance (a0 = sp+0x38);
    * the +0xc callback is a u32 GUEST code address (fn_lookup), stored
    * as uint32_t — a host code* would write 8 bytes and clobber +0x10.
-   * Ghidra split the block into scalars; local_XX names keep their sp
-   * offsets via macros (local_c0[i] == old local_X).
+   * Ghidra split the block into scalars; the step_desc[i] macros below
+   * keep the guest field offsets (desc_fNN == step_desc byte NN).
    * The block is backed by the mff_frm guest frame (sp+0x38 -> frm+0x40)
-   * so guest_of(&local_c0) resolves for the stepper's call_guest path.
+   * so guest_of(&desc_head) resolves for the stepper's call_guest path.
    * Observed field roles in this function (verified against uses below):
-   *   local_c0  +0x00 u16  stepper descriptor head (&local_c0 is the
+   *   desc_head  +0x00 u16  stepper descriptor head (&desc_head is the
    *                        a0 arg to menu_stepper_state_advance)
-   *   local_be  +0x02 u8   descriptor field (init 0)
-   *   local_bd  +0x03 i8   stepper/dialog state — switch dispatch key
+   *   desc_f02  +0x02 u8   descriptor field (init 0)
+   *   dlg_state  +0x03 i8   stepper/dialog state — switch dispatch key
    *                        (0, 0x10, 0x11, 0x12, 0x16, 0x20...)
-   *   local_bc  +0x04 u8   descriptor field (init 1)
-   *   local_bb  +0x05 u8   descriptor field (init 0)
-   *   local_ba  +0x06 u16  menu item count (init 4; local_b8==local_ba
+   *   desc_f04  +0x04 u8   descriptor field (init 1)
+   *   desc_f05  +0x05 u8   descriptor field (init 0)
+   *   item_count  +0x06 u16  menu item count (init 4; cursor_idx==item_count
    *                        is the cursor-at-end test)
-   *   local_b8  +0x08 u16  menu cursor/phase index (init 4; 1,2,3
+   *   cursor_idx  +0x08 u16  menu cursor/phase index (init 4; 1,2,3
    *                        select the slot/dialog arms below)
-   *   local_b4  +0x0c u32  guest callback code addr (init 0x80160598)
-   *   local_b0  +0x10 u16  descriptor field (init 0x10)
-   *   local_ae  +0x12 u16  descriptor field (init 0xffff)
-   *   local_ac  +0x14 u16  descriptor field (init 0)
-   *   local_aa  +0x16 s16  selected slot no. for the local_b8==2 arm
-   *   local_a8  +0x18 s16  selected slot no. for the local_b8==3 arm
-   *   local_a6..local_9e +0x1a..0x22  descriptor tail fields (init 0) */
+   *   cb_addr  +0x0c u32  guest callback code addr (init 0x80160598)
+   *   desc_f10  +0x10 u16  descriptor field (init 0x10)
+   *   desc_f12  +0x12 u16  descriptor field (init 0xffff)
+   *   desc_f14  +0x14 u16  descriptor field (init 0)
+   *   slot_sel_2  +0x16 s16  selected slot no. for the cursor_idx==2 arm
+   *   slot_sel_3  +0x18 s16  selected slot no. for the cursor_idx==3 arm
+   *   desc_f1a,desc_f1c,desc_f1e,desc_f20,desc_f22
+   *                        +0x1a..0x22  descriptor tail fields (init 0) */
   uint8_t *step_desc;
-#define local_c0 (*(uint16_t *)&step_desc[0x00])
-#define local_be (*(uint8_t  *)&step_desc[0x02])
-#define local_bd (*(char     *)&step_desc[0x03])
-#define local_bc (*(uint8_t  *)&step_desc[0x04])
-#define local_bb (*(uint8_t  *)&step_desc[0x05])
-#define local_ba (*(uint16_t *)&step_desc[0x06])
-#define local_b8 (*(uint16_t *)&step_desc[0x08])
-#define local_b4 (*(uint32_t *)&step_desc[0x0c])
-#define local_b0 (*(uint16_t *)&step_desc[0x10])
-#define local_ae (*(uint16_t *)&step_desc[0x12])
-#define local_ac (*(uint16_t *)&step_desc[0x14])
-#define local_aa (*(int16_t  *)&step_desc[0x16])
-#define local_a8 (*(int16_t  *)&step_desc[0x18])
-#define local_a6 (*(uint16_t *)&step_desc[0x1a])
-#define local_a4 (*(uint16_t *)&step_desc[0x1c])
-#define local_a2 (*(uint16_t *)&step_desc[0x1e])
-#define local_a0 (*(uint16_t *)&step_desc[0x20])
-#define local_9e (*(uint16_t *)&step_desc[0x22])
+#define desc_head (*(uint16_t *)&step_desc[0x00])
+#define desc_f02 (*(uint8_t  *)&step_desc[0x02])
+#define dlg_state (*(char     *)&step_desc[0x03])
+#define desc_f04 (*(uint8_t  *)&step_desc[0x04])
+#define desc_f05 (*(uint8_t  *)&step_desc[0x05])
+#define item_count (*(uint16_t *)&step_desc[0x06])
+#define cursor_idx (*(uint16_t *)&step_desc[0x08])
+#define cb_addr (*(uint32_t *)&step_desc[0x0c])
+#define desc_f10 (*(uint16_t *)&step_desc[0x10])
+#define desc_f12 (*(uint16_t *)&step_desc[0x12])
+#define desc_f14 (*(uint16_t *)&step_desc[0x14])
+#define slot_sel_2 (*(int16_t  *)&step_desc[0x16])
+#define slot_sel_3 (*(int16_t  *)&step_desc[0x18])
+#define desc_f1a (*(uint16_t *)&step_desc[0x1a])
+#define desc_f1c (*(uint16_t *)&step_desc[0x1c])
+#define desc_f1e (*(uint16_t *)&step_desc[0x1e])
+#define desc_f20 (*(uint16_t *)&step_desc[0x20])
+#define desc_f22 (*(uint16_t *)&step_desc[0x22])
   /* op_sel is guest $sp+0xC0 (sw 0/0x10 @0x8015FD6C/74, lw -> a0 before
    * jal 0x8016809C): only written on the slot_no 0/1 path, so back it
    * with the mff frame (sp+0xC0 -> frm+0xC8) like the other slots. */
@@ -767,31 +768,31 @@ int memcard_file_flow(int a0)
              * GUEST code address (fn_lookup -> call_guest fallback).
              * Guest stores 0x80160598 (dialog_sel_dispatch); a host fn
              * pointer would be truncated to garbage. */
-            local_b4 = 0x80160598;
-            local_ba = 4;
-            local_b8 = 4;
-            local_b0 = 0x10;
-            local_ae = 0xffff;
+            cb_addr = 0x80160598;
+            item_count = 4;
+            cursor_idx = 4;
+            desc_f10 = 0x10;
+            desc_f12 = 0xffff;
             _DAT_801e8508 = 0;
-            local_c0 = 0;
-            local_be = 0;
-            local_bd = 0;
-            local_bc = 1;
-            local_bb = 0;
-            local_ac = 0;
-            local_aa = 0;
-            local_a8 = 0;
-            local_a6 = 0;
-            local_a4 = 0;
-            local_a2 = 0;
-            local_a0 = 0;
-            local_9e = 0;
+            desc_head = 0;
+            desc_f02 = 0;
+            dlg_state = 0;
+            desc_f04 = 1;
+            desc_f05 = 0;
+            desc_f14 = 0;
+            slot_sel_2 = 0;
+            slot_sel_3 = 0;
+            desc_f1a = 0;
+            desc_f1c = 0;
+            desc_f1e = 0;
+            desc_f20 = 0;
+            desc_f22 = 0;
             _DAT_801e8518 = 0x30;
             if (a0) {
               ow_flag = 0xffffffffu;
               dlg_type = 1;
               slot_no = 0;
-              local_bd = 0x11;
+              dlg_state = 0x11;
             }
             battle_session_arm(0x1f800000,0xffffffffu);
             sm_state = 1;
@@ -808,15 +809,15 @@ int memcard_file_flow(int a0)
     }
 bb_8015f820:
     if (!(a0)) {
-      menu_stepper_state_advance(&local_c0);
+      menu_stepper_state_advance(&desc_head);
     }
-    switch (local_bd) {
+    switch (dlg_state) {
     case 0:
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
         sm_state = 0xf0;
       }
-      if ((local_b8 == local_ba) && ((_DAT_1f80007c & 0xe0) != 0)) {
+      if ((cursor_idx == item_count) && ((_DAT_1f80007c & 0xe0) != 0)) {
         deferred_cmd_post(0x400,0xc,0);
 bb_8015f8c0:
         sm_state = 0xf0;
@@ -825,20 +826,20 @@ bb_8015f8c0:
     case 0x10:
       ow_flag = 1;
       sm_ret = -1;
-      if (local_b8 == 2) {
-        slot_no = (int)local_aa;
+      if (cursor_idx == 2) {
+        slot_no = (int)slot_sel_2;
         dlg_type = 0;
         goto bb_8015ffac;
       }
-      if (local_b8 < 3) {
-        if (local_b8 == 1) {
+      if (cursor_idx < 3) {
+        if (cursor_idx == 1) {
           dlg_type = 4;
           slot_no = 0;
 bb_8015fbfc:
-          local_bd = 0x12;
+          dlg_state = 0x12;
         }
-      } else if (local_b8 == 3) {
-        slot_no = (int)local_a8;
+      } else if (cursor_idx == 3) {
+        slot_no = (int)slot_sel_3;
         dlg_type = 4;
         goto bb_8015fbfc;
       }
@@ -897,7 +898,7 @@ case_0_8015fbc4:
           case 5:
             if (!(a0)) goto case_0_8015fbc4;
             if (!(ow_flag)) goto bb_8015fbfc;
-            local_bd = 0x11;
+            dlg_state = 0x11;
             dlg_type = 1;
             ow_flag = 1;
           }
@@ -905,7 +906,7 @@ case_0_8015fbc4:
       } else {
         deferred_cmd_post(0x400,0xd,0);
 bb_8015fc08:
-        local_bd = 0x20;
+        dlg_state = 0x20;
       }
       break;
     case 0x12:
@@ -983,7 +984,7 @@ dflt_8015fc3c:
         wait_cnt = -1;
       }
 bb_8015ffac:
-      local_bd++;
+      dlg_state++;
       break;
     case 0x15:
       scroll_offset_set(0x10,0x68);
@@ -1014,11 +1015,11 @@ dflt_8015ffe4:
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xe0) != 0) {
         deferred_cmd_post(0x400,0xc,0);
-        local_bd = 0x16;
+        dlg_state = 0x16;
       }
       if ((_DAT_1f80007c & 0x10) != 0) {
         deferred_cmd_post(0x400,0xd,0);
-        local_bd = 0x16;
+        dlg_state = 0x16;
       }
       if (op_rc == 4) {
         if (!(dlg_type)) {
@@ -1041,27 +1042,27 @@ dflt_8015ffe4:
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_COMPLETED___80121954,0x10,0x1000,3);
               rc = wait_cnt - 1;
               if ((-1 < wait_cnt) && (wait_cnt = rc, rc == -1)) {
-                local_bd = 0x16;
+                dlg_state = 0x16;
               }
               break;
             case 2:
               ow_flag = 0xffffffffu;
               if (!(a0)) {
-                if (local_b8 != 2) {
-                  if (local_b8 < 3) {
-                    if (local_b8 == 1) goto bb_8016026c;
-                    local_bd = 0x11;
+                if (cursor_idx != 2) {
+                  if (cursor_idx < 3) {
+                    if (cursor_idx == 1) goto bb_8016026c;
+                    dlg_state = 0x11;
                   } else {
-                    if (local_b8 == 3) {
+                    if (cursor_idx == 3) {
                       dlg_type = 1;
-                      slot_no = (int)local_a8;
+                      slot_no = (int)slot_sel_3;
                       goto bb_8016028c;
                     }
-                    local_bd = 0x11;
+                    dlg_state = 0x11;
                   }
                   break;
                 }
-                slot_no = (int)local_aa;
+                slot_no = (int)slot_sel_2;
                 dlg_type = 0;
               } else {
 bb_8016026c:
@@ -1069,7 +1070,7 @@ bb_8016026c:
                 slot_no = 0;
               }
 bb_8016028c:
-              local_bd = 0x11;
+              dlg_state = 0x11;
               break;
             case 4:
               dlg_type = 1;
@@ -1085,7 +1086,7 @@ bb_8016028c:
             } else {
               dlg_type = 5;
             }
-            local_bd = 0x11;
+            dlg_state = 0x11;
           }
           break;
         }
@@ -1109,7 +1110,7 @@ bb_8016028c:
           dlg_type = 3;
 bb_80160488:
           ow_flag = 1;
-          local_bd = 0x11;
+          dlg_state = 0x11;
           break;
         }
 bb_801603ec:
@@ -1122,8 +1123,8 @@ bb_801603fc:
       if (!(dlg_type)) {
         if (a0) goto bb_8015f8c0;
         if (!(op_rc)) goto bb_80160510;
-        if (local_b8 != 1) {
-          local_bd = 0;
+        if (cursor_idx != 1) {
+          dlg_state = 0;
           break;
         }
         goto bb_80160504;
@@ -1149,18 +1150,18 @@ bb_80160470:
       dlg_type = 2;
 bb_80160464:
       ow_flag = 1;
-      local_bd = 0x11;
+      dlg_state = 0x11;
       break;
     case 0x20:
     case 0x21:
       if (a0) goto bb_8015f8c0;
 bb_801604f4:
-      if (local_b8 == 1) {
+      if (cursor_idx == 1) {
 bb_80160504:
         *(uint8_t *)(_g_system_config_ptr + 0x22) = 0;
       }
 bb_80160510:
-      local_bd = 0;
+      dlg_state = 0;
     }
     if (!(a0)) {
       hud_gauge_render(0x1f800000,_DAT_1f800008,7);
@@ -1174,24 +1175,24 @@ bb_80160558:
     }
   } while (true);
 }
-#undef local_c0
-#undef local_be
-#undef local_bd
-#undef local_bc
-#undef local_bb
-#undef local_ba
-#undef local_b8
-#undef local_b4
-#undef local_b0
-#undef local_ae
-#undef local_ac
-#undef local_aa
-#undef local_a8
-#undef local_a6
-#undef local_a4
-#undef local_a2
-#undef local_a0
-#undef local_9e
+#undef desc_head
+#undef desc_f02
+#undef dlg_state
+#undef desc_f04
+#undef desc_f05
+#undef item_count
+#undef cursor_idx
+#undef cb_addr
+#undef desc_f10
+#undef desc_f12
+#undef desc_f14
+#undef slot_sel_2
+#undef slot_sel_3
+#undef desc_f1a
+#undef desc_f1c
+#undef desc_f1e
+#undef desc_f20
+#undef desc_f22
 #undef op_sel
 
 /* ======== 0x80156ff0 ======== */
