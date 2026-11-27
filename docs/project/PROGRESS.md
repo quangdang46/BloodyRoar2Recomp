@@ -1,6 +1,6 @@
 # Progress snapshot — br2-recomp
 
-Live state as of session 28 (master ~70 commits ahead of mine/master,
+Live state as of session 30 (master ~75 commits ahead of mine/master,
 unpushed). `AGENTS.md` session updates are the authoritative changelog;
 this is the one-page dashboard.
 
@@ -29,6 +29,16 @@ this is the one-page dashboard.
   Structuring proven dead (every block is a pinned `_cont` resume
   target); work = whole-function reconstruction across piece
   boundaries, prioritized by call frequency and size.
+  **Unnamed-cluster campaign COMPLETE (session 30)**: all four
+  candidates resolved — cps_801587c0 → hud_gauge_frame_emit,
+  cps_80161630 → ret_zero_e promoted via addr-encoded adapter,
+  cps_80126234 → guest_main wired, prim_xform3_task_run confirmed
+  legitimately CPS. Remaining = large named coroutine state
+  machines (cps_8012fce0 355a, cps_8015d69c 332a,
+  battle_flow_state_machine_alt 223a, cpst_8019dad0 222a,
+  cps_8015b190 175a, hit_react_apply_cps 159a,
+  player_name_entry_alt 151a, fighter_script_fsm_cps 146a,
+  memcard_dialog_cps 145a — 1413 symbols / 9197 rows total).
 - Coroutine/IRQ-resume functions (cd_* state machines,
   scene_node_walk, printf/sprintf cores, menu_stepper_sm,
   impact_fx_update self-delegate) legitimately keep CPS bodies —
