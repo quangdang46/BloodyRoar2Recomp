@@ -12,6 +12,7 @@ GEN = os.path.join(ROOT, 'generated', 'SLES_017.22_full_20.c')
 txt = open(GEN, errors='replace').read()
 
 def extract(sym):
+    """Pull the body of a generated alias function out of the .c source."""
     m = re.search(r'void ' + sym + r'\(CPUState\*\s*cpu,\s*uint32_t\s+entry\)\s*\{', txt)
     assert m, sym
     start = m.end()
@@ -20,6 +21,7 @@ def extract(sym):
     return txt[start:end]
 
 def emit(sym_host, guest_anchor, name, comment):
+    """Emit one clean-C wrapper for a guest alias entry."""
     body = extract('br2eu_psx_alias_body_' + sym_host)
     core = G._GPR_RE.sub(G._gpr_names, G.transform(body))
     core = core.replace('switch (entry)', 'switch (_sel)')
