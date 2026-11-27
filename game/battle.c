@@ -449,7 +449,7 @@ void battle_frame_tick(int battle,uint phase)
   return;
 
 }
-/* fighter_contact_resolve — per-frame contact pass for the fighter pair:
+/* fighter_contact_resolve @0x8017f398 — per-frame contact pass for the fighter pair:
  * state_tick both fighters against the battle camera, then run the
  * contact/hit-resolution stages. */
 void fighter_contact_resolve(int f0,int f1,int battle)
@@ -619,7 +619,7 @@ void camera_state_cache(uint unused,int battle)
 
 }
 
-/* player_light_apply — load per-side GTE light vector, then (when the
+/* player_light_apply @0x8012ecbc — load per-side GTE light vector, then (when the
  * rec_flag1_set latch is armed) rotate a secondary light by fighter
  * facing and dispatch the DAT_801b140c mode callback. */
 void player_light_apply(byte *ctrl,int side)
@@ -666,7 +666,7 @@ void player_light_apply(byte *ctrl,int side)
   return;
 
 }
-/* fighter_pair_update — per-frame update driver for the fighter pair:
+/* fighter_pair_update @0x801809c8 — per-frame update driver for the fighter pair:
  * heading/eligibility checks, height track, attach run, flash update and
  * the contact resolve cascade. */
 void fighter_pair_update(int f0,int f1,int battle)
@@ -1262,7 +1262,7 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
     return num / den;
 }
 
-/* battle_camera_step — per-frame battle camera update: track
+/* battle_camera_step @0x8012fb10 — per-frame battle camera update: track
  * both fighters, apply shot/track modes, collision resolve and write
  * the camera state consumed by battle_hud_draw/GTE setup. */
 void battle_camera_step(uint cam,byte *f0,byte *f1,int battle)
@@ -2341,7 +2341,7 @@ LAB_80131f4c:
   return;
 
 }
-/* battle_hud_draw — HUD element dispatcher: digit/cell sprite
+/* battle_hud_draw @0x801737ec — HUD element dispatcher: digit/cell sprite
  * emission, gauge bars, portraits and per-type element cases drawing
  * into the shared OT via sprite_strip/prim helpers. */
 void battle_hud_draw(int unused,int fighter,int aux0,int aux1)
@@ -3286,7 +3286,7 @@ extern uint8_t  **g_PTR_DAT_801b19d4, **g_PTR_DAT_801b1e8c, **g_PTR_FUN_801b1ea8
 #define PTR_DAT_801b1e8c   (*g_PTR_DAT_801b1e8c)
 #define PTR_FUN_801b1ea8   (*g_PTR_FUN_801b1ea8)
 
-/* fighter_state_tick — per-fighter state tick: sample pad edge flags,
+/* fighter_state_tick @0x8017fb34 — per-fighter state tick: sample pad edge flags,
  * update heading (ctrl pos vs state anim offset), advance timers and
  * dispatch the state machine for this controller. */
 void fighter_state_tick(uint *ctrl,undefined4 pad,int ctx)
@@ -3393,7 +3393,7 @@ LAB_8017fca0:
 
 }
 
-/* fighter_atk_dir — attack-direction eligibility: returns 0 when the
+/* fighter_atk_dir @0x8017f7c4 — attack-direction eligibility: returns 0 when the
  * attacker state/anim flags disallow a directional attack, else the
  * facing/direction code relative to the defender. */
 undefined4 fighter_atk_dir(int atk,int def)
@@ -3550,7 +3550,7 @@ undefined4 hit_elig_check(int f0,int f1)
 
 }
 
-/* hitbox_pair_test — pairwise hitbox overlap test between two fighters;
+/* hitbox_pair_test @0x80145970 — pairwise hitbox overlap test between two fighters;
  * writes per-box results into out[] and returns the aggregated verdict. */
 undefined4 hitbox_pair_test(int f0,int f1,undefined2 *out)
 {
@@ -3688,7 +3688,7 @@ uint fighter_range_code(int f0,int f1)
 
 }
 
-/* hit_scale_calc — compute the hit-reaction scale/launch power
+/* hit_scale_calc @0x80143c6c — compute the hit-reaction scale/launch power
  * from attacker/defender stats for hit_react_apply. */
 int hit_scale_calc(int f0,int f1)
 {
@@ -3714,7 +3714,7 @@ int hit_scale_calc(int f0,int f1)
 
 }
 
-/* hit_react_apply — apply a resolved hit: damage/guard checks,
+/* hit_react_apply @0x80143d38 — apply a resolved hit: damage/guard checks,
  * launch velocity, hit-flash, sound/anim triggers and flag updates on
  * attacker and defender. */
 undefined4 hit_react_apply(int atk,int def,int scale,short *hits,int n)
@@ -4321,7 +4321,7 @@ LAB_80144d0c:
 
 }
 
-/* hitbox_wall_collide — hitbox vs stage wall collision resolve: push
+/* hitbox_wall_collide @0x8014642c — hitbox vs stage wall collision resolve: push
  * out, kill velocity components, set launch/knock flags on both
  * fighters and return the collision mask. */
 uint hitbox_wall_collide(int f0,undefined2 *hits,int battle)
@@ -4846,7 +4846,7 @@ void fighter_chan_delta_accum(uint32_t node, uint32_t dx,
 
 }
 
-/* fighter_attach_run — run the attach/bone-follow update for fighter f:
+/* fighter_attach_run @0x80186b2c — run the attach/bone-follow update for fighter f:
  * propagate parent bone transforms into attached nodes. */
 void fighter_attach_run(int f)
 {
@@ -4923,7 +4923,7 @@ void fighter_height_track(int f,int st)
 
 }
 
-/* hitbox_corners_xform — transform both fighters' hitbox corner
+/* hitbox_corners_xform @0x8017fe60 — transform both fighters' hitbox corner
  * vertices through their world matrices into the shared corner buffer. */
 void hitbox_corners_xform(int f0,int f1)
 {
@@ -5239,7 +5239,7 @@ void pad_edge_scan(int ctrl_g)
 
 }
 
-/* cmd_input_parse — parse raw pad state into the command stream for
+/* cmd_input_parse @0x801434d4 — parse raw pad state into the command stream for
  * ctrl_g: per-button press/repeat timing produces command codes. */
 void cmd_input_parse(int ctrl_g)
 {
@@ -5445,7 +5445,7 @@ switchD_801435e8_caseD_0:
 
 }
 
-/* action_from_input — map controller input to the action/state
+/* action_from_input @0x80142f3c — map controller input to the action/state
  * selection state machine (button timers, combo windows, state codes). */
 void action_from_input(int ctrl_g)
 {
@@ -5637,7 +5637,7 @@ LAB_801434b4:
 
 }
 
-/* seg_sphere_hit — segment vs sphere intersection test (two radii);
+/* seg_sphere_hit @0x801454f0 — segment vs sphere intersection test (two radii);
  * on hit writes the contact point to hit[0..2] and returns 1. */
 undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *hit)
 {
@@ -5744,7 +5744,7 @@ undefined4 seg_sphere_hit(int rad0,int rad1,int *seg0,int *seg1,int *cen,short *
 
 }
 
-/* sphere_pt_hit — point vs dual-radius sphere test; writes the hit
+/* sphere_pt_hit @0x801453a0 — point vs dual-radius sphere test; writes the hit
  * point offset to mid[] and returns the inside flag. */
 undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 {
@@ -5788,7 +5788,7 @@ undefined4 sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 
 }
 
-/* debug_strike_fx_a — debug strike-FX variant A: spawn hit spark at pos
+/* debug_strike_fx_a @0x8013f034 — debug strike-FX variant A: spawn hit spark at pos
  * with screen offsets (x,y) for fighter f. */
 void debug_strike_fx_a(short *pos,int x,int y,undefined4 unused,int f)
 {
@@ -5813,7 +5813,7 @@ void debug_strike_fx_a(short *pos,int x,int y,undefined4 unused,int f)
 
 }
 
-/* debug_strike_fx_b — debug strike-FX variant B: spawn hit spark with
+/* debug_strike_fx_b @0x8013ee40 — debug strike-FX variant B: spawn hit spark with
  * packed offset args and heading ang for fighter f. */
 void debug_strike_fx_b(short *pos,undefined4 x,undefined4 y,ushort ang,int f)
 {
@@ -5871,14 +5871,14 @@ void debug_strike_fx_b(short *pos,undefined4 x,undefined4 y,ushort ang,int f)
 
 }
 
-/* noop_fn — empty task callback (guest fn-table placeholder). */
+/* noop_fn @0x80140c90 — empty task callback (guest fn-table placeholder). */
 void noop_fn(void)
 {
   return;
 
 }
 
-/* rtps_pt_xform — transform one s16 vec3 point through the current
+/* rtps_pt_xform @0x8018d5b4 — transform one s16 vec3 point through the current
  * GTE RTPS matrix; writes s16 x/y/z to out[0..2]. */
 undefined2 * rtps_pt_xform(ushort *pt,undefined2 *out)
 {
@@ -6015,7 +6015,7 @@ switchD_801289e8_caseD_4:
 
 }
 
-/* fighter_script_fsm — per-fighter script bytecode VM: fetch
+/* fighter_script_fsm @0x80181f20 — per-fighter script bytecode VM: fetch
  * opcode at ip, dispatch handler through the opcode table, update
  * phase/operand regs until the script ends. */
 void fighter_script_fsm(int ctrl_g,undefined4 pad,int *script,int ctx)
@@ -6513,7 +6513,7 @@ switchD_80181ff0_caseD_9:
 
 }
 
-/* pt_box_radius_test — point vs box-with-radius test; returns
+/* pt_box_radius_test @0x80145c90 — point vs box-with-radius test; returns
  * inside flag. */
 bool pt_box_radius_test(int r0,int r1,int *p,int *q)
 {
@@ -6556,7 +6556,7 @@ bool pt_box_radius_test(int r0,int r1,int *p,int *q)
   return false;
 
 }
-/* always_one — task callback returning constant 1. */
+/* always_one @0x80137570 — task callback returning constant 1. */
 undefined4 always_one(int unused)
 {
   (void)unused;
@@ -6564,7 +6564,7 @@ undefined4 always_one(int unused)
 
 }
 
-/* triple_track_spawn — spawn a triple-slot angle tracker
+/* triple_track_spawn @0x80138a24 — spawn a triple-slot angle tracker
  * (slot_triple_*) bound to table index tid with initial value val. */
 void triple_track_spawn(int idx,undefined2 val,int tid)
 {
@@ -6599,7 +6599,7 @@ void triple_track_spawn(int idx,undefined2 val,int tid)
 
 }
 
-/* xform_accum_spawn — spawn an accumulated-transform FX
+/* xform_accum_spawn @0x80138b00 — spawn an accumulated-transform FX
  * record for mode/lvl. */
 void xform_accum_spawn(int mode,int lvl)
 {
@@ -6657,7 +6657,7 @@ LAB_80138c24:
 
 }
 
-/* impact_fx_spawn — spawn an impact FX record: allocate the
+/* impact_fx_spawn @0x80139fd0 — spawn an impact FX record: allocate the
  * node, fill motion vec/color vec/scalars from pos/fid/ang/aux/fl. */
 void impact_fx_spawn(undefined4 *pos,uint fid,int ang,int aux,uint fl)
 {
@@ -7017,7 +7017,7 @@ switchD_8013a1f8_caseD_10:
 
 }
 
-/* fx_record_alloc — allocate an FX task node and initialize
+/* fx_record_alloc @0x8013b088 — allocate an FX task node and initialize
  * its record payload (pos/kind/fl/aux). */
 int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 pal_g)
 {
@@ -7045,7 +7045,7 @@ int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 
 
 }
 
-/* emit_task_spawn/spawn_b/quad_fx_spawn/group_fx_spawn —
+/* emit_task_spawn @0x8013d6b0/spawn_b/quad_fx_spawn/group_fx_spawn —
  * task-node spawners for emit/quad/group FX variants; fill pay payload
  * and link into the task lists. */
 void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undefined2 p6)
@@ -7081,7 +7081,7 @@ void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undef
 
 }
 
-/* see emit_task_spawn. */
+/* emit_task_spawn_b @0x8013ed98 — see emit_task_spawn. */
 void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl)
 {
   int node;
@@ -7103,7 +7103,7 @@ void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl
 
 }
 
-/* see emit_task_spawn (quad variant). */
+/* quad_fx_spawn @0x80141814 — see emit_task_spawn (quad variant). */
 void quad_fx_spawn(int f,int kind,undefined4 *pos,undefined2 aux,ushort fl, int p6,int p7)
 {
   int d0;
@@ -7228,7 +7228,7 @@ void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, un
 
 }
 
-/* vec3_step_toward family — move pos toward dst by at most
+/* vec3_step_toward @0x80133aa0 family — move pos toward dst by at most
  * stp units along the normalized delta; _spd/_q/_q_spd are the
  * speed-scaled and fixed-point variants. */
 undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
@@ -7277,7 +7277,7 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
 
 }
 
-/* see vec3_step_toward. */
+/* vec3_step_toward_spd @0x80133c08 — see vec3_step_toward. */
 undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 {
   short rz;
@@ -7329,7 +7329,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
-/* see vec3_step_toward. */
+/* vec3_step_toward_q @0x80133db0 — see vec3_step_toward. */
 undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
@@ -7374,7 +7374,7 @@ undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 
 }
 
-/* see vec3_step_toward. */
+/* vec3_step_toward_q_spd @0x80133f30 — see vec3_step_toward. */
 undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *pos,short *dst,int spd)
 {
   short rz;
@@ -7424,7 +7424,7 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *pos,short *dst,int sp
 
 }
 
-/* table_byte_next_a/b — advance the shared byte-table cursor and
+/* table_byte_next_a @0x80129f78/b — advance the shared byte-table cursor and
  * return the next byte (wrapping at table end). */
 undefined1 table_byte_next_a(void)
 {
@@ -7435,7 +7435,7 @@ undefined1 table_byte_next_a(void)
 
 }
 
-/* table_byte_next_b — second byte-table cursor advance (see _a). */
+/* table_byte_next_b @0x80129fc4 — second byte-table cursor advance (see _a). */
 undefined1 table_byte_next_b(void)
 {
   byte idx;
@@ -7444,7 +7444,7 @@ undefined1 table_byte_next_b(void)
   return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((idx + 0x801e8400)));
 
 }
-/* sprite_strip_draw_dual — draw a dual-source sprite
+/* sprite_strip_draw_dual @0x801721a4 — draw a dual-source sprite
  * strip (src_a/src_b palettes) with uv scale, count n and tag mode. */
 void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag)
 {
@@ -7584,7 +7584,7 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0,
 
 }
 
-/* see task_alloc_wrap_c. */
+/* task_alloc_wrap_a @0x801725a4 — see task_alloc_wrap_c. */
 int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
@@ -7604,7 +7604,7 @@ int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 
 }
 
-/* see task_alloc_wrap_c (5-word payload variant). */
+/* task_alloc_wrap_b @0x80172640 — see task_alloc_wrap_c (5-word payload variant). */
 int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, int w4)
 {
   int node;
@@ -7636,7 +7636,7 @@ int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, i
 
 }
 
-/* hud_cell_frame_set — write the HUD cell frame/UV word for digit
+/* hud_cell_frame_set @0x801726ec — write the HUD cell frame/UV word for digit
  * value val into cell record (uses DAT_801b4b54/56 + scroll offset). */
 void hud_cell_frame_set(int val,int cell)
 {
@@ -7660,7 +7660,7 @@ void hud_cell_frame_set(int val,int cell)
 
 }
 
-/* hud_digits_color — set the HUD digit color/attr fields for value
+/* hud_digits_color @0x801727b8 — set the HUD digit color/attr fields for value
  * val into the cell record. */
 void hud_digits_color(int val,int cell)
 {
@@ -7727,7 +7727,7 @@ bool fighter_height_check(int f)
 
 }
 
-/* sprite_rect_set_a/b/c — sprite rect variants: write position (x,y)
+/* sprite_rect_set_a @0x801756b0/b/c — sprite rect variants: write position (x,y)
  * and packed size (w,h) into the sprite record; _a/_b/_c differ in
  * which corner/anchor convention they apply. */
 undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
@@ -7754,7 +7754,7 @@ undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
 
 }
 
-/* sprite_rect_set_b — see sprite_rect_set_a. */
+/* sprite_rect_set_b @0x80175708 — see sprite_rect_set_a. */
 undefined4 sprite_rect_set_b(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -7779,7 +7779,7 @@ undefined4 sprite_rect_set_b(int rec,short x,int y,undefined4 w,int h)
 
 }
 
-/* sprite_rect_set_c — see sprite_rect_set_a. */
+/* sprite_rect_set_c @0x80175760 — see sprite_rect_set_a. */
 undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -7804,7 +7804,7 @@ undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 
 }
 
-/* rtps_point_xform/xform2 — GTE RTPS point transform: load matrix rt,
+/* rtps_point_xform @0x8018d538/xform2 — GTE RTPS point transform: load matrix rt,
  * transform s16 vec3 in -> out; xform applies the flag-controlled
  * perspective divide variant. */
 int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
@@ -7838,7 +7838,7 @@ int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 
 }
 
-/* rtps_point_xform2 — RTPS point transform without the flag variant
+/* rtps_point_xform2 @0x8018d540 — RTPS point transform without the flag variant
  * (see rtps_point_xform). */
 int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 {
@@ -7869,7 +7869,7 @@ int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 
 }
 
-/* rotmat_rtps_build — build an RTPS rotation matrix from a packed
+/* rotmat_rtps_build @0x8018de6c — build an RTPS rotation matrix from a packed
  * euler angle word (10-bit fields + sign/axis flags) into m[0..8]. */
 uint * rotmat_rtps_build(uint ang,uint *m)
 {
@@ -7902,7 +7902,7 @@ uint * rotmat_rtps_build(uint ang,uint *m)
 
 }
 
-/* rotmat2_pair_build — build a two-angle rotation matrix from packed
+/* rotmat2_pair_build @0x8018df00 — build a two-angle rotation matrix from packed
  * angle words ang0/ang1 via the DAT_801247a8 sin LUT into out[0..4]. */
 uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 {
@@ -8274,7 +8274,7 @@ LAB_8018f78c:
 }
 #undef local_39
 
-/* rtps_basis_xform — transform a basis-vector set through matrix rt
+/* rtps_basis_xform @0x80186d20 — transform a basis-vector set through matrix rt
  * and repack into out. */
 uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
 {
@@ -8334,7 +8334,7 @@ uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
 
 }
 
-/* rotmat2_build — build a rotation matrix from a single packed angle
+/* rotmat2_build @0x8018da2c — build a rotation matrix from a single packed angle
  * into m (RTPS layout). */
 undefined4 * rotmat2_build(uint ang,undefined4 *m)
 {
@@ -8414,7 +8414,7 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   }
 }
 
-/* task_node_alloc — allocate a task node from pool kind/cnt/sz
+/* task_node_alloc @0x801a4308 — allocate a task node from pool kind/cnt/sz
  * with callback cb and payload size; returns node or 0. */
 int * task_node_alloc(int kind,undefined4 cnt,uint sz,int cb,int cb_arg,int dsize)
 {
@@ -8453,7 +8453,7 @@ int * task_node_alloc(int kind,undefined4 cnt,uint sz,int cb,int cb_arg,int dsiz
 
 }
 
-/* task_node_free — free a task node back to its pool and run
+/* task_node_free @0x801a48fc — free a task node back to its pool and run
  * the destructor chain. */
 void task_node_free(int *node)
 {
@@ -8487,7 +8487,7 @@ void task_node_free(int *node)
 
 }
 
-/* task_pools_tick — run one tick over a task pool: invoke each
+/* task_pools_tick @0x801a49d0 — run one tick over a task pool: invoke each
  * live node's fn callback. */
 void task_pools_tick(int pool)
 {
@@ -8570,7 +8570,7 @@ int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 
 }
 
-/* see noop_a. */
+/* noop_b @0x801ad224 — see noop_a. */
 void noop_b(int node,undefined4 w0,undefined4 w1)
 {
   int datap;
@@ -8581,7 +8581,7 @@ void noop_b(int node,undefined4 w0,undefined4 w1)
 
 }
 
-/* see noop_a. */
+/* noop_c @0x801ad284 — see noop_a. */
 undefined4 noop_c(int node)
 {
   return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
@@ -8640,7 +8640,7 @@ void node_tree_free(int node)
 
 }
 
-/* prim_attr_word_set — write the attribute halfword into a
+/* prim_attr_word_set @0x801ac9b8 — write the attribute halfword into a
  * primitive record. */
 void prim_attr_word_set(int prim,undefined2 attr)
 {
@@ -8707,7 +8707,7 @@ LAB_801acae8:
 
 }
 
-/* prim_group_build — build a primitive group node: allocate
+/* prim_group_build @0x801a6bd0 — build a primitive group node: allocate
  * via prim_group_alloc and emit the member primitives. */
 undefined4 * prim_group_build(undefined4 prim,int attr,undefined4 a2,undefined4 a3)
 {
@@ -8766,7 +8766,7 @@ LAB_801a6cfc:
 
 }
 
-/* tween_chan_alloc/dur_spread — allocate a tween channel
+/* tween_chan_alloc @0x801a72a0/dur_spread — allocate a tween channel
  * for group/idx and spread its duration across channels. */
 undefined4 tween_chan_alloc(int grp,int idx)
 {
@@ -8799,7 +8799,7 @@ undefined4 tween_chan_alloc(int grp,int idx)
 
 }
 
-/* see tween_chan_alloc. */
+/* tween_dur_spread @0x801a73e4 — see tween_chan_alloc. */
 void tween_dur_spread(int grp,int n)
 {
   int i;
@@ -8817,7 +8817,7 @@ void tween_dur_spread(int grp,int n)
 
 }
 
-/* str_len — strlen over guest memory. */
+/* str_len @0x8018e510 — strlen over guest memory. */
 int str_len(char *s)
 {
   char ch;
@@ -8834,7 +8834,7 @@ int str_len(char *s)
 
 }
 
-/* strchr_bounded — memchr-style bounded strchr: find c in s within n
+/* strchr_bounded @0x8018eca0 — memchr-style bounded strchr: find c in s within n
  * bytes, return pointer or NULL. */
 char * strchr_bounded(char *s,char c,int n)
 {
@@ -8854,7 +8854,7 @@ char * strchr_bounded(char *s,char c,int n)
 
 }
 
-/* mem_move — memmove over guest memory; returns dst. */
+/* mem_move @0x8018f7e0 — memmove over guest memory; returns dst. */
 undefined1 * mem_move(undefined1 *s,undefined1 *src,int n)
 {
   undefined1 tmp;
@@ -8884,7 +8884,7 @@ extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
 extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
 extern uint32_t g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6;
 
-/* script_stream_tick — advance a channel script stream one tick:
+/* script_stream_tick @0x80137824 — advance a channel script stream one tick:
  * fetch opcode, dispatch handler, update cursor/counters. */
 void script_stream_tick(int *stream)
 {
@@ -8967,7 +8967,7 @@ LAB_80137954:
 
 }
 
-/* ---- batch13: effect/task worker callbacks + misc ---- */
+/* slot_height_proj @0x80136b64 — ---- batch13: effect/task worker callbacks + misc ---- */
 void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 {
   short ang;
@@ -9023,7 +9023,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 
 }
 
-/* battle_intro_fsm — battle intro state machine: pool/task
+/* battle_intro_fsm @0x80137098 — battle intro state machine: pool/task
  * init phases then per-frame intro camera/fx sequencing. */
 void battle_intro_fsm(undefined4 mat,undefined4 a1,undefined4 a2,int st)
 {
@@ -9188,7 +9188,7 @@ int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 
 }
 
-/* task_alloc_wrap_d — see task_alloc_wrap_c (5-word payload variant). */
+/* task_alloc_wrap_d @0x80137f0c — see task_alloc_wrap_c (5-word payload variant). */
 int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,int w4)
 {
   int node;
@@ -9224,7 +9224,7 @@ int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,in
 
 }
 
-/* task_alloc_wrap_e — see task_alloc_wrap_c (3-word payload variant). */
+/* task_alloc_wrap_e @0x80137fb8 — see task_alloc_wrap_c (3-word payload variant). */
 int task_alloc_wrap_e(int w0,int w1,int w2)
 {
   int res;
@@ -9251,7 +9251,7 @@ int task_alloc_wrap_e(int w0,int w1,int w2)
 
 }
 
-/* task_alloc_wrap_f — see task_alloc_wrap_c; seq is the keyframe
+/* task_alloc_wrap_f @0x80138040 — see task_alloc_wrap_c; seq is the keyframe
  * descriptor whose +2 next-index seeds the pay cursor. */
 int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 {
@@ -9274,7 +9274,7 @@ int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 
 }
 
-/* slot_triple_tick — advance a triple-slot tracker: step the angle
+/* slot_triple_tick @0x8013885c — advance a triple-slot tracker: step the angle
  * cursor through the slot table and reset on wrap. */
 void slot_triple_tick(int *slot)
 {
@@ -9305,7 +9305,7 @@ void slot_triple_tick(int *slot)
 
 }
 
-/* xform_accum_tick — per-tick update for an accumulated-transform
+/* xform_accum_tick @0x8013893c — per-tick update for an accumulated-transform
  * record (advance phase, decay, emit on completion). */
 void xform_accum_tick(undefined4 *rec)
 {
@@ -9329,7 +9329,7 @@ void xform_accum_tick(undefined4 *rec)
 
 }
 
-/* impact_fx_update — per-tick update for an impact FX record. */
+/* impact_fx_update @0x80138cec — per-tick update for an impact FX record. */
 void impact_fx_update(int rec)
 {
   /* guest impact_fx_update @0x80138CEC: after the type switch, EVERY
@@ -9343,7 +9343,7 @@ void impact_fx_update(int rec)
   call_guest4(0x80138CECu,(uint32_t)rec,0,0,0);
 }
 
-/* impact_fx_emit_tick — emit pass for an impact FX record. */
+/* impact_fx_emit_tick @0x80139e0c — emit pass for an impact FX record. */
 void impact_fx_emit_tick(int rec)
 {
   uint slot;
@@ -9403,7 +9403,7 @@ LAB_80139fb0:
 
 }
 
-/* fx_record_init — initialize an FX record payload to defaults. */
+/* fx_record_init @0x8013adb4 — initialize an FX record payload to defaults. */
 void fx_record_init(undefined4 *rec)
 {
   undefined2 *src;
@@ -9422,7 +9422,7 @@ void fx_record_init(undefined4 *rec)
 
 }
 
-/* quad_fx_update — per-tick update for a quad FX record. */
+/* quad_fx_update @0x80141610 — per-tick update for a quad FX record. */
 void quad_fx_update(int rec)
 {
   short mode;
@@ -9487,7 +9487,7 @@ LAB_801417f8:
 
 }
 
-/* angle_from_xy — heading angle from delta (x,y) via octant compare
+/* angle_from_xy @0x80142b3c — heading angle from delta (x,y) via octant compare
  * and the DAT_801247a8-ish slope math; returns a 12-bit angle. */
 int angle_from_xy(int x,int y)
 {
@@ -9546,7 +9546,7 @@ int angle_from_xy(int x,int y)
 
 }
 
-/* table_1f0ae0_clear — clear entry idx of the 1f0ae0 table. */
+/* table_1f0ae0_clear @0x80142cd8 — clear entry idx of the 1f0ae0 table. */
 void table_1f0ae0_clear(int idx)
 {
   int i;
@@ -9563,7 +9563,7 @@ void table_1f0ae0_clear(int idx)
 
 }
 
-/* sprite_place_centered — position a sprite record centered on (x,y)
+/* sprite_place_centered @0x80148e70 — position a sprite record centered on (x,y)
  * with size (w,h). */
 void sprite_place_centered(undefined4 rec,undefined4 st,short x,short y,int w, int h)
 {
@@ -9577,7 +9577,7 @@ void sprite_place_centered(undefined4 rec,undefined4 st,short x,short y,int w, i
 
 }
 
-/* fighter_tint_fade — fade a fighter's tint/flash record over time for
+/* fighter_tint_fade @0x8016d244 — fade a fighter's tint/flash record over time for
  * the scene/idx slot. */
 void fighter_tint_fade(int scene,int idx,int battle,int anim)
 {
@@ -9771,7 +9771,7 @@ void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,u
 
 }
 
-/* slot_triple_set — load the three cursor values for a triple-slot
+/* slot_triple_set @0x8012ea18 — load the three cursor values for a triple-slot
  * tracker index. */
 void slot_triple_set(int slot,int c0,int c1,int c2)
 {
@@ -9801,7 +9801,7 @@ void slot_triple_set(int slot,int c0,int c1,int c2)
 
 }
 
-/* rec_flag1_set — latch a 3-word record into the
+/* rec_flag1_set @0x8012ee0c — latch a 3-word record into the
  * _DAT_801f022c/234/236/238 globals and arm the flag. */
 void rec_flag1_set(undefined2 *src)
 {
@@ -9813,7 +9813,7 @@ void rec_flag1_set(undefined2 *src)
 
 }
 
-/* target_angles_/depth_/pair_depth_/midpoint_angles_ —
+/* target_angles_set @0x80132084 — target_angles_/depth_/pair_depth_/midpoint_angles_ —
  * camera target helpers: write aim angles/depth for a target idx or
  * midpoint of a fighter pair into dst buffers. */
 void target_angles_set(short *dst,int idx)
@@ -9838,7 +9838,7 @@ void target_angles_set(short *dst,int idx)
 
 }
 
-/* see target_angles_set family. */
+/* target_depth_set @0x80132224 — see target_angles_set family. */
 void target_depth_set(short *dst,int idx)
 {
   int dep2;
@@ -9873,7 +9873,7 @@ void target_depth_set(short *dst,int idx)
 
 }
 
-/* see target_angles_set family. */
+/* pair_depth_set @0x8013237c — see target_angles_set family. */
 void pair_depth_set(short *pa,short *pb,int idx)
 {
   short dmin;
@@ -9934,7 +9934,7 @@ void pair_depth_set(short *pa,short *pb,int idx)
 
 }
 
-/* see target_angles_set family. */
+/* target_angles_depth_set @0x8013258c — see target_angles_set family. */
 void target_angles_depth_set(short *dst,int idx)
 {
   short dep;
@@ -9972,7 +9972,7 @@ void target_angles_depth_set(short *dst,int idx)
 
 }
 
-/* see target_angles_set family. */
+/* midpoint_angles_set @0x801326d4 — see target_angles_set family. */
 void midpoint_angles_set(int *pa,int *pb,int idx)
 {
   short s1;
@@ -10052,7 +10052,7 @@ void midpoint_angles_set(int *pa,int *pb,int idx)
 
 }
 
-/* dual_target_track(_b) — dual-target camera tracking:
+/* dual_target_track @0x801329d8(_b) — dual-target camera tracking:
  * compute midpoint angles/depth between two fighters and steer the
  * camera target (tgt record or cam+fa+fb variant). */
 void dual_target_track(int tgt,int f_a,int f_b)
@@ -10196,7 +10196,7 @@ void dual_target_track(int tgt,int f_a,int f_b)
 
 }
 
-/* see dual_target_track. */
+/* dual_target_track_b @0x80132d70 — see dual_target_track. */
 void dual_target_track_b(int cam,int fa,int fb)
 {
   short s1;
@@ -10313,7 +10313,7 @@ LAB_80132f50:
 
 }
 
-/* camera_track_shot/step — scripted camera shot tracking
+/* camera_track_shot @0x80132fdc/step — scripted camera shot tracking
  * and per-frame camera step toward the tracked target. */
 void camera_track_shot(int cam,int f_a,int f_b)
 {
@@ -10409,7 +10409,7 @@ LAB_801332f0:
 
 }
 
-/* see camera_track_shot. */
+/* camera_track_step @0x80133328 — see camera_track_shot. */
 void camera_track_step(int cam,int fa,int fb)
 {
   ushort stp;
@@ -10554,7 +10554,7 @@ void camera_track_step(int cam,int fa,int fb)
 
 }
 
-/* u16_step_toward/fixed_approach_s16 — fixed-point
+/* u16_step_toward @0x80133828/fixed_approach_s16 — fixed-point
  * approach helpers: step a u16/s16 value toward target by step,
  * return arrived flag. */
 int u16_step_toward(ushort *cur,ushort *tgt,short step)
@@ -10589,7 +10589,7 @@ LAB_801338bc:
 
 }
 
-/* see u16_step_toward. */
+/* fixed_approach_s16 @0x801338c4 — see u16_step_toward. */
 int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 {
   int t20;
@@ -10621,7 +10621,7 @@ int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 
 }
 
-/* fighter_trail_emit — emit fighter trail particles:
+/* fighter_trail_emit @0x80135180 — emit fighter trail particles:
  * spawn burst slots along the motion vector with life/width taper. */
 void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
 {
@@ -10850,7 +10850,7 @@ LAB_80135630:
 
 }
 
-/* burst_slot_active — check whether a particle burst slot
+/* burst_slot_active @0x80135724 — check whether a particle burst slot
  * index is still live. */
 bool burst_slot_active(int slot)
 {
@@ -10858,7 +10858,7 @@ bool burst_slot_active(int slot)
 
 }
 
-/* ---- batch15: GTE/vector + string helpers ---- */
+/* prim_packet_init_tex @0x801941e0 — ---- batch15: GTE/vector + string helpers ---- */
 void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 {
   uint pw;
@@ -10886,7 +10886,7 @@ void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 }
 
 
-/* gte_xform_accum — accumulate a vec3 transform: acc +=
+/* gte_xform_accum @0x80194840 — accumulate a vec3 transform: acc +=
  * vec transformed by tr matrix. */
 void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 {
@@ -10916,7 +10916,7 @@ void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 
 }
 
-/* gte_rtps_xform3 family — GTE RTPS vec3 transforms:
+/* gte_rtps_xform3 @0x80194960 family — GTE RTPS vec3 transforms:
  * load matrix/angles, transform, write s16 outputs; _t/_nold/_1/_raw
  * are the transpose/normal/raw-input variants. */
 uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
@@ -10959,7 +10959,7 @@ uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 
 }
 
-/* see gte_rtps_xform3. */
+/* gte_xform3_nold @0x80194b60 — see gte_rtps_xform3. */
 uint * gte_xform3_nold(ushort *in,uint *out)
 {
   uint t0;
@@ -10995,7 +10995,7 @@ uint * gte_xform3_nold(ushort *in,uint *out)
 
 }
 
-/* gte_mvmva_add — GTE MVMVA: matrix*vector + translation add. */
+/* gte_mvmva_add @0x80194db0 — GTE MVMVA: matrix*vector + translation add. */
 int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 {
   uint vx;
@@ -11078,7 +11078,7 @@ int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 
 }
 
-/* see gte_rtps_xform3 (single-output variant). */
+/* gte_rtps_xform1 @0x801951b0 — see gte_rtps_xform3 (single-output variant). */
 undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 {
   undefined4 in_zero;
@@ -11104,7 +11104,7 @@ undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 
 }
 
-/* gte_rot_load/light_load/tr_load/cw_d000_set — load the
+/* gte_rot_load @0x80195210/light_load/tr_load/cw_d000_set — load the
  * GTE rotation matrix / light vector / translation record / control
  * word d000 into cop2 registers. */
 void gte_rot_load(undefined4 *m)
@@ -11118,7 +11118,7 @@ void gte_rot_load(undefined4 *m)
 
 }
 
-/* see gte_rot_load. */
+/* gte_light_load @0x80195240 — see gte_rot_load. */
 void gte_light_load(undefined4 *light)
 {
   setCopControlWord(2,0x8000,*light);
@@ -11130,7 +11130,7 @@ void gte_light_load(undefined4 *light)
 
 }
 
-/* see gte_rot_load. */
+/* gte_tr_load @0x80195270 — see gte_rot_load. */
 void gte_tr_load(int trec)
 {
   setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((trec + 0x14))));
@@ -11140,7 +11140,7 @@ void gte_tr_load(int trec)
 
 }
 
-/* see gte_rot_load. */
+/* gte_cw_d000_set @0x801952b0 — see gte_rot_load. */
 void gte_cw_d000_set(undefined4 cw)
 {
   setCopControlWord(2,0xd000,cw);
@@ -11170,7 +11170,7 @@ undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 
 }
 
-/* orbit_fx_spawn — spawn an orbiting FX record bound to
+/* orbit_fx_spawn @0x801385dc — spawn an orbiting FX record bound to
  * variable var. */
 void orbit_fx_spawn(int var)
 {
@@ -11228,7 +11228,7 @@ void orbit_fx_spawn(int var)
 
 }
 
-/* ---- batch16: task/resource internals ---- */
+/* task_heads_clear @0x801a42d0 — ---- batch16: task/resource internals ---- */
 void task_heads_clear(int pool)
 {
   int i;
@@ -11243,7 +11243,7 @@ void task_heads_clear(int pool)
 
 }
 
-/* task_slot_step — advance/free the current task slot
+/* task_slot_step @0x801a482c — advance/free the current task slot
  * (mark dead, run destructor, recycle). */
 void task_slot_step(void)
 {
@@ -11273,7 +11273,7 @@ void task_slot_step(void)
 
 }
 
-/* task_slot_fns_run — invoke the fn callbacks registered
+/* task_slot_fns_run @0x801a4aac — invoke the fn callbacks registered
  * on a task slot. */
 void task_slot_fns_run(int slot)
 {
@@ -11305,7 +11305,7 @@ void task_slot_fns_run(int slot)
 
 }
 
-/* task_pool_init/alloc/free — task pool management:
+/* task_pool_init @0x801a4e2c/alloc/free — task pool management:
  * init a pool region, allocate/free nodes by pool+kind+size. */
 void task_pool_init(int pool,int kind,int count,int base)
 {
@@ -11335,7 +11335,7 @@ extern uint32_t g_tpool_fail_count, g_tpool_fail_head, g_tpool_fail_next,
                 g_tpool_fail_size, g_tpool_fail_flag;
 extern int32_t  g_tpool_fail_p1, g_tpool_fail_p2, g_tpool_fail_p3;
 
-/* see task_pool_init. */
+/* task_pool_alloc @0x801a4ebc — see task_pool_init. */
 int task_pool_alloc(int pool,int kind,int size)
 {
   short flag;
@@ -11403,7 +11403,7 @@ int task_pool_alloc(int pool,int kind,int size)
 
 }
 
-/* see task_pool_init. */
+/* task_pool_free @0x801a4fd0 — see task_pool_init. */
 void task_pool_free(int pool)
 {
   short kind;
@@ -11447,7 +11447,7 @@ void gp_slot48_set(undefined4 v)
 
 }
 
-/* see gp_slot48_set. */
+/* gp_slot24_set @0x801a6bc4 — see gp_slot48_set. */
 void gp_slot24_set(undefined4 v)
 {
   int gp_save = (int)guest_gp();
@@ -11456,7 +11456,7 @@ void gp_slot24_set(undefined4 v)
 
 }
 
-/* prim_batch_emit — emit a batch of primitives: walk the
+/* prim_batch_emit @0x801a7570 — emit a batch of primitives: walk the
  * descriptor streams (d0-d3/s0-s6), emit OT entries via otc cursor,
  * tag with sel/fl/kind. */
 int prim_batch_emit(int desc,int idx,undefined4 w0,undefined4 w1,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 kind)
@@ -12065,7 +12065,7 @@ void obj_flag34_clear(int obj)
 
 }
 
-/* tween_seq_alloc/track_alloc — allocate a tween
+/* tween_seq_alloc @0x801a9644/track_alloc — allocate a tween
  * sequence/track node: pack mode/count/args into pay and bind the
  * keyframe descriptor. */
 int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 kind)
@@ -12103,7 +12103,7 @@ int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg
 
 }
 
-/* gte_matrix_base_set — set the GTE matrix base pointer
+/* gte_matrix_base_set @0x801aad04 — set the GTE matrix base pointer
  * (DAT_801be838) and aux gp slot. */
 void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 {
@@ -12114,7 +12114,7 @@ void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 
 }
 
-/* lazy_node_wrap — attach a lazy node via node_lazy_attach
+/* lazy_node_wrap @0x801ac070 — attach a lazy node via node_lazy_attach
  * and fill its pay fields (proto/arg/aux). */
 int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 {
@@ -12134,7 +12134,7 @@ int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 
 }
 
-/* prim_group_alloc — allocate a primitive group node
+/* prim_group_alloc @0x801ac334 — allocate a primitive group node
  * with attr/num/mode sizing. */
 int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, undefined4 arg7)
 {
@@ -12297,7 +12297,7 @@ int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, u
 
 }
 
-/* node_param_quad_set — write a 4-word param quad
+/* node_param_quad_set @0x801ad260 — write a 4-word param quad
  * into a node record. */
 void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, undefined4 q3)
 {
@@ -12311,7 +12311,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
-/* prim_list_gte_invoke/persp_step — walk a primitive
+/* prim_list_gte_invoke @0x801871bc/persp_step — walk a primitive
  * list applying the GTE step (perspective divide variant) per element. */
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
@@ -12385,7 +12385,7 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
 
 }
 
-/* ---- batch17: announcer/round + vector math ---- */
+/* text_render_full @0x8012d154 — ---- batch17: announcer/round + vector math ---- */
 undefined4 text_render_full(uint *a0,uint font,int cfg)
 {
   byte wd;
@@ -12938,7 +12938,7 @@ LAB_8012dca4:
 
 }
 
-/* text_render_simple/full — text renderer: glyph quad
+/* text_render_simple @0x8012dce4/full — text renderer: glyph quad
  * emission with font/cfg selection, spacing, tint and clipping into
  * the OT. */
 undefined4 text_render_simple(uint *a0,uint font,int cfg)
@@ -13097,7 +13097,7 @@ LAB_8012e044:
 
 }
 
-/* particle_burst_spawn/update — spawn and per-tick
+/* particle_burst_spawn @0x80136114/update — spawn and per-tick
  * update a particle burst record (type/idx bound). */
 void particle_burst_spawn(int type,int idx)
 {
@@ -13288,7 +13288,7 @@ void particle_burst_spawn(int type,int idx)
 
 }
 
-/* see particle_burst_spawn. */
+/* particle_burst_update @0x801365a4 — see particle_burst_spawn. */
 void particle_burst_update(int ctx,undefined4 arg,undefined4 pos,int rec)
 {
   short vx;
@@ -13447,7 +13447,7 @@ LAB_80136b18:
 
 }
 
-/* radial_glow_draw — draw a radial glow sprite quad
+/* radial_glow_draw @0x801380e4 — draw a radial glow sprite quad
  * from the record parameters. */
 void radial_glow_draw(int *rec)
 {
@@ -13591,7 +13591,7 @@ void radial_glow_draw(int *rec)
 
 }
 
-/* iris_wipe_spawn/update — iris wipe transition: spawn the
+/* iris_wipe_spawn @0x8013b5a8/update — iris wipe transition: spawn the
  * wipe record and per-tick advance the aperture. */
 void iris_wipe_spawn(int req,int arg)
 {
@@ -13664,7 +13664,7 @@ void iris_wipe_spawn(int req,int arg)
 
 }
 
-/* gte_xform3_ip/t_ip — GTE transform writing results
+/* gte_xform3_ip @0x80186e64/t_ip — GTE transform writing results
  * back through the input pointer (in-place variant). */
 undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 {
@@ -13709,7 +13709,7 @@ undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 
 }
 
-/* see gte_xform3_ip. */
+/* gte_xform3_t_ip @0x80186f5c — see gte_xform3_ip. */
 undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 {
   uint t0;
@@ -13765,7 +13765,7 @@ undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 
 }
 
-/* prim_task_run — run a primitive task node: dispatch the
+/* prim_task_run @0x8018a4f8 — run a primitive task node: dispatch the
  * packet emit chain for rec with mode selector. */
 int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 {
@@ -13848,7 +13848,7 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 
 }
 
-/* vec2_rot — rotate a packed s16 vec2 by angle pair. */
+/* vec2_rot @0x8018b050 — rotate a packed s16 vec2 by angle pair. */
 undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 {
   undefined2 c0;
@@ -13868,7 +13868,7 @@ undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 
 }
 
-/* angle_gte_vec — compute the heading angle of a vec2
+/* angle_gte_vec @0x8018b0a0 — compute the heading angle of a vec2
  * into out. */
 uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 {
@@ -13890,7 +13890,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 
 }
 
-/* see prim_list_gte_invoke. */
+/* prim_list_persp_step @0x8018b208 — see prim_list_gte_invoke. */
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
@@ -13976,7 +13976,7 @@ int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
 
 }
 
-/* gte_light_set — load GTE light direction/color. */
+/* gte_light_set @0x8018d2ec — load GTE light direction/color. */
 void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 {
   setCopControlWord(2,0x6800,x);
@@ -13987,7 +13987,7 @@ void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 }
 
 
-/* gte_xform_add_off — transform vec and add offset. */
+/* gte_xform_add_off @0x8018d568 — transform vec and add offset. */
 int * gte_xform_add_off(int x,undefined4 *y,int *z)
 {
   undefined4 in_zero;
@@ -14012,7 +14012,7 @@ int * gte_xform_add_off(int x,undefined4 *y,int *z)
 
 }
 
-/* angle_pair_rotmat/angle_vec_build — build rotation
+/* angle_pair_rotmat @0x8018dac0/angle_vec_build — build rotation
  * artifacts from packed euler angles via the sin LUT. */
 uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 {
@@ -14062,7 +14062,7 @@ uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 
 }
 
-/* ---- batch18: task/alloc + GTE helpers ---- */
+/* vec_emit_spawn @0x80137048 — ---- batch18: task/alloc + GTE helpers ---- */
 void vec_emit_spawn(undefined4 *rec)
 {
   int grp;
@@ -14074,7 +14074,7 @@ void vec_emit_spawn(undefined4 *rec)
 
 }
 
-/* see iris_wipe_spawn. */
+/* iris_wipe_update @0x8013b12c — see iris_wipe_spawn. */
 void iris_wipe_update(int *rec)
 {
   short cv;
@@ -14213,7 +14213,7 @@ void iris_wipe_update(int *rec)
 
 }
 
-/* script_op_dispatch — script opcode dispatch loop:
+/* script_op_dispatch @0x80184f28 — script opcode dispatch loop:
  * fetch op byte, sprintf debug string, jalr handler until cont==0
  * or iter cap. */
 undefined4 script_op_dispatch(undefined4 ctrl,undefined4 pad,int script,undefined4 ctx)
@@ -14250,7 +14250,7 @@ undefined4 script_op_dispatch(undefined4 ctrl,undefined4 pad,int script,undefine
 
 }
 
-/* trig_sin_lookup — sine lookup by angle index. */
+/* trig_sin_lookup @0x8018d244 — sine lookup by angle index. */
 int trig_sin_lookup(uint ang)
 {
   uint idx;
@@ -14272,7 +14272,7 @@ int trig_sin_lookup(uint ang)
 
 }
 
-/* see angle_pair_rotmat. */
+/* angle_vec_build @0x8018e028 — see angle_pair_rotmat. */
 uint * angle_vec_build(uint ang,uint *out)
 {
   int t0;
@@ -14304,7 +14304,7 @@ uint * angle_vec_build(uint ang,uint *out)
 
 }
 
-/* rand_lcg — LCG random step. */
+/* rand_lcg @0x8018e4d0 — LCG random step. */
 uint rand_lcg(void)
 {
   _DAT_801f68e0 = _DAT_801f68e0 * 0x41c64e6d + 0x3039;
@@ -14312,7 +14312,7 @@ uint rand_lcg(void)
 
 }
 
-/* isqrt/isqrt_refine — integer square root + refinement. */
+/* isqrt @0x801943d4/isqrt_refine — integer square root + refinement. */
 int isqrt(int n)
 {
   int r;
@@ -14344,7 +14344,7 @@ int isqrt(int n)
 
 }
 
-/* see gte_rtps_xform3 (_t = transpose-angle variant). */
+/* gte_rtps_xform3_t @0x80194c50 — see gte_rtps_xform3 (_t = transpose-angle variant). */
 uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 {
   uint t0;
@@ -14398,7 +14398,7 @@ uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 
 }
 
-/* gte_xform1_ir/raw — single-row GTE transform variants. */
+/* gte_xform1_ir @0x80194f10/raw — single-row GTE transform variants. */
 undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 {
   undefined4 v;
@@ -14415,7 +14415,7 @@ undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 
 }
 
-/* see gte_xform1_ir. */
+/* gte_rtps_xform1_raw @0x80195160 — see gte_xform1_ir. */
 undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 {
   undefined4 v;
@@ -14439,7 +14439,7 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 
 }
 
-/* node_lazy_attach — attach a node of class cls from
+/* node_lazy_attach @0x801a4414 — attach a node of class cls from
  * pool tables; returns node or 0. */
 int * node_lazy_attach(int n,int en,int aux,int par)
 {
@@ -14479,7 +14479,7 @@ int * node_lazy_attach(int n,int en,int aux,int par)
 
 }
 
-/* tween_ensure — ensure a channel has a live tween track;
+/* tween_ensure @0x801a6f44 — ensure a channel has a live tween track;
  * allocate via tween_track_alloc if missing. */
 undefined4 tween_ensure(int chan)
 {
@@ -14509,7 +14509,7 @@ undefined4 tween_ensure(int chan)
 
 }
 
-/* see obj_flag34_clear. */
+/* obj_flag34_set @0x801a7498 — see obj_flag34_clear. */
 void obj_flag34_set(int obj)
 {
   int i;
@@ -14523,7 +14523,7 @@ void obj_flag34_set(int obj)
 
 }
 
-/* tween_seek — seek a tween sequence to position pos. */
+/* tween_seek @0x801a99e0 — seek a tween sequence to position pos. */
 void tween_seek(int seq,int pos)
 {
   uint ok;
@@ -14592,7 +14592,7 @@ void tween_seek(int seq,int pos)
 
 }
 
-/* tween_seq_step — advance a tween sequence one step. */
+/* tween_seq_step @0x801aa4fc — advance a tween sequence one step. */
 void tween_seq_step(short *seq)
 {
   short t;
@@ -14729,7 +14729,7 @@ LAB_801aa600:
 
 }
 
-/* prim_group_gc — garbage-collect dead entries in a
+/* prim_group_gc @0x801ac154 — garbage-collect dead entries in a
  * primitive group. */
 void prim_group_gc(int grp)
 {
@@ -14783,7 +14783,7 @@ LAB_801ac2ac:
 
 }
 
-/* rect_prim_spawn — spawn a rect primitive task node:
+/* rect_prim_spawn @0x801ace48 — spawn a rect primitive task node:
  * write x0/y0/x1/y1 + flags into the record. */
 void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, undefined1 b0,undefined1 b1,undefined2 fl,undefined2 aux, undefined4 kind)
 {
@@ -14807,7 +14807,7 @@ void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, un
 
 }
 
-/* ---- batch19: task/effect node ops ---- */
+/* isqrt_refine @0x80194280 — ---- batch19: task/effect node ops ---- */
 undefined4 isqrt_refine(int n)
 {
   /* Faithful port of guest 0x80194280: a restoring digit-recurrence integer
@@ -14855,7 +14855,7 @@ undefined4 isqrt_refine(int n)
 
 }
 
-/* cop2_clz — cop2 count-leading-zeros op. */
+/* cop2_clz @0x801954b4 — cop2 count-leading-zeros op. */
 undefined4 cop2_clz(undefined4 v)
 {
   undefined4 res;
@@ -14865,7 +14865,7 @@ undefined4 cop2_clz(undefined4 v)
 
 }
 
-/* gte_points_xform — transform n points: ip -> sz/sx/sy/cc
+/* gte_points_xform @0x80195500 — transform n points: ip -> sz/sx/sy/cc
  * output streams. */
 void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
@@ -14897,7 +14897,7 @@ void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *s
 
 }
 
-/* see tween_seq_alloc (track variant). */
+/* tween_track_alloc @0x801a953c — see tween_seq_alloc (track variant). */
 int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 kind)
 {
   undefined2 fld0;
@@ -14942,7 +14942,7 @@ int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short 
 
 }
 
-/* tween_apply — apply tween value v0->v1 with phase/dir
+/* tween_apply @0x801a9c24 — apply tween value v0->v1 with phase/dir
  * accumulation to the seq target. */
 void tween_apply(short *seq,int v0,int v1)
 {
@@ -15096,7 +15096,7 @@ LAB_801a9ec0:
 
 }
 
-/* rect_prim_tick — per-tick update for a rect primitive. */
+/* rect_prim_tick @0x801acdbc — per-tick update for a rect primitive. */
 void rect_prim_tick(uint *prim)
 {
   uint cnt;
@@ -15118,7 +15118,7 @@ void rect_prim_tick(uint *prim)
 
 }
 
-/* prim_tag_set — set the primitive tag/OT link bits. */
+/* prim_tag_set @0x801acf94 — set the primitive tag/OT link bits. */
 void prim_tag_set(int prim)
 {
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((prim + 3) ))= 4;
@@ -15127,7 +15127,7 @@ void prim_tag_set(int prim)
 
 }
 
-/* prim_packet_init(+_tex) — init a primitive packet
+/* prim_packet_init @0x801acfb4(+_tex) — init a primitive packet
  * header: tag word + attribute flags (+tex variant binds texture). */
 void prim_packet_init(int pkt,int a1,int a2,uint fl)
 {
@@ -15146,7 +15146,7 @@ void prim_packet_init(int pkt,int a1,int a2,uint fl)
 
 }
 
-/* verts_*_apply — vertex-array passes: offset / rgb /
+/* verts_offset_apply @0x801acfe4 — verts_*_apply — vertex-array passes: offset / rgb /
  * add / sub transforms over n verts with color stride. */
 void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
@@ -15187,7 +15187,7 @@ void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefine
 
 }
 
-/* see verts_offset_apply. */
+/* verts_rgb_apply @0x801ad070 — see verts_offset_apply. */
 void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
   short vi;
@@ -15224,7 +15224,7 @@ void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 
 }
 
-/* see verts_offset_apply. */
+/* verts_add_apply @0x801ad11c — see verts_offset_apply. */
 void verts_add_apply(int n,undefined4 *v,ushort *c,int d)
 {
   short dz;
@@ -15251,7 +15251,7 @@ void verts_add_apply(int n,undefined4 *v,ushort *c,int d)
 
 }
 
-/* see verts_offset_apply. */
+/* verts_sub_apply @0x801ad180 — see verts_offset_apply. */
 void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
 {
   short dz;
@@ -15280,7 +15280,7 @@ void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
 
 /* ---- batch19b: fixed_point_divide manual port (capstone) ---- */
 
-/* fixed_point_divide — capstone-verified fixed-point divide (2-pass Newton refinement).
+/* fixed_point_divide @0x8018d300 — capstone-verified fixed-point divide (2-pass Newton refinement).
    div= signed 32/32 mflo, multu= unsigned 32x32 -> mfhi:mflo. */
 /* fixed_point_divide — fixed-point division helper. */
 int fixed_point_divide(int num,int den)
@@ -16154,7 +16154,7 @@ undefined2 * euler_rotmat(uint node,uint ang0,uint ang1,undefined2 *out)
 /* ---- batch25: task callbacks + motion_integrator_tail (verified vs disasm) ---- */
 #define _DAT_1f8003fe (*(uint16_t *)((char *)&_DAT_1f8003fc + 2))
 
-/* spark_trail_task_update — spark-trail task update (EV7 sub 3). */
+/* spark_trail_task_update @0x8013a9d8 — spark-trail task update (EV7 sub 3). */
 void spark_trail_task_update(int *rec)
 {
   ushort life;
@@ -16271,7 +16271,7 @@ void confetti_burst_update(int rec)
   return;
 }
 
-/* ring_effect_task_update — ring/effect task update (6 sprites, matrix transform). */
+/* ring_effect_task_update @0x801407cc — ring/effect task update (6 sprites, matrix transform). */
 void ring_effect_task_update(int rec)
 {
   undefined4 org;
@@ -16347,7 +16347,7 @@ void ring_effect_task_update(int rec)
   return;
 }
 
-/* firework_task_update — firework/particle task update (10 emitters). */
+/* firework_task_update @0x80140d38 — firework/particle task update (10 emitters). */
 void firework_task_update(int rec)
 {
   short dv;
@@ -16501,7 +16501,7 @@ void motion_integrator_tail(int f,int n)
   return;
 }
 
-/* LAB_8013e558 — speech-bubble/voice-print task update (EV2/3 path).
+/* LAB_8013e558 @0x8013e558 — speech-bubble/voice-print task update (EV2/3 path).
  * Alternate entry: task callback registered via task_node_alloc. */
 void LAB_8013e558(undefined4 *ctx)
 {
@@ -16574,7 +16574,7 @@ void LAB_8013e558(undefined4 *ctx)
   return;
 }
 
-/* LAB_80140510 — hit-spark sequence player task update (EV22 path).
+/* LAB_80140510 @0x80140510 — hit-spark sequence player task update (EV22 path).
  * Walks {op,arg,jump} records; spawns impact bursts via impact_fx_spawn. */
 void LAB_80140510(int *ctx)
 {
@@ -16681,7 +16681,7 @@ void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
                0x1f80038c);
 }
 
-/* print_mode_dispatch — print-mode dispatch (mode 1 = text window). */
+/* print_mode_dispatch_b @0x8012cbc0 — print_mode_dispatch — print-mode dispatch (mode 1 = text window). */
 void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2)
 {
   BA32(0x1f800384) = (uint32_t)mode;
@@ -16708,7 +16708,7 @@ void scroll_offset_accumulate(int16_t x,int16_t y)
   BA16(0x1f80037e) = (uint16_t)(BA16(0x1f80037e) + (uint16_t)y);
 }
 
-/* scroll_offset_set — scroll offset set (-1 = keep). */
+/* scroll_offset_set @0x8012cd9c — scroll offset set (-1 = keep). */
 void scroll_offset_set(int32_t x,int32_t y)
 {
   if (BA8(0x1f800015) != 0) y <<= 1;
@@ -16726,14 +16726,14 @@ int32_t scroll_offset_y_get(void)
   return _DAT_1f80037e;
 }
 
-/* rgb_triple_store — RGB triple store (two mirrored triples). */
+/* rgb_triple_store @0x801274fc — RGB triple store (two mirrored triples). */
 void rgb_triple_store(uint8_t r,uint8_t g,uint8_t b)
 {
   BA8(0x801e40b9) = r; BA8(0x801e40ba) = g; BA8(0x801e40bb) = b;
   BA8(0x801e6209) = r; BA8(0x801e620a) = g; BA8(0x801e620b) = b;
 }
 
-/* brightness_packet_send — brightness/gamma level -> 4-byte packet to cd_cmd_retry.
+/* brightness_packet_send @0x80156114 — brightness/gamma level -> 4-byte packet to cd_cmd_retry.
  * DAT_801bef70 = s16 level; DAT_801f36c0 u16 flag selects direct vs
  * scaled (x*63/127) encoding. Verified vs disasm incl. stack buf. */
 void brightness_packet_send(int32_t val)
