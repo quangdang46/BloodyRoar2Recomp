@@ -9354,7 +9354,8 @@ void impact_fx_update(int rec)
    * non-returning case reaches a computed goto — lw v0,(0x801200B8+type*4);
    * jr v0 — into mid-function continuations (0x80138F48..0x8013A014) that
    * consume the function's live s-register file (s1=record, s3=0x1F8003FC,
-   * s4=0x1F8000xx, s5=0x1F8003F8 plus caller-preserved s0/s2/s6/s7/fp).
+   * s4=0x1F8000xx, s5=0x1F8003F8 plus working s0/s2; the prologue saves
+   * only s0-s5+ra — no s6/s7/fp).
    * That register state cannot be reconstructed from clean C locals, so the
    * whole body delegates to the generated implementation (faithful per the
    * delegation rule) rather than guessing the jump-table dispatch. */
@@ -10661,7 +10662,7 @@ void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
   undefined1 *tp;
   int base;
   undefined4 arg;
-  /* Guest vec3 slot: gte_xform_add_off writes ent[0..2] as 3
+  /* Guest vec3 slot: gte_xform_add_off writes out[0..2] as 3
    * contiguous int; the decompiler split the 12-byte vec3 into
    * scalars. out[0..2] = old out/local_40/local_3c. */
   undefined4 out [3];
