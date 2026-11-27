@@ -4320,8 +4320,8 @@ int32_t menu_res_load_sm(uint32_t a0,uint8_t *buf_a,uint8_t *buf_b,int32_t mode)
   val = (int32_t)*(int16_t *)(ctx + 0x8c);
   /* DIAG: record every menu_res_load_sm entry (a0, buf_a guest, buf_b guest, mode,
    * incoming ctx+0x8c state) so versus-vs-arcade load coverage is provable. */
-  decomp_trace_record(61,a0,buf_a?guest_of(buf_a):0,(uint8_t)mode,(uint32_t)val);
-  decomp_trace_record(62,a0,buf_b?guest_of(buf_b):0,(uint8_t)mode,(uint32_t)val);
+  decomp_trace_record(61,a0,buf_a ? guest_of(buf_a) : 0,(uint8_t)mode,(uint32_t)val);
+  decomp_trace_record(62,a0,buf_b ? guest_of(buf_b) : 0,(uint8_t)mode,(uint32_t)val);
   aux = 0;
   if (val < 0) return val;
   *(int16_t *)(ctx + 0xd2) = 0;
@@ -10088,7 +10088,7 @@ int op_anim_delta_walk(uint32_t a0,int32_t a1)
       }
       break;                                   /* -> 0x801A9990 pass++ */
     }
-  slot_done:
+slot_done:
     pass++;                                      /* 0x801A99B4 */
     if (pass >= 2) break;                        /* slti pass,2 @0x801A99B8 */
   }
