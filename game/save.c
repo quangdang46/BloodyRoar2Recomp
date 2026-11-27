@@ -6084,7 +6084,6 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
      {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
-#define BR2_WS16(a,v)  (*(int16_t *)guest_at(a) = (int16_t)(v))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))
 
 /* ---- display_cur_invalidate @0x8015e87c (3 insns) ---- */
@@ -7253,7 +7252,6 @@ int save_state_machine_alt(uint32_t a0, uint8_t *blk, int32_t a2)
   uint32_t sp28 = 0;
   uint32_t heapB, heapA, sz, rec_dst, pblk, slot_base, i;
   int *tbl = (int *)tag_table_get();   /* tag table; pure getter */
-#define H90W16(a,v) BR2_WS16(a,v)
 
   if (phase == 0x20) goto st_20;
   if (phase < 0x21) {
@@ -7490,8 +7488,9 @@ ret0:
      there is no store-less return-0, so ret_nc is removed. */
   *(int16_t *)(st + 0x8e) = (int16_t)phase;
   return 0;
-#undef H90W16
 }
+#undef BR2_W32
+#undef BR2_W8
 
 /* ======== 0x8018123c ======== */
 
