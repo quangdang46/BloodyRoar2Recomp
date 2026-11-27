@@ -1,6 +1,6 @@
 /* resolve.c — FUN_80176248 action-request resolver.
  * Faithful port: guest decompile kept 1:1 (identifiers, goto, labels).
- * Types: uint8_t/uint16_t/uint32_t/undefinedN are guest-width typedefs.
+ * Types: uint8_t/uint16_t/uint32_t/uint64_t are guest-width stdint types.
  * DAT_ symbols are lvalue macros yielding guest-field pointers;
  * _DAT_801f04a4 is an int32_t* guest pointer. FUN_ calls bind to
  * host hooks (declared below; guest names preserved for audit). */
