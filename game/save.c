@@ -2819,7 +2819,7 @@ void rec_slot_scan(void)
   for (i = 0; i < 0x20; i++) {
     uint16_t *r = (uint16_t *)guest_at(0x801f3600 + i * 6);
     if ((*r & 0xf00) == 0x400) {
-      *(uint32_t *)guest_at(0x801f35f4) -= 1;
+      (*(uint32_t *)guest_at(0x801f35f4))--;
       *r = 0;
     }
   }
@@ -2948,7 +2948,7 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
       } else {
         len = *ip++;
         if (!(len)) return ret_val;
-        len += 1;
+        len++;
       }
       ref = op + off;
     } else {
@@ -2967,7 +2967,7 @@ uint32_t lzss_decode(uint32_t dst,uint32_t src)
       }
       bit = bitwin & 0x8000;
       bitwin <<= 1;
-      if (bit) l += 1;
+      if (bit) l++;
       len = l + 2;
       b = *ip++;
       ref = op + ((int32_t)b - 0x100);
@@ -4827,7 +4827,7 @@ void sprite_anim_chain_build(uint32_t a0)
     uint32_t prim_c = 0x801f4d08 + off;
     s4t = 0x801e40a0 + (uint32_t)i * 0x2150;
 
-    sp20 += 1;
+    sp20++;
     prim_packet_init_tex(prim_a,1,g8(s4t + 0x16),0x40,0);
     d18[0]=0x100; d18[1]=0x1f0; d18[2]=0x60; d18[3]=0x10;
     gpu_texclut_pkt(clut,d18,0x100,0x1e0);
@@ -4923,7 +4923,7 @@ void sprite_anim_chain_build(uint32_t a0)
     tag24_merge(h2_e0,sp24);
 
     sp2c += 0x2150;
-    sp20 += 1;
+    sp20++;
     sp28 += 0x58;
     sp24 += 0x58;
   }
@@ -6361,10 +6361,10 @@ void hud_slot_blitter(uint32_t a0, uint32_t a1)
   cnt = 0;
   for (;;) {
     uint16_t attr = *(uint16_t *)(ring + idx * 2);
-    idx += 1;
+    idx++;
     slot_attr_packet_build(_DAT_1f800008, _DAT_1f80000c, attr, 0x1000, 0x1000, a1);
     idx %= 10;
-    cnt += 1;
+    cnt++;
     if (cnt >= 10) break;
   }
   print_dispatch((const char *)guest_at(0x801223cc));
@@ -8825,7 +8825,7 @@ static int32_t guard_tri_emit(uint32_t a0,uint32_t a1,uint32_t a2,
     guard_lwc2(vtx,4); guard_lwc2(vtx + 4,5);
   }
 
-  cnt -= 1;
+  cnt--;
   if (cnt > 0) istr += 6; else istr -= 6;   /* bgtz/j delay slots */
 
   for (;;) {
@@ -8836,7 +8836,7 @@ static int32_t guard_tri_emit(uint32_t a0,uint32_t a1,uint32_t a2,
       setCopReg(2, GTE_DREG(1), dreg1);
     }
     first = 0;
-    cnt -= 1;
+    cnt--;
     copFunction(2, 0x0280030);              /* RTPT */
     /* current triple: idx0 pair -> next-iteration V0 (GPRs), idx1/idx2
      * -> V1/V2 via lwc2. All three indices are lh (sign-extended). */
@@ -8936,7 +8936,7 @@ static int32_t guard_quad_emit(uint32_t a0,uint32_t a1,uint32_t a2,
   guard_lwc2(vtx,4); guard_lwc2(vtx + 4,5);
   v4ptr = vtab + ((iw1 >> 16) << 3);
 
-  cnt -= 1;
+  cnt--;
   if (cnt > 0) istr += 8; else istr -= 8;   /* bgtz/j delay slots */
 
   for (;;) {
@@ -8945,7 +8945,7 @@ static int32_t guard_quad_emit(uint32_t a0,uint32_t a1,uint32_t a2,
       setCopReg(2, GTE_DREG(1), dreg1);
     }
     first = 0;
-    cnt -= 1;
+    cnt--;
     copFunction(2, 0x0280030);              /* RTPT */
     iw0 = *(uint32_t *)guest_at(istr);
     iw1 = *(uint32_t *)guest_at(istr + 4);
