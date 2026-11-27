@@ -5851,6 +5851,8 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
   }
   return 0;
 }
+#undef BDC0_E58C
+#undef BDC0_STATUS
 
 /* ======================================================================
  * Round-3 ports: save/load state machines, memcard wrappers, HUD debug
