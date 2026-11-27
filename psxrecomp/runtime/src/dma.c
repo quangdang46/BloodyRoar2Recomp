@@ -80,6 +80,7 @@ static CdDmaEntry cd_dma_log[CD_DMA_LOG_CAP];
 static uint32_t   cd_dma_log_head  = 0;
 static uint32_t   cd_dma_log_total = 0;
 
+/* Push a CD-DMA record into the bounded log ring. */
 static void cd_dma_log_push(int lba, uint32_t dest, uint32_t size) {
     cd_dma_log[cd_dma_log_head % CD_DMA_LOG_CAP].lba  = lba;
     cd_dma_log[cd_dma_log_head % CD_DMA_LOG_CAP].dest = dest;
@@ -88,7 +89,9 @@ static void cd_dma_log_push(int lba, uint32_t dest, uint32_t size) {
     cd_dma_log_total++;
 }
 
+/* Total CD-DMA log records written. */
 uint32_t cd_dma_log_get_total(void) { return cd_dma_log_total; }
+/* Fetch one CD-DMA log entry by index. */
 void     cd_dma_log_get_entry(uint32_t idx, int *lba, uint32_t *dest, uint32_t *size) {
     uint32_t cap   = CD_DMA_LOG_CAP;
     uint32_t oldest = cd_dma_log_total > cap ? cd_dma_log_total - cap : 0;
@@ -147,6 +150,7 @@ static DMADelayedComplete delayed_complete[7];
  * boundary) to match the channel direction. While waiting, CHCR.24 stays
  * set with no payload moved and no completion — the faithful "SPU DMA
  * waits for transfer mode" behaviour. The countdown is serviced from
+ /* Advance DMA timing by `cycles` guest cycles. */
  * dma_advance() and advertised through dma_cycles_to_internal_event() so
  * the event scheduler wakes the DMA engine when the mode may apply. */
 static int      spu_wait_active;
@@ -167,6 +171,7 @@ static uint64_t cdrom_dma_history_seq;
 static DMACDROMHistoryEntry cdrom_dma_active_entry;
 static uint8_t cdrom_dma_history_active;
 
+/* DICR read value (bit31 synthesized from channel flags). */
 static uint32_t dicr_read_value(uint32_t v);
 
 static void trace_dma(uint32_t kind, int ch, uint32_t total_words,
@@ -216,6 +221,7 @@ static void trace_dma_reg_write(uint32_t addr, uint32_t val, uint32_t mask,
     e->pc = g_debug_last_store_pc;
 }
 
+/* Snapshot GPU OT-walk stats after a transfer. */
 static void gpu_ot_record_walk_stats(uint64_t cycles) {
     gpu_ot_stats.nodes_last = gpu_linked_list.nodes_processed;
     gpu_ot_stats.words_last = gpu_linked_list.total_words;
@@ -241,15 +247,18 @@ static void update_master_irq(void) {
      * when both master IRQ and that channel IRQ are enabled. */
 }
 
+/* Compute DICR bit31 master flag from channel bits. */
 static uint32_t dicr_master_flag(uint32_t v) {
     return ((v & (1u << 15)) ||
             ((v & (1u << 23)) && (v & DICR_RESET_MASK))) ? (1u << 31) : 0;
 }
 
+/* DICR read value (bit31 synthesized from channel flags). */
 static uint32_t dicr_read_value(uint32_t v) {
     return (v & ~(1u << 31)) | dicr_master_flag(v);
 }
 
+/* Raise IRQ3 on the DICR master-flag 0->1 edge. */
 static void raise_dma_irq_on_master_edge(uint32_t before) {
     /* IRQ3 is latched only when DICR's aggregate master flag transitions
      * from 0 to 1. Pending channel flags keep bit 31 high, but do not
@@ -259,6 +268,7 @@ static void raise_dma_irq_on_master_edge(uint32_t before) {
     }
 }
 
+/* Begin a CDROM DMA history capture. */
 static void start_cdrom_dma_capture(uint32_t requested_words) {
     CDROMDebugState s;
     cdrom_debug_snapshot(&s);
@@ -287,6 +297,7 @@ static void start_cdrom_dma_capture(uint32_t requested_words) {
     cdrom_dma_history_active = 1;
 }
 
+/* Record one CDROM DMA word into the capture. */
 static void record_cdrom_dma_word(uint32_t word) {
     if (!cdrom_dma_history_active) return;
 
@@ -306,6 +317,7 @@ static void record_cdrom_dma_word(uint32_t word) {
     e->moved_words++;
 }
 
+/* Finish a CDROM DMA history capture. */
 static void finish_cdrom_dma_capture(uint32_t final_addr, uint8_t completed) {
     if (!cdrom_dma_history_active) return;
 
@@ -327,12 +339,14 @@ static void finish_cdrom_dma_capture(uint32_t final_addr, uint8_t completed) {
     cdrom_dma_history_active = 0;
 }
 
+/* True if DMA channel ch is enabled in DPCR. */
 static int channel_enabled(int ch) {
     /* DPCR: each channel has 4 bits, bit 3 of each group is enable.
      * Ch0 = bits 0-3, Ch1 = bits 4-7, etc. Enable = bit (ch*4 + 3). */
     return (dpcr >> (ch * 4 + 3)) & 1;
 }
 
+/* True if channel ch IRQs are unmasked in DICR. */
 static int channel_irq_enabled(int ch) {
     /* DICR bits 16-22: per-channel IRQ mask. On real hardware a completed
      * transfer latches the done-flag (bit 24+ch) whenever this mask is set —
@@ -345,15 +359,18 @@ static int channel_irq_enabled(int ch) {
     return (dicr >> (16 + ch)) & 1u;
 }
 
+/* True when a ch completion yields a deliverable IRQ3. */
 static int channel_irq_flag_armed(int ch) {
     /* True when a completion on this channel will produce a DELIVERABLE
      * IRQ3: the flag will latch (per-channel mask set) AND the master
      * enable is on so the computed bit31 can rise. Used only by the
      * IRQ-timing estimator; complete_transfer() itself latches the flag
      * on channel_irq_enabled() alone. */
+    /* True if channel ch IRQs are unmasked in DICR. */
     return channel_irq_enabled(ch) && ((dicr >> 23) & 1u);
 }
 
+/* Total words a DMA channel transfer will move. */
 static uint32_t transfer_word_count(int ch) {
     uint32_t chcr = channels[ch].chcr;
     uint32_t sync_mode = (chcr >> 9) & 3;
@@ -383,6 +400,7 @@ static uint32_t transfer_word_count(int ch) {
  * (the node walker has its own MAX_NODES cycle cap). */
 #define DMA_MAX_TRANSFER_WORDS 0x80000u
 
+/* Validate/adjust a DMA transfer length. */
 static void validate_transfer_length(int ch) {
     uint32_t sync_mode = (channels[ch].chcr >> 9) & 3u;
     if (ch == 2 && sync_mode == 2) return;
@@ -414,6 +432,7 @@ static void dmaprobe(const char *kind, int ch, uint32_t a, uint32_t b, uint32_t 
             g_debug_last_store_pc);
 }
 
+/* Finish a DMA channel transfer (regs, IRQ, stats). */
 static void complete_transfer(int ch) {
     uint32_t dicr_before = dicr;
     uint32_t i_stat_before = i_stat;
@@ -490,6 +509,7 @@ static void schedule_delayed_complete(int ch, uint32_t total_words,
     event_ring_record_aux(EV_DMA_SCHED, (uint8_t)ch, channels[ch].chcr);
 }
 
+/* Advance a delayed DMA completion deadline. */
 static void advance_delayed_complete(int ch, uint32_t cycles) {
     DMADelayedComplete *d = &delayed_complete[ch];
     if (!d->active) return;
@@ -504,6 +524,7 @@ static void advance_delayed_complete(int ch, uint32_t cycles) {
     complete_transfer(ch);
 }
 
+/* Start an async MDEC DMA channel. */
 static void start_async_mdec_transfer(int ch) {
     DMAAsyncChannel *a = &mdec_async[ch];
     if (a->active) return;
@@ -522,6 +543,7 @@ static void start_async_mdec_transfer(int ch) {
     a->debug_started = 1;
 }
 
+/* Finish an async MDEC DMA channel. */
 static void finish_async_mdec_transfer(int ch, uint32_t final_addr, uint32_t total_words) {
     if (ch == 0) {
         mdec_debug_dma_in_end(final_addr, total_words);
@@ -532,6 +554,7 @@ static void finish_async_mdec_transfer(int ch, uint32_t final_addr, uint32_t tot
     complete_transfer(ch);
 }
 
+/* Start the async CDROM DMA channel. */
 static void start_async_cdrom_transfer(void) {
     DMAAsyncChannel *a = &cdrom_async;
     if (a->active) return;
@@ -551,6 +574,7 @@ static void start_async_cdrom_transfer(void) {
     }
 }
 
+/* Finish the async CDROM DMA channel. */
 static void finish_async_cdrom_transfer(uint32_t final_addr) {
     finish_cdrom_dma_capture(final_addr, 1);
     DMAAsyncChannel *a = &cdrom_async;
@@ -582,6 +606,7 @@ static void finish_async_cdrom_transfer(uint32_t final_addr) {
     complete_transfer(3);
 }
 
+/* Advance one async MDEC channel by available words. */
 static void advance_mdec_channel(int ch, uint32_t cycles) {
     DMAAsyncChannel *a = &mdec_async[ch];
     if (!a->active) return;
@@ -676,6 +701,7 @@ static void advance_mdec_channel(int ch, uint32_t cycles) {
     }
 }
 
+/* Execute DMA channel 0 (MDEC input). */
 static void execute_ch0_mdec_in(void) {
     uint32_t chcr = channels[0].chcr;
     uint32_t direction = chcr & 1;           /* 1=from RAM to MDEC */
@@ -710,6 +736,7 @@ static void execute_ch0_mdec_in(void) {
     complete_transfer(0);
 }
 
+/* Execute DMA channel 1 (MDEC output). */
 static void execute_ch1_mdec_out(void) {
     uint32_t chcr = channels[1].chcr;
     uint32_t direction = chcr & 1;           /* 0=from MDEC to RAM */
@@ -731,11 +758,13 @@ static void execute_ch1_mdec_out(void) {
     complete_transfer(1);
 }
 
+/* GPU LL hook: resolve a linked-list address. */
 static uint32_t gpu_ll_resolve_address(void *opaque, uint32_t address) {
     (void)opaque;
     return psx_mod_gpu_dma_resolve_address(address);
 }
 
+/* GPU LL hook: read a word for the walk. */
 static uint32_t gpu_ll_read_word(void *opaque, uint32_t address) {
     (void)opaque;
     return psx_read_word(address);
@@ -747,6 +776,7 @@ static void gpu_ll_observe_header(void *opaque, uint32_t addr,
     gpu_ws_validate_linked_list_header(addr, header);
 }
 
+/* GPU LL hook: begin a linked-list node. */
 static int gpu_ll_begin_node(void *opaque, uint32_t addr, uint32_t num_words) {
     (void)opaque;
 
@@ -755,6 +785,7 @@ static int gpu_ll_begin_node(void *opaque, uint32_t addr, uint32_t num_words) {
     return 1;
 }
 
+/* GPU LL hook: emit one GP0 word. */
 static void gpu_ll_emit_word(void *opaque, uint32_t address, uint32_t word) {
     (void)opaque;
     gpu_set_gp0_source(address);
@@ -766,11 +797,13 @@ static void gpu_ll_emit_word(void *opaque, uint32_t address, uint32_t word) {
  * walker stalls on this exactly like the CD-ROM channel's
  * cdrom_dma_ready() gate; gpu_dma_ready_cycles() reports the guest-cycle
  * wait (0 = ready, legacy always-ready when PSX_GPU_TIMING=0). */
+/* GPU LL hook: cycles until the GPU is ready. */
 static uint32_t gpu_ll_ready_cycles(void *opaque) {
     (void)opaque;
     return gpu_dma_ready_cycles();
 }
 
+/* GPU LL hook: linked-list walk complete. */
 static void gpu_ll_complete(void *opaque, int hit_limit) {
     (void)opaque;
     gpu_ot_stats.completes++;
@@ -791,6 +824,7 @@ static const DMAGPULinkedListOps gpu_ll_ops = {
     gpu_ll_ready_cycles
 };
 
+/* Start an async GPU linked-list (OT) walk. */
 static void start_async_gpu_linked_list(void) {
     if (gpu_linked_list.active) {
         gpu_ot_stats.starts_dropped++;
@@ -809,6 +843,7 @@ static void start_async_gpu_linked_list(void) {
     gpu_ot_polls_this_walk = 0;
 }
 
+/* Execute DMA channel 2 (GPU/OT). */
 static uint32_t execute_ch2_gpu(void) {
     uint32_t chcr = channels[2].chcr;
     uint32_t direction = chcr & 1;           /* 0=to RAM, 1=from RAM (to device) */
@@ -877,6 +912,7 @@ static uint32_t execute_ch2_gpu(void) {
     return actual_words;
 }
 
+/* Execute DMA channel 3 (CDROM). */
 static void execute_ch3_cdrom(void) {
     uint32_t chcr = channels[3].chcr;
     uint32_t direction = chcr & 1;           /* 0=to RAM, 1=from RAM */
@@ -893,6 +929,7 @@ static void execute_ch3_cdrom(void) {
  * delayed completion (DMA_SPU_CYCLES_PER_WORD). The payload moves immediately
  * (SPU RAM is correct the instant this returns); only the busy-bit clear and
  * completion IRQ are deferred by schedule_delayed_complete. */
+/* Execute DMA channel 4 (SPU). */
 static uint32_t execute_ch4_spu(void) {
     uint32_t chcr = channels[4].chcr;
     uint32_t direction = chcr & 1;           /* 1=from RAM to SPU, 0=SPU to RAM */
@@ -930,6 +967,7 @@ static uint32_t execute_ch4_spu(void) {
     return total_words;
 }
 
+/* Execute DMA channel 6 (OTC ordering-table clear). */
 static void execute_ch6_otc(void) {
     /* OTC (Ordering Table Clear): writes a backward-linked list to RAM.
      * Node N = address of node N-1, node 0 = 0xFFFFFF (end marker).
@@ -955,6 +993,7 @@ static void execute_ch6_otc(void) {
     complete_transfer(6);
 }
 
+/* Execute DMA channel 5 (PIO/parallel port). */
 static void execute_ch5_pio(void) {
     /* PIO (Parallel I/O) — used for expansion port / parallel port transfers.
      * Very simple: just move words directly to/from RAM with no device interaction.
@@ -990,6 +1029,7 @@ static void execute_ch5_pio(void) {
  * after one full SPU sample period when no application is pending (the
  * applied mode cannot change without a pending write, but re-checking each
  * sample boundary also catches writes committed between polls). */
+/* Arm the SPU ch4 transfer-mode wait deadline. */
 static void spu_ch4_arm_mode_wait(void) {
     uint64_t now = psx_get_cycle_count();
     uint64_t nxt = spu_transfer_mode_apply_cycle();
@@ -1023,6 +1063,7 @@ static void spu_ch4_retry(void) {
     spu_ch4_arm_mode_wait();
 }
 
+/* Advance the SPU ch4 mode-wait deadline. */
 static void spu_ch4_mode_wait_advance(uint32_t cycles) {
     if (!spu_wait_active) return;
     if (cycles >= spu_wait_cycles_left) {
@@ -1032,6 +1073,7 @@ static void spu_ch4_mode_wait_advance(uint32_t cycles) {
     }
 }
 
+/* Attempt to start a DMA channel transfer (CHCR start bit). */
 static void try_execute(int ch) {
     uint32_t chcr = channels[ch].chcr;
 
@@ -1116,6 +1158,7 @@ static void try_execute(int ch) {
 
 uint32_t dma_get_dicr(void) { return dicr_read_value(dicr); }
 uint32_t dma_get_dpcr(void) { return dpcr; }
+/* True while a CDROM DMA transfer is in flight. */
 int dma_cdrom_transfer_active(void) {
     return cdrom_async.active &&
            ((channels[3].chcr >> 24) & 1u) &&
@@ -1129,6 +1172,7 @@ int dma_cdrom_transfer_active(void) {
  * already accumulated (always <= the true remaining, since per-word cost >= 1),
  * and the exact countdown for delayed-complete channels. Over-slicing on a
  * channel whose DICR completion is masked is safe. See PRECISE_IRQ_SLICE.md. */
+/* Guest cycles to the next DMA IRQ3 (UINT32_MAX if masked). */
 uint32_t dma_cycles_to_irq(uint32_t i_mask) {
     if (!(i_mask & (1u << 3))) return 0xFFFFFFFFu;   /* IRQ_DMA masked */
     uint32_t best = 0xFFFFFFFFu;
@@ -1152,6 +1196,7 @@ uint32_t dma_cycles_to_irq(uint32_t i_mask) {
     return best;
 }
 
+/* Guest cycles to the next internal DMA event. */
 uint32_t dma_cycles_to_internal_event(void) {
     uint32_t best = 0xFFFFFFFFu;
 
@@ -1207,6 +1252,7 @@ uint32_t dma_cycles_to_internal_event(void) {
     return best;
 }
 
+/* Guest cycles to the next deliverable DMA IRQ. */
 uint32_t dma_cycles_to_deliverable_irq(uint32_t i_mask) {
     if (!(i_mask & (1u << 3))) return 0xFFFFFFFFu;
     uint32_t best = 0xFFFFFFFFu;
@@ -1234,6 +1280,7 @@ uint32_t dma_cycles_to_deliverable_irq(uint32_t i_mask) {
     return best;
 }
 
+/* Advance DMA timing by `cycles` guest cycles. */
 void dma_advance(uint32_t cycles) {
     if (cycles == 0) return;
     g_dma_exec_depth++;   /* async to-RAM DMA writes below run through psx_write_word */
@@ -1309,6 +1356,7 @@ void dma_advance(uint32_t cycles) {
     g_dma_exec_depth--;
 }
 
+/* Reset all DMA state (call at machine init). */
 void dma_init(void) {
     memset(channels, 0, sizeof(channels));
     memset(mdec_async, 0, sizeof(mdec_async));
@@ -1323,6 +1371,7 @@ void dma_init(void) {
     dma_debug_clear_cdrom_history();
 }
 
+/* DMA register read dispatch (DPCR/DICR/MADR/etc). */
 uint32_t dma_read(uint32_t addr) {
     /* DPCR */
     if (addr == 0x1F8010F0u) return dpcr;
@@ -1367,6 +1416,7 @@ bad:
     return 0;
 }
 
+/* DMA register write with a bitmask. */
 void dma_write_masked(uint32_t addr, uint32_t val, uint32_t mask) {
     /* DPCR */
     if (addr == 0x1F8010F0u) {
@@ -1440,10 +1490,12 @@ bad:
     }
 }
 
+/* DMA register write dispatch. */
 void dma_write(uint32_t addr, uint32_t val) {
     dma_write_masked(addr, val, 0xFFFFFFFFu);
 }
 
+/* GPU OT-walk stats for the debug server. */
 void dma_debug_get_gpu_ot_stats(DMAGpuOtStats* out) {
     if (!out) return;
     *out = gpu_ot_stats;
@@ -1451,21 +1503,25 @@ void dma_debug_get_gpu_ot_stats(DMAGpuOtStats* out) {
     out->active = gpu_linked_list.active;
 }
 
+/* DMA trace ring for the debug server. */
 uint64_t dma_debug_get_trace(const DMATraceEntry** out_entries) {
     if (out_entries) *out_entries = dma_trace;
     return dma_trace_seq;
 }
 
+/* Clear the DMA trace ring. */
 void dma_debug_clear_trace(void) {
     memset(dma_trace, 0, sizeof(dma_trace));
     dma_trace_seq = 0;
 }
 
+/* CDROM DMA history for the debug server. */
 uint64_t dma_debug_get_cdrom_history(const DMACDROMHistoryEntry** out_entries) {
     if (out_entries) *out_entries = cdrom_dma_history;
     return cdrom_dma_history_seq;
 }
 
+/* Clear the CDROM DMA history. */
 void dma_debug_clear_cdrom_history(void) {
     memset(cdrom_dma_history, 0, sizeof(cdrom_dma_history));
     memset(&cdrom_dma_active_entry, 0, sizeof(cdrom_dma_active_entry));
@@ -1473,6 +1529,7 @@ void dma_debug_clear_cdrom_history(void) {
     cdrom_dma_history_active = 0;
 }
 
+/* Full DMA state snapshot for the debug server. */
 void dma_debug_get_state(DMADebugState* out) {
     if (!out) return;
     out->dpcr = dpcr;
@@ -1511,16 +1568,19 @@ void dma_debug_get_state(DMADebugState* out) {
     (7u * 12u) + 4u + 4u + (2u * DMA_ASYNC_WIRE) + DMA_ASYNC_WIRE + \
     DMA_GPU_LL_WIRE + (7u * DMA_DELAY_WIRE))
 
+/* Serialize an async-channel record. */
 static int dma_w_async(PstW *w, const DMAAsyncChannel *a) {
     return pst_w_u8(w, a->active) && pst_w_u8(w, a->debug_started) &&
            pst_w_u32(w, a->total_words) && pst_w_u32(w, a->remaining_words) &&
            pst_w_u32(w, a->cycles_accum) && pst_w_u32(w, a->start_addr);
 }
+/* Deserialize an async-channel record. */
 static int dma_r_async(PstR *r, DMAAsyncChannel *a) {
     return pst_r_u8(r, &a->active) && pst_r_u8(r, &a->debug_started) &&
            pst_r_u32(r, &a->total_words) && pst_r_u32(r, &a->remaining_words) &&
            pst_r_u32(r, &a->cycles_accum) && pst_r_u32(r, &a->start_addr);
 }
+/* Serialize GPU-LL state. */
 static int dma_w_gpu_ll(PstW *w, const DMAGPULinkedList *s) {
     return pst_w_u8(w, s->active) && pst_w_u8(w, s->phase) &&
            pst_w_u8(w, s->emit_node) && pst_w_u8(w, s->hit_limit) &&
@@ -1531,6 +1591,7 @@ static int dma_w_gpu_ll(PstW *w, const DMAGPULinkedList *s) {
            pst_w_u32(w, s->nodes_processed) && pst_w_u32(w, s->max_nodes) &&
            pst_w_u32(w, s->total_words) && pst_w_u32(w, s->empty_rank);
 }
+/* Deserialize GPU-LL state. */
 static int dma_r_gpu_ll(PstR *r, DMAGPULinkedList *s) {
     int ok = pst_r_u8(r, &s->active) && pst_r_u8(r, &s->phase) &&
            pst_r_u8(r, &s->emit_node) && pst_r_u8(r, &s->hit_limit) &&
@@ -1543,17 +1604,21 @@ static int dma_r_gpu_ll(PstR *r, DMAGPULinkedList *s) {
     return ok && s->payload_index <= s->word_count &&
            s->phase <= DMA_GPU_LL_PHASE_PAYLOAD;
 }
+/* Serialize a delayed-complete record. */
 static int dma_w_delay(PstW *w, const DMADelayedComplete *d) {
     return pst_w_u8(w, d->active) && pst_w_u32(w, d->total_words) &&
            pst_w_u32(w, d->cycles_remaining);
 }
+/* Deserialize a delayed-complete record. */
 static int dma_r_delay(PstR *r, DMADelayedComplete *d) {
     return pst_r_u8(r, &d->active) && pst_r_u32(r, &d->total_words) &&
            pst_r_u32(r, &d->cycles_remaining);
 }
 
+/* Byte size of the DMA savestate section. */
 uint32_t dma_snapshot_bytes(void) { return DMA_SNAP_WIRE_BYTES; }
 
+/* Write the DMA savestate section. */
 void dma_snapshot_write(uint8_t *p) {
     PstW w;
     pst_w_init(&w, p, DMA_SNAP_WIRE_BYTES);
@@ -1572,6 +1637,7 @@ void dma_snapshot_write(uint8_t *p) {
         dma_w_delay(&w, &delayed_complete[i]);
 }
 
+/* Restore the DMA savestate section. */
 int dma_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     int gpu_ll_was_active = gpu_linked_list.active != 0;

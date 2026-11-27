@@ -37,6 +37,7 @@ static uint16_t sio_ctrl;
 static uint16_t sio_baud;
 static uint32_t sio_debug_poll_counter;
 
+/* Throttled debug-server poll from the SIO path. */
 static void sio_debug_poll_maybe(void) {
     if ((++sio_debug_poll_counter & 0x3FFu) == 0) {
         debug_server_poll();
@@ -166,6 +167,7 @@ static int8_t pad_type_req[PSX_MAX_PLAYERS] = {
  *   physical 0 → multitap pads A–D = logical 0–3
  *   physical 1 → multitap pads A–D = logical 4–7
  */
+/* True when the multitap pad device is active. */
 static int sio_multitap_active(void) {
 #if PSX_MAX_PLAYERS >= 5
     return sio_multitap_enabled;
@@ -183,18 +185,21 @@ static int sio_dual_multitap(void) {
 #endif
 }
 
+/* Map a physical slot to its multitap logical pad index. */
 static int mtap_slot_a_logical(void) {
     if (sio_dual_multitap())
         return (selected_slot == 0) ? 0 : 4;
     return (sio_multitap_port == 0) ? 0 : 1;
 }
 
+/* Standalone (non-multitap) logical pad index. */
 static int mtap_standalone_logical(void) {
     if (sio_dual_multitap())
         return -1; /* no lone opposite-port pad */
     return (sio_multitap_port == 0) ? 4 : 0;
 }
 
+/* Resolve a controller port+slot to a logical pad index. */
 static int pad_logical_for_port(int phys_port) {
     if (phys_port < 0 || phys_port > 1) return -1;
     if (sio_multitap_active()) {
@@ -202,6 +207,7 @@ static int pad_logical_for_port(int phys_port) {
             return (phys_port == 0) ? 0 : 4;
         if (phys_port == sio_multitap_port)
             return (sio_multitap_port == 0) ? 0 : 1;
+        /* Standalone (non-multitap) logical pad index. */
         return mtap_standalone_logical();
     }
     return phys_port;
@@ -219,6 +225,7 @@ static int pad_port_has_device(int phys_port) {
     return (pad_connected & (1u << phys_port)) ? 1 : 0;
 }
 
+/* True if the selected device sits on a multitap port. */
 static int selected_is_mtap_port(void) {
     if (!sio_multitap_active()) return 0;
     if (sio_dual_multitap()) return (selected_slot == 0 || selected_slot == 1);
@@ -400,10 +407,12 @@ uint32_t sio_get_trace(const SioTraceEntry **buf_out, int *write_idx_out) {
     return sio_trace_seq;
 }
 
+/* SIO transaction sequence counter. */
 uint32_t sio_get_seq(void) {
     return sio_trace_seq;
 }
 
+/* True while a memory-card protocol exchange is in flight. */
 int sio_card_protocol_active(void) {
     /* Active if either slot has an in-flight protocol, or the working
      * mc_state is non-idle. */
@@ -430,10 +439,13 @@ static void sio_arm_card_ct_defer_guard(void) {
 }
 
 #if SIO_MODEL_CYCLE_PACED
+/* Raise the SIO0 ACK interrupt (I_STAT bit7). */
 static void sio_fire_ack_irq(void);
+/* Handle a completed shift-register byte. */
 static void sio_handle_shift_complete(void);
 #endif
 
+/* Diagnostic: should a thread switch defer for card I/O. */
 int sio_should_defer_thread_switch(void) {
     /* Diagnostic helper for card_handoff / future gates. Not wired into
      * can_defer — forcing defer while A6C10 is nested prevented recovery. */
@@ -494,6 +506,7 @@ static int s_ape_unstick_pending = 0;
 static uint64_t s_ape_unstick_cool_cyc = 0;
 static int s_ape_torn_pulses = 0;
 
+/* Cached PSX_APE_CARD_UNSTICK gate. */
 static int ape_unstick_enabled(void) {
     if (s_ape_unstick_env < 0) {
         const char *e = getenv("PSX_APE_CARD_UNSTICK");
@@ -514,6 +527,7 @@ void sio_ape_card_unstick_pump(void);
  * bit31 set. Tip post-probe hang without collapse: a6=1, busy=2, B4E38=0
  * (one IntRP short). Re-edge IRQ7 until idle/publish — never poke A6C10
  * or invent B4E20/B4E30/B4E38. */
+/* APE-card unstick watchdog pump. */
 static void ape_card_unstick_maybe(int allow_b4e38_synth) {
     if (!ape_unstick_enabled()) return;
     if (!s_ape_unstick_pending) return;
@@ -554,6 +568,7 @@ static void ape_card_unstick_maybe(int allow_b4e38_synth) {
         s_ape_unstick_pending = 0;
 }
 
+/* Arm/disarm the card-handoff I_MASK bit7 hold. */
 void sio_card_handoff_on_imask(uint32_t old_mask, uint32_t new_mask) {
     if (!s_card_handoff_armed) return;
     if (!(old_mask & 0x80u) && (new_mask & 0x80u))
@@ -564,6 +579,7 @@ void sio_card_handoff_on_imask(uint32_t old_mask, uint32_t new_mask) {
     }
 }
 
+/* Hold I_STAT bit7 while a card transfer needs it. */
 int sio_card_should_hold_imask_bit7(void) {
     static int s_hold_left = -1; /* -1 = idle; 0 = exhausted; >0 remaining */
     if (!ape_unstick_enabled()) { s_hold_left = -1; return 0; }
@@ -593,9 +609,12 @@ const SioCardHandoffEntry *sio_get_card_handoff(int *idx_out, int *count_out) {
     if (count_out) *count_out = s_card_handoff_count;
     return s_card_handoff;
 }
+/* Card-handoff armed state accessor. */
 int sio_card_handoff_cap(void) { return CARD_HANDOFF_CAP; }
+/* Card-handoff armed flag. */
 int sio_card_handoff_armed(void) { return s_card_handoff_armed; }
 
+/* VBlank-paced hold for card-present debounce. */
 int sio_hold_present_for_card(void) {
     /* NTSC VBlank period — matches interrupts.c VBLANK_CYCLES. */
     enum { SIO_PRESENT_HOLD_STALE_VB = 10 };
@@ -790,6 +809,7 @@ static uint8_t   sio_irq_pending_delay      = 0;
 static uint8_t   sio_irq_pending_mc_state   = 0;
 static uint32_t  sio_irq_pending_byte_seq   = 0;
 
+/* Copy the SIO IRQ ring to a caller buffer. */
 uint32_t sio_get_irq_ring(const SioIrqEntry **buf_out, int *write_idx_out) {
     if (buf_out) *buf_out = sio_irq_buf;
     if (write_idx_out) *write_idx_out = sio_irq_idx;
@@ -847,6 +867,7 @@ void sio_card_arm_audit_record(int dev, uint16_t ctrl_pre,
     a->countdown_after_last = countdown_after;
 }
 
+/* Card-arm audit counters (tx/armed/no_ack/...). */
 void sio_get_card_arm_audit(uint32_t out[3][7]) {
     /* row 0 = card, row 1 = pad, row 2 = none.
      * cols: tx_total, armed, no_ack, no_ackirqen, ctrl_last, stat_pre, stat_post */
@@ -863,22 +884,36 @@ void sio_get_card_arm_audit(uint32_t out[3][7]) {
     }
 }
 
+/* Countdown after last card-arm event. */
 int sio_get_card_arm_countdown_after(void) {
     return s_card_arm_audit_card.countdown_after_last;
 }
 
+/* MC probe counter. */
 int sio_get_mc_probe_count(void) { return sio_mc_probe_count; }
+/* MC ACK counter. */
 int sio_get_mc_ack_count(void) { return sio_mc_ack_count; }
+/* MC command counter. */
 int sio_get_mc_cmd_count(void) { return sio_mc_cmd_count; }
+/* MC read counter. */
 int sio_get_mc_read_count(void) { return sio_mc_read_count; }
+/* MC read-done counter. */
 int sio_get_mc_read_done(void) { return sio_mc_read_done; }
+/* Last MC caller PC. */
 uint32_t sio_get_mc_last_caller(void) { return sio_mc_last_caller; }
+/* MC abort counter. */
 int sio_get_mc_abort_count(void) { return sio_mc_abort_count; }
+/* MC abort state. */
 int sio_get_mc_abort_state(void) { return sio_mc_abort_state; }
+/* MC abort control value. */
 uint16_t sio_get_mc_abort_ctrl(void) { return sio_mc_abort_ctrl; }
+/* Max MC state seen. */
 int sio_get_mc_max_state(void) { return sio_mc_max_state; }
+/* TX write counter. */
 int sio_get_tx_writes(void) { return sio_tx_writes; }
+/* TX gated counter. */
 int sio_get_tx_gated(void) { return sio_tx_gated; }
+/* Last control value seen on TX. */
 uint16_t sio_get_last_ctrl_on_tx(void) { return sio_last_ctrl_on_tx; }
 
 /* Delayed IRQ mechanism.
@@ -933,6 +968,7 @@ static int sio_ack_visible_reads = 0;
 #define SIO_CTRL_ACK_IRQ_EN (1 << 12)
 #define SIO_CTRL_SLOT        (1 << 13)
 
+/* Reset all SIO state (call at machine init). */
 void sio_init(void) {
     sio_tx_data = 0;
     sio_rx_data = 0xFF;
@@ -999,6 +1035,7 @@ void sio_init(void) {
  * DELIVERABLE IRQ (bit7 unmasked in i_mask). UINT32_MAX if none. Returns the
  * nearest armed countdown: shift-complete, pending ack, or the pad/card IRQ
  * delivery countdown. See PRECISE_IRQ_SLICE.md. */
+/* Guest cycles to the next SIO IRQ (UINT32_MAX if masked). */
 uint32_t sio_cycles_to_irq(uint32_t i_mask) {
     if (!(i_mask & (1u << 7))) return 0xFFFFFFFFu;   /* IRQ_SIO0 masked */
     uint32_t best = 0xFFFFFFFFu;
@@ -1015,6 +1052,7 @@ uint32_t sio_cycles_to_irq(uint32_t i_mask) {
     return best;
 }
 
+/* Enable/disable the multitap device. */
 void sio_set_multitap(int enabled) {
 #if PSX_MAX_PLAYERS >= 5
     sio_multitap_enabled = enabled ? 1 : 0;
@@ -1029,10 +1067,13 @@ void sio_set_multitap(int enabled) {
 #endif
 }
 
+/* Current multitap enabled state. */
 int sio_get_multitap(void) {
+    /* True when the multitap pad device is active. */
     return sio_multitap_active();
 }
 
+/* Select which physical port the multitap sits on. */
 void sio_set_multitap_port(int phys_port) {
 #if PSX_MAX_PLAYERS >= 5
     sio_multitap_port = (phys_port == 1) ? 1 : 0;
@@ -1045,6 +1086,7 @@ void sio_set_multitap_port(int phys_port) {
 #endif
 }
 
+/* Current multitap port selection. */
 int sio_get_multitap_port(void) {
 #if PSX_MAX_PLAYERS >= 5
     return sio_multitap_port;
@@ -1053,14 +1095,17 @@ int sio_get_multitap_port(void) {
 #endif
 }
 
+/* Multitap analog-stick hack toggle. */
 void sio_set_multitap_analog(int enabled) {
     sio_multitap_analog_hack = enabled ? 1 : 0;
 }
 
+/* Current multitap analog-hack state. */
 int sio_get_multitap_analog(void) {
     return sio_multitap_analog_hack;
 }
 
+/* True if a logical pad is on the multitap. */
 int sio_pad_on_multitap(int logical_slot) {
 #if PSX_MAX_PLAYERS >= 5
     if (!sio_multitap_active()) return 0;
@@ -1080,6 +1125,7 @@ static int sio_tap_force_digital(int logical_slot) {
     return sio_pad_on_multitap(logical_slot) && !sio_multitap_analog_hack;
 }
 
+/* Mark a pad slot as connected. */
 void sio_connect_pad(int slot) {
     if (slot >= 0 && slot < PSX_MAX_PLAYERS)
         pad_connected |= (uint8_t)(1u << slot);
@@ -1142,6 +1188,7 @@ void sio_netplay_canonicalize_session_pads(int slot_count)
     }
 }
 
+/* Set a pad slot's connected flag. */
 void sio_set_pad_connected(int slot, int connected) {
     if (slot < 0 || slot >= PSX_MAX_PLAYERS) return;
     if (connected) {
@@ -1153,6 +1200,7 @@ void sio_set_pad_connected(int slot, int connected) {
     }
 }
 
+/* Set whether a slot accepts config commands. */
 void sio_set_pad_config_capable(int slot, int capable) {
     if (slot < 0 || slot >= PSX_MAX_PLAYERS) return;
     if (sio_tap_force_digital(slot)) capable = 0;
@@ -1166,6 +1214,7 @@ void sio_set_pad_config_capable(int slot, int capable) {
     }
 }
 
+/* Read a pad slot's rumble motor state. */
 void sio_get_pad_rumble(int slot, uint8_t *small, uint8_t *large) {
     uint8_t s = 0, l = 0;
     if (slot >= 0 && slot < PSX_MAX_PLAYERS && (pad_connected & (1u << slot))) {
@@ -1176,10 +1225,12 @@ void sio_get_pad_rumble(int slot, uint8_t *small, uint8_t *large) {
     if (large) *large = l;
 }
 
+/* Set pad 0 button/axis state. */
 void sio_set_pad_state(uint16_t buttons) {
     pad_buttons[0] = buttons;
 }
 
+/* Set a specific pad slot's state. */
 void sio_set_pad_state_slot(int slot, uint16_t buttons) {
     if (slot >= 0 && slot < PSX_MAX_PLAYERS) pad_buttons[slot] = buttons;
 }
@@ -1219,23 +1270,28 @@ void sio_request_pad_type(int slot, int analog) {
     pad_type_req[slot] = (pad_analog[slot] == want) ? -1 : (int8_t)want;
 }
 
+/* Pad 0 button bitmask. */
 uint16_t sio_get_pad_buttons(void) {
     return pad_buttons[0];
 }
 
+/* Button bitmask for a pad slot. */
 uint16_t sio_get_pad_buttons_slot(int slot) {
     return (slot >= 0 && slot < PSX_MAX_PLAYERS) ? pad_buttons[slot] : 0xFFFF;
 }
 
+/* Connected flag for a pad slot. */
 int sio_get_pad_connected(int slot) {
     if (slot < 0 || slot >= PSX_MAX_PLAYERS) return 0;
     return (pad_connected & (1u << slot)) ? 1 : 0;
 }
 
+/* Analog axis value for a pad slot. */
 int sio_get_pad_analog(int slot) {
     return (slot >= 0 && slot < PSX_MAX_PLAYERS) ? pad_analog[slot] : 0;
 }
 
+/* Left/right stick axes for a pad slot. */
 void sio_get_pad_sticks(int slot, uint8_t out[4]) {
     if (!out) return;
     if (slot < 0 || slot >= PSX_MAX_PLAYERS) {
@@ -1286,6 +1342,7 @@ void sio_get_pad_sticks(int slot, uint8_t out[4]) {
  *                                       flip re-detect is benign.
  *
  *   Driven per-game by [controller] legacy_pad_config in game.toml (applied via
+ /* Set the legacy pad config flag. */
  *   sio_set_legacy_cfg() at boot). ONLY Tomba opts in. Because the default is 0,
  *   the modern path in pad_process_byte() below is byte-for-byte unchanged when
  *   the flag is off — no other title is affected. The `pad_cfg` debug command can
@@ -1300,7 +1357,9 @@ void sio_get_pad_sticks(int slot, uint8_t out[4]) {
  * legacy_pad_config config field, and the per-game game.toml opt-in — and let
  * Tomba ride the modern SM like everything else. */
 volatile int g_pad_legacy_cfg = 0;
+/* Legacy pad config flag. */
 int sio_get_legacy_cfg(void) { return g_pad_legacy_cfg; }
+/* Set the legacy pad config flag. */
 void sio_set_legacy_cfg(int v) {
     g_pad_legacy_cfg = v ? 1 : 0;
     /* Clear any in-flight config latch so a mid-session toggle can't carry a
@@ -1309,6 +1368,7 @@ void sio_set_legacy_cfg(int v) {
         pad_in_config[s] = 0;
 }
 
+/* Apply host type change + process one pad RX byte. */
 static void pad_process_byte(uint8_t tx_byte) {
     /* Apply any pending host type change (the emulated analog button) ONLY while
      * the bus is idle and the pad is not in config mode. This guarantees the
@@ -1643,6 +1703,7 @@ static void pad_process_byte(uint8_t tx_byte) {
     sio_stat |= SIO_STAT_TX_RDY | SIO_STAT_TX_EMPTY;
 }
 
+/* Memory-card protocol byte processor. */
 static void mc_process_byte(uint8_t tx_byte) {
     if ((int)mc_state > sio_mc_max_state) sio_mc_max_state = (int)mc_state;
     switch (mc_state) {
@@ -1878,6 +1939,7 @@ static void mc_process_byte(uint8_t tx_byte) {
     sio_stat |= SIO_STAT_TX_RDY | SIO_STAT_TX_EMPTY;
 }
 
+/* Top-level SIO RX byte dispatcher (pad vs card). */
 static void sio_process_byte(uint8_t tx_byte) {
     /* ---- Trace: capture pre-state ---- */
     extern uint32_t g_debug_current_func_addr;
@@ -2054,6 +2116,7 @@ static void sio_process_byte(uint8_t tx_byte) {
     }
 }
 
+/* SIO register read dispatch. */
 uint32_t sio_read(uint32_t addr) {
     sio_debug_poll_maybe();
 
@@ -2118,10 +2181,14 @@ uint32_t sio_read(uint32_t addr) {
  * handshake — that is the observer corrupting the observed, and it desynced the
  * DualShock handshake the Mega Man X engine depends on (dev builds skipped the
  * boot FMV; release, which never records frames, played it). Read raw state. */
+/* Peek SIO_STAT without side effects. */
 uint16_t sio_peek_stat(void) { return sio_stat; }
+/* Peek SIO_CTRL without side effects. */
 uint16_t sio_peek_ctrl(void) { return sio_ctrl; }
+/* Peek RX data without side effects. */
 uint8_t  sio_peek_rx_data(void) { return sio_rx_data; }
 
+/* SIO register write dispatch. */
 void sio_write(uint32_t addr, uint32_t value) {
     sio_debug_poll_maybe();
 
@@ -2542,6 +2609,7 @@ static uint32_t s_irq_seq_at_burst_start = 0;
 extern uint8_t psx_read_byte(uint32_t addr);
 extern int     psx_get_in_exception(void);
 
+/* Drain a card-protocol burst (bounded iterations). */
 static int sio_card_burst_drain(int max_iters) {
     if (max_iters <= 0) max_iters = 128;
     if (max_iters > 1024) max_iters = 1024;
@@ -2584,6 +2652,7 @@ static int sio_card_burst_drain(int max_iters) {
     return iters;
 }
 
+/* Burst-drain statistics. */
 void sio_get_burst_stats(uint64_t out[10]) {
     out[0] = s_burst_stats.calls;
     out[1] = s_burst_stats.iters_total;
@@ -2620,12 +2689,14 @@ void sio_get_burst_stats(uint64_t out[10]) {
  * but are never reached at runtime: sio_tick_quantum is gated by
  * g_sio_timing_active (which stays 0), and even if called the cycle-
  * paced loop in sio_tick would find no events to fire. */
+/* Consume a pending ACK event; returns whether acked. */
 static int sio_consume_ack_event(void) {
     int acked = (sio_stat & SIO_STAT_ACK) ? 1 : 0;
     sio_stat &= ~SIO_STAT_ACK;
     return acked;
 }
 
+/* Raise the SIO0 ACK interrupt (I_STAT bit7). */
 static void sio_fire_ack_irq(void) {
     /* I_STAT sources are owned per device: an SIO0 card ACK may only raise
      * bit 7. It must never clear SPU (bit 9) — a pending SPU IRQ stays
@@ -2694,6 +2765,7 @@ static void sio_fire_ack_irq(void) {
     }
 }
 
+/* Handle a completed shift-register byte. */
 static void sio_handle_shift_complete(void) {
     uint8_t b = sio_shift_byte;
     sr_record(SR_EVT_SHIFT_DONE, b, 0);
@@ -2750,7 +2822,9 @@ static void sio_handle_shift_complete(void) {
 static uint64_t s_sio_advance_called    = 0;
 static uint64_t s_sio_advance_with_work = 0;
 
+/* Count of sio_advance calls. */
 uint64_t sio_get_advance_called(void)    { return s_sio_advance_called; }
+/* Count of sio_advance calls with pending work. */
 uint64_t sio_get_advance_with_work(void) { return s_sio_advance_with_work; }
 
 /* Walk shift/ack deadlines for `cycles`.
@@ -2762,6 +2836,7 @@ uint64_t sio_get_advance_with_work(void) { return s_sio_advance_with_work; }
  * 81 52 00. Do not fake-collapse A6C10 to compensate.
  * EXPERIMENT: was uncapped under netplay/selfcheck (MotK leftover-time);
  * always MT=1 here for TM4 netplay desync testing. */
+/* Cycle-paced deadline walk for SIO events. */
 static void sio_pace_walk(int cycles) {
     int remaining = cycles;
     int transitions = 0;
@@ -2804,6 +2879,7 @@ static void sio_pace_walk(int cycles) {
     }
 }
 
+/* Advance SIO timing by `cycles` guest cycles. */
 void sio_advance(uint32_t cycles) {
     if (cycles == 0) return;
     s_sio_advance_called++;
@@ -2876,11 +2952,13 @@ void sio_tick(int cycles) {
     sio_ape_card_unstick_pump();
 }
 
+/* Pump the APE-card unstick watchdog. */
 void sio_ape_card_unstick_pump(void) {
     if (s_ape_unstick_pending)
         ape_card_unstick_maybe(1);
 }
 
+/* Host tick quantum for the SIO model. */
 void sio_tick_quantum(void) {
 #if SIO_MODEL_CYCLE_PACED
     sio_tick(sio_tick_quantum_cycles);
@@ -2921,6 +2999,7 @@ static int sio_w_mcslot(PstW *w, const McSlotState *s) {
            pst_w_i32(w, (int32_t)s->data_idx) && pst_w_u8(w, s->checksum) &&
            pst_w_u8(w, s->flag);
 }
+/* Deserialize one MC-slot record from a save-state stream. */
 static int sio_r_mcslot(PstR *r, McSlotState *s) {
     uint32_t st = 0;
     int32_t di = 0;
@@ -2943,6 +3022,7 @@ static int sio_snap_emit_regs(PstW *w) {
            pst_w_u16(w, sio_ctrl) && pst_w_u16(w, sio_baud);
 }
 
+/* Serialize pad state to a save-state stream. */
 static int sio_snap_emit_pads(PstW *w) {
     /* Pad arrays sized by PSX_MAX_PLAYERS. Default MAX=2 keeps the historical
      * 2-pad snap layout byte-identical. pad_response runtime buffer is larger
@@ -2960,6 +3040,7 @@ static int sio_snap_emit_pads(PstW *w) {
     return 1;
 }
 
+/* Serialize memory-card state to a save-state stream. */
 static int sio_snap_emit_mc(PstW *w) {
     if (!pst_w_u32(w, (uint32_t)mc_state) || !pst_w_i32(w, (int32_t)mc_slot) ||
         !pst_w_u8(w, mc_cmd) || !pst_w_u16(w, mc_sector) ||
@@ -3008,10 +3089,12 @@ static int sio_snap_emit_rumble(PstW *w) {
            pst_w_bytes(w, pad_rumble_large, sizeof(pad_rumble_large));
 }
 
+/* Serialize the SIO FSM state to a save-state stream. */
 static int sio_snap_emit_fsm(PstW *w) {
     return sio_snap_emit_fsm_pace(w) && sio_snap_emit_fsm_meta(w);
 }
 
+/* Serialize all SIO state to a save-state stream. */
 static int sio_snap_emit(PstW *w) {
     return sio_snap_emit_regs(w) && sio_snap_emit_pads(w) &&
            sio_snap_emit_mc(w) && sio_snap_emit_fsm(w) && sio_snap_emit_rumble(w);
@@ -3036,6 +3119,7 @@ void sio_snapshot_section_ends(uint32_t out[5]) {
     out[4] = (uint32_t)w.written;
 }
 
+/* Deserialize SIO state from a save-state stream. */
 static int sio_snap_parse(PstR *r) {
     uint32_t u;
     int32_t i;
@@ -3136,6 +3220,7 @@ static int sio_snap_parse(PstR *r) {
     return 1;
 }
 
+/* Byte size of the SIO savestate section. */
 uint32_t sio_snapshot_bytes(void) {
     PstW w;
     pst_w_init(&w, NULL, 0);
@@ -3143,6 +3228,7 @@ uint32_t sio_snapshot_bytes(void) {
     return (uint32_t)w.written;
 }
 
+/* Write the SIO savestate section. */
 void sio_snapshot_write(uint8_t *p) {
     PstW w;
     uint32_t n = sio_snapshot_bytes();
@@ -3150,6 +3236,7 @@ void sio_snapshot_write(uint8_t *p) {
     (void)sio_snap_emit(&w);
 }
 
+/* Restore the SIO savestate section. */
 int sio_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     const uint32_t current = sio_snapshot_bytes();
@@ -3159,5 +3246,6 @@ int sio_snapshot_read(const uint8_t *p, uint32_t len) {
     if (len != current && (len > current || len + rumble_bytes != current))
         return 0;
     pst_r_init(&r, p, len);
+    /* Deserialize SIO state from a save-state stream. */
     return sio_snap_parse(&r);
 }
