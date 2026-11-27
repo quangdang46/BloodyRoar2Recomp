@@ -179,6 +179,7 @@ class Capture:
     __slots__ = ('cid', 'lo', 'size', 'data', 'exec_pcs')
 
     def __init__(self, cid, lo, size, data, exec_pcs):
+        """Capture ctor: id, load range, data, exec PCs."""
         self.cid = cid
         self.lo = lo
         self.size = size
