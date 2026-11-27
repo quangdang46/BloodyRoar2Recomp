@@ -2174,7 +2174,7 @@ void datetime_confirm_b(int32_t a0,uint32_t a1)
   *(int16_t *)(dlg + 0x12) = (int16_t)a0;
   mc_state_init();
   tmp = cd_stamp_to_sector(date_str);
-  tmp = tmp + cd_stamp_to_sector((const void *)guest_at(
+  tmp += cd_stamp_to_sector((const void *)guest_at(
       0x801b3310u + (uint32_t)*(uint16_t *)(dlg + 0x12) * 4)) * 2;
   *(uint32_t *)(dlg + 0x28) = (uint32_t)tmp;
   dlg[0] = 1;
