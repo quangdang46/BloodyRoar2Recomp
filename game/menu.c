@@ -3854,18 +3854,18 @@ int32_t pi;
 extern void task_node_free(uint32_t);
 extern uint32_t task_alloc_wrap_c(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void deferred_cmd_post(int32_t,int32_t,int32_t);
-void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
+void fighter_spawn_setup(uint32_t battle_g,uint8_t *ab_a,uint8_t *ab_b,
                   uint8_t *cfg,int32_t direct)
 {
   uint8_t *bstate = (uint8_t *)guest_at(battle_g);
   uint16_t *bp = (uint16_t *)bstate;
   uint8_t *cfg_cur = cfg;
   uint8_t *srecs = cfg + 0x28;
-  int32_t fp = direct;
-  int32_t pi, i;
+  
 
-  battle_config_eval(args_a,battle_g,fp);
-  battle_config_eval(args_b,battle_g,fp);
+
+  battle_config_eval(ab_a,battle_g,direct);
+  battle_config_eval(ab_b,battle_g,direct);
 
   if ((bp[0xb4/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb4/2] = 0x600; }
   if ((bp[0xb6/2] & 0xf00) == 0x500) { bp[0xb2/2] = 0; bp[0xb6/2] = 0x600; }
@@ -3879,7 +3879,7 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *args_a,uint8_t *args_b,
         uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(bstate + 0xc0));
         uint32_t ch;
         confirm_bookkeeping(battle_g);
-        if (fp != 0) {
+        if (direct != 0) {
           ch = cr[pi + 0x1b];
           *(uint32_t *)rcur = (uint32_t)rtype;
           *(uint32_t *)(rcur + 0x24) = 0;
