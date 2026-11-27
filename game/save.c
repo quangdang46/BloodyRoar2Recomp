@@ -1660,7 +1660,7 @@ extern void chan_sweep_flag100(void);
 extern void chan_sweep_flag200(void);
 extern void datetime_confirm_a(int,uint32_t);
 extern void datetime_confirm_b(int,uint32_t);
-extern int  cd_cmd_issue_sync(int,int,int);
+extern bool cd_cmd_issue_sync(int8_t,int,uint32_t);
 
 /* memcard_err_sentinel — memcard error sentinel (-99). */
 uint32_t memcard_err_sentinel(void)
@@ -2256,7 +2256,7 @@ int32_t mc_dialog_bit4(int32_t a0)
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
-extern void cd_dir_entry_probe(int32_t);
+extern uint32_t cd_dir_entry_probe(int32_t);
 int32_t blk_io_retry(uint32_t a0,void *a1)
 {
   uint8_t *blk = (uint8_t *)guest_at(a0);
@@ -2993,7 +2993,7 @@ extern void page_table_ptr_set(uint32_t,int32_t);
  * call sites, so wrap it in guest_at() — passing the raw guest address as
  * int* made *a1 dereference host memory ~0x80xxxxxx (wild read). */
 extern uint32_t stream_block_decode(uint32_t,int *,int);
-extern void cd_timer_read(uint32_t);
+extern uint32_t cd_timer_read(int);
 extern uint32_t action_enter(void *battle, uint8_t *ctrl, uint32_t sel);
 /* strong action_enter_fwd: forwards to action_enter (action.c).
    Overrides the weak stub in bind.c. */
