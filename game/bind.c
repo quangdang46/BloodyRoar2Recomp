@@ -985,6 +985,13 @@ void br2_guest_frame_free(void)
     if (g_bind_frm_depth <= 0) return;
     guest_sp_set(g_bind_frm_sp[--g_bind_frm_depth]);
 }
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak))
+#endif
+void br2_guest_frame_abandon(void)
+{
+    if (g_bind_frm_depth > 0) g_bind_frm_depth--;
+}
 
 /* COP2 register-ABI GTE functions — clean ports of the guest leaf
  * routines (pure GTE math, no IRQ/sp dependence). The ani.c/gfx.c
