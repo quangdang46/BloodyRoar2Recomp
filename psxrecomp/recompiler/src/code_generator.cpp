@@ -33,6 +33,7 @@ static bool should_print_reserved_opcode_warning(uint32_t addr) {
     return seen.insert(addr).second;
 }
 
+/* codegen cycle per insn: if (e != nullptr && e[0] != '\0') return e[0] != '0' */
 static bool codegen_cycle_per_insn() {
     // DEFAULT ON for the faithful-timing (cycle-audit) branch: each instruction
     // charges its cost at its own site, so the running cycle count is correct
@@ -53,6 +54,7 @@ static bool codegen_cycle_per_insn() {
  * so the window comes from the profile, never from a constant. */
 static const ::PSXRecompV4::BiosAddressModel* g_game_bios_model = nullptr;
 
+/* set bios address model: g_game_bios_model = m */
 void CodeGenerator::set_bios_address_model(const PSXRecompV4::BiosAddressModel* m) {
     g_game_bios_model = m;
 }
@@ -93,6 +95,7 @@ static uint32_t ram_to_rom(uint32_t addr, const PS1Executable& exe) {
     return g_game_bios_model->ram_alias_to_rom(addr);
 }
 
+/* Code Generator: { const char* e = std::getenv("PSX_CPS"); cps_enabled_ = (e == nullpt... */
 CodeGenerator::CodeGenerator(const PS1Executable& exe, const CodeGenConfig& config)
     : exe_(exe), config_(config) {
     // RECURSION_BUG.md §25 — continuation-passing call/return. Gen-time opt-in
@@ -128,6 +131,7 @@ static std::string emit_stale_static_guard_named(const std::string& name,
     return emit_stale_static_guard((uint32_t)v, indent);
 }
 
+/* partial block cycle count: if (cfg.blocks.count(addr))  */
 uint32_t CodeGenerator::partial_block_cycle_count(uint32_t addr,
                                                   const ControlFlowGraph& cfg) const {
     if (cfg.blocks.count(addr)) {
@@ -148,6 +152,7 @@ uint32_t CodeGenerator::partial_block_cycle_count(uint32_t addr,
     return 0;
 }
 
+/* emit mid block cycle charge: if (codegen_cycle_per_insn())  */
 std::string CodeGenerator::emit_mid_block_cycle_charge(uint32_t addr,
                                                        const ControlFlowGraph& cfg,
                                                        const std::string& indent) const {
@@ -167,6 +172,7 @@ std::string CodeGenerator::emit_mid_block_cycle_charge(uint32_t addr,
     return ss.str();
 }
 
+/* emit interrupt check: return std::string("#ifdef PSX_ENABLE_BLOCK_CYCLES\n") + indent + */
 std::string CodeGenerator::emit_interrupt_check(uint32_t resume_pc,
                                                 const std::string& indent) const {
     return std::string("#ifdef PSX_ENABLE_BLOCK_CYCLES\n") + indent +
@@ -174,6 +180,7 @@ std::string CodeGenerator::emit_interrupt_check(uint32_t resume_pc,
            fmt::format("psx_check_interrupts_at(cpu, 0x{:08X}u);\n", resume_pc);
 }
 
+/* emit interrupt check expr: return std::string("#ifdef PSX_ENABLE_BLOCK_CYCLES\n") + indent + */
 std::string CodeGenerator::emit_interrupt_check_expr(const std::string& resume_pc_expr,
                                                      const std::string& indent) const {
     return std::string("#ifdef PSX_ENABLE_BLOCK_CYCLES\n") + indent +
@@ -181,6 +188,7 @@ std::string CodeGenerator::emit_interrupt_check_expr(const std::string& resume_p
            fmt::format("psx_check_interrupts_at(cpu, {});\n", resume_pc_expr);
 }
 
+/* reg name: if (reg_num >= 0 && reg_num < 32)  */
 std::string CodeGenerator::reg_name(int reg_num) {
     if (reg_num >= 0 && reg_num < 32) {
         return fmt::format("cpu->gpr[{}]", reg_num);
@@ -188,6 +196,7 @@ std::string CodeGenerator::reg_name(int reg_num) {
     return fmt::format("cpu->gpr[{}]", reg_num);
 }
 
+/* translate addiu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_addiu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -206,6 +215,7 @@ std::string CodeGenerator::translate_addiu(uint32_t instr) {
     return fmt::format("{} = {} + {};", reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate lui: uint32_t rt = get_rt(instr) */
 std::string CodeGenerator::translate_lui(uint32_t instr) {
     uint32_t rt = get_rt(instr);
     uint16_t imm = get_imm16_u(instr);
@@ -218,6 +228,7 @@ std::string CodeGenerator::translate_lui(uint32_t instr) {
                        reg_name(rt), imm, ((uint32_t)imm) << 16);
 }
 
+/* translate lw: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lw(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -234,6 +245,7 @@ std::string CodeGenerator::translate_lw(uint32_t instr) {
                        reg_name(rt), addr, rt, mask);
 }
 
+/* translate sw: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sw(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -247,6 +259,7 @@ std::string CodeGenerator::translate_sw(uint32_t instr) {
     }
 }
 
+/* translate or: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_or(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -267,6 +280,7 @@ std::string CodeGenerator::translate_or(uint32_t instr) {
     return fmt::format("{} = {} | {};", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate and: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_and(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -279,6 +293,7 @@ std::string CodeGenerator::translate_and(uint32_t instr) {
     return fmt::format("{} = {} & {};", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate sll: uint32_t rt = get_rt(instr) */
 std::string CodeGenerator::translate_sll(uint32_t instr) {
     uint32_t rt = get_rt(instr);
     uint32_t rd = get_rd(instr);
@@ -300,6 +315,7 @@ std::string CodeGenerator::translate_sll(uint32_t instr) {
     return fmt::format("{} = {} << {};", reg_name(rd), reg_name(rt), shamt);
 }
 
+/* translate srl: uint32_t rt = get_rt(instr) */
 std::string CodeGenerator::translate_srl(uint32_t instr) {
     uint32_t rt = get_rt(instr);
     uint32_t rd = get_rd(instr);
@@ -312,6 +328,7 @@ std::string CodeGenerator::translate_srl(uint32_t instr) {
     return fmt::format("{} = (uint32_t){} >> {};", reg_name(rd), reg_name(rt), shamt);
 }
 
+/* translate slt: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_slt(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -325,6 +342,7 @@ std::string CodeGenerator::translate_slt(uint32_t instr) {
                       reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate sltu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sltu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -338,6 +356,7 @@ std::string CodeGenerator::translate_sltu(uint32_t instr) {
                       reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate addu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_addu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -358,11 +377,13 @@ std::string CodeGenerator::translate_addu(uint32_t instr) {
     return fmt::format("{} = {} + {};", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate add: return translate_addu(instr) */
 std::string CodeGenerator::translate_add(uint32_t instr) {
     // add and addu are functionally identical in practice (trap on overflow not used)
     return translate_addu(instr);
 }
 
+/* translate subu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_subu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -375,11 +396,13 @@ std::string CodeGenerator::translate_subu(uint32_t instr) {
     return fmt::format("{} = {} - {};", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate sub: return translate_subu(instr) */
 std::string CodeGenerator::translate_sub(uint32_t instr) {
     // sub and subu are functionally identical in practice (trap on overflow not used)
     return translate_subu(instr);
 }
 
+/* translate lb: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lb(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -395,6 +418,7 @@ std::string CodeGenerator::translate_lb(uint32_t instr) {
                        reg_name(rt), addr, rt, mask);
 }
 
+/* translate lbu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lbu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -410,6 +434,7 @@ std::string CodeGenerator::translate_lbu(uint32_t instr) {
                        reg_name(rt), addr, rt, mask);
 }
 
+/* translate lh: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lh(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -425,6 +450,7 @@ std::string CodeGenerator::translate_lh(uint32_t instr) {
                        reg_name(rt), addr, rt, mask);
 }
 
+/* translate lhu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lhu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -440,6 +466,7 @@ std::string CodeGenerator::translate_lhu(uint32_t instr) {
                        reg_name(rt), addr, rt, mask);
 }
 
+/* translate lwl: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lwl(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -462,6 +489,7 @@ std::string CodeGenerator::translate_lwl(uint32_t instr) {
                        reg_name(rt), addr, lwlr_merge_operand(rt), rt, mask);
 }
 
+/* translate lwr: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_lwr(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -482,6 +510,7 @@ std::string CodeGenerator::translate_lwr(uint32_t instr) {
                        reg_name(rt), addr, lwlr_merge_operand(rt), rt, mask);
 }
 
+/* translate swl: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_swl(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -497,6 +526,7 @@ std::string CodeGenerator::translate_swl(uint32_t instr) {
     }
 }
 
+/* translate swr: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_swr(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -512,6 +542,7 @@ std::string CodeGenerator::translate_swr(uint32_t instr) {
     }
 }
 
+/* translate sb: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sb(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -525,6 +556,7 @@ std::string CodeGenerator::translate_sb(uint32_t instr) {
     }
 }
 
+/* translate sh: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sh(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -538,6 +570,7 @@ std::string CodeGenerator::translate_sh(uint32_t instr) {
     }
 }
 
+/* translate sra: uint32_t rt = get_rt(instr) */
 std::string CodeGenerator::translate_sra(uint32_t instr) {
     uint32_t rt = get_rt(instr);
     uint32_t rd = get_rd(instr);
@@ -550,6 +583,7 @@ std::string CodeGenerator::translate_sra(uint32_t instr) {
     return fmt::format("{} = (int32_t){} >> {};", reg_name(rd), reg_name(rt), shamt);
 }
 
+/* translate andi: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_andi(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -562,6 +596,7 @@ std::string CodeGenerator::translate_andi(uint32_t instr) {
     return fmt::format("{} = {} & 0x{:04X};", reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate ori: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_ori(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -579,6 +614,7 @@ std::string CodeGenerator::translate_ori(uint32_t instr) {
     return fmt::format("{} = {} | 0x{:04X};", reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate xori: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_xori(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -591,6 +627,7 @@ std::string CodeGenerator::translate_xori(uint32_t instr) {
     return fmt::format("{} = {} ^ 0x{:04X};", reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate xor: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_xor(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -603,6 +640,7 @@ std::string CodeGenerator::translate_xor(uint32_t instr) {
     return fmt::format("{} = {} ^ {};", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate nor: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_nor(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -623,6 +661,7 @@ std::string CodeGenerator::translate_nor(uint32_t instr) {
     return fmt::format("{} = ~({} | {});", reg_name(rd), reg_name(rs), reg_name(rt));
 }
 
+/* translate sllv: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sllv(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -635,6 +674,7 @@ std::string CodeGenerator::translate_sllv(uint32_t instr) {
     return fmt::format("{} = {} << ({} & 0x1F);", reg_name(rd), reg_name(rt), reg_name(rs));
 }
 
+/* translate srlv: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_srlv(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -647,6 +687,7 @@ std::string CodeGenerator::translate_srlv(uint32_t instr) {
     return fmt::format("{} = (uint32_t){} >> ({} & 0x1F);", reg_name(rd), reg_name(rt), reg_name(rs));
 }
 
+/* translate srav: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_srav(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -659,6 +700,7 @@ std::string CodeGenerator::translate_srav(uint32_t instr) {
     return fmt::format("{} = (int32_t){} >> ({} & 0x1F);", reg_name(rd), reg_name(rt), reg_name(rs));
 }
 
+/* translate slti: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_slti(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -672,6 +714,7 @@ std::string CodeGenerator::translate_slti(uint32_t instr) {
                       reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate sltiu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_sltiu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -685,6 +728,7 @@ std::string CodeGenerator::translate_sltiu(uint32_t instr) {
                       reg_name(rt), reg_name(rs), imm);
 }
 
+/* translate mult: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_mult(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -694,6 +738,7 @@ std::string CodeGenerator::translate_mult(uint32_t instr) {
                       reg_name(rs), reg_name(rt), reg_name(rs));
 }
 
+/* translate multu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_multu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -703,6 +748,7 @@ std::string CodeGenerator::translate_multu(uint32_t instr) {
                       reg_name(rs), reg_name(rt), reg_name(rs));
 }
 
+/* translate div: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_div(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -714,6 +760,7 @@ std::string CodeGenerator::translate_div(uint32_t instr) {
                       reg_name(rt), reg_name(rs), reg_name(rt), reg_name(rs), reg_name(rt), reg_name(rs), reg_name(rs));
 }
 
+/* translate divu: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_divu(uint32_t instr) {
     uint32_t rs = get_rs(instr);
     uint32_t rt = get_rt(instr);
@@ -725,6 +772,7 @@ std::string CodeGenerator::translate_divu(uint32_t instr) {
                       reg_name(rt), reg_name(rs), reg_name(rt), reg_name(rs), reg_name(rt), reg_name(rs));
 }
 
+/* translate mfhi: uint32_t rd = get_rd(instr) */
 std::string CodeGenerator::translate_mfhi(uint32_t instr) {
     uint32_t rd = get_rd(instr);
 
@@ -738,6 +786,7 @@ std::string CodeGenerator::translate_mfhi(uint32_t instr) {
     return fmt::format("{} = cpu->hi;{}", reg_name(rd), stall);
 }
 
+/* translate mflo: uint32_t rd = get_rd(instr) */
 std::string CodeGenerator::translate_mflo(uint32_t instr) {
     uint32_t rd = get_rd(instr);
 
@@ -749,18 +798,21 @@ std::string CodeGenerator::translate_mflo(uint32_t instr) {
     return fmt::format("{} = cpu->lo;{}", reg_name(rd), stall);
 }
 
+/* translate mthi: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_mthi(uint32_t instr) {
     uint32_t rs = get_rs(instr);
 
     return fmt::format("cpu->hi = {};", reg_name(rs));
 }
 
+/* translate mtlo: uint32_t rs = get_rs(instr) */
 std::string CodeGenerator::translate_mtlo(uint32_t instr) {
     uint32_t rs = get_rs(instr);
 
     return fmt::format("cpu->lo = {};", reg_name(rs));
 }
 
+/* generate branch condition: uint32_t opcode = (instr >> 26) & 0x3F */
 std::string CodeGenerator::generate_branch_condition(uint32_t instr, uint32_t addr) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t rs = get_rs(instr);
@@ -832,6 +884,7 @@ std::string CodeGenerator::generate_branch_condition(uint32_t instr, uint32_t ad
     return keep_branch_if_wide("0 /* unknown branch condition: defaults to not-taken */");
 }
 
+/* translate instruction: uint32_t opcode = (instr >> 26) & 0x3F */
 std::string CodeGenerator::translate_instruction(uint32_t addr, uint32_t instr) {
     uint32_t opcode = (instr >> 26) & 0x3F;
     uint32_t funct = instr & 0x3F;
@@ -1676,6 +1729,7 @@ std::string CodeGenerator::translate_instruction(uint32_t addr, uint32_t instr) 
     return config_.indent + code + comment;
 }
 
+/* translate basic block: std::stringstream ss */
 std::string CodeGenerator::translate_basic_block(
     const BasicBlock& block,
     const ControlFlowGraph& cfg) {
@@ -2508,6 +2562,7 @@ std::string CodeGenerator::translate_basic_block(
     return ss.str();
 }
 
+/* func has screen extent cull: bool has_x = false, has_y = false */
 bool CodeGenerator::func_has_screen_extent_cull(const ControlFlowGraph& cfg) const {
     // The GTE trivial-reject pairs a width compare (slti/sltiu, immediate from
     // the per-game W set) with a height compare (immediate from the H set) in
@@ -2534,6 +2589,7 @@ bool CodeGenerator::func_has_screen_extent_cull(const ControlFlowGraph& cfg) con
     return false;
 }
 
+/* detect cull bltz sites: if (!ws_auto_cull_func_) return 0 */
 int CodeGenerator::detect_cull_bltz_sites(const ControlFlowGraph& cfg) {
     // Populate ws_cull_bltz_pcs_ with the function's LEFT-edge funnel bltz
     // addresses (ws_cull_detect.h idioms 2/3). Only meaningful when the
@@ -2559,6 +2615,7 @@ int CodeGenerator::detect_cull_bltz_sites(const ControlFlowGraph& cfg) {
     return (int)ws_cull_bltz_pcs_.size();
 }
 
+/* detect backdrop windows: if (!config_.ws_auto_backdrop_preload) return 0 */
 int CodeGenerator::detect_backdrop_windows(const ControlFlowGraph& cfg) {
     // Always clear so a stale map from the previous function can never leak.
     ws_backdrop_sites_.clear();
@@ -2585,6 +2642,7 @@ int CodeGenerator::detect_backdrop_windows(const ControlFlowGraph& cfg) {
     return ns;
 }
 
+/* generate function: GeneratedFunction result */
 GeneratedFunction CodeGenerator::generate_function(
     const Function& func,
     const ControlFlowGraph& cfg,
@@ -2868,6 +2926,7 @@ GeneratedFunction CodeGenerator::generate_function(
     return result;
 }
 
+/* scan jr tables: for (const auto& [baddr, blk] : cfg.blocks)  */
 void CodeGenerator::scan_jr_tables(
     const ControlFlowGraph& cfg,
     std::map<uint32_t, std::vector<uint32_t>>& out_edges) {
@@ -2896,6 +2955,7 @@ void CodeGenerator::scan_jr_tables(
     }
 }
 
+/* generate alias group: std::vector<GeneratedFunction> results */
 std::vector<GeneratedFunction> CodeGenerator::generate_alias_group(
     const std::vector<const Function*>& aliases,
     const ControlFlowGraph& cfg,
@@ -3119,6 +3179,7 @@ std::vector<GeneratedFunction> CodeGenerator::generate_alias_group(
     return results;
 }
 
+/* generate all functions: std::vector<GeneratedFunction> results */
 std::vector<GeneratedFunction> CodeGenerator::generate_all_functions(
     const std::vector<Function>& functions,
     const std::map<uint32_t, ControlFlowGraph>& cfgs) {
@@ -3253,6 +3314,7 @@ std::vector<GeneratedFunction> CodeGenerator::generate_all_functions(
     return results;
 }
 
+/* emit runtime externs: ss << "#ifndef PSX_NO_DEBUG_TOOLS\n" */
 void CodeGenerator::emit_runtime_externs(std::ostream& ss) const {
     /* Release inlines debug_server_log_call_entry via debug_server.h
      * (included from psx_runtime.h). Debug builds need the extern. */
@@ -3299,6 +3361,7 @@ void CodeGenerator::emit_runtime_externs(std::ostream& ss) const {
     ss << "extern uint32_t g_debug_last_store_pc;  /* exact PC of the executing SW/SH/SB — wtrace/readtrace producer attribution (debug_server.c) */\n\n";
 }
 
+/* emit unaligned helpers: emits the reference unaligned-memory helper implementations */
 void CodeGenerator::emit_unaligned_helpers(std::ostream& ss, bool as_inline) const {
     const char* kw = as_inline ? "static inline " : "static ";
 
@@ -3377,6 +3440,7 @@ void CodeGenerator::emit_unaligned_helpers(std::ostream& ss, bool as_inline) con
     ss << "\n";
 }
 
+/* build shared decls header: std::stringstream h */
 std::string CodeGenerator::build_shared_decls_header(const std::vector<GeneratedFunction>& gen_funcs) const {
     std::stringstream h;
     h << "/* Generated by PSXRecomp - shared declarations for split full.c shards. DO NOT EDIT. */\n";
@@ -3393,6 +3457,7 @@ std::string CodeGenerator::build_shared_decls_header(const std::vector<Generated
     return h.str();
 }
 
+/* generate file: std::stringstream ss */
 std::string CodeGenerator::generate_file(
     const std::vector<Function>& functions,
     const std::map<uint32_t, ControlFlowGraph>& cfgs) {
@@ -3645,6 +3710,7 @@ std::string CodeGenerator::generate_file(
     return ss.str();
 }
 
+/* generate ranges manifest: std::stringstream ss */
 std::string CodeGenerator::generate_ranges_manifest(
     const std::vector<Function>& functions,
     const std::map<uint32_t, ControlFlowGraph>& cfgs) {

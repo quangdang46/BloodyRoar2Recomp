@@ -20,6 +20,7 @@
 
 namespace PSXRecomp {
 
+/* Basic Block Analyzer */
 BasicBlockAnalyzer::BasicBlockAnalyzer(const PS1Executable& exe)
     : exe_(exe)
 {

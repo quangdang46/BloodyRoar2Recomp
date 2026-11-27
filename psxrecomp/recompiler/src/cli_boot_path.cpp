@@ -5,6 +5,7 @@
 
 namespace PSXRecompCLI {
 
+/* normalize boot path: std::string normalized */
 std::string normalize_boot_path(const std::string& boot) {
     std::string normalized;
     normalized.reserve(boot.size());
@@ -12,10 +13,12 @@ std::string normalize_boot_path(const std::string& boot) {
     return normalized;
 }
 
+/* boot filename: return std::filesystem::path(normalize_boot_path(boot)).filename().st... */
 std::string boot_filename(const std::string& boot) {
     return std::filesystem::path(normalize_boot_path(boot)).filename().string();
 }
 
+/* serial from boot: std::string base = boot_filename(boot) */
 std::string serial_from_boot(const std::string& boot) {
     std::string base = boot_filename(boot);
     std::string clean;

@@ -27,7 +27,9 @@ namespace {
 constexpr uint32_t kWLo = 0x100, kWHi = 0x290;   // 256 .. 656
 constexpr uint32_t kHLo = 0xC0,  kHHi = 0x201;   // 192 .. 513
 
+/* plausible w: return imm >= kWLo && imm <= kWHi; */
 bool plausible_w(uint32_t imm) { return imm >= kWLo && imm <= kWHi; }
+/* plausible h: return imm >= kHLo && imm <= kHHi; */
 bool plausible_h(uint32_t imm) { return imm >= kHLo && imm <= kHHi; }
 
 // The console's actual display modes. A trivial-reject immediate is normally
@@ -39,20 +41,29 @@ bool canonical_w(uint32_t v) {
     for (uint32_t c : k) if (v == c || v == c + 1) return true;
     return false;
 }
+/* canonical h: for (uint32_t c : k) if (v == c || v == c + 1) return true */
 bool canonical_h(uint32_t v) {
     static const uint32_t k[] = {224, 240, 256, 480};
     for (uint32_t c : k) if (v == c || v == c + 1) return true;
     return false;
 }
 
+/* rd of: return (w >> 11) & 0x1F; */
 uint32_t rd_of(uint32_t w) { return (w >> 11) & 0x1F; }
+/* rt of: return (w >> 16) & 0x1F; */
 uint32_t rt_of(uint32_t w) { return (w >> 16) & 0x1F; }
+/* rs of: return (w >> 21) & 0x1F; */
 uint32_t rs_of(uint32_t w) { return (w >> 21) & 0x1F; }
+/* op of: return w >> 26; */
 uint32_t op_of(uint32_t w) { return w >> 26; }
+/* funct of: return w & 0x3F; */
 uint32_t funct_of(uint32_t w) { return w & 0x3F; }
+/* simm of: return static_cast<int16_t>(w & 0xFFFF); */
 int32_t  simm_of(uint32_t w) { return static_cast<int16_t>(w & 0xFFFF); }
+/* uimm of: return w & 0xFFFF; */
 uint32_t uimm_of(uint32_t w) { return w & 0xFFFF; }
 
+/* dis1: auto lines = disassemble_range(exe, pc, pc + 4, &db) */
 std::string dis1(const PS1Executable& exe, uint32_t pc, const AnalysisDb& db) {
     auto lines = disassemble_range(exe, pc, pc + 4, &db);
     if (lines.empty()) return {};
@@ -72,6 +83,7 @@ struct FnWords {
 
 } // namespace
 
+/* scan widescreen: WsScanResult out */
 WsScanResult scan_widescreen(const PS1Executable& exe,
                              const AnalysisDb& db,
                              const WsScanOptions& opts) {
@@ -356,6 +368,7 @@ namespace PSXRecomp::Analysis {
 
 namespace {
 
+/* of kind: std::vector<const WsCandidate*> v */
 std::vector<const WsCandidate*> of_kind(const WsScanResult& s, const char* kind,
                                         int min_conf) {
     std::vector<const WsCandidate*> v;
@@ -366,6 +379,7 @@ std::vector<const WsCandidate*> of_kind(const WsScanResult& s, const char* kind,
     return v;
 }
 
+/* imm list: std::string s */
 std::string imm_list(const std::vector<uint32_t>& v) {
     std::string s;
     for (size_t i = 0; i < v.size(); ++i)
@@ -375,6 +389,7 @@ std::string imm_list(const std::vector<uint32_t>& v) {
 
 } // namespace
 
+/* write ws sites toml: std::error_code ec */
 bool write_ws_sites_toml(const WsScanResult& scan,
                          const std::filesystem::path& path,
                          int min_confidence,
@@ -429,6 +444,7 @@ bool write_ws_sites_toml(const WsScanResult& scan,
     return true;
 }
 
+/* write ws sites json: std::error_code ec */
 bool write_ws_sites_json(const WsScanResult& scan,
                          const std::filesystem::path& path,
                          std::string& error) {
@@ -472,6 +488,7 @@ bool write_ws_sites_json(const WsScanResult& scan,
     return true;
 }
 
+/* print ws report: fmt::print("\n=== widescreen site scan (static) ===\n") */
 void print_ws_report(const WsScanResult& scan, const AnalysisDb& db, int top_n) {
     fmt::print("\n=== widescreen site scan (static) ===\n");
     if (scan.w_imms.empty() || scan.h_imms.empty()) {

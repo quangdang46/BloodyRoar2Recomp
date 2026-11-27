@@ -41,6 +41,7 @@ static bool bios_cycle_per_insn() {
  * default: emitting without a model is a caller bug and aborts loudly. */
 static const BiosAddressModel* g_addr_model = nullptr;
 
+/* set address model: g_addr_model = m */
 void FullFunctionEmitter::set_address_model(const BiosAddressModel* m) {
     g_addr_model = m;
 }
@@ -50,6 +51,7 @@ void FullFunctionEmitter::set_address_model(const BiosAddressModel* m) {
  * null just means every profile-keyed HLE anchor is emitted as 0. */
 static const BiosConfig* g_bios_profile = nullptr;
 
+/* set bios profile: g_bios_profile = cfg */
 void FullFunctionEmitter::set_bios_profile(const BiosConfig* cfg) {
     g_bios_profile = cfg;
 }
@@ -85,6 +87,7 @@ static std::string rt_sym(const char* base) {
     return g_sym_prefix + base;
 }
 
+/* addr model: if (!g_addr_model)  */
 static const BiosAddressModel& addr_model() {
     if (!g_addr_model) {
         throw std::runtime_error(
@@ -94,10 +97,12 @@ static const BiosAddressModel& addr_model() {
     return *g_addr_model;
 }
 
+/* normalize address: return addr_model().normalize(addr) */
 uint32_t FullFunctionEmitter::normalize_address(uint32_t addr) {
     return addr_model().normalize(addr);
 }
 
+/* ram alias to rom: return addr_model().ram_alias_to_rom(addr) */
 static uint32_t ram_alias_to_rom(uint32_t addr) {
     return addr_model().ram_alias_to_rom(addr);
 }
@@ -110,6 +115,7 @@ static uint32_t bios_runtime_pc(uint32_t rom_pc) {
     return addr_model().runtime_pc(rom_pc);
 }
 
+/* read u32 le: return static_cast<uint32_t>(rom[offset + 0]) */
 uint32_t FullFunctionEmitter::read_u32_le(const std::vector<uint8_t>& rom, uint32_t offset) {
     return  static_cast<uint32_t>(rom[offset + 0])
          | (static_cast<uint32_t>(rom[offset + 1]) << 8)
@@ -131,6 +137,7 @@ static std::string branch_condition(const char* kind, uint32_t branch_addr) {
     return "";
 }
 
+/* is branch kind: if (!kind) return false */
 static bool is_branch_kind(const char* kind) {
     if (!kind) return false;
     std::string k = kind;

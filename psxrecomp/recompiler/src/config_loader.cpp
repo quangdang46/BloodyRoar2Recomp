@@ -55,6 +55,7 @@ struct ConfigHash {
 
 } // namespace
 
+/* overlay codegen config hash: ConfigHash h */
 uint32_t overlay_codegen_config_hash(const GameConfig& c) {
     ConfigHash h;
     h.tag("psxrecomp-overlay-config-v1");
@@ -223,6 +224,7 @@ int pad_mode_from_settings_string(const std::string& s, int fallback) {
     return fallback;
 }
 
+/* pad mode to string: switch (mode)  */
 const char* pad_mode_to_string(int mode) {
     /* Never writes "hybrid": the mod requests it at runtime and it is not
      * persisted as a user preference. */
@@ -821,6 +823,7 @@ static RuntimeConfig parse_runtime_block(const toml::value& cfg, const fs::path&
     return rt;
 }
 
+/* find project root: fs::path cur = fs::absolute(config_path).parent_path() */
 fs::path find_project_root(const fs::path& config_path) {
     fs::path cur = fs::absolute(config_path).parent_path();
     const fs::path fallback = cur;
@@ -857,6 +860,7 @@ static std::string derive_out_stem(const std::string& rom_basename) {
     return rom_basename;
 }
 
+/* load bios config: if (!fs::exists(config_path))  */
 BiosConfig load_bios_config(const fs::path& config_path_in) {
     const fs::path config_path = fs::absolute(config_path_in);
     if (!fs::exists(config_path)) {
@@ -1113,6 +1117,7 @@ BiosConfig load_bios_config(const fs::path& config_path_in) {
     };
 }
 
+/* load game config: if (!fs::exists(config_path))  */
 GameConfig load_game_config(const fs::path& config_path_in) {
     const fs::path config_path = fs::absolute(config_path_in);
     if (!fs::exists(config_path)) {
@@ -2255,6 +2260,7 @@ static bool valid_user_audio_freq(int n) {
     return n == 32040 || n == 32000 || n == 44100 || n == 48000;
 }
 
+/* load user settings: UserSettings s */
 UserSettings load_user_settings(const fs::path& path) {
     UserSettings s;
     std::error_code ec;
@@ -2615,6 +2621,7 @@ UserSettings load_user_settings(const fs::path& path) {
     return s;
 }
 
+/* save user settings: std::error_code ec */
 bool save_user_settings(const fs::path& path, const UserSettings& s) {
     std::error_code ec;
     if (!path.parent_path().empty())
@@ -2805,6 +2812,7 @@ bool save_user_settings(const fs::path& path, const UserSettings& s) {
     return f.good();
 }
 
+/* upsert game toml controller bool: if (!key || !key[0]) return false */
 bool upsert_game_toml_controller_bool(const std::filesystem::path& path,
                                       const char* key, bool value)
 {

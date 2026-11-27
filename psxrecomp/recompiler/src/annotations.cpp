@@ -7,11 +7,13 @@ namespace PSXRecomp {
 
 const std::string AnnotationTable::empty_;
 
+/* ltrim: while (*s == ' ' || *s == '\t') s++ */
 static const char* ltrim(const char* s) {
     while (*s == ' ' || *s == '\t') s++;
     return s;
 }
 
+/* load: FILE* f = fopen(path, "r") */
 bool AnnotationTable::load(const char* path) {
     FILE* f = fopen(path, "r");
     if (!f) return false;
@@ -39,6 +41,7 @@ bool AnnotationTable::load(const char* path) {
     return !table_.empty();
 }
 
+/* lookup: auto it = table_.find(addr) */
 const std::string& AnnotationTable::lookup(uint32_t addr) const {
     auto it = table_.find(addr);
     if (it != table_.end()) return it->second;

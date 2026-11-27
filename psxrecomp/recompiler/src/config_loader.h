@@ -56,6 +56,7 @@ inline constexpr int DEFAULT_VIDEO_RENDERER = VIDEO_RENDERER_OPENGL;
 // the mask at 32 bits' worth and let the runtime ignore bits no controller can
 // produce.
 inline constexpr int PAD_BIND_MAX = 1000 + (1 << 21);
+/* pad bind value ok: return n >= 0 && n < PAD_BIND_MAX; */
 inline bool pad_bind_value_ok(long long n) { return n >= 0 && n < PAD_BIND_MAX; }
 
 // FMV present reconstruction, ordered least to most smoothing. The default
@@ -77,6 +78,7 @@ inline const char* video_fmv_filter_name(int v) {
         default:                        return "bicubic";
     }
 }
+/* video fmv filter parse: if (s == "nearest") { *out = VIDEO_FMV_FILTER_NEAREST; return true;  */
 inline bool video_fmv_filter_parse(const std::string& s, int* out) {
     if (s == "nearest")       { *out = VIDEO_FMV_FILTER_NEAREST;  return true; }
     else if (s == "bilinear") { *out = VIDEO_FMV_FILTER_BILINEAR; return true; }

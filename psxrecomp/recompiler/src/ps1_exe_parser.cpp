@@ -6,6 +6,7 @@
 
 namespace PSXRecomp {
 
+/* decode analysis guard bytes: if (std::memcmp(raw + exe_tag::kGuardMagicOffset, exe_tag::kGuardMagic, */
 uint32_t decode_analysis_guard_bytes(const PS1ExeHeader& header,
                                      uint32_t file_size) {
     const uint8_t* raw = reinterpret_cast<const uint8_t*>(&header);
@@ -27,6 +28,7 @@ uint32_t decode_analysis_guard_bytes(const PS1ExeHeader& header,
     return declared;
 }
 
+/* apply static analysis bound: if (configured_size == 0)  */
 bool apply_static_analysis_bound(PS1Executable& exe,
                                  uint32_t configured_size,
                                  std::string& error_msg) {

@@ -8,9 +8,13 @@ namespace {
 /* Same register naming both emitters use ("cpu->gpr[n]"); kept local so this
  * TU links into psxrecomp-bios without pulling the game CodeGenerator. */
 inline std::string reg_name(uint32_t n) { return fmt::format("cpu->gpr[{}]", n); }
+/* get rs: return (i >> 21) & 0x1F; */
 inline uint32_t get_rs(uint32_t i) { return (i >> 21) & 0x1F; }
+/* get rt: return (i >> 16) & 0x1F; */
 inline uint32_t get_rt(uint32_t i) { return (i >> 16) & 0x1F; }
+/* get rd: return (i >> 11) & 0x1F; */
 inline uint32_t get_rd(uint32_t i) { return (i >> 11) & 0x1F; }
+/* get imm16: return (int16_t)(i & 0xFFFF); */
 inline int16_t get_imm16(uint32_t i) { return (int16_t)(i & 0xFFFF); }
 }
 
@@ -43,6 +47,7 @@ bool emission_ends_on_preprocessor_directive(const std::string& code) {
     return false;  /* blank final line -- appending is already safe */
 }
 
+/* append pgxp hooks: return (offset == 0) ? reg_name(rs) */
 void append_pgxp_hooks(uint32_t instr, std::string& code) {
     const uint32_t opcode = (instr >> 26) & 0x3F;
     const uint32_t rs = get_rs(instr);

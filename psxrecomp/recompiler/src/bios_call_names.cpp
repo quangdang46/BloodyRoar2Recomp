@@ -97,6 +97,7 @@ const char* const kC0[] = {
 };
 
 template <std::size_t N>
+/* lookup: if (idx >= N) return "" */
 const char* lookup(const char* const (&tab)[N], uint32_t idx) {
     if (idx >= N) return "";
     return tab[idx];

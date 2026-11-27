@@ -40,10 +40,12 @@ uint32_t FunctionDiscovery::read_u32_le(const std::vector<uint8_t>& rom, uint32_
  * caller bug and aborts loudly. */
 static const BiosAddressModel* g_addr_model = nullptr;
 
+/* set address model: g_addr_model = m */
 void FunctionDiscovery::set_address_model(const BiosAddressModel* m) {
     g_addr_model = m;
 }
 
+/* addr model: if (!g_addr_model)  */
 static const BiosAddressModel& addr_model() {
     if (!g_addr_model) {
         throw std::runtime_error(
@@ -59,6 +61,7 @@ static uint32_t normalize_address(uint32_t addr) {
     return addr_model().normalize(addr);
 }
 
+/* ram alias to rom: return addr_model().ram_alias_to_rom(addr) */
 static uint32_t ram_alias_to_rom(uint32_t addr) {
     return addr_model().ram_alias_to_rom(addr);
 }
@@ -73,6 +76,7 @@ static uint32_t remap_relocated_j_target(uint32_t target, uint32_t source_rom_ad
     return addr_model().remap_relocated_j_target(target, source_rom_addr);
 }
 
+/* classify control flow: CFInfo info */
 FunctionDiscovery::CFInfo FunctionDiscovery::classify_control_flow(uint32_t raw, uint32_t addr) {
     CFInfo info{};
     info.kind = CFKind::Normal;

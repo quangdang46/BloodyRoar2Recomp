@@ -13,6 +13,7 @@ namespace PSXRecompV4 {
 
 namespace {
 
+/* read u32 le: if (offset + 3 >= rom.size())  */
 uint32_t read_u32_le(const std::vector<uint8_t>& rom, uint32_t offset) {
     if (offset + 3 >= rom.size()) {
         throw std::runtime_error(fmt::format(
@@ -25,6 +26,7 @@ uint32_t read_u32_le(const std::vector<uint8_t>& rom, uint32_t offset) {
          | (static_cast<uint32_t>(rom[offset + 3]) << 24);
 }
 
+/* format name: switch (f)  */
 const char* format_name(PSXRecomp::InstrFormat f) {
     switch (f) {
         case PSXRecomp::InstrFormat::R:       return "R";
@@ -39,6 +41,7 @@ const char* format_name(PSXRecomp::InstrFormat f) {
     return "UNKNOWN";
 }
 
+/* record unsupported: UnsupportedEntry e */
 void record_unsupported(WalkResult& result, const PSXRecomp::DecodedInstruction& d, const std::string& reason) {
     UnsupportedEntry e;
     e.address        = d.address;
@@ -52,6 +55,7 @@ void record_unsupported(WalkResult& result, const PSXRecomp::DecodedInstruction&
 
 } // namespace
 
+/* walk: WalkResult result */
 WalkResult BiosSliceWalker::walk(const std::vector<uint8_t>& rom,
                                  uint32_t                    base_addr,
                                  uint32_t                    start_addr,

@@ -9,6 +9,7 @@ namespace PSXRecompV4 {
 
 namespace {
 
+/* apply one recompiler patch: if (observed == patch.expected) return patch.replacement */
 uint32_t apply_one_recompiler_patch(const RecompilerPatch& patch,
                                     uint32_t address,
                                     uint32_t observed,
@@ -23,6 +24,7 @@ uint32_t apply_one_recompiler_patch(const RecompilerPatch& patch,
 
 } // namespace
 
+/* apply recompiler patch: for (const auto& patch : patches)  */
 uint32_t apply_recompiler_patch(const std::vector<RecompilerPatch>& patches,
                                 uint32_t address,
                                 uint32_t observed,
@@ -35,6 +37,7 @@ uint32_t apply_recompiler_patch(const std::vector<RecompilerPatch>& patches,
     return observed;
 }
 
+/* apply recompiler patches to executable: for (const auto& patch : patches)  */
 void apply_recompiler_patches_to_executable(
     PSXRecomp::PS1Executable& executable,
     const std::vector<RecompilerPatch>& patches,
@@ -67,6 +70,7 @@ void apply_recompiler_patches_to_executable(
     }
 }
 
+/* merge recompiler patches: for (const auto& candidate : incoming)  */
 void merge_recompiler_patches(std::vector<RecompilerPatch>& destination,
                               const std::vector<RecompilerPatch>& incoming) {
     for (const auto& candidate : incoming) {

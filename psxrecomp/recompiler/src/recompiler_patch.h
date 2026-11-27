@@ -21,6 +21,7 @@ struct RecompilerPatch {
     std::string note;
 };
 
+/* recompiler patch address key: return address & 0x1FFFFFFFu */
 inline uint32_t recompiler_patch_address_key(uint32_t address) {
     return address & 0x1FFFFFFFu;
 }
