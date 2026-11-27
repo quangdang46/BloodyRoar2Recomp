@@ -797,3 +797,15 @@ clean_table: 9160 wrappers (+49), 4 legit skips unchanged.
 Remaining filtered pool ~75 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :5053 frames 9262 -> 13143+
 attract CD streaming, no wedge.
+
+## Batch 39 (orch/w5/e05) — 14 leaves + 56 _cont rows
+
+14 leaves -> cpst_ (801ae7f8, 801af628, 8019e45c, 80199cf0,
+801a2f60, 801aece4, 80195c44, 801af098, 801a34dc, 801af11c,
+801a3570, 801a347c, 801af1ac, 801aed3c). 56 _cont cases -> resume
+rows (one already routed; +55 unique), no fnmap conflicts.
+
+clean_table: 9229 wrappers (+69), 4 legit skips unchanged.
+Remaining filtered pool ~61 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :5059 frames 9317 -> 13113+
+attract CD streaming, no wedge.
