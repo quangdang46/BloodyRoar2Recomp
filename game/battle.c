@@ -154,10 +154,10 @@ extern undefined4 * rotmat2_build(uint a0,undefined4 *a1);
 extern int * task_node_alloc(int a0,undefined4 a1,uint a2,int a3,int arg5,int arg6);
 extern void task_node_free(int *a0);
 extern void task_pools_tick(int a0);
-extern void noop_a(int a0,undefined4 a1,undefined4 a2,undefined4 a3);
+extern void task_data_set3(int a0,undefined4 a1,undefined4 a2,undefined4 a3);
 extern int fx_group_alloc(undefined4 a0,undefined4 a1,int a2,int a3);
-extern void noop_b(int a0,undefined4 a1,undefined4 a2);
-extern undefined4 noop_c(int a0);
+extern void task_data_set2(int a0,undefined4 a1,undefined4 a2);
+extern undefined4 task_data_ptr(int a0);
 extern void node_tree_free(int a0);
 extern void prim_attr_word_set(int a0,undefined2 a1);
 extern undefined4 * prim_group_build(undefined4 a0,int a1,undefined4 a2,undefined4 a3);
@@ -2451,7 +2451,7 @@ LAB_80173dd8:
             triple_track_spawn(*(undefined1 *)guest_at((uint32_t)(uintptr_t)((*slot + 2))),0x30,0);
             t0 = fx_group_alloc(1,1,0,0x13);
             if (t0 != 0) {
-              noop_a(t0,fighter + t2 * 2 + 0x6c,*(int *)guest_at((uint32_t)(uintptr_t)((*slot + 0x20) ))+ 0x124,
+              task_data_set3(t0,fighter + t2 * 2 + 0x6c,*(int *)guest_at((uint32_t)(uintptr_t)((*slot + 0x20) ))+ 0x124,
                             (undefined4)br2_gaddr(&DAT_801f0760));
             }
             group_fx_spawn(*slot,0x1b,*(int *)guest_at((uint32_t)(uintptr_t)((*slot + 0x20) ))+ 0x124,0xe00,0x2000,0,5);
@@ -7112,8 +7112,8 @@ void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, un
   int rec;
   grp = fx_group_alloc(1,1,0,0xc);
   if (grp != 0) {
-    rec = noop_c(grp);
-    noop_b(grp,arg, (undefined4)br2_gaddr(&DAT_801f0760));
+    rec = task_data_ptr(grp);
+    task_data_set2(grp,arg, (undefined4)br2_gaddr(&DAT_801f0760));
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0xc) ))= w0;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x10) ))= w1;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((rec + 0x14) ))= w2;
@@ -8387,7 +8387,7 @@ void task_pools_tick(int pool)
 
 }
 
-void noop_a(int u0,undefined4 u1,undefined4 u2,undefined4 u3)
+void task_data_set3(int u0,undefined4 u1,undefined4 u2,undefined4 u3)
 {
   int datap;
   datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
@@ -8417,7 +8417,7 @@ int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 
 }
 
-void noop_b(int u0,undefined4 u1,undefined4 u2)
+void task_data_set2(int u0,undefined4 u1,undefined4 u2)
 {
   int datap;
   datap = *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
@@ -8427,7 +8427,7 @@ void noop_b(int u0,undefined4 u1,undefined4 u2)
 
 }
 
-undefined4 noop_c(int u0)
+undefined4 task_data_ptr(int u0)
 {
   return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((u0 + 0x10) ))+ 8)));
 
@@ -8895,7 +8895,7 @@ void battle_intro_fsm(undefined4 mat,undefined4 a1,undefined4 a2,int st)
         (&DAT_801f0ad8)[i] = cnt + -1;
       }
       if ((&DAT_1f8000eb)[t7] == '\b') {
-        fx = noop_c(*(undefined4 *)(&DAT_801f0750 + (uint)(byte)(&DAT_1f8000ea)[t7] * 4)
+        fx = task_data_ptr(*(undefined4 *)(&DAT_801f0750 + (uint)(byte)(&DAT_1f8000ea)[t7] * 4)
                             );
         if ((*(uint *)(&DAT_1f800148 + t7) & 2) == 0) {
           *(undefined4 *)guest_at((uint32_t)(uintptr_t)((fx + 0x14) ))= 0;
@@ -13776,7 +13776,7 @@ void vec_emit_spawn(undefined4 *rec)
   int grp;
   grp = fx_group_alloc(1,1,3,3);
   if (grp != 0) {
-    noop_a(grp,*rec,rec[1],rec[2]);
+    task_data_set3(grp,*rec,rec[1],rec[2]);
   }
   return;
 
@@ -17282,7 +17282,7 @@ int task_node_alloc_init(int kind,int cnt,int sz)
 }
 
 /* guest task_cb_voice_line @0x8013f648 — task callback: voice/line table lookup +
- * fx_group_alloc alloc + noop_b register, then task_slot_step. */
+ * fx_group_alloc alloc + task_data_set2 register, then task_slot_step. */
 void task_cb_voice_line(int arg)
 {
   int ent;
@@ -17310,7 +17310,7 @@ void task_cb_voice_line(int arg)
   }
   t = *(int *)guest_at((uint32_t)(uintptr_t)arg);
   base = *(int *)guest_at((uint32_t)(uintptr_t)(t + 0x20));
-  noop_b(ent,base + *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4)) * 0x40 + t * 0x10 + 0x34,
+  task_data_set2(ent,base + *(int *)guest_at((uint32_t)(uintptr_t)(arg + 4)) * 0x40 + t * 0x10 + 0x34,
                 (undefined4)br2_gaddr(&DAT_801f0760));
   task_slot_step();
   return;

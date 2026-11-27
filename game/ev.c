@@ -1330,8 +1330,8 @@ typedef uint8_t *evhandler_t(uint8_t *ctrl, uint8_t *motion, uint32_t pc_g);
 extern uint8_t *g_DAT_1f8000b1, *g_DAT_1f8000e8, *g_DAT_801f0760;
 extern uint32_t *g__DAT_801f093a, *g__DAT_801f093e;
 extern int fx_group_alloc(undefined4,undefined4,int,int);
-extern undefined4 noop_c(int);
-extern void noop_a(int,undefined4,undefined4,undefined4);
+extern undefined4 task_data_ptr(int);
+extern void task_data_set3(int,undefined4,undefined4,undefined4);
 extern void node_param_quad_set(int,undefined4,undefined4,undefined4,undefined4);
 extern void hit_spark_spawn(undefined4,uint,undefined2);
 extern void speech_bubble_spawn(undefined4*,short,int,ushort);
@@ -1343,7 +1343,7 @@ extern void popup_spawn(int,int,int);
 extern void firework_spawn(undefined2*);
 extern void triple_track_spawn(int,undefined2,int);
 extern void iris_wipe_spawn(int,int);
-extern void noop_b(int,undefined4,undefined4);
+extern void task_data_set2(int,undefined4,undefined4);
 extern void emit_task_spawn_b(undefined4*,undefined4,undefined4,undefined4);
 extern int fx_record_alloc(undefined4,int,uint,undefined4,undefined4);
 extern uint rand_lcg(void);
@@ -1371,9 +1371,9 @@ ushort * ev_spark_spawn(int ctrl_g,undefined4 unused,ushort *stream)
     if (tmp < 3) {
       tmp = fx_group_alloc(1,1,0,0);
       if (tmp != 0) {
-        task_g = (int)noop_c(tmp);
+        task_g = (int)task_data_ptr(tmp);
         task = (uint8_t *)guest_at((uint32_t)task_g);
-        noop_a(tmp,GU32(ctrl, 0x20) + 0x124,
+        task_data_set3(tmp,GU32(ctrl, 0x20) + 0x124,
                      (uint32_t)ctrl_g,guest_of(g_DAT_801f0760));
         rec = *stream;
         *(uint32_t *)(task + 0x18) = 0x80140710;
@@ -1385,7 +1385,7 @@ ushort * ev_spark_spawn(int ctrl_g,undefined4 unused,ushort *stream)
     }
     else if ((tmp == 3) &&
                (tmp = fx_group_alloc(1,1,GU8(ctrl,2) + 1,0), tmp != 0)) {
-        task_g = (int)noop_c(tmp);
+        task_g = (int)task_data_ptr(tmp);
         task = (uint8_t *)guest_at((uint32_t)task_g);
         node_param_quad_set(tmp,(uint32_t)ctrl_g,
                      guest_of(g_DAT_1f8000e8 + (GU8(ctrl,2) ^ 1) * 0x108),
@@ -1487,7 +1487,7 @@ ushort * ev_cmd_dispatch(int ctrl_g,undefined4 unused,ushort *stream)
       }
       tmp = fx_group_alloc(1,1,0,0xf);
       if (tmp != 0) {
-        noop_b(tmp,GU32(ctrl, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
+        task_data_set2(tmp,GU32(ctrl, 0x20) + (uint32_t)(pi * 0x50) + 0x34,
                      guest_of(g_DAT_801f0760));
       }
       break;
