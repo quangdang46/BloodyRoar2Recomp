@@ -12173,7 +12173,7 @@ int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 
 /* prim_group_alloc @0x801ac334 — allocate a primitive group node
  * with attr/num/mode sizing. */
-int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, undefined4 arg7)
+int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int div, undefined4 kind)
 {
   undefined2 ff;
   int node;
@@ -12189,8 +12189,8 @@ int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, u
   if ((mode == 0) && (flg != 0)) {
     m = 1;
   }
-  pad = (uint)(arg6 != 0x1000) * 0x20;
-  node = (int)(intptr_t)task_node_alloc(arg7,2,1,0x801ac154,0,
+  pad = (uint)(div != 0x1000) * 0x20;
+  node = (int)(intptr_t)task_node_alloc(kind,2,1,0x801ac154,0,
                        num * 4 + m * 0x18 + 0x4c + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x2c) ))* 8 +
                        *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x34) ))* 8 + *(int *)guest_at((uint32_t)(uintptr_t)((attr + 0x30) ))* 8 + pad);
   if (node == 0) {
@@ -12205,16 +12205,16 @@ int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, u
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x2c) ))= 0;
     *(int *)guest_at((uint32_t)(uintptr_t)((grp + 0x44) ))= mode;
     *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 0x48) ))= 0;
-    if ((arg6 != 0x1000) == 0) {
+    if ((div != 0x1000) == 0) {
       *(undefined4 *)guest_at((uint32_t)(uintptr_t)((grp + 4) ))= 0;
     }
     else {
-      /* guest @0x801AC41C-0x801AC430: num=0x01000000, div arg6;
+      /* guest @0x801AC41C-0x801AC430: num=0x01000000, divisor div;
        * break @0x801AC42C is a no-op -> dv==0 yields LO=-1 (num>=0),
        * stored truncated to u16. C /0 would SIGFPE — guard faithfully. */
       *(int *)guest_at((uint32_t)(uintptr_t)((grp + 4) ))= grp + 0x4c;
-      ff = (undefined2)(arg6 == 0 ? (int32_t)0xffffffff
-                                      : 0x1000000 / arg6);
+      ff = (undefined2)(div == 0 ? (int32_t)0xffffffff
+                                      : 0x1000000 / div);
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((grp + 0x4c) ))= ff;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((grp + 0x54) ))= ff;
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((grp + 4) ))+ 0x10) ))= ff;
