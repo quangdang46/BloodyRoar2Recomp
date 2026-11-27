@@ -172,7 +172,6 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t clean_caller_ra(void);
-extern void     br2_guest_ra_set(uint32_t);
 
 /* MMIO register-block accessors. The pointer cells 0x801bdeb0,
  * 0x801bdec0 and 0x801bdec4 resolve to HARDWARE addresses — the SPU
@@ -186,9 +185,6 @@ extern void     br2_guest_ra_set(uint32_t);
 #define CDMMIO16(base, idx)        br2_ld16((base) + ((uint32_t)(idx) << 1))
 #define CDMMIO16_ST(base, idx, v)  \
     br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
-#define CDMMIO32(base, idx)        br2_ld32((base) + ((uint32_t)(idx) << 2))
-#define CDMMIO32_ST(base, idx, v)  \
-    br2_st32((base) + ((uint32_t)(idx) << 2), (uint32_t)(v))
 
 /* ---- guest globals ----
  * The g_DAT_* bindings live in bind.c (guest_for registry) — names are
@@ -377,18 +373,9 @@ extern uint32_t cd_busy_wait(int);
 extern int cd_dispatch_tbl4(int,uint32_t);
 uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
-extern char *s__s____80125840;
-extern char *s_CD_timeout__801257a4;
-extern char *s__s___s__Sync__s__Ready__s_801257b4;
-extern char *s__s__no_param_80125848;
-extern char *s_CD_cw_80125858;
-extern char *s_CdRead__Shell_open____80125ae0;
-extern char *s_CdRead__retry____80125af8;
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
-#define DB16P(a) br2_ld16p(a)
 #define DB8P(a)  br2_ld8p(a)
-#define DB32P(a) br2_ld32p(a)
 #define DB32G(a) (*(uint32_t *)guest_at(a))
 #define DB8(a)   (*(uint8_t  *)guest_at(a))
 #define DB16(a)  (*(uint16_t *)guest_at(a))
@@ -852,24 +839,8 @@ extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
 extern uint32_t gpu_status_cmd(uint32_t);
 
-extern char *s_CD_sync_8012582c;
-extern char *s_CD_ready_80125834;
-extern char *s_CD_datasync_801258b0;
-extern char *s_CD_timeout__801257a4;
-extern char *s_VSync__timeout_80125b38;
-extern char *s_CdRead__sector_error_80125ac8;
-extern char *s_DiskError__801257d0;
-extern char *s_com__s_code___02x__02x__801257dc;
-extern char *s_CDROM__unknown_intr_801257f8;
-extern char *s___d__8012580c;
-extern char *s__s___s__Sync__s__Ready__s_801257b4;
 
-#define CDB8(a)   DB8(a)
-#define CDB8P(a)  DB8P(a)
-#define CDB32(a)  DB32(a)
 #define CDB32G(a) DB32G(a)
-#define CDNAME(ch) (((uint32_t *)guest_at(0x801bc86c))[(ch) & 0xff])
-#define CDNOINTR(st) (((uint32_t *)guest_at(0x801bc8ec))[(st) & 0xff])
 
 /* shared sync-wait skeleton used by 968cc/96b4c/97698:
  * returns via out params; implemented inline per function for
@@ -2075,11 +2046,6 @@ int cd_dispatch_tbl8(int a0,uint32_t a1)
  * pointer; the register int8_t/half/word lives at *cell. */
 static uint8_t *cdcell_u8(uint32_t cell)
 { return (uint8_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-static uint16_t *cdcell_u16(uint32_t cell)
-{ return (uint16_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-static uint32_t cdcell_u32(uint32_t cell)
-{ return *(uint32_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-
 /* cd_reg_init_seq — CD register init sequence: threshold fields on
  * channel block, then command bytes 2/3/2 with params 0x80/0/0x80/0
  * and status 0x20 through cells 0x801bcb0c/10/14/18.
@@ -2290,14 +2256,14 @@ void cd_handler_triple_install(void)
 }
 
 /* cd_ext_init_once — one-shot CD ext-table init: guard @0x801bdea0,
- * crit-in, cd_ext_table_init(0x8019b7e0), FUN_8019b380(0xf0000009,0x20,
- * 0x2000,0) -> FUN_8019b390 -> @0x801bde38, crit-out.
+ * crit-in, cd_ext_table_init(0x8019b7e0), bios_tramp_b008(0xf0000009,0x20,
+ * 0x2000,0) -> bios_tramp_b00c -> @0x801bde38, crit-out.
  * Disasm 0x8019b308-0x8019b370. */
 extern int32_t cd_ext_table_init(uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_ext_init_once(void)
 {
-  /* OpenEvent/EnableEvent via FUN_8019b380/390 -> bios_svc6 needs the
+  /* OpenEvent/EnableEvent via bios_tramp_b008/b00c -> bios_svc6 needs the
    * guest $ra caller-token semantics the generated CPS frame supplies;
    * the clean port livelocked versus boot in the CD-event wait. Delegate
    * whole body to generated MIPS. (The 0x8019B7E0 callback arg was
@@ -4358,15 +4324,16 @@ void cd_file_header_copy(uint32_t a0,void *a1)
   d[3] = (uint8_t)(v - (q << 4) + 0x30);
 }
 
-/* FUN_801a0260 / FUN_801a05f0 — SKIPPED: pure BIOS-call trampolines
- * (jr $t2=0xb0, t1=0x43 / t2=0xa0,t1=0xac then b0 entries). No body. */
+/* guest 0x801A0260 / 0x801A05F0 are pure BIOS-call trampolines
+ * (jr $t2=0xb0, t1=0x43 / t2=0xa0,t1=0xac) — ported as
+ * bios_tramp_b043 / bios_tramp_a0ac; call sites below use those. */
 
 /* cd_file_record_lookup — file-record lookup: copies tag bytes (<0x3b signed)
  * from a0 into buf @0x801fec48, scans 0x50-stride table
  * @*(u32*)0x150..+count*80 (@0x154 count) comparing names via
  * cd_strcmp; phase1 hit -> *0x801fec40 = entry+0x34; phase2
  * strcmp==0 -> entry+0x34 = 0x801a041c; tail calls BIOS svc
- * B0/0x42 trampoline (FUN_801a0520) with (a0,a1) unless phase1 miss
+ * B0/0x42 trampoline (bios_tramp_b042) with (a0,a1) unless phase1 miss
  * (returns 0). a0/a1 are HOST pointers (callers pass stack bufs).
  * Reads kernel cells 0x150/0x154 via guest_at.
  * Disasm 0x801a0280-0x801a0418. */
@@ -4486,8 +4453,9 @@ void cd_strcat_guard(void *a0,uintptr_t a1)
   }
 }
 
-/* FUN_801a05f0 — SKIPPED: BIOS trampoline cluster head
- * (jr $t2=0xa0 t1=0xac / jr $t2=0xb0 t1=0x4e / t1=0x50). */
+/* guest 0x801A05F0 cluster head — BIOS trampolines
+ * (jr $t2=0xa0 t1=0xac / jr $t2=0xb0 t1=0x4e / t1=0x50);
+ * 0x801A05F0 itself = bios_tramp_a0ac. */
 
 /* cd_chan_cmd_burst — channel command pump: 15 rounds building a 0x20-int8_t
  * request {0xa0,0,0xffff,0...} at 0x801fec70+i*0x20, copying it to the
@@ -7182,7 +7150,7 @@ int cd_ctx_save(uint32_t a0)
  * stale regs — so 0,0). Re-polls until mask drains. Tail: while
  * *ptrA&*ptrB nonzero bump counter @0x801bddb0; at old>=0x801 print
  * "intr timeout(%04x:%04x)", reset counter, clear *ptrA. Mask==0
- * also clears counter. Ends with BIOS svc 0x17 (FUN_8019ad60
+ * also clears counter. Ends with BIOS svc 0x17 (bios_tramp_b017
  * trampoline: intc enable) and busy flag=0. First entry with
  * flag==0 prints "unexpected interrupt(%04x)" then enables intc.
  * Disasm 0x8019a8ec-0x8019aab8. */
@@ -7209,16 +7177,16 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
 }
 
 /* cd_hw_chan_init — channel/hw object init under DI/EI (0x801a0be0-
- * 0x801a0db8). Eight FUN_8019b380(object,attr,size,cb) allocations —
+ * 0x801a0db8). Eight bios_tramp_b008(object,attr,size,cb) allocations —
  * objects 0xf4000001 / 0xf0000011, attrs {4,0x8000,0x100,0x2000},
  * size 0x1000, guest cb addrs 0x801a0b10..0x801a0b9c — stored to
- * 0x8020ef70..0x8020ef8c, then each released via FUN_8019b390 in
+ * 0x8020ef70..0x8020ef8c, then each released via bios_tramp_b00c in
  * order, cd_pending_args_pump() pump, conditional EI. Guest tests the DI
  * (syscall 1) return ==1 before EI; host FUN_8018e300 is a void
  * stub, so the restore runs unconditionally — same convention as
  * every other DI/EI site in this file. */
 /* cd_hw_chan_init — delegate whole body to generated MIPS (0x801a0be0).
- * Eight FUN_8019b380(B0/0x08) allocs + FUN_8019b390(B0/0x09) frees: the
+ * Eight bios_tramp_b008(B0/0x08) allocs + bios_tramp_b00c(B0/0x09) frees: the
  * BIOS `jr 0xB0` $v0 handles must propagate through generated context
  * (session-18 boundary bug — same as cd_ext_init_once/cd_dma_chan_init). */
 void cd_hw_chan_init(void)
