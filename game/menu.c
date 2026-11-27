@@ -12822,7 +12822,7 @@ void stage_char_data_load(uint32_t rec,uint32_t idx)
 extern void gte_xform_accum(void *,void *,int32_t,uint32_t);
 void event_record_walk(uint32_t w)
 {
-  uint32_t cur, tagw, hi, lo, v0, v1, scale;
+  uint32_t cur, tagw, hi, lo, fpa, fpb, qsrc, quo, scale;
   int32_t den;
   /* emit vec = guest $sp+0x10 (frame -0x30) = entry_sp-0x20; it is filled
    * in the emit phase and re-read by gte_xform_accum through nested
@@ -12880,25 +12880,25 @@ void event_record_walk(uint32_t w)
     if ((MB16(cur) & 0xff00u) == 0) break;
   }
 term:
-  v0 = MB32(w + 0x10);
-  v1 = MB32(w + 0x10);
-  MW16(w + 0x1a, MB16(v0 + 2));
-  MW16(w + 0x14, MB16(v1 + 2));
+  fpa = MB32(w + 0x10);
+  fpb = MB32(w + 0x10);
+  MW16(w + 0x1a, MB16(fpa + 2));
+  MW16(w + 0x14, MB16(fpb + 2));
   {
-    int32_t t = MBS16(v1 + 2);
+    int32_t t = MBS16(fpb + 2);
     MW16(w + 0x1c, t <= 0 ? (uint16_t)t : 0);
   }
 emit:
   cur = MB32(w + 0x10);
   h0 = MB32(w);
   h1 = MB32(w + 4);
-  v1 = MB32(w + 0xc) + (uint32_t)(int32_t)MBS16(cur) * 12u;
-  MW16(gbuf + 0, MB16(v1));
-  MW16(gbuf + 2, MB16(v1 + 2));
-  MW16(gbuf + 4, MB16(v1 + 4));
-  MW16(gbuf + 6, MB16(v1 + 6));
-  MW16(gbuf + 8, MB16(v1 + 8));
-  MW16(gbuf + 10, MB16(v1 + 0xa));
+  qsrc = MB32(w + 0xc) + (uint32_t)(int32_t)MBS16(cur) * 12u;
+  MW16(gbuf + 0, MB16(qsrc));
+  MW16(gbuf + 2, MB16(qsrc + 2));
+  MW16(gbuf + 4, MB16(qsrc + 4));
+  MW16(gbuf + 6, MB16(qsrc + 6));
+  MW16(gbuf + 8, MB16(qsrc + 8));
+  MW16(gbuf + 10, MB16(qsrc + 0xa));
   /* guest 0x8014B208/0x8014B228: lh/lh/sll12/div unconditional —
    * MIPS div-by-zero LO = num>=0 ? 0xFFFFFFFF : 1 (mflo raw u32). */
   {
@@ -12909,9 +12909,9 @@ emit:
                     : (num >= 0 ? 0xFFFFFFFFu : 1u);
     } else {
       den = MBS16(w + 0x1a);
-      v0 = den != 0 ? (uint32_t)(num / den)
+      quo = den != 0 ? (uint32_t)(num / den)
                     : (num >= 0 ? 0xFFFFFFFFu : 1u);
-      scale = 0x1000u - v0;
+      scale = 0x1000u - quo;
     }
   }
   gte_xform_accum(buf, buf + 8, 1, scale);
