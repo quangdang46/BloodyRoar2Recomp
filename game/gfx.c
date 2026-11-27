@@ -398,8 +398,9 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
     *(int16_t *)((char *)pkt + 10) = (int16_t)((uint32_t)pos >> 0x10);
     *(int8_t *)((char *)pkt + 7) = *(int8_t *)((char *)pkt + 7) & 0xfd | 1;
     pkt[1] = 0x64808080;
-    /* tex args = bytes @0x801e40b7/@0x801e40b6 — head of the per-fighter
-     * attribute record (battle.c indexes it as base + slot*0x2150). */
+    /* tex args = per-fighter sprite flags: 0x801e40b7 -> flip (tag
+     * bit 0x400), 0x801e40b6 -> texture-enable (tag bit 0x200); head of
+     * the record battle.c indexes as base + slot*0x2150. */
     prim_packet_init_tex((int)guest_of(pkt + 5), GP8(0x801e40b7), GP8(0x801e40b6), (int)(int16_t)col, 0);
     ret = 0;
     *pkt = *cell | 0x4000000;
@@ -618,7 +619,9 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((char)env[8] != '\0') {
       tc = tc | 0x20;
     }
-    /* flag byte @0x801b8323: nonzero -> set bit7 of the timing ctrl byte */
+    /* flag byte @0x801b8323 — 4th byte of the gpu_mode/gpu_mode_state/
+     * gpu_dbg_level flag block; nothing ported writes it, so bit7 of
+     * the timing ctrl stays clear in practice. */
     if (GP8(0x801b8323) != '\0') {
       tc = tc | 0x80;
     }
@@ -1249,6 +1252,7 @@ uint32_t spr_attr_alloc_a(uint32_t head_g, int16_t x0, int16_t y0,
       pkt[1] = tag | 0x2a000000;
       tex_ofs = (variant + -1) * 0x20;
     }
+    /* same per-fighter flag bytes as spr_draw_off: b7=flip, b6=tex-enable */
     prim_packet_init_tex((int)guest_of(pkt + 6), GP8(0x801e40b7), GP8(0x801e40b6), tex_ofs, 0);
     ret = 0;
     uint32_t *head = (uint32_t *)guest_at(head_g);
