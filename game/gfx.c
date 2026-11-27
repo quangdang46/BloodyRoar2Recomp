@@ -7,15 +7,10 @@
  * spr_slot_pkt_submit in this file). */
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "cpu_state.h"
-
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
