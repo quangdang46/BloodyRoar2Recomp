@@ -15476,13 +15476,13 @@ extern uint32_t *g_PTR_DAT_801b1d44;
 extern void *g_PTR_FUN_801b1ec0;
 extern void motion_integrator_tail(int f,int n);
 extern void keyframe_advance(byte *ctrl,byte *motion);
-extern void spark_trail_task_update();
-extern void confetti_burst_update();
+extern void spark_trail_task_update(int *rec);
+extern void confetti_burst_update(int rec);
 extern void LAB_8013e558(undefined4 *ctx);
 extern void LAB_80140510(int *ctx);
 extern uint8_t *g_DAT_801b180c;
 #define DAT_801b180c (*g_DAT_801b180c)
-extern void ring_effect_task_update();
+extern void ring_effect_task_update(int rec);
 extern void firework_task_update(int rec);
 
 /* guest popup_spawn @0x8013ab8c */
