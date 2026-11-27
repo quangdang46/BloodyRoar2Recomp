@@ -32,16 +32,19 @@
 
 /* Pulled in by the model TU; unrelated to pad modes. */
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
     ++fails;
 }
 
+/* expect mode: if (m->s.pad_mode[player] == want) { printf("ok: %s\n", what); return;  */
 static void expect_mode(const LauncherModel* m, int player, int want,
                         const char* what) {
     if (m->s.pad_mode[player] == want) { printf("ok: %s\n", what); return; }
@@ -87,6 +90,7 @@ static LauncherModel* psx_session(int locked, int locked_mode,
     return m;
 }
 
+/* genesis session: LauncherModel* m = (LauncherModel*)calloc(1, sizeof(LauncherModel)) */
 static LauncherModel* genesis_session(int p0_src, int p0_persisted_mode) {
     static RecompLauncherCGameInfo game;
     static RecompLauncherCSettings io;
@@ -131,6 +135,7 @@ static void test_locked_analog_keyboard_seat(void) {
     free(m);
 }
 
+/* test locked analog poisoned settings: LauncherModel* m = psx_session(1, PSX_ANALOG, SRC_KEYBOARD, PSX_DIGIT... */
 static void test_locked_analog_poisoned_settings(void) {
     /* The corruption is durable: the host writes player_mode[] back to
      * settings.toml, so a build that already shipped the bug hands the
@@ -143,6 +148,7 @@ static void test_locked_analog_poisoned_settings(void) {
     free(m);
 }
 
+/* test locked digital still digital: LauncherModel* m = psx_session(1, PSX_DIGITAL, SRC_GAMEPAD, PSX_ANALOG) */
 static void test_locked_digital_still_digital(void) {
     /* The other direction of the same lock: digital-only titles (X4, Tomba 2)
      * must stay digital even for a gamepad seat, whose unlocked default would
@@ -170,6 +176,7 @@ static void test_unlocked_keyboard_presents_dpad(void) {
     free(m);
 }
 
+/* test unlocked keyboard to pad self corrects: LauncherModel* m = psx_session(0, PSX_ANALOG, SRC_KEYBOARD, PSX_ANALOG) */
 static void test_unlocked_keyboard_to_pad_self_corrects(void) {
     /* Why the unlocked case was never as bad: assigning a pad goes through
      * launcher_model_set_source -> apply_default_pad_mode_for_source, which
@@ -190,6 +197,7 @@ static void test_unlocked_keyboard_to_pad_self_corrects(void) {
     free(m);
 }
 
+/* test unlocked hybrid migrates: LauncherModel* m = psx_session(0, PSX_ANALOG, SRC_GAMEPAD, 0) */
 static void test_unlocked_hybrid_migrates(void) {
     /* Hybrid (0) is mod-only and never selectable; a stale persisted 0 on a
      * gamepad seat migrates to Analog. Unchanged by this fix, pinned because

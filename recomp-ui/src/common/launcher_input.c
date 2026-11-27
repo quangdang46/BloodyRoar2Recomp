@@ -18,18 +18,21 @@ typedef struct {
 
 static OpenPad s_open[LNG_MAX_PADS];
 
+// find open: for (int i = 0; i < LNG_MAX_PADS; ++i)
 static OpenPad* find_open(uint32_t id) {
     for (int i = 0; i < LNG_MAX_PADS; ++i)
         if (s_open[i].handle && s_open[i].id == id) return &s_open[i];
     return NULL;
 }
 
+// free open slot: for (int i = 0; i < LNG_MAX_PADS; ++i)
 static OpenPad* free_open_slot(void) {
     for (int i = 0; i < LNG_MAX_PADS; ++i)
         if (!s_open[i].handle) return &s_open[i];
     return NULL;
 }
 
+// log opened pad: if (!pad || !opened || !opened->handle) return
 static void log_opened_pad(const LauncherPad* pad, const OpenPad* opened) {
     if (!pad || !opened || !opened->handle) return;
 #if defined(LNG_SDL3)
@@ -46,12 +49,14 @@ static void log_opened_pad(const LauncherPad* pad, const OpenPad* opened) {
     if (mapping) SDL_free(mapping);
 }
 
+// id is live: for (int i = 0; i < count; ++i)
 static int id_is_live(const LauncherPad* pads, int count, uint32_t id) {
     for (int i = 0; i < count; ++i)
         if (pads[i].id == id) return 1;
     return 0;
 }
 
+// close open: if (!pad || !pad->handle) return
 static void close_open(OpenPad* pad) {
     if (!pad || !pad->handle) return;
 #if defined(LNG_SDL3)
@@ -69,10 +74,12 @@ static void close_open(OpenPad* pad) {
     memset(pad, 0, sizeof(*pad));
 }
 
+// launcher input shutdown: for (int i = 0; i < LNG_MAX_PADS; ++i) close_open(&s_open[i])
 void launcher_input_shutdown(void) {
     for (int i = 0; i < LNG_MAX_PADS; ++i) close_open(&s_open[i]);
 }
 
+// launcher input gamepad at rest: OpenPad* pad = find_open(id)
 int launcher_input_gamepad_at_rest(uint32_t id) {
     OpenPad* pad = find_open(id);
     if (!pad || !pad->handle) return 1;  // no handle → don't block capture
@@ -102,6 +109,7 @@ int launcher_input_gamepad_at_rest(uint32_t id) {
     return 1;
 }
 
+// launcher input gamepad button mask: OpenPad* pad = find_open(id)
 uint32_t launcher_input_gamepad_button_mask(uint32_t id) {
     OpenPad* pad = find_open(id);
     uint32_t mask = 0;
@@ -123,6 +131,7 @@ uint32_t launcher_input_gamepad_button_mask(uint32_t id) {
     return mask;
 }
 
+// launcher input poll: int n = 0
 int launcher_input_poll(LauncherPad* out, int max, int enable_gyro) {
     int n = 0;
     if (!out || max <= 0) return 0;

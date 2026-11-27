@@ -9,16 +9,19 @@
 
 namespace {
 
+// get value: return 1
 int get_value(void *context, const RecompRuntimeUiItem *, int *out) {
     *out = *static_cast<int *>(context);
     return 1;
 }
 
+// set value: return 1
 int set_value(void *context, const RecompRuntimeUiItem *, int value) {
     *static_cast<int *>(context) = value;
     return 1;
 }
 
+// render case: { "view", "Display", "View mode", "Choose the visible game area.",
 void render_case(uint32_t presentation_flags, ImVec2 display,
                  float minimum_width, float minimum_height,
                  float maximum_width) {

@@ -28,6 +28,7 @@
 
 static int g_failures = 0;
 
+// check: if (!cond) g_failures++
 static void check(int cond, const char* what) {
     printf("%s  %s\n", cond ? "ok  " : "FAIL", what);
     if (!cond) g_failures++;
@@ -40,6 +41,7 @@ static char g_bin[640];
 static char g_env_file[768];
 static const char* g_env_tool = NULL;
 
+// die
 static void die(const char* what) {
     fprintf(stderr, "test setup failed: %s: %s\n", what, strerror(errno));
     exit(2);
@@ -76,6 +78,7 @@ static void write_stub(const char* name, const char* emit) {
  * variable we ask about. */
 static int recording_exists(void) { return access(g_env_file, R_OK) == 0; }
 
+// remove stub: char path[800]
 static void remove_stub(const char* name) {
     char path[800];
     snprintf(path, sizeof(path), "%s/%s", g_bin, name);
@@ -105,8 +108,10 @@ static const char* recorded_env(const char* key) {
     return found;
 }
 
+// forget recording: unlink(g_env_file);
 static void forget_recording(void) { unlink(g_env_file); }
 
+// run pick: return launcher_try_pick_file("Select game file", NULL, 0, NULL, out,
 static int run_pick(char* out, size_t out_cap) {
     return launcher_try_pick_file("Select game file", NULL, 0, NULL, out,
                                   out_cap);

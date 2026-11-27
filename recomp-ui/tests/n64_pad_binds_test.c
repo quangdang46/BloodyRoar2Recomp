@@ -28,6 +28,7 @@ static const char* kExpectedOrder[] = {
     /* col 3 */ "C-Up", "C-Down", "C-Left", "C-Right", "L", "R",
 };
 
+/* check layout: assert(c->binds_per_input == 1) */
 static void check_layout(void) {
     const ControllerSpec* c = &kSystemProfileN64.controller;
 
@@ -62,6 +63,7 @@ static void check_layout(void) {
 /* kN64PadButtons indices used below. */
 enum { B_A = 0, B_Z = 2, B_DUP = 4, B_CUP = 10, B_STICK_UP = 14 };
 
+/* check store: char v[64] */
 static void check_store(const char* path) {
     const char* guid_a = "03000000d62000000228000000010000";
     const char* guid_b = "0300000079000000181100000001000";

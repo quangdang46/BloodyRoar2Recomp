@@ -14,12 +14,15 @@
 #include <unistd.h>
 #endif
 
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
+/* require: if (!ok) { fprintf(stderr, "FAIL: %s\n", label); exit(1);  */
 static void require(int ok, const char* label) {
     if (!ok) { fprintf(stderr, "FAIL: %s\n", label); exit(1); }
 }
 
+/* write text: FILE* f = fopen(path, "wb") */
 static void write_text(const char* path, const char* body) {
     FILE* f = fopen(path, "wb");
     require(f != NULL, "create fixture");

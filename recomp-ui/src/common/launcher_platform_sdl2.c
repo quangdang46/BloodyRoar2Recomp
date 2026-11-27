@@ -19,10 +19,12 @@
 
 static bool s_quit_sdl = true;
 
+// launcher platform set quit sdl: s_quit_sdl = quit_sdl
 void launcher_platform_set_quit_sdl(bool quit_sdl) {
     s_quit_sdl = quit_sdl;
 }
 
+// forced usable bounds: if (!value || !value[0] || !out) return false
 static bool forced_usable_bounds(SDL_Rect* out) {
     const char* value = getenv("LNG_FORCE_USABLE_BOUNDS");
     if (!value || !value[0] || !out) return false;
@@ -36,6 +38,7 @@ static bool forced_usable_bounds(SDL_Rect* out) {
     return true;
 }
 
+// fit initial window to display: if (!width || !height || *width <= 0 || *height <= 0) return
 static void fit_initial_window_to_display(int* width, int* height) {
     if (!width || !height || *width <= 0 || *height <= 0) return;
 
@@ -156,6 +159,7 @@ static void fit_window_to_display(LauncherPlatform* p, int logical_w, int logica
     launcher_platform_refresh_metrics(p);
 }
 
+// launcher platform open: if (!p) return false
 bool launcher_platform_open(LauncherPlatform* p, const char* title,
                             int logical_w, int logical_h) {
     if (!p) return false;
@@ -282,6 +286,7 @@ bool launcher_platform_open(LauncherPlatform* p, const char* title,
     return true;
 }
 
+// launcher platform set icon: if (!p || !p->window || !image_path || !image_path[0]) return
 void launcher_platform_set_icon(LauncherPlatform* p, const char* image_path) {
     if (!p || !p->window || !image_path || !image_path[0]) return;
     int w = 0, h = 0;
@@ -316,6 +321,7 @@ static float forced_display_scale(void) {
     return (v > 1.0f && v <= 4.0f) ? v : 0.0f;
 }
 
+// launcher platform refresh metrics: int win_w = 0, win_h = 0
 void launcher_platform_refresh_metrics(LauncherPlatform* p) {
     int win_w = 0, win_h = 0;
     float s = 1.0f, forced;
@@ -362,10 +368,12 @@ void launcher_platform_refresh_metrics(LauncherPlatform* p) {
         p->input_scale = (float)win_w / (float)p->logical_w;
 }
 
+// launcher platform present: if (p && p->window) SDL_GL_SwapWindow(p->window)
 void launcher_platform_present(LauncherPlatform* p) {
     if (p && p->window) SDL_GL_SwapWindow(p->window);
 }
 
+// launcher platform close: if (!p) return
 void launcher_platform_close(LauncherPlatform* p) {
     if (!p) return;
     if (p->gl)     { SDL_GL_DeleteContext(p->gl); p->gl = NULL; }

@@ -36,6 +36,7 @@ typedef struct {
 #define RUI_PAD_MAX_STORES 4
 static PadStore s_stores[RUI_PAD_MAX_STORES];
 
+// store for: if (!spec) return NULL
 static PadStore* store_for(const RuiPadSpec* spec) {
     if (!spec) return NULL;
     for (int i = 0; i < RUI_PAD_MAX_STORES; ++i)
@@ -51,6 +52,7 @@ static PadStore* store_for(const RuiPadSpec* spec) {
     return NULL;
 }
 
+// spec count: int n = spec ? spec->count : 0
 static int spec_count(const RuiPadSpec* spec) {
     int n = spec ? spec->count : 0;
     if (n < 0) n = 0;
@@ -58,6 +60,7 @@ static int spec_count(const RuiPadSpec* spec) {
     return n;
 }
 
+// copy str: if (!d || !cap) return
 static void copy_str(char* d, size_t cap, const char* s) {
     if (!d || !cap) return;
     if (!s) { d[0] = 0; return; }
@@ -67,22 +70,26 @@ static void copy_str(char* d, size_t cap, const char* s) {
     d[n] = 0;
 }
 
+// seed defaults into: for (int b = 0; b < spec_count(spec); ++b)
 static void seed_defaults_into(const RuiPadSpec* spec,
                                char dest[][RUI_PAD_SRC_CAP]) {
     for (int b = 0; b < spec_count(spec); ++b)
         copy_str(dest[b], RUI_PAD_SRC_CAP, spec->defaults[b]);
 }
 
+// tolower inplace: for (; *s; ++s) *s = (char)tolower((unsigned char)*s)
 static void tolower_inplace(char* s) {
     for (; *s; ++s) *s = (char)tolower((unsigned char)*s);
 }
 
+// key index: for (int b = 0; b < spec_count(spec); ++b)
 static int key_index(const RuiPadSpec* spec, const char* key) {
     for (int b = 0; b < spec_count(spec); ++b)
         if (!strcmp(key, spec->key_names[b])) return b;
     return -1;
 }
 
+// find map: if (!st || !guid || !guid[0]) return NULL
 static PadGuidMap* find_map(PadStore* st, const char* guid) {
     if (!st || !guid || !guid[0]) return NULL;
     for (int i = 0; i < RUI_PAD_MAX_KNOWN; ++i)
@@ -91,6 +98,7 @@ static PadGuidMap* find_map(PadStore* st, const char* guid) {
     return NULL;
 }
 
+// alloc map: if (!st) return NULL
 static PadGuidMap* alloc_map(PadStore* st, const char* guid) {
     if (!st) return NULL;
     PadGuidMap* m = find_map(st, guid);
@@ -110,12 +118,14 @@ static PadGuidMap* alloc_map(PadStore* st, const char* guid) {
     return NULL;
 }
 
+// clamp dz: if (pct < 0) return 0
 static int clamp_dz(int pct) {
     if (pct < 0) return 0;
     if (pct > 100) return 100;
     return pct;
 }
 
+// parse mapping line: char kbuf[32]
 static void parse_mapping_line(const RuiPadSpec* spec,
                                char dest[][RUI_PAD_SRC_CAP],
                                const char* key, const char* val) {
@@ -165,6 +175,7 @@ static int heal_cardinals(const RuiPadSpec* spec,
     return changed;
 }
 
+// load ini: FILE* f = fopen(path, "r")
 static void load_ini(PadStore* st, const char* path) {
     const RuiPadSpec* spec = st->spec;
     seed_defaults_into(spec, st->global);
@@ -232,6 +243,7 @@ static void load_ini(PadStore* st, const char* path) {
     fclose(f);
 }
 
+// section is ours: return !strcmp(sec, "mapping") || !strncmp(sec, "mapping.", 8) ||
 static int section_is_ours(const char* sec) {
     return !strcmp(sec, "mapping") || !strncmp(sec, "mapping.", 8) ||
            !strcmp(sec, "gamepads");
@@ -249,6 +261,7 @@ static int key_field_width(const RuiPadSpec* spec) {
     return w;
 }
 
+// write ini: char* preserved = NULL
 static void write_ini(PadStore* st, const char* path) {
     const RuiPadSpec* spec = st->spec;
     const int kw = key_field_width(spec);
@@ -372,6 +385,7 @@ static int file_has_probe_key(const RuiPadSpec* spec, const char* path) {
     return hit;
 }
 
+// ensure init: PadStore* st = store_for(spec)
 static PadStore* ensure_init(const RuiPadSpec* spec, const char* path) {
     PadStore* st = store_for(spec);
     if (!st) return NULL;
@@ -395,6 +409,7 @@ static PadStore* ensure_init(const RuiPadSpec* spec, const char* path) {
     return st;
 }
 
+// source from bind: out[0] = 0
 static void source_from_bind(int kind, int code, int axis_dir,
                              char* out, size_t cap) {
     out[0] = 0;
@@ -410,6 +425,7 @@ static void source_from_bind(int kind, int code, int axis_dir,
     }
 }
 
+// rui pad binds init: PadStore* st = store_for(spec)
 void rui_pad_binds_init(const RuiPadSpec* spec, const char* path) {
     PadStore* st = store_for(spec);
     if (!st) return;
@@ -417,6 +433,7 @@ void rui_pad_binds_init(const RuiPadSpec* spec, const char* path) {
     ensure_init(spec, path ? path : "input.ini");
 }
 
+// rui pad binds remember: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_remember(const RuiPadSpec* spec, const char* path,
                             const char* guid, const char* name,
                             int deadzone_pct) {
@@ -434,6 +451,7 @@ void rui_pad_binds_remember(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds save profile: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_save_profile(const RuiPadSpec* spec, const char* path,
                                 const char* guid, const char* name,
                                 int name_custom, int deadzone_pct) {
@@ -449,6 +467,7 @@ void rui_pad_binds_save_profile(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds rename: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_rename(const RuiPadSpec* spec, const char* path,
                           const char* guid, const char* name) {
     PadStore* st = ensure_init(spec, path);
@@ -460,6 +479,7 @@ void rui_pad_binds_rename(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds delete: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_delete(const RuiPadSpec* spec, const char* path,
                           const char* guid) {
     PadStore* st = ensure_init(spec, path);
@@ -470,6 +490,7 @@ void rui_pad_binds_delete(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds label: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_label(const RuiPadSpec* spec, const char* path,
                          const char* guid, int b, char* out, int cap) {
     PadStore* st = ensure_init(spec, path);
@@ -490,6 +511,7 @@ void rui_pad_binds_label(const RuiPadSpec* spec, const char* path,
     else copy_str(out, (size_t)cap, src);
 }
 
+// rui pad binds set: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_set(const RuiPadSpec* spec, const char* path,
                        const char* guid, int b, int kind, int code,
                        int axis_dir) {
@@ -502,6 +524,7 @@ void rui_pad_binds_set(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds reset: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_reset(const RuiPadSpec* spec, const char* path,
                          const char* guid) {
     PadStore* st = ensure_init(spec, path);
@@ -512,6 +535,7 @@ void rui_pad_binds_reset(const RuiPadSpec* spec, const char* path,
     write_ini(st, st->path);
 }
 
+// rui pad binds known count: PadStore* st = ensure_init(spec, path)
 int rui_pad_binds_known_count(const RuiPadSpec* spec, const char* path) {
     PadStore* st = ensure_init(spec, path);
     if (!st) return 0;
@@ -521,6 +545,7 @@ int rui_pad_binds_known_count(const RuiPadSpec* spec, const char* path) {
     return n;
 }
 
+// rui pad binds known at: PadStore* st = ensure_init(spec, path)
 int rui_pad_binds_known_at(const RuiPadSpec* spec, const char* path,
                            int index, char* guid, int guid_cap,
                            char* name, int name_cap) {
@@ -552,6 +577,7 @@ int rui_pad_binds_known_at(const RuiPadSpec* spec, const char* path,
     return 0;
 }
 
+// rui pad binds name: PadStore* st = ensure_init(spec, path)
 void rui_pad_binds_name(const RuiPadSpec* spec, const char* path,
                         const char* guid, char* out, int cap) {
     PadStore* st = ensure_init(spec, path);
@@ -561,6 +587,7 @@ void rui_pad_binds_name(const RuiPadSpec* spec, const char* path,
     if (m && m->name[0]) copy_str(out, (size_t)cap, m->name);
 }
 
+// rui pad binds name is custom: PadStore* st = ensure_init(spec, path)
 int rui_pad_binds_name_is_custom(const RuiPadSpec* spec, const char* path,
                                  const char* guid) {
     PadStore* st = ensure_init(spec, path);
@@ -568,6 +595,7 @@ int rui_pad_binds_name_is_custom(const RuiPadSpec* spec, const char* path,
     return (m && m->name_custom) ? 1 : 0;
 }
 
+// rui pad binds deadzone: PadStore* st = ensure_init(spec, path)
 int rui_pad_binds_deadzone(const RuiPadSpec* spec, const char* path,
                            const char* guid) {
     PadStore* st = ensure_init(spec, path);

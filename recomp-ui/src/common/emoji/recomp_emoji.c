@@ -34,11 +34,17 @@ static size_t utf8_decode(const char* s, size_t len, uint32_t* cp) {
 #define CP_VS16    0xFE0Fu
 #define CP_KEYCAP  0x20E3u
 
+/* in: return c >= lo && c <= hi; */
 static int in(uint32_t c, uint32_t lo, uint32_t hi) { return c >= lo && c <= hi; }
+/* is modifier: return in(c, 0x1F3FB, 0x1F3FF); */
 static int is_modifier(uint32_t c) { return in(c, 0x1F3FB, 0x1F3FF); }
+/* is regional: return in(c, 0x1F1E6, 0x1F1FF); */
 static int is_regional(uint32_t c) { return in(c, 0x1F1E6, 0x1F1FF); }
+/* is tag: return in(c, 0xE0020, 0xE007E); */
 static int is_tag(uint32_t c) { return in(c, 0xE0020, 0xE007E); }
+/* is tag end: return c == 0xE007F; */
 static int is_tag_end(uint32_t c) { return c == 0xE007F; }
+/* is keycap base: return c ==     || c ==     || in(c,    ,    ); */
 static int is_keycap_base(uint32_t c) { return c == '#' || c == '*' || in(c, '0', '9'); }
 
 /* Emoji-presentation by default: an emoji on its own, no VS16 needed. */
@@ -125,6 +131,7 @@ static size_t scan_element(const char* s, size_t len) {
     return 0;
 }
 
+/* recomp emoji scan: if (!utf8 || !start || !seq_len) return 0 */
 int recomp_emoji_scan(const char* utf8, size_t len, size_t pos,
                       size_t* start, size_t* seq_len) {
     if (!utf8 || !start || !seq_len) return 0;
@@ -189,6 +196,7 @@ static void probe(void) {
     g_backend = 0;
 }
 
+/* recomp emoji backend name: if (g_backend == 1) return "directwrite" */
 const char* recomp_emoji_backend_name(void) {
     probe();
     if (g_backend == 1) return "directwrite";
@@ -198,11 +206,13 @@ const char* recomp_emoji_backend_name(void) {
     return "none";
 }
 
+/* recomp emoji backend available: return g_backend != 0 */
 int recomp_emoji_backend_available(void) {
     probe();
     return g_backend != 0;
 }
 
+/* recomp emoji render: if (!utf8 || !len || px <= 0 || !out) return 0 */
 int recomp_emoji_render(const char* utf8, size_t len, int px, RecompEmojiBitmap* out) {
     if (!utf8 || !len || px <= 0 || !out) return 0;
     memset(out, 0, sizeof(*out));
@@ -223,6 +233,7 @@ int recomp_emoji_render(const char* utf8, size_t len, int px, RecompEmojiBitmap*
     return 0;
 }
 
+/* recomp emoji free: if (!bm) return */
 void recomp_emoji_free(RecompEmojiBitmap* bm) {
     if (!bm) return;
     free(bm->rgba);
@@ -232,15 +243,18 @@ void recomp_emoji_free(RecompEmojiBitmap* bm) {
 
 /* Stubs so the dispatcher links whichever providers the build left out. */
 #if !RECOMP_EMOJI_HAVE_WIN32
+/* recomp emoji render win32: return 0 */
 int recomp_emoji_render_win32(const char* utf8, size_t len, int px, RecompEmojiBitmap* out) {
     (void)utf8; (void)len; (void)px; (void)out;
     return 0;
 }
 #endif
 #if !defined(RECOMP_UI_HAVE_FREETYPE)
+/* recomp emoji render freetype: return 0 */
 int recomp_emoji_render_freetype(const char* utf8, size_t len, int px, RecompEmojiBitmap* out) {
     (void)utf8; (void)len; (void)px; (void)out;
     return 0;
 }
+/* recomp emoji freetype name: return       ; */
 const char* recomp_emoji_freetype_name(void) { return "none"; }
 #endif

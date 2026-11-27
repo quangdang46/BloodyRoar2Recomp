@@ -23,12 +23,14 @@ namespace {
 
 int fails;
 
+/* expect: if (cond) { std::printf("ok: %s\n", what); return;  */
 void expect(bool cond, const char* what) {
     if (cond) { std::printf("ok: %s\n", what); return; }
     std::fprintf(stderr, "FAIL: %s\n", what);
     ++fails;
 }
 
+/* begin frame: ImGuiIO& io = ImGui::GetIO() */
 void begin_frame(bool backspace) {
     ImGuiIO& io = ImGui::GetIO();
     io.AddKeyEvent(ImGuiKey_Backspace, backspace);

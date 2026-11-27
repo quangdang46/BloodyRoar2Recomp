@@ -21,10 +21,12 @@
 
 /* Pulled in by the model TU; unrelated to BIOS setup. */
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
 
+/* same path: char absolute[1024] */
 static int same_path(const char* got, const char* expected) {
 #if defined(_WIN32)
     char absolute[1024];
@@ -35,6 +37,7 @@ static int same_path(const char* got, const char* expected) {
 #endif
 }
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
@@ -63,6 +66,7 @@ static int fake_bios_verify(const char* path, RecompLauncherCBiosVerify* out) {
     return 1;
 }
 
+/* fake prepare: return 1 */
 static int fake_prepare(const char* src, char* out, size_t out_cap,
                         char* err, size_t err_cap,
                         RecompLauncherCPrepareProgressFn progress,
@@ -90,6 +94,7 @@ static LauncherModel* make_model(const char* dir, char* disc_out, size_t cap) {
     return m;
 }
 
+/* test staged in wizard: char disc[512] */
 static void test_staged_in_wizard(const char* dir) {
     char disc[512];
     char bios[512];
@@ -128,6 +133,7 @@ static void test_staged_in_wizard(const char* dir) {
     free(m);
 }
 
+/* test second pick keeps revert target: char disc[512] */
 static void test_second_pick_keeps_revert_target(const char* dir) {
     char disc[512];
     char a[512], b[512];
@@ -150,6 +156,7 @@ static void test_second_pick_keeps_revert_target(const char* dir) {
     free(m);
 }
 
+/* test openbios clears staging: char disc[512] */
 static void test_openbios_clears_staging(const char* dir) {
     char disc[512];
     char bios[512];

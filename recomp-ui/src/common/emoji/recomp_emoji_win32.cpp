@@ -33,10 +33,12 @@ struct Factories {
 };
 Factories g;
 
+/* release: if (p) { p->Release(); p = nullptr;  */
 template <class T> void release(T*& p) {
     if (p) { p->Release(); p = nullptr; }
 }
 
+/* init: if (g.tried) return g.ok */
 bool init() {
     if (g.tried) return g.ok;
     g.tried = true;
@@ -59,6 +61,7 @@ bool init() {
 
 } // namespace
 
+/* recomp emoji render win32: if (!out || !utf8 || !len || px <= 0) return 0 */
 extern "C" int recomp_emoji_render_win32(const char* utf8, size_t len, int px,
                                          RecompEmojiBitmap* out) {
     if (!out || !utf8 || !len || px <= 0) return 0;

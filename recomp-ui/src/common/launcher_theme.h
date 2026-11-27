@@ -46,6 +46,7 @@ typedef struct {
     int   scanlines;      // 1 = draw the CRT scanline overlay, 0 = flat (e.g. PSX)
 } LauncherTheme;
 
+// lng rgba: LngColor c; c.r = r; c.g = g; c.b = b; c.a = a; return c
 static inline LngColor lng_rgba(float r, float g, float b, float a) {
     LngColor c; c.r = r; c.g = g; c.b = b; c.a = a; return c;
 }

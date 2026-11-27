@@ -5,18 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* same text: if (!a) a = "" */
 static int same_text(const char *a, const char *b) {
     if (!a) a = "";
     if (!b) b = "";
     return strcmp(a, b) == 0;
 }
 
+/* recomp runtime ui item enabled: if (!ui->config.callbacks.is_enabled) return 1 */
 int recomp_runtime_ui_item_enabled(const RecompRuntimeUi *ui,
                                    const RecompRuntimeUiItem *item) {
     if (!ui->config.callbacks.is_enabled) return 1;
     return ui->config.callbacks.is_enabled(ui->config.callbacks.context, item) != 0;
 }
 
+/* recomp runtime ui section item count: size_t count = 0 */
 size_t recomp_runtime_ui_section_item_count(const RecompRuntimeUi *ui,
                                             size_t section) {
     size_t count = 0;
@@ -26,6 +29,7 @@ size_t recomp_runtime_ui_section_item_count(const RecompRuntimeUi *ui,
     return count;
 }
 
+/* recomp runtime ui section item: size_t found = 0 */
 const RecompRuntimeUiItem *recomp_runtime_ui_section_item(
     const RecompRuntimeUi *ui, size_t section, size_t row) {
     size_t found = 0;
@@ -37,6 +41,7 @@ const RecompRuntimeUiItem *recomp_runtime_ui_section_item(
     return NULL;
 }
 
+/* visibility: if (!ui || ui->open == open) return */
 static void visibility(RecompRuntimeUi *ui, int open) {
     if (!ui || ui->open == open) return;
     ui->open = open;
@@ -45,6 +50,7 @@ static void visibility(RecompRuntimeUi *ui, int open) {
         ui->config.callbacks.visibility_changed(ui->config.callbacks.context, open);
 }
 
+/* recomp runtime ui create: if (!config || !config->items || config->item_count == 0) return NULL */
 RecompRuntimeUi *recomp_runtime_ui_create(const RecompRuntimeUiConfig *config) {
     if (!config || !config->items || config->item_count == 0) return NULL;
     RecompRuntimeUi *ui = (RecompRuntimeUi *)calloc(1, sizeof(*ui));
@@ -66,6 +72,7 @@ RecompRuntimeUi *recomp_runtime_ui_create(const RecompRuntimeUiConfig *config) {
     return ui;
 }
 
+/* recomp runtime ui destroy: if (!ui) return */
 void recomp_runtime_ui_destroy(RecompRuntimeUi *ui) {
     if (!ui) return;
     if (ui->open && ui->config.callbacks.visibility_changed)
@@ -77,10 +84,12 @@ void recomp_runtime_ui_destroy(RecompRuntimeUi *ui) {
     free(ui);
 }
 
+/* recomp runtime ui is open: return ui && ui->open */
 int recomp_runtime_ui_is_open(const RecompRuntimeUi *ui) {
     return ui && ui->open;
 }
 
+/* recomp runtime ui open: if (!ui) return */
 void recomp_runtime_ui_open(RecompRuntimeUi *ui) {
     if (!ui) return;
     ui->in_section = 0;
@@ -88,6 +97,7 @@ void recomp_runtime_ui_open(RecompRuntimeUi *ui) {
     visibility(ui, 1);
 }
 
+/* recomp runtime ui close: if (ui) ui->editing_text = 0 */
 void recomp_runtime_ui_close(RecompRuntimeUi *ui) {
     /* Abandon any in-progress edit, so reopening never resumes a stale buffer
      * and wants_text_input cannot stay stuck on with the menu shut. */
@@ -95,12 +105,14 @@ void recomp_runtime_ui_close(RecompRuntimeUi *ui) {
     visibility(ui, 0);
 }
 
+/* wrap index: if (count == 0) return 0 */
 static size_t wrap_index(size_t current, int delta, size_t count) {
     if (count == 0) return 0;
     if (delta < 0) return current == 0 ? count - 1 : current - 1;
     return current + 1 >= count ? 0 : current + 1;
 }
 
+/* recomp runtime ui current value: if (!ui->config.callbacks.get_value || !value) return 0 */
 int recomp_runtime_ui_current_value(RecompRuntimeUi *ui,
                                     const RecompRuntimeUiItem *item,
                                     int *value) {
@@ -109,6 +121,7 @@ int recomp_runtime_ui_current_value(RecompRuntimeUi *ui,
                                           item, value) != 0;
 }
 
+/* accepted change: ui->status_frames = 90 */
 static void accepted_change(RecompRuntimeUi *ui, const char *status) {
     snprintf(ui->status, sizeof(ui->status), "%s", status ? status : "Applied");
     ui->status_frames = 90;
@@ -116,11 +129,13 @@ static void accepted_change(RecompRuntimeUi *ui, const char *status) {
         ui->config.callbacks.save(ui->config.callbacks.context);
 }
 
+/* accepted action: ui->status_frames = 90 */
 static void accepted_action(RecompRuntimeUi *ui) {
     snprintf(ui->status, sizeof(ui->status), "%s", "Done");
     ui->status_frames = 90;
 }
 
+/* recomp runtime ui adjust current: ui, ui->section_index, ui->row_index) */
 void recomp_runtime_ui_adjust_current(RecompRuntimeUi *ui, int direction,
                                       int activate, int repeat) {
     const RecompRuntimeUiItem *item = recomp_runtime_ui_section_item(
@@ -172,6 +187,7 @@ void recomp_runtime_ui_adjust_current(RecompRuntimeUi *ui, int direction,
         accepted_change(ui, "Saved");
 }
 
+/* recomp runtime ui current text: if (!buf || buf_size == 0) return */
 void recomp_runtime_ui_current_text(RecompRuntimeUi *ui,
                                     const RecompRuntimeUiItem *item, char *buf,
                                     size_t buf_size) {
@@ -184,6 +200,7 @@ void recomp_runtime_ui_current_text(RecompRuntimeUi *ui,
     buf[buf_size - 1] = '\0';
 }
 
+/* recomp runtime ui commit text: if (!ui || !item || !value || !ui->config.callbacks.set_text) return 0 */
 int recomp_runtime_ui_commit_text(RecompRuntimeUi *ui,
                                   const RecompRuntimeUiItem *item,
                                   const char *value) {
@@ -195,10 +212,12 @@ int recomp_runtime_ui_commit_text(RecompRuntimeUi *ui,
     return 1;
 }
 
+/* recomp runtime ui wants text input: return (ui && ui->open && ui->editing_text) ? 1 : 0 */
 int recomp_runtime_ui_wants_text_input(const RecompRuntimeUi *ui) {
     return (ui && ui->open && ui->editing_text) ? 1 : 0;
 }
 
+/* recomp runtime ui enter section: if (!ui || section >= ui->section_count) return */
 void recomp_runtime_ui_enter_section(RecompRuntimeUi *ui, size_t section) {
     if (!ui || section >= ui->section_count) return;
     ui->section_index = section;
@@ -206,12 +225,14 @@ void recomp_runtime_ui_enter_section(RecompRuntimeUi *ui, size_t section) {
     ui->in_section = 1;
 }
 
+/* recomp runtime ui leave section: if (!ui) return */
 void recomp_runtime_ui_leave_section(RecompRuntimeUi *ui) {
     if (!ui) return;
     ui->in_section = 0;
     ui->row_index = 0;
 }
 
+/* recomp runtime ui handle input: if (!ui) return 0 */
 int recomp_runtime_ui_handle_input(RecompRuntimeUi *ui,
                                    RecompRuntimeUiInput input,
                                    int pressed, int repeat) {
@@ -274,6 +295,7 @@ int recomp_runtime_ui_handle_input(RecompRuntimeUi *ui,
      ((uint64_t)(d) << 15) | ((uint64_t)(e) << 20) | \
      ((uint64_t)(f) << 25) | ((uint64_t)(g) << 30))
 
+/* glyph bits: if (c >= 'a' && c <= 'z') c = (unsigned char)(c - 'a' + 'A') */
 static uint64_t glyph_bits(unsigned char c) {
     if (c >= 'a' && c <= 'z') c = (unsigned char)(c - 'a' + 'A');
     switch (c) {
@@ -337,6 +359,7 @@ static uint64_t glyph_bits(unsigned char c) {
     }
 }
 
+/* blend pixel: unsigned dr = (dst >> 16) & 255, dg = (dst >> 8) & 255, db = dst & 255 */
 static uint32_t blend_pixel(uint32_t dst, uint32_t src, unsigned alpha) {
     unsigned dr = (dst >> 16) & 255, dg = (dst >> 8) & 255, db = dst & 255;
     unsigned sr = (src >> 16) & 255, sg = (src >> 8) & 255, sb = src & 255;
@@ -347,6 +370,7 @@ static uint32_t blend_pixel(uint32_t dst, uint32_t src, unsigned alpha) {
            ((sb * alpha + db * inv) / 255);
 }
 
+/* rect: if (x < 0) { w += x; x = 0;  */
 static void rect(void *pixels, int width, int height, int pitch, int x, int y,
                  int w, int h, uint32_t color, unsigned alpha) {
     if (x < 0) { w += x; x = 0; }
@@ -362,6 +386,7 @@ static void rect(void *pixels, int width, int height, int pitch, int x, int y,
     }
 }
 
+/* outline */
 static void outline(void *pixels, int width, int height, int pitch, int x, int y,
                     int w, int h, int thickness, uint32_t color) {
     rect(pixels,width,height,pitch,x,y,w,thickness,color,255);
@@ -370,6 +395,7 @@ static void outline(void *pixels, int width, int height, int pitch, int x, int y
     rect(pixels,width,height,pitch,x+w-thickness,y,thickness,h,color,255);
 }
 
+/* draw text: if (!text) return */
 static void draw_text(void *pixels, int width, int height, int pitch, int x,
                       int y, int scale, uint32_t color, const char *text,
                       int max_x) {
@@ -390,6 +416,7 @@ static void draw_text(void *pixels, int width, int height, int pitch, int x,
     }
 }
 
+/* text width: int count = 0 */
 static int text_width(const char *text, int scale) {
     int count = 0;
     if (!text) return 0;
@@ -398,6 +425,7 @@ static int text_width(const char *text, int scale) {
     return count * 6 * scale;
 }
 
+/* item value: if (item->type == RECOMP_RUNTIME_UI_ACTION)  */
 static void item_value(RecompRuntimeUi *ui, const RecompRuntimeUiItem *item,
                        char *out, size_t out_size) {
     if (item->type == RECOMP_RUNTIME_UI_ACTION) {
@@ -427,6 +455,7 @@ static void item_value(RecompRuntimeUi *ui, const RecompRuntimeUiItem *item,
     }
 }
 
+/* recomp runtime ui render argb8888: if (!ui || !ui->open || !pixels || width <= 0 || height <= 0 || */
 void recomp_runtime_ui_render_argb8888(RecompRuntimeUi *ui, void *pixels,
                                        int width, int height, int pitch) {
     if (!ui || !ui->open || !pixels || width <= 0 || height <= 0 ||

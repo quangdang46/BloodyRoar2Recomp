@@ -15,6 +15,7 @@
 #include <ws2tcpip.h>
 typedef SOCKET lng_sock;
 #define LNG_SOCK_INVALID INVALID_SOCKET
+/* lng net startup: WSADATA wsa */
 static void lng_net_startup(void) {
     static int started;
     WSADATA wsa;
@@ -23,6 +24,7 @@ static void lng_net_startup(void) {
             started = 1;
     }
 }
+/* lng sock close: if (s && *s != LNG_SOCK_INVALID)  */
 static void lng_sock_close(lng_sock *s) {
     if (s && *s != LNG_SOCK_INVALID) {
         closesocket(*s);
@@ -36,7 +38,9 @@ static void lng_sock_close(lng_sock *s) {
 #include <unistd.h>
 typedef int lng_sock;
 #define LNG_SOCK_INVALID (-1)
+/* lng net startup: if (s && *s != LNG_SOCK_INVALID)  */
 static void lng_net_startup(void) {}
+/* lng sock close: if (s && *s != LNG_SOCK_INVALID)  */
 static void lng_sock_close(lng_sock *s) {
     if (s && *s != LNG_SOCK_INVALID) {
         close(*s);
@@ -45,6 +49,7 @@ static void lng_sock_close(lng_sock *s) {
 }
 #endif
 
+/* launcher udp port available: lng_sock sock */
 int launcher_udp_port_available(int port) {
     lng_sock sock;
     struct sockaddr_in addr;
@@ -66,6 +71,7 @@ int launcher_udp_port_available(int port) {
     return ok;
 }
 
+/* launcher udp find free port: int i */
 int launcher_udp_find_free_port(int preferred, int span) {
     int i;
 
@@ -83,6 +89,7 @@ int launcher_udp_find_free_port(int preferred, int span) {
     return -1;
 }
 
+/* launcher udp prepare guest bind: int n */
 int launcher_udp_prepare_guest_bind(char *out, size_t cap) {
     const int port = launcher_udp_find_free_port(/*preferred=*/7778, 32);
     int n;
@@ -93,6 +100,7 @@ int launcher_udp_prepare_guest_bind(char *out, size_t cap) {
     return (n > 0 && (size_t)n < cap) ? 0 : -1;
 }
 
+/* launcher endpoint port: int port */
 int launcher_endpoint_port(const char *endpoint) {
     const char *colon;
     int port;
@@ -106,6 +114,7 @@ int launcher_endpoint_port(const char *endpoint) {
     return (port > 0 && port <= 65535) ? port : 7777;
 }
 
+/* launcher endpoint set port: char host[64] */
 int launcher_endpoint_set_port(char *endpoint, size_t cap, int port) {
     char host[64];
     const char *colon;

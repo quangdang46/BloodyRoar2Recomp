@@ -92,6 +92,7 @@ static const N64Field kN64DefaultsPad[LNG_N64_PAD_BUTTON_COUNT][RUI_N64_BINDS_PE
 static N64Field s_binds[2][LNG_N64_PAD_BUTTON_COUNT][RUI_N64_BINDS_PER_INPUT];
 static int s_init = 0;
 
+/* seed defaults */
 static void seed_defaults(void) {
     memcpy(s_binds[0], kN64DefaultsKb,  sizeof(kN64DefaultsKb));
     memcpy(s_binds[1], kN64DefaultsPad, sizeof(kN64DefaultsPad));
@@ -112,6 +113,7 @@ static void encode_field(const N64Field* f, char* out, size_t cap) {
     }
 }
 
+/* decode field: if (!colon) return 0 */
 static int decode_field(const char* s, N64Field* out) {
     const char* colon = strchr(s, ':');
     if (!colon) return 0;
@@ -138,6 +140,7 @@ static const char* bind_path(const char* path) {
     return (path && path[0]) ? path : "input.cfg";
 }
 
+/* load file: FILE* f = fopen(bind_path(path), "r") */
 static void load_file(const char* path) {
     seed_defaults();   // baseline; cfg lines override individual bindings
     FILE* f = fopen(bind_path(path), "r");
@@ -189,6 +192,7 @@ static void load_file(const char* path) {
     fclose(f);
 }
 
+/* save file: FILE* f = fopen(bind_path(path), "w") */
 static void save_file(const char* path) {
     FILE* f = fopen(bind_path(path), "w");
     if (!f) return;
@@ -209,6 +213,7 @@ static void save_file(const char* path) {
     fclose(f);
 }
 
+/* ensure init: if (s_init) return */
 static void ensure_init(const char* path) {
     if (s_init) return;
     load_file(path);
@@ -222,6 +227,7 @@ void rui_n64_binds_init(const char* path) {
     s_init = 1;
 }
 
+/* rui n64 binds get: if (out_type) *out_type = RUI_N64_FIELD_NONE */
 void rui_n64_binds_get(const char* path, int device, int b, int slot,
                        int* out_type, int* out_id) {
     if (out_type) *out_type = RUI_N64_FIELD_NONE;
@@ -233,6 +239,7 @@ void rui_n64_binds_get(const char* path, int device, int b, int slot,
     if (out_id)   *out_id   = s_binds[device][b][slot].id;
 }
 
+/* rui n64 binds set: if (device < 0 || device > 1 || b < 0 || b >= LNG_N64_PAD_BUTTON_COUN... */
 void rui_n64_binds_set(const char* path, int device, int b, int slot,
                        int type, int id) {
     if (device < 0 || device > 1 || b < 0 || b >= LNG_N64_PAD_BUTTON_COUNT ||
@@ -243,6 +250,7 @@ void rui_n64_binds_set(const char* path, int device, int b, int slot,
     save_file(path);
 }
 
+/* rui n64 binds reset device: if (device < 0 || device > 1) return */
 void rui_n64_binds_reset_device(const char* path, int device) {
     if (device < 0 || device > 1) return;
     ensure_init(path);
@@ -274,6 +282,7 @@ static const char* pad_button_label(int b) {
     }
 }
 
+/* pad axis label: switch (axis)  */
 static const char* pad_axis_label(int axis, int positive) {
     switch (axis) {
         case RUI_GPA_TRIGGERLEFT:  return "LT";
@@ -286,6 +295,7 @@ static const char* pad_axis_label(int axis, int positive) {
     }
 }
 
+/* rui n64 binds label: if (!out || !cap) return */
 void rui_n64_binds_label(int type, int id, char* out, size_t cap) {
     if (!out || !cap) return;
     switch (type) {

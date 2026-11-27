@@ -18,11 +18,13 @@
 
 static int fails;
 
+/* ck: if (!cond) { printf(" FAIL %s\n", what); fails++;  */
 static void ck(int cond, const char *what)
 {
     if (!cond) { printf("    FAIL %s\n", what); fails++; }
 }
 
+/* hooks with: RecompNetplayHostHooks h */
 static void hooks_with(int policy, int max_players)
 {
     RecompNetplayHostHooks h;
@@ -58,6 +60,7 @@ static void case_host_first_standard_and_swapped(void)
     ck(p.local_slot == 1, "the guest in seat 0 is slot 1");
 }
 
+/* case host first sparse four: SlotPlan p */
 static void case_host_first_sparse_four(void)
 {
     const int seats[3] = { 3, 0, 1 };  /* any order */
@@ -73,6 +76,7 @@ static void case_host_first_sparse_four(void)
     ck(p.port[3] == -1, "no fourth slot");
 }
 
+/* case host first host in gallery: SlotPlan p */
 static void case_host_first_host_in_gallery(void)
 {
     const int seats[2] = { 0, 1 };
@@ -148,6 +152,7 @@ static void case_lan_launch(void)
 }
 
 static int fill_calls;
+/* fill hook: fill_calls++ */
 static void fill_hook(void *ctx, const RecompLauncherCSettings *settings,
                       RNetLobbyMatchCaps *caps)
 {
@@ -157,6 +162,7 @@ static void fill_hook(void *ctx, const RecompLauncherCSettings *settings,
     caps->ext.bytes[0] = 7;      /* the engine's own byte survives */
 }
 
+/* case default caps: RecompNetplayHostHooks h */
 static void case_default_caps(void)
 {
     RecompNetplayHostHooks h;
@@ -185,6 +191,7 @@ static void case_default_caps(void)
        "and reads them back");
 }
 
+/* case seat ceiling: ck(clamp_lobby_max_slots(8) == 4, "an N64-style title caps at 4") */
 static void case_seat_ceiling(void)
 {
     printf("  seat ceiling\n");
@@ -195,6 +202,7 @@ static void case_seat_ceiling(void)
     ck(clamp_lobby_max_slots(4) == 2, "an unset ceiling is two seats");
 }
 
+/* case table and names: RecompNetplayHostHooks h */
 static void case_table_and_names(void)
 {
     const RecompLauncherCNetplayCallbacks *cb;
@@ -235,6 +243,7 @@ static unsigned test_port_base(void)
     return 43800u + ((unsigned)getpid() % 600u) * 4u;
 }
 
+/* lan hooks: RecompNetplayHostHooks h */
 static void lan_hooks(const char *registry)
 {
     RecompNetplayHostHooks h;
@@ -261,6 +270,7 @@ static int raw_join_while_pumping(RNetLanDirectGuest *g, RNetLanLobby *room)
     return rc;
 }
 
+/* raw guest hears start: int i */
 static int raw_guest_hears_start(RNetLanDirectGuest *g, RNetLanLobby *room)
 {
     int i;
@@ -272,6 +282,7 @@ static int raw_guest_hears_start(RNetLanDirectGuest *g, RNetLanLobby *room)
     return 0;
 }
 
+/* case lan rematch as host: char registry[64] */
 static void case_lan_rematch_as_host(void)
 {
     char registry[64];
@@ -338,6 +349,7 @@ struct RawHostPump {
     volatile int stop;
 };
 
+/* raw host pump thread: while (!a->stop)  */
 static void *raw_host_pump_thread(void *p)
 {
     struct RawHostPump *a = (struct RawHostPump *)p;
@@ -348,6 +360,7 @@ static void *raw_host_pump_thread(void *p)
     return NULL;
 }
 
+/* backend launches: int i */
 static int backend_launches(void)
 {
     int i;
@@ -359,6 +372,7 @@ static int backend_launches(void)
     return 0;
 }
 
+/* case lan rematch as guest: char registry[64] */
 static void case_lan_rematch_as_guest(void)
 {
     char registry[64];

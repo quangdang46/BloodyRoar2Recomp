@@ -30,12 +30,14 @@ static int g_sheet_w = 0, g_sheet_h = 0;
 static int g_cell_w = 0, g_cell_h = 0;
 static unsigned char g_present[FLAG_GRID * FLAG_GRID];
 
+/* letter index: if (c >= 'a' && c <= 'z') c = (char)(c - 'a' + 'A') */
 static int letter_index(char c) {
     if (c >= 'a' && c <= 'z') c = (char)(c - 'a' + 'A');
     if (c < 'A' || c > 'Z') return -1;
     return c - 'A';
 }
 
+/* recomp emoji flags load: int w = 0, h = 0, comp = 0 */
 int recomp_emoji_flags_load(const char* png_path) {
     int w = 0, h = 0, comp = 0;
     unsigned char* px;
@@ -70,8 +72,10 @@ int recomp_emoji_flags_load(const char* png_path) {
     return 1;
 }
 
+/* recomp emoji flags available: return g_sheet != NULL; */
 int recomp_emoji_flags_available(void) { return g_sheet != NULL; }
 
+/* recomp emoji flags has: if (!g_sheet || a < 0 || b < 0) return 0 */
 int recomp_emoji_flags_has(char first, char second) {
     const int a = letter_index(first), b = letter_index(second);
     if (!g_sheet || a < 0 || b < 0) return 0;
@@ -90,6 +94,7 @@ int recomp_emoji_flags_code(const char* utf8, size_t len, char* first, char* sec
     return 1;
 }
 
+/* recomp emoji flags render: if (!out) return 0 */
 int recomp_emoji_flags_render(char first, char second, int px, RecompEmojiBitmap* out) {
     const int a = letter_index(first), b = letter_index(second);
     if (!out) return 0;

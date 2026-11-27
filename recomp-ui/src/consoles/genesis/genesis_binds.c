@@ -70,6 +70,7 @@ static int        s_key[RUI_GEN_MAX_PLAYERS][GEN_NBTN];
 static GenPadBind s_pad[RUI_GEN_MAX_PLAYERS][GEN_NBTN];
 static int        s_init = 0;
 
+/* gen seed defaults: for (int b = 0; b < GEN_NBTN; ++b)  */
 static void gen_seed_defaults(int player) {
     const int* def = player == 1 ? kGenDefaultKeyP2 : kGenDefaultKeyP1;
     for (int b = 0; b < GEN_NBTN; ++b) {
@@ -103,6 +104,7 @@ static void gen_format_pad(const GenPadBind* b, char* out, size_t n) {
         snprintf(out, n, "none");
 }
 
+/* gen trim: while (*s == ' ' || *s == '\t') s++ */
 static char* gen_trim(char* s) {
     while (*s == ' ' || *s == '\t') s++;
     char* e = s + strlen(s);
@@ -111,6 +113,7 @@ static char* gen_trim(char* s) {
     return s;
 }
 
+/* gen button by name: for (int b = 0; b < GEN_NBTN; ++b) */
 static int gen_button_by_name(const char* name) {
     for (int b = 0; b < GEN_NBTN; ++b)
         if (strcmp(name, kGenKeyName[b]) == 0) return b;
@@ -170,6 +173,7 @@ static char* gen_strdup(const char* s) {
     return d;
 }
 
+/* gen line is key: while (*i == ' ' || *i == '\t') ++i */
 static int gen_line_is_key(const char* line, const char* key) {
     const char* i = line;
     while (*i == ' ' || *i == '\t') ++i;
@@ -180,6 +184,7 @@ static int gen_line_is_key(const char* line, const char* key) {
     return *i == '=';
 }
 
+/* gen write player: char** lines = NULL; int n = 0, cap = 0 */
 static void gen_write_player(const char* path, int player) {
     // read the whole file into a line array (preserving blank lines)
     char** lines = NULL; int n = 0, cap = 0;
@@ -271,16 +276,19 @@ void rui_genesis_binds_init(const char* path) {
     s_init = 1;
 }
 
+/* gen ensure init: if (!s_init) rui_genesis_binds_init(path) */
 static void gen_ensure_init(const char* path) {
     if (!s_init) rui_genesis_binds_init(path);
 }
 
+/* rui genesis binds get key: if (player < 0 || player >= RUI_GEN_MAX_PLAYERS || b < 0 || b >= GEN_... */
 int rui_genesis_binds_get_key(const char* path, int player, int b) {
     gen_ensure_init(path);
     if (player < 0 || player >= RUI_GEN_MAX_PLAYERS || b < 0 || b >= GEN_NBTN) return 0;
     return s_key[player][b];
 }
 
+/* rui genesis binds get pad: GenPadBind v = { RUI_GEN_BIND_NONE, 0, 0  */
 void rui_genesis_binds_get_pad(const char* path, int player, int b,
                                int* kind, int* code, int* axis_dir) {
     gen_ensure_init(path);
@@ -291,6 +299,7 @@ void rui_genesis_binds_get_pad(const char* path, int player, int b,
     if (axis_dir) *axis_dir = v.axis_dir;
 }
 
+/* rui genesis binds set key: if (player < 0 || player >= RUI_GEN_MAX_PLAYERS || b < 0 || b >= GEN_... */
 void rui_genesis_binds_set_key(const char* path, int player, int b, int scancode) {
     gen_ensure_init(path);
     if (player < 0 || player >= RUI_GEN_MAX_PLAYERS || b < 0 || b >= GEN_NBTN) return;
@@ -298,6 +307,7 @@ void rui_genesis_binds_set_key(const char* path, int player, int b, int scancode
     gen_write_player(path, player);
 }
 
+/* rui genesis binds set pad: if (player < 0 || player >= RUI_GEN_MAX_PLAYERS || b < 0 || b >= GEN_... */
 void rui_genesis_binds_set_pad(const char* path, int player, int b,
                                int kind, int code, int axis_dir) {
     gen_ensure_init(path);
@@ -308,6 +318,7 @@ void rui_genesis_binds_set_pad(const char* path, int player, int b,
     gen_write_player(path, player);
 }
 
+/* rui genesis binds reset: if (player < 0 || player >= RUI_GEN_MAX_PLAYERS) return */
 void rui_genesis_binds_reset(const char* path, int player) {
     gen_ensure_init(path);
     if (player < 0 || player >= RUI_GEN_MAX_PLAYERS) return;

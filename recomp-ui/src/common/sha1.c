@@ -4,8 +4,10 @@
 
 #include <string.h>
 
+// rol: return (v << b) | (v >> (32 - b));
 static uint32_t rol(uint32_t v, int b) { return (v << b) | (v >> (32 - b)); }
 
+// sha1 block: uint32_t w[80]
 static void sha1_block(uint32_t h[5], const uint8_t* p) {
     uint32_t w[80];
     for (int i = 0; i < 16; ++i)
@@ -27,6 +29,7 @@ static void sha1_block(uint32_t h[5], const uint8_t* p) {
     h[0] += a; h[1] += b; h[2] += c; h[3] += d; h[4] += e;
 }
 
+// recompui sha1 compute: uint32_t h[5] = { 0x67452301u, 0xEFCDAB89u, 0x98BADCFEu, 0x10325476u,...
 void recompui_sha1_compute(const uint8_t* data, size_t len, uint8_t out[20]) {
     uint32_t h[5] = { 0x67452301u, 0xEFCDAB89u, 0x98BADCFEu, 0x10325476u, 0xC3D2E1F0u };
     size_t full = len / 64;
@@ -53,6 +56,7 @@ void recompui_sha1_compute(const uint8_t* data, size_t len, uint8_t out[20]) {
     }
 }
 
+// recompui sha1 hex: for (int i = 0; i < 20; ++i) 
 void recompui_sha1_hex(const uint8_t digest[20], char out[41]) {
     static const char* hx = "0123456789abcdef";
     for (int i = 0; i < 20; ++i) {

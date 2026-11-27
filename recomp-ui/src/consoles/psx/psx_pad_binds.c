@@ -54,29 +54,35 @@ static const RuiPadSpec kPsxPadSpec = {
     kPsxLegacyProbe,
 };
 
+// rui psx pad binds init
 void rui_psx_pad_binds_init(const char* path) {
     rui_pad_binds_init(&kPsxPadSpec, path);
 }
 
+// rui psx pad binds label
 void rui_psx_pad_binds_label(const char* path, const char* guid, int b,
                              char* out, int cap) {
     rui_pad_binds_label(&kPsxPadSpec, path, guid, b, out, cap);
 }
 
+// rui psx pad binds set
 void rui_psx_pad_binds_set(const char* path, const char* guid, int b,
                            int kind, int code, int axis_dir) {
     rui_pad_binds_set(&kPsxPadSpec, path, guid, b, kind, code, axis_dir);
 }
 
+// rui psx pad binds reset
 void rui_psx_pad_binds_reset(const char* path, const char* guid) {
     rui_pad_binds_reset(&kPsxPadSpec, path, guid);
 }
 
+// rui psx pad binds remember
 void rui_psx_pad_binds_remember(const char* path, const char* guid,
                                 const char* name, int deadzone_pct) {
     rui_pad_binds_remember(&kPsxPadSpec, path, guid, name, deadzone_pct);
 }
 
+// rui psx pad binds save profile: deadzone_pct)
 void rui_psx_pad_binds_save_profile(const char* path, const char* guid,
                                     const char* name, int name_custom,
                                     int deadzone_pct) {
@@ -84,19 +90,23 @@ void rui_psx_pad_binds_save_profile(const char* path, const char* guid,
                                deadzone_pct);
 }
 
+// rui psx pad binds rename
 void rui_psx_pad_binds_rename(const char* path, const char* guid,
                               const char* name) {
     rui_pad_binds_rename(&kPsxPadSpec, path, guid, name);
 }
 
+// rui psx pad binds delete
 void rui_psx_pad_binds_delete(const char* path, const char* guid) {
     rui_pad_binds_delete(&kPsxPadSpec, path, guid);
 }
 
+// rui psx pad binds known count: return rui_pad_binds_known_count(&kPsxPadSpec, path)
 int rui_psx_pad_binds_known_count(const char* path) {
     return rui_pad_binds_known_count(&kPsxPadSpec, path);
 }
 
+// rui psx pad binds known at: return rui_pad_binds_known_at(&kPsxPadSpec, path, index, guid, guid_cap,
 int rui_psx_pad_binds_known_at(const char* path, int index,
                                char* guid, int guid_cap,
                                char* name, int name_cap) {
@@ -104,15 +114,18 @@ int rui_psx_pad_binds_known_at(const char* path, int index,
                                   name, name_cap);
 }
 
+// rui psx pad binds name
 void rui_psx_pad_binds_name(const char* path, const char* guid,
                             char* out, int cap) {
     rui_pad_binds_name(&kPsxPadSpec, path, guid, out, cap);
 }
 
+// rui psx pad binds name is custom: return rui_pad_binds_name_is_custom(&kPsxPadSpec, path, guid)
 int rui_psx_pad_binds_name_is_custom(const char* path, const char* guid) {
     return rui_pad_binds_name_is_custom(&kPsxPadSpec, path, guid);
 }
 
+// rui psx pad binds deadzone: return rui_pad_binds_deadzone(&kPsxPadSpec, path, guid)
 int rui_psx_pad_binds_deadzone(const char* path, const char* guid) {
     return rui_pad_binds_deadzone(&kPsxPadSpec, path, guid);
 }

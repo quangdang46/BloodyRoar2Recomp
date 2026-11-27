@@ -88,6 +88,7 @@ static const struct { const char* legacy; const char* sdl; } kLegacyToken[] = {
     { "r3",         "rightstick"    },
 };
 
+/* rui snes pad binds legacy token: if (!legacy || !legacy[0]) return 0 */
 const char* rui_snes_pad_binds_legacy_token(const char* legacy) {
     if (!legacy || !legacy[0]) return 0;
     char buf[24];
@@ -100,34 +101,41 @@ const char* rui_snes_pad_binds_legacy_token(const char* legacy) {
     return 0;
 }
 
+/* rui snes pad binds index from ui: if (ui_button < 0 || ui_button >= LNG_SNES_PAD_BUTTON_COUNT) return -1 */
 int rui_snes_pad_binds_index_from_ui(int ui_button) {
     if (ui_button < 0 || ui_button >= LNG_SNES_PAD_BUTTON_COUNT) return -1;
     return kUiToStore[ui_button];
 }
 
+/* rui snes pad binds init */
 void rui_snes_pad_binds_init(const char* path) {
     rui_pad_binds_init(&kSnesPadSpec, path);
 }
 
+/* rui snes pad binds label */
 void rui_snes_pad_binds_label(const char* path, const char* guid, int b,
                               char* out, int cap) {
     rui_pad_binds_label(&kSnesPadSpec, path, guid, b, out, cap);
 }
 
+/* rui snes pad binds set */
 void rui_snes_pad_binds_set(const char* path, const char* guid, int b,
                             int kind, int code, int axis_dir) {
     rui_pad_binds_set(&kSnesPadSpec, path, guid, b, kind, code, axis_dir);
 }
 
+/* rui snes pad binds reset */
 void rui_snes_pad_binds_reset(const char* path, const char* guid) {
     rui_pad_binds_reset(&kSnesPadSpec, path, guid);
 }
 
+/* rui snes pad binds remember */
 void rui_snes_pad_binds_remember(const char* path, const char* guid,
                                  const char* name, int deadzone_pct) {
     rui_pad_binds_remember(&kSnesPadSpec, path, guid, name, deadzone_pct);
 }
 
+/* rui snes pad binds save profile: deadzone_pct) */
 void rui_snes_pad_binds_save_profile(const char* path, const char* guid,
                                      const char* name, int name_custom,
                                      int deadzone_pct) {
@@ -135,19 +143,23 @@ void rui_snes_pad_binds_save_profile(const char* path, const char* guid,
                                deadzone_pct);
 }
 
+/* rui snes pad binds rename */
 void rui_snes_pad_binds_rename(const char* path, const char* guid,
                                const char* name) {
     rui_pad_binds_rename(&kSnesPadSpec, path, guid, name);
 }
 
+/* rui snes pad binds delete */
 void rui_snes_pad_binds_delete(const char* path, const char* guid) {
     rui_pad_binds_delete(&kSnesPadSpec, path, guid);
 }
 
+/* rui snes pad binds known count: return rui_pad_binds_known_count(&kSnesPadSpec, path) */
 int rui_snes_pad_binds_known_count(const char* path) {
     return rui_pad_binds_known_count(&kSnesPadSpec, path);
 }
 
+/* rui snes pad binds known at: return rui_pad_binds_known_at(&kSnesPadSpec, path, index, guid, guid_... */
 int rui_snes_pad_binds_known_at(const char* path, int index,
                                 char* guid, int guid_cap,
                                 char* name, int name_cap) {
@@ -155,15 +167,18 @@ int rui_snes_pad_binds_known_at(const char* path, int index,
                                   name, name_cap);
 }
 
+/* rui snes pad binds name */
 void rui_snes_pad_binds_name(const char* path, const char* guid,
                              char* out, int cap) {
     rui_pad_binds_name(&kSnesPadSpec, path, guid, out, cap);
 }
 
+/* rui snes pad binds name is custom: return rui_pad_binds_name_is_custom(&kSnesPadSpec, path, guid) */
 int rui_snes_pad_binds_name_is_custom(const char* path, const char* guid) {
     return rui_pad_binds_name_is_custom(&kSnesPadSpec, path, guid);
 }
 
+/* rui snes pad binds deadzone: return rui_pad_binds_deadzone(&kSnesPadSpec, path, guid) */
 int rui_snes_pad_binds_deadzone(const char* path, const char* guid) {
     return rui_pad_binds_deadzone(&kSnesPadSpec, path, guid);
 }

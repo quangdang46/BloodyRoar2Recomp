@@ -25,10 +25,12 @@
 
 static char g_last_relaunch_exe[512];
 
+// recomp launcher set preserve sdl
 void recomp_launcher_set_preserve_sdl(int preserve) {
     launcher_platform_set_quit_sdl(!preserve);
 }
 
+// recomp launcher relaunch exe: if (!out || out_cap == 0 || !g_last_relaunch_exe[0])
 int recomp_launcher_relaunch_exe(char* out, size_t out_cap) {
     if (!out || out_cap == 0 || !g_last_relaunch_exe[0])
         return 0;
@@ -36,6 +38,7 @@ int recomp_launcher_relaunch_exe(char* out, size_t out_cap) {
     return 1;
 }
 
+// recomp launcher run window: g_last_relaunch_exe[0] = '\0'
 int recomp_launcher_run_window(const char* window_title,
                              RecompLauncherCSettings* io,
                              const RecompLauncherCGameInfo* game,

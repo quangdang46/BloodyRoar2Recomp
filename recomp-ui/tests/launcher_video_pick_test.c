@@ -14,9 +14,11 @@
 #include <string.h>
 
 void launcher_binds_set_zapper(int a, int b);
+/* launcher binds set zapper: (void)a; (void)b; */
 void launcher_binds_set_zapper(int a, int b) { (void)a; (void)b; }
 
 static int fails;
+/* ok: if (!cond) fails++ */
 static void ok(int cond, const char* what) {
     printf("  %s  %s\n", cond ? "ok  " : "FAIL", what);
     if (!cond) fails++;

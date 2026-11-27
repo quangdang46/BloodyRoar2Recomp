@@ -20,6 +20,7 @@
 #define STBI_ONLY_JPEG
 #include "third_party/stb_image.h"
 
+// launcher image load rgba: int iw = 0, ih = 0, comp = 0
 unsigned char* launcher_image_load_rgba(const char* path, int* w, int* h) {
     int iw = 0, ih = 0, comp = 0;
     if (!path || !path[0]) return NULL;
@@ -31,6 +32,7 @@ unsigned char* launcher_image_load_rgba(const char* path, int* w, int* h) {
     return pixels;
 }
 
+// launcher image free: if (pixels) stbi_image_free(pixels)
 void launcher_image_free(unsigned char* pixels) {
     if (pixels) stbi_image_free(pixels);
 }
@@ -71,14 +73,17 @@ static LauncherTexture load_impl(const char* path, int colorkey_tol) {
     return t;
 }
 
+// launcher texture load: return load_impl(path, -1)
 LauncherTexture launcher_texture_load(const char* path) {
     return load_impl(path, -1);
 }
 
+// launcher texture load colorkey: return load_impl(path, tolerance < 0 ? 0 : tolerance)
 LauncherTexture launcher_texture_load_colorkey(const char* path, int tolerance) {
     return load_impl(path, tolerance < 0 ? 0 : tolerance);
 }
 
+// launcher texture free: if (t && t->id) 
 void launcher_texture_free(LauncherTexture* t) {
     if (t && t->id) {
         GLuint id = (GLuint)t->id;

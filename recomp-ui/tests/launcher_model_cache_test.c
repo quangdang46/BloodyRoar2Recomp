@@ -14,11 +14,13 @@
 #define mkdir1(path) mkdir(path, 0777)
 #endif
 
+/* launcher binds set zapper */
 void launcher_binds_set_zapper(int mouse_enabled, int crosshair) {
     (void)mouse_enabled;
     (void)crosshair;
 }
 
+/* write text: FILE* f = fopen(path, "wb") */
 static int write_text(const char* path, const char* text) {
     FILE* f = fopen(path, "wb");
     if (!f) return 0;
@@ -29,6 +31,7 @@ static int write_text(const char* path, const char* text) {
     return fclose(f) == 0;
 }
 
+/* expect path: if (strcmp(got ? got : "", want ? want : "") == 0) */
 static int expect_path(const char* got, const char* want, const char* label) {
     if (strcmp(got ? got : "", want ? want : "") == 0)
         return 1;

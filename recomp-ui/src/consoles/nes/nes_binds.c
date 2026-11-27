@@ -82,6 +82,7 @@ static SDL_Scancode nes_kb_name_to_scancode(const char* name) {
     if (!strcmp(buf, "none") || !buf[0]) return SDL_SCANCODE_UNKNOWN;
     return SDL_SCANCODE_UNKNOWN;
 }
+// nes kb scancode to name: if (sc == SDL_SCANCODE_UNKNOWN) return "None"
 static const char* nes_kb_scancode_to_name(SDL_Scancode sc) {
     if (sc == SDL_SCANCODE_UNKNOWN) return "None";
     const char* n = SDL_GetScancodeName(sc);
@@ -213,6 +214,7 @@ static void nes_kb_load_ini(const char* path) {
     fclose(f);
 }
 
+// rui nes binds init: s_nes_zapper_mouse = 1
 void rui_nes_binds_init(const char* path) {
     memset(s_nes_binds,0,sizeof(s_nes_binds));
     memcpy(s_nes_binds[0], kNesDefaultsP1, sizeof(kNesDefaultsP1));
@@ -240,6 +242,7 @@ void rui_nes_binds_init(const char* path) {
     s_nes_binds_init = 1;
 }
 
+// rui nes binds get: if (!s_nes_binds_init) rui_nes_binds_init(path)
 int rui_nes_binds_get(const char* path, int player, int b) {
     if (!s_nes_binds_init) rui_nes_binds_init(path);
     if (player < 0 || player > 3 || b < 0 || b >= LNG_NES_PAD_BUTTON_COUNT)
@@ -247,6 +250,7 @@ int rui_nes_binds_get(const char* path, int player, int b) {
     return (int)s_nes_binds[player][b];
 }
 
+// rui nes binds set: if (player < 0 || player > 3 || b < 0 || b >= LNG_NES_PAD_BUTTON_COUN...
 void rui_nes_binds_set(const char* path, int player, int b, int scancode) {
     if (player < 0 || player > 3 || b < 0 || b >= LNG_NES_PAD_BUTTON_COUNT) return;
     if (!s_nes_binds_init) rui_nes_binds_init(path);
@@ -257,6 +261,7 @@ void rui_nes_binds_set(const char* path, int player, int b, int scancode) {
                           nes_kb_scancode_to_name((SDL_Scancode)scancode));
 }
 
+// rui nes binds reset: if (player < 0 || player > 3) return
 void rui_nes_binds_reset(const char* path, int player) {
     if (player < 0 || player > 3) return;
     if (!s_nes_binds_init) rui_nes_binds_init(path);
@@ -269,12 +274,14 @@ void rui_nes_binds_reset(const char* path, int player) {
                               nes_kb_scancode_to_name(s_nes_binds[player][b]));
 }
 
+// rui nes zapper get: if (!s_nes_binds_init) rui_nes_binds_init(path)
 void rui_nes_zapper_get(const char* path, int* mouse_enabled, int* crosshair) {
     if (!s_nes_binds_init) rui_nes_binds_init(path);
     if (mouse_enabled) *mouse_enabled = s_nes_zapper_mouse;
     if (crosshair)     *crosshair     = s_nes_zapper_crosshair;
 }
 
+// rui nes zapper set: s_nes_zapper_mouse = mouse_enabled ? 1 : 0
 void rui_nes_zapper_set(const char* path, int mouse_enabled, int crosshair) {
     s_nes_zapper_mouse     = mouse_enabled ? 1 : 0;
     s_nes_zapper_crosshair = crosshair ? 1 : 0;
@@ -282,6 +289,7 @@ void rui_nes_zapper_set(const char* path, int mouse_enabled, int crosshair) {
     launcher_ini_kv_write(path, "zapper", "crosshair", s_nes_zapper_crosshair ? "true" : "false");
 }
 
+// rui nes camera bind get: if (!s_nes_binds_init) rui_nes_binds_init(path)
 int rui_nes_camera_bind_get(const char* path, int action) {
     if (!s_nes_binds_init) rui_nes_binds_init(path);
     if (action < 0 || action >= LNG_CAMERA_BIND_COUNT)
@@ -289,6 +297,7 @@ int rui_nes_camera_bind_get(const char* path, int action) {
     return (int)s_nes_camera_binds[action];
 }
 
+// rui nes camera bind set: if (!s_nes_binds_init) rui_nes_binds_init(path)
 void rui_nes_camera_bind_set(const char* path, int action, int scancode) {
     if (!s_nes_binds_init) rui_nes_binds_init(path);
     if (action < 0 || action >= LNG_CAMERA_BIND_COUNT) return;
@@ -298,6 +307,7 @@ void rui_nes_camera_bind_set(const char* path, int action, int scancode) {
         nes_kb_scancode_to_name((SDL_Scancode)scancode));
 }
 
+// rui nes camera bind reset: if (!s_nes_binds_init) rui_nes_binds_init(path)
 void rui_nes_camera_bind_reset(const char* path) {
     if (!s_nes_binds_init) rui_nes_binds_init(path);
     memcpy(s_nes_camera_binds, kNesCameraDefaults,

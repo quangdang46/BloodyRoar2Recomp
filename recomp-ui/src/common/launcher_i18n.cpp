@@ -201,6 +201,7 @@ static const LauncherI18nEntry kItalian[] = {
     {"No patch selected", "Nessuna patch selezionata"},
 };
 
+/* lookup: if (!english) return "" */
 static const char* lookup(const LauncherI18nEntry* entries, int count,
                           const char* english) {
     if (!english) return "";
@@ -211,10 +212,12 @@ static const char* lookup(const LauncherI18nEntry* entries, int count,
     return english;
 }
 
+/* launcher i18n language: return RECOMP_UI_LANGUAGE */
 const char* launcher_i18n_language(void) {
     return RECOMP_UI_LANGUAGE;
 }
 
+/* launcher i18n text: if (!language || language[0] == '\0' || */
 const char* launcher_i18n_text(const char* english) {
     const char* language = launcher_i18n_language();
     if (!language || language[0] == '\0' ||

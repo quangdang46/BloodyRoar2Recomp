@@ -16,6 +16,7 @@
 
 static int fails;
 
+/* expect: if (cond) { printf("ok: %s\n", what); return;  */
 static void expect(int cond, const char* what) {
     if (cond) { printf("ok: %s\n", what); return; }
     fprintf(stderr, "FAIL: %s\n", what);
@@ -26,10 +27,12 @@ static void expect(int cond, const char* what) {
 #define H 2
 #define PITCH ((size_t)W * 4u)
 
+/* fill: for (int i = 0; i < W * H; ++i) f[i] = v */
 static void fill(uint32_t* f, uint32_t v) {
     for (int i = 0; i < W * H; ++i) f[i] = v;
 }
 
+/* all: for (int i = 0; i < W * H; ++i) if (f[i] != v) return 0 */
 static int all(const uint32_t* f, uint32_t v) {
     for (int i = 0; i < W * H; ++i) if (f[i] != v) return 0;
     return 1;

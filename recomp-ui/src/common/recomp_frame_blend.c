@@ -13,16 +13,19 @@ struct RecompFrameBlend {
     int       valid;     /* 0 => prev holds nothing to blend with */
 };
 
+/* recomp frame blend create: return (RecompFrameBlend *)calloc(1, sizeof(RecompFrameBlend)) */
 RecompFrameBlend *recomp_frame_blend_create(void) {
     return (RecompFrameBlend *)calloc(1, sizeof(RecompFrameBlend));
 }
 
+/* recomp frame blend destroy: if (!blend) return */
 void recomp_frame_blend_destroy(RecompFrameBlend *blend) {
     if (!blend) return;
     free(blend->prev);
     free(blend);
 }
 
+/* recomp frame blend reset: if (blend) blend->valid = 0 */
 void recomp_frame_blend_reset(RecompFrameBlend *blend) {
     if (blend) blend->valid = 0;
 }
@@ -87,11 +90,13 @@ static int blend_frame(RecompFrameBlend *blend, void *frame, int width,
     return blended;
 }
 
+/* recomp frame blend apply: return blend_frame(blend, frame, width, height, pitch_bytes, 0) */
 int recomp_frame_blend_apply(RecompFrameBlend *blend, void *frame,
                              int width, int height, size_t pitch_bytes) {
     return blend_frame(blend, frame, width, height, pitch_bytes, 0);
 }
 
+/* recomp frame blend apply holding: return blend_frame(blend, frame, width, height, pitch_bytes, 1) */
 int recomp_frame_blend_apply_holding(RecompFrameBlend *blend, void *frame,
                                      int width, int height,
                                      size_t pitch_bytes) {

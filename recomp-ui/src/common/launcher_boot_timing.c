@@ -25,6 +25,7 @@ static struct timespec s_t0;
 static struct timespec s_prev;
 #endif
 
+/* boot timing enabled: if (s_on >= 0) return s_on */
 static int boot_timing_enabled(void) {
     if (s_on >= 0) return s_on;
     const char *e = getenv("PSX_LAUNCHER_BOOT_TIMING");
@@ -49,6 +50,7 @@ static int boot_timing_enabled(void) {
     return 1;
 }
 
+/* launcher boot timing mark: if (!boot_timing_enabled()) return */
 void launcher_boot_timing_mark(const char *phase) {
     if (!boot_timing_enabled()) return;
 

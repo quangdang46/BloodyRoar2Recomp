@@ -113,6 +113,7 @@ static int title_max_players(void)
   return n;
 }
 
+/* clamp lobby max slots: if (slots < 2) */
 static int clamp_lobby_max_slots(int slots)
 {
   if (slots < 2)
@@ -122,6 +123,7 @@ static int clamp_lobby_max_slots(int slots)
   return slots;
 }
 
+/* clamp input prediction: if (p <= 0) */
 static int clamp_input_prediction(int p)
 {
   if (p <= 0)
@@ -133,6 +135,7 @@ static int clamp_input_prediction(int p)
   return p;
 }
 
+/* clamp input delay: if (delay < 2) */
 static int clamp_input_delay(int delay)
 {
   if (delay < 2)
@@ -178,6 +181,7 @@ static const char *game_version(void);
 static int g_lan_swap_incoming;
 static int g_lan_swap_outgoing;
 
+/* host now ms: return (uint64_t)GetTickCount64() */
 static uint64_t host_now_ms(void)
 {
 #ifdef _WIN32
@@ -212,6 +216,7 @@ static uint32_t next_lan_session_id(void)
   return g_lan_session_last;
 }
 
+/* close direct sockets: g_lan_swap_incoming = 0 */
 static void close_direct_sockets(void)
 {
   rnet_lan_direct_host_close(&g_direct_host);
@@ -228,6 +233,7 @@ static void close_direct_sockets(void)
   lan_chat_clear();
 }
 
+/* publish lan room: if (g_direct_host) */
 static int publish_lan_room(void)
 {
   /* The seated guest hears every room change over its socket; the file is
@@ -379,6 +385,7 @@ static int fill_beacon_row(int index, const char *skip_endpoint,
   return 0;
 }
 
+/* beacon row count: int n = 0 */
 static int beacon_row_count(const char *skip_endpoint)
 {
   int n = 0;
@@ -387,11 +394,13 @@ static int beacon_row_count(const char *skip_endpoint)
   return n;
 }
 
+/* game name: return g_h.game_name && g_h.game_name[0] ? g_h.game_name : "Game" */
 static const char *game_name(void)
 {
   return g_h.game_name && g_h.game_name[0] ? g_h.game_name : "Game";
 }
 
+/* game version: return g_h.game_version && g_h.game_version[0] ? g_h.game_version */
 static const char *game_version(void)
 {
   return g_h.game_version && g_h.game_version[0] ? g_h.game_version
@@ -558,6 +567,7 @@ static int caps_require_mods(const RNetLobbyMatchCaps *caps)
   return caps && caps->valid && (caps->mod_count > 0 || caps->mod_set[0]);
 }
 
+/* default caps: RNetLobbyMatchCaps caps */
 static RNetLobbyMatchCaps default_caps(const RecompLauncherCSettings *settings)
 {
   RNetLobbyMatchCaps caps;
@@ -577,12 +587,14 @@ static RNetLobbyMatchCaps default_caps(const RecompLauncherCSettings *settings)
   return caps;
 }
 
+/* read lan: return rnet_lan_lobby_read(lan_path(), game_name(), game_version(), s... */
 static int read_lan(RNetLanLobby *state)
 {
   return rnet_lan_lobby_read(lan_path(), game_name(), game_version(), state) ==
          RNET_LAN_LOBBY_OK;
 }
 
+/* create lan: char advertised[RNET_LAN_LOBBY_ENDPOINT_MAX] */
 static int create_lan(const char *name, const char *endpoint,
                       const char *password)
 {
@@ -648,6 +660,7 @@ static int create_lan(const char *name, const char *endpoint,
   return 1;
 }
 
+/* fill lan row: RNetLanLobby state */
 static int fill_lan_row(RecompLauncherCNetplayLobby *out)
 {
   RNetLanLobby state;
@@ -670,6 +683,7 @@ static int fill_lan_row(RecompLauncherCNetplayLobby *out)
   return 1;
 }
 
+/* clear lan joiner: if (g_joined_direct && g_direct_guest) */
 static void clear_lan_joiner(void)
 {
   if (g_joined_direct && g_direct_guest)
@@ -795,6 +809,7 @@ static void direct_reopen_step(void)
                   "guest's seat is open for it to re-join\n", bind_hp);
 }
 
+/* sync lan joiner: RNetLanLobby state */
 static void sync_lan_joiner(void)
 {
   RNetLanLobby state;
@@ -823,6 +838,7 @@ static void sync_lan_joiner(void)
     clear_lan_joiner();
 }
 
+/* use lan members: RNetLanLobby local */
 static int use_lan_members(RNetLanLobby *state)
 {
   RNetLanLobby local;
@@ -862,6 +878,7 @@ typedef struct SlotPlan {
   int      port[RECOMP_LAUNCHER_NETPLAY_MAX_MEMBERS + 1];
 } SlotPlan;
 
+/* plan session slots: int sorted[RECOMP_LAUNCHER_NETPLAY_MAX_MEMBERS] */
 static void plan_session_slots(const int *seats, int n, int host_seat,
                                int my_seat, int i_am_host, SlotPlan *out)
 {
@@ -920,6 +937,7 @@ static void plan_session_slots(const int *seats, int n, int host_seat,
     out->slot_count = 2;
 }
 
+/* launch apply plan: int i */
 static void launch_apply_plan(RecompLauncherCNetplayLaunch *out,
                               const SlotPlan *plan)
 {
@@ -930,6 +948,7 @@ static void launch_apply_plan(RecompLauncherCNetplayLaunch *out,
     out->slot_port[i] = plan->port[i];
 }
 
+/* arm lan launch: int seats[2] */
 static void arm_lan_launch(const RNetLanLobby *state)
 {
   const char *colon;
@@ -981,6 +1000,7 @@ static void arm_lan_launch(const RNetLanLobby *state)
   }
 }
 
+/* recomp netplay host init: RNetLobbyConfig cfg */
 int recomp_netplay_host_init(const RecompNetplayHostHooks *hooks)
 {
   RNetLobbyConfig cfg;
@@ -1047,6 +1067,7 @@ int recomp_netplay_host_init(const RecompNetplayHostHooks *hooks)
   return 0;
 }
 
+/* recomp netplay host shutdown: g_inited = 0 */
 void recomp_netplay_host_shutdown(void)
 {
   recomp_netplay_host_disconnect();
@@ -1054,6 +1075,7 @@ void recomp_netplay_host_shutdown(void)
   g_inited = 0;
 }
 
+/* recomp netplay host prepare rematch: if (g_hosting_lan || g_joined_lan)  */
 void recomp_netplay_host_prepare_rematch(void)
 {
   if (g_hosting_lan || g_joined_lan) {
@@ -1085,6 +1107,7 @@ void recomp_netplay_host_prepare_rematch(void)
   memset(&g_lan_launch, 0, sizeof(g_lan_launch));
 }
 
+/* recomp netplay host begin soft return: if (!gi || !set_resume_room) */
 void recomp_netplay_host_begin_soft_return(RecompLauncherCGameInfo *gi,
                                            int set_resume_room)
 {
@@ -1099,6 +1122,7 @@ void recomp_netplay_host_begin_soft_return(RecompLauncherCGameInfo *gi,
   }
 }
 
+/* recomp netplay host leave: int rc */
 int recomp_netplay_host_leave(void)
 {
   int rc;
@@ -1125,12 +1149,14 @@ int recomp_netplay_host_leave(void)
   return rc;
 }
 
+/* recomp netplay host disconnect */
 void recomp_netplay_host_disconnect(void)
 {
   (void)recomp_netplay_host_leave();
   rnet_lobby_disconnect();
 }
 
+/* recomp netplay host resume endpoint: if (g_resume_endpoint[0]) */
 const char *recomp_netplay_host_resume_endpoint(void)
 {
   if (g_resume_endpoint[0])
@@ -1138,23 +1164,27 @@ const char *recomp_netplay_host_resume_endpoint(void)
   return "";
 }
 
+/* recomp netplay host in lan: return g_hosting_lan || g_joined_lan */
 int recomp_netplay_host_in_lan(void)
 {
   return g_hosting_lan || g_joined_lan;
 }
 
+/* recomp netplay host set runtime error: error_code ? error_code : "") */
 void recomp_netplay_host_set_runtime_error(const char *error_code)
 {
   snprintf(g_runtime_error, sizeof(g_runtime_error), "%s",
            error_code ? error_code : "");
 }
 
+/* cb default url: return g_lobby_url[0] ? g_lobby_url : rnet_lobby_default_url() */
 static const char *cb_default_url(void *ctx)
 {
   (void)ctx;
   return g_lobby_url[0] ? g_lobby_url : rnet_lobby_default_url();
 }
 
+/* cb set url */
 static void cb_set_url(void *ctx, const char *url)
 {
   (void)ctx;
@@ -1162,6 +1192,7 @@ static void cb_set_url(void *ctx, const char *url)
            url && url[0] ? url : rnet_lobby_default_url());
 }
 
+/* cb connect: int rc */
 static int cb_connect(void *ctx)
 {
   int rc;
@@ -1175,12 +1206,14 @@ static int cb_connect(void *ctx)
   return rc;
 }
 
+/* cb connected: return rnet_lobby_connected() */
 static int cb_connected(void *ctx)
 {
   (void)ctx;
   return rnet_lobby_connected();
 }
 
+/* cb pump */
 static void cb_pump(void *ctx)
 {
   (void)ctx;
@@ -1276,6 +1309,7 @@ static void cb_pump(void *ctx)
     (void)rnet_lobby_set_ready(1);
 }
 
+/* cb set player name: if (name && name[0] && g_h.name_store) */
 static void cb_set_player_name(void *ctx, const char *name)
 {
   (void)ctx;
@@ -1287,6 +1321,7 @@ static void cb_set_player_name(void *ctx, const char *name)
     (void)g_h.name_store(g_h.ctx, name);
 }
 
+/* cb player name */
 static const char *cb_player_name(void *ctx)
 {
   static char persisted[64];
@@ -1304,6 +1339,7 @@ static const char *cb_player_name(void *ctx)
   return rnet_lobby_display_name();
 }
 
+/* cb request list */
 static void cb_request_list(void *ctx)
 {
   (void)ctx;
@@ -1319,6 +1355,7 @@ static void cb_request_list(void *ctx)
 static int g_list_scope;
 
 #if defined(RECOMP_LAUNCHER_HAS_SET_BLOCKS)
+/* cb set blocks: return rnet_lobby_set_blocks(accounts) */
 static int cb_set_blocks(void *ctx, const char *accounts)
 {
   (void)ctx;
@@ -1327,6 +1364,7 @@ static int cb_set_blocks(void *ctx, const char *accounts)
 #endif
 
 #if defined(RECOMP_LAUNCHER_HAS_CHAT_REPORT)
+/* cb chat report: return rnet_lobby_report_chat(mids, mid_count, reason, note) */
 static int cb_chat_report(void *ctx, const char *const *mids, int mid_count,
                           const char *reason, const char *note)
 {
@@ -1339,6 +1377,7 @@ static int cb_chat_report(void *ctx, const char *const *mids, int mid_count,
 #endif
 
 #if defined(RECOMP_LAUNCHER_HAS_LIST_SCOPE)
+/* cb list scope set: g_list_scope = scope */
 static int cb_list_scope_set(void *ctx, int scope)
 {
   (void)ctx;
@@ -1347,16 +1386,19 @@ static int cb_list_scope_set(void *ctx, int scope)
 }
 #endif
 
+/* list want online: return g_list_scope != RECOMP_LAUNCHER_LIST_SCOPE_LAN */
 static int list_want_online(void)
 {
   return g_list_scope != RECOMP_LAUNCHER_LIST_SCOPE_LAN;
 }
 
+/* list want lan: return g_list_scope != RECOMP_LAUNCHER_LIST_SCOPE_ONLINE */
 static int list_want_lan(void)
 {
   return g_list_scope != RECOMP_LAUNCHER_LIST_SCOPE_ONLINE;
 }
 
+/* cb list count: RecompLauncherCNetplayLobby lan */
 static int cb_list_count(void *ctx)
 {
   RecompLauncherCNetplayLobby lan;
@@ -1401,6 +1443,7 @@ static int cb_list_count(void *ctx)
               : 0);
 }
 
+/* cb list get: RNetLobbyRow row */
 static int cb_list_get(void *ctx, int index, RecompLauncherCNetplayLobby *out)
 {
   RNetLobbyRow row;
@@ -1449,6 +1492,7 @@ static int cb_online_count(void *ctx)
   return rnet_lobby_connected() ? rnet_lobby_online_count() : 0;
 }
 
+/* cb online get: RNetLobbyOnlinePlayer p */
 static int cb_online_get(void *ctx, int index, RecompLauncherCNetplayOnlinePlayer *out)
 {
   RNetLobbyOnlinePlayer p;
@@ -1473,6 +1517,7 @@ static int cb_online_get(void *ctx, int index, RecompLauncherCNetplayOnlinePlaye
   return 1;
 }
 
+/* refresh local addresses: int count = rnet_ipv4_enumerate(g_local_addresses, kMaxLocalAddresses) */
 static int refresh_local_addresses(void)
 {
   int count = rnet_ipv4_enumerate(g_local_addresses, kMaxLocalAddresses);
@@ -1484,6 +1529,7 @@ static int refresh_local_addresses(void)
   return count;
 }
 
+/* cb local address get: if (!out || index < 0) */
 static int cb_local_address_get(void *ctx, int index,
                                 RecompLauncherCNetplayLocalAddress *out)
 {
@@ -1502,6 +1548,7 @@ static int cb_local_address_get(void *ctx, int index,
   return 1;
 }
 
+/* cb local ip: RecompLauncherCNetplayLocalAddress address */
 static int cb_local_ip(void *ctx, char *out, size_t out_len)
 {
   RecompLauncherCNetplayLocalAddress address;
@@ -1511,6 +1558,7 @@ static int cb_local_ip(void *ctx, char *out, size_t out_len)
   return out[0] != '\0';
 }
 
+/* cb external ip: RNetExternalIpv4Config config */
 static int cb_external_ip(void *ctx, char *out, size_t out_len)
 {
   RNetExternalIpv4Config config;
@@ -1532,6 +1580,7 @@ static int cb_external_ip(void *ctx, char *out, size_t out_len)
   return out[0] != '\0';
 }
 
+/* cb create: RNetLobbyMatchCaps caps = default_caps(settings) */
 static int cb_create(void *ctx, const char *lobby_name, char *host_endpoint,
                      const char *password,
                      const RecompLauncherCSettings *settings, int lan_only,
@@ -1579,6 +1628,7 @@ static int cb_create(void *ctx, const char *lobby_name, char *host_endpoint,
       &caps, g_lobby_max_slots);
 }
 
+/* cb join: RNetLanLobby state */
 static int cb_join(void *ctx, const char *lobby_id, const char *password,
                    char *guest_bind)
 {
@@ -1653,12 +1703,14 @@ static int cb_join(void *ctx, const char *lobby_id, const char *password,
   return rnet_lobby_join(lobby_id, password ? password : "", guest_bind);
 }
 
+/* cb leave: return recomp_netplay_host_leave() */
 static int cb_leave(void *ctx)
 {
   (void)ctx;
   return recomp_netplay_host_leave();
 }
 
+/* cb in lobby: return g_hosting_lan || g_joined_lan || rnet_lobby_in_lobby() */
 static int cb_in_lobby(void *ctx)
 {
   (void)ctx;
@@ -1666,6 +1718,7 @@ static int cb_in_lobby(void *ctx)
   return g_hosting_lan || g_joined_lan || rnet_lobby_in_lobby();
 }
 
+/* cb is host: if (g_hosting_lan || g_joined_lan) */
 static int cb_is_host(void *ctx)
 {
   (void)ctx;
@@ -1674,6 +1727,7 @@ static int cb_is_host(void *ctx)
   return rnet_lobby_is_host();
 }
 
+/* cb member count: RNetLanLobby state */
 static int cb_member_count(void *ctx)
 {
   RNetLanLobby state;
@@ -1681,6 +1735,7 @@ static int cb_member_count(void *ctx)
   return use_lan_members(&state) ? 2 : rnet_lobby_member_count();
 }
 
+/* cb member get: RNetLobbyMember member */
 static int cb_member_get(void *ctx, int index,
                          RecompLauncherCNetplayMember *out)
 {
@@ -1741,6 +1796,7 @@ static int g_lan_chat_head;
 static int g_lan_chat_count;
 static uint32_t g_lan_chat_seq;
 
+/* lan chat clear: g_lan_chat_head = 0 */
 static void lan_chat_clear(void)
 {
   g_lan_chat_head = 0;
@@ -1748,6 +1804,7 @@ static void lan_chat_clear(void)
   /* seq keeps counting across rooms -- see rnet_lobby_chat_clear. */
 }
 
+/* lan chat push: RNetLobbyChatMsg *m */
 static void lan_chat_push(const char *player_id, const char *from,
                           const char *text)
 {
@@ -1819,6 +1876,7 @@ static int lan_chat_available(void)
   return 0;
 }
 
+/* cb chat send: if (g_hosting_lan || g_joined_lan)  */
 static int cb_chat_send(void *ctx, const char *text)
 {
   (void)ctx;
@@ -1848,6 +1906,7 @@ static int cb_chat_send(void *ctx, const char *text)
   return rnet_lobby_send_chat(text);
 }
 
+/* cb chat count: if (g_hosting_lan || g_joined_lan) */
 static int cb_chat_count(void *ctx)
 {
   (void)ctx;
@@ -1856,6 +1915,7 @@ static int cb_chat_count(void *ctx)
   return rnet_lobby_chat_count();
 }
 
+/* cb chat get: RNetLobbyChatMsg msg */
 static int cb_chat_get(void *ctx, int index,
                        RecompLauncherCNetplayChatMessage *out)
 {
@@ -1894,11 +1954,17 @@ static int cb_chat_get(void *ctx, int index,
  * Thin adapters over recomp-net's rnet_account (auth.h), which owns the HTTP, the worker
  * thread and the device key. */
 static int cb_account_available(void *ctx) { (void)ctx; return rnet_account_available(); }
+/* cb account login begin: (void)ctx; return rnet_account_login_begin(); */
 static int cb_account_login_begin(void *ctx) { (void)ctx; return rnet_account_login_begin(); }
+/* cb account state: (void)ctx; return rnet_account_state(); */
 static int cb_account_state(void *ctx) { (void)ctx; return rnet_account_state(); }
+/* cb account handle: (void)ctx; return rnet_account_handle(); */
 static const char *cb_account_handle(void *ctx) { (void)ctx; return rnet_account_handle(); }
+/* cb account username: (void)ctx; return rnet_account_username(); */
 static const char *cb_account_username(void *ctx) { (void)ctx; return rnet_account_username(); }
+/* cb account error: (void)ctx; return rnet_account_error(); */
 static const char *cb_account_error(void *ctx) { (void)ctx; return rnet_account_error(); }
+/* cb account sign out: (void)ctx; return rnet_account_sign_out(); */
 static int cb_account_sign_out(void *ctx) { (void)ctx; return rnet_account_sign_out(); }
 /* ── automatch ──────────────────────────────────────────────────────────────
  *
@@ -1907,6 +1973,7 @@ static int cb_account_sign_out(void *ctx) { (void)ctx; return rnet_account_sign_
  * POLICY here is mods_enabled -- see cb_automatch_queue.
  */
 #if defined(RECOMP_LAUNCHER_HAS_AUTOMATCH)
+/* cb automatch available: if (rnet_lobby_connected() && !rnet_lobby_automatch_available()) */
 static int cb_automatch_available(void *ctx)
 {
     (void)ctx;
@@ -1918,12 +1985,14 @@ static int cb_automatch_available(void *ctx)
     return rnet_lobby_automatch_available();
 }
 
+/* cb automatch ruleset count: return rnet_lobby_automatch_ruleset_count() */
 static int cb_automatch_ruleset_count(void *ctx)
 {
     (void)ctx;
     return rnet_lobby_automatch_ruleset_count();
 }
 
+/* cb automatch ruleset get: RNetLobbyRuleset r */
 static int cb_automatch_ruleset_get(void *ctx, int index,
                                     RecompLauncherCNetplayRuleset *out)
 {
@@ -1941,6 +2010,7 @@ static int cb_automatch_ruleset_get(void *ctx, int index,
     return 1;
 }
 
+/* cb automatch queue: char why[160] */
 static int cb_automatch_queue(void *ctx, const char *ruleset_id)
 {
     (void)ctx;
@@ -2048,30 +2118,35 @@ static int cb_automatch_queue(void *ctx, const char *ruleset_id)
     }
 }
 
+/* cb automatch cancel: return rnet_lobby_automatch_cancel() */
 static int cb_automatch_cancel(void *ctx)
 {
     (void)ctx;
     return rnet_lobby_automatch_cancel();
 }
 
+/* cb automatch state: return rnet_lobby_automatch_state() */
 static int cb_automatch_state(void *ctx)
 {
     (void)ctx;
     return rnet_lobby_automatch_state();
 }
 
+/* cb automatch queued secs: return rnet_lobby_automatch_queued_secs() */
 static int cb_automatch_queued_secs(void *ctx)
 {
     (void)ctx;
     return rnet_lobby_automatch_queued_secs();
 }
 
+/* cb automatch pool: return rnet_lobby_automatch_pool() */
 static int cb_automatch_pool(void *ctx)
 {
     (void)ctx;
     return rnet_lobby_automatch_pool();
 }
 
+/* cb automatch found get: RNetLobbyAutomatchFound f */
 static int cb_automatch_found_get(void *ctx, RecompLauncherCNetplayFound *out)
 {
     RNetLobbyAutomatchFound f;
@@ -2089,12 +2164,14 @@ static int cb_automatch_found_get(void *ctx, RecompLauncherCNetplayFound *out)
     return 1;
 }
 
+/* cb automatch accept: return rnet_lobby_automatch_accept(accept) */
 static int cb_automatch_accept(void *ctx, int accept)
 {
     (void)ctx;
     return rnet_lobby_automatch_accept(accept);
 }
 
+/* cb automatch error: return rnet_lobby_automatch_error() */
 static const char *cb_automatch_error(void *ctx)
 {
     (void)ctx;
@@ -2107,6 +2184,7 @@ static int cb_account_set_handle(void *ctx, const char *h) {
     return rnet_account_set_handle(h);
 }
 
+/* cb server chat send: if (g_hosting_lan || g_joined_lan || !rnet_lobby_connected()) */
 static int cb_server_chat_send(void *ctx, const char *text)
 {
   (void)ctx;
@@ -2115,6 +2193,7 @@ static int cb_server_chat_send(void *ctx, const char *text)
   return rnet_lobby_send_server_chat(text);
 }
 
+/* cb server chat count: if (g_hosting_lan || g_joined_lan) */
 static int cb_server_chat_count(void *ctx)
 {
   (void)ctx;
@@ -2123,6 +2202,7 @@ static int cb_server_chat_count(void *ctx)
   return rnet_lobby_server_chat_count();
 }
 
+/* cb server chat get: RNetLobbyChatMsg msg */
 static int cb_server_chat_get(void *ctx, int index,
                               RecompLauncherCNetplayChatMessage *out)
 {
@@ -2159,6 +2239,7 @@ static int cb_allow_spectators_get(void *ctx)
   return rnet_lobby_allow_spectators_pref();
 }
 
+/* cb allow spectators set: if (g_hosting_lan || g_joined_lan) */
 static int cb_allow_spectators_set(void *ctx, int allow)
 {
   (void)ctx;
@@ -2168,6 +2249,7 @@ static int cb_allow_spectators_set(void *ctx, int allow)
   return 0;
 }
 
+/* cb lobby allow spectators: if (g_hosting_lan || g_joined_lan) */
 static int cb_lobby_allow_spectators(void *ctx)
 {
   (void)ctx;
@@ -2176,6 +2258,7 @@ static int cb_lobby_allow_spectators(void *ctx)
   return rnet_lobby_allow_spectators();
 }
 
+/* cb lobby max spectators: if (g_hosting_lan || g_joined_lan) */
 static int cb_lobby_max_spectators(void *ctx)
 {
   (void)ctx;
@@ -2184,6 +2267,7 @@ static int cb_lobby_max_spectators(void *ctx)
   return rnet_lobby_max_spectators();
 }
 
+/* cb lobby spectator count: if (g_hosting_lan || g_joined_lan) */
 static int cb_lobby_spectator_count(void *ctx)
 {
   (void)ctx;
@@ -2192,6 +2276,7 @@ static int cb_lobby_spectator_count(void *ctx)
   return rnet_lobby_spectator_count();
 }
 
+/* cb local is spectator: if (g_hosting_lan || g_joined_lan) */
 static int cb_local_is_spectator(void *ctx)
 {
   (void)ctx;
@@ -2200,6 +2285,7 @@ static int cb_local_is_spectator(void *ctx)
   return rnet_lobby_local_is_spectator();
 }
 
+/* cb spectator slot: if (g_hosting_lan || g_joined_lan) */
 static int cb_spectator_slot(void *ctx, int index)
 {
   (void)ctx;
@@ -2208,6 +2294,7 @@ static int cb_spectator_slot(void *ctx, int index)
   return rnet_lobby_spectator_slot(index);
 }
 
+/* cb move member: if (g_hosting_lan && from_slot >= 0 && from_slot <= 1 && to_slot >= 0 && */
 static int cb_move_member(void *ctx, int from_slot, int to_slot)
 {
   (void)ctx;
@@ -2220,6 +2307,7 @@ static int cb_move_member(void *ctx, int from_slot, int to_slot)
   return rnet_lobby_move(from_slot, to_slot);
 }
 
+/* cb kick member: int guest_slot */
 static int cb_kick_member(void *ctx, int slot)
 {
   int guest_slot;
@@ -2240,6 +2328,7 @@ static int cb_kick_member(void *ctx, int slot)
   return rnet_lobby_kick(slot);
 }
 
+/* cb local ready: if (g_hosting_lan || g_joined_lan) */
 static int cb_local_ready(void *ctx)
 {
   (void)ctx;
@@ -2248,6 +2337,7 @@ static int cb_local_ready(void *ctx)
   return rnet_lobby_local_ready();
 }
 
+/* cb all ready: RNetLanLobby state */
 static int cb_all_ready(void *ctx)
 {
   RNetLanLobby state;
@@ -2257,6 +2347,7 @@ static int cb_all_ready(void *ctx)
   return rnet_lobby_all_ready();
 }
 
+/* cb set ready: if (g_hosting_lan || g_joined_lan) */
 static int cb_set_ready(void *ctx, int ready)
 {
   (void)ctx;
@@ -2265,6 +2356,7 @@ static int cb_set_ready(void *ctx, int ready)
   return rnet_lobby_set_ready(ready);
 }
 
+/* cb request start: RNetLobbyMatchCaps caps = default_caps(settings) */
 static int cb_request_start(void *ctx, const RecompLauncherCSettings *settings)
 {
   RNetLobbyMatchCaps caps = default_caps(settings);
@@ -2282,6 +2374,7 @@ static int cb_request_start(void *ctx, const RecompLauncherCSettings *settings)
   return rnet_lobby_request_start(&caps);
 }
 
+/* cb launch pending: RNetLanLobby state */
 static int cb_launch_pending(void *ctx)
 {
   RNetLanLobby state;
@@ -2306,6 +2399,7 @@ static int cb_launch_pending(void *ctx)
   return g_lan_launch.enabled || rnet_lobby_launch_pending();
 }
 
+/* cb clear launch pending */
 static void cb_clear_launch_pending(void *ctx)
 {
   (void)ctx;
@@ -2313,6 +2407,7 @@ static void cb_clear_launch_pending(void *ctx)
   rnet_lobby_clear_launch_pending();
 }
 
+/* cb last error: if (g_runtime_error[0]) */
 static const char *cb_last_error(void *ctx)
 {
   const RNetLobbyJoinInfo *join;
@@ -2323,6 +2418,7 @@ static const char *cb_last_error(void *ctx)
   return (join && join->last_error[0]) ? join->last_error : "";
 }
 
+/* cb clear last error: g_runtime_error[0] = '\0' */
 static void cb_clear_last_error(void *ctx)
 {
   (void)ctx;
@@ -2330,6 +2426,7 @@ static void cb_clear_last_error(void *ctx)
   rnet_lobby_clear_last_error();
 }
 
+/* cb input delay get: RNetLanLobby state */
 static int cb_input_delay_get(void *ctx)
 {
   const RNetLobbyMatchCaps *caps;
@@ -2346,6 +2443,7 @@ static int cb_input_delay_get(void *ctx)
   return clamp_input_delay(g_lobby_input_delay);
 }
 
+/* cb input delay set: RNetLobbyMatchCaps caps */
 static int cb_input_delay_set(void *ctx, int delay_frames)
 {
   RNetLobbyMatchCaps caps;
@@ -2372,6 +2470,7 @@ static int cb_input_delay_set(void *ctx, int delay_frames)
   return rnet_lobby_set_match_caps(&caps);
 }
 
+/* cb force input relay get: if (g_hosting_lan || g_joined_lan) */
 static int cb_force_input_relay_get(void *ctx)
 {
   const RNetLobbyMatchCaps *caps;
@@ -2384,6 +2483,7 @@ static int cb_force_input_relay_get(void *ctx)
   return g_lobby_force_input_relay ? 1 : 0;
 }
 
+/* cb force input relay set: RNetLobbyMatchCaps caps */
 static int cb_force_input_relay_set(void *ctx, int force)
 {
   RNetLobbyMatchCaps caps;
@@ -2398,6 +2498,7 @@ static int cb_force_input_relay_set(void *ctx, int force)
   return rnet_lobby_set_match_caps(&caps);
 }
 
+/* cb force turn get: if (g_hosting_lan || g_joined_lan) */
 static int cb_force_turn_get(void *ctx)
 {
   const RNetLobbyMatchCaps *caps;
@@ -2410,6 +2511,7 @@ static int cb_force_turn_get(void *ctx)
   return g_lobby_force_turn ? 1 : 0;
 }
 
+/* cb force turn set: RNetLobbyMatchCaps caps */
 static int cb_force_turn_set(void *ctx, int force)
 {
   RNetLobbyMatchCaps caps;
@@ -2424,6 +2526,7 @@ static int cb_force_turn_set(void *ctx, int force)
   return rnet_lobby_set_match_caps(&caps);
 }
 
+/* cb lobby max slots: RNetLanLobby state */
 static int cb_lobby_max_slots(void *ctx)
 {
   const RNetLobbyJoinInfo *join;
@@ -2459,6 +2562,7 @@ static int refuse_launch(uint32_t session_id, const char *code,
   return 0;
 }
 
+/* cb fill launch: RNetLobbyJoinInfo join */
 static int cb_fill_launch(void *ctx, RecompLauncherCNetplayLaunch *out)
 {
   RNetLobbyJoinInfo join;
@@ -2620,6 +2724,7 @@ static const RNetLobbyModPkg *plan_row(int index)
   return &caps->mods[index];
 }
 
+/* cb lobby mods count: if (!caps || !caps->valid) */
 static int cb_lobby_mods_count(void *ctx)
 {
   const RNetLobbyMatchCaps *caps = rnet_lobby_match_caps();
@@ -2629,6 +2734,7 @@ static int cb_lobby_mods_count(void *ctx)
   return caps->mod_count;
 }
 
+/* cb lobby mods get: if (!out) */
 static int cb_lobby_mods_get(void *ctx, int index,
                              RecompLauncherCNetplayLobbyMod *out)
 {
@@ -2722,6 +2828,7 @@ static int cb_lobby_mods_get(void *ctx, int index,
   return 1;
 }
 
+/* cb lobby mods missing: int missing = 0 */
 static int cb_lobby_mods_missing(void *ctx)
 {
   const int n = cb_lobby_mods_count(ctx);
@@ -2758,6 +2865,7 @@ static char g_dl_ver[RNET_LOBBY_MAX_MODS][RNET_LOBBY_MOD_VER_LEN];
 static int  g_dl_n;
 static int  g_dl_next;
 
+/* dl queue clear: g_dl_n = 0 */
 static void dl_queue_clear(void)
 {
   g_dl_n = 0;
@@ -2803,6 +2911,7 @@ static void dl_queue_step(void)
  * text, so it fires on a real change and not on a redraw. */
 static char g_published_set[1024];
 
+/* host caps watch step: char text[1024] */
 static void host_caps_watch_step(void)
 {
   char text[1024];
@@ -2845,6 +2954,7 @@ static void host_caps_watch_step(void)
  * actually differs. */
 static char g_adopted_set[512];
 
+/* mod set sync step: char want[1024] */
 static void mod_set_sync_step(void)
 {
   const RNetLobbyMatchCaps *caps;
@@ -2969,6 +3079,7 @@ static void desync_report_step(void)
             (unsigned)tick, partition, (unsigned)mine, (unsigned)theirs);
 }
 
+/* cb lobby mods can download: if (!g_mods || !g_mods->install_blob) */
 static int cb_lobby_mods_can_download(void *ctx)
 {
   (void)ctx;
@@ -2988,6 +3099,7 @@ static int cb_lobby_mods_can_download(void *ctx)
   return rnet_lobby_host_player_id()[0] != '\0';
 }
 
+/* cb lobby mods download one: if (!row || !cb_lobby_mods_can_download(NULL)) */
 static int cb_lobby_mods_download_one(void *ctx, int index)
 {
   const RNetLobbyModPkg *row = plan_row(index);
@@ -2999,6 +3111,7 @@ static int cb_lobby_mods_download_one(void *ctx, int index)
   return rnet_lobby_mod_request(row->id, row->ver);
 }
 
+/* cb lobby mods progress one: if (!row || !moving[0] || strcmp(moving, row->id) != 0) */
 static int cb_lobby_mods_progress_one(void *ctx, int index)
 {
   const RNetLobbyModPkg *row = plan_row(index);
@@ -3012,18 +3125,21 @@ static int cb_lobby_mods_progress_one(void *ctx, int index)
   return rnet_lobby_mod_progress();
 }
 
+/* cb mod xfer failed: return rnet_lobby_mod_failed(err, err_cap) */
 static int cb_mod_xfer_failed(void *ctx, char *err, size_t err_cap)
 {
   (void)ctx;
   return rnet_lobby_mod_failed(err, err_cap);
 }
 
+/* cb mod xfer cancel */
 static void cb_mod_xfer_cancel(void *ctx)
 {
   (void)ctx;
   rnet_lobby_mod_cancel();
 }
 
+/* cb lobby mods download: int n */
 static int cb_lobby_mods_download(void *ctx)
 {
   int n;
@@ -3049,6 +3165,7 @@ static int cb_lobby_mods_download(void *ctx)
   return 0;
 }
 
+/* cb push match caps: RNetLobbyMatchCaps caps */
 static void cb_push_match_caps(void *ctx)
 {
   RNetLobbyMatchCaps caps;
@@ -3073,6 +3190,7 @@ static int cb_seat_move_self(void *ctx, int to_slot)
   if (g_joined_lan) return -1; /* the only other seat is the host's: ask */
   return rnet_lobby_seat_move_self(to_slot);
 }
+/* cb seat swap request: if (g_hosting_lan)  */
 static int cb_seat_swap_request(void *ctx, int target_slot)
 {
   (void)ctx;
@@ -3095,6 +3213,7 @@ static int cb_seat_swap_request(void *ctx, int target_slot)
   }
   return rnet_lobby_seat_swap_request(target_slot);
 }
+/* cb seat swap incoming: if (g_hosting_lan)  */
 static int cb_seat_swap_incoming(void *ctx, char *who, size_t who_cap, int *from_slot)
 {
   (void)ctx;
@@ -3109,6 +3228,7 @@ static int cb_seat_swap_incoming(void *ctx, char *who, size_t who_cap, int *from
   if (g_joined_lan) return 0;
   return rnet_lobby_seat_swap_incoming(who, who_cap, from_slot);
 }
+/* cb seat swap respond: if (g_hosting_lan)  */
 static int cb_seat_swap_respond(void *ctx, int accept)
 {
   (void)ctx;
@@ -3124,12 +3244,14 @@ static int cb_seat_swap_respond(void *ctx, int accept)
   if (g_joined_lan) return -1;
   return rnet_lobby_seat_swap_respond(accept);
 }
+/* cb seat swap outgoing: if (g_hosting_lan || g_joined_lan) return g_lan_swap_outgoing */
 static int cb_seat_swap_outgoing(void *ctx)
 {
   (void)ctx;
   if (g_hosting_lan || g_joined_lan) return g_lan_swap_outgoing;
   return rnet_lobby_seat_swap_outgoing();
 }
+/* cb seat swap clear: if (g_hosting_lan || g_joined_lan)  */
 static void cb_seat_swap_clear(void *ctx)
 {
   (void)ctx;
@@ -3160,6 +3282,7 @@ static int cb_rollback_get(void *ctx)
   return g_lobby_rollback ? 1 : 0;
 }
 
+/* cb rollback set: RNetLobbyMatchCaps caps */
 static int cb_rollback_set(void *ctx, int enable)
 {
   RNetLobbyMatchCaps caps;
@@ -3191,6 +3314,7 @@ static int cb_input_prediction_get(void *ctx)
   return clamp_input_prediction(g_lobby_input_prediction);
 }
 
+/* cb input prediction set: RNetLobbyMatchCaps caps */
 static int cb_input_prediction_set(void *ctx, int prediction_frames)
 {
   RNetLobbyMatchCaps caps;
@@ -3232,6 +3356,7 @@ static int cb_need_mods_count(void *ctx)
   return rnet_lobby_need_mods_count();
 }
 
+/* cb need mods get: if (!out || !row) */
 static int cb_need_mods_get(void *ctx, int index,
                             RecompLauncherCNetplayNeedMod *out)
 {
@@ -3258,6 +3383,7 @@ static int cb_need_mods_can_transfer(void *ctx)
   return 0;
 }
 
+/* cb mod xfer progress: return rnet_lobby_mod_progress() */
 static int cb_mod_xfer_progress(void *ctx)
 {
   (void)ctx;
@@ -3389,11 +3515,13 @@ static RecompLauncherCNetplayCallbacks g_callbacks = {
 #endif
 };
 
+/* recomp netplay host callbacks: return g_inited ? &g_callbacks : NULL */
 const RecompLauncherCNetplayCallbacks *recomp_netplay_host_callbacks(void)
 {
   return g_inited ? &g_callbacks : NULL;
 }
 
+/* auto now ms: return (uint64_t)GetTickCount64() */
 static uint64_t auto_now_ms(void)
 {
 #ifdef _WIN32
@@ -3405,6 +3533,7 @@ static uint64_t auto_now_ms(void)
 #endif
 }
 
+/* auto sleep ms: ts.tv_sec = (time_t)(ms / 1000u) */
 static void auto_sleep_ms(unsigned ms)
 {
 #ifdef _WIN32
@@ -3417,6 +3546,7 @@ static void auto_sleep_ms(unsigned ms)
 #endif
 }
 
+/* auto log: "[netplay selftest] role=%s stage=%s members=%d ready=%d " */
 static void auto_log(const char *role, const char *stage)
 {
   const RecompLauncherCNetplayCallbacks *cb = recomp_netplay_host_callbacks();
@@ -3428,6 +3558,7 @@ static void auto_log(const char *role, const char *stage)
           rnet_lobby_in_lobby(), err ? err : "");
 }
 
+/* recomp netplay host auto launch: RecompLauncherCSettings settings */
 int recomp_netplay_host_auto_launch(const char *role, const char *player_name,
                                     const char *lobby_name, unsigned timeout_ms,
                                     RecompLauncherCNetplayLaunch *out)

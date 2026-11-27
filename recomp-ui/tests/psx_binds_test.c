@@ -11,6 +11,7 @@ enum {
     TEST_MOUSE1 = 513
 };
 
+/* require: if (condition) return */
 static void require(int condition, const char *message)
 {
     if (condition) return;
@@ -18,6 +19,7 @@ static void require(int condition, const char *message)
     exit(1);
 }
 
+/* file contains: FILE *file = fopen(path, "r") */
 static int file_contains(const char *path, const char *needle)
 {
     /* This is a text INI assertion; translate Windows CRLF on read. */

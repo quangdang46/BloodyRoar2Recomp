@@ -153,6 +153,7 @@ static inline int launcher_console_is_gb(const char* name) {
     return lps_streq_ci(name, "gb") || lps_streq_ci(name, "gameboy") ||
            lps_streq_ci(name, "dmg");
 }
+// launcher console is gbc: return lps_streq_ci(name, "gbc") || lps_streq_ci(name, "gameboycolor"...
 static inline int launcher_console_is_gbc(const char* name) {
     return lps_streq_ci(name, "gbc") || lps_streq_ci(name, "gameboycolor") ||
            lps_streq_ci(name, "cgb");
@@ -170,12 +171,14 @@ static inline void launcher_profile_apply_gb_common(RecompLauncherCGameInfo* gi)
     // extended view); stock titles render the native 160x144.
 }
 
+// launcher profile apply gb: gi->theme = "gb"
 static inline void launcher_profile_apply_gb(RecompLauncherCGameInfo* gi) {
     gi->theme    = "gb";
     gi->platform = "GAME BOY";
     launcher_profile_apply_gb_common(gi);
 }
 
+// launcher profile apply gbc: gi->theme = "gbc"
 static inline void launcher_profile_apply_gbc(RecompLauncherCGameInfo* gi) {
     gi->theme    = "gbc";
     gi->platform = "GAME BOY COLOR";
