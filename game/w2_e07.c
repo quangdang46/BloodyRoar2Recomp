@@ -4,19 +4,6 @@
 extern CPUState *clean_cpu_state(void);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
-#define DB16(a) (*(uint16_t *)guest_at(a))
-/* swl_guest — unaligned word store: RMW of the aligned word,
- * byte lane selected by addr&3 (guest swl semantics). */
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
 #define at   cpu->gpr[1]
@@ -2195,8 +2182,6 @@ block_80184358:
 /* CPS piece-entry wrappers — each resumes the shared body at its
  * own block via cpu->pc (set by the CLEAN_ENT_CPS dispatch). */
 
-/* scriptop_wait_cps_80183964 — guest script-op entry 0x80183964: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_80183964(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2205,8 +2190,6 @@ uint32_t scriptop_wait_cps_80183964(void)
   return c->gpr[2];
 }
 
-/* scriptop_wait_cps_8018397c — guest script-op entry 0x8018397C: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_8018397c(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2215,8 +2198,6 @@ uint32_t scriptop_wait_cps_8018397c(void)
   return c->gpr[2];
 }
 
-/* scriptop_wait_cps_80183988 — guest script-op entry 0x80183988: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_80183988(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2225,8 +2206,6 @@ uint32_t scriptop_wait_cps_80183988(void)
   return c->gpr[2];
 }
 
-/* scriptop_wait_cps_80183a48 — guest script-op entry 0x80183A48: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_80183a48(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2235,8 +2214,6 @@ uint32_t scriptop_wait_cps_80183a48(void)
   return c->gpr[2];
 }
 
-/* scriptop_wait_cps_80183a74 — guest script-op entry 0x80183A74: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_80183a74(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2245,8 +2222,6 @@ uint32_t scriptop_wait_cps_80183a74(void)
   return c->gpr[2];
 }
 
-/* scriptop_wait_cps_80183aa4 — guest script-op entry 0x80183AA4: runs the
- * shared scriptop_wait_cps_body on live CPU state. */
 uint32_t scriptop_wait_cps_80183aa4(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2255,8 +2230,6 @@ uint32_t scriptop_wait_cps_80183aa4(void)
   return c->gpr[2];
 }
 
-/* scriptop_chk_cps_80183ce4 — guest script-op entry 0x80183CE4: runs the
- * shared scriptop_chk_cps_body on live CPU state. */
 uint32_t scriptop_chk_cps_80183ce4(void)
 {
   CPUState *c = clean_cpu_state();
@@ -2265,8 +2238,6 @@ uint32_t scriptop_chk_cps_80183ce4(void)
   return c->gpr[2];
 }
 
-/* scriptop_chk_cps_80183cf0 — guest script-op entry 0x80183CF0: runs the
- * shared scriptop_chk_cps_body on live CPU state. */
 uint32_t scriptop_chk_cps_80183cf0(void)
 {
   CPUState *c = clean_cpu_state();
