@@ -4314,8 +4314,9 @@ void cd_file_header_copy(uint32_t a0,void *a1)
   d[3] = (uint8_t)(v - (q << 4) + 0x30);
 }
 
-/* FUN_801a0260 / FUN_801a05f0 — SKIPPED: pure BIOS-call trampolines
- * (jr $t2=0xb0, t1=0x43 / t2=0xa0,t1=0xac then b0 entries). No body. */
+/* guest 0x801A0260 / 0x801A05F0 are pure BIOS-call trampolines
+ * (jr $t2=0xb0, t1=0x43 / t2=0xa0,t1=0xac) — ported as
+ * bios_tramp_b043 / bios_tramp_a0ac; call sites below use those. */
 
 /* cd_file_record_lookup — file-record lookup: copies tag bytes (<0x3b signed)
  * from a0 into buf @0x801fec48, scans 0x50-stride table
@@ -4443,8 +4444,9 @@ void cd_strcat_guard(void *a0,uintptr_t a1)
   }
 }
 
-/* FUN_801a05f0 — SKIPPED: BIOS trampoline cluster head
- * (jr $t2=0xa0 t1=0xac / jr $t2=0xb0 t1=0x4e / t1=0x50). */
+/* guest 0x801A05F0 cluster head — BIOS trampolines
+ * (jr $t2=0xa0 t1=0xac / jr $t2=0xb0 t1=0x4e / t1=0x50);
+ * 0x801A05F0 itself = bios_tramp_a0ac. */
 
 /* cd_chan_cmd_burst — channel command pump: 15 rounds building a 0x20-byte
  * request {0xa0,0,0xffff,0...} at 0x801fec70+i*0x20, copying it to the
