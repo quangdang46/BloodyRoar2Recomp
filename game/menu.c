@@ -7599,7 +7599,7 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
 
   uint32_t btns = MB16(rec + 0x68);
   uint32_t dirs = MB16(rec + 0x6c);
-  uint32_t v0, v1, idx, e;
+  uint32_t nv, sv, mode, doff;
   uint32_t dv[2];                              /* sp+0x10..0x17, u16 lanes */
   uint16_t *dvh;
   uint32_t *m;
@@ -7619,14 +7619,14 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
   }
   if (btns & 0x20) {
     /* signed mod-4 of (u16 @s1+0x76 + 1) into battle_field_set */
-    v0 = (uint32_t)MB16(cursor + 0x76) + 1u;
-    v1 = (uint32_t)(int32_t)(int16_t)(v0 << 16 >> 16);
-    MW16(cursor + 0x76,(uint16_t)v0);
+    nv = (uint32_t)MB16(cursor + 0x76) + 1u;
+    sv = (uint32_t)(int32_t)(int16_t)(nv << 16 >> 16);
+    MW16(cursor + 0x76,(uint16_t)nv);
     {
-      int32_t field_val = (int32_t)v1;
+      int32_t field_val = (int32_t)sv;
       if (field_val < 0) field_val += 3;
       field_val = field_val >> 2;                          /* sra */
-      field_val = (int32_t)v1 - (field_val << 2);
+      field_val = (int32_t)sv - (field_val << 2);
       field_val = (int32_t)(int16_t)(field_val << 16 >> 16);
       battle_field_set(cursor,field_val);
     }
@@ -7640,9 +7640,9 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
     gte_cw_d000_set((int32_t)MBS16(rec + 0x24),0);
   }
 
-  idx = (uint32_t)MB16(cursor + 0x76) & 0x7f;
-  if (idx >= 0x25) goto L_end;
-  switch (idx) {
+  mode = (uint32_t)MB16(cursor + 0x76) & 0x7f;
+  if (mode >= 0x25) goto L_end;
+  switch (mode) {
   case 0: case 1: goto L_case408;
   case 2:        goto L_case608;
   case 31:       goto L_case774;
@@ -7654,10 +7654,10 @@ void menu_step_b(uint32_t cursor,uint32_t unused_a,uint32_t unused_b,
 L_case408:                                     /* 0x8012f408 */
   if (btns & 2) {
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + e));
-    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + e + 4));
+    doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + doff));
+    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + doff + 4));
   }
   /* shared velocity block 0x8012f46c */
   dv[0] = dv[1] = 0;                            /* sp+0x10..0x17 = 0 */
@@ -7749,10 +7749,10 @@ L_case8e4:                                     /* 0x8012f8e4 */
     MW16(cursor + 0x5e,0);
     MW16(cursor + 0x5c,0);
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
-    e = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + e));
-    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + e + 2));
-    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + e + 4));
+    doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
+    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + doff));
+    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + doff + 4));
   }
   goto L_end;
 
