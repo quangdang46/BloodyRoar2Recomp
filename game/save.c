@@ -6793,7 +6793,7 @@ init:
 
     /* alloc tags 0x12,0x13,0x14 with spr_draw_off(heapB,0,0,0) */
     {
-      static const int32_t tg[3] = { 0x12, 0x13, 0x14 };
+      static const int32_t tg[3] = {0x12,0x13,0x14};
       for (i = 0; i < 3; i++) {
         heapB = g32(0x801e3cfc);
         sz = heap_alloc54(heapB, tbl, tg[i]);
