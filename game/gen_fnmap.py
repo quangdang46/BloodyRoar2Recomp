@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Generate game/fnmap.c: guest-address -> host-function table."""
 import re,glob
+# ---- load renames.map: canonical name -> guest addr ----
+# 'ren' is the most authoritative addr source (hand-curated).
 names={}   # name -> addr_hex
 addr_src={}  # name -> 'ren'|'enc'|'mark'  (source reliability for dedup)
 ren={}
@@ -10,6 +12,7 @@ try:
         if not line or line.startswith('#'): continue
         a,n=line.split(None,1); ren[n]='0x'+a
 except FileNotFoundError: pass
+# ---- scan every game/*.c for non-static function definitions ----
 for f in sorted(glob.glob('game/*.c')):
     if f.endswith(('bind.c','fnmap.c')): continue
     src=open(f).read()
@@ -46,7 +49,9 @@ for f in sorted(glob.glob('game/*.c')):
         # falling back to generated code. Keep them out of the map.
         if name.startswith('entry_0x'):
             continue
-        # determine guest addr: FUN_/LAB_ name, or @0x marker within 500 chars back
+        # ---- resolve the guest addr for this def ----
+        # Priority: FUN_/LAB_ name > _0x<addr> name suffix > renames.map >
+        # nearest @0x marker in the preceding ~600 chars of source.
         addr=None; src_kind='mark'
         fm=re.match(r'^(?:FUN_|LAB_)([0-9a-f]{8})$',name)
         if fm: addr=fm.group(1); src_kind='enc'
@@ -67,7 +72,8 @@ for f in sorted(glob.glob('game/*.c')):
         if name in names and names[name]!=addr:
             print("CONFLICT",name,names[name],addr,f); continue
         names[name]=addr; addr_src[name]=src_kind
-# Dedup by guest addr: two clean names can resolve to the same addr (an
+# ---- dedup by guest addr ----
+# Two clean names can resolve to the same addr (an
 # internal helper/impl picks up a stray @0x<addr> doc marker that belongs to
 # a different function — e.g. ev_step/print_mode_dispatch vs the renames.map
 # guest-ABI wrappers). fn_table is keyed by addr for binary-search lookup, so
@@ -88,6 +94,7 @@ for a,ns in by_addr.items():
             print("DEDUP addr",a,"keep",best,"drop",n,"src",addr_src.get(n))
 for n in drop:
     del names[n]; addr_src.pop(n,None)
+# ---- emit fnmap.c ----
 out=['''/* Auto-generated guest-code-address -> host-function map.
  * Regenerate: scan src/*.c for non-static FUN_/LAB_ defs and @0x
  * marker defs (excludes bind.c weak stubs). Do not edit by hand. */

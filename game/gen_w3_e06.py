@@ -25,12 +25,6 @@ def emit(sym_host, guest_anchor, name, comment):
     body = extract('br2eu_psx_alias_body_' + sym_host)
     core = G._GPR_RE.sub(G._gpr_names, G.transform(body))
     core = core.replace('switch (entry)', 'switch (_sel)')
-    # capture the dispatched addr (entry on first dispatch, continuation on
-    # resume) before the body consumes cpu->pc.
-    core = core.replace(
-        '  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n',
-        '  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n'
-        '  uint32_t _sel = cpu->pc;\n', 1) if False else core
     out = []
     out.append(f'\n/* {name} — clean CPS transliteration of the overlapping-alias\n'
                f' * body br2eu_psx_alias_body_{sym_host} (host {guest_anchor}),\n'
