@@ -3182,7 +3182,7 @@ extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 int32_t select_screen_tick(int32_t entry_mode)
 {
   uint8_t next_state;
-  int32_t iVar3, iVar4, draw_slot, pkv;
+  int32_t draw_slot, pkv;
   uint32_t pidx_b;
   uint8_t *rec;
   uint32_t *spr_tab;
@@ -3460,8 +3460,10 @@ LAB_80150558:
             }
           } else {
             int32_t yc = ((int16_t)_DAT_1f800022 * 3) / 5;
-            int32_t ply_a = iVar4;
-            int32_t ply_b = iVar3;
+            /* guest caches the two select-row indices in $s6/$fp at
+             * 0x8014F8B0 (s7+0x1c / s7+0x4c == local_a8[3] / local_94[10]) */
+            int32_t ply_a = row_a;
+            int32_t ply_b = row_b;
             uint32_t pkw;
             if (local_34 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[ply_a * 2]),
