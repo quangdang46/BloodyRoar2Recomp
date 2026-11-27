@@ -2737,8 +2737,13 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
   uint8_t *cmd = (uint8_t *)guest_at(fr);
   uint8_t *resp = (uint8_t *)guest_at(fr + 8);
   uint8_t *out = (uint8_t *)guest_at(a1);
-  uint32_t s6, s0, s3, s2, dbg, i;
-  uint8_t *s1p;
+  uint32_t s6, s0, s3, dbg, i;
+  /* s2 is guest $s2 (count, =1/++ in loop): on the s3<s0 early-out the
+   * guest reads the caller's incoming s2. s1p is guest $s1: its stale
+   * value there is the sp+24 arg pointer from the mc_session setup
+   * (entry_sp-0x28 = fr-0x18 after the 0x10 reserve). */
+  uint32_t s2 = clean_cpu_state()->gpr[18];
+  uint8_t *s1p = (uint8_t *)guest_at(fr - 0x18);
   (void)a0;
   cmd[0] = 1;
   s6 = mc_session(0);
@@ -3266,7 +3271,10 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
   uint32_t *blk = (uint32_t *)guest_at(fr + 0x10);   /* sp+0x10: 0x20 job blk */
   uint32_t *rec = (uint32_t *)guest_at(fr + 0x30);   /* sp+0x30: 0x28 record  */
   uint32_t err = 0;
-  uint32_t s0, s1, s2, s4, s5;
+  /* s5 is guest $s5 (record count -> *a3): on the fp+lim<=0 early-out
+   * the guest reads the caller's incoming s5. */
+  uint32_t s5 = clean_cpu_state()->gpr[21];
+  uint32_t s0, s1, s2, s4;
   uint32_t fp = a4, lim = a5;
   uintptr_t a1v;
   uint32_t st0;

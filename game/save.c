@@ -668,7 +668,11 @@ int memcard_file_flow(int a0)
   uint8_t *str_arg;
   char *fmt_str;
   int dlg_type;
-  int op_rc;
+  /* op_rc is guest $s2: each mc_* result is moved v0->s2 and the
+   * op_rc==2 fixup writes s2 directly; on the no-matching-dlg_type
+   * path the guest reads the caller's incoming s2, so seed likewise. */
+  extern CPUState *clean_cpu_state(void);
+  int op_rc = (int)clean_cpu_state()->gpr[18];
   int slot_no;
   uint32_t ow_flag;
   uint32_t sm_state;
@@ -718,8 +722,11 @@ int memcard_file_flow(int a0)
 #define local_a2 (*(uint16_t *)&step_desc[0x1e])
 #define local_a0 (*(uint16_t *)&step_desc[0x20])
 #define local_9e (*(uint16_t *)&step_desc[0x22])
+  /* op_sel is guest $sp+0xC0 (sw 0/0x10 @0x8015FD6C/74, lw -> a0 before
+   * jal 0x8016809C): only written on the slot_no 0/1 path, so back it
+   * with the mff frame (sp+0xC0 -> frm+0xC8) like the other slots. */
+#define op_sel    (*(uint32_t *)guest_at(mff_frm + 0xc8))
   char *msg_buf;   /* guest-backed staging buffer: $sp+0x80, frame -0xf8 */
-  uint32_t op_sel;
   int sm_ret;
   int wait_cnt;
   char *msg_arg;
@@ -1185,6 +1192,7 @@ bb_80160558:
 #undef local_a2
 #undef local_a0
 #undef local_9e
+#undef op_sel
 
 /* ======== 0x80156ff0 ======== */
 
@@ -7445,7 +7453,12 @@ void slot_action_dump(uint32_t a0)
   int16_t f82 = *(int16_t *)guest_at(0x1f800082);
   int32_t acc = 0;                            /* sp18: running total */
   int32_t streak = 0;                             /* scaled-path streak */
-  int32_t i, val5, val3;
+  int32_t i;
+  /* val5/val3 are guest $s0/$s1 (bne @0x80181934, print args @0x8018195C):
+   * paths that skip the record-field loads read the caller's s-regs. */
+  extern CPUState *clean_cpu_state(void);
+  int32_t val5 = (int32_t)clean_cpu_state()->gpr[16];
+  int32_t val3 = (int32_t)clean_cpu_state()->gpr[17];
   int16_t *rec;
 
   /* ---- prologue counters ---- */

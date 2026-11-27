@@ -1653,7 +1653,11 @@ struct match_stepper_desc {
 void match_loop(void)
 {
     int ret;
-    int attract_timer;
+    /* attract_timer is guest $s2: written only by the state-0 arm (=300)
+     * and decremented in match_end_poll; seed from the incoming register
+     * so a direct state-1 entry reads the caller's s2 like the guest. */
+    extern CPUState *clean_cpu_state(void);
+    int attract_timer = (int)clean_cpu_state()->gpr[18];
     struct match_stepper_desc sd;
     /* Guest: attract_stage_load_step writes 4 contiguous words at
      * sp+0x68..0x77 (a1 = sp+0x68); spr_draw_pair then loads

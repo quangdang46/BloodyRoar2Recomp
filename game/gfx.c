@@ -1484,10 +1484,13 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   uint8_t c1, c2;
   char dig;
   int pfx, lng, sht, alt;
-  uint32_t v, base, flags, quo;
+  uint32_t v, base = 10, flags, quo;
   uint32_t *apn, *ap;
-  char *txt;
-  uint32_t *need, *fldw, *left;
+  /* txt/left/base are only read by the emit_kind 1/2 tails, and every
+   * spec case that sets emit_kind 1/2 also sets them — the warnings are
+   * dead-path false positives; init anyway for -Wconditional-uninit. */
+  char *txt = 0;
+  uint32_t *need, *fldw, *left = 0;
   const uint8_t *fp;
   int32_t sign;
   intptr_t count, prec, zpad, width;
@@ -2020,26 +2023,29 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src, uint32_t mode, uint32_t arg3,
                       uint32_t x, uint32_t y, uint32_t v,
                       uint32_t h)
 {
-  int16_t rect[4];
-  int16_t dim;                          /* guest leaves +0x14 uninit for
-                                         * mode > 2 / negative mode */
+  int16_t *gr;
+  uint32_t frm;
   int32_t mode_i = (int32_t)mode;
   int32_t v_i = (int32_t)v;
 
-  rect[0] = (int16_t)x;
-  rect[1] = (int16_t)y;
-  rect[3] = (int16_t)h;
+  /* Guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
+   * +0x14 is only stored for mode 0..2 — other modes leave the guest
+   * stack slot stale, so write the fields individually into the
+   * reserved frame instead of memcpy'ing a host-local dim. */
+  frm = br2_guest_frame(0x30);
+  gr = (int16_t *)guest_at(frm + 0x10);
+  gr[0] = (int16_t)x;
+  gr[1] = (int16_t)y;
+  gr[3] = (int16_t)h;
   if (mode_i == 1) {
-    dim = (int16_t)(v_i / 2);
-  } else if (mode_i < 2) {
-    if (mode_i == 0) dim = (int16_t)(v_i / 4);
+    gr[2] = (int16_t)(v_i / 2);
+  } else if (mode_i == 0) {
+    gr[2] = (int16_t)(v_i / 4);
   } else if (mode_i == 2) {
-    dim = (int16_t)v_i;
+    gr[2] = (int16_t)v_i;
   }
-  rect[2] = dim;
-  /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
-   * reserved frame staging, see spr_draw_off. */
-  spr_rect_frame_emit(rect, src, 0x30);
+  gpu_load_image_cmd(frm + 0x10, src);
+  br2_guest_frame_free();
   return gpu_bits_pack_a(mode, arg3, x, y) & 0xffff;
 }
 
