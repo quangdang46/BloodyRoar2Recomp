@@ -120,7 +120,6 @@ static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
     uint32_t *t = GPU_TBL();
     return gpu_invoke(t[off >> 2], a0, a1, a2, a3);
 }
-#define GPU_ADDR(p) guest_of((const void *)(uintptr_t)(p))
 /* PSX callers hand gpu_load_image_cmd a stack RECT (x,y,w,h s16 x4); the
  * port has no guest stack, so stage the 8-int8_t rect in the arg-build
  * area below the guest stack pointer (o32 sp-0x10..sp-1) — scratchpad
@@ -138,15 +137,12 @@ static void gpu_dbg(const char *fmt, ...)
 }
 #define GPU_DBG(...) gpu_dbg(__VA_ARGS__)
 
-/* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a);
- * GPP = guest_at(a) as u32*; GPTRW = *(u32*)guest_at(GP32(a)) (double-deref). */
+/* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a). */
 #define GP32(a)   (*(uint32_t *)guest_at(a))
 #define GP8(a)    (*(uint8_t  *)guest_at(a))
 #define GP16(a)   (*(uint16_t *)guest_at(a))
 #define GP32S(a)  (*(int32_t  *)guest_at(a))
 #define GP16S(a)  (*(int16_t  *)guest_at(a))
-#define GPP(a)    ((uint32_t *)guest_at(a))
-#define GPTRW(a)  (*(uint32_t *)guest_at(GP32(a)))
 
 /* ======== 0x8018bd50 ======== */
 
