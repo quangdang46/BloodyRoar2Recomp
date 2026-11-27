@@ -3236,79 +3236,80 @@ int32_t select_screen_tick(int32_t entry_mode)
       fighter_spawn_setup(0x1f800000,local_40,local_3c,arg_blk,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
-        uVar8 = 0;
+        uint32_t side = 0;
         rec = player_recs;
         do {
-          iVar4 = *(int32_t *)(rec + 0x24);
-          if (iVar4 == 1) {
+          int32_t st = *(int32_t *)(rec + 0x24), thr, ocur;
+          if (st == 1) {
             if (*(int32_t *)(rec + 0x10) == 0) {
               if (*(int32_t *)(rec + 0x2c) == 0) {
-                if (local_a8[(uVar8 ^ 1) * 0xc] == 0) {
-                  iVar4 = local_94[(uVar8 ^ 1) * 0xc];
+                if (local_a8[(side ^ 1) * 0xc] == 0) {
+                  thr = local_94[(side ^ 1) * 0xc];
                   goto L_promote_chk;
                 }
-                if (local_a8[(uVar8 ^ 1) * 0xc] == 1) {
+                if (local_a8[(side ^ 1) * 0xc] == 1) {
                   *(uint32_t *)(rec + 0x24) = 2;
                 }
               }
             }
             else if (*(int32_t *)(rec + 0x10) == 1) {
-              iVar4 = local_94[(uVar8 ^ 1) * 0xc];
+              thr = local_94[(side ^ 1) * 0xc];
 L_promote_chk:
-              if (0 < iVar4) *(uint32_t *)(rec + 0x24) = 2;
+              if (0 < thr) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
-          else if (iVar4 < 2) {
-            if (iVar4 == 0 && local_2c != 0) {
-              iVar4 = *(int32_t *)(rec + 0x1c);
+          else if (st < 2) {
+            if (st == 0 && local_2c != 0) {
+              ocur = *(int32_t *)(rec + 0x1c);
+              uint32_t cur;
               if ((*(uint32_t *)(rec + 8) & 0x1000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(iVar4,0);
-                *(uint32_t *)(rec + 0x1c) = uVar5;
+                cur = (uint32_t)select_cursor_step(ocur,0);
+                *(uint32_t *)(rec + 0x1c) = cur;
               }
               if ((*(uint32_t *)(rec + 8) & 0x2000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
-                *(uint32_t *)(rec + 0x1c) = uVar5;
+                cur = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),1);
+                *(uint32_t *)(rec + 0x1c) = cur;
               }
               if ((*(uint32_t *)(rec + 8) & 0x4000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
-                *(uint32_t *)(rec + 0x1c) = uVar5;
+                cur = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),2);
+                *(uint32_t *)(rec + 0x1c) = cur;
               }
               if ((*(uint32_t *)(rec + 8) & 0x8000) != 0) {
-                uVar5 = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
-                *(uint32_t *)(rec + 0x1c) = uVar5;
+                cur = (uint32_t)select_cursor_step(*(int32_t *)(rec + 0x1c),3);
+                *(uint32_t *)(rec + 0x1c) = cur;
               }
-              iVar3 = *(int32_t *)(rec + 0x1c);
-              if (iVar3 < 0) { *(uint32_t *)(rec + 0x1c) = 0; iVar3 = 0; }
-              if (10 < iVar3) *(uint32_t *)(rec + 0x1c) = 10;
-              if (*(int32_t *)(rec + 0x1c) != iVar4) deferred_cmd_post(0x400,0x40,0);
+              int32_t ccur = *(int32_t *)(rec + 0x1c);
+              if (ccur < 0) { *(uint32_t *)(rec + 0x1c) = 0; ccur = 0; }
+              if (10 < ccur) *(uint32_t *)(rec + 0x1c) = 10;
+              if (*(int32_t *)(rec + 0x1c) != ocur) deferred_cmd_post(0x400,0x40,0);
               if (((*(uint32_t *)(rec + 8) & 0xe0) != 0) ||
                   (((*(uint32_t *)(rec + 8) & 0x800) != 0 &&
                     ((*(uint32_t *)(_g_system_config_ptr + 0x50) >>
                       (*(uint32_t *)(rec + 0x1c) & 0x1f) & 1) != 0)))) {
-                select_confirm_handler(0x1f800000,uVar8,rec,*(uint32_t *)(rec + 8),1);
+                select_confirm_handler(0x1f800000,side,rec,*(uint32_t *)(rec + 8),1);
                 *(uint32_t *)(rec + 0x24) = 1;
                 deferred_cmd_post(0x400,0x41,0);
                 *(uint32_t *)(rec + 0x2c) = 8;
               }
             }
           }
-          else if (iVar4 == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
+          else if (st == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
             DAT_1f800001 = 0xf0;
           }
           rec += 0x30;
-          uVar8++;
-        } while ((int32_t)uVar8 < 2);
+          side++;
+        } while ((int32_t)side < 2);
         if ((DAT_1f80009b != 0) && (entry_mode != 2)) {
-          iVar4 = 0;
+          int32_t k = 0;
           rec = player_recs;
           do {
             if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
             if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
             if (9 < local_c8) local_c8 = 0;
             if (local_c8 < 0) local_c8 = 9;
-            iVar4++;
+            k++;
             rec += 0x30;
-          } while (iVar4 < 2);
+          } while (k < 2);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120688),0xd8,0x88,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120690),0xd0,0x98,4);
           {
