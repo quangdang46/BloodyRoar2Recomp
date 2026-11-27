@@ -7251,8 +7251,13 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
    * local_30/local_2c/local_28. */
   int delta [3];
   int ndir [3];
-  undefined4 step_a;
-  undefined4 step_b;
+  /* Guest frame 0x50: the packed step pair lives at sp+0x30..0x37 as
+   * halfwords — dc@0x30, dy@0x32 (together = step_a), dz@0x34, and the
+   * high half of step_b @0x36 is never written, so it stays whatever
+   * the guest stack held. Only the len>=step path stores the halves;
+   * the len<step path copies the frame slots verbatim. */
+  uint32_t vst_frm = br2_guest_frame(0x50);
+  uint16_t *stp_h = (uint16_t *)guest_at(vst_frm + 0x30);
   delta[0] = (int)*dst - (int)*pos;
   delta[1] = (int)dst[1] - (int)pos[1];
   delta[2] = (int)dst[2] - (int)pos[2];
@@ -7270,15 +7275,17 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
   else {
     dc = (short)(ndir[0] * step >> 0xc);
     *pos = *pos + dc;
+    stp_h[0] = (uint16_t)dc;
     dy = (short)(ndir[1] * step >> 0xc);
-    step_a = CONCAT22(dy,dc);
+    stp_h[1] = (uint16_t)dy;
     pos[1] = pos[1] + dy;
     dc = (short)(ndir[2] * step >> 0xc);
-    step_b = CONCAT22((step_b >> 16),dc);
+    stp_h[2] = (uint16_t)dc;
     pos[2] = pos[2] + dc;
   }
-  *out = step_a;
-  out[1] = step_b;
+  *out = ((uint32_t)stp_h[1] << 16) | stp_h[0];
+  out[1] = ((uint32_t)stp_h[3] << 16) | stp_h[2];
+  br2_guest_frame_free();
   return out;
 
 }
@@ -7298,39 +7305,48 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
    * local_28/local_24/local_20. */
   int delta [3];
   int ndir [3] = {0, 0, 0};
-  undefined4 res_a;
-  undefined4 res_b;
+  /* Guest frame 0x48: the packed result lives at sp+0x30..0x37 as
+   * halfwords — rx@0x30, ry@0x32 (together = res_a), rz@0x34, and the
+   * high half of res_b @0x36 is never written, so it stays whatever
+   * the guest stack held. The t==0 path stores zero to 0x30/0x32/0x34
+   * only; the else path stores all three components then applies the
+   * three single-half fixups. */
+  uint32_t spd_frm = br2_guest_frame(0x48);
+  uint16_t *rs_h = (uint16_t *)guest_at(spd_frm + 0x30);
   delta[0] = (int)*dst - (int)*pos;
   delta[1] = (int)dst[1] - (int)pos[1];
   delta[2] = (int)dst[2] - (int)pos[2];
   t = FUN_80194630((undefined4 *)delta,(undefined4 *)ndir);
   if (t == 0) {
-    res_b = (uint)(res_b >> 16) << 0x10;
-    res_a = 0;
+    rs_h[0] = 0;
+    rs_h[1] = 0;
+    rs_h[2] = 0;
   }
   else {
     t = FUN_80194500((uint)t);
     sh = (spd + 0xc) * 0x10000 >> 0x10;
     rx = ndir[0] * t >> (sh & 0x1f);
     ry = (undefined2)(ndir[1] * t >> (sh & 0x1f));
-    res_a = CONCAT22(ry,(short)rx);
     rz = (short)(ndir[2] * t >> (sh & 0x1f));
-    res_b = CONCAT22((res_b >> 16),rz);
+    rs_h[0] = (uint16_t)rx;
+    rs_h[1] = ry;
+    rs_h[2] = (uint16_t)rz;
     if (((rx & 0xffff) == 0) && (ndir[0] != 0)) {
-      res_a = CONCAT22(ry,1);
+      rs_h[0] = 1;
     }
-    if (((res_a >> 16) == 0) && (ndir[1] != 0)) {
-      res_a = CONCAT22(1,(short)res_a);
+    if ((rs_h[1] == 0) && (ndir[1] != 0)) {
+      rs_h[1] = 1;
     }
     if ((rz == 0) && (ndir[2] != 0)) {
-      res_b = CONCAT22((res_b >> 16),1);
+      rs_h[2] = 1;
     }
-    *pos = *pos + (short)res_a;
-    pos[1] = pos[1] + (res_a >> 16);
-    pos[2] = pos[2] + (short)res_b;
+    *pos = *pos + (int16_t)rs_h[0];
+    pos[1] = pos[1] + rs_h[1];
+    pos[2] = pos[2] + (int16_t)rs_h[2];
   }
-  *out = res_a;
-  out[1] = res_b;
+  *out = ((uint32_t)rs_h[1] << 16) | rs_h[0];
+  out[1] = ((uint32_t)rs_h[3] << 16) | rs_h[2];
+  br2_guest_frame_free();
   return out;
 
 }
@@ -15010,7 +15026,9 @@ void tween_apply(short *seq,int v0,int v1)
   /* phase is guest $t4 (slti 3 @0x801A9CF8/0x801A9D10, =2 @0x801A9D14):
    * the t==v0 path reads it before any write, i.e. the caller's $t4. */
   uint phase = br2_gpr(12);
-  int dir;
+  /* dir is guest $t6 (li 1/-1 @0x801A9C88/0x801A9CC8): the phase==1
+   * apply path reads it without a write this call, i.e. caller's $t6. */
+  int dir = (int)br2_gpr(14);
   short v1s;
   int unaff_gp = (int)guest_gp();
   /* acc is guest $sp+0x18..0x27 (frame 0x30): acc[phase] is indexed by
