@@ -90,7 +90,7 @@ _UNAL_T_RE = re.compile(
 # cpu->pc = <entry> through clean_try_dispatch.
 _ALIAS_CALL_RE = re.compile(
     r'\bbr2eu_psx_alias_body_[0-9a-fA-F]{8}\s*\(\s*cpu\s*,\s*'
-    r'0x([0-9a-fA-F]+)u?\s*\)')
+    r'0x([0-9a-fA-F]+)u?\s*\)\s*;?')
 
 
 # COP2 lwc2: psx_cyc_lwc2_read(cpu, addr) is a 32-bit GTE load == cpu->read_word
