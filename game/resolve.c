@@ -3266,7 +3266,7 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
       } else {
         /* Opcodes >=24 dispatch through the guest handler table; try the
          * clean-room port first (call_guest4 -> clean_try_dispatch), with
-         * the same generated fallback br2_call_generated used. */
+         * call_guest4's own generated fallback. */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
               npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
         ret = npc_g ? (byte *)guest_at(npc_g) : (byte *)0;
