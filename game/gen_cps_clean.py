@@ -158,6 +158,7 @@ def unwrap_pgx_group(text):
 
 
 def _sub_loads(s):
+    """Rewrite generated load ops to br2_*/cpst_* accessor calls."""
     if not TIMING:
         s = _LOAD_RE.sub(lambda m: f'{_LOAD_RD[m.group(1)]}({m.group(2).strip()})', s)
         s = _LWC2_RE.sub(lambda m: f'cpu->read_word({m.group(1).strip()})', s)
@@ -303,6 +304,7 @@ def _truncate_embedded_entry(body, entry):
 
 
 def transform(body):
+    """Transform one generated function body into clean CPS C."""
     out = []
     lines = body.split('\n')
     i, n = 0, len(lines)
@@ -492,9 +494,11 @@ GPR_NAMES = ['zero','at','v0','v1','a0','a1','a2','a3','t0','t1','t2','t3','t4',
 _GPR_RE = re.compile(r'cpu->gpr\[(\d+)\]')
 
 def _gpr_names(m):
+    """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
 
 def emit_fn(addr):
+    """Emit the clean-C wrapper for one guest function address."""
     found = find_body(addr)
     if not found:
         print(f'/* {addr:#x}: no generated body found */', file=sys.stderr)

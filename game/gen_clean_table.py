@@ -122,6 +122,7 @@ def clean_frame(addr):
     return 0x10000 - imm
 
 def clean_cost(addr):
+    """Estimated clean-C cycle cost for a guest function (instruction+memory)."""
     s = fn_size.get(addr)
     if not s:
         return 8  # tiny default for thunks/aliases with no emitted body
@@ -248,6 +249,7 @@ BAD_RET = re.compile(r'\b(void|int|uint32_t|int32_t|uint16_t|int16_t|uint8_t|int
                      r'byte|ushort|short|char|bool|undefined\d?|uint|s32|u32|s16|u16|s8|u8)\b')
 
 def ret_kind(ret):
+    """Classify a guest prototype return type for the wrapper signature."""
     r = ret.strip()
     if re.fullmatch(r'BR2_WEAK_UINT32_\d+', r): return 'u32'
     if r == 'void' or r.endswith(' void'): return 'void'

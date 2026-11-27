@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+"""Generate game/fnmap.c: guest-address -> host-function table."""
 import re,glob
 names={}   # name -> addr_hex
 addr_src={}  # name -> 'ren'|'enc'|'mark'  (source reliability for dedup)
