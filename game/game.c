@@ -1078,6 +1078,91 @@ b638:
       return c->gpr[2]; }
 }
 
+/* cd_chan_attr_issue_cps — guest 0x8015607c (renames: cd_chan_attr_issue),
+ * the caller-scaled sibling of menu.c's gauge_scale_fixed: consumes the
+ * multiply results a preceding guest `mult` left in a0/v0/v1/hi,
+ *   a1 = (a0 >> 5) - (v1 >> 31)     signed scale, +1 when v1 was neg
+ *   v1 = (hi >> 5) - (v0 >> 31)     same correction on the hi lane
+ * clamps a1 <= 0x3fff and v1 <= 0x7fff, fills the scratchpad command
+ * struct at 0x801f2690 {u32 0x2c3, u16 a1 @+4/+6, u16 v1 @+0x10/+0x12,
+ * u32 1 @+0x18} and tail-jals cd_chan_attr_apply(0x801f2690).
+ * 6-block CPS coroutine (clean_cps.map: entry + 5 continuation addrs). */
+uint32_t cd_chan_attr_issue_cps(void)
+{
+    extern CPUState *clean_cpu_state(void);
+    extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+    extern void     br2_st16(uint32_t a, uint16_t v);
+    extern void     br2_st32(uint32_t a, uint32_t v);
+    extern uint32_t br2_ld32(uint32_t a);
+    CPUState *c = clean_cpu_state();
+    uint32_t pc;
+    if (!c) return 0;
+    pc = c->pc;
+    if (pc != 0u && pc != 0x8015607cu) {
+        switch (pc) {
+        case 0x801560A8u: goto bA8;
+        case 0x801560ACu: goto bAC;
+        case 0x801560BCu: goto bBC;
+        case 0x801560C0u: goto bC0;
+        case 0x801560E8u: goto bE8;
+        default: break;
+        }
+    }
+
+    /* block_8015607C — 0x18 guest frame, scale + sign-correct */
+    c->gpr[29] = c->gpr[29] - 24u;                  /* sp -= 0x18 */
+    c->gpr[3]  = (uint32_t)((int32_t)c->gpr[3] >> 31);
+    c->gpr[4]  = (uint32_t)((int32_t)c->gpr[4] >> 5);
+    c->gpr[5]  = c->gpr[4] - c->gpr[3];             /* a1 = a0' - v1' */
+    c->gpr[2]  = (uint32_t)((int32_t)c->gpr[2] >> 31);
+    c->gpr[6]  = c->hi;                             /* a2 = pending hi */
+    psx_muldiv_stall(c);
+    c->gpr[3]  = (uint32_t)((int32_t)c->gpr[6] >> 5);
+    c->gpr[3]  = c->gpr[3] - c->gpr[2];             /* v1 = hi' - v0' */
+    { int _bc = ((int32_t)c->gpr[5] < 16384);
+      br2_st32(c->gpr[29] + 16u, c->gpr[31]);       /* delay: save ra */
+      psx_check_interrupts_at(c, _bc ? 0x801560ACu : 0x801560A8u);
+      if (_bc) goto bAC; else goto bA8; }
+
+bA8:
+    c->gpr[5] = 16383u;                             /* a1 clamp hi */
+    /* fall through */
+
+bAC:
+    c->gpr[2] = 32767u;
+    { int _bc = !((int32_t)c->gpr[2] < (int32_t)c->gpr[3]);
+      c->gpr[4] = 0x801F0000u;                      /* delay: a0 = base */
+      psx_check_interrupts_at(c, _bc ? 0x801560C0u : 0x801560BCu);
+      if (_bc) goto bC0; else goto bBC; }
+
+bBC:
+    c->gpr[3] = 32767u;                             /* v1 clamp hi */
+    /* fall through */
+
+bC0:
+    c->gpr[2] = 707u;                               /* cmd 0x2c3 */
+    br2_st32(c->gpr[4] + 9872u, c->gpr[2]);         /* [0x801F2690] = 0x2c3 */
+    c->gpr[4] = c->gpr[4] + 9872u;                  /* a0 = 0x801F2690 */
+    c->gpr[2] = 1u;
+    br2_st16(c->gpr[4] + 6u,  (uint16_t)c->gpr[5]);
+    br2_st16(c->gpr[4] + 4u,  (uint16_t)c->gpr[5]);
+    br2_st16(c->gpr[4] + 18u, (uint16_t)c->gpr[3]);
+    br2_st16(c->gpr[4] + 16u, (uint16_t)c->gpr[3]);
+    c->gpr[31] = 0x801560E8u;                       /* jal link */
+    br2_st32(c->gpr[4] + 24u, c->gpr[2]);           /* delay: [base+0x18] = 1 */
+    psx_check_interrupts_at(c, 0x8019D5F0u);
+    c->pc = 0x8019D5F0u;                            /* jal cd_chan_attr_apply */
+    return c->gpr[2];
+
+bE8:
+    c->gpr[31] = br2_ld32(c->gpr[29] + 16u);        /* restore ra */
+    { uint32_t _jt = c->gpr[31];                    /* jr ra */
+      c->gpr[29] = c->gpr[29] + 24u;                /* delay: sp += 0x18 */
+      psx_check_interrupts_at(c, _jt);
+      c->pc = _jt;
+      return c->gpr[2]; }
+}
+
 /* small frame/console helpers */
 void cd_channel_init_seq(void)
 {

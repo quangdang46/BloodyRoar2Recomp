@@ -15877,28 +15877,28 @@ extern void gauge_scale_fixed(int16_t gw,int16_t gh);
     gauge_scale_fixed(((int16_t)cpu->gpr[4]), ((int16_t)cpu->gpr[5]));
 }
 static void wrap_8015607c(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560a8(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560ac(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560bc(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560c0(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560e8(CPUState *cpu) {
-extern void cps_8015607c(void);
-    cps_8015607c();
+extern uint32_t cd_chan_attr_issue_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_chan_attr_issue_cps());
 }
 static void wrap_801560f8(CPUState *cpu) {
 extern uint32_t match_mode_set(int mode);
