@@ -568,6 +568,7 @@ int32_t action_resolve(byte *ctrl, byte *motion)
                   f68 = f58 & 0x2800;
                   if (f68 == 0x800) {
 combo_eval_2800:
+LAB_8017788c:
                     if ((f58 & 0x4000) == 0) {
                       if ((((*(ushort *)(ctrl + 0x7c) & 0x800) != 0) &&
                           ((f60 & 0x1000000) == 0)) &&
@@ -578,6 +579,7 @@ combo_eval_2800:
                         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 1;
                       }
 combo_flag_4000:
+LAB_80177940:
                       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) | 0x4000;
                     }
                   }
@@ -761,6 +763,7 @@ combo_flag_4000:
                 }
                 if ((*(ushort *)(ctrl + 0x7a) & 0xf0e0) == 0) {
 read_c0_value:
+LAB_8017764c:
                   sv = *(short *)(ctrl + 0xc0);
                 }
                 else {
@@ -816,6 +819,7 @@ read_c0_value:
 range_recheck:
                     if (*(short *)(ctrl + 0x94) + -0x100 <=
                         *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178)) goto act_8a_assign;
+LAB_801770c0:
                     act = 0x4c;
                     if (*(short *)(ctrl + 0x96) == 0x800) {
                       act = 0x4b;
@@ -834,9 +838,9 @@ range_recheck:
                 }
                 if (t2 < 0x400) goto post_pick_tail;
               }
-              if (((f5c & 0x1000000) != 0) &&
                  (act = 0x8a, *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178) < -0x100)) {
 act_62_pick:
+LAB_801772c8:
                 act = 0x62;
                 if (*(short *)(ctrl + 0x96) == 0x800) {
                   act = 0x61;
@@ -868,6 +872,7 @@ act_62_pick:
                   goto act_62_pick;
                 }
 act_8a_assign:
+LAB_801772e0:
                 act = 0x8a;
               }
               else {
@@ -891,6 +896,7 @@ act_8a_assign:
               }
             }
 post_pick_tail:
+LAB_801772ec:
             if (((ba & 0xc0) == 0xc0) && (*(short *)(ctrl + 0xcc) == 0)) {
               ctrl[0xc0] = 0;
               ctrl[0xc1] = 0;
@@ -933,6 +939,7 @@ post_pick_tail:
                 }
                 *(short *)(ctrl + 0xb2) = *(short *)(ctrl + 0xb2) + sv;
 clear_98_99:
+LAB_80177350:
                 ctrl[0x98] = 0;
                 ctrl[0x99] = 0;
               }
@@ -945,6 +952,7 @@ clear_98_99:
       else if ((int)f58 < 0) {
         f68 = *(uint *)(ctrl + 0x5c) & 0xfdfffffb;
 ack_request:
+LAB_80177a7c:
         *(uint *)(ctrl + 0x5c) = f68 | 1;
       }
       else {
@@ -1015,6 +1023,7 @@ ack_request:
           f58 = *(uint *)(ctrl + 0x5c) | 1;
           t2 = act;
 commit_f58_return:
+LAB_80176f0c:
           *(uint *)(ctrl + 0x5c) = f58;
           return t2;
         }
@@ -1037,9 +1046,8 @@ commit_f58_return:
       if (((((f58 & 0x40000) != 0) || ((f58 & 0x40) != 0)) || ((f58 & 0x8000) != 0)) ||
          (((f58 & 0x80080000) == 0x80000 || ((f58 & 0x1000000) != 0)))) goto act_return;
       if ((int)f58 < 0) {
-        if (cancel) {
-          if (((*(ushort *)(ctrl + 0x80) & 0xe8) == 0xe0) && ((ctrl[5] & 0x10) == 0)) {
 pending_hit_clear:
+LAB_8017857c:
             pending_hit_a_clear(ctrl);
             hit_chain_clear(ctrl);
             if (*(short *)(ctrl + 0xd6) < 0x1e00) {
@@ -1302,20 +1310,15 @@ pending_hit_clear:
         }
         if (((*(ushort *)(ctrl + 0x80) & 0x20) != 0) && ((ctrl[5] & 0x10) == 0))
         goto pending_hit_clear;
-        goto act_return;
       }
       if ((f58 & 0x400000) != 0) goto act_return;
-      if ((*(uint *)(motion_p + 0x30) & 0x20000) == 0) {
-        if ((*(uint *)(motion_p + 0x30) & 0x40000) == 0) {
-          if ((*(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x178) < (int)*(short *)(motion_p + 0x38)) &&
              ((f58 & 0x800) != 0)) goto motion34_fetch;
-        }
         else if ((f58 & 0x2800) == 0x2000) goto motion34_clear;
-      }
-      else if ((f58 & 0x2800) == 0) {
 motion34_fetch:
         act2 = (int)*(short *)(motion_p + 0x34);
 motion34_clear:
+LAB_80178118:
+LAB_80178120:
         *(undefined2 *)(motion_p + 0x34) = 0xffff;
       }
       f58 = f58 & 0x2800;
@@ -1331,6 +1334,7 @@ motion34_clear:
       /* attack/cancel selection tail: act2<0 keeps act, else
        * returns act2+0x90 (extended action range). */
 act_return:
+LAB_8017862c:
       if (act2 < 0) {
         return act;
       }
@@ -1365,6 +1369,7 @@ act_return:
     if ((f6c & 0x80000) == 0) {
       if ((f5c & 0x4000000) == 0) {
 resolve_neg1:
+LAB_801766c8:
         *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
         return -1;
       }
@@ -1372,6 +1377,7 @@ resolve_neg1:
        * clear hits, then pick directional get-up action (0x30-0x5b
        * range) from f68/f58 nibble combos. */
 getup_path:
+LAB_801766e8:
       *(uint *)(ctrl + 0x5c) = *(uint *)(ctrl + 0x5c) & 0xfbffffff;
       *(uint *)(ctrl + 0x6c) = *(uint *)(ctrl + 0x6c) & 0xfff7efff;
       *(undefined2 *)(motion_p + 0x82) = 0xffff;
@@ -1466,9 +1472,6 @@ getup_path:
       }
       if ((f68 & 0x800) == 0) goto getup_dir_finish;
       f58 = f68 & 0xc;
-      if ((f5c & 0x100000) == 0) {
-        if (f58 != 4) {
-          if (f58 != 8) goto getup_dir_finish;
           goto act_58_assign;
         }
       }
@@ -1479,9 +1482,9 @@ act_58_assign:
           goto getup_dir_finish;
         }
         if (f58 != 8) goto getup_dir_finish;
-      }
-      act = 0x59;
 getup_dir_finish:
+LAB_80176a80:
+LAB_80176a88:
       if (((f68 & 0x1000) != 0) && (act = 0x4f, (f68 & 3) == 2)) {
         act = 0x53;
       }
@@ -1568,6 +1571,8 @@ getup_dir_finish:
 resolve_tail_f60:
   f60 = *(uint *)(ctrl + 0x6c);
 resolve_tail:
+LAB_80176d18:
+LAB_80176d24:
   *(uint *)(ctrl + 0x6c) = f60 & 0xfff7ffff;
   return (int)*(short *)(motion_p + 0x9a);
 }
@@ -1723,6 +1728,7 @@ void fighter_frame(byte *ctrl, byte *motion)
       ctrl[0xc9] = '\0';
       dv = -dv;
 store_ca_dv:
+LAB_80178d48:
       *(short *)(ctrl + 0xca) = dv;
     }
     else if (*(short *)(ctrl + 200) != 0) {
@@ -1772,6 +1778,7 @@ store_ca_dv:
     *(short *)(ctrl + 0x94) = dv;
     if (dv == 0) {
 clear_range_94:
+LAB_80178f9c:
       ctrl[0x94] = '\0';
       ctrl[0x95] = '\0';
       uv = *(uint *)(ctrl + 0x60) & 0xdfffffff;
@@ -1855,6 +1862,7 @@ clear_range_94:
       uv += 0x40;
     }
 post_cmd_400:
+LAB_80179238:
     deferred_cmd_post(0x400,uv,auxv);
   }
   else if (((*(uint *)(ctrl + 0x68) & 0x8000000) != 0) &&
@@ -1938,6 +1946,7 @@ post_cmd_400:
   ctrl[0x8c] = '\0';
   ctrl[0x8d] = '\0';
 spin_decay:
+LAB_8017938c:
   /* spin decay: apply rotation rate 0xb2 into 0xa2/0x9a, then
    * scale 0xb2 by 0xb4 >> 7. */
   if (*(short *)(ctrl + 0xb2) != 0) {
@@ -2386,6 +2395,7 @@ void launch_vel_update(byte *ctrl,byte *motion)
       if ((int)((uint)acc << 0x10) < 0) {
         *(undefined2 *)(ctrl + 0x8e) = 0;
 vel98_done:
+LAB_8017957c:
         *(undefined2 *)(ctrl + 0x98) = 0;
       }
     }
@@ -2411,6 +2421,7 @@ vel98_done:
   *(short *)(ctrl + 0x90) = (short)vy;
   rem = (short)(vx >> 7);
 vy_merge:
+LAB_80179618:
   *(undefined2 *)(ctrl + 0x9c) = rem;
   return;
 
@@ -2511,6 +2522,7 @@ void motion_turn_update(byte *ctrl,byte *motion)
     }
   }
 motion_10a_tick:
+LAB_801798e0:
   ctr16 = *(ushort *)(motion + 0x10a) - 1;
   if (((*(ushort *)(motion + 0x10a) & 0x7f) != 0) &&
      (*(ushort *)(motion + 0x10a) = ctr16, (ctr16 & 0x7f) == 0)) {
@@ -2541,9 +2553,9 @@ void motion_blend_frame(byte *ctrl,byte *motion)
   int dx;
   int obj_g;
   if (*(int *)(motion + 0xb0) == 0) goto pose_copy;
-  if (*(short *)(motion + 0xce) == 0) {
 blend_apply:
 apply_blend_point:
+LAB_80186010:
     keyframe_blend_apply(ctrl,motion);
   }
   else {
@@ -2563,6 +2575,7 @@ apply_blend_point:
     *(short *)(motion + 0xc4) = *(short *)(motion + 0xc4) + *(short *)(ctrl + 0x88);
   }
 pose_copy:
+LAB_8018604c:
   t = 0;
   jdst = (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x40)) + 0x12);
   jsrc = (undefined2 *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0x3c);

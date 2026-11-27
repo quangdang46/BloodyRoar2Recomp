@@ -491,6 +491,62 @@ GPR_NAMES = ['zero','at','v0','v1','a0','a1','a2','a3','t0','t1','t2','t3','t4',
              'k0','k1','gp','sp','fp','ra']
 _GPR_RE = re.compile(r'cpu->gpr\[(\d+)\]')
 
+def _cond_slug(expr):
+    """Expression-derived identifier for a saved branch-condition temp."""
+    e = re.sub(r'\((?:u?int(?:8|16|32|64)_t|char|short|ushort|byte|long|uint|'
+               r'bool|size_t)\)', '', expr.strip())
+    e = e.strip('() ')
+    e = e.replace('<<', ' §L§ ').replace('>>', ' §R§ ')
+    for a, b in (('&&', '_and_'), ('||', '_or_'), ('==', '_eq_'),
+                 ('!=', '_ne_'), ('<=', '_le_'), ('>=', '_ge_'),
+                 ('<', '_lt_'), ('>', '_gt_'), ('!', '_not_'), ('~', '_not_')):
+        e = e.replace(a, b)
+    e = e.replace(' §L§ ', '_shl_').replace(' §R§ ', '_shr_')
+    toks = re.findall(r'[A-Za-z_]\w*|0x[0-9a-fA-F]+|\d+', e)
+    s = re.sub(r'_+', '_', '_'.join(toks)).strip('_')
+    s = re.sub(r'[^A-Za-z0-9_]', '', 'cond_' + s)
+    return s[:56].rstrip('_') if len(s) > 56 else s
+
+
+def rename_temps(body):
+    """Per-function rename of generated _bc_<addr>/_jt_<addr> temps to
+    readable cond_*/jr_target names. Scoped to one emitted body so shared
+    guest addrs across sibling pieces never collide."""
+    lines = body.split('\n')
+    ren = {}
+    used = set()
+    # _bc_<addr> decls carry their predicate expr — slug it.
+    for ln in lines:
+        m = re.search(r'\b(_bc_[0-9a-fA-F]+)\b\s*=\s*(\(.*\))\s*;', ln)
+        if not m or m.group(1) in ren:
+            continue
+        base = _cond_slug(m.group(2))
+        cand, c = base, 2
+        while cand in used or cand in ren.values():
+            cand = f'{base}_{c}'
+            c += 1
+        ren[m.group(1)] = cand
+        used.add(cand)
+    # _jt_<addr> latches -> jr_target, jr_target_2, ...
+    jt = 0
+    for ln in lines:
+        for m in re.finditer(r'\b(_jt_[0-9a-fA-F]+)\b', ln):
+            addr = m.group(1)
+            if addr in ren:
+                continue
+            jt += 1
+            cand = 'jr_target' if jt == 1 else f'jr_target_{jt}'
+            while re.search(r'\b' + re.escape(cand) + r'\b', body):
+                jt += 1
+                cand = f'jr_target_{jt}'
+            ren[addr] = cand
+    if not ren:
+        return body
+    for old, new in ren.items():
+        body = re.sub(r'\b' + re.escape(old) + r'\b', new, body)
+    return body
+
+
 def _gpr_names(m):
     return GPR_NAMES[int(m.group(1))]
 
@@ -516,6 +572,7 @@ def emit_fn(addr):
         body = tb
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
+    core = rename_temps(core)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the
