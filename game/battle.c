@@ -12351,7 +12351,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 /* prim_list_gte_invoke @0x801871bc/persp_step — walk a primitive
  * list applying the GTE basis transform (gte_xform3_ip/t_ip + MVMVA)
  * per element, then call_guest4 the record's emit callbacks. */
-int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
+int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 mtx_t ,undefined4 mtx_ip)
 {
   undefined4 in_zero;
   undefined4 at_out;
@@ -12381,8 +12381,8 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
     _DAT_1f8003fc = in_ra;
     do {
       if (((short)lst[3] == 0) && (*lst != 0)) {
-        gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
-        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        gte_xform3_ip((undefined4 *)guest_at((uint32_t)mtx_ip),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
+        gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)mtx_t),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         setCopReg(2,in_zero,lst[1]);
         setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
