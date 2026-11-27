@@ -719,7 +719,7 @@ void fighter_pair_update(int f0,int f1,int battle)
       t9 = t9 + 0x7f;
     }
     t9 = t9 >> 7;
-    t7 = hitbox_pair_test(f0,f1,hitres0);
+    t7 = hitbox_pair_test(f0,f1,(uint16_t *)hitres0);
   }
   t4 = 0;
   if (elig1 != 0) {
@@ -731,7 +731,7 @@ void fighter_pair_update(int f0,int f1,int battle)
       t8 = t8 + 0x7f;
     }
     t8 = t8 >> 7;
-    t4 = hitbox_pair_test(f1,f0,hitres1);
+    t4 = hitbox_pair_test(f1,f0,(uint16_t *)hitres1);
   }
   if (t7 != 0) {
     if (t4 != 0) {
@@ -776,8 +776,8 @@ void fighter_pair_update(int f0,int f1,int battle)
                        *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x20) ))+ 0x34) ))-
                        *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x20) ))+ 0x34))));
   camera_aim_offset(f0,f1,t9);
-  t8 = hitbox_wall_collide(f0,hitres0,battle);
-  t7 = hitbox_wall_collide(f1,hitres1,battle);
+  t8 = hitbox_wall_collide(f0,(uint16_t *)hitres0,battle);
+  t7 = hitbox_wall_collide(f1,(uint16_t *)hitres1,battle);
   if ((((*(uint32_t *)guest_at((uint32_t)(uintptr_t)((f0 + 0x58) ))& 0x40000000) == 0) ||
       ((*(uint32_t *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))& 0x100000) == 0)) &&
      (((*(uint32_t *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))& 0x40000000) == 0 ||
