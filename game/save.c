@@ -9750,9 +9750,9 @@ void slot_field_clear(uint32_t a0)
  * record flag/field setters. a0 = host ctx; arrays at +0x34/+0x38 (or
  * +0x3c), count +0x44, idx a1 (signed). Records: flags u16 @+0x44,
  * params @+0x46/+0x48. Disasm 0x801aa0e4-0x801aa3f8. */
-static uint8_t *elem_at(uint8_t *s,uint32_t arros,int32_t idx)
+static uint8_t *elem_at(uint8_t *s,uint32_t aoff,int32_t idx)
 {
-  uint8_t *arr = (uint8_t *)mem_ptr(*(uint32_t *)(s + arros));
+  uint8_t *arr = (uint8_t *)mem_ptr(*(uint32_t *)(s + aoff));
   uint32_t e = *(uint32_t *)(arr + (uint32_t)idx * 4);
   return (uint8_t *)mem_ptr(e);
 }
