@@ -47,10 +47,10 @@ extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
  *          0x80156894->0x3B08 (the DAT_801b38d0/3968/3a84/3b08 case arms). */
 uint32_t ptab_ptr_case_set(void)
 {
-  CPUState *c = clean_cpu_state();
+  CPUState *cpu = clean_cpu_state();
   uint32_t pc;
-  if (!c) return 0;
-  pc = c->pc;
+  if (!cpu) return 0;
+  pc = cpu->pc;
   switch (pc) {
   case 0x80156864u: goto block_80156864;
   case 0x80156870u: goto block_80156870;
@@ -58,46 +58,46 @@ uint32_t ptab_ptr_case_set(void)
   case 0x80156894u: goto block_80156894;
   case 0x801568E4u: goto block_801568E4;
   case 0x801568ECu: goto block_801568EC;
-  default: return c->gpr[2];
+  default: return cpu->gpr[2];
   }
 
 block_80156864:
-  c->gpr[2] = 0x801B0000u;                     /* lui v0,0x801B */
-  c->gpr[6] = c->gpr[2] + 0x38D0u;             /* delay: a2 = &DAT_801b38d0 */
+  cpu->gpr[2] = 0x801B0000u;                     /* lui v0,0x801B */
+  cpu->gpr[6] = cpu->gpr[2] + 0x38D0u;             /* delay: a2 = &DAT_801b38d0 */
   goto dispatch_801568E4;
 
 block_80156870:
-  c->gpr[2] = 0x801B0000u;
-  c->gpr[6] = c->gpr[2] + 0x3968u;             /* delay: a2 = &DAT_801b3968 */
+  cpu->gpr[2] = 0x801B0000u;
+  cpu->gpr[6] = cpu->gpr[2] + 0x3968u;             /* delay: a2 = &DAT_801b3968 */
   goto dispatch_801568E4;
 
 block_80156888:
-  c->gpr[2] = 0x801B0000u;
-  c->gpr[6] = c->gpr[2] + 0x3A84u;             /* delay: a2 = &DAT_801b3a84 */
+  cpu->gpr[2] = 0x801B0000u;
+  cpu->gpr[6] = cpu->gpr[2] + 0x3A84u;             /* delay: a2 = &DAT_801b3a84 */
   goto dispatch_801568E4;
 
 block_80156894:
-  c->gpr[2] = 0x801B0000u;
-  c->gpr[6] = c->gpr[2] + 0x3B08u;             /* delay: a2 = &DAT_801b3b08 */
+  cpu->gpr[2] = 0x801B0000u;
+  cpu->gpr[6] = cpu->gpr[2] + 0x3B08u;             /* delay: a2 = &DAT_801b3b08 */
   goto dispatch_801568E4;
 
 dispatch_801568E4:
-  psx_check_interrupts_at(c, 0x801568E4u);
+  psx_check_interrupts_at(cpu, 0x801568E4u);
   goto block_801568E4;
 
 block_801568E4:
-  c->gpr[3] = 0x801F0000u;                     /* lui v1,0x801F */
-  c->gpr[3] = c->gpr[3] + 0x35E0u;             /* delay: v1 = 0x801F35E0 */
+  cpu->gpr[3] = 0x801F0000u;                     /* lui v1,0x801F */
+  cpu->gpr[3] = cpu->gpr[3] + 0x35E0u;             /* delay: v1 = 0x801F35E0 */
   /* fall through — generated has no interrupt check between E4 and EC */
 
 block_801568EC:
-  c->gpr[2] = c->gpr[5] << 2;                  /* sll v0,a1,2 */
-  c->gpr[2] = c->gpr[2] + c->gpr[3];           /* addu v0,v0,v1 */
-  { uint32_t jr_target = c->gpr[31];                 /* latch jr target */
-    c->write_word(c->gpr[2], c->gpr[6]);       /* delay: sw a2,0(v0) */
-    psx_check_interrupts_at(c, jr_target);
-    c->pc = jr_target;
-    return c->gpr[2]; }
+  cpu->gpr[2] = cpu->gpr[5] << 2;                  /* sll v0,a1,2 */
+  cpu->gpr[2] = cpu->gpr[2] + cpu->gpr[3];           /* addu v0,v0,v1 */
+  { uint32_t jr_target = cpu->gpr[31];                 /* latch jr target */
+    cpu->write_word(cpu->gpr[2], cpu->gpr[6]);       /* delay: sw a2,0(v0) */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target;
+    return cpu->gpr[2]; }
 }
 
 /* ======== confirm_code_tail_set ========
@@ -118,10 +118,10 @@ block_801568EC:
  * (dispatch arg a0 = N + 20, matching confirm_code_select's code += 0x14). */
 uint32_t confirm_code_tail_set(void)
 {
-  CPUState *c = clean_cpu_state();
+  CPUState *cpu = clean_cpu_state();
   uint32_t pc;
-  if (!c) return 0;
-  pc = c->pc;
+  if (!cpu) return 0;
+  pc = cpu->pc;
   switch (pc) {
   case 0x80157910u: goto block_80157910;
   case 0x80157918u: goto block_80157918;
@@ -134,61 +134,61 @@ uint32_t confirm_code_tail_set(void)
   case 0x801579E0u: goto block_801579E0;
   case 0x801579E4u: goto block_801579E4;
   case 0x801579F0u: goto block_801579F0;
-  default: return c->gpr[2];
+  default: return cpu->gpr[2];
   }
 
 block_80157910:
-  c->gpr[5] = c->gpr[0];                     /* delay: move a1,zero */
+  cpu->gpr[5] = cpu->gpr[0];                     /* delay: move a1,zero */
   goto dispatch_80157964;
 block_80157918:
-  c->gpr[5] = 1;                             /* delay: li a1,1 */
+  cpu->gpr[5] = 1;                             /* delay: li a1,1 */
   goto dispatch_80157964;
 block_80157920:
-  c->gpr[5] = 2;
+  cpu->gpr[5] = 2;
   goto dispatch_80157964;
 block_80157928:
-  c->gpr[5] = 5;
+  cpu->gpr[5] = 5;
   goto dispatch_80157964;
 block_80157930:
-  c->gpr[5] = 3;
+  cpu->gpr[5] = 3;
   goto dispatch_80157964;
 block_80157938:
-  c->gpr[5] = 6;
+  cpu->gpr[5] = 6;
   goto dispatch_80157964;
 block_80157940:
-  c->gpr[5] = 4;
+  cpu->gpr[5] = 4;
   goto dispatch_80157964;
 
 dispatch_80157964:
-  psx_check_interrupts_at(c, 0x80157964u);
+  psx_check_interrupts_at(cpu, 0x80157964u);
   goto block_80157964;
 
 block_80157964:
-  c->gpr[5] = c->gpr[5] + 20;                /* delay: addiu a1,a1,0x14 */
-  psx_check_interrupts_at(c, 0x801579E4u);
+  cpu->gpr[5] = cpu->gpr[5] + 20;                /* delay: addiu a1,a1,0x14 */
+  psx_check_interrupts_at(cpu, 0x801579E4u);
   goto block_801579E4;
 
 block_801579E0:
-  c->gpr[5] = c->gpr[5] + 10;                /* addiu a1,a1,0xa */
+  cpu->gpr[5] = cpu->gpr[5] + 10;                /* addiu a1,a1,0xa */
   /* fall through — generated has no interrupt check between E0 and E4 */
 
 block_801579E4:
-  c->gpr[4] = c->gpr[5];                     /* move a0,a1 */
+  cpu->gpr[4] = cpu->gpr[5];                     /* move a0,a1 */
   /* fall through — generated has no interrupt check between E4 and E8 */
 
 block_801579E8:
-  c->gpr[31] = 0x801579F0u;                  /* jal link */
-  c->gpr[5] = 1;                             /* delay: li a1,1 */
-  psx_check_interrupts_at(c, 0x801577BCu);
-  c->pc = 0x801577BCu;                       /* CPS jal -> mc_confirm_dispatch */
-  return c->gpr[2];
+  cpu->gpr[31] = 0x801579F0u;                  /* jal link */
+  cpu->gpr[5] = 1;                             /* delay: li a1,1 */
+  psx_check_interrupts_at(cpu, 0x801577BCu);
+  cpu->pc = 0x801577BCu;                       /* CPS jal -> mc_confirm_dispatch */
+  return cpu->gpr[2];
 
 block_801579F0:
-  c->gpr[31] = c->read_word(c->gpr[29] + 16);/* lw ra,16(sp) */
+  cpu->gpr[31] = cpu->read_word(cpu->gpr[29] + 16);/* lw ra,16(sp) */
   /* nop @0x801579F4 */
-  { uint32_t jr_target = c->gpr[31];               /* latch jr target */
-    c->gpr[29] = c->gpr[29] + 24;            /* delay: addiu sp,sp,0x18 */
-    psx_check_interrupts_at(c, jr_target);
-    c->pc = jr_target;
-    return c->gpr[2]; }
+  { uint32_t jr_target = cpu->gpr[31];               /* latch jr target */
+    cpu->gpr[29] = cpu->gpr[29] + 24;            /* delay: addiu sp,sp,0x18 */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target;
+    return cpu->gpr[2]; }
 }
