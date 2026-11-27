@@ -203,11 +203,11 @@ block_801846E0:
   s1 = cpu->read_word(sp + 20);                     /* 0x801846FC: lw s1,0x14(sp) */
   s0 = cpu->read_word(sp + 16);                     /* 0x80184700: lw s0,0x10(sp) */
   v0 = 1;                                           /* 0x80184704: addiu v0,zero,1 */
-  uint32_t _jt_80184708 = ra;  /* latch indirect target before delay slot */
+  uint32_t jr_target = ra;  /* latch indirect target before delay slot */
   /* delay slot (always executes) */
   sp = sp + 48;                                     /* 0x8018470C: addiu sp,sp,0x30 */
-  psx_check_interrupts_at(cpu, _jt_80184708);
-  cpu->pc = _jt_80184708; return;  /* CPS: jr $ra */
+  psx_check_interrupts_at(cpu, jr_target);
+  cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
 /* ======== scriptop_add src-selector cases ========
@@ -283,9 +283,9 @@ block_801847F0:
   /* nop */  /* 0x801847FC: 0x00000000 */
   v0 = v0 + a0;                                     /* 0x80184800: addu v0,v0,a0 */
   cpu->write_half(v1 + 60, (uint16_t)v0);           /* 0x80184804: sh v0,0x3c(v1) */
-  uint32_t _jt_80184808 = ra;  /* latch indirect target before delay slot */
+  uint32_t jr_target = ra;  /* latch indirect target before delay slot */
   /* delay slot (always executes) */
   v0 = 1;                                           /* 0x8018480C: addiu v0,zero,1 */
-  psx_check_interrupts_at(cpu, _jt_80184808);
-  cpu->pc = _jt_80184808; return;  /* CPS: jr $ra */
+  psx_check_interrupts_at(cpu, jr_target);
+  cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
