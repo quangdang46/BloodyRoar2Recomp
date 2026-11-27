@@ -65,6 +65,7 @@ static const char* cfg_or(const char* v, const char* d) {
     return (v && v[0]) ? v : d;
 }
 
+/* Case-insensitive ASCII compare (Win _stricmp / POSIX strcasecmp). */
 static int ascii_strcasecmp(const char* a, const char* b) {
 #if defined(_WIN32)
     return _stricmp(a, b);
@@ -73,6 +74,7 @@ static int ascii_strcasecmp(const char* a, const char* b) {
 #endif
 }
 
+/* True if path exists and is a regular file. */
 static int path_is_file(const char* path) {
 #if defined(_WIN32)
     DWORD attr = GetFileAttributesA(path);
@@ -108,6 +110,7 @@ static int read_first_line(const char* path, char* out, size_t cap) {
     return out[0] != '\0';
 }
 
+/* True if path is absolute (platform-aware). */
 static int path_is_absolute(const char* path) {
     if (!path || !path[0]) return 0;
 #if defined(_WIN32)
@@ -123,6 +126,7 @@ static int join_path(char* out, size_t cap, const char* a, const char* b);
 static int dirname_copy(char* out, size_t cap, const char* path);
 static int absolutize_existing_file(char* out, size_t cap, const char* path);
 
+/* True if path exists and is a directory. */
 static int path_is_dir(const char* path) {
 #if defined(_WIN32)
     DWORD attr = GetFileAttributesA(path);
@@ -134,6 +138,7 @@ static int path_is_dir(const char* path) {
 #endif
 }
 
+/* Join two path components with a single separator. */
 static int join_path(char* out, size_t cap, const char* a, const char* b) {
     size_t na = strlen(a);
     int need_slash = na > 0 && a[na - 1] != '/' && a[na - 1] != '\\';
@@ -207,6 +212,7 @@ static int resolve_existing_dir(const char* path, char* out, size_t cap) {
     return 0;
 }
 
+/* True if a Python path points at a Windows Store stub. */
 static int python_path_is_store(const char* path) {
     if (!path || !path[0])
         return 0;
@@ -283,6 +289,7 @@ static int capture_cmd_first_line(const char* cmdline, char* out, size_t cap) {
     return out[0] != '\0';
 }
 #else
+/* Resolve path to an existing directory into out[]. */
 static int resolve_existing_dir(const char* path, char* out, size_t cap) {
     if (path && path[0] && path_is_dir(path)) {
         snprintf(out, cap, "%s", path);
@@ -293,6 +300,7 @@ static int resolve_existing_dir(const char* path, char* out, size_t cap) {
 
 #endif
 
+/* Copy the dirname portion of path into out[]. */
 static int dirname_copy(char* out, size_t cap, const char* path) {
     size_t n = strlen(path);
     while (n > 0 && (path[n - 1] == '/' || path[n - 1] == '\\'))
@@ -359,6 +367,7 @@ static int absolutize_existing_file(char* out, size_t cap, const char* path) {
     return 0;
 }
 
+/* Resolve the psxrecomp CLI executable path (config candidates). */
 static int resolve_cli_path(const char* root, char* out, size_t cap) {
     const char* candidates[] = {
         cfg_or(g_cfg->psxrecomp_cli_relpath, "psxrecomp/psxrecomp_cli.py"),
@@ -375,6 +384,7 @@ static int resolve_cli_path(const char* root, char* out, size_t cap) {
     return 0;
 }
 
+/* Heuristic: does dir contain the project markers (cli+toml)? */
 static int looks_like_project_root(const char* root) {
     char cli[1100], toml[1100];
     if (!join_path(toml, sizeof(toml), root,
@@ -385,6 +395,7 @@ static int looks_like_project_root(const char* root) {
     return resolve_cli_path(root, cli, sizeof(cli));
 }
 
+/* Find an executable on PATH (Win PATHEXT-aware). */
 static int find_on_path(const char* name, char* out, size_t cap) {
 #if defined(_WIN32)
     char cmd[640];
@@ -454,6 +465,7 @@ static int python_exe_under_py_root(const char* py_root, char* out, size_t cap) 
     return 0;
 }
 
+/* Locate the toolchain-bundled Python interpreter. */
 static int find_toolchain_python(char* out, size_t cap) {
     char bin[1400], pack[1400], py_root[1400];
     if (!resolve_toolchain_bin(bin, sizeof(bin)))
@@ -465,6 +477,7 @@ static int find_toolchain_python(char* out, size_t cap) {
     return python_exe_under_py_root(py_root, out, cap);
 }
 
+/* True if a Python env path is a usable interpreter. */
 static int python_env_usable(const char* env) {
     if (!env || !env[0] || !path_is_file(env))
         return 0;
@@ -523,6 +536,7 @@ static int find_python(char* out, size_t cap) {
     return 0;
 }
 
+/* True if the toolchain bin dir has cmake. */
 static int toolchain_bin_has_cmake(const char* bin, char* out, size_t cap) {
     char cmake[1200];
 #if defined(_WIN32)
@@ -539,6 +553,7 @@ static int toolchain_bin_has_cmake(const char* bin, char* out, size_t cap) {
     return 0;
 }
 
+/* Resolve a tool under a toolchain bin dir. */
 static int resolve_toolchain_bin_under(const char* wrap, char* out, size_t cap) {
     char cand[1100], cmake[1200], root[1400];
     if (!wrap || !wrap[0])
@@ -709,6 +724,7 @@ static int preferred_toolchain_cache_root(char* out, size_t cap) {
     return 1;
 }
 
+/* Resolve the shared toolchain cache dir. */
 static int resolve_shared_toolchain_cache(char* out, size_t cap) {
     char bases[12][1400];
     int n = collect_toolchain_cache_bases(bases, 12);
@@ -759,6 +775,7 @@ static int resolve_toolchain_stamp(char* out, size_t cap) {
     return 0;
 }
 
+/* Resolve a toolchain binary (fresh ensure result first). */
 static int resolve_toolchain_bin(char* out, size_t cap) {
     /* Fresh ensure-toolchain result (bin directory). */
     if (g_cli_toolchain_bin[0]) {
@@ -791,6 +808,7 @@ static int resolve_toolchain_bin(char* out, size_t cap) {
     return 0;
 }
 
+/* Prepend the toolchain pack bin dir to PATH. */
 static void activate_toolchain_path(void) {
     char pack_root[1400];
     g_toolchain_bin[0] = '\0';
@@ -896,6 +914,7 @@ static void activate_toolchain_path(void) {
     }
 }
 
+/* Find cmake (env CMAKE, then PATH). */
 static int find_cmake(char* out, size_t cap) {
     const char* env = getenv("CMAKE");
     if (env && env[0] && path_is_file(env)) {
@@ -989,6 +1008,7 @@ static const char* path_base_name(const char* path) {
     return base;
 }
 
+/* True if a toolchain dir name looks like a releases/ pack. */
 static int name_is_releases(const char* name) {
     if (!name || !name[0]) return 0;
 #if defined(_WIN32)
@@ -1038,6 +1058,7 @@ static int try_retcomm_src_current(const char* start, char* out, size_t cap) {
     return 0;
 }
 
+/* Discover the psxrecomp project root (env/candidates). */
 static int discover_project_root(char* out, size_t cap) {
     const char* env_name =
         cfg_or(g_cfg->project_root_env, "PSXRECOMP_PROJECT_ROOT");
@@ -1073,6 +1094,7 @@ static int discover_project_root(char* out, size_t cap) {
     return 0;
 }
 
+/* Resolve build-dir paths from env/config. */
 static int resolve_build_paths(void) {
     const char* env_name =
         cfg_or(g_cfg->build_dir_env, "PSXRECOMP_BUILD_DIR");
@@ -1135,6 +1157,7 @@ static int resolve_build_paths(void) {
     return join_path(g_exe_path, sizeof(g_exe_path), g_build_dir, exe_name);
 }
 
+/* True if required BIOS backend C files are missing. */
 static int bios_backends_missing(void) {
     char openbios[1100], scph[1100];
     if (!join_path(openbios, sizeof(openbios), g_project_root,
@@ -1146,6 +1169,7 @@ static int bios_backends_missing(void) {
     return !(path_is_file(openbios) || path_is_file(scph));
 }
 
+/* True if codegen-host source files are missing. */
 int psxrecomp_codegen_host_sources_missing(
     const PsxrecompCodegenHostConfig* cfg) {
     if (!cfg || !cfg->cmake_target || !cfg->exe_basename)
@@ -1164,6 +1188,7 @@ int psxrecomp_codegen_host_sources_missing(
     return bios_backends_missing();
 }
 
+/* Read the first line of a file (trimmed). */
 static int read_line_file(const char* path, char* out, size_t cap) {
     FILE* f = fopen(path, "r");
     if (!f) return 0;
@@ -1179,6 +1204,7 @@ static int read_line_file(const char* path, char* out, size_t cap) {
     return n > 0;
 }
 
+/* Write a single line to a file. */
 static int write_line_file(const char* path, const char* line) {
     FILE* f;
     if (!path || !path[0])
@@ -1221,6 +1247,7 @@ static uint32_t host_crc32(const unsigned char* data, size_t len) {
     return ~crc;
 }
 
+/* Validate a retail BIOS file (size check). */
 static int retail_bios_file_ok_c(const char* path) {
     FILE* f;
     long size;
@@ -1303,6 +1330,7 @@ static int discover_retail_bios_c(char* out, size_t cap) {
     return 0;
 }
 
+/* True if a BIOS .toml sidecar exists for the given BIOS. */
 static int bios_cfg_sidecar_exists(void) {
     char cand[1100];
     char dir[1100];
@@ -1317,6 +1345,7 @@ static int bios_cfg_sidecar_exists(void) {
     return 0;
 }
 
+/* Resolve a BIOS path/arg to an existing file. */
 static int resolve_bios_arg(char* out, size_t cap) {
     char cand[1100];
     char line[1100];
@@ -1388,6 +1417,7 @@ static int  g_wizard_disc_count;
 static RecompLauncherCDisc g_disc_roster[PSX_HOST_MAX_DISCS];
 static int  g_num_discs;
 
+/* Host-side absolute-path check. */
 static int host_path_is_absolute(const char* p) {
     if (!p || !p[0]) return 0;
     if (p[0] == '/' || p[0] == '\\') return 1;
@@ -1401,6 +1431,7 @@ static int host_path_is_absolute(const char* p) {
  *
  * Only [game] discs is recognised, and only string entries -- anything else in
  * the file is skipped rather than guessed at. */
+/* Parse disc paths out of game.toml. */
 static void load_game_toml_disc_roster(void) {
     FILE* f;
     char line[1600];
@@ -1472,6 +1503,7 @@ static void load_game_toml_disc_roster(void) {
     }
 }
 
+/* Persist first-run setup state (bios path) to disk. */
 static int host_persist_setup(void* ctx, const char* rom_path,
                               const char* bios_path) {
     char path[1200];
@@ -1529,6 +1561,7 @@ static int host_persist_setup(void* ctx, const char* rom_path,
  * The BIOS half is delegated to host_persist_setup: passing rom_path NULL runs
  * its bios.cfg logic and skips its single-path disc write, so the two entry
  * points cannot drift on BIOS handling. */
+/* Persist setup state incl. disc roster. */
 static int host_persist_setup_discs(void* ctx, const char* const* disc_paths,
                                     int disc_count, const char* bios_path) {
     char body[PSX_HOST_MAX_DISCS * 1030];
@@ -1579,6 +1612,7 @@ static int host_persist_setup_discs(void* ctx, const char* const* disc_paths,
     return 0;
 }
 
+/* Persist relaunch sidecars (bios line) for next start. */
 static void persist_relaunch_sidecars(const char* near_exe,
                                       const char* disc_path) {
     char bios_line[1100];
@@ -1636,6 +1670,7 @@ static void persist_relaunch_sidecars(const char* near_exe,
     }
 }
 
+/* Extract a string field from a JSON blob. */
 static int json_get_string(const char* line, const char* key, char* out,
                            size_t out_cap) {
     char pattern[96];
@@ -1656,6 +1691,7 @@ static int json_get_string(const char* line, const char* key, char* out,
     return i > 0;
 }
 
+/* Extract a number field from a JSON blob. */
 static int json_get_number(const char* line, const char* key, double* out) {
     char pattern[96];
     snprintf(pattern, sizeof(pattern), "\"%s\":", key);
@@ -1670,6 +1706,7 @@ static int json_get_number(const char* line, const char* key, double* out) {
     return 1;
 }
 
+/* Feed a CLI progress line to the progress callback. */
 static void handle_progress_line(const char* line,
                                  RecompLauncherCPrepareProgressFn on_progress,
                                  void* progress_ctx) {
@@ -1727,12 +1764,14 @@ typedef struct {
     char last_err[480];
 } CliTail;
 
+/* Heuristic: does a CLI tail line look like an error? */
 static int cli_tail_line_is_error(const char* s) {
     return strstr(s, "rror") != NULL || strstr(s, "ailed") != NULL ||
            strstr(s, "FAILED") != NULL || strstr(s, "Traceback") != NULL ||
            strstr(s, "fatal") != NULL || strstr(s, "Fatal") != NULL;
 }
 
+/* Record a CLI output line into the tail buffer. */
 static void cli_tail_note(CliTail* t, const char* line) {
     char msg[480];
     const char* rec = line;
@@ -1751,6 +1790,7 @@ static void cli_tail_note(CliTail* t, const char* line) {
         snprintf(t->last_err, sizeof(t->last_err), "%s", rec);
 }
 
+/* Build a CLI failure message from the tail buffer. */
 static void cli_fail_msg(char* err_msg, size_t err_cap, const char* fail_label,
                          long code, const CliTail* t) {
     const char* why = t->last_err[0] ? t->last_err : t->last;
@@ -1766,6 +1806,7 @@ static void cli_fail_msg(char* err_msg, size_t err_cap, const char* fail_label,
 }
 
 #if defined(_WIN32)
+/* Run the psxrecomp CLI on Windows (CreateProcess + pipes). */
 static int run_cli_win(const char* cmdline,
                        RecompLauncherCPrepareProgressFn on_progress,
                        void* progress_ctx, char* err_msg, size_t err_cap,
@@ -1842,6 +1883,7 @@ static int run_cli_win(const char* cmdline,
     return 0;
 }
 #else
+/* Run the psxrecomp CLI on POSIX (fork/exec + pipes). */
 static int run_cli_posix(char* const argv[],
                          RecompLauncherCPrepareProgressFn on_progress,
                          void* progress_ctx, char* err_msg, size_t err_cap,
@@ -1972,6 +2014,7 @@ static int version_cmp(const char* a, const char* b) {
     }
 }
 
+/* Read the version from a toolchain pack meta. */
 static int read_pack_version(const char* pack_root, char* out, size_t cap) {
     char meta[1400], buf[4096];
     FILE* f;
@@ -2005,6 +2048,7 @@ static int read_pack_version(const char* pack_root, char* out, size_t cap) {
     }
 }
 
+/* True if pack version satisfies the minimum. */
 static int pack_meets_min_version(const char* pack_root) {
     char ver[64];
     const char* need = toolchain_min_version();
@@ -2015,6 +2059,7 @@ static int pack_meets_min_version(const char* pack_root) {
     return version_cmp(ver, need) >= 0;
 }
 
+/* Recursive mkdir (platform-specific). */
 static int mkdir_p(const char* path) {
     char tmp[1400];
     size_t n;
@@ -2061,6 +2106,7 @@ static int mkdir_p(const char* path) {
 #endif
 }
 
+/* Recursive directory removal. */
 static int rmtree_path(const char* path) {
     char cmd[1600];
     if (!path || !path[0] || !path_is_dir(path))
@@ -2074,6 +2120,7 @@ static int rmtree_path(const char* path) {
 }
 
 #if defined(_WIN32)
+/* Run a command line and wait (Win CreateProcess). */
 static int run_cmdline_wait(const char* cmdline, DWORD* out_code) {
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
@@ -2111,6 +2158,7 @@ static int run_cmdline_wait(const char* cmdline, DWORD* out_code) {
 }
 #endif
 
+/* Latest shared toolchain cache dir. */
 static int shared_toolchain_latest_dir(char* out, size_t cap) {
     char cache[1400];
     if (!preferred_toolchain_cache_root(cache, sizeof(cache)))
@@ -2147,6 +2195,7 @@ static int unwrap_toolchain_pack_root(const char* in, char* out, size_t cap) {
     return 0;
 }
 
+/* True if an (unwrapped) pack root has cmake. */
 static int pack_root_has_cmake(const char* root) {
     char unwrapped[1400];
     return unwrap_toolchain_pack_root(root, unwrapped, sizeof(unwrapped));
@@ -2185,6 +2234,7 @@ static void read_toolchain_pack_version(const char* pack_root, char* out,
     out[len] = '\0';
 }
 
+/* Sanitize a string for use as a toolchain tag. */
 static void sanitize_toolchain_tag(const char* ver, char* out, size_t cap) {
     size_t j = 0;
     if (!out || cap < 2) return;
@@ -2257,6 +2307,7 @@ static int set_toolchain_latest_pointer(const char* cache_root,
     return pack_root_has_cmake_direct(latest);
 }
 
+/* Write the project toolchain stamp file. */
 static int write_project_toolchain_stamp(const char* bin_dir) {
     char tc_dir[1200], stamp[1200];
     FILE* f;
@@ -2275,6 +2326,7 @@ static int write_project_toolchain_stamp(const char* bin_dir) {
     return 1;
 }
 
+/* Activate an installed toolchain pack root. */
 static int activate_installed_pack_root(const char* pack_root) {
     char root[1400], bin[1400];
     if (!unwrap_toolchain_pack_root(pack_root, root, sizeof(root)))
@@ -2324,6 +2376,7 @@ static int junction_dir(const char* link_path, const char* target_path) {
     return code == 0 && path_is_dir(link_path);
 }
 
+/* Find a pack root under LocalAppData store cache. */
 static int find_store_localcache_pack_root(char* out, size_t cap) {
     const char* local = getenv("LOCALAPPDATA");
     char packages[1100], pattern[1200];
@@ -2427,6 +2480,7 @@ static int harvest_store_python_toolchain(int allow_copy) {
         pack_root_has_cmake(real_latest) ? real_latest : cache_root);
 }
 
+/* Download a URL to a file (host helper). */
 static int host_download_url_to_file(const char* url, const char* dest,
                                      char* err_msg, size_t err_cap) {
     char cmd[4096];
@@ -2452,6 +2506,7 @@ static int host_download_url_to_file(const char* url, const char* dest,
     return path_is_file(dest);
 }
 
+/* Extract a zip archive (host helper). */
 static int host_extract_zip(const char* zip_path, const char* dest_dir,
                             char* err_msg, size_t err_cap) {
     char cmd[3200];
@@ -2505,6 +2560,7 @@ static int host_extract_zip(const char* zip_path, const char* dest_dir,
     return 0;
 }
 #else
+/* Download a URL to a file (host helper). */
 static int host_download_url_to_file(const char* url, const char* dest,
                                      char* err_msg, size_t err_cap) {
     char cmd[4096];
@@ -2524,6 +2580,7 @@ static int host_download_url_to_file(const char* url, const char* dest,
     return path_is_file(dest);
 }
 
+/* Extract a zip archive (host helper). */
 static int host_extract_zip(const char* zip_path, const char* dest_dir,
                             char* err_msg, size_t err_cap) {
     char cmd[3200];
@@ -2576,6 +2633,7 @@ static int host_extract_zip(const char* zip_path, const char* dest_dir,
 }
 #endif
 
+/* Link or stamp the project toolchain into place. */
 static int link_or_stamp_project_toolchain(const char* pack_root) {
     char root[1400], proj_tc[1200], bin[1400];
     if (!unwrap_toolchain_pack_root(pack_root, root, sizeof(root)))
@@ -2721,6 +2779,7 @@ static void prune_old_toolchain_tags(const char* keep_pack) {
     (void)removed;
 }
 
+/* Install a toolchain pack from a local zip. */
 static int host_install_toolchain_from_zip(
     const char* zip_path, RecompLauncherCPrepareProgressFn on_progress,
     void* progress_ctx, char* err_msg, size_t err_cap) {
@@ -2838,6 +2897,7 @@ static int host_install_toolchain_from_zip(
     return 0;
 }
 
+/* Download + install the toolchain pack. */
 static int host_download_and_install_toolchain(
     RecompLauncherCPrepareProgressFn on_progress, void* progress_ctx,
     char* err_msg, size_t err_cap) {
@@ -2942,10 +3002,12 @@ static int migrate_legacy_psxrecomp_toolchain(void) {
     return 0;
 }
 
+/* Derive pack root from a bin dir path. */
 static int pack_root_from_bin(const char* bin, char* out, size_t cap) {
     return bin && bin[0] && dirname_copy(out, cap, bin);
 }
 
+/* Run a command; true if exit code is zero. */
 static int run_cmd_exit_zero(const char* cmdline) {
 #if defined(_WIN32)
     DWORD code = 1;
@@ -3046,6 +3108,7 @@ static int toolchain_bin_compiler_works(const char* bin) {
     return ok;
 }
 
+/* True if the toolchain bin dir is healthy (cmake+python present). */
 static int toolchain_bin_is_healthy(const char* bin) {
     char cmake[1200];
     if (!bin || !bin[0])
@@ -3061,6 +3124,7 @@ static int toolchain_bin_is_healthy(const char* bin) {
     return toolchain_bin_compiler_works(bin);
 }
 
+/* Remove the project toolchain stamp file. */
 static void clear_project_toolchain_stamp(void) {
     char stamp[1200];
     if (!g_project_root[0])
@@ -3192,6 +3256,7 @@ static void discard_unhealthy_active_toolchain(void) {
     }
 }
 
+/* True if the active toolchain meets the min version. */
 static int active_toolchain_meets_min(void) {
     char pack[1400];
     if (!g_toolchain_bin[0] && !resolve_toolchain_bin(g_toolchain_bin,
@@ -3202,6 +3267,7 @@ static int active_toolchain_meets_min(void) {
     return pack_meets_min_version(pack);
 }
 
+/* True if portable cmake is ready to use. */
 static int host_portable_cmake_ready(void) {
     if (!find_cmake(g_cmake, sizeof(g_cmake)))
         return 0;
@@ -3219,6 +3285,7 @@ static const char* host_toolchain_repair_note(void) {
     return g_tc_repair_note[0] ? g_tc_repair_note : NULL;
 }
 
+/* True if the toolchain is fully ready (bin+cmake+python). */
 static int host_toolchain_is_ready(void) {
     int attempt;
     if (!g_project_root[0])
@@ -3417,6 +3484,7 @@ static int host_toolchain_update_available(char* local_ver, size_t local_cap,
  * Broken latest/ stamps are healed, then GitHub /releases/latest is fetched.
  *
  * download: 0 = zip/cache only, 1 = download if missing, 2 = force latest. */
+/* Ensure toolchain installed, with progress callback. */
 static int host_ensure_toolchain_with_progress(
     int download, const char* zip_path, char* err_msg, size_t err_cap,
     RecompLauncherCPrepareProgressFn on_progress, void* progress_ctx) {
@@ -3531,6 +3599,7 @@ static int host_ensure_toolchain(RecompLauncherCPrepareProgressFn on_progress,
  * A failure here is reported and non-fatal: Generate itself only needs the
  * boot image, and refusing to build because disc 3 could not be probed would
  * be a worse outcome than building with a single-disc roster. */
+/* Update the disc set for the host session. */
 static void host_update_disc_set(RecompLauncherCPrepareProgressFn on_progress,
                                  void* progress_ctx) {
     char script[1200];
@@ -3643,6 +3712,7 @@ static void list_generated_dispatch(char* out, size_t cap) {
 #endif
 }
 
+/* Record a successful generate in the stamp. */
 static void host_record_generate_ok(void) {
     char sidecar[1200], line[32];
     if (!join_path(sidecar, sizeof(sidecar), g_project_root,
@@ -3652,6 +3722,7 @@ static void host_record_generate_ok(void) {
     write_line_file(sidecar, line);
 }
 
+/* Clear the generate stamp. */
 static void host_clear_generate_stamp(void) {
     char sidecar[1200];
     if (join_path(sidecar, sizeof(sidecar), g_project_root,
@@ -3742,6 +3813,7 @@ static int host_preflight_project_root(char* err_msg, size_t err_cap) {
     return 1;
 }
 
+/* Prepare for codegen (ensure toolchain + paths). */
 static int host_prepare_generate(const char* source_path, char* out_path,
                                  size_t out_cap, char* err_msg, size_t err_cap,
                                  RecompLauncherCPrepareProgressFn on_progress,
@@ -3872,6 +3944,7 @@ static int host_prepare_generate(const char* source_path, char* out_path,
 }
 
 #if defined(_WIN32)
+/* Append a set VAR=value line to a .bat file buffer. */
 static void bat_write_set(FILE* f, const char* name, const char* value) {
     fprintf(f, "set \"%s=", name);
     for (const char* p = value; *p; ++p) {
@@ -4012,6 +4085,7 @@ static int write_windows_deferred_rebuild_helper(int force_pgo,
 }
 #endif
 
+/* Rebuild the game runtime (extended options). */
 static int host_rebuild_game_ex(const char* disc_path, int force_pgo,
                                 char* out_exe_path, size_t out_cap,
                                 char* err_msg, size_t err_cap,
@@ -4118,6 +4192,7 @@ static int host_rebuild_game_ex(const char* disc_path, int force_pgo,
 #endif
 }
 
+/* Rebuild the game runtime. */
 static int host_rebuild_game(const char* disc_path, char* out_exe_path,
                              size_t out_cap, char* err_msg, size_t err_cap,
                              RecompLauncherCPrepareProgressFn on_progress,
@@ -4126,6 +4201,7 @@ static int host_rebuild_game(const char* disc_path, char* out_exe_path,
                                 err_cap, on_progress, progress_ctx);
 }
 
+/* Run PGO optimization pass for the runtime. */
 static int host_pgo_optimize(const char* disc_path, char* out_exe_path,
                              size_t out_cap, char* err_msg, size_t err_cap,
                              RecompLauncherCPrepareProgressFn on_progress,
@@ -4149,6 +4225,7 @@ static int host_fmv_timing_optimize(const char* disc_path, char* out_exe_path,
                                 err_cap, on_progress, progress_ctx);
 }
 
+/* Path to the host executable itself. */
 static int host_self_exe_path(char* out, size_t cap) {
     if (!out || cap < 2)
         return 0;
@@ -4175,6 +4252,7 @@ static int host_self_exe_path(char* out, size_t cap) {
 #endif
 }
 
+/* True if two paths refer to the same file. */
 static int host_paths_same_file(const char* a, const char* b) {
     char fa[1100], fb[1100];
     if (!a || !a[0] || !b || !b[0])
@@ -4378,6 +4456,7 @@ void psxrecomp_codegen_host_relaunch_or_exit(const char* disc_path) {
 #endif
 }
 
+/* Apply codegen-host config to the session. */
 void psxrecomp_codegen_host_apply(RecompLauncherCGameInfo* gi,
                                   const PsxrecompCodegenHostConfig* cfg) {
     if (!gi || !cfg || !cfg->cmake_target || !cfg->exe_basename)
