@@ -1,9 +1,10 @@
 /* cd.c — CD/file services: async read pump, status pollers,
  * command issuer with retry (verbatim Ghidra, decomp/batch_sm3.txt).
  *
- * Guest globals via g_* arena bindings; timer cd_timer_read and
- * channel ops mc_session/95d78/961a8/961cc/98590/95ec8/98908/
- * 96e14/98c90 remain extern (deeper CD-driver cluster). */
+ * Guest globals via g_* arena bindings. The undefinedN / byte / uint
+ * typedefs below mirror Ghidra's decompile types so signatures stay
+ * visually comparable to generated/SLES_017.22_full_*.c — they are
+ * stdint aliases, not distinct types. */
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
