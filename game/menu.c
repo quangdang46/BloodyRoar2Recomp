@@ -159,10 +159,13 @@ extern void status_flag_cond_set(uint32_t,int);
 extern int table_byte_next_a(void);
 extern void br2_guest_frame_abandon(void);
 extern uint32_t g_cdfn_log[24];
+extern uint32_t g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3;
+extern int br2_bail_pending(void);
+extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
 extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
 extern int cd_stamp_to_sector(const void *);
-extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-extern int br2_bail_pending(void);
+
+
 extern void perm_table_apply(uint);
 extern void scroll_cfg_set(undefined1,int);
 extern void battle_session_arm(intptr_t,int);
@@ -567,10 +570,10 @@ void battle_flow_state_machine(intptr_t in_rec)
   int qres, otdp, sbyte;
 
   battle_ran = false;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     if (DAT_1f800001 != 0 && DAT_1f800001 != 1)
       decomp_trace_record(60,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,0,0);
-    decomp_trace_record(70,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,(uint8_t)DAT_1f80009b,0); }
+    decomp_trace_record(70,(uint32_t)DAT_1f800001,(uint32_t)DAT_1f80009c,DAT_1f80009b,0); }
 joined_r0x8016fd30:
   /* Bail-unwind in flight (g_psx_call_bail): this is a clean-C mega-loop
    * (goto joined_r0x8016fd30 every iteration) with no dispatch boundary —
@@ -586,7 +589,7 @@ joined_r0x8016fd30:
    * foreign value (proof/gs5_matchloop_dat1_3_dead_state.md). Restore the
    * canonical post-BFSM state so the gs->5 handoff sees exactly what the
    * guest guarantees. */
-  { extern int br2_bail_pending(void);
+  {
     if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
   /* Guest block_8016FD38 (the loop head) reloads the OT base/index from
    * scratchpad EVERY iteration: lw $2C,0xC($16) / lw $2B,8($16) where $16 =
@@ -633,7 +636,7 @@ joined_r0x8016fd30:
            * this clean-C loop with every generated fallback dropped.
            * Same DAT1 exit invariant as the loop head: a bail-forced return
            * must not leak BFSM-private DAT1 into match_loop (see above). */
-          { extern int br2_bail_pending(void);
+          {
             if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
           if (res < 0) {
             DAT_1f800001 = -1;
@@ -651,8 +654,8 @@ joined_r0x8016fd30:
       case 2:
         _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
         res = select_screen_tick(1);
-        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(74,0xf00d,(uint32_t)res,(uint8_t)DAT_1f800001,(uint32_t)DAT_1f80009c); }
+        {
+          decomp_trace_record(74,0xf00d,(uint32_t)res,DAT_1f800001,(uint32_t)DAT_1f80009c); }
         if (res != 0) {
           DAT_1f800001 = -1;
         }
@@ -708,8 +711,8 @@ L_dat1_2:
         scratchpad_pair_init();
         DAT_1f80009e = '\0';
         DAT_1f800001 = '\x03';
-        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-          decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
+        {
+          decomp_trace_record(73,0xcafe,(uint32_t)DAT_1f800001,DAT_1f80009b,(uint32_t)DAT_1f80009c); }
 L_dat1_3:
         res = frame_divisor_get();
         if (res == 0) {
@@ -738,8 +741,8 @@ L_dat1_3:
   case '\x03':
     goto L_dat1_3;
   case '\x04':
-    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-      decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
+    {
+      decomp_trace_record(71,0xdead,(uint32_t)DAT_1f800001,DAT_1f80009b,(uint32_t)DAT_1f80009c); }
     if (_DAT_1f800090 != 0) {
       _DAT_1f800090 = 0;
     }
@@ -752,7 +755,7 @@ L_dat1_3:
      * resumes the load instead of entering battle on a NULL node.
      * DAT1 exit invariant (see loop head): a bail-forced return must not
      * leak BFSM-private DAT1 into match_loop — restore canonical 0. */
-    { extern int br2_bail_pending(void);
+    {
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if ((qres != 0) && (_DAT_1f800090 == 0)) goto L_dat1_5;
     break;
@@ -777,7 +780,7 @@ L_dat1_5:
     brightness_packet_send(0x7f);
     record_copy_1a((char)DAT_1f800098);
     per_side_setup((char)DAT_1f800098,DAT_1f800099);
-    rec_copy_init((uint8_t)*(uint8_t *)&DAT_1f800098);
+    rec_copy_init(DAT_1f800098);
     clear_f4ee8_u16s(0x1f8000e8);
     clear_f4ee8_u16s(0x1f8001f0);
     reset_combat_slots();
@@ -793,8 +796,8 @@ L_dat1_7:
     if (qres == 0) {
       DAT_1f800001 = '\b';
 L_dat1_8:
-      { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-        decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,(uint8_t)DAT_1f80009b,(uint32_t)DAT_1f80009c); }
+      {
+        decomp_trace_record(72,0xbeef,(uint32_t)DAT_1f800001,DAT_1f80009b,(uint32_t)DAT_1f80009c); }
       if (DAT_1f80009b == '\x04') {
         battle_sides_commit(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
       }
@@ -1040,7 +1043,7 @@ joined_r0x8015c784:
    * below writes DAT_1f800001 = 0 before returning; a bail-forced return
    * would leak a private substate into match_loop after gs->5 (same hazard
    * as battle_flow_state_machine). */
-  { extern int br2_bail_pending(void);
+  {
     if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
@@ -1218,7 +1221,7 @@ undefined4 system_config_menu_b(void)
 joined_r0x8015b9e0:
   /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
    * writes DAT_1f800001 = 0); see system_config_menu_a. */
-  { extern int br2_bail_pending(void);
+  {
     if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
@@ -1409,7 +1412,7 @@ joined_r0x80164744:
      * returning; a bail-forced return would leak a private substate into
      * match_loop after the caller's gs->5 transition (same hazard as
      * battle_flow_state_machine — see its loop head). */
-    { extern int br2_bail_pending(void);
+    {
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 1) {
@@ -2056,7 +2059,7 @@ joined_r0x801673ac:
     /* Bail-unwind exit must preserve the DAT1 exit invariant (normal exits
      * write DAT_1f800001 = 0); see battle_flow_state_machine / results_
      * scoreboard for the full rationale. */
-    { extern int br2_bail_pending(void);
+    {
       if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
     if (DAT_1f800001 != 0xff) {
       if (DAT_1f800001 == 2) {
@@ -2140,7 +2143,7 @@ LAB_8016767c:
          * DAT1 exit invariant (normal exits leave DAT_1f800001 = 0) so the
          * caller's gs->5 handoff can't leak a private substate to
          * match_loop. */
-        { extern int br2_bail_pending(void);
+        {
           if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
         if ((res != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -2477,7 +2480,7 @@ undefined4 stream_block_decode(undefined4 dst,int *tbl,int idx)
       { uint32_t len = mode3_dispatch(dst,srcg);
         /* tag 11: record the RETURN length so cursor advances are fully
          * attributed (decode dst->dst+len). dst=heap cursor arg. */
-        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+        {
           decomp_trace_record(11,dst,srcg,0,len); }
         return len; }
     }
@@ -4102,7 +4105,7 @@ int32_t battle_config_eval(uint8_t *argblk,uint32_t battle_g,int32_t flag)
   uint32_t cls = ph & 0xf00;                 /* $v1 */
   uint32_t g, gcls, idx;
   int32_t r;
-  extern uint32_t g_bce_calls,g_bce_fz0,g_bce_fzN,g_bce_cls,g_bce_p3;
+
   g_bce_calls++;
   if (flag == 0) g_bce_fz0++; else g_bce_fzN++;
   g_bce_cls = cls; g_bce_p3 = (uint32_t)flag;
@@ -5034,7 +5037,7 @@ void pad_slot_state_walk(void)
 #define MW16(a,v) (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define MW32(a,v) ((uint32_t)(a)==0x801c47b8u ? \
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
-     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(20,_bo,_bv,0,__LINE__);} _bv;}) \
+     {decomp_trace_record(20,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 
 /* ======== 0x8017d198 / 0x8017d19c / 0x8017d1c4 ======== */
@@ -5236,7 +5239,7 @@ void battle_subrecord_reset(uint32_t battle_g)
   MW16(sub + 0xe,  0);
   memcpy(hrec + 0x18,  guest_at(0x801e1b3c), 0x21c0);
   memcpy(hrec + 0x21d8, guest_at(0x801e0f6c), 0xbd0);
-  results_record_build(3, (int32_t)(int16_t)*(int16_t *)(hrec + 6));
+  results_record_build(3, *(int16_t *)(hrec + 6));
 }
 
 /* battle_subrecord_set1 — *(u16*)(*(u32*)(a0+0xcc)) = 1. */
@@ -5425,7 +5428,7 @@ void battle_input_dispatch(uint32_t battle, uint32_t mask)
 L_7a4:
   srec = MB32(battle + 0x84);
   MW16(battle + 0x82,
-       (uint16_t)(int16_t)(int8_t)(MB8(srec) ^ MB8(srec + 1)));
+       (int8_t)(MB8(srec) ^ MB8(srec + 1)));
 }
 
 /* battle_math_init — battle-math struct init: dest a0 gets 7 u32 slots
@@ -5597,7 +5600,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   uint8_t *p1 = side_a, *p2 = side_b;
 
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
   for (;;) {
@@ -5901,7 +5904,7 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
 
   ttab = guest_of(tag_table_get());       /* tag table 0x801c47c0 */
   cur_st = MBS16(battle + 0x8c);
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(43,battle,sel_a,sel_b,(uint32_t)(int16_t)cur_st); }
   if (cur_st < 0) return -1;
   state = (uint32_t)cur_st;
@@ -8318,7 +8321,7 @@ int battle_frame(void)
      * bail exit (no MW8(0x1f800001,0), no sp restore): abandon only the
      * host-side frame record so $sp keeps the un-returned frame, exactly as
      * generated code leaves it. */
-    { extern int br2_bail_pending(void);
+    {
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; } }
     /* dispatcher @0x8014ce80 */
     st = MB8(0x1f800001);
@@ -9461,7 +9464,7 @@ void vs_confirm_a(uint8_t *blk_a,uint8_t *blk_b,uint32_t battle,
 
   uint32_t rec, kind;
   int32_t ret;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(49,(uint32_t)(uintptr_t)blk_a,(uint32_t)(uintptr_t)blk_b,battle,flag); }
 
   rec = MB32(battle + 0xcc);
@@ -9931,7 +9934,7 @@ void versus_stage_commit(uint32_t baddr,uint32_t stage)
   int32_t stg = (int32_t)stage;
   uint32_t rec = MB32(baddr + 0xcc);
   int32_t idx;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(47,baddr,stage,rec,MB32(baddr+0xcc)); }
 
   MW16(rec + 0, 3);
@@ -9958,7 +9961,7 @@ void versus_stage_commit_b(uint32_t baddr,int32_t stage)
   int32_t stg = stage;
   uint32_t rec = MB32(baddr + 0xcc);
   int32_t idx;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(48,baddr,stage,rec,MB32(baddr+0xcc)); }
 
   MW16(rec + 0, 3);
@@ -12750,7 +12753,7 @@ void gauge_scale_fixed(int16_t gw,int16_t gh)
 void stage_char_data_load(uint32_t rec,uint32_t idx)
 {
   uint32_t K = idx * 23140u;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(46,rec,idx,K,0); }
   uint32_t blk = MB32(rec + 0xcc);
   uint32_t ret;
@@ -15017,7 +15020,7 @@ void heap_ptr_fixup(uint32_t blk)
 {
   int32_t  n;
   uint32_t cur;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     /* tag25/29 hfix_in: dump raw header words blk+0,+4 and +8,+0xc */
     decomp_trace_record(25,blk,MB32(blk+0u),0,MB32(blk+4u));
     decomp_trace_record(29,blk,MB32(blk+8u),0,MB32(blk+0xcu)); }
@@ -15077,7 +15080,7 @@ void heap_ptr_fixup(uint32_t blk)
       cur += 4u;
     } while (n > 0);
   }
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     /* tag26 hfix_out: dst=blk, src=gate(+4 post), mode=slotcount(+0xc), len=nested(+8 post) FULL */
     decomp_trace_record(26,blk,MB32(blk+4u),(uint8_t)MB32(blk+0xcu),MB32(blk+8u)); }
 }
@@ -15100,9 +15103,9 @@ uint32_t heap_record_emit(uint32_t heap,uint32_t dst,uint32_t src,
   int32_t  cnt = (int32_t)cnt0;
   uint32_t slotp, outsz = 0, fr;
   uint32_t total;
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(23,heap,src,idx,0); }  /* tag23 hrec_in */
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     /* tag24: src(heapA arg) vs *guest_at(0x801c47b8) live cell — split-brain probe */
     decomp_trace_record(24,src,*(uint32_t *)guest_at(0x801c47b8u),0,0); }
   *out = 0;
@@ -15141,7 +15144,7 @@ uint32_t heap_record_emit(uint32_t heap,uint32_t dst,uint32_t src,
     cnt--;
   } while (cnt > 0);
   br2_guest_frame_free();
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     /* tag 12: heapA cursor advance = return(srcw) - src(heapA in).
      * dst=heapA_in, src=dst_cursor dw, len=advance. Catches inflated emit. */
     decomp_trace_record(12,src,dw,0,(srcw>src)?(srcw-src):0); }
@@ -15982,7 +15985,7 @@ int32_t heap_serialize(uint32_t blk,uint32_t cur,uint32_t dst,
   uint32_t emit_n = 0;
   uint32_t i;
   uint32_t entry_blk = blk;   /* entry blk for trace */
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     decomp_trace_record(22,blk,cur,dst,0); }  /* tag22 hser_in */
 
 #define B7C0_EMIT(N_) do {                                    \
@@ -16144,7 +16147,7 @@ int32_t heap_serialize(uint32_t blk,uint32_t cur,uint32_t dst,
           scr[emit_n*4u+3u] = 0x80187dccu;
           emit_n++;
         }
-        { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+        {
           decomp_trace_record(27,ctx,MB32(ctx+0x14u),0,MB32(rp+0x18u));
           decomp_trace_record(28,rp,cur,0,MB32(ctx+0x10u));
           decomp_trace_record(30,MB32(ctx+4u),MB32(ctx+8u),0,MB32(ctx+0xcu));
@@ -16191,7 +16194,7 @@ next_block:
       cur += 0x10u;
     }
   }
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+  {
     /* tag15 hser: dst=entry blk, src=ret cur, len=emit count emit_n */
     decomp_trace_record(15,entry_blk,(uint32_t)cur,0,emit_n); }
   return (int32_t)cur;
