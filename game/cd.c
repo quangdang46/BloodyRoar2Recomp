@@ -5282,7 +5282,7 @@ void cd_block7_init(void)
 
 /* ======== 0x8019ef30 ======== */
 
-/* cd_pending_release — if pending slot @0x801FEBF4 >= 0, release via FUN_801A0250 and mark -1. */
+/* cd_pending_release — if pending slot @0x801FEBF4 >= 0, release via bios_tramp_b036 and mark -1. */
 void cd_pending_release(void)
 {
   int32_t v = (int32_t)DB32(0x801febf4);
@@ -5611,7 +5611,7 @@ int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019aca4 ======== */
 
-/* cd_state_blk_save — save block @0x801BCD18: if flag clear, FUN_8019AD80(+0x38), set flag, stash fields to globals, crit-enter; ret s0. */
+/* cd_state_blk_save — save block @0x801BCD18: if flag clear, bios_tramp_b019(+0x38), set flag, stash fields to globals, crit-enter; ret s0. */
 uint32_t cd_state_blk_save(void)
 {
   uint32_t s0 = 0x801bcd18;
@@ -5642,7 +5642,7 @@ int cd_subsys_init_full(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x8019ac04 ======== */
 
-/* cd_state_blk_restore — inverse of save: restore fields, clear MMIO cells, FUN_8019AD70, clear flag; ret s0. */
+/* cd_state_blk_restore — inverse of save: restore fields, clear MMIO cells, bios_tramp_b018, clear flag; ret s0. */
 uint32_t cd_state_blk_restore(void)
 {
   uint32_t s0 = 0x801bcd18;
@@ -6173,7 +6173,7 @@ extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
 /* ======== 0x8019f02c ======== */
 
-/* cd_job_sm5 — job SM state 5 (cb 0x8019F02C): init->wait FUN_801A0230/240 pumps->0x1e; on queue status retry<=3 then map status, ret 1 done. */
+/* cd_job_sm5 — job SM state 5 (cb 0x8019F02C): init->wait bios_tramp_b033/b034 pumps->0x1e; on queue status retry<=3 then map status, ret 1 done. */
 int cd_job_sm5(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6224,7 +6224,7 @@ int cd_job_sm5(uint32_t a0)
 
 /* ======== 0x8019f220 ======== */
 
-/* cd_job_sm6 — job SM state 6 (cb 0x8019F220): same skeleton via bios_tramp_b035 instead of FUN_801A0240. */
+/* cd_job_sm6 — job SM state 6 (cb 0x8019F220): same skeleton via bios_tramp_b035 instead of bios_tramp_b034. */
 int cd_job_sm6(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6274,7 +6274,7 @@ int cd_job_sm6(uint32_t a0)
 
 /* ======== 0x8019f474 ======== */
 
-/* cd_job_submit5 — job submit SM for state-5 job (cb 0x8019F02C): case walk 0->alloc, 0xa->FUN_801A0220 slot, 0x14->pump svc_dual, 0x16->queue_b. */
+/* cd_job_submit5 — job submit SM for state-5 job (cb 0x8019F02C): case walk 0->alloc, 0xa->bios_tramp_b032 slot, 0x14->pump svc_dual, 0x16->queue_b. */
 int cd_job_submit5(uint32_t a0)
 {
   uint32_t *s1 = (uint32_t *)guest_at(a0);
@@ -6766,7 +6766,7 @@ void cd_cb7_run(uint32_t a0)
 
 /* ======== 0x8019eda8 ======== */
 
-/* cd_file_open_wait — open-file job loop: FUN_801A0220 alloc slot, job_slot_alloc(0x8019E700), pump until job_result st==0 (retry st==2 x5, st==3 continue). */
+/* cd_file_open_wait — open-file job loop: bios_tramp_b032 alloc slot, job_slot_alloc(0x8019E700), pump until job_result st==0 (retry st==2 x5, st==3 continue). */
 int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t *q = (uint32_t *)guest_at(0x801febf4);
