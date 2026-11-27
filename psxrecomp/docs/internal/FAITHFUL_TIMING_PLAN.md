@@ -10741,3 +10741,17 @@ N+102 — x28 bug narrowed to a frame_tick CALLEE (4 agents, still unfixed):
   Debug-enabled headless verification on port 4507 advanced frames 2206 to
   8446 to 19726 without a crash; the runtime was then stopped. No timing-core
   behavior changed.
+- **2026-11-27 (BR2 CD/IRQ timed coverage COMPLETE + runtime-verified):**
+  orch/w5/e05 batches 45-63 closed every residual untimed path in
+  0x8018-0x801B: tail-dispatch targets, piece-entry rows, embedded
+  entries (find_body scoring fix), all _cont resume cases across every
+  dispatched clean body (incl. peer files w2_e01/w3_e0x), and the
+  register-indirect jr/jalr class via new clean_fallback_stats
+  instrumentation on psx_dispatch_game_compiled — count=0 at frame
+  55213+ across repeated soaks. Transformer pipeline
+  (gen_cps_clean.py) is canonical for cps_clean.c / cd_irq_probe.c /
+  w3_e06.c: addr-keyed temps, LUI/sign-extend/setcc folds (now
+  anchor-aware after the /* 0xADDR: 0xENC */ salvage regression),
+  callee-named comments, mode-aware headers. Remaining untimed
+  surface is the 0x8012-0x8017 game-logic band (peer scope) and
+  gameplay-path verification of cold bodies.
