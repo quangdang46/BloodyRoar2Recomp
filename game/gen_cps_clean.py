@@ -364,7 +364,21 @@ def transform(body):
     # real dispatch — the same tail-dispatch the generated body uses.
     body = re.sub(r'cps_([0-9a-fA-F]{8})\(\)\s*;\s*(?:return\s*;)?',
                   lambda m: f'cpu->pc = 0x{m.group(1)}u; return;', body)
-    return body
+    # The generated tail emits BOTH a 'fallthrough to split piece' dispatch
+    # and a 'fallthrough to next function' dispatch to the same target —
+    # after the stale-static guards are dropped they become two consecutive
+    # identical `cpu->pc = X; return;` lines and the second is unreachable.
+    # Collapse them, keeping the first (split-piece boundary) comment.
+    dedup = []
+    prev_pc = None
+    for ln in body.split('\n'):
+        code = ln.split('/*')[0].strip()
+        m = re.fullmatch(r'cpu->pc = (0x[0-9a-fA-F]+u); return;', code)
+        if m and m.group(1) == prev_pc:
+            continue
+        prev_pc = m.group(1) if m else None
+        dedup.append(ln)
+    return '\n'.join(dedup)
 
 
 FILE_HDR = '''/* cps_clean.c — AUTO-GENERATED clean CPS transliterations.
