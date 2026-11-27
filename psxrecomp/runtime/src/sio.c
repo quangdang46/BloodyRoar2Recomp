@@ -1342,7 +1342,6 @@ void sio_get_pad_sticks(int slot, uint8_t out[4]) {
  *                                       flip re-detect is benign.
  *
  *   Driven per-game by [controller] legacy_pad_config in game.toml (applied via
- /* Set the legacy pad config flag. */
  *   sio_set_legacy_cfg() at boot). ONLY Tomba opts in. Because the default is 0,
  *   the modern path in pad_process_byte() below is byte-for-byte unchanged when
  *   the flag is off — no other title is affected. The `pad_cfg` debug command can
@@ -2879,7 +2878,7 @@ static void sio_pace_walk(int cycles) {
     }
 }
 
-/* Advance SIO timing by `cycles` guest cycles. */
+/* Macro=0: stubs for ABI symmetry. */
 void sio_advance(uint32_t cycles) {
     if (cycles == 0) return;
     s_sio_advance_called++;
@@ -3091,6 +3090,7 @@ static int sio_snap_emit_rumble(PstW *w) {
 
 /* Serialize the SIO FSM state to a save-state stream. */
 static int sio_snap_emit_fsm(PstW *w) {
+    /* Load-bearing pacing state (guest-visible IRQ timing). */
     return sio_snap_emit_fsm_pace(w) && sio_snap_emit_fsm_meta(w);
 }
 

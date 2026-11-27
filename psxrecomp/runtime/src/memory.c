@@ -660,7 +660,6 @@ void dirty_ram_mark_executable_range(uint32_t phys, uint32_t len) {
  * dirty-RAM interpreter (the SAME path overlays take) instead of the compiled
  * image. Interp-path Δ-ruler enabler: lets the cyctest isolation loops be measured
  * native-INTERP vs Beetle. Consulted by every routing site that already calls
- /* True if a phys page is dirty (needs interp). */
  * dirty_ram_is_dirty (top dispatch, dirty_ram_dispatch_inner gates, the
  * psx_dispatch_game_compiled gates) — no emitter/dispatch change needed. */
 /* Cached PSX_FORCE_INTERP gate. */

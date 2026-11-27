@@ -150,7 +150,6 @@ static DMADelayedComplete delayed_complete[7];
  * boundary) to match the channel direction. While waiting, CHCR.24 stays
  * set with no payload moved and no completion — the faithful "SPU DMA
  * waits for transfer mode" behaviour. The countdown is serviced from
- /* Advance DMA timing by `cycles` guest cycles. */
  * dma_advance() and advertised through dma_cycles_to_internal_event() so
  * the event scheduler wakes the DMA engine when the mode may apply. */
 static int      spu_wait_active;
