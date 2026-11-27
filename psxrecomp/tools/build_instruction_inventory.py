@@ -174,6 +174,7 @@ COP2_RS = {
 
 # Categories for opcodes the BIOS uses.
 def categorize_primary(op):
+    """bucket an opcode into its primary ISA category."""
     if op in (0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
               0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F):
         return "CPU"
@@ -237,14 +238,17 @@ def classify(raw, addr):
 
 
 def addr_to_offset(addr):
+    """guest vaddr -> ROM file offset."""
     return addr - IMAGE_BASE
 
 
 def offset_to_addr(off):
+    """ROM file offset -> guest vaddr."""
     return IMAGE_BASE + off
 
 
 def fetch(rom, addr):
+    """read the 4-byte instruction word at guest addr."""
     off = addr_to_offset(addr)
     if off < 0 or off + 4 > ROM_SIZE:
         return None
@@ -397,6 +401,7 @@ def walk_function(rom, entry, hard_cap):
 
 
 def main():
+    """walk the BIOS image and emit the instruction inventory."""
     if not os.path.exists(BIOS_PATH):
         print(f"ERROR: BIOS not found at {BIOS_PATH}", file=sys.stderr)
         return 2

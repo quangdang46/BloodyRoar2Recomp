@@ -40,6 +40,7 @@ WORKFLOW_REL = pathlib.Path(".github") / "workflows" / "release.yml"
 
 
 def zip_prefix_from_packager(root: pathlib.Path) -> str:
+    """derive the release zip prefix from the packager script."""
     try:
         text = (root / "scripts" / "package_setup_release.sh").read_text(
             encoding="utf-8", errors="replace")
@@ -50,6 +51,7 @@ def zip_prefix_from_packager(root: pathlib.Path) -> str:
 
 
 def main() -> int:
+    """regenerate the CI workflow files."""
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog="\n".join(__doc__.split("\n\n")[1:]))
