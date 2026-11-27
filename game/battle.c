@@ -12426,7 +12426,7 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
 /* text_render_full @0x8012d154 — full text renderer: walk the string,
  * fetch per-glyph font metrics, and emit textured quads into the
  * packet/OT stream; font selects the glyph table, cfg the attrs. */
-undefined4 text_render_full(uint *a0,uint font,int cfg)
+undefined4 text_render_full(uint *ot,uint font,int cfg)
 {
   byte wd;
   undefined2 aw;
@@ -12935,8 +12935,8 @@ LAB_8012dc2c:
           *gp = by;
 LAB_8012dc4c:
           gp = gp + 0x14;
-          *pkt = *a0 | 0x9000000;
-          *a0 = guest_of(pkt) & 0xffffff;
+          *pkt = *ot | 0x9000000;
+          *ot = guest_of(pkt) & 0xffffff;
           _DAT_1f800380 = _DAT_1f800380 + 1;
           pkt = pkt + 10;
           if (399 < _DAT_1f800380) {
@@ -15184,16 +15184,16 @@ void prim_tag_set(int prim)
 /* prim_packet_init @0x801acfb4 — init a primitive packet
  * header: tag word + attribute flags (texture-less variant;
  * see prim_packet_init_tex for the tex-bound form). */
-void prim_packet_init(int pkt,int a1,int a2,uint fl)
+void prim_packet_init(int pkt,int flag1,int flag2,uint fl)
 {
   uint tagw;
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((pkt + 3) ))= 1;
   tagw = 0xe1000000;
-  if (a2 != 0) {
+  if (flag2 != 0) {
     tagw = 0xe1000200;
   }
   fl = fl & 0x9ff;
-  if (a1 != 0) {
+  if (flag1 != 0) {
     fl = fl | 0x400;
   }
   *(uint *)guest_at((uint32_t)(uintptr_t)((pkt + 4) ))= tagw | fl;
@@ -16721,7 +16721,7 @@ extern uint32_t cd_cmd_retry(uintptr_t);
 
 /* announce_param_block_init @0x8012e58c — round/announce parameter block init @0x1f80038c.
  * All fields u16 (sh) except +0x1c u32 (sw); verified vs disasm. */
-void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
+void announce_param_block_init(uint32_t tbl,uint32_t a1,const void *a2,
                   uint32_t a3,uint32_t arg5,int32_t arg6)
 {
   uint16_t *b = (uint16_t *)guest_at(0x1f80038c);
@@ -16733,7 +16733,7 @@ void announce_param_block_init(uint32_t a0,uint32_t a1,const void *a2,
   b[11] = (uint16_t)((((uint32_t)arg6 + 0x1e0) & 0x1ff) * 0x40 + 0x16);
   b[12] = 4;
   b[0] = 0; b[1] = 0; b[2] = 0;
-  text_render_full((uint *)guest_at(a0), a1 & 0xffff,
+  text_render_full((uint *)guest_at(tbl), a1 & 0xffff,
                0x1f80038c);
 }
 
@@ -16917,8 +16917,8 @@ extern void slot_name_measure(char *,uint32_t);
 /* hud_time_score_draw @0x80163e38 — draw the time/score readout: split the
  * frame counter into mm:ss:ff (clamped), sprintf_core into a reserved
  * guest-frame buffer, then render via the hud_text/announce helpers. */
-void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
-                  uint8_t *arg5,int32_t arg6)
+void hud_time_score_draw(uint32_t tbl,uint16_t font,int32_t a2,int32_t clr,
+                  uint8_t *rec,int32_t mode)
 {
   int32_t s1, s2, ff, t5, t6, fc;
   int16_t col;
@@ -16932,71 +16932,71 @@ void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
   extern void br2_guest_frame_free(void);
   uint32_t htsd_frm = br2_guest_frame(0x60);
   char *auStack_48 = (char *)guest_at(htsd_frm + 0x18);
-  t5 = *(int32_t *)(arg5 + 8) / 0x32;
+  t5 = *(int32_t *)(rec + 8) / 0x32;
   t6 = t5 / 0x3c;
   t5 = t5 % 0x3c;
-  ff = (*(int32_t *)(arg5 + 8) % 0x32) * 2;
+  ff = (*(int32_t *)(rec + 8) % 0x32) * 2;
   if (99 < t6) { ff = 99; t6 = 99; t5 = 0x3b; }
   fc = ff;
   sprintf_core(auStack_48,(char *)guest_at(0x80121fa8),t6,t5,ff);
-  s2 = ((int32_t)*(int16_t *)(arg5 + 0xc) % 1000) * 0x10000 >> 0x10;
-  s1 = ((int32_t)*(int16_t *)(arg5 + 0xe) % 1000) * 0x10000 >> 0x10;
-  col = (int16_t)a3;
-  switch (arg6) {
+  s2 = ((int32_t)*(int16_t *)(rec + 0xc) % 1000) * 0x10000 >> 0x10;
+  s1 = ((int32_t)*(int16_t *)(rec + 0xe) % 1000) * 0x10000 >> 0x10;
+  col = (int16_t)clr;
+  switch (mode) {
   case 0:
     t5 = (int32_t)col;
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t5,4);
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t5,4);
     break;
   case 1:
     sprintf_core(auStack_48,(char *)guest_at(0x80121fb8),t6,t5,ff);
-    print_dispatch((const char *)guest_at(0x80121fc8),(const char *)arg5,auStack_48);
+    print_dispatch((const char *)guest_at(0x80121fc8),(const char *)rec,auStack_48);
     goto LAB_80164124;
   case 2:
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)col,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)col,1);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
     break;
   case 3:
-    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)arg5,s2);
+    print_dispatch((const char *)guest_at(0x80121fd4),(const char *)rec,s2);
 LAB_80164124:
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
     print_dispatch(auStack_48);
     break;
   case 4:
     t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
     t6 = (int32_t)col;
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)t6,4);
-    announce_param_block_init_b(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t6,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t6,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t6,4);
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)t6,4);
+    announce_param_block_init_b(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t6,1);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t6,1);
+    announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t6,4);
     break;
   case 5:
     t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
-    t5 = (a3 + 10) * 0x10000 >> 0x10;
-    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    announce_param_block_init_b(tbl,a1,arg5,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)col,4);
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = (clr + 10) * 0x10000 >> 0x10;
+    hud_text_a(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    hud_text_a(tbl,font,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)col,4);
     break;
   case 6:
     t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
-    announce_param_block_init_b(tbl,a1,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
-    t5 = (a3 + 10) * 0x10000 >> 0x10;
-    hud_text_a(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    hud_text_a(tbl,a1,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = (clr + 10) * 0x10000 >> 0x10;
+    hud_text_a(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    hud_text_a(tbl,font,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
     break;
   case 0x12:
-    hud_text_b(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,5);
+    hud_text_b(tbl,font,auStack_48,a2 + 0x10,(uint16_t)clr,5);
     goto LAB_801645f8;
   case 0x13:
     if ((_DAT_1f8000dc & 4) == 0) fl = 0; else fl = 5;
-    hud_text_c(tbl,a1,auStack_48,a2 + 0x10,(uint16_t)a3,fl);
+    hud_text_c(tbl,font,auStack_48,a2 + 0x10,(uint16_t)clr,fl);
     goto LAB_80164538;
   case 0x14:
     s2 = s1;
@@ -17004,26 +17004,26 @@ LAB_80164124:
   case 0x15:
     t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
     if ((_DAT_1f8000dc & 4) == 0) {
-      hud_text_c(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,0);
+      hud_text_c(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,0);
       fl = 0;
     } else {
-      hud_text_c(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,5);
+      hud_text_c(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
       fl = 5;
     }
-    announce_param_block_init_alt(tbl,a1,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)a3,fl);
+    announce_param_block_init_alt(tbl,font,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)clr,fl);
 LAB_80164538:
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init_alt(tbl,a1,auStack_48,(uint16_t)(a2 + 0xf8),(uint16_t)a3,2);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    announce_param_block_init_alt(tbl,font,auStack_48,(uint16_t)(a2 + 0xf8),(uint16_t)clr,2);
     break;
   case 0x16:
 LAB_8016457c:
     t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
-    hud_text_b(tbl,a1,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)a3,5);
-    announce_param_block_init(tbl,a1,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)col,5);
+    hud_text_b(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
+    announce_param_block_init(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)col,5);
 LAB_801645f8:
-    announce_param_block_init(tbl,a1,arg5,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)col,0);
-    slot_name_measure(auStack_48,*(uint8_t *)(arg5 + 4));
-    announce_param_block_init(tbl,a1,auStack_48,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)col,2);
+    announce_param_block_init(tbl,font,rec,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)col,0);
+    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
+    announce_param_block_init(tbl,font,auStack_48,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)col,2);
   }
   br2_guest_frame_free();
 }
