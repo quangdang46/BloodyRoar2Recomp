@@ -1303,3 +1303,27 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 - Verification method that worked: map clean call site -> fnmap guest
   addr -> find `CPS jal -> 0xADDR` in generated/SLES_017.22_full_*.c ->
   read last cpu->gpr[5] write before jal for true a1.
+
+### Session update 27 (ABI audit round 2 + structuring negative result)
+
+- Audit round 2 (subagent, all 51 unprototyped externs x call sites):
+  5 more REAL-BUGs fixed in `4a8d53fc` — cd_dir_read_wrap host-ptr-as-
+  guest-addr + discarded return value, cd_stamp_to_sector uint32_t*
+  arithmetic 4x overshoot, mc_data_* p11 host-ptr truncation (3 sites),
+  menu.c FUN_8018b100 macro shadowing the real 6-arg CPS-frame wrapper
+  (all args silently dropped!), battle.c task_alloc_wrap_c payload
+  truncation. Build clean, versus-mash verified frames advancing.
+- **cps_ structuring: NEGATIVE RESULT — approach dead.** Implemented
+  `structure_regions()` (Phoenix-style single-predecessor inlining,
+  SCC bail, pinned=_cont-case targets) in gen_cps_clean.py, ran full
+  regen over all 743 cps_ + sampled 400/518 cpst_ addrs: **inlined=0
+  everywhere**. Root cause measured: EVERY non-first block in EVERY
+  multi-block function is a `_cont` switch case target — the CPS
+  coroutine model calls psx_check_interrupts_at before every dispatch
+  with resume=next-block, so every block is a pinned resume point.
+  Label-inlining can never fire; the labels ARE the continuation
+  table. Reverted the pass (dead code). Only cycles found were
+  self-loops (`if(c) goto self` poll spins) — not multi-node SCCs.
+- True remaining frontier for cps_ readability: per-function hand
+  ports reconstructing whole guest functions across piece boundaries
+  (the established clean-port workflow), not CFG structuring.
