@@ -626,7 +626,7 @@ void guest_main(void)
     }
     frame_advance_helper();
     func_0x80163840(0);
-switchD_80126370_caseD_80126344:
+L_80126344_dispatch:
     /* Bail-unwind in flight (g_psx_call_bail): main() is a clean-C
      * mega-loop — every state dispatch re-enters here. Return so the
      * unwind reaches the outermost psx_dispatch_impl (which flattens the
@@ -641,13 +641,14 @@ switchD_80126370_caseD_80126344:
 code_r0x8012634c:
     state_lt_14 = state < 0xe;
 frame_state_wait:
+L_80126350:
     do {
     } while (!state_lt_14);
     switch(state) {
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
-        goto switchD_80126370_caseD_80126344;
+        goto L_80126344_dispatch;
     case 1: /* 0x8012638c */
         display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
@@ -657,7 +658,7 @@ frame_state_wait:
         if (state == 1) goto state_fallback;
         goto frame_state_wait;
     case 2: /* 0x801263c8 */
-        goto switchD_80126370_caseD_801263c8;
+        goto L_801263c8_dispatch;
     case 3: /* 0x801263e0 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -672,7 +673,7 @@ frame_state_wait:
         state_lt_14 = state < 0xe;
         if (state == 3) {
             g_game_state = 4;
-            goto switchD_80126370_caseD_80126344;
+            goto L_80126344_dispatch;
         }
         goto frame_state_wait;
     case 4: /* 0x8012644c */
@@ -690,10 +691,10 @@ frame_state_wait:
         }
         gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                      ((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
-        if (g_game_state != 4) goto switchD_80126370_caseD_80126344;
+        if (g_game_state != 4) goto L_80126344_dispatch;
         break;
     case 5: /* 0x80126534 */
-        goto switchD_80126370_caseD_80126534;
+        goto L_80126534_dispatch;
     case 6: /* 0x801265c8 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -703,7 +704,6 @@ frame_state_wait:
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
             goto switchD_80126370_caseD_80126344;
-        goto state_to_3;
     case 7: /* 0x80126624 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -720,10 +720,11 @@ frame_state_wait:
         battle_flow_state_machine((intptr_t)pad_buf);
         ret_state = 8;
 post_flow_state_check:
+L_8012666c:
         if (g_game_state == ret_state) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto L_80126344_dispatch;
     case 9: /* 0x8012667c */
         match_mode_set(1);
         unlock_progress_scene_entry(0);
@@ -736,7 +737,7 @@ post_flow_state_check:
                 player_name_entry(0);
                 g_game_state = 5;
             }
-            goto switchD_80126370_caseD_80126344;
+            goto L_80126344_dispatch;
         }
         break;
     case 11: /* 0x801266c0 */
@@ -745,19 +746,19 @@ post_flow_state_check:
             call_ret = system_config_menu_a();
         }
         else {
-            if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
+            if (g_sub_state != '\x04') goto L_80126344_dispatch;
             call_ret = system_config_menu_b();
         }
         if (call_ret != 0) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto L_80126344_dispatch;
     default: /* 10,12,13 -> 0x80126344 re-dispatch (hang) */
-        goto switchD_80126370_caseD_80126344;
+        goto L_80126344_dispatch;
     }
     g_game_state = 5;
-    goto switchD_80126370_caseD_80126344;
-switchD_80126370_caseD_80126534:
+    goto L_80126344_dispatch;
+L_80126534_dispatch:
     mmode = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
         mmode = 1;
@@ -783,19 +784,21 @@ switchD_80126370_caseD_80126534:
         }
         else {
 state_fallback:
+L_801265b8:
             g_game_state = 2;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto L_80126344_dispatch;
     }
     goto frame_state_wait;
 switchD_80126370_caseD_801263c8:
     state = (uint32_t)g_game_state;
     retry_count = 0;
     if (state == 2) goto state_to_3;
-    goto code_r0x8012634c;
 state_to_3:
+L_801263c8_dispatch:
+L_8012661c:
     g_game_state = 3;
-    goto switchD_80126370_caseD_80126344;
+    goto L_80126344_dispatch;
 }
 
 /* ==================================================================
@@ -1046,6 +1049,7 @@ disp_off_f0:
         _DAT_1f800022 = 0xf0;
         DAT_1f800015 = '\0';
         goto disp_env_tail;
+L_80127134:
     case 7:
         _DAT_1f800020 = 0x280;
         break;
@@ -1055,6 +1059,7 @@ disp_off_f0:
     _DAT_1f800022 = 0x1e0;
     DAT_1f800015 = '\x01';
 disp_env_tail:
+L_80127160:
     _DAT_1f800024 = 0x168;
     gte_ofs_set(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
     gte_cw_d000_set((int)_DAT_1f800024);
@@ -1511,6 +1516,7 @@ joined_r0x801470b0:
                 DAT_1f800001 = 1;
             }
 spr_pkt_submit_block:
+L_801472f8:
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0,0xefff0088,0x7c000000);
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0x100,0xefff008a,0x7c400000);
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0xf00000,0xefff0099,0x7c800000);
@@ -1562,6 +1568,7 @@ spr_pkt_submit_block:
             }
             else if (DAT_1f800001 == 1) {
 match_end_poll:
+L_801472a4:
                 ret = match_end_check(0x1f800000);
                 if ((ret < 0) && (attract_timer = attract_timer + -1, attract_timer == 0)) {
                     DAT_1f800001 = 0xf0;
@@ -1704,6 +1711,7 @@ uint32_t scene_entry(int vram_base,int stage_idx,int demo_flag)
     } while ((demo_flag == 0) || ((_DAT_1f80007c & 0x850) == 0));
     ret = 1;
 demo_exit:
+L_801593a8:
     brightness_packet_send(0);
     cmd_byte[0] = 0x80;
     _DAT_1f80000c = (uint32_t)(_DAT_1f80000c == 0);
@@ -1909,6 +1917,7 @@ int32_t intro_movie_state(int32_t which)
       spr_draw_off((int)_DAT_801c47b8,0x3c0,0x100,1);
       _DAT_801c47b8 = _DAT_801c47b8 + (uint32_t)ret;
 stream_decode_done:
+L_8012c330:
       cd_timer_read(0);
       scratch_013_set(saved_013);
       *(int16_t *)g_DAT_1f80008c = -1;
