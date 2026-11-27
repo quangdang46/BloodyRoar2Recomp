@@ -119,14 +119,14 @@ extern int status_text_display(uint32_t a0,uint32_t a1);
 extern int scratchpad_pair_init(void);
 extern int menu_res_load_sm(uint32_t a0,uint8_t *buf_a,uint8_t *buf_b,int32_t mode);
 extern int fighter_anim_table_init(int32_t a0);
-extern int action_enter_fwd();
+extern int action_enter_fwd(uint32_t battle,uint8_t *ctrl,uint32_t sel);
 extern void fighter_frame(byte *,uint8_t *);
 #define FUN_801787dc fighter_frame
 extern int prim_xform3_task_run();
 #define FUN_8018b100 prim_xform3_task_run
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
-extern int spr_slot_pkt_submit();
+extern int spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_t attr);
 extern uint32_t spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 extern int cd_file_load_sm(int file_id,uint32_t dst);
 extern int printf_forward(const char *fmt, ...);
@@ -2927,7 +2927,7 @@ undefined4 attract_menu_dispatch(intptr_t ctx,uint btn)
       if (st < 0) {
         st = st + 3;
       }
-      spr_slot_pkt_submit(_DAT_1f800008 + 4,
+      spr_slot_pkt_submit((uint32_t *)(uintptr_t)(_DAT_1f800008 + 4),
                    ((st >> 2) + -0x10) * 0x10000 |
                    ((((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                     ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1) - 8U & 0xffff,0xf0f001e,
@@ -2936,7 +2936,7 @@ undefined4 attract_menu_dispatch(intptr_t ctx,uint btn)
       if (st < 0) {
         st = st + 3;
       }
-      spr_slot_pkt_submit(_DAT_1f800008 + 4,
+      spr_slot_pkt_submit((uint32_t *)(uintptr_t)(_DAT_1f800008 + 4),
                    ((st >> 2) + 0x10) * 0x10000 |
                    ((((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
                     ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1) - 8U & 0xffff,0xf0f001e,
