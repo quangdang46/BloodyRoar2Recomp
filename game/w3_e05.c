@@ -93,10 +93,10 @@ bE4:
 bEC:
   c->gpr[2] = c->gpr[5] << 2;                  /* sll v0,a1,2 */
   c->gpr[2] = c->gpr[2] + c->gpr[3];           /* addu v0,v0,v1 */
-  { uint32_t _jt = c->gpr[31];                 /* latch jr target */
+  { uint32_t jr_target = c->gpr[31];                 /* latch jr target */
     c->write_word(c->gpr[2], c->gpr[6]);       /* delay: sw a2,0(v0) */
-    psx_check_interrupts_at(c, _jt);
-    c->pc = _jt;
+    psx_check_interrupts_at(c, jr_target);
+    c->pc = jr_target;
     return c->gpr[2]; }
 }
 
@@ -186,9 +186,9 @@ b9E8:
 b9F0:
   c->gpr[31] = c->read_word(c->gpr[29] + 16);/* lw ra,16(sp) */
   /* nop @0x801579F4 */
-  { uint32_t _jt = c->gpr[31];               /* latch jr target */
+  { uint32_t jr_target = c->gpr[31];               /* latch jr target */
     c->gpr[29] = c->gpr[29] + 24;            /* delay: addiu sp,sp,0x18 */
-    psx_check_interrupts_at(c, _jt);
-    c->pc = _jt;
+    psx_check_interrupts_at(c, jr_target);
+    c->pc = jr_target;
     return c->gpr[2]; }
 }

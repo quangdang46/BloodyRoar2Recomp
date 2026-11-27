@@ -44,9 +44,9 @@ void battle_state_gate_tail(void)
 block_80152248:
   cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[4] + 0xa4); /* lh v0,0xa4(a0) */
   /* nop @0x8015224C */
-  { int _bc = ((int32_t)cpu->gpr[2] >= 0);   /* bgez v0 — cond before delay */
+  { int cond_v0_ge_0 = ((int32_t)cpu->gpr[2] >= 0);   /* bgez v0 — cond before delay */
     cpu->gpr[2] = 1;                          /* delay: li v0,1 */
-    if (_bc) {
+    if (cond_v0_ge_0) {
       psx_check_interrupts_at(cpu, 0x80152264u);
       cpu->pc = 0x80152264u; return;          /* CPS taken: split -> jr-ra stub */
     } else {
@@ -55,10 +55,10 @@ block_80152248:
     } }
 
 block_80152258:
-  { uint32_t _jt = cpu->gpr[31];              /* jr $ra — latch before delay */
+  { uint32_t jr_target = cpu->gpr[31];              /* jr $ra — latch before delay */
     cpu->gpr[2] = cpu->gpr[0];                /* delay: move v0,zero */
-    psx_check_interrupts_at(cpu, _jt);
-    cpu->pc = _jt; return; }                  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return; }                  /* CPS: jr $ra */
 }
 
 /* ======== mc_slot_action (guest 0x8015260C) case-0 piece ========
@@ -96,9 +96,9 @@ void battle_config_eval_b0(void)
   /* nop @0x80153734 */
   cpu->gpr[3] = cpu->gpr[2] & 0x0f00;          /* andi v1,v0,0xf00 */
   cpu->gpr[2] = 0x200;                        /* addiu v0,zero,0x200 */
-  { int _bc = (cpu->gpr[3] == cpu->gpr[2]);    /* beq v1,v0 — cond before delay */
+  { int cond_v1_eq_v0 = (cpu->gpr[3] == cpu->gpr[2]);    /* beq v1,v0 — cond before delay */
     cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 513) ? 1u : 0u; /* delay: slti v0,v1,0x201 */
-    if (_bc) {
+    if (cond_v1_eq_v0) {
       psx_check_interrupts_at(cpu, 0x80153774u);
       cpu->pc = 0x80153774u; return;
     } else {
@@ -128,9 +128,9 @@ block_80155678:
   cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[17] + 0x8c); /* lh v0,0x8c(s1) */
   /* nop @0x8015567C */
   cpu->gpr[2] = ((int32_t)cpu->gpr[2] < 30) ? 1u : 0u;  /* slti v0,v0,0x1e */
-  { int _bc = (cpu->gpr[2] != cpu->gpr[0]);   /* bnez v0 — cond before delay */
+  { int cond_v0_ne_zero = (cpu->gpr[2] != cpu->gpr[0]);   /* bnez v0 — cond before delay */
     cpu->gpr[3] = 0x80020000u;                /* delay: lui v1,0x8002 */
-    if (_bc) {
+    if (cond_v0_ne_zero) {
       psx_check_interrupts_at(cpu, 0x801556ACu);
       cpu->pc = 0x801556ACu; return;
     } else {
@@ -141,9 +141,9 @@ block_80155678:
 block_80155708:
   cpu->gpr[3] = (int32_t)(int16_t)br2_ld16(cpu->gpr[17] + 0x8c); /* lh v1,0x8c(s1) */
   cpu->gpr[2] = 1;                            /* addiu v0,zero,1 */
-  { int _bc = (cpu->gpr[3] != cpu->gpr[0]);   /* bnez v1 — cond before delay */
+  { int cond_v1_ne_zero = (cpu->gpr[3] != cpu->gpr[0]);   /* bnez v1 — cond before delay */
     br2_st8(cpu->gpr[17] + 0xb1, (uint8_t)cpu->gpr[2]); /* delay: sb v0,0xb1(s1) */
-    if (_bc) {
+    if (cond_v1_ne_zero) {
       psx_check_interrupts_at(cpu, 0x80155720u);
       cpu->pc = 0x80155720u; return;
     } else {
@@ -176,9 +176,9 @@ void page_table_ptr_set_sel(void)
 
 block_80156784:
   cpu->gpr[2] = (cpu->gpr[4] < 20u) ? 1u : 0u;  /* sltiu v0,a0,0x14 */
-  { int _bc = (cpu->gpr[2] == cpu->gpr[0]);    /* beqz v0 — cond before delay */
+  { int cond_v0_eq_zero = (cpu->gpr[2] == cpu->gpr[0]);    /* beqz v0 — cond before delay */
     cpu->gpr[2] = 0x80120000u;                 /* delay: lui v0,0x8012 */
-    if (_bc) {
+    if (cond_v0_eq_zero) {
       psx_check_interrupts_at(cpu, 0x801568E4u);
       cpu->pc = 0x801568E4u; return;
     } else {

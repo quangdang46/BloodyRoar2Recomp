@@ -188,15 +188,15 @@ void memcard_flow_triage(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  int _bc;
+  int cond;
 
 block_80160220:
   t3 = cpu->read_word(sp + 248);          /* 0x80160220: lw t3,0xf8(sp) */
   /* nop */  /* 0x80160224: 0x00000000 */
-  _bc = (t3 != zero);       /* bnez t3 */
+  cond = (t3 != zero);       /* bnez t3 */
   /* delay slot (always executes) */
   s4 = 0xFFFFFFFF;                        /* 0x8016022C: addiu s4,zero,-1 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x8016026Cu);
     goto block_8016026C;
   } else {
@@ -207,10 +207,10 @@ block_80160220:
 block_80160230:
   v1 = cpu->read_half(sp + 64);           /* 0x80160230: lhu v1,0x40(sp) */
   /* nop */  /* 0x80160234: 0x00000000 */
-  _bc = (v1 == fp);          /* beq v1,fp */
+  cond = (v1 == fp);          /* beq v1,fp */
   /* delay slot (always executes) */
   v0 = ((int32_t)v1 < 3) ? 1 : 0;         /* 0x8016023C: slti v0,v1,3 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160278u);
     goto block_80160278;
   } else {
@@ -219,10 +219,10 @@ block_80160230:
   }
 
 block_80160240:
-  _bc = (v0 == zero);        /* beqz v0 */
+  cond = (v0 == zero);        /* beqz v0 */
   /* delay slot (always executes) */
   t0 = 1;                                 /* 0x80160244: addiu t0,zero,1 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160258u);
     goto block_80160258;
   } else {
@@ -231,10 +231,10 @@ block_80160240:
   }
 
 block_80160248:
-  _bc = (v1 == t0);          /* beq v1,t0 */
+  cond = (v1 == t0);          /* beq v1,t0 */
   /* delay slot (always executes) */
   t1 = 17;                                /* 0x8016024C: addiu t1,zero,0x11 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x8016026Cu);
     goto block_8016026C;
   } else {
@@ -250,10 +250,10 @@ block_80160250:
 
 block_80160258:
   v0 = 3;                                 /* 0x80160258: addiu v0,zero,3 */
-  _bc = (v1 == v0);          /* beq v1,v0 */
+  cond = (v1 == v0);          /* beq v1,v0 */
   /* delay slot (always executes) */
   t1 = 17;                                /* 0x80160260: addiu t1,zero,0x11 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160284u);
     goto block_80160284;
   } else {
@@ -328,13 +328,13 @@ void memcard_flow_state_dispatch(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  int _bc;
+  int cond;
 
 block_80160410:
-  _bc = (s0 == zero);        /* beqz s0 */
+  cond = (s0 == zero);        /* beqz s0 */
   /* delay slot (always executes) */
   v0 = 5;                                 /* 0x80160414: addiu v0,zero,5 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x801604B4u);
     goto block_801604B4;
   } else {
@@ -343,10 +343,10 @@ block_80160410:
   }
 
 block_80160418:
-  _bc = (s2 == v0);          /* beq s2,v0 */
+  cond = (s2 == v0);          /* beq s2,v0 */
   /* delay slot (always executes) */
   v0 = ((int32_t)s2 < 6) ? 1 : 0;         /* 0x8016041C: slti v0,s2,6 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160494u);
     goto block_80160494;
   } else {
@@ -355,10 +355,10 @@ block_80160418:
   }
 
 block_80160420:
-  _bc = (v0 == zero);        /* beqz v0 */
+  cond = (v0 == zero);        /* beqz v0 */
   /* delay slot (always executes) */
   v0 = ((int32_t)s2 < 4) ? 1 : 0;         /* 0x80160424: slti v0,s2,4 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160448u);
     goto block_80160448;
   } else {
@@ -367,10 +367,10 @@ block_80160420:
   }
 
 block_80160428:
-  _bc = (v0 == zero);        /* beqz v0 */
+  cond = (v0 == zero);        /* beqz v0 */
   /* delay slot (always executes) */
   /* nop */  /* 0x8016042C: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x8016045Cu);
     goto block_8016045C;
   } else {
@@ -379,10 +379,10 @@ block_80160428:
   }
 
 block_80160430:
-  _bc = ((int32_t)s2 > 0);   /* bgtz s2 */
+  cond = ((int32_t)s2 > 0);   /* bgtz s2 */
   /* delay slot (always executes) */
   /* nop */  /* 0x80160434: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160470u);
     goto block_80160470;
   } else {
@@ -391,10 +391,10 @@ block_80160430:
   }
 
 block_80160438:
-  _bc = (s2 == zero);        /* beqz s2 */
+  cond = (s2 == zero);        /* beqz s2 */
   /* delay slot (always executes) */
   /* nop */  /* 0x8016043C: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160494u);
     goto block_80160494;
   } else {
@@ -410,10 +410,10 @@ block_80160440:
 
 block_80160448:
   v0 = 15;                                /* 0x80160448: addiu v0,zero,0xf */
-  _bc = (s2 == v0);          /* beq s2,v0 */
+  cond = (s2 == v0);          /* beq s2,v0 */
   /* delay slot (always executes) */
   /* nop */  /* 0x80160450: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160494u);
     goto block_80160494;
   } else {
@@ -442,10 +442,10 @@ block_80160464:
 block_80160470:
   t3 = cpu->read_word(sp + 248);          /* 0x80160470: lw t3,0xf8(sp) */
   /* nop */  /* 0x80160474: 0x00000000 */
-  _bc = (t3 == zero);        /* beqz t3 */
+  cond = (t3 == zero);        /* beqz t3 */
   /* delay slot (always executes) */
   /* nop */  /* 0x8016047C: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x801604A4u);
     goto block_801604A4;
   } else {
@@ -468,10 +468,10 @@ block_80160488:
 block_80160494:
   t1 = cpu->read_word(sp + 248);          /* 0x80160494: lw t1,0xf8(sp) */
   /* nop */  /* 0x80160498: 0x00000000 */
-  _bc = (t1 != zero);        /* bnez t1 */
+  cond = (t1 != zero);        /* bnez t1 */
   /* delay slot (always executes) */
   /* nop */  /* 0x801604A0: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x8015F8C0u);
     cpu->pc = 0x8015F8C0u; return;  /* CPS taken: split */
   } else {
@@ -480,10 +480,10 @@ block_80160494:
   }
 
 block_801604A4:
-  _bc = (s2 == zero);        /* beqz s2 */
+  cond = (s2 == zero);        /* beqz s2 */
   /* delay slot (always executes) */
   /* nop */  /* 0x801604A8: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160510u);
     goto block_80160510;
   } else {
@@ -500,10 +500,10 @@ block_801604AC:
 block_801604B4:
   t3 = cpu->read_word(sp + 248);          /* 0x801604B4: lw t3,0xf8(sp) */
   /* nop */  /* 0x801604B8: 0x00000000 */
-  _bc = (t3 != zero);        /* bnez t3 */
+  cond = (t3 != zero);        /* bnez t3 */
   /* delay slot (always executes) */
   /* nop */  /* 0x801604C0: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x8015F8C0u);
     cpu->pc = 0x8015F8C0u; return;  /* CPS taken: split */
   } else {
@@ -512,10 +512,10 @@ block_801604B4:
   }
 
 block_801604C4:
-  _bc = (s2 == zero);        /* beqz s2 */
+  cond = (s2 == zero);        /* beqz s2 */
   /* delay slot (always executes) */
   t0 = 1;                                 /* 0x801604C8: addiu t0,zero,1 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160510u);
     goto block_80160510;
   } else {
@@ -526,10 +526,10 @@ block_801604C4:
 block_801604CC:
   v0 = cpu->read_half(sp + 64);           /* 0x801604CC: lhu v0,0x40(sp) */
   /* nop */  /* 0x801604D0: 0x00000000 */
-  _bc = (v0 == t0);          /* beq v0,t0 */
+  cond = (v0 == t0);          /* beq v0,t0 */
   /* delay slot (always executes) */
   /* nop */  /* 0x801604D8: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160504u);
     goto block_80160504;
   } else {
@@ -546,10 +546,10 @@ block_801604DC:
 block_801604F4:
   v0 = cpu->read_half(sp + 64);           /* 0x801604F4: lhu v0,0x40(sp) */
   t2 = 1;                                 /* 0x801604F8: addiu t2,zero,1 */
-  _bc = (v0 != t2);          /* bne v0,t2 */
+  cond = (v0 != t2);          /* bne v0,t2 */
   /* delay slot (always executes) */
   /* nop */  /* 0x80160500: 0x00000000 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160510u);
     goto block_80160510;
   } else {
@@ -577,15 +577,15 @@ void memcard_flow_poll_node(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  int _bc;
+  int cond;
 
 block_80160514:
   t3 = cpu->read_word(sp + 248);          /* 0x80160514: lw t3,0xf8(sp) */
   /* nop */  /* 0x80160518: 0x00000000 */
-  _bc = (t3 != zero);        /* bnez t3 */
+  cond = (t3 != zero);        /* bnez t3 */
   /* delay slot (always executes) */
   a0 = s1;                                /* 0x80160520: move a0,s1 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x80160550u);
     goto block_80160550;
   } else {
@@ -686,15 +686,15 @@ void mode_name_case_practice(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  int _bc;
+  int cond;
 
 block_80163780:
   v0 = cpu->read_byte(t0 + 155);          /* 0x80163780: lbu v0,0x9b(t0) */
   v1 = 4;                                 /* 0x80163784: addiu v1,zero,4 */
-  _bc = (v0 != v1);          /* bne v0,v1 */
+  cond = (v0 != v1);          /* bne v0,v1 */
   /* delay slot (always executes) */
   a2 = 0x8012 << 16;                      /* 0x8016378C: lui a2,0x8012 */
-  if (_bc) {
+  if (cond) {
     psx_check_interrupts_at(cpu, 0x801637ACu);
     goto block_801637AC;
   } else {
