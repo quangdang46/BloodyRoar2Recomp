@@ -1,3 +1,10 @@
+# renames.map — canonical guest-address -> readable-name map.
+#
+# Format: "<hex-addr> <name>" per line (# comments allowed).
+# Consumed by gen_fnmap.py (addr source 'ren', highest dedup priority) and
+# the readability passes that rename FUN_/LAB_/cps_ symbols. Keep names
+# stable: they appear in fnmap.c externs and clean_table.c wrappers.
+
 80126f04 boot
 80126870 cd_file_pump
 8012708c display_mode_setup
