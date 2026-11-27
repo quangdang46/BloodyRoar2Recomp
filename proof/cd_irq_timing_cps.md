@@ -1038,3 +1038,18 @@ dispatch so it counts all band dispatches — diagnostic only.
 
 Verified: clean build EU + USA; headless :5129 frames -> 55213,
 clean_fallback_stats count=0, no wedge.
+
+## Batch 51 (orch/w5/e05) — readability idiom fold (transformer + retro)
+
+Ported the session-22 hand convention into the pipeline: `x = x OP e;`
+-> `x OP= e;`, `x = x + 1` -> `x++`, `x = x + -1`/`x - 1` -> `x--`,
+comment-aware (skips /* */ regions, preserves trailing op comments).
+
+- Retro pass: cps_clean.c 2938 lines, cd_irq_probe.c 5060 lines folded
+- Transformer: fold_idioms() added to gen_cps_clean.py emit_fn so all
+  future emissions get it (verified --timing emits `sp += 32` etc.)
+
+Verified: clean build EU + USA (fresh configure, PSX_DEBUG_TOOLS=ON —
+note: default Release configure sets PSX_NO_DEBUG_TOOLS=1, which is why
+the first rebuild had no debug port); headless :5143 frames -> 32019,
+clean_fallback_stats count=0, no wedge.

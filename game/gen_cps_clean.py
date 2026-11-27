@@ -554,6 +554,66 @@ def rename_temps(body):
     return body
 
 
+_FOLD_RE = re.compile(
+    r'\b([A-Za-z_]\w*) = \1 (<<|>>|\+|-|&|\||\^) ([^;=][^;]*);')
+
+def fold_idioms(body):
+    """`x = x OP e;` -> `x OP= e;` (+1/-1 -> ++/--). Readability pass matching
+    the hand-applied convention in cps_clean.c/cd_irq_probe.c; applied to
+    code outside /* */ comments only."""
+    def rep(m):
+        var, op, expr = m.group(1), m.group(2), m.group(3).strip()
+        if op == '+':
+            mm = re.match(r'^-\s*(\d+)$', expr)
+            if mm:
+                n = int(mm.group(1))
+                return f'{var}--;' if n == 1 else f'{var} -= {n};'
+            if expr == '1':
+                return f'{var}++;'
+            return f'{var} += {expr};'
+        if op == '-':
+            mm = re.match(r'^-\s*(\d+)$', expr)
+            if mm:
+                n = int(mm.group(1))
+                return f'{var}++;' if n == 1 else f'{var} += {n};'
+            if expr == '1':
+                return f'{var}--;'
+            return f'{var} -= {expr};'
+        return f'{var} {op}= {expr};'
+    out = []
+    inblock = False
+    for ln in body.split('\n'):
+        res = ''
+        i = 0
+        while i < len(ln):
+            if inblock:
+                e = ln.find('*/', i)
+                if e < 0:
+                    res += ln[i:]
+                    i = len(ln)
+                    break
+                res += ln[i:e + 2]
+                inblock = False
+                i = e + 2
+                continue
+            st = ln.find('/*', i)
+            if st < 0:
+                res += _FOLD_RE.sub(rep, ln[i:])
+                i = len(ln)
+                break
+            res += _FOLD_RE.sub(rep, ln[i:st])
+            e = ln.find('*/', st)
+            if e < 0:
+                res += ln[st:]
+                inblock = True
+                i = len(ln)
+                break
+            res += ln[st:e + 2]
+            i = e + 2
+        out.append(res)
+    return '\n'.join(out)
+
+
 def _gpr_names(m):
     """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
@@ -582,6 +642,7 @@ def emit_fn(addr):
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
     core = rename_temps(core)
+    core = fold_idioms(core)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the
