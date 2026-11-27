@@ -2136,12 +2136,6 @@
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
 80143978 cmd_input_parse_alt_3978
-80144034 hit_react_apply_alt_4034
-80144054 hit_react_apply_alt_4054
-80144070 hit_react_apply_alt_4070
-80144094 hit_react_apply_alt_4094
-80144114 hit_react_apply_alt_4114
-80144158 hit_react_apply_alt_4158
 80148224 battle_bringup_a_alt_8224
 80148304 battle_bringup_a_alt_8304
 80148380 battle_bringup_a_alt_8380

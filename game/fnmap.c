@@ -931,12 +931,6 @@ extern void hit_chain_clear(void);
 extern void hit_elig_check(void);
 extern void hit_pose_swap(void);
 extern void hit_react_apply(void);
-extern void hit_react_apply_alt_4034(void);
-extern void hit_react_apply_alt_4054(void);
-extern void hit_react_apply_alt_4070(void);
-extern void hit_react_apply_alt_4094(void);
-extern void hit_react_apply_alt_4114(void);
-extern void hit_react_apply_alt_4158(void);
 extern void hit_scale_calc(void);
 extern void hit_spark_spawn(void);
 extern void hitbox_corners_xform(void);
@@ -2048,12 +2042,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80143bb8, (void *)fighter_range_code },
   { 0x80143c6c, (void *)hit_scale_calc },
   { 0x80143d38, (void *)hit_react_apply },
-  { 0x80144034, (void *)hit_react_apply_alt_4034 },
-  { 0x80144054, (void *)hit_react_apply_alt_4054 },
-  { 0x80144070, (void *)hit_react_apply_alt_4070 },
-  { 0x80144094, (void *)hit_react_apply_alt_4094 },
-  { 0x80144114, (void *)hit_react_apply_alt_4114 },
-  { 0x80144158, (void *)hit_react_apply_alt_4158 },
   { 0x80144f8c, (void *)trig_lut_read },
   { 0x8014512c, (void *)trig_vel_flat },
   { 0x801451d4, (void *)trig_vel_up },
