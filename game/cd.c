@@ -12,7 +12,6 @@
 #include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
-extern uint32_t guest_sp(void);
 extern uint32_t psx_read_word(uint32_t addr);
 extern void psx_write_word(uint32_t addr, uint32_t val);
 
@@ -98,7 +97,6 @@ enum {
 extern uint32_t guest_of(const void *);
 extern uint32_t br2_gaddr(const void *);
 extern uint8_t  br2_ld8p(uint32_t cell);
-extern uint16_t br2_ld16p(uint32_t cell);
 extern uint32_t br2_ld32p(uint32_t cell);
 
 /* DIAG: ring recording every write to resume stamp 0x801feb00.
@@ -163,7 +161,6 @@ extern uint32_t br2_ld32(uint32_t a);
 extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
 extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t clean_caller_ra(void);
@@ -832,7 +829,6 @@ extern int  cd_sync_wait_c(uint32_t,uint32_t);
 extern void bios_table_tramp(void);
 extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
-extern uint32_t gpu_status_cmd(uint32_t);
 
 
 #define CDB32G(a) DB32G(a)
