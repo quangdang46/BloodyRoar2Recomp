@@ -1641,8 +1641,8 @@ void player_name_entry(void)
   int name_len;
   /* Guest string slots at sp+0x18/0x20/0x28/0x30 (8-byte stride, offsets
    * verified against the generated body's sp accesses): slot0 @sp+0x18 is
-   * the name buffer — local_78 u32 at +0 with name chars appended through
-   * name_ptr = &local_78 + name_len — and slot3 @sp+0x30 is the local_60
+   * the name buffer — name_buf u32 at +0 with name chars appended through
+   * name_ptr = &name_buf + name_len — and slot3 @sp+0x30 is the disp_str
    * per-char display slot ("A\0" -> char + NUL). announce_param_block_init_alt
    * stores guest_of(param_3) into the text prim, so both must live in guest
    * RAM (guest_of is 0 for host locals); name_rec_insert/name_rec_gate/
@@ -1656,13 +1656,13 @@ void player_name_entry(void)
   uint32_t pne_frm = br2_guest_frame(0x90);
   undefined1 *num_buf = (undefined1 *)guest_at(pne_frm + 0x38);
   uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
-#define local_78   (*(uint32_t *)pne_slots)
-#define local_70   pne_slots[8]
-#define local_6f   pne_slots[9]
-#define local_6e   pne_slots[10]
-#define local_68   pne_slots[16]
-#define local_67   pne_slots[17]
-#define local_60   (pne_slots + 24)
+#define name_buf   (*(uint32_t *)pne_slots)
+#define slot1_b0   pne_slots[8]
+#define slot1_b1   pne_slots[9]
+#define slot1_b2   pne_slots[10]
+#define slot2_b0   pne_slots[16]
+#define slot2_b1   pne_slots[17]
+#define disp_str   (pne_slots + 24)
   /* wait_timer/rec_idx/records are guest stack slots too (sp+0x40/0x4c/0x58):
    * the name-entry state machine carries them across calls via the stable
    * guest frame, so host locals would lose the countdown/selection state.
@@ -1671,26 +1671,26 @@ void player_name_entry(void)
 #define rec_idx     (*(int32_t *)guest_at(pne_frm + 0x4c))
 #define records_g   (*(uint32_t *)guest_at(pne_frm + 0x58))
 #define records     ((undefined1 *)guest_at(records_g))
-  undefined1 *local_4c;
-  undefined1 *local_48;
+  undefined1 *spad_cfg_a;
+  undefined1 *spad_cfg_b;
   undefined1 *active_bank;
   uint slot_idx;
   undefined1 *fmt_buf;
   undefined4 *name_ptr;
 
   char_sel = 0;
-  local_4c = &DAT_1f8000e8;
-  local_48 = &DAT_1f8001f0;
+  spad_cfg_a = &DAT_1f8000e8;
+  spad_cfg_b = &DAT_1f8001f0;
   active_bank = &DAT_1f8000e8;
   slot_idx = 0;
-  local_78 = DAT_80121f30;
-  local_70 = DAT_80122074;
-  local_6f = DAT_80122075;
-  local_6e = DAT_80122076;
-  local_68 = DAT_80122078;
-  local_67 = DAT_80122079;
-  local_60[0] = DAT_8012207c;
-  local_60[1] = DAT_8012207d;
+  name_buf = DAT_80121f30;
+  slot1_b0 = DAT_80122074;
+  slot1_b1 = DAT_80122075;
+  slot1_b2 = DAT_80122076;
+  slot2_b0 = DAT_80122078;
+  slot2_b1 = DAT_80122079;
+  disp_str[0] = DAT_8012207c;
+  disp_str[1] = DAT_8012207d;
   name_len = 0;
   if (DAT_1f80009c == 3) {
     records_g = 0x801c13a4;
@@ -1703,7 +1703,7 @@ void player_name_entry(void)
   }
   _DAT_1f80008c = 0;
   if (DAT_1f800001 != 0xff) {
-    name_ptr = &local_78;
+    name_ptr = &name_buf;
     fmt_buf = num_buf;
     do {
       if (DAT_1f800001 == 3) {
@@ -1741,12 +1741,12 @@ LAB_801652bc:
           else if (*name_ch == '^') {
             deferred_cmd_post(0x400,0xc,0);
             *name_ch = ' ';
-            local_78 = local_78 & 0xffffff;
+            name_buf = name_buf & 0xffffff;
             hud_name_fixup(name_ptr);
             rec_u32_store(records,rec_idx,name_ptr);
-            *_g_system_config_ptr = (char)local_78;
-            _g_system_config_ptr[1] = ((uint8_t *)&local_78)[1];
-            _g_system_config_ptr[2] = ((uint8_t *)&local_78)[2];
+            *_g_system_config_ptr = (char)name_buf;
+            _g_system_config_ptr[1] = ((uint8_t *)&name_buf)[1];
+            _g_system_config_ptr[2] = ((uint8_t *)&name_buf)[2];
             wait_timer = 0;
             _g_system_config_ptr[3] = '\0';
             DAT_1f800001 = 4;
@@ -1783,8 +1783,8 @@ LAB_801654c0:
                 more = true;
                 while (more) {
                   if ((disp_i != name_len) || ((_DAT_1f8000dc & 8) != 0)) {
-                    local_60[0] = *(undefined1 *)((char *)name_ptr + disp_i);
-                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,local_60,char_x,0x1000,0);
+                    disp_str[0] = *(undefined1 *)((char *)name_ptr + disp_i);
+                    announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,disp_str,char_x,0x1000,0);
                   }
                   disp_i = disp_i + 1;
                   char_x = char_x + 0x10;
@@ -1800,7 +1800,7 @@ LAB_801654c0:
               else {
                 aux_mode = 0;
               }
-              announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,&local_78,0x108,0x1000,aux_mode);
+              announce_param_block_init_alt(_DAT_1f800008,_DAT_1f80000c,&name_buf,0x108,0x1000,aux_mode);
             }
             aux_mode = 0x14;
           }
@@ -1849,10 +1849,10 @@ LAB_80165090:
             goto LAB_80165090;
           }
           if ((_DAT_1f8000b4 & 0xf00) == 0xa00) {
-            active_bank = local_4c;
+            active_bank = spad_cfg_a;
           }
           if ((_DAT_1f8000b6 & 0xf00) == 0xa00) {
-            active_bank = local_48;
+            active_bank = spad_cfg_b;
           }
           slot_idx = (uint)(byte)active_bank[2];
           switch(DAT_1f80009c) {
@@ -1881,7 +1881,7 @@ LAB_801651e8:
           if (rec_idx < 0) {
             wait_timer = 0;
             DAT_1f800001 = 4;
-            local_78 = local_78 & 0xffffff00;
+            name_buf = name_buf & 0xffffff00;
           }
           else {
             aux_mode = 9;
@@ -1892,10 +1892,10 @@ LAB_801651e8:
             if (*_g_system_config_ptr != '\0') {
               name_len = 3;
               char_sel = 0x20;
-              local_78 = (uint)CONCAT12(_g_system_config_ptr[2],
+              name_buf = (uint)CONCAT12(_g_system_config_ptr[2],
                                         CONCAT11(_g_system_config_ptr[1],*_g_system_config_ptr));
             }
-            name_rec_insert(records,rec_idx,active_bank,&local_78,10);
+            name_rec_insert(records,rec_idx,active_bank,&name_buf,10);
             wait_timer = -1;
             DAT_1f800001 = 3;
           }
@@ -1904,7 +1904,7 @@ LAB_801651e8:
         }
         if (DAT_1f800001 == 0xf0) {
           rec_timer_pair_clear(0x1f800000);
-          name_rec_gate(active_bank,(const void *)&local_78);
+          name_rec_gate(active_bank,(const void *)&name_buf);
           status_flag_cond_set(guest_of(active_bank),1);
           deferred_cmd_post(0x204,0,0);
           frame_present(0x1f800000);
@@ -1944,13 +1944,13 @@ LAB_801651e8:
   br2_guest_frame_free();
   return;
 }
-#undef local_78
-#undef local_70
-#undef local_6f
-#undef local_6e
-#undef local_68
-#undef local_67
-#undef local_60
+#undef name_buf
+#undef slot1_b0
+#undef slot1_b1
+#undef slot1_b2
+#undef slot2_b0
+#undef slot2_b1
+#undef disp_str
 #undef wait_timer
 #undef rec_idx
 #undef records_g
