@@ -729,15 +729,9 @@ def emit_fn(addr):
     sym = f'cpst_{addr:08x}' if TIMING else f'cps_{addr:08x}'
     core = _GPR_RE.sub(_gpr_names, transform(body))
     core = rename_temps(core)
-<<<<<<< HEAD
     core = fold_idioms(core)
-<<<<<<< HEAD
-=======
-    core = name_comment_targets(core)
->>>>>>> orch/w5/e02
-=======
     core = fold_cps_readability(core)
->>>>>>> orch/w5/e05
+    core = name_comment_targets(core)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the
