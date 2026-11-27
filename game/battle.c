@@ -16923,7 +16923,7 @@ void hud_time_score_draw(uint32_t tbl,uint16_t font,int32_t a2,int32_t clr,
   int32_t s1, s2, ff, t5, t6, fc;
   int16_t col;
   uint32_t fl;
-  /* auStack_48 = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
+  /* line = sp+0x18 (frame 0x60) -> guest_sp()-0x48;
    * `addiu $tbl,$sp,0x18` before sprintf jal in 0x80163e38. The string is
    * re-read by announce_param_block_init_b / hud_text_* / slot_name_measure
    * across many nested calls, so reserve the guest frame window
@@ -16931,99 +16931,99 @@ void hud_time_score_draw(uint32_t tbl,uint16_t font,int32_t a2,int32_t clr,
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
   uint32_t htsd_frm = br2_guest_frame(0x60);
-  char *auStack_48 = (char *)guest_at(htsd_frm + 0x18);
+  char *line = (char *)guest_at(htsd_frm + 0x18);
   t5 = *(int32_t *)(rec + 8) / 0x32;
   t6 = t5 / 0x3c;
   t5 = t5 % 0x3c;
   ff = (*(int32_t *)(rec + 8) % 0x32) * 2;
   if (99 < t6) { ff = 99; t6 = 99; t5 = 0x3b; }
   fc = ff;
-  sprintf_core(auStack_48,(char *)guest_at(0x80121fa8),t6,t5,ff);
+  sprintf_core(line,(char *)guest_at(0x80121fa8),t6,t5,ff);
   s2 = ((int32_t)*(int16_t *)(rec + 0xc) % 1000) * 0x10000 >> 0x10;
   s1 = ((int32_t)*(int16_t *)(rec + 0xe) % 1000) * 0x10000 >> 0x10;
   col = (int16_t)clr;
   switch (mode) {
   case 0:
     t5 = (int32_t)col;
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t5,1);
     announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t5,4);
     break;
   case 1:
-    sprintf_core(auStack_48,(char *)guest_at(0x80121fb8),t6,t5,ff);
-    print_dispatch((const char *)guest_at(0x80121fc8),(const char *)rec,auStack_48);
+    sprintf_core(line,(char *)guest_at(0x80121fb8),t6,t5,ff);
+    print_dispatch((const char *)guest_at(0x80121fc8),(const char *)rec,line);
     goto LAB_80164124;
   case 2:
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)col,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0x10) * 0x10000 >> 0x10),(uint16_t)col,1);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)col,1);
     break;
   case 3:
     print_dispatch((const char *)guest_at(0x80121fd4),(const char *)rec,s2);
 LAB_80164124:
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    print_dispatch(auStack_48);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    print_dispatch(line);
     break;
   case 4:
-    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
+    t5 = sprintf_core(line,(char *)guest_at(0x80121fe0),s2,s1,fc);
     t6 = (int32_t)col;
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)t6,4);
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)t6,4);
     announce_param_block_init_b(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t6,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t6,1);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + 0xa0) * 0x10000 >> 0x10),(uint16_t)t6,1);
     announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0x130) * 0x10000 >> 0x10),(uint16_t)t6,4);
     break;
   case 5:
-    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = sprintf_core(line,(char *)guest_at(0x80121fe0),s1,s1,fc);
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
     t5 = (clr + 10) * 0x10000 >> 0x10;
     hud_text_a(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    hud_text_a(tbl,font,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    hud_text_a(tbl,font,line,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
     announce_param_block_init_b(tbl,font,rec,(uint16_t)((a2 + 0xb4) * 0x10000 >> 0x10),(uint16_t)col,4);
     break;
   case 6:
-    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
-    announce_param_block_init_b(tbl,font,auStack_48,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
+    t5 = sprintf_core(line,(char *)guest_at(0x80121fe0),s1,s1,fc);
+    announce_param_block_init_b(tbl,font,line,(uint16_t)((a2 + (3 - t5) * 0x10) * 0x10000 >> 0x10),(uint16_t)col,4);
     t5 = (clr + 10) * 0x10000 >> 0x10;
     hud_text_a(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x30) * 0x10000 >> 0x10),(uint16_t)t5,1);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    hud_text_a(tbl,font,auStack_48,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    hud_text_a(tbl,font,line,(uint16_t)((a2 + 0x74) * 0x10000 >> 0x10),(uint16_t)t5,1);
     break;
   case 0x12:
-    hud_text_b(tbl,font,auStack_48,a2 + 0x10,(uint16_t)clr,5);
+    hud_text_b(tbl,font,line,a2 + 0x10,(uint16_t)clr,5);
     goto LAB_801645f8;
   case 0x13:
     if ((_DAT_1f8000dc & 4) == 0) fl = 0; else fl = 5;
-    hud_text_c(tbl,font,auStack_48,a2 + 0x10,(uint16_t)clr,fl);
+    hud_text_c(tbl,font,line,a2 + 0x10,(uint16_t)clr,fl);
     goto LAB_80164538;
   case 0x14:
     s2 = s1;
     goto LAB_8016457c;
   case 0x15:
-    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s1,s1,fc);
+    t5 = sprintf_core(line,(char *)guest_at(0x80121fe0),s1,s1,fc);
     if ((_DAT_1f8000dc & 4) == 0) {
-      hud_text_c(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,0);
+      hud_text_c(tbl,font,line,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,0);
       fl = 0;
     } else {
-      hud_text_c(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
+      hud_text_c(tbl,font,line,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
       fl = 5;
     }
     announce_param_block_init_alt(tbl,font,guest_at(0x80121fe4),(uint16_t)(a2 + 0x40),(uint16_t)clr,fl);
 LAB_80164538:
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    announce_param_block_init_alt(tbl,font,auStack_48,(uint16_t)(a2 + 0xf8),(uint16_t)clr,2);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    announce_param_block_init_alt(tbl,font,line,(uint16_t)(a2 + 0xf8),(uint16_t)clr,2);
     break;
   case 0x16:
 LAB_8016457c:
-    t5 = sprintf_core(auStack_48,(char *)guest_at(0x80121fe0),s2,s1,fc);
-    hud_text_b(tbl,font,auStack_48,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
+    t5 = sprintf_core(line,(char *)guest_at(0x80121fe0),s2,s1,fc);
+    hud_text_b(tbl,font,line,a2 + (3 - t5) * 0x10 + 0x10,(uint16_t)clr,5);
     announce_param_block_init(tbl,font,guest_at(0x80121fe4),(uint16_t)((a2 + 0x40) * 0x10000 >> 0x10),(uint16_t)col,5);
 LAB_801645f8:
     announce_param_block_init(tbl,font,rec,(uint16_t)((a2 + 0xa8) * 0x10000 >> 0x10),(uint16_t)col,0);
-    slot_name_measure(auStack_48,*(uint8_t *)(rec + 4));
-    announce_param_block_init(tbl,font,auStack_48,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)col,2);
+    slot_name_measure(line,*(uint8_t *)(rec + 4));
+    announce_param_block_init(tbl,font,line,(uint16_t)((a2 + 0xf8) * 0x10000 >> 0x10),(uint16_t)col,2);
   }
   br2_guest_frame_free();
 }
