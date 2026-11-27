@@ -988,7 +988,7 @@ undefined4 system_config_menu_a(void)
 
 {
   short *pad_buf;
-  intptr_t tmp;
+  intptr_t cfg_p, res;
   undefined4 ret;
   /* Guest stepper descriptor: one contiguous 0x30-byte block at
    * sp+0x10..0x3f passed to menu_stepper_state_advance / menu_stepper_sm
@@ -1073,9 +1073,9 @@ LAB_8015c900:
           *(undefined1 *)(_g_system_config_ptr + 7) = (undefined1)local_48;
           *(undefined1 *)(_g_system_config_ptr + 8) = (undefined1)local_46;
           *(undefined1 *)(_g_system_config_ptr + 9) = (undefined1)local_44;
-          tmp = (intptr_t)_g_system_config_ptr;
+          cfg_p = (intptr_t)_g_system_config_ptr;
           *(undefined1 *)(_g_system_config_ptr + 6) = (undefined1)local_42;
-          *(undefined1 *)(tmp + 5) = (undefined1)local_42;
+          *(undefined1 *)(cfg_p + 5) = (undefined1)local_42;
           *(undefined1 *)(_g_system_config_ptr + 0x11) = (undefined1)local_40;
           *(undefined1 *)(_g_system_config_ptr + 0x25) = (undefined1)local_3e;
           *(undefined1 *)(_g_system_config_ptr + 0x24) = (undefined1)local_36;
@@ -1086,10 +1086,10 @@ LAB_8015c900:
         DAT_1f800001 = 0xff;
         goto joined_r0x8015c784;
       }
-      if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
+      if ((DAT_1f800001 == 0) && (res = frame_divisor_get(), res == 0)) {
         print_mode_dispatch_b(2,0,0);
-        tmp = intro_movie_state(0);
-        if (tmp != 0) {
+        res = intro_movie_state(0);
+        if (res != 0) {
           deferred_cmd_post(0x203,0,0);
           /* desc+0xc is read by menu_stepper_state_advance as a u32 GUEST
            * code address (fn_lookup -> call_guest fallback). Guest stores
@@ -1166,7 +1166,7 @@ undefined4 system_config_menu_b(void)
 
 {
   intptr_t cfg_base;
-  int tmp;
+  int res;
   uint cfg_flags;
   byte *cfg_ptr;
   uint step_arg;
@@ -1281,8 +1281,8 @@ LAB_8015bbd8:
         DAT_1f800001 = 0xff;
         goto joined_r0x8015b9e0;
       }
-      if (((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) &&
-         (tmp = intro_movie_state(0), tmp != 0)) {
+      if (((DAT_1f800001 == 0) && (res = frame_divisor_get(), res == 0)) &&
+         (res = intro_movie_state(0), res != 0)) {
         deferred_cmd_post(0x203,0,0);
         local_5c = 0x8015bdc0;   /* dialog_sel_dispatch_wide, guest addr */
         local_62 = 0xb;
@@ -1940,7 +1940,7 @@ void transition_screen_flow(int mode)
 
 {
   int fade_acc;
-  int tmp;
+  int val, res;
   uint gray;
   undefined4 spr_code;
   int fade_ctr;
@@ -1989,10 +1989,10 @@ LAB_80165ed0:
                              ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
                 spr_code = 0xeffe000d;
               }
-              tmp = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
+              val = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
               spr_attr_alloc_b(_DAT_1f800008,
-                           (tmp - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,spr_code,
-                           0x7d000000,tmp,(int)_DAT_1f800022);
+                           (val - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,spr_code,
+                           0x7d000000,val,(int)_DAT_1f800022);
             }
 LAB_80166058:
             frame_tick(0x1f800000);
@@ -2002,8 +2002,8 @@ LAB_80166058:
           }
           else {
             if (DAT_1f800001 < 2) {
-              if (((DAT_1f800001 == 0) && (tmp = card_sprite_load_sm(0x1f800000,mode), tmp != 0)) &&
-                 (tmp = frame_divisor_get(), tmp == 0)) {
+              if (((DAT_1f800001 == 0) && (res = card_sprite_load_sm(0x1f800000,mode), res != 0)) &&
+                 (res = frame_divisor_get(), res == 0)) {
                 fade_acc = 0x31ce;
                 spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,0,0);
                 fade_ctr = 200;
@@ -2040,7 +2040,7 @@ void battle_intro_flow(int mode)
   bool is_attract;
   undefined1 saved_sub;
   ushort field_attr;
-  int tmp;
+  int res, rnd;
   uint flags;
   char round_step;
   /* The generated code keeps the phase-2 intro countdown in $s3 across the
@@ -2049,9 +2049,9 @@ void battle_intro_flow(int mode)
   static int intro_timer;
   undefined4 field_id;
   is_attract = false;
-  tmp = memcard_err_sentinel();
+  res = memcard_err_sentinel();
   saved_sub = DAT_1f80009b;
-  if (tmp < 0) {
+  if (res < 0) {
     DAT_1f80009b = 3;
 joined_r0x801673ac:
     /* Bail-unwind exit must preserve the DAT1 exit invariant (normal exits
@@ -2106,23 +2106,23 @@ LAB_8016767c:
           DAT_1f8001f4 = 0;
           _DAT_1f8000c4 = guest_of(_g_system_config_ptr + 0x2c);
           if (mode == 0) {
-            tmp = table_byte_next_a();
-            DAT_1f8000eb = (char)tmp + (char)(tmp / 9) * -9;
-            tmp = table_byte_next_a();
-            DAT_1f8001f3 = (char)tmp + (char)(tmp / 9) * -9;
-            tmp = table_byte_next_a();
-            round_step = (char)(tmp / 5) * '\x05';
+            rnd = table_byte_next_a();
+            DAT_1f8000eb = (char)rnd + (char)(rnd / 9) * -9;
+            rnd = table_byte_next_a();
+            DAT_1f8001f3 = (char)rnd + (char)(rnd / 9) * -9;
+            rnd = table_byte_next_a();
+            round_step = (char)(rnd / 5) * '\x05';
           }
           else {
             is_attract = true;
-            tmp = table_byte_next_a();
-            DAT_1f8000eb = (char)tmp + (char)(tmp / 9) * -9;
-            tmp = table_byte_next_a();
-            DAT_1f8001f3 = (char)tmp + (char)(tmp / 9) * -9;
-            tmp = table_byte_next_a();
-            round_step = (char)(tmp / 6) * '\x06';
+            rnd = table_byte_next_a();
+            DAT_1f8000eb = (char)rnd + (char)(rnd / 9) * -9;
+            rnd = table_byte_next_a();
+            DAT_1f8001f3 = (char)rnd + (char)(rnd / 9) * -9;
+            rnd = table_byte_next_a();
+            round_step = (char)(rnd / 6) * '\x06';
           }
-          DAT_1f800098 = (char)tmp - round_step;
+          DAT_1f800098 = (char)rnd - round_step;
           DAT_1f800099 = *(char *)(_g_system_config_ptr + 4) * '\x02' + -2;
           fighter_spawn_tail((uint8_t *)guest_at(0x1f800000),0);
           _DAT_1f800088 = 0;
@@ -2135,7 +2135,7 @@ LAB_8016767c:
         if (_DAT_1f800090 != 0) {
           _DAT_1f800090 = 0;
         }
-        tmp = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
+        res = menu_res_load_sm(0x1f800000,&DAT_1f8000e8,&DAT_1f8001f0,0);
         /* Same -1 ambiguity as battle_flow_state_machine: a br2_bail_pending
          * unwind must propagate, not be read as "load done". Restore the
          * DAT1 exit invariant (normal exits leave DAT_1f800001 = 0) so the
@@ -2143,7 +2143,7 @@ LAB_8016767c:
          * match_loop. */
         { extern int br2_bail_pending(void);
           if (br2_bail_pending()) { DAT_1f800001 = 0; return; } }
-        if ((tmp != 0) && (_DAT_1f800090 == 0)) {
+        if ((res != 0) && (_DAT_1f800090 == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             confirm_code_select(0x1f800000);
           }
@@ -2178,8 +2178,8 @@ LAB_8016767c:
           DAT_1f800001 = DAT_1f800001 + 1;
         }
         else if (DAT_1f800001 != 0xf1) goto LAB_801677b4;
-        tmp = frame_divisor_get();
-        if (tmp == 0) {
+        res = frame_divisor_get();
+        if (res == 0) {
           /* The hoisted 0xff constant lives in callee-saved x28 across the
            * whole do-while; the IRQ setjmp/longjmp path restores x28 stale
            * (g_irqctx_ring base), so even a fresh-pointer store emitted
