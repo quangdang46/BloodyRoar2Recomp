@@ -625,11 +625,9 @@ uint32_t draw_env_timing(uint32_t env_g)
     if (0x118 < (int16_t)hgt) {
       if ((int16_t)hgt < 0x161) {
         tc = tc | 1;
-      }
-      else if ((int16_t)hgt < 0x191) {
+      } else if ((int16_t)hgt < 0x191) {
         tc = tc | 0x40;
-      }
-      else if ((int16_t)hgt < 0x231) {
+      } else if ((int16_t)hgt < 0x231) {
         tc = tc | 2;
       } else {
         tc = tc | 3;
@@ -1985,8 +1983,7 @@ void mdec_pump_a(int32_t code)
     MDECREG_ST(0x801b68f4, 0x60000000);
     mdec_decode_issue(0x801b67b0, 0x20);
     mdec_decode_issue(0x801b6834, 0x20);
-  }
-  else if (code == 1) {
+  } else if (code == 1) {
     MDECREG_ST(0x801b68f4, 0x80000000);
     MDECREG_ST(0x801b68c8, 0);
     MDECREG_ST(0x801b68d4, 0);
@@ -2070,11 +2067,9 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src, uint32_t mode, uint32_t arg3,
   rect[3] = (int16_t)h;
   if (mode_i == 1) {
     dim = (int16_t)(v_i / 2);
-  }
-  else if (mode_i < 2) {
+  } else if (mode_i < 2) {
     if (mode_i == 0) dim = (int16_t)(v_i / 4);
-  }
-  else if (mode_i == 2) {
+  } else if (mode_i == 2) {
     dim = (int16_t)v_i;
   }
   rect[2] = dim;
@@ -2245,8 +2240,7 @@ int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
           count = count + 1;
         }
         ep = sp;
-      }
-      else if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
+      } else if ((c == 0x78) || (c == 0x58)) { /* 'x'/'X' */
         uint32_t hv = BR2_ARG();
         uint8_t *hp = dtop;
         static const char hexd[] = "0123456789abcdef";
@@ -2273,15 +2267,13 @@ int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
           }
           skip_pad = 1;
         }
-      }
-      else if (c == 0x63) {            /* 'c' */
+      } else if (c == 0x63) {            /* 'c' */
         uint32_t av = BR2_ARG();
         uint8_t *hp = dtop - 1;        /* s0 reset to sp+0x210 per spec */
         *hp = (uint8_t)av;
         ep = hp;
         count = 1;
-      }
-      else if (c == 0x73) {            /* 's' */
+      } else if (c == 0x73) {            /* 's' */
         ep = (const uint8_t *)guest_at(BR2_ARG());
         count = str_len((char *)(uintptr_t)ep);
       }
