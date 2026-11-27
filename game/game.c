@@ -525,12 +525,12 @@ static void guest_start(void)
     halt_baddata();
 }
 
-/* empty_thunk_80126170 / noop_80163840 — jr-ra thunks (empty).
+/* func_0x80126170 / func_0x80163840 — jr-ra thunks (empty).
  * empty_leaf_e is the renames.map-registered form of guest 0x80126170
  * (`jr ra; nop`, 8-uint8_t body — a bind_jal waypoint slot). */
 void empty_leaf_e(void) { }
-static void empty_thunk_80126170(void) { empty_leaf_e(); }
-static void noop_80163840(int p) { (void)p; }
+static void func_0x80126170(void) { empty_leaf_e(); }
+static void func_0x80163840(int p) { (void)p; }
 
 /* apply_saved_settings_or_defaults @0x80126720 */
 static void apply_saved_settings_or_defaults(uint32_t *sys_cfg)
@@ -596,7 +596,7 @@ void guest_main(void)
     uint32_t mn_frm = br2_guest_frame(0x40);
     uint16_t *pad_buf = (uint16_t *)guest_at(mn_frm + 0x10);
 
-    empty_thunk_80126170();
+    func_0x80126170();
     retry_count = 0;
     boot();
     pad_buf[1] = 0x1c7f;
@@ -625,7 +625,7 @@ void guest_main(void)
         brightness_commit(*(uint8_t *)(_g_system_config_ptr + 0xc) ^ 1);
     }
     frame_advance_helper();
-    noop_80163840(0);
+    func_0x80163840(0);
 main_state_dispatch:
     /* Bail-unwind in flight (g_psx_call_bail): main() is a clean-C
      * mega-loop — every state dispatch re-enters here. Return so the
