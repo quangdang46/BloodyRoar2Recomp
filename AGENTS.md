@@ -1327,3 +1327,44 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
 - True remaining frontier for cps_ readability: per-function hand
   ports reconstructing whole guest functions across piece boundaries
   (the established clean-port workflow), not CFG structuring.
+
+### Session update 28 (cpst_ unmask sweep + prototype tightening)
+
+- **Rotmat family unmapped** (`ad893e5c`): the batch-24 timed-coverage
+  sweep had routed 8 rotmat entries (euler_rotmat_unpack/neg/core,
+  rotmat_rtps_build_half, rotmat2_pair_build_word,
+  angle_vec_build_half, rotmat_half_euler_a/b) to cpst_ bodies even
+  though complete clean defs existed — the deferred "peer ports win"
+  question from proof/cd_irq_timing_cps.md batch-24 audit. Verified
+  leaf-safe (no calls needing CPS resume, ~300cyc IRQ granularity
+  bound, same exposure as already-clean GTE prim_* family) and that
+  euler_rotmat_core @0x8018DC20's only entries are wrapper tail-jumps
+  + DC18 fallthrough, all with t7=LUT preset — clean forward is
+  semantically identical. Removed 62 clean_cps.map rows; cpst_
+  bodies remain as dead code (batch-44 precedent).
+- **scene_node_walk stays masked**: 47 _cont rows + guest call_guest
+  handler dispatch = the coroutine/IRQ-resume class from
+  proof/masked_function_override_audit.md — single clean C fn can't
+  express mid-body resume. Same for all cd.c cpst_ entries (§4).
+- **Prototype tightening** (`44a92a6a`): applied the audited safe list
+  (~49 decls across save/menu/battle/game) matching def signatures;
+  held 4 category-B () decls (ret_one/ret_stub_b/noop_fn/
+  cd_subsys_reset_wrap — args provably dead, prototype would be a
+  constraint violation). -Wmissing-prototype/-Wdeprecated-non-prototype
+  on touched files now down to those 4 deliberate sites.
+- **Two REAL BUGS caught by the tightening**:
+  - dialog_sel_dispatch_wide case 6 called u16_counter_step_pad_a
+    with 2 args — guest jal actually targets 0x80129B48 =
+    u16_counter_step_pad_b(a0+0x1e,8). Wrong callee, wrong
+    counter-wrap semantics. Fixed.
+  - cd_result_wait_b_fwd dropped cd_result_wait_b's v0 (guest jr ra
+    passthrough; save.c:546 consumes cd_rc). Now returns uint32_t.
+- **Pointer-convention audit** (`6788b9a2`): 4 sites where a guest
+  address loaded from guest RAM was cast to a pointer for a callee
+  that derefs it as host ptr — pair_depth_set x2 (camera_track_shot),
+  impact_fx_spawn x2 (spark_trail_task_update, LAB_80140510). All
+  guest_at()-wrapped.
+- Method note: `psx_slice_block` is PARKED OFF by default
+  (g_psx_precise_slice=0) — cpst_ yield checks are no-ops unless
+  PSX_PRECISE_SLICE=1; the live mechanism is psx_check_interrupts_at
+  per-block IRQ delivery.
