@@ -403,9 +403,9 @@ extern void cd_read_param_set(int);
 extern uint32_t gte_screen_init_defer(void);   /* guest 0x80194478 clean port */
 extern void cd_fileop_reset(int);
 extern int32_t set_graph_debug(uint32_t);
-extern void cd_xchg_bde20(int);
+extern uint32_t cd_xchg_bde20(uint32_t);
 extern void cd_probe_retry(void);
-extern void cd_xchg_bc850(int);
+extern uint32_t cd_xchg_bc850(uint32_t);
 extern void cd_subsys_boot(void);
 extern void cd_channel_init_seq(void);
 extern void boot(void);
@@ -482,11 +482,11 @@ extern void gpu_pkt_attr_set(int,int);
 extern void cd_fileop_forward(uint32_t,uint32_t);
 extern void tile_decode_wait(int,int);
 extern void display_frame_present(int*,int);
-extern int  cd_cmd_issue_sync(int,int,int);
+extern bool cd_cmd_issue_sync(int8_t,int,uint32_t);
 extern void cd_fileop_dispatch(int);
 extern void cd_subsystem_reset(void);
 extern void vram_tile_decode(int);
-extern int  cd_file_open_b(uint32_t);
+extern int32_t cd_file_open_b(uint32_t);
 extern void vsync_wait_n(uint32_t,int);
 extern uint32_t memcard_file_flow(int);
 extern void guest_bzero(uint32_t,int);
@@ -2751,8 +2751,8 @@ void reset_combat_slots(void)
 /* blk_1f26c0_init — init block @0x801f26c0: +4=0x100, clear
  * @0x801f36c4, cd_chan_mode_apply(block), cd_chan_mode_set(0).
  * Disasm 0x80155e30-0x80155e64. */
-extern void cd_chan_mode_apply(uint32_t);
-extern void cd_chan_mode_set(int32_t);
+extern int32_t cd_chan_mode_apply(uint32_t);
+extern int32_t cd_chan_mode_set(uint32_t);
 void blk_1f26c0_init(void)
 {
   uint32_t block = 0x801f26c0;
