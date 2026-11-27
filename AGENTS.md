@@ -1197,3 +1197,27 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   args there are CORRECT (callee guest_of()s them internally).
 - Headless verify post-commits: frame 33,915+ advancing, no crash.
   master ~35 ahead of mine/master, unpushed.
+- **Session 24 — ABI + frame-discipline audits (subagent-driven)**:
+  - save.c unprototyped-extern ABI audit COMPLETE: 4 REAL LP64
+    pointer-truncation bugs fixed (`4f11c496`) — rotmat2_build,
+    rotmat_rtps_build, angle_vec_build, angle_pair_rotmat declared
+    `extern int` but return `uint32_t*`; op_wrap_* fed truncated
+    (void*) into clean_table guest_of() wraps -> corrupt v0.
+    prim_group_build tightened too.
+  - guest-frame audit (`1daa6a3c`): results_scoreboard bail exit
+    LEAKED its 0x88 frame (no free/abandon) -> sp drift; 10 sites in
+    cd.c/save.c used free() on bail exits (over-restores sp) -> all
+    converted to br2_guest_frame_abandon(). RULE: on
+    br2_bail_pending() exits inside a br2_guest_frame scope ALWAYS
+    abandon(), never free(), never bare return.
+  - Return-type audit (`7d0660da`): latent-trap decls tightened
+    (guest_memcpy, prim_list_gte/gte_invoke returns, euler_rotmat,
+    gte_op_a00428). task_node_alloc left uint32_t deliberately —
+    returns guest-address-valued pointer. fnmap.c `extern void
+    name(void)` block is auto-generated + address-taken only = safe.
+  - battle.c vec3 out-buffers uint8_t[8]->uint32_t[2] (`d87999cc`),
+    hitres u16 casts (`b19a0114`). Uninit strict sweep still clean.
+  - text_win_printf arg0 bug (`fac04fd9`) verified vs generated
+    br2eu_func_801ACF34; printf-family callers audited consistent.
+- Headless verify: frames 40k->67k advancing post-fixes, no crash.
+  master ~42 ahead of mine/master, unpushed.
