@@ -7953,8 +7953,9 @@ uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 
 }
 
-/* sprintf_core — printf engine: parse fmt, handle %d/%u/%x/%s/
- * %c/%%/%n with width/precision/flags, write digits via wp cursor. */
+/* sprintf_core @0x8018ef6c — printf engine: parse fmt, handle %d/%u/%x/%s/
+ * %c/%%/%n with width/precision/flags, write digits via wp cursor.
+ * (clean port of guest sprintf_core_engine; wrapper entry is 0x8018ef60) */
 int sprintf_core(char *dst,char *fmt,...)
 {
   char ch;
