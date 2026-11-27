@@ -205,7 +205,9 @@ static void ws_clear_all_reveal_margins(void);
  * and the 2D scene presents widescreen. Set once from game.toml at widescreen-
  * engage (gpu_ws_set_full_2d); PSX_WS_FORCE_2D=1 forces it on for testing. */
 static int ws_full_2d = 0;
+/* Set full-2D widescreen mode flag. */
 void gpu_ws_set_full_2d(int on) { ws_full_2d = on ? 1 : 0; }
+/* Set auto UI-squash enable. */
 void gpu_ws_set_auto_ui_squash(int on) {
     ws_auto_ui_squash = on ? 1 : 0;
     ws_ui_prepass_count = 0;
@@ -218,6 +220,7 @@ void gpu_ws_set_auto_ui_squash(int on) {
 static int ws_clear_reveal = 0;
 static int g_mmx6_void_sides = 0;
 static uint32_t g_mmx6_void_generation = 1;
+/* Set clear-reveal widescreen mode. */
 void gpu_ws_set_clear_reveal(int on) { ws_clear_reveal = on ? 1 : 0; }
 
 /* GTE-activity gameplay detector ([widescreen] gte_game_mode) — the generic
@@ -246,8 +249,10 @@ static int ws_gameplay_state_value_count = 0;
  * intro-cutscene flicker). Only a genuine full-2D screen — no GTE projection for
  * this many consecutive frames (save/options/memory-card) — reverts to 4:3. */
 #define WS_GTE_GAME_MODE_HYSTERESIS 45u
+/* Set GTE-game-mode widescreen flag. */
 void gpu_ws_set_gte_game_mode(int on) { ws_gte_game_mode_cfg = on ? 1 : 0; }
 void gpu_pgxp_rederive_enable(void);
+/* Set precise NCLIP widescreen flag. */
 void gpu_ws_set_precise_nclip(int on) {
     ws_precise_nclip_cfg = on ? 1 : 0;
     /* Exact NCLIP consumes PGXP transport shadows even when every visual
@@ -255,6 +260,7 @@ void gpu_ws_set_precise_nclip(int on) {
     gpu_pgxp_rederive_enable();
 }
 int gpu_ws_precise_nclip_enabled(void) { return ws_precise_nclip_cfg && ws_active(); }
+/* Set gameplay-state gate value list. */
 void gpu_ws_set_gameplay_state_gate(uint32_t addr,
                                     const uint32_t *values, int nvalues) {
     if (nvalues < 0) nvalues = 0;
@@ -368,6 +374,7 @@ static int ws_full_2d_mode(void) {
     if (env < 0) { const char *e = getenv("PSX_WS_FORCE_2D"); env = (e && e[0] == '1') ? 1 : 0; }
     return ws_full_2d || env;
 }
+/* Resolve current widescreen game mode. */
 static int ws_game_mode(void) {
     int state_match = ws_gameplay_state_matches();
     if (state_match >= 0) return state_match;
@@ -402,6 +409,7 @@ static int ws_game_mode(void) {
  * screens by projection count. The hysteresis rides out 1-2 frame gaps; a
  * real scene change crosses it in ~0.1 s. */
 #define WS_2D_SCENE_HYSTERESIS 6u
+/* True if scene is 2D-only (no widescreen). */
 static int ws_2d_only_scene(void) {
     if (ws_full_2d_mode() || ws_gte_game_mode_cfg) return 0;
     return (uint32_t)s_frame_count - ws_sust_ovh_stamp > WS_2D_SCENE_HYSTERESIS;
@@ -410,6 +418,7 @@ static int ws_2d_only_scene(void) {
 static uint32_t s_ws_fmv_frame_cache = 0xFFFFFFFFu;
 static int      s_ws_fmv_cached = 0;
 
+/* Present native 4:3 when widescreen disengaged. */
 int gpu_ws_present_native_43(void) {
     if (!ws_engaged()) return 0;
     if (!ws_game_mode()) return 1;                 /* full-2D screen */
@@ -438,6 +447,7 @@ static int ws_active(void) { return ws_configured() && !gpu_ws_present_native_43
  * aligned), the draw-area widens by EXTRA so the shifted content is not clipped
  * on the right, and the present widens the display read by EXTRA. 0 when
  * native-wide is inactive (4:3 / boot / squash mode / FMV / full-2D). */
+/* True if native-wide mode is active. */
 int ws_native_wide_active(void) {
     return ws_mode == 2 && !gpu_ws_present_native_43();
 }
@@ -453,12 +463,14 @@ static int ws_local_viewport_cfg = 0;
 static int ws_local_viewport_slot = 0;
 static int ws_local_viewport_draw_target(int *base_x);
 static int ws_vertical_split_active(void);
+/* Set netplay local-viewport flag. */
 void gpu_ws_set_netplay_local_viewport(int enabled, int slot) {
     ws_local_viewport_cfg = enabled ? 1 : 0;
     ws_local_viewport_slot = slot == 1 ? 1 : 0;
     ws_nw_sync_target();
 }
 
+/* Compute local viewport layout (base/src_w/offset). */
 static int ws_local_viewport_layout(int *base_x, int *source_w,
                                     int *wide_w, int *offset) {
     if (!ws_local_viewport_cfg || !ws_native_wide_configured() ||
@@ -485,6 +497,7 @@ static int ws_local_viewport_layout(int *base_x, int *source_w,
     return final_w > src_w && off > 0;
 }
 
+/* Configured native-wide offset. */
 static int ws_nw_configured_offset(void) {
     if (!ws_native_wide_configured()) return 0;
     int local_offset = 0;
@@ -494,12 +507,15 @@ static int ws_nw_configured_offset(void) {
     int w = (int)ws_disp_w();
     return (w * numr + 4 * ws_cfg_den) / (8 * ws_cfg_den);
 }
+/* Active native-wide X offset. */
 static int ws_nw_offset(void) {
     if (!ws_native_wide_active()) return 0;
     return ws_nw_configured_offset();
 }
+/* Extra width added by native-wide. */
 int ws_nw_extra(void) { return 2 * ws_nw_offset(); }
 
+/* Present width under native-wide. */
 int ws_nw_present_width(void) {
     int wide_w = 0;
     if (ws_local_viewport_layout(NULL, NULL, &wide_w, NULL))
@@ -507,11 +523,13 @@ int ws_nw_present_width(void) {
     return (int)ws_disp_w() + ws_nw_extra();
 }
 
+/* Netplay local viewport base X. */
 int gpu_ws_netplay_local_viewport_base_x(void) {
     int base = 0;
     return ws_local_viewport_layout(&base, NULL, NULL, NULL) ? base : 0;
 }
 
+/* Netplay local viewport width. */
 int gpu_ws_netplay_local_viewport_width(void) {
     int wide_w = 0;
     return ws_local_viewport_layout(NULL, NULL, &wide_w, NULL) ? wide_w : 0;
@@ -530,12 +548,15 @@ int gpu_ws_netplay_local_viewport_width(void) {
 static int ws_margin_override = -1;
 static int ws_cull_guard_pixels = 0;
 static int ws_activation_guard_pixels = 0;
+/* Set explicit widescreen margin override (clamped). */
 void gpu_ws_set_margin_override(int v) { ws_margin_override = v; }
+/* Set cull guard pixels (0..256). */
 void gpu_ws_set_cull_guard_pixels(int pixels) {
     if (pixels < 0) pixels = 0;
     if (pixels > 256) pixels = 256;
     ws_cull_guard_pixels = pixels;
 }
+/* Set activation guard pixels (0..256). */
 void gpu_ws_set_activation_guard_pixels(int pixels) {
     if (pixels < 0) pixels = 0;
     if (pixels > 256) pixels = 256;
@@ -549,6 +570,7 @@ static uint32_t ws_explicit_range_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_bias_n = 0;
 static int ws_explicit_slti_n = 0;
 static int ws_explicit_range_n = 0;
+/* Register explicit cull site PC list. */
 void gpu_ws_set_explicit_cull_sites(const uint32_t *bias, int nbias,
                                     const uint32_t *slti, int nslti,
                                     const uint32_t *range, int nrange) {
@@ -565,19 +587,23 @@ void gpu_ws_set_explicit_cull_sites(const uint32_t *bias, int nbias,
     for (int i = 0; i < nslti; i++) ws_explicit_slti_sites[i] = slti[i] & 0x1FFFFFFFu;
     for (int i = 0; i < nrange; i++) ws_explicit_range_sites[i] = range[i] & 0x1FFFFFFFu;
 }
+/* True if pc is in an explicit site list. */
 static int ws_explicit_site(const uint32_t *sites, int n, uint32_t pc) {
     uint32_t p = pc & 0x1FFFFFFFu;
     for (int i = 0; i < n; i++) if (sites[i] == p) return 1;
     return 0;
 }
+/* True if pc is a bias-cull site. */
 int psx_ws_is_cull_bias_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_bias_sites, ws_explicit_bias_n, pc);
 }
+/* True if pc is an SLTI-cull site. */
 int psx_ws_is_cull_slti_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_slti_sites, ws_explicit_slti_n, pc);
 }
 static uint32_t ws_explicit_slti_lower_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_slti_lower_n = 0;
+/* Register SLTI-lower cull sites. */
 void gpu_ws_set_slti_lower_cull_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX)
@@ -586,12 +612,14 @@ void gpu_ws_set_slti_lower_cull_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_slti_lower_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is an SLTI-lower cull site. */
 int psx_ws_is_cull_slti_lower_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_slti_lower_sites,
                             ws_explicit_slti_lower_n, pc);
 }
 static uint32_t ws_explicit_negsub_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_negsub_n = 0;
+/* Register negsub cull sites. */
 void gpu_ws_set_negsub_cull_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX) nsites = WS_EXPLICIT_CULL_SITES_MAX;
@@ -599,11 +627,13 @@ void gpu_ws_set_negsub_cull_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_negsub_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is a negsub cull site. */
 int psx_ws_is_cull_negsub_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_negsub_sites, ws_explicit_negsub_n, pc);
 }
 static uint32_t ws_explicit_vxrange_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_vxrange_n = 0;
+/* Register vxrange cull sites. */
 void gpu_ws_set_vxrange_cull_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX) nsites = WS_EXPLICIT_CULL_SITES_MAX;
@@ -611,11 +641,13 @@ void gpu_ws_set_vxrange_cull_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_vxrange_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is a vxrange cull site. */
 int psx_ws_is_cull_vxrange_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_vxrange_sites, ws_explicit_vxrange_n, pc);
 }
 static uint32_t ws_explicit_depth_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_depth_n = 0;
+/* Register depth cull sites. */
 void gpu_ws_set_depth_cull_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX) nsites = WS_EXPLICIT_CULL_SITES_MAX;
@@ -623,9 +655,11 @@ void gpu_ws_set_depth_cull_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_depth_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is a depth cull site. */
 int psx_ws_is_cull_depth_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_depth_sites, ws_explicit_depth_n, pc);
 }
+/* Compute depth bound with widescreen margin. */
 int32_t psx_ws_depth_bound(int32_t imm) {
     if (psx_ws_x_margin() <= 0) return imm;
     int64_t numerator = (int64_t)imm * 3 * ws_cfg_num;
@@ -636,11 +670,13 @@ int32_t psx_ws_depth_bound(int32_t imm) {
         : -((-numerator + denominator / 2) / denominator);
     return (int32_t)result;
 }
+/* True if pc is a range-cull site. */
 int psx_ws_is_cull_range_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_range_sites, ws_explicit_range_n, pc);
 }
 static uint32_t ws_explicit_plane_nx_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_plane_nx_n = 0;
+/* Register plane-NX cull sites. */
 void gpu_ws_set_plane_nx_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX) nsites = WS_EXPLICIT_CULL_SITES_MAX;
@@ -648,6 +684,7 @@ void gpu_ws_set_plane_nx_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_plane_nx_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is a plane-NX cull site. */
 int psx_ws_is_cull_plane_nx_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_plane_nx_sites, ws_explicit_plane_nx_n, pc);
 }
@@ -656,6 +693,7 @@ int psx_ws_is_cull_plane_nx_site(uint32_t pc) {
  * ratio means scaling nx by the INVERSE factor (4*den)/(3*num):
  * atan(nz/(nx*4*den/(3*num))) == atan((3*num)/(4*den)*tan(theta)). Identity
  * at 4:3 (margin 0). */
+/* Compute plane NX with widescreen margin. */
 int32_t psx_ws_plane_nx(int32_t nx) {
     if (psx_ws_x_margin() <= 0) return nx;
     int64_t numerator = (int64_t)nx * 4 * ws_cfg_den;
@@ -669,6 +707,7 @@ int32_t psx_ws_plane_nx(int32_t nx) {
 
 static uint32_t ws_explicit_xclip_load_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_explicit_xclip_load_n = 0;
+/* Register xclip-load cull sites. */
 void gpu_ws_set_xclip_load_sites(const uint32_t *sites, int nsites) {
     if (nsites < 0) nsites = 0;
     if (nsites > WS_EXPLICIT_CULL_SITES_MAX) nsites = WS_EXPLICIT_CULL_SITES_MAX;
@@ -676,6 +715,7 @@ void gpu_ws_set_xclip_load_sites(const uint32_t *sites, int nsites) {
     for (int i = 0; i < nsites; i++)
         ws_explicit_xclip_load_sites[i] = sites[i] & 0x1FFFFFFFu;
 }
+/* True if pc is an xclip-load cull site. */
 int psx_ws_is_cull_xclip_load_site(uint32_t pc) {
     return ws_explicit_site(ws_explicit_xclip_load_sites, ws_explicit_xclip_load_n, pc);
 }
@@ -694,6 +734,7 @@ typedef struct {
 } WsCullKeepSite;
 static WsCullKeepSite ws_cull_keep_sites[WS_EXPLICIT_CULL_SITES_MAX];
 static int ws_cull_keep_n = 0;
+/* Register cull-keep sites with expected/results. */
 void gpu_ws_set_cull_keep_sites(const uint32_t *addresses,
                                 const uint32_t *expected,
                                 const uint32_t *results, int nsites) {
@@ -706,9 +747,11 @@ void gpu_ws_set_cull_keep_sites(const uint32_t *addresses,
         ws_cull_keep_sites[i].result = results[i] ? 1u : 0u;
     }
 }
+/* Cull-keep result for a site (forced or vanilla). */
 uint32_t psx_ws_cull_keep_result(uint32_t vanilla, uint32_t forced) {
     return psx_ws_x_margin() > 0 ? (forced ? 1u : 0u) : vanilla;
 }
+/* Look up a cull-keep site by pc. */
 int psx_ws_cull_keep_site(uint32_t pc, uint32_t instr, uint32_t vanilla,
                           uint32_t *out) {
     const uint32_t phys = pc & 0x1FFFFFFFu;
@@ -732,6 +775,7 @@ static uint64_t ws_angle_43_identity = 0;
 static uint32_t ws_angle_max_vanilla = 0;
 static uint32_t ws_angle_max_widened = 0;
 
+/* Register angle-widening sites with expected values. */
 void gpu_ws_set_angle_sites(const uint32_t *addresses,
                             const uint32_t *expected, int nsites) {
     if (nsites < 0) nsites = 0;
@@ -748,6 +792,7 @@ void gpu_ws_set_angle_sites(const uint32_t *addresses,
     ws_angle_max_widened = 0;
 }
 
+/* Angle-widen hook: widen FOV at a registered site. */
 uint32_t psx_ws_angle_widen(uint32_t vanilla) {
     ws_angle_calls++;
     const int margin = psx_ws_x_margin();
@@ -764,6 +809,7 @@ uint32_t psx_ws_angle_widen(uint32_t vanilla) {
     return widened;
 }
 
+/* Look up an angle site by pc. */
 int psx_ws_angle_site(uint32_t pc, uint32_t instr, uint32_t *out) {
     const uint32_t phys = pc & 0x1FFFFFFFu;
     for (int i = 0; i < ws_angle_n; i++) {
@@ -888,6 +934,7 @@ void gpu_ws_set_aspect_cone(const uint32_t *addresses,
            sizeof(ws_aspect_cone_queue_highwater));
 }
 
+/* Find an aspect-cone site by expected value. */
 static WsAspectConeSite *ws_aspect_cone_find(uint32_t address,
                                              uint32_t expected) {
     const uint32_t phys = address & 0x1FFFFFFFu;
@@ -900,6 +947,7 @@ static WsAspectConeSite *ws_aspect_cone_find(uint32_t address,
     return NULL;
 }
 
+/* Aspect-cone object state snapshot. */
 static WsAspectConeState *ws_aspect_cone_object_state(uint32_t site,
                                                        uint32_t object) {
     const uint32_t now = (uint32_t)s_frame_count;
@@ -933,6 +981,7 @@ static WsAspectConeState *ws_aspect_cone_object_state(uint32_t site,
     return oldest;
 }
 
+/* True if the object queue has room for a guard. */
 static int ws_aspect_cone_queue_has_guard_room(uint32_t object) {
     if (object == 0) return 0;
     const uint8_t type =
@@ -952,6 +1001,7 @@ static int ws_aspect_cone_queue_has_guard_room(uint32_t object) {
     return 1;
 }
 
+/* Sample aspect-cone queues at frame start. */
 static void ws_aspect_cone_sample_queues(void) {
     /* The game clears each queue at frame start and appends as candidates are
      * accepted. Sample throughout the producer loop so the high-water mark
@@ -965,6 +1015,7 @@ static void ws_aspect_cone_sample_queues(void) {
     }
 }
 
+/* Aspect-cone result hook (object/x/z/y). */
 uint32_t psx_ws_aspect_cone_result(uint32_t site_address, uint32_t vanilla,
                                    uint32_t object, int32_t x, int32_t z,
                                    int32_t y) {
@@ -1047,6 +1098,7 @@ uint32_t psx_ws_aspect_cone_result(uint32_t site_address, uint32_t vanilla,
     return 0;
 }
 
+/* Aspect-cone site lookup by pc. */
 int psx_ws_aspect_cone_site(CPUState *cpu, uint32_t pc, uint32_t instr,
                             uint32_t vanilla, uint32_t *out) {
     const WsAspectConeSite *site = ws_aspect_cone_find(pc, instr);
@@ -1061,6 +1113,7 @@ int psx_ws_aspect_cone_site(CPUState *cpu, uint32_t pc, uint32_t instr,
     return 1;
 }
 
+/* Active widescreen X margin (override-aware). */
 int psx_ws_x_margin(void) {
     if (ws_margin_override >= 0) return ws_margin_override;
     /* Native-wide: widen the world-space draw cull by the per-side reveal
@@ -1079,11 +1132,13 @@ int psx_ws_x_margin(void) {
            + ws_cull_guard_pixels;
 }
 
+/* Activation margin derived from X margin. */
 int psx_ws_activation_margin(void) {
     const int margin = psx_ws_x_margin();
     return margin > 0 ? margin + ws_activation_guard_pixels : 0;
 }
 
+/* Player X bound with widescreen margin. */
 int32_t psx_ws_player_x_bound(int32_t vanilla)
 {
     const int margin = psx_ws_x_margin();
@@ -1095,6 +1150,7 @@ int32_t psx_ws_player_x_bound(int32_t vanilla)
 static uint32_t ws_signed_bound_addr[WS_SIGNED_BOUND_MAX];
 static uint32_t ws_signed_bound_expected[WS_SIGNED_BOUND_MAX];
 static int ws_signed_bound_count = 0;
+/* Register signed X-bound sites. */
 void gpu_ws_set_signed_x_bound_sites(const uint32_t *addresses,
                                      const uint32_t *expected, int count) {
     if (count < 0) count = 0;
@@ -1105,6 +1161,7 @@ void gpu_ws_set_signed_x_bound_sites(const uint32_t *addresses,
         ws_signed_bound_expected[i] = expected[i];
     }
 }
+/* True if pc is a signed X-bound site. */
 int psx_ws_is_signed_x_bound_site(uint32_t pc, uint32_t instr) {
     const uint32_t phys = pc & 0x1FFFFFFFu;
     for (int i = 0; i < ws_signed_bound_count; i++)
@@ -1143,6 +1200,7 @@ static uint32_t g_bg2d_packet_cap = 1000;
 static int g_bg2d_native_cols = 21;
 static int g_bg2d_parent_links = 1;
 
+/* Configure BG2D widescreen params (map/stride/ring). */
 void gpu_ws_bg2d_configure(uint32_t layer_base, uint32_t ring_base,
                            uint32_t map_size_addr, uint32_t layer_stride_addr,
                            uint32_t ring_cols, uint32_t layer_count,
@@ -1157,10 +1215,12 @@ void gpu_ws_bg2d_configure(uint32_t layer_base, uint32_t ring_base,
     g_bg2d_packet_cap = packet_cap;
 }
 
+/* Set BG2D parent-links flag. */
 void gpu_ws_bg2d_set_parent_links(int on) {
     g_bg2d_parent_links = on ? 1 : 0;
 }
 
+/* Left-column count for BG2D streaming. */
 static int ws_bg2d_left_cols(void) {
     if (!ws_native_wide_active()) return 0;
     /* Only the ~320 gameplay mode; the engine's 512 hi-res mode (title) draws
@@ -1197,8 +1257,11 @@ int psx_ws_bg2d_startx(int x)        { return x - ws_bg2d_left_cols() * 16; }
  * the camera scrolls (the incremental streamer fills each newly-leading column).
  * Identity (no extra streaming) at 4:3 / 512 hi-res, so the ring is byte-identical
  * there. The 64-col ring has ample slack (visible ~21 cols) for ±LEFT more. */
+/* BG2D stream left edge (x - left_cols). */
 int psx_ws_bg2d_stream_left(int x)  { return x - ws_bg2d_left_cols() * 16; }
+/* BG2D stream right edge (x + left_cols). */
 int psx_ws_bg2d_stream_right(int x) { return x + ws_bg2d_left_cols() * 16; }
+/* BG2D undercap with widened column budget. */
 int psx_ws_bg2d_undercap(int counter, int native_cap) {
     int cap = ws_bg2d_left_cols() > 0 ? (int)g_bg2d_packet_cap : native_cap;
     return counter < cap;
@@ -1210,10 +1273,15 @@ int psx_ws_bg2d_undercap(int counter, int native_cap) {
  * the name is historical; the recompiler emits these names for any title with
  * a [widescreen.bg2d] block. Renaming means touching code_generator.cpp, which
  * rolls the overlay cache tag for every game. */
+/* MMX6 BG column count (BG2D alias). */
 int psx_ws_mmx6_bg_cols(int base)       { return psx_ws_bg2d_cols(base); }
+/* MMX6 BG start column (BG2D alias). */
 int psx_ws_mmx6_bg_startcol(int col)    { return psx_ws_bg2d_startcol(col, 0x3fu); }
+/* MMX6 BG start X (BG2D alias). */
 int psx_ws_mmx6_bg_startx(int x)        { return psx_ws_bg2d_startx(x); }
+/* MMX6 BG stream left (BG2D alias). */
 int psx_ws_mmx6_bg_stream_left(int x)   { return psx_ws_bg2d_stream_left(x); }
+/* MMX6 BG stream right (BG2D alias). */
 int psx_ws_mmx6_bg_stream_right(int x)  { return psx_ws_bg2d_stream_right(x); }
 
 /* Called at entry to MMX6's full tile-ring initializer (FUN_800269F4). The
@@ -1235,6 +1303,7 @@ int psx_ws_mmx6_bg_bufbase(int addr) {
     return addr;
 }
 
+/* MMX6 BG undercap (fixed 1000 cap). */
 int psx_ws_mmx6_bg_undercap(int counter) {
     return psx_ws_bg2d_undercap(counter, 1000);
 }
@@ -1256,6 +1325,7 @@ int psx_ws_mmx6_bg_undercap(int counter) {
  * native-wide + ~320 mode, so 4:3 and the 512 hi-res title stay byte-identical. */
 extern void psx_write_half(uint32_t addr, uint16_t val);
 
+/* Clear a BG2D world column. */
 static void bg2d_clear_column(int layer, int ringcol, int worldY) {
     int rows = 0x12;
     if (worldY < 0) { worldY = 0; rows = 0x11; }
@@ -1277,6 +1347,7 @@ static void bg2d_clear_column(int layer, int ringcol, int worldY) {
  * (UNSIGNED). When write!=0 the tiles are written to the ring; when write==0 they are
  * compared against the live ring (validation), counting *cmp_total / *cmp_bad. Returns
  * 1 if the column was streamed, 0 if skipped (map-loop seam early-return). */
+/* Fill a BG2D world column; counts compares/bad. */
 static int bg2d_fill_column(int layer, int worldX, int worldY, int scrollX, int write,
                              int *cmp_total, int *cmp_bad) {
     /* The guest column streamer returns immediately for negative world X. Do
@@ -1380,6 +1451,7 @@ long gpu_ws_mmx6_refill_cols(void)    { return g_mmx6_refill_cols; }
  * the driver. ci spans the renderer's widened span [-LEFT, 20+LEFT].
  * No-op at 4:3 / 512 hi-res (left==0). Idempotent over the native columns the engine
  * already streamed correctly, so re-streaming them is harmless. */
+/* Refill all MMX6 BG columns (freshfix mode). */
 void psx_ws_mmx6_bg_refill_all(void) {
     if (!g_mmx6_freshfix) return;
     if (!ws_native_wide_active() || ws_disp_w() > 384) return;
@@ -1457,6 +1529,7 @@ int gpu_ws_mmx6_validate(int *bad_out) {
  * 0x141). Returns the sltiu verdict (1 = on-screen/keep). Sign-extends sx and
  * shifts by +margin so BOTH 16:9 margins pass; at 4:3 margin==0 so it reduces
  * bit-for-bit to the vanilla `(uint16)sx < imm`. */
+/* SLTIU cull with widescreen margin. */
 int psx_ws_cull_sltiu(uint32_t sx, uint32_t imm) {
     int m = psx_ws_x_margin();
     return ((uint32_t)((int32_t)(int16_t)(uint16_t)sx + m)
@@ -1484,6 +1557,7 @@ int psx_ws_cull_slti_lower(uint32_t sx, uint32_t imm) {
 int psx_ws_cull_bltz(uint32_t v) {
     return ((int32_t)v < -psx_ws_x_margin()) ? 1 : 0;
 }
+/* VXRANGE cull with widescreen margin. */
 int psx_ws_cull_vxrange(uint32_t x, uint32_t imm) {
     int32_t margin = psx_ws_x_margin();
     uint32_t bound = (uint32_t)(int32_t)(int16_t)(uint16_t)imm;
@@ -1501,6 +1575,7 @@ static uint32_t ws_cull_w_imms[8] = { 0x140, 0x141 };
 static int      ws_cull_w_n = 2;
 static uint32_t ws_cull_h_imms[8] = { 0xE0, 0xF1 };
 static int      ws_cull_h_n = 2;
+/* Register cull immediate values (max 8). */
 void gpu_ws_set_cull_imms(const uint32_t *w, int nw, const uint32_t *h, int nh) {
     if (w && nw > 0) {
         if (nw > 8) nw = 8;
@@ -1513,6 +1588,7 @@ void gpu_ws_set_cull_imms(const uint32_t *w, int nw, const uint32_t *h, int nh) 
         ws_cull_h_n = nh;
     }
 }
+/* True if imm is a registered cull W immediate. */
 int psx_ws_is_cull_w_imm(uint32_t imm) {
     return psx_ws_cull_imm_in(imm, ws_cull_w_imms, ws_cull_w_n);
 }
@@ -1526,10 +1602,12 @@ int psx_ws_is_cull_w_imm(uint32_t imm) {
  * game.toml at startup (main.cpp). */
 static int ws_auto_cull_on_cfg = 0;
 static int ws_auto_backdrop_on_cfg = 0;
+/* Set auto-hook enable flags (cull/backdrop). */
 void gpu_ws_set_auto_hooks(int cull_on, int backdrop_on) {
     ws_auto_cull_on_cfg     = cull_on ? 1 : 0;
     ws_auto_backdrop_on_cfg = backdrop_on ? 1 : 0;
 }
+/* Detect GTE screen-extent cull signature in a word run. */
 int psx_ws_auto_cull_on(void) { return ws_auto_cull_on_cfg; }
 
 /* Detect the GTE screen-extent trivial-reject signature in a run of
@@ -1538,6 +1616,7 @@ int psx_ws_auto_cull_on(void) { return ws_auto_cull_on_cfg; }
  * interpreter gate the cull-widening to real render funnels (a lone width
  * compare elsewhere must stay vanilla). Same shared scan the recompiler's
  * func_has_screen_extent_cull uses (ws_cull_detect.h). */
+/* True if function words contain a screen cull. */
 int psx_ws_func_has_screen_cull(const uint32_t *words, int n) {
     return psx_ws_cull_scan(words, n, ws_cull_w_imms, ws_cull_w_n,
                             ws_cull_h_imms, ws_cull_h_n);
@@ -1567,6 +1646,7 @@ int psx_ws_cull_bltz_at(const uint32_t *words, int n, int idx) {
  * mountain panels — pre-calculated POLY_FT4 screen coords stored by main-EXE
  * `sh` sites, wtrace-evidenced).
  * x is the int16 screenX the handler was about to store. */
+/* Backdrop X with widescreen adjustment. */
 int psx_ws_backdrop_x(int x) {
     if (ws_native_wide_active()) {
         int32_t X = ws_disp_x();
@@ -1594,6 +1674,7 @@ int psx_ws_backdrop_x(int x) {
  * generator's own low/high clamps still bound it at the level edges. Gated on
  * native-wide only (NOT squash: that path uses psx_ws_backdrop_x()). Returns
  * `orig` unchanged at 4:3 / squash / boot / FMV, so 4:3 stays byte-identical. */
+/* True if backdrop preload is active. */
 int psx_ws_backdrop_preload(void) {
     return ws_auto_backdrop_on_cfg && ws_native_wide_active();
 }
@@ -1611,6 +1692,7 @@ int g_ws_bd_margin = 0;   /* column preload proven irrelevant to the void; defau
  * function notes them itself -- that is how the ring sees native execution. */
 int g_ws_bd_from_interp = 0;
 
+/* Backdrop value (identity when preload off). */
 uint32_t psx_ws_backdrop_value(uint32_t orig, int is_end, int window_cols) {
     if (!psx_ws_backdrop_preload()) return orig;   /* 4:3 -> byte-identical */
     if (window_cols < 0) window_cols = -window_cols;
@@ -1654,6 +1736,7 @@ typedef struct {
 static WsBdRingEnt s_bd_ring[WS_BD_RING_CAP];
 static uint32_t    s_bd_ring_seq = 0;
 
+/* Note a backdrop-ring event. */
 void psx_ws_backdrop_ring_note(uint32_t pc, int kind, int wcols, uint32_t orig,
                                uint32_t finalv, int extent, int camx, int count,
                                uint32_t base, uint32_t dl) {
@@ -1664,6 +1747,7 @@ void psx_ws_backdrop_ring_note(uint32_t pc, int kind, int wcols, uint32_t orig,
     s_bd_ring_seq++;
 }
 
+/* Backdrop ring as JSON. */
 int psx_ws_backdrop_ring_json(char *buf, int cap) {
     int n = (int)(s_bd_ring_seq < WS_BD_RING_CAP ? s_bd_ring_seq : WS_BD_RING_CAP);
     uint32_t start = s_bd_ring_seq - (uint32_t)n;
@@ -1691,6 +1775,7 @@ int psx_ws_backdrop_ring_json(char *buf, int cap) {
  *
  * This reports both the raw key inputs and the union-find root, which together
  * answer "did these two merge, and if not, which component split them". */
+/* UI groups state as JSON. */
 int psx_ws_ui_groups_json(char *buf, int cap) {
     int off = snprintf(buf, (size_t)cap,
         "\"active\":%d,\"squash\":%d,\"dense\":%d,\"rank\":%d,"
@@ -1743,6 +1828,7 @@ int psx_ws_ui_groups_json(char *buf, int cap) {
 static uint32_t ws_backdrop_sites[WS_BACKDROP_SITES_MAX];
 static int      ws_backdrop_site_n = 0;
 
+/* Register backdrop site PCs. */
 void psx_ws_set_backdrop_sites(const uint32_t* pcs, int n) {
     ws_backdrop_site_n = 0;
     if (!pcs) return;
@@ -1750,6 +1836,7 @@ void psx_ws_set_backdrop_sites(const uint32_t* pcs, int n) {
         ws_backdrop_sites[ws_backdrop_site_n++] = pcs[i] & 0x1FFFFFFFu;
 }
 
+/* True if pc is a backdrop site. */
 int psx_ws_is_backdrop_site(uint32_t pc) {
     if (!ws_backdrop_site_n) return 0;
     pc &= 0x1FFFFFFFu;
@@ -1805,6 +1892,7 @@ void gpu_ws_get_debug(GpuWsDebug* out) {
     out->angle_max_widened = ws_angle_max_widened;
 }
 
+/* Fetch aspect-cone site debug info. */
 int gpu_ws_get_aspect_cone_site_debug(
     uint32_t address, GpuWsAspectConeSiteDebug* out) {
     WsAspectConeSite *site = ws_aspect_cone_find(address, 0);
@@ -1821,6 +1909,7 @@ int gpu_ws_get_aspect_cone_site_debug(
     return 1;
 }
 
+/* Configure widescreen params (sprite anchor, HUD squash, mode). */
 void gpu_ws_configure(int aspect_num, int aspect_den,
                       uint32_t sprite_anchor_addr, int hud_sprt_squash, int mode) {
     ws_cfg_num = aspect_num > 0 ? aspect_num : 4;
@@ -1912,9 +2001,11 @@ static int ws_tagged_anchor(int32_t *out_ax) {
  * so tag/narrow heuristics alone mis-stretch and tear it. */
 uint32_t g_ws_backdrop_lo = 0, g_ws_backdrop_hi = 0;
 static int ws_nw_phase_backdrop = 0;
+/* Set NW phase-backdrop flag. */
 void gpu_ws_set_nw_phase_backdrop(int on) { ws_nw_phase_backdrop = on ? 1 : 0; }
 static int ws_nw_textured_edges = 0;
 int g_ws_tex_edge_pct = 0;
+/* Set NW textured-edges flag + scale. */
 void gpu_ws_set_nw_textured_edges(int on, int scale_pct) {
     ws_nw_textured_edges = on ? 1 : 0;
     g_ws_tex_edge_pct = scale_pct;
@@ -1981,6 +2072,7 @@ void psx_ws_dbg_gate_frame_snapshot(void) {
  * per-frame at GP0 decode (ws_bg_phase_note, sees every prim in draw order). */
 static uint32_t s_bg_phase_frame = 0xFFFFFFFFu;
 static int      s_bg_phase_over  = 0;
+/* Note BG phase transition per frame. */
 void ws_bg_phase_note(uint32_t op) {
     uint32_t f = (uint32_t)s_frame_count;
     if (f != s_bg_phase_frame) { s_bg_phase_frame = f; s_bg_phase_over = 0; }
@@ -1996,6 +2088,7 @@ static int ws_bg_phase_over(void) {
     return s_bg_phase_over;
 }
 
+/* True if current prim is in the backdrop band. */
 int psx_ws_prim_in_backdrop(void) {
     if (gp0_cmd_source_addr != 0xFFFFFFFFu) {
         uint32_t f = (uint32_t)s_frame_count;
@@ -2018,6 +2111,7 @@ int psx_ws_prim_in_backdrop(void) {
     return psx_ws_prim_is_tagged();
 }
 
+/* True if current prim carries a sprite tag. */
 int psx_ws_prim_is_tagged(void) {
     if (!ws_engaged() || gp0_cmd_source_addr == 0xFFFFFFFFu) return 0;
     uint32_t now = (uint32_t)s_frame_count;
@@ -2055,6 +2149,7 @@ static int32_t ws_disp_x(void) {
     return 0;
 }
 
+/* Display width from GPU display info. */
 static int32_t ws_disp_w(void) {
     int src_w = 0;
     if (ws_local_viewport_layout(NULL, &src_w, NULL, NULL))
@@ -2064,6 +2159,7 @@ static int32_t ws_disp_w(void) {
     return di.width ? (int32_t)di.width : 320;
 }
 
+/* Display height from GPU display info. */
 static int32_t ws_disp_h(void) {
     GpuDisplayInfo di;
     gpu_get_display_info(&di);
@@ -2090,6 +2186,7 @@ static void ws_expand_fullscreen_rect(int32_t *x, int32_t y, int *w, int h) {
  * the middle third to centre. A composite (counter box + digits) sits inside
  * one zone, so its pieces share a pivot and stay aligned. (Full-2D menu
  * screens never reach here — they get zero squash + 4:3 pillarbox instead.) */
+/* HUD pivot X from display geometry. */
 static int32_t ws_hud_pivot(int32_t x, int32_t w) {
     int32_t X = ws_disp_x();
     int32_t W = ws_disp_w();
@@ -2106,6 +2203,7 @@ static int32_t ws_hud_pivot(int32_t x, int32_t w) {
  * before the list streams through GP0. This excludes CPU-built characters (the
  * source of the old squashed-Spike regression) even when their packets are
  * axis-aligned, and gives animated glyphs a shared anchor on their first frame. */
+/* Invalidate stale UI prepass state. */
 static void ws_ui_prepass_invalidate_stale(void) {
     ws_ui_prepass_count = 0;
     ws_ui_prepass_node_count = 0;
@@ -2114,6 +2212,7 @@ static void ws_ui_prepass_invalidate_stale(void) {
     ws_ui_reject.stale++;
 }
 
+/* Auto UI anchor detection for squash. */
 static int ws_auto_ui_anchor(int32_t *out_anchor) {
     if (!ws_auto_ui_squash || !ws_active() ||
         gp0_cmd_source_addr == 0xFFFFFFFFu)
@@ -2134,6 +2233,7 @@ static int ws_auto_ui_anchor(int32_t *out_anchor) {
     return 0;
 }
 
+/* Group key from quad words. */
 static uint32_t ws_auto_ui_group_key_words(const uint32_t *words,
                                            uint32_t op,
                                            int32_t y, int32_t h) {
@@ -2151,6 +2251,7 @@ static uint32_t ws_auto_ui_group_key_words(const uint32_t *words,
     return key ? key : 1u;
 }
 
+/* True if quad vertices form an axis-aligned rect. */
 static int ws_axis_aligned_quad(const int32_t vx[4], const int32_t vy[4]) {
     int32_t min_x = vx[0], max_x = vx[0], min_y = vy[0], max_y = vy[0];
     for (int i = 1; i < 4; i++) {
@@ -2170,6 +2271,7 @@ static int ws_axis_aligned_quad(const int32_t vx[4], const int32_t vy[4]) {
     return corners == 15u;
 }
 
+/* Auto-UI transform for a quad (tagged/axis checks). */
 static int ws_auto_ui_transform_quad(int32_t vx[4], const int32_t vy[4]) {
     if (psx_ws_prim_is_tagged() || !ws_axis_aligned_quad(vx, vy))
         return 0;
@@ -2194,6 +2296,7 @@ static int ws_auto_ui_transform_quad(int32_t vx[4], const int32_t vy[4]) {
     return 1;
 }
 
+/* Auto-UI transform for a rect. */
 static int ws_auto_ui_transform_rect(int32_t *x, int32_t y, int *w, int h) {
     if (!x || !w || *w <= 0 || psx_ws_prim_is_tagged())
         return 0;
@@ -2249,10 +2352,12 @@ static uint32_t ws_nw_left_hud_packet_lo = 0;
 static uint32_t ws_nw_left_hud_packet_hi = 0;
 void gpu_ws_set_nw_hud_corners(int on) { ws_nw_hud_corners = on ? 1 : 0; }
 void gpu_ws_set_nw_hud_tag_rects(int on) { ws_nw_hud_tag_rects = on ? 1 : 0; }
+/* Register NW left-HUD packet PC range. */
 void gpu_ws_set_nw_left_hud_packet_range(uint32_t lo, uint32_t hi) {
     ws_nw_left_hud_packet_lo = lo & 0x1FFFFFFFu;
     ws_nw_left_hud_packet_hi = hi & 0x1FFFFFFFu;
 }
+/* True if current packet is a NW left-HUD packet. */
 static int ws_nw_left_hud_packet(void) {
     if (!ws_native_wide_active() || gp0_cmd_source_addr == 0xFFFFFFFFu ||
         ws_nw_left_hud_packet_hi <= ws_nw_left_hud_packet_lo)
@@ -2261,6 +2366,7 @@ static int ws_nw_left_hud_packet(void) {
     int matched = a >= ws_nw_left_hud_packet_lo && a < ws_nw_left_hud_packet_hi;
     return matched;
 }
+/* NW HUD X shift. */
 static int32_t ws_nw_hud_shift(int32_t x, int32_t w) {
     if (!ws_native_wide_active()) return 0;
     int32_t off = ws_nw_offset();
@@ -2314,10 +2420,14 @@ static void ws_nw_hud_shift_vertices(int32_t *vx, int count) {
  * they never match. Identity unless native-wide is engaged AND the game opts in.
  * Transforms vx[0..3] IN PLACE (pre-draw_offset); returns 1 if it applied. */
 static int ws_nw_backdrop = 0;
+/* Set NW backdrop flag. */
 void gpu_ws_set_nw_backdrop(int on) { ws_nw_backdrop = on ? 1 : 0; }
 static int ws_nw_flat_backdrop = 0;
+/* Set NW flat-backdrop flag. */
 void gpu_ws_set_nw_flat_backdrop(int on) { ws_nw_flat_backdrop = on ? 1 : 0; }
+/* True if NW flat backdrop is enabled. */
 int gpu_ws_nw_flat_backdrop_enabled(void) { return ws_nw_flat_backdrop; }
+/* Stretch quad vertices for NW backdrop. */
 static int ws_nw_backdrop_stretch_quad(int32_t *vx, const int32_t *vy) {
     if (!ws_nw_backdrop || !ws_native_wide_active()) return 0;
     int32_t extra = ws_nw_extra();
@@ -2427,6 +2537,7 @@ static int draw_area_intersects_rect(int x, int y, int w, int h) {
              (int)draw_area_top > b);
 }
 
+/* Local viewport draw target rect. */
 static int ws_local_viewport_draw_target(int *base_x) {
     int base = 0, src_w = 0;
     if (!ws_local_viewport_layout(&base, &src_w, NULL, NULL))
@@ -2441,6 +2552,7 @@ static int ws_local_viewport_draw_target(int *base_x) {
     return 0;
 }
 
+/* Display viewport draw target rect. */
 static int ws_display_viewport_draw_target(int *base_x) {
     if (!ws_native_wide_active())
         return 0;
@@ -2525,21 +2637,25 @@ static uint32_t display_area_y;
 #define WS_FB_BASES 4
 static uint32_t ws_fb_base[WS_FB_BASES];
 static int      ws_fb_n = 0;
+/* Note a display base address. */
 static void ws_note_display_base(uint32_t bx) {
     for (int i = 0; i < ws_fb_n; i++) if (ws_fb_base[i] == bx) return;
     if (ws_fb_n < WS_FB_BASES) { ws_fb_base[ws_fb_n++] = bx; return; }
     for (int i = 1; i < WS_FB_BASES; i++) ws_fb_base[i - 1] = ws_fb_base[i];
     ws_fb_base[WS_FB_BASES - 1] = bx;
 }
+/* True if bx is a known framebuffer base. */
 static int ws_is_fb_base(uint32_t bx) {
     for (int i = 0; i < ws_fb_n; i++) if (ws_fb_base[i] == bx) return 1;
     return 0;
 }
 
+/* Reset the vertical-split trace. */
 static void split_trace_reset(GpuVerticalSplitTrace *trace) {
     memset(trace, 0, sizeof(*trace));
 }
 
+/* Note draw-area for split detection. */
 static void split_trace_note_draw_area(void) {
     GpuDisplayInfo di;
     gpu_get_display_info(&di);
@@ -2578,14 +2694,17 @@ static void split_trace_note_draw_area(void) {
     }
 }
 
+/* True if a vertical split screen is active. */
 static int ws_vertical_split_active(void) {
     return split_recent_left_age <= 8 && split_recent_right_age <= 8;
 }
 
+/* Last frame had a vertical split. */
 int gpu_last_frame_vertical_split_screen(void) {
     return ws_vertical_split_active();
 }
 
+/* Vertical-split debug out params. */
 void gpu_vertical_split_debug(int *active, int *left_age, int *right_age) {
     if (active) *active = gpu_last_frame_vertical_split_screen();
     if (left_age) *left_age = split_recent_left_age;
@@ -2614,6 +2733,7 @@ static void ws_nw_sync_target(void) {
     else                     gr_wide_disable_target();
 }
 
+/* Clear reveal margins on all FBs. */
 static void ws_clear_all_reveal_margins(void) {
     for (int i = 0; i < ws_fb_n; i++)
         gr_wide_clear_margins((int)ws_fb_base[i], 0, 512, 0, 3);
@@ -2627,6 +2747,7 @@ void gpu_ws_begin_linked_list(void) {
     gp0_ot_rank = 0xFFFFu;
 }
 
+/* Set GP0 linked-list node (word_count==0 clears). */
 void gpu_set_gp0_linked_list_node(uint32_t addr, uint32_t word_count) {
     (void)addr;
     if (word_count == 0) {
@@ -2635,10 +2756,12 @@ void gpu_set_gp0_linked_list_node(uint32_t addr, uint32_t word_count) {
     }
 }
 
+/* End the widescreen linked-list pass. */
 void gpu_ws_end_linked_list(void) {
     gp0_ot_rank = 0xFFFFu;
 }
 
+/* Restore OT rank after widescreen pass. */
 void gpu_ws_restore_linked_list_rank(uint32_t rank) {
     gp0_ot_rank = rank == UINT32_MAX ? 0xFFFFu : (uint16_t)rank;
 }
@@ -2770,6 +2893,7 @@ void gpu_charge_cycles(uint64_t cost) {
  * The charge is therefore a bounded per-primitive command cost (decode +
  * setup/clip), independent of coverage; `pixels`/`textured` are retained
  * in the signature for the call sites but do not scale the charge. */
+/* Note a primitive for timing (no-op when disabled). */
 void gpu_note_prim(int64_t pixels, int textured) {
     (void)pixels; (void)textured;
     if (!gpu_timing_enabled()) return;
@@ -2788,11 +2912,13 @@ void gpu_note_vram_px(int64_t pixels) {
     gpu_charge_cycles(cost);
 }
 
+/* True if GPU command processor is busy. */
 static int gpu_cmd_busy(void) {
     return gpu_timing_enabled() &&
            psx_get_cycle_count() < s_gpu_busy_until;
 }
 
+/* Cycles until GPU DMA is ready. */
 uint32_t gpu_dma_ready_cycles(void) {
     if (!gpu_timing_enabled()) return 0u;
     uint64_t now = psx_get_cycle_count();
@@ -2902,6 +3028,7 @@ static void gpu_reset_state(int clear_vram) {
     s_d24_prev_disp_h = 0;
 }
 
+/* Initialize GPU state (reset). */
 void gpu_init(void) {
     gpu_reset_state(1);
 }
@@ -3064,6 +3191,7 @@ static uint16_t rgb888_to_rgb555(uint32_t color24) {
 static int s_present_pending;
 static int s_flushing_present;
 
+/* Clear a deferred present request. */
 void gpu_vblank_clear_deferred_present(void) {
     s_present_pending = 0;
     /* longjmp from flush_resume abandons the flush_present stack frame —
@@ -3071,6 +3199,7 @@ void gpu_vblank_clear_deferred_present(void) {
     s_flushing_present = 0;
 }
 
+/* Arm a deferred present (coalesced). */
 void gpu_vblank_arm_deferred_present(void) {
     /* Coalesce: at most one deferred present. Stacking (≥2) drained in one
      * flush as double finish_frame at the same guest cycle (MotK soak:
@@ -3079,14 +3208,17 @@ void gpu_vblank_arm_deferred_present(void) {
         s_present_pending = 1;
 }
 
+/* True if a present is pending. */
 int gpu_vblank_present_pending(void) {
     return s_present_pending > 0;
 }
 
+/* Release the present-flush guard. */
 void gpu_vblank_release_present_flush_guard(void) {
     s_flushing_present = 0;
 }
 
+/* Flush a pending deferred present. */
 void gpu_vblank_flush_present(void) {
     if (s_flushing_present || s_present_pending <= 0)
         return;
@@ -3144,6 +3276,7 @@ void gpu_vblank_flush_present(void) {
     s_flushing_present = 0;
 }
 
+/* Per-frame GPU vblank tick (FIELD/interlace). */
 void gpu_vblank_tick(void) {
     lcf ^= 1;
     /* GPUSTAT.13 (interlace FIELD): on real hardware this alternates per
@@ -3219,6 +3352,7 @@ const uint16_t* gpu_get_vram(void) {
     return vram;
 }
 
+/* Read a VRAM byte through the facade. */
 static uint8_t gpu_vram_byte(uint32_t byte_x, uint32_t y) {
     uint16_t hw = vram[((y & 511u) * 1024u) + ((byte_x >> 1) & 1023u)];
     return (byte_x & 1u) ? (uint8_t)(hw >> 8) : (uint8_t)hw;
@@ -3229,6 +3363,7 @@ static uint8_t gpu_vram_byte(uint32_t byte_x, uint32_t y) {
  * width — MotK's Star Wars crawl leaves ~8px of stale VRAM on the right.
  * Only FB-class A0s (w >= 256 halfwords) grow the span; texture uploads must
  * not collapse it. During present-hold, ignore updates entirely. */
+/* Note a depth24 upload span. */
 static void depth24_note_upload(uint32_t x, uint32_t w) {
     if (!(display_depth & 1u) || w < 256u) return;
     if (s_d24_present_hold > 0) return;
@@ -3237,6 +3372,7 @@ static void depth24_note_upload(uint32_t x, uint32_t w) {
     if (x1 > s_d24_upload_x1) s_d24_upload_x1 = x1;
 }
 
+/* Depth24 RGB limit from CRTC width. */
 uint32_t gpu_depth24_rgb_limit(uint32_t display_x, uint32_t crtc_w) {
     if (!(display_depth & 1u) || crtc_w == 0u)
         return crtc_w;
@@ -3252,16 +3388,19 @@ uint32_t gpu_depth24_rgb_limit(uint32_t display_x, uint32_t crtc_w) {
     return rgb;
 }
 
+/* Reset the depth24 upload span. */
 void gpu_depth24_upload_span_reset(void) {
     s_d24_upload_x1 = 0;
 }
 
+/* Tick the depth24 present hold. */
 int gpu_depth24_present_hold_tick(void) {
     if (s_d24_present_hold <= 0) return 0;
     s_d24_present_hold--;
     return 1;
 }
 
+/* Depth24 present hold on savestate load. */
 void gpu_depth24_on_savestate_loaded(void) {
     /* Hold skips Swap — after restore we want the restored VRAM visible now.
      * Upload span / prev_h were restored from the GPU snap. */
@@ -3317,6 +3456,7 @@ static void screen_lut_ensure(void) {
     }
 }
 
+/* Convert RGB555 to RGB888 via screen LUT. */
 static void gpu_rgb555_to_rgb888(uint16_t c, uint8_t* r, uint8_t* g, uint8_t* b) {
     screen_lut_ensure();
     if (s_screen_lut) {
@@ -3329,6 +3469,7 @@ static void gpu_rgb555_to_rgb888(uint16_t c, uint8_t* r, uint8_t* g, uint8_t* b)
     *b = (uint8_t)(((c >> 10) & 0x1Fu) << 3);
 }
 
+/* Display pixel → RGB (depth24-aware). */
 void gpu_display_pixel_rgb(const GpuDisplayInfo* di, uint32_t x, uint32_t y,
                            uint8_t* r, uint8_t* g, uint8_t* b) {
     if (di->depth24) {
@@ -3352,6 +3493,7 @@ void gpu_display_pixel_rgb(const GpuDisplayInfo* di, uint32_t x, uint32_t y,
     gpu_rgb555_to_rgb888(vram[vy * 1024u + vx], r, g, b);
 }
 
+/* Display pixel → ARGB. */
 uint32_t gpu_display_pixel_argb(const GpuDisplayInfo* di, uint32_t x, uint32_t y) {
     uint8_t r, g, b;
     gpu_display_pixel_rgb(di, x, y, &r, &g, &b);
@@ -3368,6 +3510,7 @@ uint32_t gpu_display_pixel_argb(const GpuDisplayInfo* di, uint32_t x, uint32_t y
  * VRAM touches of the 16-bit path, done as a function-call chain instead of
  * a straight-line loop). Still scalar C — no host-endianness assumptions,
  * same byte-order shifts as gpu_vram_byte. */
+/* Present one depth24 row. */
 void gpu_depth24_present_row(const GpuDisplayInfo* di, uint32_t y, uint32_t* out,
                              uint32_t count) {
     uint32_t vy = (di->display_y + y) & 511u;
@@ -3397,10 +3540,12 @@ void gpu_depth24_present_row(const GpuDisplayInfo* di, uint32_t y, uint32_t* out
         out[x] = 0xFF000000u;
 }
 
+/* True if display is depth24 mode. */
 int gpu_display_is_depth24(void) {
     return (int)(display_depth & 1u);
 }
 
+/* Fill GpuDisplayInfo from CRTC state. */
 void gpu_get_display_info(GpuDisplayInfo* out) {
     out->display_x = display_area_x;
     out->display_y = display_area_y;
@@ -3492,6 +3637,7 @@ void gpu_get_crtc_debug(uint32_t *x1, uint32_t *x2, uint32_t *y1, uint32_t *y2,
     if (hres2_out) *hres2_out = hres2;
 }
 
+/* Set the vblank callback. */
 void gpu_set_vblank_callback(gpu_vblank_cb cb) {
     vblank_callback = cb;
 }
@@ -3523,15 +3669,18 @@ void gpu_pgxp_rederive_enable(void) {
                      ws_precise_nclip_cfg);
 }
 
+/* Set texture-correction enable. */
 void gpu_texture_correction_set(int enabled) {
     s_texture_correction_enabled = enabled ? 1 : 0;
     gpu_pgxp_rederive_enable();
 }
 
+/* True if texture correction is enabled. */
 int gpu_texture_correction_enabled(void) {
     return s_texture_correction_enabled;
 }
 
+/* Perspective-triangle correction hit count. */
 uint32_t gpu_texture_correction_hits(void) {
     return sw_perspective_triangle_count();
 }
@@ -3545,6 +3694,7 @@ uint32_t gpu_texture_correction_hits(void) {
  * it, so shared edges between neighbouring triangles cannot disagree by more
  * than the sub-pixel fraction. The integer delta folds in draw offsets and
  * any widescreen adjustment already applied by the caller. */
+/* Prepare a precise triangle for capture. */
 static void prepare_precise_triangle(int i0, int i1, int i2,
                                      const int32_t vx[3], const int32_t vy[3]) {
     gr_set_perspective_triangle(0, 0.0f, 0.0f, 0.0f);
@@ -3921,7 +4071,9 @@ static void gp0_exec_shaded_tri(void) {
                              vx[2], vy[2], c[2]);
 }
 
+/* Arm shaded-quad capture. */
 void gpu_arm_shaded_quad_capture(void) { sq_cap_armed = 1; sq_cap_count = 0; }
+/* Fetch captured shaded quads (disarms). */
 int  gpu_get_shaded_quad_capture(const GpuSqCapEntry** out) {
     sq_cap_armed = 0; /* disarm on read */
     *out = sq_cap_buf;
@@ -3990,6 +4142,7 @@ static uint16_t current_texpage(void) {
  * Beetle: SetTPage(CB[4 + ((cc>>4)&1)] >> 16) on every textured poly.
  * Bits 9-10 (dither / draw-to-display) exist only in E1; bit 11 (texture
  * disable) only latches when GP1(09h) allowed it, which polys can't grant. */
+/* Set texture page from a polygon header. */
 static void set_tpage_from_poly(uint16_t tpage_word) {
     texpage_x         = tpage_word & 0xF;
     texpage_y         = (tpage_word >> 4) & 1;
@@ -4491,6 +4644,7 @@ static void gp0_exec_fill_rect(void) {
     }
 }
 
+/* GP0 E1: set draw mode / texpage. */
 static void gp0_exec_draw_mode(void) {
     /* 0xE1 — Draw Mode / Texpage
      * Bits 0-3: texpage X base
@@ -4521,6 +4675,7 @@ static void gp0_exec_texture_window(void) {
     gr_set_texture_window(texture_window_value);
 }
 
+/* GP0 E3: set drawing area top-left. */
 static void gp0_exec_draw_area_tl(void) {
     /* 0xE3 — Set Drawing Area Top-Left
      * Bits 0-9: X
@@ -4563,6 +4718,7 @@ static void gp0_exec_draw_offset(void) {
     gr_set_draw_offset(draw_offset_x, draw_offset_y);
 }
 
+/* GP0 E6: set mask bit. */
 static void gp0_exec_mask_bit(void) {
     /* 0xE6 — Mask Bit Setting
      * Bit 0: set mask bit when drawing (force bit 15 of pixels)
@@ -4605,7 +4761,9 @@ int gpu_get_a0_history(int index, int *x, int *y, int *w, int *h,
     *wcount = a0_history[index].word_count;
     return 1;
 }
+/* A0 history entry count. */
 int gpu_get_a0_count(void) { return a0_history_count; }
+/* Fetch an A0 history entry's extra regs. */
 int gpu_get_a0_extra(int index, uint32_t *func, uint32_t *sp, uint32_t *ra,
                      uint32_t *s1, uint32_t *stack10) {
     if (index < 0 || index >= a0_history_count) return 0;
@@ -4626,6 +4784,7 @@ int gpu_get_a0_src(int index, uint32_t *s2, uint32_t *a0, uint32_t *a1, uint32_t
     return 1;
 }
 
+/* GP0 A0: CPU→VRAM copy (3-word header). */
 static void gp0_exec_cpu_to_vram(void) {
     /* 0xA0 — CPU→VRAM Copy (header: 3 words)
      * Word 0: command
@@ -4692,7 +4851,9 @@ static void gp0_exec_cpu_to_vram(void) {
 #define c0_history_count c0_history_count_fwd
 #define c0_capture_slot c0_capture_slot_fwd
 
+/* C0 history entry count. */
 int gpu_get_c0_count(void) { return c0_history_count; }
+/* Fetch a C0 history entry. */
 int gpu_get_c0_history(int index, int *x, int *y, int *w, int *h,
                        uint32_t *func, uint32_t *sp, uint32_t *s1,
                        uint32_t *fw0, uint32_t *fw1, int *rcount) {
@@ -4708,6 +4869,7 @@ int gpu_get_c0_history(int index, int *x, int *y, int *w, int *h,
     return 1;
 }
 
+/* GP0 C0: VRAM→CPU copy (3-word header). */
 static void gp0_exec_vram_to_cpu(void) {
     /* 0xC0 — VRAM→CPU Copy (3 words)
      * Word 1: source coords
@@ -4922,6 +5084,7 @@ static void ws_ui_prepass_add(const uint32_t *words, uint32_t word_count,
     item->packet_guard = ws_prepass_packet_guard(words, word_count);
 }
 
+/* Prepass a linked list for UI-squash detection. */
 void gpu_ws_prepass_linked_list(uint32_t start_addr) {
     ws_ui_prepass_count = 0;
     ws_ui_prepass_node_count = 0;
@@ -5053,6 +5216,7 @@ void gpu_ws_prepass_linked_list(uint32_t start_addr) {
         ws_ui_prepass[i].group.anchor = group_origin + groups[i].anchor;
 }
 
+/* Validate a linked-list header post-prepass. */
 void gpu_ws_validate_linked_list_header(uint32_t addr, uint32_t header) {
     if (ws_ui_prepass_count == 0) return;
 
@@ -5067,6 +5231,7 @@ void gpu_ws_validate_linked_list_header(uint32_t addr, uint32_t header) {
     ws_ui_prepass_invalidate_stale();
 }
 
+/* Validate a linked-list node post-prepass. */
 void gpu_ws_validate_linked_list_node(uint32_t addr, uint32_t num_words) {
     if (ws_ui_prepass_count == 0) return;
 
@@ -5185,6 +5350,7 @@ uint64_t gpu_gp0_ring_total(void)    { return gp0_ring_seq; }
 uint32_t gpu_gp0_ring_capacity(void) { return GP0_RING_CAP; }
 uint32_t gpu_gp0_ring_max_words(void){ return GPU_GP0_RING_MAX_WORDS; }
 
+/* Set the GP0 command source address. */
 void gpu_set_gp0_source(uint32_t addr) {
     gp0_next_source_addr = addr;
 }
@@ -5251,6 +5417,7 @@ extern uint16_t       psx_read_half(uint32_t addr);
  * (pos word = 1 + i*(1 + gouraud + textured)); rects/sprites/lines fall back to
  * the first vertex. Lets the census show how far right each path reaches and
  * whether anything is drawn past the 4:3 edge (native-wide margin diagnosis). */
+/* Primitive screen-X extent. */
 static void prim_sx_extent(uint8_t op, int32_t *xmin, int32_t *xmax) {
     int32_t lo = 0x7FFF, hi = -0x8000;
     if (op >= 0x20 && op <= 0x3F) {
@@ -5299,6 +5466,7 @@ static void ws_note_overhang(uint8_t op) {
     }
 }
 
+/* Record a WS census event (when enabled). */
 static void ws_census_record(uint8_t opcode, int32_t x, int32_t y) {
     if (!ws_census_on) return;
     if (!ws_census) {
@@ -5344,7 +5512,9 @@ int gpu_ws_census_dump(uint32_t f0, uint32_t f1, const char *path) {
     return n;
 }
 
+/* Enable/disable WS census. */
 void gpu_ws_census_set(int on) { ws_census_on = on ? 1 : 0; }
+/* Current WS census sequence number. */
 uint64_t gpu_ws_census_seq(void) { return ws_census_seq; }
 
 /* Execute a fully-collected GP0 command */
@@ -5575,6 +5745,7 @@ void gpu_get_gp0_stats(uint64_t* nop, uint64_t* fill, uint64_t* draw, uint64_t* 
     *draw = gp0_draw_count; *env = gp0_env_count; *copy = gp0_copy_count;
 }
 
+/* Fill draw-area out params. */
 void gpu_get_draw_area(GpuDrawArea* out) {
     out->left = draw_area_left;
     out->top = draw_area_top;
@@ -5584,6 +5755,7 @@ void gpu_get_draw_area(GpuDrawArea* out) {
     out->offset_y = draw_offset_y;
 }
 
+/* Peek a VRAM pixel (bounds-checked). */
 uint16_t gpu_vram_peek(int x, int y) {
     if (x < 0 || x >= 1024 || y < 0 || y >= 512) return 0;
     /* Through the facade so the GL backend syncs its FBO down first. */
@@ -5812,6 +5984,7 @@ static void gp1_reset(void) {
     gpu_reset_state(0);
 }
 
+/* GP1 01: reset command buffer. */
 static void gp1_reset_command_buffer(void) {
     /* GP1(01h): Reset command buffer — clears FIFO, aborts current command */
     gp0_state = GP0_IDLE;
@@ -5820,6 +5993,7 @@ static void gp1_reset_command_buffer(void) {
     vram_write_remaining = 0;
 }
 
+/* GP1 02: acknowledge IRQ1. */
 static void gp1_ack_irq1(void) {
     /* GP1(02h): Acknowledge IRQ1 */
     irq1_flag = 0;
@@ -5839,6 +6013,7 @@ static void gp1_display_enable(uint32_t val) {
     display_disabled = next_disabled;
 }
 
+/* GP1 04: set DMA direction. */
 static void gp1_dma_direction(uint32_t val) {
     /* GP1(04h): DMA direction — bits 0-1 */
     dma_direction = val & 3;
@@ -5861,6 +6036,7 @@ static void gp1_h_display_range(uint32_t val) {
     h_display_x2 = (val >> 12) & 0xFFF;
 }
 
+/* GP1 07: set vertical display range. */
 static void gp1_v_display_range(uint32_t val) {
     /* GP1(07h): Vertical display range
      * bits 0-9: Y1
@@ -5880,6 +6056,7 @@ static void gp1_v_display_range(uint32_t val) {
     if (h != 0u) s_d24_prev_disp_h = h;
 }
 
+/* GP1 08: set display mode. */
 static void gp1_display_mode(uint32_t val) {
     /* GP1(08h): Display mode
      * bit 0-1: horizontal resolution 1 (0=256, 1=320, 2=512, 3=640)
@@ -5906,6 +6083,7 @@ static void gp1_display_mode(uint32_t val) {
     reverse_flag = (val >> 7) & 1;
 }
 
+/* GP1 10: get GPU info into GPUREAD latch. */
 static void gp1_get_info(uint32_t val) {
     /* GP1(10h): Get GPU info — writes result to GPUREAD latch.
      * Mednafen-psx masks the subcommand to 4 bits (val & 0x0F) and
@@ -5939,6 +6117,7 @@ static void gp1_get_info(uint32_t val) {
     }
 }
 
+/* GP1 register write dispatcher. */
 void gpu_write_gp1(uint32_t val) {
     uint32_t cmd = (val >> 24) & 0x3F;
 
@@ -6043,6 +6222,7 @@ static int gpu_snap_emit(PstW *w) {
 #undef WH
     return 1;
 }
+/* Parse a GPU snapshot byte stream. */
 static int gpu_snap_parse(PstR *r) {
     uint32_t u; int32_t i; uint16_t h;
 #define RU(f) do { if (!pst_r_u32(r, &u)) return 0; (f) = u; } while (0)
@@ -6077,18 +6257,23 @@ static int gpu_snap_parse(PstR *r) {
     return 1;
 }
 
+/* GPU snapshot blob size. */
 uint32_t gpu_snapshot_bytes(void) {
     PstW w; pst_w_init(&w, NULL, 0);
     (void)gpu_snap_emit(&w);
     return (uint32_t)w.written;
 }
+/* Serialize GPU state into a snapshot. */
 void gpu_snapshot_write(uint8_t *p) {
     PstW w; uint32_t n = gpu_snapshot_bytes();
     pst_w_init(&w, p, n);
     (void)gpu_snap_emit(&w);
 }
+/* Co-sim snapshot size (= gpu_snapshot_bytes). */
 uint32_t gpu_cosim_snapshot_bytes(void) { return gpu_snapshot_bytes(); }
+/* Co-sim snapshot write (= gpu_snapshot_write). */
 void gpu_cosim_snapshot_write(uint8_t *p) { gpu_snapshot_write(p); }
+/* Co-sim state dump to string. */
 void gpu_cosim_dump(char *out, int cap) {
     if (!out || cap <= 0) return;
     char *p = out;
@@ -6128,6 +6313,7 @@ void gpu_cosim_dump(char *out, int cap) {
     APPEND("%s", "\n");
 #undef APPEND
 }
+/* Deserialize GPU state from a snapshot. */
 int gpu_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     if (len != gpu_snapshot_bytes()) return 0;
@@ -6144,5 +6330,7 @@ int gpu_snapshot_read(const uint8_t *p, uint32_t len) {
     ws_nw_sync_target();
     return 1;
 }
+/* VRAM base pointer accessor. */
 uint16_t* gpu_get_vram_ptr(void){ return vram; }
+/* VRAM size in bytes. */
 uint32_t  gpu_get_vram_bytes(void){ return (uint32_t)sizeof(vram); }
