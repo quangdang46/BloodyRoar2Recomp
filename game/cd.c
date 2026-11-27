@@ -6157,7 +6157,7 @@ timeout:                                        /* @0x8019D124: jal 0x8018E550 *
 
 /* ======== batch_mass9 ======== */
 
-extern void cd_svc_dual(uint32_t);
+extern void cd_svc_dual(uint32_t,uint32_t);
 extern uint32_t cd_queue_b_read(void);
 extern int32_t bios_tramp_b035(int32_t,const void *,int32_t);
 
@@ -6297,7 +6297,9 @@ int cd_job_submit5(uint32_t a0)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
       cd_pending_args_pump();
-      cd_svc_dual(s0[3]);
+      /* guest jal 0x801A0620 sets only a0=*(s0+0xC); a1 stays a live
+       * caller leftover -> forward gpr[5] unchanged (call_guest conv.). */
+      cd_svc_dual(s0[3],clean_cpu_state()->gpr[5]);
       *s1 = 0x16;
       return 0;
     }
@@ -6350,7 +6352,9 @@ int cd_job_submit6(uint32_t a0)
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
       cd_pending_args_pump();
-      cd_svc_dual(s0[3]);
+      /* guest jal 0x801A0620 sets only a0=*(s0+0xC); a1 stays a live
+       * caller leftover -> forward gpr[5] unchanged (call_guest conv.). */
+      cd_svc_dual(s0[3],clean_cpu_state()->gpr[5]);
       *s1 = 0x16;
       return 0;
     }
