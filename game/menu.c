@@ -758,7 +758,7 @@ L_dat1_3:
     break;
   case '\x05':
 L_dat1_5:
-    se_value_select((int)(char)DAT_1f800098);
+    se_value_select((char)DAT_1f800098);
     confirm_code_select(0x1f800000);
     battle_struct_init(_DAT_1f8000bc,0x1f800000);
     task_table_init(0);
@@ -775,15 +775,15 @@ L_dat1_5:
     task_table_init(1);
     flow_cfg_init(1);
     brightness_packet_send(0x7f);
-    record_copy_1a((int)(char)DAT_1f800098);
-    per_side_setup((int)(char)DAT_1f800098,(int)DAT_1f800099);
+    record_copy_1a((char)DAT_1f800098);
+    per_side_setup((char)DAT_1f800098,DAT_1f800099);
     rec_copy_init((uint8_t)*(uint8_t *)&DAT_1f800098);
     clear_f4ee8_u16s(0x1f8000e8);
     clear_f4ee8_u16s(0x1f8001f0);
     reset_combat_slots();
     action_enter_fwd(0x1f800000,&DAT_1f8000e8,DAT_1f80009a);
     action_enter_fwd(0x1f800000,&DAT_1f8001f0,DAT_1f80009a);
-    fighter_anim_table_init((int)DAT_1f800099);
+    fighter_anim_table_init(DAT_1f800099);
     sprite_anim_chain_build(0x1f800000);
     clear_f0300_records();
     frame_tick(0x1f800000);
@@ -832,7 +832,7 @@ L_dat1_8:
           if ((_DAT_1f800154 & 0x200) == 0) {
             if (((_DAT_1f800154 & 0x8000000) == 0) || (otidx == 0)) {
               player_light_apply((byte *)&DAT_1f8000e8,1);
-              sbyte = (int)(int8_t)DAT_1f8000ee;
+              sbyte = (int8_t)DAT_1f8000ee;
               gaddr = _DAT_1f800100;
             }
             else {
@@ -842,7 +842,7 @@ L_dat1_8:
                * _DAT_1f800110 (record[1]: count byte +0x24, prim hdr +0x34).
                * The decompiler's +0x24/+0x34 were element indices on a
                * uint32_t*, i.e. byte offsets 4x too far. */
-              sbyte = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+              sbyte = (int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
               gaddr = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
             }
           }
@@ -852,9 +852,9 @@ L_dat1_8:
              * in_rec = record[0] prim hdr (byte +0x10), param_4 = signed
              * count byte at struct +0. */
             prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800110 + 0x10)),ot_base + 0x40,otidx,
-                         (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
+                         (int8_t)*(uint8_t *)guest_at(_DAT_1f800110),0x1f800028,0x1f80033c);
             if (otidx == 0) goto LAB_801704bc;
-            sbyte = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
+            sbyte = (int8_t)*(uint8_t *)guest_at(_DAT_1f800110 + 0x24);
             gaddr = *(undefined4 *)guest_at(_DAT_1f800110 + 0x34);
           }
           prim_list_gte_invoke((int *)guest_at(gaddr),ot_base + 0x40,otidx,sbyte,0x1f800028,0x1f80033c);
@@ -881,21 +881,21 @@ LAB_80170524:
           if ((_DAT_1f80025c & 0x200) == 0) {
             if (((_DAT_1f80025c & 0x8000000) == 0) || (otidx == 0)) {
               player_light_apply((byte *)&DAT_1f8001f0,2);
-              sbyte = (int)(int8_t)DAT_1f8001f6;
+              sbyte = (int8_t)DAT_1f8001f6;
               gaddr = _DAT_1f800208;
             }
             else {
               player_light_apply((byte *)&DAT_1f8001f0,2);
-              sbyte = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+              sbyte = (int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
               gaddr = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
             }
           }
           else {
             player_light_apply((byte *)&DAT_1f8001f0,2);
             prim_list_gte_invoke((int *)guest_at(*(uint32_t *)guest_at(_DAT_1f800218 + 0x10)),ot_base + 0x40,otidx,
-                         (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
+                         (int8_t)*(uint8_t *)guest_at(_DAT_1f800218),0x1f800028,0x1f80033c);
             if (otidx == 0) goto LAB_801706ac;
-            sbyte = (int)(int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
+            sbyte = (int8_t)*(uint8_t *)guest_at(_DAT_1f800218 + 0x24);
             gaddr = *(undefined4 *)guest_at(_DAT_1f800218 + 0x34);
           }
           prim_list_gte_invoke((int *)guest_at(gaddr),ot_base + 0x40,otidx,sbyte,0x1f800028,0x1f80033c);
@@ -925,7 +925,7 @@ LAB_80170714:
         _DAT_801f4cb6 = 0x10;
       }
       _DAT_801f4cb2 = 0;
-      fighter_tint_fade(ot_base,otidx,0x1f800000,(int)(char)DAT_1f800098);
+      fighter_tint_fade(ot_base,otidx,0x1f800000,(char)DAT_1f800098);
       if ((*(ushort *)(in_rec + 2) >> 3 & 1) != 0) {
         fighter_trail_emit((undefined4 *)guest_at(0x1f800028),0x1f80033c,_DAT_1f8000bc,0x1f800000);
       }
@@ -1729,7 +1729,7 @@ LAB_801652bc:
             wait_timer = 0;
             _g_system_config_ptr[3] = '\0';
             DAT_1f800001 = 4;
-            _DAT_801e850c = (int)_DAT_1f800020;
+            _DAT_801e850c = _DAT_1f800020;
           }
           else {
             deferred_cmd_post(0x400,0xc,0);
@@ -1815,7 +1815,7 @@ LAB_80165090:
             _DAT_801e8508 = 0;
             _DAT_801e8518 = 0x30;
             DAT_1f800001 = 2;
-            _DAT_801e850c = (int)_DAT_1f800020;
+            _DAT_801e850c = _DAT_1f800020;
             _DAT_801e851c = _DAT_1f800022 + -0x3c;
           }
           else if (DAT_1f800001 < 2) {
@@ -1963,7 +1963,7 @@ LAB_80165dd8:
               if (fade_ctr < 0x32) {
                 gray = 0xff - (fade_ctr * 0xff) / 0x32;
 LAB_80165ed0:
-                spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,
+                spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,_DAT_1f800022,
                              gray | gray << 8 | gray << 0x10,3);
               }
               else if ((0x95 < fade_ctr) && (fade_ctr < 200)) {
@@ -1974,24 +1974,24 @@ LAB_80165ed0:
                 rgb_triple_store(0xff,0xff,0xff);
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
-                             ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
+                             ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,_DAT_1f800022);
                 spr_code = 0xeffe008a;
               }
               else {
                 if (mode != 0xf) {
                   spr_attr_alloc_b(_DAT_1f800008,0,0xeffe008c,0x7d000000,(int)(short)_DAT_1f800020,
-                               (int)_DAT_1f800022);
+                               _DAT_1f800022);
                   goto LAB_80166058;
                 }
                 spr_attr_alloc_b(_DAT_1f800008,0,0xeffe000c,0x7d000000,
                              (((int)((uint)_DAT_1f800020 << 0x10) >> 0x10) -
-                             ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,(int)_DAT_1f800022);
+                             ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1,_DAT_1f800022);
                 spr_code = 0xeffe000d;
               }
               val = (int)((uint)_DAT_1f800020 << 0x10) >> 0x10;
               spr_attr_alloc_b(_DAT_1f800008,
                            (val - ((int)((uint)_DAT_1f800020 << 0x10) >> 0x1f)) >> 1 & 0xffff,spr_code,
-                           0x7d000000,val,(int)_DAT_1f800022);
+                           0x7d000000,val,_DAT_1f800022);
             }
 LAB_80166058:
             frame_tick(0x1f800000);
@@ -2004,7 +2004,7 @@ LAB_80166058:
               if (((DAT_1f800001 == 0) && (res = card_sprite_load_sm(0x1f800000,mode), res != 0)) &&
                  (res = frame_divisor_get(), res == 0)) {
                 fade_acc = 0x31ce;
-                spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,(int)_DAT_1f800022,0,0);
+                spr_attr_alloc_a(_DAT_1f800008,0,0,(int)(short)_DAT_1f800020,_DAT_1f800022,0,0);
                 fade_ctr = 200;
                 DAT_1f800001 = DAT_1f800001 + 1;
                 goto LAB_80165dd8;
@@ -2147,7 +2147,7 @@ LAB_8016767c:
             confirm_code_select(0x1f800000);
           }
           intro_timer = 9000;
-          se_value_select((int)DAT_1f800098);
+          se_value_select(DAT_1f800098);
           DAT_1f8000e9 = 0x11;
           DAT_1f8001f1 = 0x12;
           battle_round_init(0x1f800000,0);
@@ -2369,12 +2369,12 @@ void tile_stream_pump(void)
   _DAT_801f4714 = (uint)(_DAT_801f4714 == 0);
   step = _DAT_801f4730;
   if ((_DAT_801f473c != 0) &&
-     (blk = (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4)) % (int)_DAT_801f4730, blk != 0)) {
+     (blk = (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4)) % _DAT_801f4730, blk != 0)) {
     _DAT_801f473c = 0;
     step = (short)blk;
   }
   _DAT_801f472c = _DAT_801f472c + step;
-  if ((int)_DAT_801f472c <
+  if (_DAT_801f472c <
       (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e8)) +
       (int)*(short *)guest_at((uint32_t)(_DAT_801f4728 * 8 + -0x7fe0b8e4))) {
     blk = _DAT_801f4732 + -1;
