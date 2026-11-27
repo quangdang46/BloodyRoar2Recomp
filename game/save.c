@@ -7946,7 +7946,7 @@ extern void fighter_chan_delta_accum(uint32_t,uint32_t,uint32_t,uint32_t);
 void op_wrap_acb08(int16_t *a0,uint32_t a1)
 {
   void *fn = fn_lookup(0x801acb08);
-  if (fn != (void *)0x0) {
+  if (fn != NULL) {
     ((void (*)(uint32_t,int,int))fn)(a1,a0[1],a0[2]);
   }
   else {
@@ -8087,7 +8087,7 @@ void ctx_fn_send(uint8_t *a0)
   uint32_t fn_g = *(uint32_t *)guest_at(0x801be798);
   void *fn = fn_lookup(fn_g);
   uint32_t r = 0;
-  if (fn != (void *)0x0) {
+  if (fn != NULL) {
     r = ((uint32_t (*)(uint32_t))fn)(guest_of(a0));
   }
   else {
@@ -8129,7 +8129,7 @@ void op_list_head_reset(uint32_t *a0)
         /* Guest jal 0x801B0DB8 (unconditional inside the off!=0 branch):
          * a0 = struct guest addr, a1 = caller's live $a1. */
         void *fn = fn_lookup(0x801b0db8);
-        if (fn != (void *)0x0) {
+        if (fn != NULL) {
           ((void (*)(uint32_t))fn)(guest_of(a0));
         }
         else {
@@ -8152,7 +8152,7 @@ void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
     /* Guest jal 0x801B0DB8: a0 = ctx ptr (BR2_GPC), a1 = caller's $a1
      * (= guest_of(a1) here — the wrapper passes gpr[5] through). */
     void *fn = fn_lookup(0x801b0db8);
-    if (fn != (void *)0x0) {
+    if (fn != NULL) {
       ((void (*)(uint32_t))fn)(BR2_GPC);
     }
     else {
@@ -8450,7 +8450,7 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
     if (off) {
       uint32_t slot = BR2_GPF(8) + (uint32_t)off;
       uint32_t r = 0;
-      if (fn != (void *)0x0) {
+      if (fn != NULL) {
         r = ((uint32_t (*)(uint32_t))fn)(a0);
       }
       else {
@@ -8459,7 +8459,7 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
         r = call_guest(fnaddr,a0,a1);
       }
       *(uint32_t *)guest_at(slot) = r;
-    } else if (fn != (void *)0x0) {
+    } else if (fn != NULL) {
       ((void (*)(uint32_t))fn)(a0);
     }
     else {
@@ -8529,7 +8529,7 @@ int op_state_dispatch(uint8_t *a0)
   {
     uint32_t fp = *(uint32_t *)guest_at(0x801be784);
     void *fn = fn_lookup(fp);
-    if (fn != (void *)0x0) {
+    if (fn != NULL) {
       ((void (*)(void))fn)();
     }
     else {
@@ -8570,7 +8570,7 @@ int op_job_submit_ab(uint32_t a0,uint32_t a1,uint32_t a2)
   *(uint32_t *)guest_at(0x801bef00) = 0;
   gp_20_store_default();
   r = task_node_alloc(a0,2,0,0x801a6b70,0,0);
-  if (r != (int *)0x0) {
+  if (r != NULL) {
     return 1;
   }
   return -1;
@@ -8579,7 +8579,7 @@ int op_job_submit_ab(uint32_t a0,uint32_t a1,uint32_t a2)
 /* 0x801a9bc0 — validate ctx chain then tween_apply(node). */
 void op_ctx_validate_call(uint8_t *a0)
 {
-  if (a0 != (uint8_t *)0x0) {
+  if (a0 != NULL) {
     uint32_t p = *(uint32_t *)(a0 + 0x3c);
     uint32_t qg = *(uint32_t *)guest_at(p);
     uint8_t *q = (uint8_t *)guest_at(qg);
@@ -8650,7 +8650,7 @@ void op_dbg_dump_tbl(uint32_t a0,uint32_t a1)
 void op_job_submit_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3)
 {
   int *r = task_node_alloc(a0,a1,4,0x801b0db8,0,0x1c);
-  if (r != (int *)0x0) {
+  if (r != NULL) {
     /* r is the node's GUEST address (task_node_alloc returns guest-addr-as-
      * pointer); node+0x10 cell holds the guest addr of the inline data. */
     uint32_t *p = (uint32_t *)guest_at(
@@ -9176,7 +9176,7 @@ void op_tag_dispatch(uint8_t *a0,uint32_t a1)
 int *op_job_alloc_init(int32_t a0,int32_t a1,uint32_t a2,uint32_t a3,uint32_t a4)
 {
   int *r = task_node_alloc(a0,a1,4,0x801b0db8,0x801ad2dc,0x1c);
-  if (r != (int *)0x0) {
+  if (r != NULL) {
     /* r is the node's GUEST address (task_node_alloc returns guest-addr-as-
      * pointer); node+0x10 cell holds the guest addr of the inline data. */
     uint32_t *p = (uint32_t *)guest_at(
@@ -9199,7 +9199,7 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   if (a2v) {
     uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
     uint32_t r = 0;
-    if (fn != (void *)0x0) {
+    if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t))fn)(node);
     }
     else {
@@ -9208,7 +9208,7 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       r = br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
     }
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != (void *)0x0) {
+  } else if (fn != NULL) {
     ((void (*)(uint32_t))fn)(node);
   }
   else {
@@ -9228,7 +9228,7 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   if (a2v) {
     uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
     uint32_t r = 0;
-    if (fn != (void *)0x0) {
+    if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t,uint32_t))fn)(n0,n1);
     }
     else {
@@ -9236,7 +9236,7 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       r = br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
     }
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != (void *)0x0) {
+  } else if (fn != NULL) {
     ((void (*)(uint32_t,uint32_t))fn)(n0,n1);
   }
   else {
@@ -9256,7 +9256,7 @@ static void walk_dispatch(uint8_t **a0,uint8_t *a1)
     /* a0/a1/node_/ctx_ are host pointers into guest RAM; link/cell fields
      * are 4-byte GUEST addresses — never read/write them as host pointers. */
     uint32_t nxg_ = *(uint32_t *)node_;
-    uint8_t *nx_ = nxg_ ? (uint8_t *)guest_at(nxg_) : (uint8_t *)0x0;
+    uint8_t *nx_ = nxg_ ? (uint8_t *)guest_at(nxg_) : NULL;
     uint8_t *ctx_ = (uint8_t *)guest_at(*(uint32_t *)a0);
     *(uint32_t *)(ctx_ + 0x40) = (uint32_t)guest_of(node_);
     if (*(int8_t *)(node_ + 0x17) != 0) {
@@ -9270,7 +9270,7 @@ static void walk_dispatch(uint8_t **a0,uint8_t *a1)
         task_invoke(fp_, ar_);
       }
     }
-    if (nx_ == (uint8_t *)0x0) break;
+    if (nx_ == NULL) break;
     node_ = nx_;
   }
   return;
@@ -9286,7 +9286,7 @@ void op_walk_dispatch_f(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return
 /* 0x801aa3fc — free slot a1 of container s1 (f24[] and f3c[] arrays). */
 void op_slot_free(uint8_t *cont,int32_t a1)
 {
-  if (cont != (uint8_t *)0x0 && a1 >= 0 &&
+  if (cont != NULL && a1 >= 0 &&
       a1 < (int32_t)*(uint32_t *)(cont + 0x44)) {
     uint32_t o = (uint32_t)a1 * 4;
     uint32_t *arr = (uint32_t *)guest_at(*(uint32_t *)(cont + 0x24));
@@ -9375,7 +9375,7 @@ void op_frame_advance(uint8_t *ctx)
         } else if (*(uint8_t *)(ctx + 0x49) != 0) {
           uint32_t fnaddr = *(uint32_t *)guest_at(0x801be784);
           void *fn = fn_lookup(fnaddr);
-          if (fn != (void *)0x0) {
+          if (fn != NULL) {
             ((void (*)(uint32_t))fn)((uint32_t)guest_of(ctx));
           }
           else {
@@ -9416,7 +9416,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
     uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
     uint32_t n2 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4);
     uint32_t n3 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4);
-    if (fn != (void *)0x0) {
+    if (fn != NULL) {
       r = ((uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(n0,n1,n2,n3);
     }
     else {
@@ -9424,7 +9424,7 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
       r = br2_call_clean(fnaddr,n0,n1,n2,n3);
     }
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != (void *)0x0) {
+  } else if (fn != NULL) {
     ((void (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
       *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
@@ -9712,7 +9712,7 @@ void slot_field_clear(uint32_t a0)
 {
   uint8_t *s = (uint8_t *)mem_ptr(a0);
   int32_t n, i;
-  if (s == (uint8_t *)0x0) return;
+  if (s == NULL) return;
   n = *(int32_t *)(s + 0x40);
   if (n <= 0) return;
   for (i = 0; i < n; i++) {
@@ -9738,25 +9738,25 @@ void elem_pair_flag100(void *a0,int32_t a1)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x34,a1);
-  if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
+  if (e != NULL) *(uint16_t *)(e + 0x44) |= 0x100;
   e = elem_at(s,0x38,a1);
-  if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
+  if (e != NULL) *(uint16_t *)(e + 0x44) |= 0x100;
 }
 
 void elem_pair_flag8(void *a0,int32_t a1)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x34,a1);
-  if (e != (uint8_t *)0x0)
+  if (e != NULL)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
   e = elem_at(s,0x38,a1);
-  if (e != (uint8_t *)0x0)
+  if (e != NULL)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
 }
 
@@ -9764,10 +9764,10 @@ void elem_pair_field_set(void *a0,int32_t a1,int32_t a2,int32_t a3)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x34,a1);
-  if (e != (uint8_t *)0x0) {
+  if (e != NULL) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
     e = elem_at(s,0x34,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
@@ -9775,7 +9775,7 @@ void elem_pair_field_set(void *a0,int32_t a1,int32_t a2,int32_t a3)
     *(uint16_t *)(e + 0x44) |= 1;
   }
   e = elem_at(s,0x38,a1);
-  if (e != (uint8_t *)0x0) {
+  if (e != NULL) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
     e = elem_at(s,0x38,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
@@ -9788,20 +9788,20 @@ void elem_flag100(void *a0,int32_t a1)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x3c,a1);
-  if (e != (uint8_t *)0x0) *(uint16_t *)(e + 0x44) |= 0x100;
+  if (e != NULL) *(uint16_t *)(e + 0x44) |= 0x100;
 }
 
 void elem_flag8(void *a0,int32_t a1)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x3c,a1);
-  if (e != (uint8_t *)0x0)
+  if (e != NULL)
     *(uint16_t *)(e + 0x44) = (uint16_t)*(uint8_t *)(e + 0x44);
 }
 
@@ -9809,10 +9809,10 @@ void elem_field_set(void *a0,int32_t a1,int32_t a2,int32_t a3)
 {
   uint8_t *s = (uint8_t *)a0;
   uint8_t *e;
-  if (s == (uint8_t *)0x0 || a1 < 0) return;
+  if (s == NULL || a1 < 0) return;
   if ((uint32_t)a1 >= *(uint32_t *)(s + 0x44)) return;
   e = elem_at(s,0x3c,a1);
-  if (e != (uint8_t *)0x0) {
+  if (e != NULL) {
     *(int16_t *)(e + 0x46) = (int16_t)a2;
     e = elem_at(s,0x3c,a1);
     *(int16_t *)(e + 0x48) = (int16_t)a3;
@@ -9923,7 +9923,7 @@ int anim_node_alloc(uint32_t a0,int32_t a1)
   int32_t slot = a1;
   uint32_t sub, cnt, mode, idx;
   int32_t aux;
-  if (ctx == (uint8_t *)0x0) return 0;
+  if (ctx == NULL) return 0;
   sub = *(uint32_t *)(ctx + 8);
   mode = *(uint32_t *)guest_at(sub + 0xc);
   if (!(mode)) return 0;
