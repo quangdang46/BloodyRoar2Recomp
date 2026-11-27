@@ -1104,3 +1104,17 @@ Effects vs the incrementally-appended file:
 
 Verified: clean build EU + USA; headless :5153 frame 19935 attract CD
 streaming, clean_fallback_stats count=0, scratchpad live.
+
+## Batch 54 (orch/w5/e05) — gen_w3_e06.py full pipeline + w3_e06.c regen
+
+gen_w3_e06.py emit() was still on the pre-rename_temps pipeline
+(transform + _GPR_RE only). Wired the full emit_fn chain —
+rename_temps -> fold_idioms -> fold_cps_readability ->
+name_comment_targets — and regenerated game/w3_e06.c (1,783 -> 1,821
+lines): cond_<slug>/jr_target -> cond_<ADDR>/jt_<ADDR>, LUI const
+folds, dead-dispatch removal, callee-named comments, restored HDR
+helper block (br2_lwl/lwr/swl/swr + psx_ws_cull_sltiu extern — the
+extern stays: generated/SLES_017.22_full_41.c does emit the call).
+
+Verified: clean build EU + USA; headless :5155 frame 35835, clean_fallback_stats
+count=0.
