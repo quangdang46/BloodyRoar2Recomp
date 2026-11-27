@@ -1217,3 +1217,14 @@ Full regen of both pipeline files onto current transformer:
 
 Verified: clang -fsyntax-only clean; build EU + USA; headless :5183
 frame 14324, clean_fallback_stats count=0.
+
+## Batch 62 (orch/w5/e05) — w3_e06.c anchor regen
+
+gen_w3_e06.py rerun after the batch-61 transformer catch-up: the two
+alias bodies now carry per-instruction /* 0xADDR: 0xENC */ anchors on
+the previously bare ops (309 lines, anchors only — zero semantic
+delta). All three pipeline-emitted files are now uniformly
+anchor-annotated.
+
+Verified: clang -fsyntax-only clean; build EU + USA; headless :5189
+frame 6395, clean_fallback_stats count=0.
