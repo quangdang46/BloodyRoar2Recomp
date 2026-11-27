@@ -20,9 +20,6 @@ void *guest_at(uint32_t addr);
 uint32_t guest_of(const void *p);
 /* guest_for — recover the guest address embedded in a binding symbol
  * name: scans `name` for hex-digit runs, keeps the longest run >=6
- * digits as the address, returns guest_at(addr) (or guest_arena when
- * the name carries no address). This is what lets g_DAT_801e40b7-style
- * globals bind to their guest RAM cell by name alone. */
 static uint8_t *guest_for(const char *name)
 {
     char hexbuf[64]; int ndx=0; unsigned long best_addr=0; int have_addr=0;
@@ -465,6 +462,8 @@ uint8_t * g__DAT_801f68e0;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
+/* bind_globals_1 — constructor: bind pad buffer + DAT_1f8000xx
+ * scratch globals via guest_for name lookup. */
 static void bind_globals_1(void)
 {
     _g_pad_buffer = (uint8_t *)guest_for("_g_pad_buffer");
@@ -966,6 +965,9 @@ static int g_bind_frm_depth;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
+/* br2_guest_frame — guest stack-frame push: aligns size to 16,
+ * decrements guest sp, records the old sp (depth < 32). Returns
+ * the new frame base. */
 uint32_t br2_guest_frame(uint32_t size)
 {
     uint32_t sp = guest_sp();
@@ -1258,6 +1260,8 @@ uint32_t *g_PTR_DAT_801b5b94;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
+/* bind_globals_3 — constructor: bind system-config ptr +
+ * DAT_1f8000xx state cells via guest_for. */
 static void bind_globals_3(void)
 {
     _g_system_config_ptr = (uint8_t *)guest_for("_g_system_config_ptr");
@@ -1422,6 +1426,8 @@ uint8_t *g_DAT_801e40fc, *g_DAT_801e61f0, *g_DAT_801e624c;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((constructor))
 #endif
+/* bind_globals_4 — constructor: bind the 29 g_DAT_801e4/6/8xx
+ * record/table globals (name<->ptr table loop). */
 static void bind_globals_4(void)
 {
     const char *names[] = {
@@ -1571,6 +1577,8 @@ char *s__s____80121864;
 uint32_t *g_PTR_u32_801b4160;
 
 __attribute__((constructor))
+/* bind_globals_5 — constructor: bind save.c globals + the
+ * memory-card UI string constants. */
 static void bind_globals_5(void)
 {
     const char *names[] = {"g_DAT_1f800014","g_DAT_1f800017","g_DAT_1f800018","g_DAT_1f800019","g_DAT_8012181c","g_DAT_80121820","g_DAT_801b3f78","g_DAT_801b45f4","g_DAT_801b45f8","g_DAT_801b45fc","g_DAT_801b4600","g_DAT_801b4604","g_DAT_801b4608","g_DAT_801b460c","g_DAT_801b4610","g_DAT_801b4614","g_DAT_801bef60","g_DAT_801bef64","g_DAT_801bef67","g_DAT_801bef68","g_DAT_801bef69","g_DAT_801bef6c","g_DAT_801bef6d","g_DAT_801bef6e","g_DAT_801bef6f","g_DAT_801bef72","g_DAT_801bef74","g_DAT_801bef76","g_DAT_801bef78","g_DAT_801bef80","g_DAT_801bef84","g_DAT_801bef88","g_DAT_801bef8c","g_DAT_801c11e0","g_DAT_801c11e4","g_DAT_801c11e8","g_DAT_801c11ec","g_DAT_801c11f4","g_DAT_801c1264","g_DAT_801c1304","g_DAT_801c13a4","g_DAT_801e8400","g_DAT_801f09b","g_DAT_801f24d0","g_DAT_801f24d1","g_DAT_801f35f4","g_DAT_801f3602","g_DAT_801f5968","g_DAT_801f5969","g_DAT_801f596e","g_DAT_801f596f","g_DAT_801f5972","g_DAT_801f5973","g_PTR_DAT_801b4618","g__DAT_1f80007c","g__DAT_1f800084","g__DAT_1f80008c","g__DAT_1f8000b8","g__DAT_801c15f0","g__DAT_801e8508","g__DAT_801e8518","g__DAT_801f2650","g__DAT_801f2654","g__DAT_801f2658","g__DAT_801f265a","g__DAT_801f2666","g__DAT_801f2668","g__DAT_801f266c","g__DAT_801f268a","g__DAT_801f268c","g__DAT_801f2690","g__DAT_801f2694","g__DAT_801f2696","g__DAT_801f26a0","g__DAT_801f26a2","g__DAT_801f26a8","g__DAT_801f36c0","g_DAT_801b43f0","g_DAT_801f2650","g_DAT_801f35f4"};
@@ -1759,6 +1767,9 @@ extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
 extern void psx_dispatch_call(CPUState *cpu, uint32_t target_addr,
                               uint32_t return_addr);
 extern int br2_bail_pending(void);
+/* bind_jal — guest jal emulation: sets ra=link, tries the clean
+ * dispatcher first, else psx_dispatch_call into generated code;
+ * restores ra/pc/sp and returns gpr[2]. */
 static uint32_t bind_jal(uint32_t fn, uint32_t link)
 {
     CPUState *cpu = clean_cpu_state();
@@ -2135,6 +2146,8 @@ int FUN_8018b100(uint32_t recs,uint32_t a1,uint32_t a2,uint32_t count,
 }
 
 __attribute__((constructor))
+/* bind_globals_7 — constructor: bind mode-name strings
+ * (NAME_ENTRY/RANKING/SURVIVAL/TIME_ATTACK/VS_RANKING). */
 static void bind_globals_7(void)
 {
     s_NAME_ENTRY_80122080 = (char *)guest_at(0x80122080);
@@ -2186,6 +2199,8 @@ static void bind_globals_8(void)
  * to guest func addrs and hand them here. Weak default = no-op until
  * the libgpu syscall cluster (0x80192xxx) is ported. */
 __attribute__((weak))
+/* gpu_invoke — weak GPU-invoke stub: returns 0 until a real
+ * dispatch is bound. */
 uint32_t gpu_invoke(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
     (void)fn; (void)a0; (void)a1; (void)a2; (void)a3;
@@ -2224,6 +2239,8 @@ char *s_ResetGraph_jtb__08x_env__08x_80125410;
 char *s_SetDispMask__d_____801254a0;
 
 __attribute__((constructor))
+/* bind_globals_9 — constructor: bind CD callback cells
+ * (0x801BC7B4-0x801BCBB0) + GPU command-string constants. */
 static void bind_globals_9(void)
 {
     const char *names[] = {"g_DAT_801bc7b4","g_DAT_801bc7c0","g_DAT_801bc848","g_DAT_801bc854","g_DAT_801bcb80","g_DAT_801bcb94","g_DAT_801bcb98","g_DAT_801bcb9c","g_DAT_801bcba4","g_DAT_801bcba8","g_DAT_801bcbac","g_DAT_801bcbb0"};
@@ -2246,6 +2263,8 @@ static void bind_globals_9(void)
 /* ---- cd.c / gfx.c callees ---- */
 
 __attribute__((constructor))
+/* bind_globals_10 — constructor: bind the DAT_801b832x
+ * coordinate-limit cells via guest_at. */
 static void bind_globals_10(void)
 {
     g_DAT_801b8320 = guest_at(0x801b8320);
@@ -2258,6 +2277,8 @@ static void bind_globals_10(void)
 
 /* ---- cd.c batch26 callees ---- */
 __attribute__((weak))
+/* call_guest — weak 2-arg guest-call stub: returns 0 until a
+ * real dispatcher is bound (cd.c batch26 callees). */
 uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
 {
     (void)fn; (void)a; (void)b;
@@ -2267,6 +2288,8 @@ char *s__s____80125840;
 char *s__s___s__Sync__s__Ready__s_801257b4;
 char *s__s__no_param_80125848;
 __attribute__((constructor))
+/* bind_globals_11 — constructor: bind three printf format
+ * strings (0x80125840/0x801257B4/0x80125848). */
 static void bind_globals_11(void)
 {
     s__s____80125840 = (char *)guest_at(0x80125840);
@@ -2285,6 +2308,8 @@ char *s_com__s_code___02x__02x__801257dc;
 char *s_CDROM__unknown_intr_801257f8;
 char *s___d__8012580c;
 __attribute__((constructor))
+/* bind_globals_12 — constructor: bind the CD error/status
+ * message strings (sync/ready/datasync/timeout/disk error). */
 static void bind_globals_12(void)
 {
     s_CD_sync_8012582c = (char *)guest_at(0x8012582c);
@@ -2304,6 +2329,8 @@ static void bind_globals_12(void)
  * src/clean_bridge.c (real svc_call into the recompiled BIOS); this
  * weak def only satisfies link in builds with no BIOS image. */
 __attribute__((weak))
+/* bios_call — weak BIOS-call stub: returns 0 until a real
+ * dispatcher is bound. */
 uint32_t bios_call(uint32_t fn, uint32_t a0)
 {
     (void)fn; (void)a0;
@@ -2356,6 +2383,9 @@ __attribute__((weak)) void aux_tbl_store_b() { return; }
 char *PTR_s_NAME_ENTRY_801b13a8[16];
 char *PTR_s_MOVIES_AND_PICTURES_801b13c4;
 __attribute__((constructor))
+/* bind_globals_30 — constructor: bind the PTR_s_NAME_ENTRY
+ * pointer table (16 entries via double-deref) + the
+ * MOVIES_AND_PICTURES ptr. */
 static void bind_globals_30(void)
 {
     int i;
@@ -2435,6 +2465,8 @@ void FUN_8018e310(uint32_t arg)
  * clean_bridge.c routes through svc_call. Standalone: this weak
  * fallback degrades to bios_call (see above). */
 __attribute__((weak))
+/* bios_svc — weak BIOS-service shim: forwards (table,a0) to
+ * bios_call, dropping svc/a1 (real svc dispatch not yet bound). */
 uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 {
     (void)svc; (void)a1;

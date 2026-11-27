@@ -27804,7 +27804,7 @@ extern void angle_pair_rotmat_unpack(void);
     angle_pair_rotmat_unpack();
 }
 static void wrap_8018dac0(CPUState *cpu) {
-extern uint * angle_pair_rotmat(uint x,uint y,uint *z);
+extern uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out);
     cpu->gpr[2] = guest_of((const void *)(angle_pair_rotmat(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_8018dbe4(CPUState *cpu) {
@@ -27836,7 +27836,7 @@ extern void cpst_8018def4(void);
     cpst_8018def4();
 }
 static void wrap_8018df00(CPUState *cpu) {
-extern uint * rotmat2_pair_build(uint a,uint b,uint *out);
+extern uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out);
     cpu->gpr[2] = guest_of((const void *)(rotmat2_pair_build(((uint)cpu->gpr[4]), ((uint)cpu->gpr[5]), ((uint *)guest_at(cpu->gpr[6])))));
 }
 static void wrap_8018e024(CPUState *cpu) {
@@ -35166,11 +35166,11 @@ extern void cpst_801ad210(void);
     cpst_801ad210();
 }
 static void wrap_801ad224(CPUState *cpu) {
-extern void noop_b(int u0,undefined4 u1,undefined4 u2);
+extern void noop_b(int node,undefined4 w0,undefined4 w1);
     noop_b(((int)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]));
 }
 static void wrap_801ad240(CPUState *cpu) {
-extern void noop_a(int u0,undefined4 u1,undefined4 u2,undefined4 u3);
+extern void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2);
     noop_a(((int)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]), ((undefined4)cpu->gpr[7]));
 }
 static void wrap_801ad260(CPUState *cpu) {
@@ -35178,7 +35178,7 @@ extern void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 
     node_param_quad_set(((int)cpu->gpr[4]), ((undefined4)cpu->gpr[5]), ((undefined4)cpu->gpr[6]), ((undefined4)cpu->gpr[7]), ((undefined4)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)));
 }
 static void wrap_801ad284(CPUState *cpu) {
-extern uint32_t noop_c(int u0);
+extern uint32_t noop_c(int node);
     cpu->gpr[2] = (uint32_t)(noop_c(((int)cpu->gpr[4])));
 }
 static void wrap_801ad298(CPUState *cpu) {
