@@ -8742,7 +8742,10 @@ undefined4 * prim_group_build(undefined4 prim,int attr,undefined4 a2,undefined4 
   int lnode;
   undefined4 *bd;
   uint i;
-  int emit;
+  /* emit is only read under the same attr+0x20!=0 guard that runs the
+   * do-while (which executes at least once), so it is always assigned —
+   * init only to silence the conditional-uninitialized false positive. */
+  int emit = 0;
   int *outp;
   undefined4 xf [2];
   bd = (undefined4 *)guest_at(*(uint32_t *)guest_at((uint32_t)(uintptr_t)((attr + 0x80))));
@@ -9008,7 +9011,10 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   undefined4 at_out = 0x800;
   int tmp;
   int scl;
-  undefined4 at_val;
+  /* at_val keeps the high half of GTE data reg 1 (cop2 idx 0x800>>11):
+   * the guest reads the register file, replaces the low half, writes it
+   * back — so seed from the live COP2 state, not a host local. */
+  undefined4 at_val = (undefined4)getCopReg(2, at_out);
   off = idx * 0x68;
   ang = *(short *)guest_at((uint32_t)(uintptr_t)((obj + 0x2a)));
   setCopControlWord(2,0,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((xf + 0x28))));
