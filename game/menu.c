@@ -4704,7 +4704,7 @@ int32_t continue_countdown(uint32_t battle_g,uint32_t player)
  * +0xb0=1/+0xb1=0, *(u16*)(*(u32*)(p+0x38)+0x80)=0x28 for both players,
  * phase-gate select_phase_gate -> force +0xb4/+0xb6 phase 0x300, then
  * confirm_bookkeeping. Disasm 0x80151328-0x801513c4. */
-void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
+void battle_state_init(uint8_t *side0, uint8_t *side1, uint32_t battle_g)
 {
   uint8_t *b = (uint8_t *)guest_at(battle_g);
   uint16_t phw;
@@ -4713,8 +4713,8 @@ void battle_state_init(uint8_t *p0, uint8_t *p1, uint32_t battle_g)
   *(uint16_t *)(b + 0x8c) = 0;
   *(uint8_t *)(b + 0xb0) = 1;
   *(uint8_t *)(b + 0xb1) = 0;
-  *(uint16_t *)guest_at(*(uint32_t *)(p0 + 0x38) + 0x80) = 0x28;
-  *(uint16_t *)guest_at(*(uint32_t *)(p1 + 0x38) + 0x80) = 0x28;
+  *(uint16_t *)guest_at(*(uint32_t *)(side0 + 0x38) + 0x80) = 0x28;
+  *(uint16_t *)guest_at(*(uint32_t *)(side1 + 0x38) + 0x80) = 0x28;
   if (select_phase_gate(battle_g,0) == 0) {
     phw = *(uint16_t *)(b + 0xb4);
     *(uint16_t *)(b + 0xb4) = (uint16_t)((phw & 0xf000) | 0x300);
@@ -12405,7 +12405,7 @@ void script_entry_walk(uint32_t w)
  * a0/c0/a7/df, case2: a8/c0/af/df, case3: 70/a0/7f/af). Phase 2:
  * per i<30: two rand_lcg()&0x1ff halfwords at t0+0x960+4i,
  * byte (rand&0x3f)+0x20 if i&3==2 else +8 at t0+0x9d8+i. */
-void color_rec_table_init(uint32_t unused,uint32_t arg)
+void color_rec_table_init(uint32_t unused,uint32_t param16)
 {
   uint32_t blk, rec;
   int32_t oi, i;
@@ -12414,7 +12414,7 @@ void color_rec_table_init(uint32_t unused,uint32_t arg)
   blk = task_node_alloc(1, 2, 0xe, 0x801411e8u, 0, 0x9fc);
   if (blk == 0) return;
   rec = MB32(blk + 0x10);
-  MW32(rec + 0x9f8, arg);
+  MW32(rec + 0x9f8, param16);
   a3off = 0;
   for (oi = 0; oi < 2; oi++) {
     for (i = 0; i < 0x1e; i++) {
