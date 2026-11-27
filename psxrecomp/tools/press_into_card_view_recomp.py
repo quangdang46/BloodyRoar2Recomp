@@ -3,6 +3,7 @@ Mirrors Beetle's press_into_card_view.py."""
 import socket, json, sys, time
 
 def call(d):
+    """Send a JSON command to the recomp debug server (port 4370).."""
     s = socket.create_connection(('127.0.0.1', 4370)); s.settimeout(60.0)
     s.sendall((json.dumps(d) + '\n').encode())
     buf = b''

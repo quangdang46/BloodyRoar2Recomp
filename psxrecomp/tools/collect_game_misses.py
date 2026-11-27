@@ -13,6 +13,7 @@ hi        = int(sys.argv[3], 0) if len(sys.argv) > 3 else 0x98000
 out_file  = sys.argv[4]         if len(sys.argv) > 4 else 'dirty_ram_misses.txt'
 
 def send(cmd, **kw):
+    """Send one debug command to the runtime and return the response dict.."""
     s = socket.create_connection(('127.0.0.1', port), timeout=5)
     s.sendall(json.dumps({'id':1,'cmd':cmd,**kw}).encode() + b'\n')
     d = b''

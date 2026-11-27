@@ -28,6 +28,7 @@ import subprocess
 import sys
 
 def call(port, payload, timeout=30):
+    """Send a JSON command to the runtime debug port; return parsed reply.."""
     s = socket.create_connection(("127.0.0.1", port), timeout=timeout)
     try:
         s.sendall((json.dumps(payload) + "\n").encode())
@@ -55,6 +56,7 @@ def dump_tap(port, tap, path, secs):
     return r, stats
 
 def main():
+    """A/B audio capture CLI entry point.."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--runtime-port", type=int, default=4520)
     ap.add_argument("--beetle-port", type=int, default=4380)
