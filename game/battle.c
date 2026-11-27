@@ -16314,14 +16314,14 @@ void confetti_burst_update(int rec)
   }
   else {
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x540) ))=
-         *(uint16_t *)
-          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x34);
+         *(uint16_t *)guest_at((uint32_t)(uintptr_t)
+          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x34));
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x542) ))=
-         *(uint16_t *)
-          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x38);
+         *(uint16_t *)guest_at((uint32_t)(uintptr_t)
+          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x38));
     *(uint16_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x544) ))=
-         *(uint16_t *)
-          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x3c);
+         *(uint16_t *)guest_at((uint32_t)(uintptr_t)
+          (*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x550) ))* 0x50 + *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((rec + 0x548) ))+ 0x20) ))+ 0x3c));
     setCopReg(2,0,*(uint32_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x540))));
     setCopReg(2,0x800,*(uint32_t *)guest_at((uint32_t)(uintptr_t)((rec + 0x544))));
     copFunction(2,0x180001);
