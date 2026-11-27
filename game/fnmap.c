@@ -709,6 +709,7 @@ extern void fighter_attach_run(void);
 extern void fighter_chan_delta_accum(void);
 extern void fighter_combat_reset(void);
 extern void fighter_contact_resolve(void);
+extern void fighter_emit_state_run(void);
 extern void fighter_flash_update(void);
 extern void fighter_frame(void);
 extern void fighter_frame_triple_emit(void);
@@ -2063,6 +2064,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80145c90, (void *)pt_box_radius_test },
   { 0x80145d84, (void *)camera_aim_offset },
   { 0x8014642c, (void *)hitbox_wall_collide },
+  { 0x801468ec, (void *)fighter_emit_state_run },
   { 0x80146e38, (void *)attract_stage_load_step },
   { 0x80147034, (void *)match_loop },
   { 0x8014751c, (void *)attract_menu_dispatch },

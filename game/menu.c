@@ -60,7 +60,7 @@ extern void record_copy_1a(int);
 extern int hud_sprite_desc_init(void);
 extern int task_table_init(int32_t arg);
 extern int reset_combat_slots(void);
-extern int FUN_801468ec(uint32_t a0,uint32_t a1,uint32_t mat,const void *ctrl,int32_t mode);
+extern int fighter_emit_state_run(uint32_t a0,uint32_t a1,uint32_t mat,const void *ctrl,int32_t mode);
 extern int battle_frame(void);
 extern int32_t select_screen_tick(int32_t entry_mode);
 void select_confirm_handler(uint32_t,uint32_t,uint8_t *,uint32_t,int32_t);
@@ -926,10 +926,10 @@ LAB_80170714:
         slot_height_proj(ot_base + 0x207c,_DAT_1f8000bc,otidx,0x1f800000);
       }
       if (*(short *)(cmd_rec + 8) != 0) {
-        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8000e8,(int)*(short *)(cmd_rec + 8));
+        fighter_emit_state_run(ot_base,otidx,0x1f800028,&DAT_1f8000e8,(int)*(short *)(cmd_rec + 8));
       }
       if (*(short *)(cmd_rec + 10) != 0) {
-        FUN_801468ec(ot_base,otidx,0x1f800028,&DAT_1f8001f0,(int)*(short *)(cmd_rec + 10));
+        fighter_emit_state_run(ot_base,otidx,0x1f800028,&DAT_1f8001f0,(int)*(short *)(cmd_rec + 10));
       }
       if (*(short *)(cmd_rec + 4) != 0) {
         status_text_display(0x1f8000e8u,(uint32_t)*(short *)(cmd_rec + 4));

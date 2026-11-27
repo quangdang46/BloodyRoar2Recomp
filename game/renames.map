@@ -319,6 +319,7 @@
 80181db8 ani_fixup_guest
 80178664 pending_gate_guest
 80141b78 ev_spark_spawn
+801468ec fighter_emit_state_run
 80141d2c ev_cmd_dispatch
 80142084 ev_cmd_dispatch_alias
 801421c4 ev24_fx_spawn

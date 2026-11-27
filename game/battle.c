@@ -20,6 +20,11 @@ extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, 
 extern uint32_t br2_guest_frame(uint32_t);
 extern void    br2_guest_frame_free(void);
 extern void    br2_st32(uint32_t,uint32_t);
+extern uint32_t br2_ld8(uint32_t);
+extern uint32_t br2_ld16(uint32_t);
+extern uint32_t br2_ld32(uint32_t);
+extern int     clean_try_dispatch(CPUState *cpu,uint32_t addr);
+extern CPUState *clean_cpu_state(void);
 extern uint32_t guest_sp(void);
 extern uint32_t guest_gp(void);
 extern void    *fn_lookup(uint32_t addr);
@@ -7373,6 +7378,263 @@ int stage_env_task_spawn(int32_t a0,uint32_t a1,uint32_t ctx_g, uint32_t a3)
   }
   return 0;
 
+}
+
+/* br2_waypoint_jal — faithful guest `jal` to an interrupt-check waypoint
+ * (jr-$ra stub): saves ra/pc/sp, links ra, dispatches clean-first via
+ * clean_try_dispatch else psx_dispatch_call, restores ra/pc and returns
+ * gpr[2]. Same contract as bind.c's bind_jal, kept file-local. */
+static uint32_t br2_waypoint_jal(uint32_t fn,uint32_t link)
+{
+  CPUState *cpu = clean_cpu_state();
+  uint32_t ra,pc,sp;
+  extern int br2_bail_pending(void);
+  if (!cpu || fn == 0) return 0;
+  if (br2_bail_pending()) return cpu->gpr[2];
+  ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
+  cpu->gpr[31] = link;
+  if (clean_try_dispatch(cpu,fn)) {
+    uint32_t r = cpu->gpr[2];
+    cpu->gpr[31] = ra; cpu->pc = pc;
+    return r;
+  }
+  psx_dispatch_call(cpu,fn,link);
+  cpu->gpr[29] = sp;
+  {
+    uint32_t r = cpu->gpr[2];
+    cpu->gpr[31] = ra; cpu->pc = pc;
+    return r;
+  }
+}
+
+int fighter_emit_state_run(uint32_t a0,uint32_t a1,uint32_t mat,const void *ctrl,int32_t mode)
+{
+    /* guest 0x801468EC — fighter emit state machine. Loads the 8-word
+    * matrix at mat into GTE CT0..CT7, normalizes the mode index mode
+    * through the 6-entry jr table at 0x801202CC ({0,4,2,6,1,7}), then
+    * runs three bit-selected emit sections (bit0/bit1/bit2 of the
+    * normalized mode) that walk 4-byte record lists hanging off the
+    * FighterCtrl at ctrl and jal the 8-byte jr-$ra padding stubs
+    * 0x80136F70/0x80136F80 (interrupt-check waypoints; the args are
+    * dead but reproduced faithfully). Faithful notes:
+    *  - guest frame is exactly 0x60; incoming arg5 (mode) is already
+    *    marshalled at old_sp+0x10 by the dispatch wrapper; outgoing
+    *    arg5/arg6 land at fr+0x10/0x14 and the 3-word vector at
+    *    fr+0x18 is passed by guest pointer — all via br2_guest_frame.
+    *  - the prologue spills s0-s7/fp/ra + the a0/a1 home slots into
+    *    the frame so the stack image matches generated.
+    *  - the ctc2 sequence mirrors generated: direct gte_ctrl[] stores
+    *    for CT0-3 and CT5-7, gte_write_ctrl() for CT4 (16-bit reg). */
+    CPUState *c = clean_cpu_state();
+    uint32_t fr, s4, P, L2, T, fp, s0;
+    int32_t s6, s2, s3, s5v, s7, ret = 0;
+    if (!c) {
+        /* no dispatch context: every guest-call bridge (br2_call_clean /
+         * br2_call_generated / psx_dispatch_call) no-ops on a NULL cpu, and
+         * a self-addressed call would recurse through this wrapper anyway. */
+        return 0;
+    }
+    s4 = guest_of(ctrl);
+    s6 = mode;
+    c->gpr[4] = a0; c->gpr[5] = a1; c->gpr[6] = mat; c->gpr[7] = s4;
+    fr = br2_guest_frame(0x60);
+    br2_st32(fr + 0x38, c->gpr[16]);
+    br2_st32(fr + 0x3c, c->gpr[17]);
+    br2_st32(fr + 0x40, c->gpr[18]);
+    br2_st32(fr + 0x44, c->gpr[19]);
+    br2_st32(fr + 0x48, c->gpr[20]);
+    br2_st32(fr + 0x4c, c->gpr[21]);
+    br2_st32(fr + 0x50, c->gpr[22]);
+    br2_st32(fr + 0x54, c->gpr[23]);
+    br2_st32(fr + 0x58, c->gpr[30]);
+    br2_st32(fr + 0x5c, c->gpr[31]);
+    br2_st32(fr + 0x60, a0);
+    br2_st32(fr + 0x64, a1);
+    P  = br2_ld32(s4 + 0x2c); br2_st32(fr + 0x28, P);
+    L2 = br2_ld32(s4 + 0x10); br2_st32(fr + 0x2c, L2);
+    T  = br2_ld32(s4 + 0x14); br2_st32(fr + 0x30, T);
+    fp = br2_ld32(s4 + 0x20);
+    s0 = br2_ld32(s4 + 0x0c);
+
+    /* GTE CT0..CT7 <- 8 matrix words at mat (generated order preserved) */
+    {
+        uint32_t m0 = br2_ld32(mat + 0x00), m1 = br2_ld32(mat + 0x04);
+        uint32_t m2 = br2_ld32(mat + 0x08), m3 = br2_ld32(mat + 0x0c);
+        uint32_t m4 = br2_ld32(mat + 0x10), m5 = br2_ld32(mat + 0x14);
+        uint32_t m6 = br2_ld32(mat + 0x18), m7 = br2_ld32(mat + 0x1c);
+        c->gte_ctrl[0] = m0; c->gte_ctrl[1] = m1;
+        c->gte_ctrl[2] = m2; c->gte_ctrl[3] = m3;
+        gte_write_ctrl(c, 4, m4);
+        c->gte_ctrl[5] = m5; c->gte_ctrl[6] = m6; c->gte_ctrl[7] = m7;
+    }
+    /* jr-table mode normalize (table at 0x801202CC): input 0..5 ->
+    * {0,4,2,6,1,7}; inputs >=6 keep the raw index. */
+    if ((uint32_t)s6 < 6u) {
+        static const int8_t mode_map[6] = {0, 4, 2, 6, 1, 7};
+        s6 = mode_map[s6];
+    }
+
+    /* 0x801469E0: s6 != 0 -> waypoint call, arg5 = 26 */
+    if (s6 != 0) {
+        c->gpr[4] = a0; c->gpr[5] = a1;
+        c->gpr[6] = fp + 0x34; c->gpr[7] = 0;
+        br2_st32(fr + 0x10, 26);
+        (void)br2_waypoint_jal(0x80136f70u, 0x80146a00u);
+    }
+
+    /* ---- bit0 section (0x80146A00..0x80146AE4) ---- */
+    if (s6 & 1) {
+        uint32_t f60 = br2_ld32(s4 + 0x60);
+        if (!(f60 & 0x200000u)) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            int32_t single;
+            /* flag pair on st_58, else on partner ctrl P+0x58:
+            * "hit" = (f & 0x30000) && !(f & 0x8000000) */
+            if ((f58 & 0x30000u) != 0 && (f58 & 0x08000000u) == 0) {
+                single = 1;
+            } else {
+                uint32_t fP = br2_ld32(P + 0x58);
+                single = (fP & 0x30000u) != 0 && (fP & 0x08000000u) == 0;
+            }
+            if (single) { s2 = 0; s3 = 1; }
+            else        { s2 = 1; s3 = (int8_t)br2_ld8(s4 + 9); }
+            while (s2 < s3) {
+                uint32_t e = s0 + (uint32_t)s2 * 4u;
+                int32_t idx = (int8_t)br2_ld8(e + 1);
+                int32_t val = (int16_t)br2_ld16(e + 2);
+                c->gpr[4] = a0; c->gpr[5] = a1;
+                c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                c->gpr[7] = 2;
+                br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                (void)br2_waypoint_jal(0x80136f70u, 0x80146ad8u);
+                s2++;
+            }
+        }
+    }
+
+    /* ---- bit1 section (0x80146AE4..0x80146C24) ---- */
+    if (((uint32_t)s6 >> 1) & 1u) {
+        int8_t b27 = (int8_t)br2_ld8(s4 + 0x27);
+        if (b27 >= 0) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            s7 = 0;
+            if (f58 & 0x40000u) {
+                s7 = 1;
+            } else if (f58 & 0x30000u) {
+                if (!(f58 & 0x08000000u)) {
+                    uint32_t f5c = br2_ld32(s4 + 0x5c);
+                    if ((f5c & 0x80000080u) != 0x80u) s7 = 1;
+                }
+            }
+            {
+                uint32_t p64 = br2_ld32(P + 0x64);
+                s5v = (int32_t)(p64 & 0x1000u);
+                s3 = (int8_t)br2_ld8(s4 + 0x0a);
+                if (s7 == 0 || s5v != 0) {
+                    if (s3 > 0) {
+                        uint32_t cur = L2;
+                        int32_t n = 0;
+                        do {
+                            int32_t idx = (int8_t)br2_ld8(cur + 1);
+                            int32_t val = (int16_t)br2_ld16(cur + 2);
+                            cur += 4; n++;
+                            c->gpr[4] = a0; c->gpr[5] = a1;
+                            c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                            c->gpr[7] = 1;
+                            br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                            (void)br2_waypoint_jal(0x80136f70u, 0x80146bb8u);
+                        } while (n < s3);
+                    }
+                }
+            }
+        }
+        /* BC8: bit1 still set -> st_5c & 0x2000 gates the stub80 call */
+        if (br2_ld32(s4 + 0x5c) & 0x2000u) {
+            int32_t x = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e) - 0x400) << 20) >> 20;
+            int32_t y = (((int32_t)(int16_t)br2_ld16(s4 + 0xc4) - 0x400) << 20) >> 20;
+            c->gpr[4] = a0; c->gpr[5] = a1;
+            c->gpr[6] = fp + 0x34; c->gpr[7] = (uint32_t)y;
+            br2_st32(fr + 0x10, 0x400);
+            br2_st32(fr + 0x14, (uint32_t)x);
+            (void)br2_waypoint_jal(0x80136f80u, 0x80146c24u);
+            /* guest v0 is overwritten by (s6>>2)&1 at 0x80146C24 — ret stays 0 here */
+        } else {
+            ret = 0;
+        }
+    }
+
+    /* ---- bit2 section (0x80146C24..0x80146E00) ---- */
+    if (((uint32_t)s6 >> 2) & 1u) {
+        int8_t b26 = (int8_t)br2_ld8(s4 + 0x26);
+        if (b26 >= 0) {
+            uint32_t f58 = br2_ld32(s4 + 0x58);
+            s7 = 0;
+            if (f58 & 0x40000u) {
+                s7 = 1;
+            } else if (f58 & 0x30000u) {
+                if (!(f58 & 0x08000000u)) {
+                    uint32_t f5c = br2_ld32(s4 + 0x5c);
+                    if ((f5c & 0x80000080u) != 0x80u) s7 = 1;
+                }
+            }
+            /* guest s2/s3 are 0 on every path reaching the scan loop */
+            {
+                uint32_t p64 = br2_ld32(P + 0x64);
+                s5v = (int32_t)(p64 & 0x1000u);
+                uint32_t cur = T;
+                int32_t n;
+                for (n = 0; n < 8; n++, cur += 4) {
+                    int32_t cmd = (int8_t)br2_ld8(cur);
+                    int32_t idx, val;
+                    if (cmd == -1) break;                    /* -> D94 */
+                    if (cmd == -2) continue;                 /* -> D80 */
+                    if ((s7 != 0) != (s5v != 0)) continue;   /* flag gate */
+                    idx = (int8_t)br2_ld8(cur + 1);
+                    val = (int16_t)br2_ld16(cur + 2);
+                    c->gpr[4] = a0; c->gpr[5] = a1;
+                    c->gpr[6] = fp + 0x34 + (uint32_t)((int32_t)idx * 0x50);
+                    c->gpr[7] = 3;
+                    br2_st32(fr + 0x10, (uint32_t)(val << 1));
+                    (void)br2_waypoint_jal(0x80136f70u, 0x80146d20u);
+                    if (!(br2_ld32(s4 + 0x6c) & 0x800u)) {
+                        /* second waypoint: 3-word vector at fr+0x18 */
+                        uint32_t rec = br2_ld32(s4 + 0x40) +
+                                      (uint32_t)((int32_t)cmd * 0x1c);
+                        int32_t v2 = (int16_t)br2_ld16(cur + 2);
+                        br2_st32(fr + 0x18, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x0e));
+                        br2_st32(fr + 0x1c, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x10));
+                        br2_st32(fr + 0x20, (uint32_t)(int32_t)(int16_t)br2_ld16(rec + 0x12));
+                        c->gpr[4] = a0; c->gpr[5] = a1;
+                        c->gpr[6] = fr + 0x18; c->gpr[7] = 5;
+                        br2_st32(fr + 0x10, (uint32_t)(v2 << 1));
+                        (void)br2_waypoint_jal(0x80136f70u, 0x80146d80u);
+                    }
+                }
+            }
+        }
+        /* D94: bit2 retest (always set on this path) + st_58 sign gate */
+        {
+            int32_t f58s = (int32_t)br2_ld32(s4 + 0x58);
+            if (f58s < 0) {
+                int32_t x = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e)
+                            + (int32_t)(int16_t)br2_ld16(s4 + 0xc6) - 0x400) << 20) >> 20;
+                int32_t z = (((int32_t)(int16_t)br2_ld16(s4 + 0x4e) - 0x400) << 20) >> 20;
+                c->gpr[4] = a0; c->gpr[5] = a1;
+                c->gpr[6] = fp + 0x34; c->gpr[7] = (uint32_t)x;
+                br2_st32(fr + 0x10, (uint32_t)((uint32_t)(uint8_t)br2_ld8(s4 + 0xdb) << 4));
+                br2_st32(fr + 0x14, (uint32_t)z);
+                (void)br2_waypoint_jal(0x80136f80u, 0x80146e00u);
+                ret = z;
+            } else {
+                ret = f58s;
+            }
+        }
+    }
+
+    /* 0x80146E00: trailing waypoint (jr-$ra stub), then epilogue */
+    (void)br2_waypoint_jal(0x80136f78u, 0x80146e08u);
+    br2_guest_frame_free();
+    return ret;
 }
 
 /* group_fx_spawn @0x80142108 — allocate an FX group record and store the
