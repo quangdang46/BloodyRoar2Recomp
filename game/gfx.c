@@ -5,8 +5,13 @@
  * part skinning, HUD gauges, BIOS trampolines.
  *
  * Guest globals bound via g_* arena pointers (bind.c).
- * Guest memory access: GP8/GP16/GP16S/GP32/GP32S(a) = *(T*)guest_at(a);
- * br2_ldN/br2_stN byte helpers; (T*)guest_at(addr) for struct fields.
+ * Guest memory access — two layers, do not mix casually:
+ *   GP8/GP16/GP16S/GP32/GP32S(a) = *(T*)guest_at(a)   macro, direct deref
+ *   br2_ldN/br2_stN(a, v)        = same deref via the weak bind.c
+ *     bridge — used in the CPS register-model bodies so they keep the
+ *     call form shared with generated/*.c and the other game/*.c TUs
+ *     (and stay interposable); GP* is for hand-ported helpers.
+ *   (T*)guest_at(addr)           host pointer for struct field access.
  * Pointer-compressed fields (& 0xffffff tags) round-trip through
  * guest_of(); spr_desc_slot_alloc returns a host pointer (signature
  * widened from the guest's 32-bit return — sole caller is
