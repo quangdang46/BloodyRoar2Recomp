@@ -1083,3 +1083,24 @@ addr-keyed rename needs full --timing regen, deferred).
 
 Verified: clean build EU + USA; headless :5149 frame 43516 attract CD
 streaming, clean_fallback_stats count=0, scratchpad live.
+
+## Batch 53 (orch/w5/e05) — full --timing regen of cd_irq_probe.c
+
+Regenerated all 558 cpst_ bodies via `gen_cps_clean.py --timing --file`
+with the merged transformer (fold_idioms + fold_cps_readability +
+name_comment_targets), spliced onto cd_irq_probe.c's own prelude
+(header comment, externs, GPR #defines, cpst_* helpers — no br2_*
+helpers, no psx_ws_cull_sltiu extern).
+
+Effects vs the incrementally-appended file:
+- _bc_/_jt_ -> cond_<ADDR>/jt_<ADDR> everywhere (was cond_<slug>/
+  jr_target — now matches cps_clean.c convention)
+- bare-LUI const folds (0x801C<<16 -> 0x801C0000u etc.)
+- dead duplicate dispatch-return removal
+- callee names in CPS jal comments (name_comment_targets)
+- find_body scoring fix (batch 49) now applies retroactively: e.g.
+  cpst_801a1e58 resolves to its own br2eu_func_801A1E58 piece instead
+  of the parent func_801A1E4C body — tighter piece boundaries
+
+Verified: clean build EU + USA; headless :5153 frame 19935 attract CD
+streaming, clean_fallback_stats count=0, scratchpad live.
