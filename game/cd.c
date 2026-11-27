@@ -4596,8 +4596,6 @@ extern uint32_t cd_chan_cmd_submit(uint32_t,uint32_t,uint32_t,uint32_t,
                              uint32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_finalize(void);
 
-#define CD_ENT16(o)  (*(uint16_t *)guest_at(DB32(0x801feb18) + (o)))
-
 void cd_mc_state_machine(void)
 {
   CDFN(CDFN_MC_SM,0);
@@ -4613,8 +4611,6 @@ void cd_mc_state_machine(void)
   call_guest4(0x80199440u,0,0,0,0);
   return;
 }
-
-#undef CD_ENT16
 
 /* ======== 0x801a12dc ======== */
 /* Device-context status map. ctx = (*(*(u32*)0x801be194))() guest fn
