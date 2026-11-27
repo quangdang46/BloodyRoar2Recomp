@@ -366,7 +366,6 @@ extern bool cd_cmd_issue_sync(int8_t,int,uint32_t);
 extern uint8_t * cd_param_buf_get(void);
 extern void cd_cmd_reset_wrap(void);
 extern uint8_t cd_mode_byte_read(void);
-extern int cd_stamp_to_sector(const void *);
 extern void vsync_wait_n(int,int);
 extern uint32_t cd_result_wait_b(int,uint8_t *);
 extern uint32_t cd_busy_wait(int);
@@ -1522,7 +1521,6 @@ int cd_sync_wait_c(uint32_t a0,uint32_t a1)
  * li t1,<svc>` forwarding caller a0-a3. Disasm-verified:
  * 0x80199fe0 = B0/0x5b, 0x8019a670 = C0/0x0a, 0x801957f0 = A0/0x44. */
 extern void br2_bios_tramp(uint32_t,uint32_t);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void bios_table_tramp(void)
 {
   br2_bios_tramp(0xb0,0x5b);
@@ -2260,7 +2258,6 @@ void cd_handler_triple_install(void)
  * 0x2000,0) -> bios_tramp_b00c -> @0x801bde38, crit-out.
  * Disasm 0x8019b308-0x8019b370. */
 extern int32_t cd_ext_table_init(uint32_t);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_ext_init_once(void)
 {
   /* OpenEvent/EnableEvent via bios_tramp_b008/b00c -> bios_svc6 needs the
@@ -2567,7 +2564,6 @@ void cd_reg_win_rmw_cc_cd(uint32_t a0,uint32_t a1)
  * Disasm 0x80168424-0x801684c4. */
 extern int32_t cd_chan_job_submit(uint32_t);
 extern int32_t cd_job_result(uint32_t,uint32_t *,uint32_t *);
-extern int br2_bail_pending(void);
 int32_t mc_op_result_poll(uint32_t a0)
 {
   uint32_t s0 = 0, sp10 = 0, sp14 = 0, r;
@@ -5213,8 +5209,6 @@ extern int gpu_coord_pack(int,int);
 extern void cd_guest_zero32_c(uint32_t,uint32_t);
 extern void cd_guest_zero32_b(uint32_t,uint32_t);
 extern void FUN_8019a0ddc(void);
-extern void cd_file_open(int32_t,uint8_t *);
-extern int cd_stamp_to_sector(const void *);
 
 /* 0x8019a774 — indirect dispatch tbl+0x10 (head loads *0x801bdda0). */
 uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
@@ -5629,8 +5623,6 @@ uint32_t cd_state_blk_save(void)
 
 /* ======== batch_mass4 ======== */
 
-extern void cd_kobj_init_a(void);
-extern void cd_kobj_init_b(void);
 extern int cd_seek_state_machine(uint32_t);
 extern void cd_mmio_strobe_22(void);
 
@@ -6560,7 +6552,6 @@ void cd_dir_entry_store(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019d508 ======== */
 
-extern int32_t cd_seek_state_machine(uint32_t);
 
 /* cd_seek_step — trace; delegate to generated 0x8019D508 (TestEvent IRQ-poll spin needs deferred CD coroutine). */
 int32_t cd_seek_step(uint32_t a0,uint32_t a1)
@@ -6574,7 +6565,6 @@ int32_t cd_seek_step(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019b8a4 ======== */
 
-extern void cd_mmio_strobe_22(void);
 
 /* cd_dma_xfer_start_b — mid-entry (0x8019B8A4) of cd_dma_xfer_start: MMIO channel setup, args p_a0=buf p_a1=ch p_a2=len; arms DMA cb cell @0x801BDF00. */
 void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2)
