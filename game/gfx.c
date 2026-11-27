@@ -1380,13 +1380,13 @@ void hud_gauge_render(uint32_t st_g, uint32_t head_g, uint32_t variant)
     spr_attr_alloc_b(cell, 0x280100, 0x177e001e, 0x7a568080, 0x180, 0x48);
     spr_attr_alloc_b(cell, 0x280180, 0x1780001e, 0x7a5680ff, 0x200, 0x48);
     spr_slot_pkt_submit((uint32_t *)guest_at(cell), (*(int16_t *)(st + 0x22) + -0x54) * 0x10000 |
-                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff, 0x277e001e,
-                 ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90u) & 0xffff, 0x277e001e,
+                 ((uint32_t)(v << 6) | 0x7e16u) << 0x10 | 0x9880);
     sprite_node_emit_a(cell, 0, *(int16_t *)(st + 0x22) + -0x40, (int32_t)*(int16_t *)(st + 0x20), 0x18,
                  col_a, 0, col_a, 0, 2);
     sprite_node_emit_b(cell, ((uint32_t)(*(int16_t *)(st + 0x22) + -0x13f) * 0x10000) |
-                 ((uint32_t)*(int16_t *)(st + 0x20) - 0xffU) & 0xffff, 0xfefe001f,
-                 ((uint32_t)(v << 6) | 0x7c16U) << 0x10, 0x80, 1);
+                 ((uint32_t)*(int16_t *)(st + 0x20) - 0xffu) & 0xffff, 0xfefe001f,
+                 ((uint32_t)(v << 6) | 0x7c16u) << 0x10, 0x80, 1);
     x = *(int16_t *)(st + 0x20);
     v = (int32_t)*(int16_t *)(st + 0x22);
     cell = 0;
@@ -1397,8 +1397,8 @@ void hud_gauge_render(uint32_t st_g, uint32_t head_g, uint32_t variant)
     spr_attr_alloc_b(cell, 0x280100, 0x177e001e, 0x7a568080, 0x180, 0x48);
     spr_attr_alloc_b(cell, 0x280180, 0x1780001e, 0x7a5680ff, 0x200, 0x48);
     spr_slot_pkt_submit((uint32_t *)guest_at(cell), ((uint32_t)(*(int16_t *)(st + 0x22) + -0x54) * 0x10000) |
-                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90U) & 0xffff, 0x277e001e,
-                 ((uint32_t)(v << 6) | 0x7e16U) << 0x10 | 0x9880);
+                 ((uint32_t)*(int16_t *)(st + 0x20) - 0x90u) & 0xffff, 0x277e001e,
+                 ((uint32_t)(v << 6) | 0x7e16u) << 0x10 | 0x9880);
     sprite_node_emit_a(cell, 0, *(int16_t *)(st + 0x22) + -0x40, (int32_t)*(int16_t *)(st + 0x20), 0x18,
                  col_a, 0, col_a, 0, 2);
     x = *(int16_t *)(st + 0x20);
