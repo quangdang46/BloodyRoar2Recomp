@@ -1233,3 +1233,25 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   stay. Much more tractable than decompiler-grade CFG recovery.
 - versus_fight_mash.py driving headless build for deep-path
   verification of the session-24 fixes (frame 300k+ and climbing).
+
+### Session update 25 (cps_clean goto-fold + full regen)
+
+- `fold_fallthrough_gotos()` added to `game/gen_cps_clean.py` and
+  `cps_clean.c` regenerated wholesale (743 unique `cps_*` addrs —
+  extract via `grep -oE '^void cps_[0-9a-f]+\(void\)' | sort -u`,
+  protos+defs double-count otherwise). Removes `goto block_X;` when
+  block_X is the next block_ label in layout order and only
+  braces/else/comments intervene — 1503 no-op fallthrough gotos
+  deleted. Conservative: any executable line between goto and next
+  label keeps the goto.
+- Regen also picked up `fix_label_decls` `;` insertion (539 -> 0
+  -Wc23-extensions warnings) and canonical renames.map names in
+  dispatch comments. Verified regen-vs-prior diff was comments/`;`/
+  gotos ONLY — zero semantic changes.
+- `fix_label_decls` now skips comment lines when scanning for a
+  following declaration (7 residual label->decl sites).
+- cps_clean.c gotos: 7119 -> 5620. Build clean, zero warnings on the
+  file. Headless verified (frame_fingerprint advancing ~1300fps).
+- Structuring path confirmed next: with fallthrough gotos gone, the
+  remaining `goto block_` sites are the real CFG edges — Phoenix-style
+  region analysis on the DAG is the next generator milestone.
