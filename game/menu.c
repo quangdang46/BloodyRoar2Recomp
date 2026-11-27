@@ -5910,54 +5910,54 @@ void round_announce_block(uint32_t ctx,uint32_t ctx2,const void *str,
 int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
                      void *unused)
 {
-  uint32_t s5 = battle, s4 = sel_a, s2 = sel_b;
-  uint32_t s3, s0, s1, res_id;
-  int32_t  v1;
+  uint32_t s2 = sel_b;
+  uint32_t ttab, state, res_id;
+  int32_t  cur_st;
   (void)unused;
 
-  s3 = guest_of(tag_table_get());       /* tag table 0x801c47c0 */
-  v1 = MBS16(s5 + 0x8c);
+  ttab = guest_of(tag_table_get());       /* tag table 0x801c47c0 */
+  cur_st = MBS16(battle + 0x8c);
   { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(43,battle,sel_a,sel_b,(uint32_t)(int16_t)v1); }
-  if (v1 < 0) return -1;
-  s0 = (uint32_t)v1;
-  if (s0 >= 0x31) goto L_store;
+    decomp_trace_record(43,battle,sel_a,sel_b,(uint32_t)(int16_t)cur_st); }
+  if (cur_st < 0) return -1;
+  state = (uint32_t)cur_st;
+  if (state >= 0x31) goto L_store;
 
-  switch (s0) {
+  switch (state) {
   case 0:
     cd_file_load_sm(0xffffffffu,0);
     MW32(0x801c43a0,0);
     MW8(0x801e3d00,0xff);
     MW32(0x801c47b8,0x80010000);
     MW32(0x801e3cfc,0x800dc800);
-    s0 = 8;
+    state = 8;
     /* fall through: case 8 enters at the shared tail */
   case 8:
-    s1 = 0x801c0000;
+
     if (cd_file_load_sm(0x8c, MB32(0x801c47b8)) == 0) goto L_store;
     fighter_record_apply(MB32(0x801c47b8),2);
-    s0 = 0x10;                            /* jal delay slot */
+    state = 0x10;                            /* jal delay slot */
     page_table_ptr_set(0x11,2,(undefined *)0);
     cd_timer_read(0);
-    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + sel_a) + 0xc7);
     goto L_bchk;
   case 0x10:
-    res_id = (uint32_t)(MB8(0x801b49f8 + s4) + 0xc7);
+    res_id = (uint32_t)(MB8(0x801b49f8 + sel_a) + 0xc7);
   L_bchk:
-    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
+    if (cd_file_load_sm(res_id, ttab) == 0) goto L_store;
     goto L_mid;
   case 0x20:
     res_id = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
     res_id += 0xc7;
-    if (cd_file_load_sm(res_id, s3) == 0) goto L_store;
+    if (cd_file_load_sm(res_id, ttab) == 0) goto L_store;
     scratch_013_set(0);
-    spr_draw_pair(s3,0,0x1f6,1,0x260,0,1);
+    spr_draw_pair(ttab,0,0x1f6,1,0x260,0,1);
     cd_timer_read(0);
     scratch_013_set(1);
-    s0 = 0x30;
+    state = 0x30;
     /* fall through into the 0x81 sound gate */
   case 0x30:
-    if (cd_file_load_sm(0x81, s3) == 0) goto L_store;
+    if (cd_file_load_sm(0x81, ttab) == 0) goto L_store;
     goto L_tail48;
   default:
     goto L_store;
@@ -5965,45 +5965,45 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
 
 L_mid:                                        /* 0x80148280 */
   scratch_013_set(0);
-  spr_draw_pair(s3,0,0x1f5,1,0x200,0,1);       /* arg7 = s0 = 1 */
-  if (s4 == s2 && s2 != 8) {
-    spr_draw_pair(s3,0,0x1f6,1,0x260,0,1);
-    s0 = 0x30;
+  spr_draw_pair(ttab,0,0x1f5,1,0x200,0,1);       /* arg7 = state = 1 */
+  if (sel_a == s2 && s2 != 8) {
+    spr_draw_pair(ttab,0,0x1f6,1,0x260,0,1);
+    state = 0x30;
   } else {
-    s0 = 0x20;
+    state = 0x20;
   }
   cd_timer_read(0);
   scratch_013_set(1);
-  MW16(s5 + 0x8c,(uint16_t)s0);              /* j delay slot */
+  MW16(battle + 0x8c,(uint16_t)state);              /* j delay slot */
   return 0;
 
 L_tail48:                                     /* 0x80148394 */
   scratch_013_set(0);
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x31);
+  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x31);
   spr_draw_off(MB32(0x801c47b8),0x300,0x100,1);
   MW32(0x801c47b8, MB32(0x801c47b8) + s2);   /* delay-slot store */
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x32);
+  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x32);
   spr_draw_off(MB32(0x801c47b8),0x280,0x100,1);
   MW32(0x801c47b8, MB32(0x801c47b8) + s2);
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(s3),0x30);
+  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x30);
   spr_draw_off(MB32(0x801c47b8),0,0x1e0,1);
   {
     uint32_t rA = s2;                        /* heapA still owes r3 */
-    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x34);
+    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x34);
     MW32(0x801c47b8, MB32(0x801c47b8) + rA);
     spr_draw_off(MB32(0x801e3cfc),0x2c0,0,1);
     MW32(0x801e3cfc, MB32(0x801e3cfc) + s2);
-    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(s3),0x35);
+    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x35);
     spr_draw_off(MB32(0x801e3cfc),0x2c0,0x100,1);
     MW32(0x801e3cfc, MB32(0x801e3cfc) + s2);
   }
   cd_timer_read(0);
   scratch_013_set(1);
-  MW16(s5 + 0x8c,0xffff);                    /* j delay slot */
+  MW16(battle + 0x8c,0xffff);                    /* j delay slot */
   return 1;
 
 L_store:                                     /* 0x801484bc */
-  MW16(s5 + 0x8c,(uint16_t)s0);
+  MW16(battle + 0x8c,(uint16_t)state);
   return 0;
 }
 
