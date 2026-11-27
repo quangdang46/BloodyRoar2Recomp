@@ -6332,7 +6332,7 @@ int32_t pad_handler_b(uint32_t battle,uint32_t mask)
   uint32_t s3 = battle;
   uint32_t s7 = mask;                 /* pad mask */
   uint32_t a0 = 1, fp = 0;
-  uint32_t s6, s5, s4, s2, s0, s1;
+  uint32_t s6, s5, s4, s2, s0;
   uint32_t p84;
   int32_t  lbv, lh12;
 
@@ -6476,7 +6476,7 @@ int32_t pad_handler_c(uint32_t battle,uint32_t mask)
   uint32_t s2 = battle;
   uint32_t fp = mask;                 /* pad mask */
   uint32_t a0 = 1;
-  uint32_t s5, s4, s3, s6, s7 = 0, s1, s0;
+  uint32_t s5, s4, s3, s7 = 0, s1, s0;
   uint32_t p84, dw_ent;
   int32_t  lb2, lh12;
 
@@ -7451,8 +7451,8 @@ L_ewin:
 
   case 16: {
     int32_t spr_idx = -1, aux_b5 = 1;
-    uint32_t nv, byted;
-    int32_t v1;
+    uint32_t nv, bval;
+    int32_t tv;
     MW8(s1 + 0xb1,0xff);                 /* jal delay slot: before call */
     slot_triple_set(1,-1,-1,-1);
     slot_triple_set(2,-1,-1,-1);
@@ -7482,12 +7482,12 @@ L_ewin:
     nv = MB16(s1 + 0x8e) + 1;
     MW16(s1 + 0x8e,nv);
     hud_announce(s1,0x16,(int32_t)(int16_t)nv);
-    byted = MB8(MB32(s1 + 0xc0) + 0xd);
-    v1 = MBS16(s1 + 0x8e);
-    if (byted != 0) {
-      if (v1 < 0x15e) return 0;
+    bval = MB8(MB32(s1 + 0xc0) + 0xd);
+    tv = MBS16(s1 + 0x8e);
+    if (bval != 0) {
+      if (tv < 0x15e) return 0;
     } else {
-      if (v1 < 0x2ee) return 0;
+      if (tv < 0x2ee) return 0;
     }
     MW16(s1 + 0x8e,0);
     MW16(s1 + 0x90,0);
@@ -9017,7 +9017,7 @@ L_aeec:                                       /* 0x8014f164 */
  * written. */
 void battle_side_flag_prop(uint32_t battle,uint8_t *side)
 {
-  uint8_t *s = side;
+
   uint32_t fl5c = *(uint32_t *)(side + 0x5c);
   uint32_t rec;
   if ((fl5c & 8u) == 0) return;
