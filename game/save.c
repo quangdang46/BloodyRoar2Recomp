@@ -869,8 +869,7 @@ bb_8015fbfc:
         announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_MEMORY_CARD_CHANGED__801217a4,0x10,0x1000,2);
         scroll_offset_accumulate(0,0x10); /* fallthrough */
       case 1:
-        sprintf_core(msg_buf,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(slot_no))
-        ;
+        sprintf_core(msg_buf,s_SAVE_TO_MEMORY_CARD__s___801217bc,SLOTSTR(slot_no));
       }
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
@@ -949,8 +948,7 @@ bb_8015fc08:
 dflt_8015fc3c:
       announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,msg_buf,0x10,0x1000,0);
       scroll_offset_accumulate(0,0x10);
-      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3)
-      ;
+      announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,s_DO_NOT_REMOVE_MEMORY_CARD___801218d0,0x10,0x1000,3);
       goto bb_8015ffac;
     case 0x14:
       if (!(slot_no)) {
