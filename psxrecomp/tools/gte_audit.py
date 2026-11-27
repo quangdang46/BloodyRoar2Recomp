@@ -29,6 +29,7 @@ import audit_config
 
 
 def main():
+    """Run the GTE audit over the configured ROM regions.."""
     cfg = audit_config.from_argv(sys.argv)
     print(f"# gte audit: {cfg.name}")
     print(f"  rom    = {cfg.rom}")

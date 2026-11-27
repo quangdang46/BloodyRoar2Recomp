@@ -11,6 +11,7 @@ with open('generated/SCPH1001_dispatch.c') as f:
             dispatch_addrs.add(int(m.group(1), 16))
 
 def normalize(addr):
+    """Fold a guest address to physical, remapping the BIOS ROM window.."""
     phys = addr & 0x1FFFFFFF
     if 0x1FC10000 <= phys <= 0x1FC17FFF:
         phys = phys - 0x1FC10000 + 0x500

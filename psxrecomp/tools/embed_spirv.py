@@ -15,11 +15,13 @@ import argparse, os, subprocess, sys, struct, tempfile
 STAGE = {".vert": "vert", ".frag": "frag", ".comp": "comp"}
 
 def ident(path):
+    """Derive a C identifier name from a shader file path.."""
     base = os.path.basename(path)
     name, ext = os.path.splitext(base)
     return "%s_%s" % (name.replace("-", "_"), STAGE[ext]), STAGE[ext]
 
 def main():
+    """Compile GLSL to SPIR-V and embed as C arrays.."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--glslc", required=True)
     ap.add_argument("--out", required=True)

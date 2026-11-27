@@ -81,6 +81,7 @@ def summarise(dump, top=25, out=sys.stdout):
 
 
 def main(argv=None):
+    """Capture GPU frames per --help; CLI entry point.."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")
