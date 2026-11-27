@@ -7844,8 +7844,8 @@ undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
  * no perspective divide in either. */
 int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 {
-  undefined4 in_zero = 0;      /* lwc2 gte[0] */
-  undefined4 in_at = 0x800;    /* lwc2 gte[1] */
+  undefined4 cop2_idx0 = 0;      /* lwc2 gte[0] */
+  undefined4 cop2_idx1 = 0x800;    /* lwc2 gte[1] */
   int ty;
   int tz;
   int gx;
@@ -7858,8 +7858,8 @@ int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
     setCopControlWord(2,0x1800,rt[3]);
     setCopControlWord(2,0x2000,rt[4]);
   }
-  setCopReg(2,in_zero,*in);
-  setCopReg(2,in_at,in[1]);
+  setCopReg(2,cop2_idx0,*in);
+  setCopReg(2,cop2_idx1,in[1]);
   copFunction(2,0x486012);
   ty = rt[6];
   tz = rt[7];
@@ -7877,8 +7877,8 @@ int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
  * (see rtps_point_xform). */
 int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 {
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   int ty;
   int tz;
   int gx;
@@ -7889,8 +7889,8 @@ int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
   setCopControlWord(2,0x1000,rt[2]);
   setCopControlWord(2,0x1800,rt[3]);
   setCopControlWord(2,0x2000,rt[4]);
-  setCopReg(2,in_zero,*in);
-  setCopReg(2,in_at,in[1]);
+  setCopReg(2,cop2_idx0,*in);
+  setCopReg(2,cop2_idx1,in[1]);
   copFunction(2,0x486012);
   ty = rt[6];
   tz = rt[7];
@@ -9018,7 +9018,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   short ang;
   int off;
   undefined4 res;
-  undefined4 in_zero = 0;
+  undefined4 cop2_idx0 = 0;
   undefined4 at_out = 0x800;
   int tmp;
   int scl;
@@ -9049,7 +9049,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
     tmp = tmp + 0xfff;
   }
   at_val = (at_val & 0xffff0000) | (uint16_t)(short)(tmp >> 0xc);
-  setCopReg(2,in_zero,res);
+  setCopReg(2,cop2_idx0,res);
   setCopReg(2,at_out,at_val);
   copFunction(2,0x180001);
   tmp = getCopReg(2,0xe);
@@ -11146,8 +11146,8 @@ int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 /* gte_rtps_xform1 @0x801951b0 — see gte_rtps_xform3 (single-output variant). */
 undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 {
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   undefined4 gx;
   undefined4 gy;
   undefined4 gz;
@@ -11156,8 +11156,8 @@ undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
   setCopControlWord(2,0x1000,rt[2]);
   setCopControlWord(2,0x1800,rt[3]);
   setCopControlWord(2,0x2000,rt[4]);
-  setCopReg(2,in_zero,*in);
-  setCopReg(2,in_at,in[1]);
+  setCopReg(2,cop2_idx0,*in);
+  setCopReg(2,cop2_idx1,in[1]);
   copFunction(2,0x486012);
   gx = getCopReg(2,0x4800);
   gy = getCopReg(2,0x5000);
@@ -12386,20 +12386,20 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
  * per element, then call_guest4 the record's emit callbacks. */
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 mtx_t ,undefined4 mtx_ip)
 {
-  undefined4 in_zero = 0;
+  undefined4 cop2_idx0 = 0;
   undefined4 at_out = 0x800;
   undefined4 t0;
   undefined4 t1;
   undefined4 t2;
-  undefined4 in_s0 = br2_gpr(16);
-  undefined4 in_s1 = br2_gpr(17);
-  undefined4 in_s2 = br2_gpr(18);
+  undefined4 s0_in = br2_gpr(16);
+  undefined4 s1_in = br2_gpr(17);
+  undefined4 s2_in = br2_gpr(18);
   int *rp;
-  undefined4 in_s3 = br2_gpr(19);
-  undefined4 in_s4 = br2_gpr(20);
-  undefined4 in_s5 = br2_gpr(21);
-  undefined4 in_s6 = br2_gpr(22);
-  undefined4 in_ra = br2_gpr(31);
+  undefined4 s3_in = br2_gpr(19);
+  undefined4 s4_in = br2_gpr(20);
+  undefined4 s5_in = br2_gpr(21);
+  undefined4 s6_in = br2_gpr(22);
+  undefined4 ra_in = br2_gpr(31);
   /* Two distinct guest counters the decompiler merged into num:
    * num_out = $s3 ← $a3=total @0x801870E4, decremented @0x80187180 and
    * tested @0x80187184 (outer list loop); num_in = $s6, loaded from
@@ -12411,19 +12411,19 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
   if (0 < total) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
-    _DAT_1f8003e0 = in_s6;
-    _DAT_1f8003e4 = in_s5;
-    _DAT_1f8003e8 = in_s4;
-    _DAT_1f8003ec = in_s3;
-    _DAT_1f8003f0 = in_s2;
-    _DAT_1f8003f4 = in_s1;
-    _DAT_1f8003f8 = in_s0;
-    _DAT_1f8003fc = in_ra;
+    _DAT_1f8003e0 = s6_in;
+    _DAT_1f8003e4 = s5_in;
+    _DAT_1f8003e8 = s4_in;
+    _DAT_1f8003ec = s3_in;
+    _DAT_1f8003f0 = s2_in;
+    _DAT_1f8003f4 = s1_in;
+    _DAT_1f8003f8 = s0_in;
+    _DAT_1f8003fc = ra_in;
     do {
       if (((short)lst[3] == 0) && (*lst != 0)) {
         gte_xform3_ip((undefined4 *)guest_at((uint32_t)mtx_ip),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)mtx_t),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
-        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,cop2_idx0,lst[1]);
         setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         num_in = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
@@ -13532,8 +13532,8 @@ LAB_80136b18:
 void radial_glow_draw(int *rec)
 {
   undefined4 xy;
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   short ox;
   short cy;
   short oy;
@@ -13549,8 +13549,8 @@ void radial_glow_draw(int *rec)
   short sx;
   short sy;
   uint rnd;
-  setCopReg(2,in_zero,rec[0xd]);
-  setCopReg(2,in_at,rec[0xe]);
+  setCopReg(2,cop2_idx0,rec[0xd]);
+  setCopReg(2,cop2_idx1,rec[0xe]);
   copFunction(2,0x180001);
   xy = getCopReg(2,0xe);
   ex = (short)xy;
@@ -13866,20 +13866,20 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
   undefined4 sv_s2;
   undefined4 sv_s1;
   undefined4 sv_s0;
-  undefined4 in_s0 = br2_gpr(16);
-  undefined4 in_s1 = br2_gpr(17);
-  undefined4 in_s2 = br2_gpr(18);
+  undefined4 s0_in = br2_gpr(16);
+  undefined4 s1_in = br2_gpr(17);
+  undefined4 s2_in = br2_gpr(18);
   int *pi;
-  undefined4 in_s3 = br2_gpr(19);
-  undefined4 in_s6 = br2_gpr(22);
+  undefined4 s3_in = br2_gpr(19);
+  undefined4 s6_in = br2_gpr(22);
   int n;
-  undefined4 in_ra = br2_gpr(31);
-  sv_ra = in_ra;
-  sv_s6 = in_s6;
-  sv_s3 = in_s3;
-  sv_s2 = in_s2;
-  sv_s1 = in_s1;
-  sv_s0 = in_s0;
+  undefined4 ra_in = br2_gpr(31);
+  sv_ra = ra_in;
+  sv_s6 = s6_in;
+  sv_s3 = s3_in;
+  sv_s2 = s2_in;
+  sv_s1 = s1_in;
+  sv_s0 = s0_in;
   t1 = _DAT_1f8003fc;
   t2 = _DAT_1f8003f8;
   t3 = _DAT_1f8003f4;
@@ -13980,54 +13980,54 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 /* prim_list_persp_step @0x8018b208 — see prim_list_gte_invoke. */
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
-  undefined4 in_zero = 0;
+  undefined4 cop2_idx0 = 0;
   undefined4 at_out = 0x800;
   int t;
   int vp;
   int sz;
-  undefined4 in_t4 = br2_gpr(12);
-  undefined4 in_t5 = br2_gpr(13);
-  undefined4 in_t6 = br2_gpr(14);
-  undefined4 in_t7 = br2_gpr(15);
-  undefined4 in_s0 = br2_gpr(16);
-  undefined4 in_s1 = br2_gpr(17);
-  undefined4 in_s2 = br2_gpr(18);
+  undefined4 t4_in = br2_gpr(12);
+  undefined4 t5_in = br2_gpr(13);
+  undefined4 t6_in = br2_gpr(14);
+  undefined4 t7_in = br2_gpr(15);
+  undefined4 s0_in = br2_gpr(16);
+  undefined4 s1_in = br2_gpr(17);
+  undefined4 s2_in = br2_gpr(18);
   int *rp;
-  undefined4 in_s3 = br2_gpr(19);
-  undefined4 in_s4 = br2_gpr(20);
-  undefined4 in_s5 = br2_gpr(21);
-  undefined4 in_s6 = br2_gpr(22);
-  undefined4 in_s7 = br2_gpr(23);
-  undefined4 in_t8 = br2_gpr(24);
-  undefined4 in_ra = br2_gpr(31);
+  undefined4 s3_in = br2_gpr(19);
+  undefined4 s4_in = br2_gpr(20);
+  undefined4 s5_in = br2_gpr(21);
+  undefined4 s6_in = br2_gpr(22);
+  undefined4 s7_in = br2_gpr(23);
+  undefined4 t8_in = br2_gpr(24);
+  undefined4 ra_in = br2_gpr(31);
   if (0 < n) {
     _DAT_1f8003d4 = arg5;
     _DAT_1f8003d0 = arg7;
     _DAT_1f8003cc = arg8;
     _DAT_1f8003d8 = a1;
-    _DAT_1f8003dc = in_s7;
-    _DAT_1f8003e0 = in_s6;
-    _DAT_1f8003e4 = in_s5;
-    _DAT_1f8003e8 = in_s4;
-    _DAT_1f8003ec = in_s3;
-    _DAT_1f8003f0 = in_s2;
-    _DAT_1f8003f4 = in_s1;
-    _DAT_1f8003f8 = in_s0;
-    _DAT_1f8003fc = in_ra;
+    _DAT_1f8003dc = s7_in;
+    _DAT_1f8003e0 = s6_in;
+    _DAT_1f8003e4 = s5_in;
+    _DAT_1f8003e8 = s4_in;
+    _DAT_1f8003ec = s3_in;
+    _DAT_1f8003f0 = s2_in;
+    _DAT_1f8003f4 = s1_in;
+    _DAT_1f8003f8 = s0_in;
+    _DAT_1f8003fc = ra_in;
     do {
       if (((short)lst[3] == 0) && (*lst != 0)) {
         vp = *lst + 0x20;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)xf),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
-        setCopReg(2,in_zero,lst[1]);
+        setCopReg(2,cop2_idx0,lst[1]);
         setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         t = getCopReg(2,0xc800);
         sz = getCopReg(2,0xd800);
-        _DAT_1f8003a0 = in_t6;
-        _DAT_1f8003a4 = in_t4;
-        _DAT_1f8003a8 = in_t7;
-        _DAT_1f8003ac = in_t8;
-        _DAT_1f8003b0 = in_t5;
+        _DAT_1f8003a0 = t6_in;
+        _DAT_1f8003a4 = t4_in;
+        _DAT_1f8003a8 = t7_in;
+        _DAT_1f8003ac = t8_in;
+        _DAT_1f8003b0 = t5_in;
         _DAT_1f8003b8 = range_circle_test(t,sz,(uint *)guest_at((uint32_t)_DAT_1f8003d0),*(undefined4 *)guest_at((uint32_t)(uintptr_t)((vp + 0x18))));
         if (_DAT_1f8003b8 != 0) {
           t = t + ((int)*(short *)guest_at((uint32_t)(uintptr_t)((xf + 2) ))* -_DAT_1f8003b8 >> 0xc);
@@ -14077,15 +14077,15 @@ void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 /* gte_xform_add_off @0x8018d568 — transform vec and add offset. */
 int * gte_xform_add_off(int x,undefined4 *y,int *z)
 {
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   int oy;
   int oz;
   int tx;
   int ty;
   int tz;
-  setCopReg(2,in_zero,*y);
-  setCopReg(2,in_at,y[1]);
+  setCopReg(2,cop2_idx0,*y);
+  setCopReg(2,cop2_idx1,y[1]);
   copFunction(2,0x486012);
   oy = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x18)));
   oz = *(int *)guest_at((uint32_t)(uintptr_t)((x + 0x1c)));
@@ -14167,8 +14167,8 @@ void vec_emit_spawn(undefined4 *rec)
 void iris_wipe_update(int *rec)
 {
   short cv;
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   int t;
   int t3;
   undefined2 *out;
@@ -14215,8 +14215,8 @@ void iris_wipe_update(int *rec)
       setCopControlWord(2,0x1000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t3 + 200))));
       setCopControlWord(2,0x1800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t3 + 0xcc))));
       setCopControlWord(2,0x2000,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((t3 + 0xd0))));
-      setCopReg(2,in_zero,*(undefined4 *)((intptr_t)rec + t));
-      setCopReg(2,in_at,((undefined4 *)((intptr_t)rec + t))[1]);
+      setCopReg(2,cop2_idx0,*(undefined4 *)((intptr_t)rec + t));
+      setCopReg(2,cop2_idx1,((undefined4 *)((intptr_t)rec + t))[1]);
       copFunction(2,0x486012);
       out = (undefined2 *)((intptr_t)rec + t7);
       t8 = getCopReg(2,0x4800);
@@ -14511,15 +14511,15 @@ undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 {
   undefined4 v;
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   setCopControlWord(2,0,*mtx);
   setCopControlWord(2,0x800,mtx[1]);
   setCopControlWord(2,0x1000,mtx[2]);
   setCopControlWord(2,0x1800,mtx[3]);
   setCopControlWord(2,0x2000,mtx[4]);
-  setCopReg(2,in_zero,*in);
-  setCopReg(2,in_at,in[1]);
+  setCopReg(2,cop2_idx0,*in);
+  setCopReg(2,cop2_idx1,in[1]);
   copFunction(2,0x486012);
   v = getCopReg(2,0x19);
   *out = v;
@@ -14693,8 +14693,8 @@ void tween_seq_step(short *seq)
   uint op;
   byte arg;
   int va;
-  int unaff_gp = (int)guest_gp();
-  if ((((*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))!= 1) && (seq != (short *)0x0)) && (-1 < seq[0x22])) &&
+  int gp_in = (int)guest_gp();
+  if ((((*(int *)guest_at((uint32_t)(uintptr_t)((gp_in + 0x44) ))!= 1) && (seq != (short *)0x0)) && (-1 < seq[0x22])) &&
      (seq[0x22] < 2)) {
     if (seq[5] < 0) {
       t = seq[0x1d] + 1;
@@ -14801,7 +14801,7 @@ LAB_801aa65c:
       }
       else if (*seq == 2) {
         off = seq[7] * 0x14 + *(int *)(seq + 0xc);
-        if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))== 0) {
+        if (*(int *)guest_at((uint32_t)(uintptr_t)((gp_in + 0x24) ))== 0) {
           va = *(int *)(seq + 0x10);
         }
         else {
@@ -14963,14 +14963,14 @@ undefined4 cop2_clz(undefined4 v)
  * output streams. */
 void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
-  undefined4 in_zero = 0;
-  undefined4 in_at = 0x800;
+  undefined4 cop2_idx0 = 0;
+  undefined4 cop2_idx1 = 0x800;
   uint code;
   undefined4 t0;
   undefined4 t1;
   do {
-    setCopReg(2,in_zero,*ip);
-    setCopReg(2,in_at,ip[1]);
+    setCopReg(2,cop2_idx0,*ip);
+    setCopReg(2,cop2_idx1,ip[1]);
     copFunction(2,0x180001);
     ip = ip + 2;
     n = n + -1;
@@ -15057,7 +15057,7 @@ void tween_apply(short *seq,int v0,int v1)
    * apply path reads it without a write this call, i.e. caller's $t6. */
   int dir = (int)br2_gpr(14);
   short v1s;
-  int unaff_gp = (int)guest_gp();
+  int gp_in = (int)guest_gp();
   /* acc is guest $sp+0x18..0x27 (frame 0x30): acc[phase] is indexed by
    * the stale-$t4 phase on the t==v0 path and acc[0]/acc[2] are only
    * conditionally written, so back it with the guest stack window
@@ -15092,7 +15092,7 @@ void tween_apply(short *seq,int v0,int v1)
       return;
     }
     t = seq[7] * 0x14 + *(int *)(seq + 0xc);
-    if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x24) ))== 0) {
+    if (*(int *)guest_at((uint32_t)(uintptr_t)((gp_in + 0x24) ))== 0) {
       vo = *(int *)(seq + 0x10);
     }
     else {
@@ -15429,7 +15429,7 @@ int fixed_point_divide(int num,int den)
  * keyframe cursor position in a sequence. */
 void keyframe_cursor_search(uint *cur)
 {
-  int unaff_gp = (int)guest_gp();
+  int gp_in = (int)guest_gp();
   int t0;
   int pos;
   int it;
@@ -15439,7 +15439,7 @@ void keyframe_cursor_search(uint *cur)
   uint *ent;
   int tv;
 
-  if (*(int *)guest_at((uint32_t)(uintptr_t)((unaff_gp + 0x44) ))== 1) {
+  if (*(int *)guest_at((uint32_t)(uintptr_t)((gp_in + 0x44) ))== 1) {
     return;
   }
   if (cur == (uint *)0x0) {
@@ -16303,7 +16303,7 @@ LAB_8013ab68:
 }
 
 /* confetti_burst_update @0x8013d7e4 — confetti/debris burst update (16 sprites x 2 rows).
- * in_zero->cop2 reg 0, in_at->cop2 reg 1 (0x800 encoding), verified
+ * cop2_idx0->cop2 reg 0, cop2_idx1->cop2 reg 1 (0x800 encoding), verified
  * against lwc2 $0/$1 at 0x8013d8ac-0x8013d8b0. */
 void confetti_burst_update(int rec)
 {
