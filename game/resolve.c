@@ -2231,8 +2231,13 @@ void fighter_combat_reset(byte *ctrl)
 
 }
 
-/* FUN_80144f8c trig LUT readers (guest sin/cos) — host binds br2_lut tables */
-
+/* FUN_80144f8c trig_lut_read - launch-velocity setup for the generic
+ * trig attack: angle from ctrl+0xdb (facing*0x60>>3 +0x200) scaled by
+ * (0x41 - ctrl+0xdd), then cos->motion+0x90 (x vel, *0xd00) and
+ * sin*-0x500->motion+0x98 (z vel). Sets anim params +0xb4=0x78,
+ * +0xb2=0, +0x92=0xa0; +5&0x10 && +100&0x480000 rescales x-vel by
+ * 0x140>>8; both lanes height-normalized via mips_div_lo against
+ * motion+0x24+4000. Guest sin/cos LUTs bound to br2_lut tables. */
 void trig_lut_read(uint32_t ctrl_g, byte *motion)
 {
   int angle;
