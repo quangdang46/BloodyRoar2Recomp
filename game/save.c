@@ -9016,6 +9016,9 @@ static int32_t guard_quad_emit(uint32_t a0,uint32_t a1,uint32_t a2,
   return 0x00ffffff;
 }
 
+/* guard_callee_{a0,a1,b0,b1,c0,c1,d0,d1} @0x801a5bd0..0x801a6880 —
+ * guard OT emit entry points: tag/count presets into guard_tri_emit /
+ * guard_quad_emit (a3 unused). */
 int guard_callee_a0(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 { (void)a3; return guard_tri_emit(a0,a1,a2,0x4000000u,8,0xc,0x10,0x14,0); }
 int guard_callee_a1(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
@@ -9292,6 +9295,8 @@ static void walk_dispatch(uint8_t **a0,uint8_t *a1)
   return;
 }
 
+/* op_walk_dispatch_{a..f} @0x801a6a68..0x801ad5d0 — identical walk_dispatch
+ * entry aliases (six guest vectors sharing one body). */
 void op_walk_dispatch_a(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
 void op_walk_dispatch_b(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
 void op_walk_dispatch_c(uint8_t **a0,uint8_t *a1) { walk_dispatch(a0,a1); return; }
