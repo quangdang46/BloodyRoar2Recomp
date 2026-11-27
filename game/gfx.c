@@ -729,6 +729,8 @@ extern char *s___d__d____d__d__801254d4;
 #define GP32(a)   (*(uint32_t *)guest_at(a))
 #define GP8(a)    (*(uint8_t  *)guest_at(a))
 #define GP16(a)   (*(uint16_t *)guest_at(a))
+#define GP32S(a)  (*(int32_t  *)guest_at(a))
+#define GP16S(a)  (*(int16_t  *)guest_at(a))
 #define GPP(a)    ((uint32_t *)guest_at(a))
 #define GPTRW(a)  (*(uint32_t *)guest_at(GP32(a)))
 
@@ -1117,11 +1119,6 @@ void spr_desc_c(uint32_t slot_g,uint32_t on)
 
 /* ---- batch29: text-window/string-widget cluster ----
  * All struct fields addressed by guest offset via guest_at. */
-#define GB8(a)   (*(uint8_t  *)guest_at(a))
-#define GB16(a)  (*(uint16_t *)guest_at(a))
-#define GB32(a)  (*(uint32_t *)guest_at(a))
-#define GB16S(a) (*(int16_t  *)guest_at(a))
-#define GB32S(a) (*(int32_t   *)guest_at(a))
 
 extern uint32_t gpu_sprite_rect_emit(uint32_t,uint32_t,uint32_t);
 extern uint32_t gpu_sprite_rect_emit_mode(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -1134,18 +1131,18 @@ extern void    *PTR_FUN_801b831c;
 /* text_win_init — text window init: two draw-env installs + clear. */
 void text_win_init(uint32_t w,int32_t h)
 {
-  GB32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,w,(uint32_t)(h + 0x80));
-  GB32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,w,(uint32_t)h,0x80,0x20);
-  GB8(0x801b78c0) = 0;
+  GP32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,w,(uint32_t)(h + 0x80));
+  GP32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,w,(uint32_t)h,0x80,0x20);
+  GP8(0x801b78c0) = 0;
   guest_memset_b(0x801b7740,0,0x180);
 }
 
 /* text_line_select — select active text line (bounds vs DAT_801b78c0). */
 void text_line_select(int32_t line)
 {
-  if ((0 <= line) && (line <= (int32_t)GB8(0x801b78c0))) {
+  if ((0 <= line) && (line <= (int32_t)GP8(0x801b78c0))) {
     PTR_FUN_801b831c = (void *)text_win_printf;
-    GB8(0x801b78c4) = (uint8_t)line;
+    GP8(0x801b78c4) = (uint8_t)line;
   }
 }
 
@@ -1161,47 +1158,47 @@ int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
   uint16_t uv[4];
   uint32_t slot;
 
-  if ((int32_t)GB8(0x801b78c0) < 8) {
-    if (GB8(0x801b78c0) == 0) GB32(0x801b82c8) = 0;
-    slot = GB8(0x801b78c0) * 0x30;
-    GB32(0x801b7740 + slot + 0x2c) = (attr == 0);
-    tmp = (int32_t)GB32(0x801b82c8);
+  if ((int32_t)GP8(0x801b78c0) < 8) {
+    if (GP8(0x801b78c0) == 0) GP32(0x801b82c8) = 0;
+    slot = GP8(0x801b78c0) * 0x30;
+    GP32(0x801b7740 + slot + 0x2c) = (attr == 0);
+    tmp = (int32_t)GP32(0x801b82c8);
     if (0x400 < tmp + count) count = 0x400 - tmp;
     uv[2] = 0x100; uv[3] = 0x100;
     uv[0] = 0;     uv[1] = 0;
-    prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
+    prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GP32(0x801fad10),
                  (int8_t *)uv);
     if (mode != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
-      GB8(0x801b7744 + slot) = 0;
-      GB8(0x801b7745 + slot) = 0;
-      GB8(0x801b7746 + slot) = 0;
+      GP8(0x801b7744 + slot) = 0;
+      GP8(0x801b7745 + slot) = 0;
+      GP8(0x801b7746 + slot) = 0;
       spr_desc_b(0x801b7740 + slot,(mode == 2));
     }
-    tmp = (int32_t)GB32(0x801b82c8);
-    slot = GB8(0x801b78c0) * 0x30;
-    GB16(0x801b7748 + slot) = x;
-    GB16(0x801b774a + slot) = y;
-    GB16S(0x801b774c + slot) = (int16_t)attr;
-    GB16(0x801b774e + slot) = aux;
-    GB32S(0x801b775c + slot) = count;
-    GB32(0x801b7768 + slot) = 0;
-    GB32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
-    GB32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
-    *(uint8_t *)guest_at(GB32(0x801b7764 + slot)) = 0;
-    tmp = GB32S(0x801b7760 + GB8(0x801b78c0) * 0x30);
+    tmp = (int32_t)GP32(0x801b82c8);
+    slot = GP8(0x801b78c0) * 0x30;
+    GP16(0x801b7748 + slot) = x;
+    GP16(0x801b774a + slot) = y;
+    GP16S(0x801b774c + slot) = (int16_t)attr;
+    GP16(0x801b774e + slot) = aux;
+    GP32S(0x801b775c + slot) = count;
+    GP32(0x801b7768 + slot) = 0;
+    GP32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
+    GP32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
+    *(uint8_t *)guest_at(GP32(0x801b7764 + slot)) = 0;
+    tmp = GP32S(0x801b7760 + GP8(0x801b78c0) * 0x30);
     i = 0;
     if (0 < count) {
       do {
         gpu_pkt_tag_74((uint32_t)tmp);
         i = i + 1;
-        GB16((uint32_t)tmp + 0xe) = GB16(0x801fad12);
+        GP16((uint32_t)tmp + 0xe) = GP16(0x801fad12);
         tmp += 0x10;
       } while (i < count);
     }
-    GB32(0x801b82c8) = GB32(0x801b82c8) + (uint32_t)count;
-    tmp = GB8(0x801b78c0);
-    GB8(0x801b78c0) = GB8(0x801b78c0) + 1;
+    GP32(0x801b82c8) = GP32(0x801b82c8) + (uint32_t)count;
+    tmp = GP8(0x801b78c0);
+    GP8(0x801b78c0) = GP8(0x801b78c0) + 1;
   } else {
     tmp = -1;
   }
@@ -1239,7 +1236,7 @@ uint32_t spr_attr_alloc_a(uint32_t head_g,int16_t x0,int16_t y0,
       pkt[1] = tag | 0x2a000000;
       tex_ofs = (variant + -1) * 0x20;
     }
-    prim_packet_init_tex((int)guest_of(pkt + 6),GB8(0x801e40b7),GB8(0x801e40b6),tex_ofs,0);
+    prim_packet_init_tex((int)guest_of(pkt + 6),GP8(0x801e40b7),GP8(0x801e40b6),tex_ofs,0);
     ret = 0;
     uint32_t *head = (uint32_t *)guest_at(head_g);
     /* OT link word goes into the packet's first word (node[0] =
@@ -2137,13 +2134,13 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
  * final cursor pos, -1 on overflow. */
 static int32_t win_putc(uint32_t slot,int32_t c)
 {
-  uint32_t pos = GB32(slot + 0x28);
-  uint8_t *buf = (uint8_t *)guest_at(GB32(slot + 0x24));
+  uint32_t pos = GP32(slot + 0x28);
+  uint8_t *buf = (uint8_t *)guest_at(GP32(slot + 0x24));
   
   buf[pos] = (uint8_t)c;
   pos = pos + 1;
-  GB32(slot + 0x28) = pos;             /* stored even on overflow */
-  if (GB32S(slot + 0x1c) < (int32_t)pos) return -1;
+  GP32(slot + 0x28) = pos;             /* stored even on overflow */
+  if (GP32S(slot + 0x1c) < (int32_t)pos) return -1;
   return 0;
 }
 
@@ -2168,10 +2165,10 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   iargs[1] = a2;
   iargs[2] = a3;
   va_start(ap,a3);
-  if ((sel < 0) || ((int32_t)GB32(0x801b78c0) <= sel)) {
+  if ((sel < 0) || ((int32_t)GP32(0x801b78c0) <= sel)) {
     /* out-of-range a0: it is the format string; window = DAT_801b78c4 */
-    win = GB32(0x801b78c4);
-    if (GB32(0x801b7740 + win * 0x30 + 0x24) == 0) {
+    win = GP32(0x801b78c4);
+    if (GP32(0x801b7740 + win * 0x30 + 0x24) == 0) {
       va_end(ap);
       return -1;
     }
@@ -2184,7 +2181,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
     ai = 1;                            /* varargs start at a2 */
   }
   slot = 0x801b7740 + win * 0x30;
-  if (GB32S(slot + 0x1c) < GB32S(slot + 0x28)) {
+  if (GP32S(slot + 0x1c) < GP32S(slot + 0x28)) {
     va_end(ap);
     return -1;
   }
@@ -2309,11 +2306,11 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   }
   /* NUL-terminate at cursor (no pos update, no bounds check) */
   {
-    uint8_t *buf = (uint8_t *)guest_at(GB32(slot + 0x24));
-    buf[GB32(slot + 0x28)] = 0;
+    uint8_t *buf = (uint8_t *)guest_at(GP32(slot + 0x24));
+    buf[GP32(slot + 0x28)] = 0;
   }
   va_end(ap);
-  return GB32(slot + 0x28);
+  return GP32(slot + 0x28);
 #undef BR2_ARG
 }
 
