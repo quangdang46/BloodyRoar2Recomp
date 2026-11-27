@@ -91,6 +91,7 @@ static int s_shell_skipped   = 0;   /* boot skip already fired */
 static PsxHleCallEntry s_ring[PSX_HLE_RING_CAP];
 static uint64_t        s_ring_seq = 0;
 
+/* hle record: uint32_t pcb = cpu->read_word(0xA0000108u) */
 static void hle_record(uint32_t vector, uint32_t fn, const CPUState* cpu,
                        uint32_t v0, uint8_t route)
 {
@@ -144,8 +145,10 @@ static void hle_record(uint32_t vector, uint32_t fn, const CPUState* cpu,
     s_ring_seq++;
 }
 
+/* psx hle ring seq: return s_ring_seq; */
 uint64_t psx_hle_ring_seq(void) { return s_ring_seq; }
 
+/* psx hle ring entry: if (seq_index >= s_ring_seq) return NULL */
 const PsxHleCallEntry* psx_hle_ring_entry(uint64_t seq_index)
 {
     if (seq_index >= s_ring_seq) return NULL;
@@ -299,6 +302,7 @@ static int hle_boot_shell_skip(CPUState* cpu)
     return 1;
 }
 
+/* psx bios hle boot turbo active: return s_boot_skip_on && !fntrace_is_game_started() */
 int psx_bios_hle_boot_turbo_active(void)
 {
     return s_boot_skip_on && !fntrace_is_game_started();
@@ -349,9 +353,12 @@ void psx_bios_hle_configure(int call_hle, int boot_skip)
         (s_call_hle_on || s_boot_skip_on) ? &bios_hle_dispatch : NULL;
 }
 
+/* psx bios hle enabled: return s_call_hle_on; */
 int psx_bios_hle_enabled(void)           { return s_call_hle_on; }
+/* psx bios hle boot skip enabled: return s_boot_skip_on; */
 int psx_bios_hle_boot_skip_enabled(void) { return s_boot_skip_on; }
 
+/* psx bios hle backend name: return s_call_hle_on ? "HLE (LLE fallback)" : "LLE (recompiled BIOS)" */
 const char* psx_bios_hle_backend_name(void)
 {
     return s_call_hle_on ? "HLE (LLE fallback)" : "LLE (recompiled BIOS)";

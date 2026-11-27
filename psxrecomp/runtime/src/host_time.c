@@ -25,6 +25,7 @@ static int s_qpc_freq_init;
 static HANDLE s_sleep_timer;
 static int s_sleep_timer_init;
 
+/* sleep timer ensure: if (s_sleep_timer_init) */
 static void sleep_timer_ensure(void)
 {
     if (s_sleep_timer_init)
@@ -37,6 +38,7 @@ static void sleep_timer_ensure(void)
         s_sleep_timer = CreateWaitableTimerW(NULL, FALSE, NULL);
 }
 
+/* psx host mono ms: LARGE_INTEGER counter */
 uint64_t psx_host_mono_ms(void)
 {
     LARGE_INTEGER counter;
@@ -53,6 +55,7 @@ uint64_t psx_host_mono_ms(void)
     return (uint64_t)((counter.QuadPart * 1000ULL) / (uint64_t)s_qpc_freq.QuadPart);
 }
 
+/* psx host sleep micros: LARGE_INTEGER due */
 void psx_host_sleep_micros(unsigned usec)
 {
     LARGE_INTEGER due;
@@ -85,6 +88,7 @@ void psx_host_sleep_micros(unsigned usec)
 #include <time.h>
 #include <unistd.h>
 
+/* psx host mono ms: if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) */
 uint64_t psx_host_mono_ms(void)
 {
 #if defined(CLOCK_MONOTONIC)
@@ -99,6 +103,7 @@ uint64_t psx_host_mono_ms(void)
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
+/* psx host sleep micros: if (usec == 0u) */
 void psx_host_sleep_micros(unsigned usec)
 {
 #ifdef __EMSCRIPTEN__

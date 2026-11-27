@@ -20,6 +20,7 @@
 #  include <time.h>
 #endif
 
+/* boot state mono ms: LARGE_INTEGER c */
 static double boot_state_mono_ms(void) {
 #if defined(_WIN32)
     static LARGE_INTEGER freq;
@@ -94,16 +95,19 @@ static int      s_vram_mirror_valid;
 static uint32_t s_last_vram_dirty_rows;
 static int      s_last_vram_incremental;
 
+/* boot state last vram dirty rows: return s_last_vram_dirty_rows */
 uint32_t boot_state_last_vram_dirty_rows(void)
 {
     return s_last_vram_dirty_rows;
 }
 
+/* boot state last vram incremental: return s_last_vram_incremental */
 int boot_state_last_vram_incremental(void)
 {
     return s_last_vram_incremental;
 }
 
+/* boot state vram mirror reset: s_vram_mirror_valid = 0 */
 void boot_state_vram_mirror_reset(void)
 {
     s_vram_mirror_valid = 0;
@@ -194,6 +198,7 @@ typedef struct BsOut {
     int      no_zlib; /* 1 => always raw sections (netplay snap ring) */
 } BsOut;
 
+/* bs write: if (!n) return 1 */
 static int bs_write(BsOut* o, const void* p, size_t n) {
     if (!n) return 1;
     if (o->f)
@@ -215,6 +220,7 @@ static int bs_write(BsOut* o, const void* p, size_t n) {
     return 1;
 }
 
+/* write header le: uint8_t buf[BOOT_STATE_HEADER_WIRE_BYTES] */
 static int write_header_le(BsOut* o, const BootStateHeader* h) {
     uint8_t buf[BOOT_STATE_HEADER_WIRE_BYTES];
     PstW w;
@@ -233,6 +239,7 @@ static int write_header_le(BsOut* o, const BootStateHeader* h) {
     return bs_write(o, buf, sizeof buf);
 }
 
+/* write section raw: uint8_t hdr[16] */
 static int write_section_raw(BsOut* o, uint32_t tag, uint32_t flags,
                              const void* data, uint64_t len) {
     uint8_t hdr[16];
@@ -272,6 +279,7 @@ static int write_section(BsOut* o, uint32_t tag, const void* data, uint64_t len)
     return write_section_raw(o, tag, 0u, data, len);
 }
 
+/* write module section: uint32_t n = bytes() */
 static int write_module_section(BsOut* o, uint32_t tag,
                                 uint32_t (*bytes)(void),
                                 void (*write)(uint8_t*)) {
@@ -284,6 +292,7 @@ static int write_module_section(BsOut* o, uint32_t tag,
     return ok;
 }
 
+/* write cpu section: uint8_t buf[CPU_REGS_WIRE_BYTES] */
 static int write_cpu_section(BsOut* o, const CPUState* cpu) {
     uint8_t buf[CPU_REGS_WIRE_BYTES];
     PstW w;
@@ -302,6 +311,7 @@ static int write_cpu_section(BsOut* o, const CPUState* cpu) {
     return write_section(o, BS_SEC_CPU, buf, CPU_REGS_WIRE_BYTES);
 }
 
+/* write timer section: uint16_t counter[3], target[3] */
 static int write_timer_section(BsOut* o) {
     uint16_t counter[3], target[3];
     uint32_t mode[3], frac[3];
@@ -358,6 +368,7 @@ static int write_vram_section_full(BsOut *o)
     return ok;
 }
 
+/* boot state save to: BootStateHeader h */
 static int boot_state_save_to(BsOut* o, const CPUState* cpu,
                               uint32_t bios_checksum, uint32_t entry_pc) {
     BootStateHeader h;
@@ -461,6 +472,7 @@ static int boot_state_save_to(BsOut* o, const CPUState* cpu,
     return ok;
 }
 
+/* boot state save: BsOut o */
 int boot_state_save(const CPUState* cpu, uint32_t bios_checksum,
                     uint32_t entry_pc, const char* path) {
     BsOut o;
@@ -476,6 +488,7 @@ int boot_state_save(const CPUState* cpu, uint32_t bios_checksum,
     return ok;
 }
 
+/* boot state save buffer ex: BsOut o */
 static int boot_state_save_buffer_ex(const CPUState* cpu, uint32_t bios_checksum,
                                      uint32_t entry_pc, uint8_t** out_data,
                                      size_t* out_len, int no_zlib) {
@@ -498,6 +511,7 @@ static int boot_state_save_buffer_ex(const CPUState* cpu, uint32_t bios_checksum
     return 1;
 }
 
+/* boot state save buffer: return boot_state_save_buffer_ex(cpu, bios_checksum, entry_pc, out_data, */
 int boot_state_save_buffer(const CPUState* cpu, uint32_t bios_checksum,
                            uint32_t entry_pc, uint8_t** out_data,
                            size_t* out_len) {
@@ -505,6 +519,7 @@ int boot_state_save_buffer(const CPUState* cpu, uint32_t bios_checksum,
                                      out_len, 0);
 }
 
+/* boot state save buffer raw: return boot_state_save_buffer_ex(cpu, bios_checksum, entry_pc, out_data, */
 int boot_state_save_buffer_raw(const CPUState* cpu, uint32_t bios_checksum,
                                uint32_t entry_pc, uint8_t** out_data,
                                size_t* out_len) {
@@ -688,6 +703,7 @@ static int apply_section(uint32_t tag, const uint8_t* p, uint32_t len,
     }
 }
 
+/* boot state parse header: PstR hr */
 static int boot_state_parse_header(const uint8_t* file, size_t file_len,
                                    BootStateHeader* h_out) {
     PstR hr;
@@ -711,6 +727,7 @@ static int boot_state_parse_header(const uint8_t* file, size_t file_len,
     return 1;
 }
 
+/* boot state append reason: size_t n */
 static void boot_state_append_reason(char* reason, size_t reason_cap,
                                      const char* part) {
     size_t n;
@@ -725,6 +742,7 @@ static void boot_state_append_reason(char* reason, size_t reason_cap,
     snprintf(reason + n, reason_cap - n, "%s", part);
 }
 
+/* boot state check buffer: BootStateHeader h */
 int boot_state_check_buffer(const uint8_t* file, size_t file_len,
                             uint32_t bios_checksum, uint32_t entry_pc,
                             char* reason, size_t reason_cap) {
@@ -791,6 +809,7 @@ int boot_state_check_buffer(const uint8_t* file, size_t file_len,
     return 1;
 }
 
+/* boot state load buffer: BootStateHeader h */
 int boot_state_load_buffer(const uint8_t* file, size_t file_len,
                            uint32_t bios_checksum, uint32_t entry_pc,
                            CPUState* cpu) {
@@ -913,6 +932,7 @@ int boot_state_load_buffer(const uint8_t* file, size_t file_len,
     return 1;
 }
 
+/* boot state load: FILE* f = fopen(path, "rb") */
 int boot_state_load(const char* path, uint32_t bios_checksum,
                     uint32_t entry_pc, CPUState* cpu) {
     FILE* f = fopen(path, "rb");
@@ -955,6 +975,7 @@ int boot_state_load(const char* path, uint32_t bios_checksum,
     return ok;
 }
 
+/* boot state set capture: s_capture_path[sizeof(s_capture_path) - 1] = '\0' */
 void boot_state_set_capture(const char* path, uint32_t bios_checksum,
                             uint32_t entry_pc) {
     strncpy(s_capture_path, path, sizeof(s_capture_path) - 1);
@@ -963,6 +984,7 @@ void boot_state_set_capture(const char* path, uint32_t bios_checksum,
     s_capture_entry_pc = entry_pc;
 }
 
+/* boot state trigger capture: if (!s_capture_path[0]) return */
 void boot_state_trigger_capture(const CPUState* cpu) {
     if (!s_capture_path[0]) return;
     boot_state_save(cpu, s_capture_checksum, s_capture_entry_pc, s_capture_path);

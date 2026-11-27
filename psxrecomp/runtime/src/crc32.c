@@ -28,6 +28,7 @@
 static uint32_t s_table[256];
 static int      s_table_ready = 0;
 
+/* crc32 init table: for (uint32_t i = 0; i < 256; i++)  */
 static void crc32_init_table(void) {
     for (uint32_t i = 0; i < 256; i++) {
         uint32_t c = i;
@@ -46,6 +47,7 @@ static void crc32_init_table(void) {
 static uint32_t s_table8[8][256];
 static int      s_table8_ready = 0;
 
+/* crc32 init table8: int n, k */
 static void crc32_init_table8(void) {
     int n, k;
     if (!s_table_ready) crc32_init_table();
@@ -90,6 +92,7 @@ uint32_t crc32_update(uint32_t crc, const uint8_t *data, size_t len) {
     return crc;
 }
 
+/* crc32 compute: return crc32_update(0xFFFFFFFFu, data, len) ^ 0xFFFFFFFFu */
 uint32_t crc32_compute(const uint8_t *data, size_t len) {
     return crc32_update(0xFFFFFFFFu, data, len) ^ 0xFFFFFFFFu;
 }

@@ -11,6 +11,7 @@
 #include "host_time.h"
 #endif
 
+/* frame pacing sleep ms: returns 0 once the deadline is reached, else sleeps up to one frame period */
 uint32_t frame_pacing_sleep_ms(uint64_t now, uint64_t deadline,
                                uint64_t freq, uint64_t period) {
     if (now >= deadline) return 0;            /* compare BEFORE subtract */
@@ -43,6 +44,7 @@ uint32_t frame_pacing_sleep_ms(uint64_t now, uint64_t deadline,
  * sub-realtime workload into an unbounded catch-up burst. */
 #define FRAME_PACER_CATCHUP_MAX_PERIODS 12u
 
+/* frame pacer wait: uint64_t freq = SDL_GetPerformanceFrequency() */
 void frame_pacer_wait(FramePacer *p, double period_ms) {
     uint64_t freq = SDL_GetPerformanceFrequency();
     uint64_t period = (uint64_t)((double)freq * (period_ms / 1000.0));

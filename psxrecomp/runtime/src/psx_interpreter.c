@@ -85,6 +85,7 @@ void interp_init(CPUState* cpu) {
     memset(s_trace_ring, 0, sizeof(s_trace_ring));
 }
 
+/* interp ld delay discard: s_load_reg = 0 */
 void interp_ld_delay_discard(void) {
     s_load_reg = 0;
     s_load_val = 0;
@@ -98,6 +99,7 @@ int interp_break_add(uint32_t pc) {
     return s_bp_count++;
 }
 
+/* interp break remove: for (int i = 0; i < s_bp_count; i++)  */
 int interp_break_remove(uint32_t pc) {
     for (int i = 0; i < s_bp_count; i++) {
         if (s_bp[i] == pc) {
@@ -108,14 +110,18 @@ int interp_break_remove(uint32_t pc) {
     return 0;
 }
 
+/* interp break clear all: s_bp_count = 0; */
 void interp_break_clear_all(void) { s_bp_count = 0; }
+/* interp hit breakpoint: return s_hit_bp; */
 int  interp_hit_breakpoint(void)  { return s_hit_bp; }
 
 /* ---- Trace ---- */
 
 void interp_trace_enable(int on) { s_trace_on = on; }
+/* interp trace count: return s_trace_seq; */
 uint64_t interp_trace_count(void) { return s_trace_seq; }
 
+/* interp trace get: if (ring_idx >= TRACE_RING_SIZE) return NULL */
 const InterpTraceEntry* interp_trace_get(uint32_t ring_idx) {
     if (ring_idx >= TRACE_RING_SIZE) return NULL;
     uint32_t avail = (s_trace_seq < TRACE_RING_SIZE)
@@ -125,6 +131,7 @@ const InterpTraceEntry* interp_trace_get(uint32_t ring_idx) {
     return &s_trace_ring[idx];
 }
 
+/* trace record: InterpTraceEntry* e = &s_trace_ring[s_trace_write_idx] */
 static void trace_record(CPUState* cpu, uint32_t insn) {
     InterpTraceEntry* e = &s_trace_ring[s_trace_write_idx];
     e->pc = cpu->pc;
@@ -154,6 +161,7 @@ static inline void apply_load_delay(CPUState* cpu) {
     }
 }
 
+/* set load delay: s_load_reg = reg */
 static inline void set_load_delay(uint32_t reg, uint32_t val) {
     s_load_reg = reg;
     s_load_val = val;
@@ -640,6 +648,7 @@ uint32_t interp_step(CPUState* cpu, uint32_t count) {
     return executed;
 }
 
+/* interp run: return interp_step(cpu, max_instructions) */
 uint32_t interp_run(CPUState* cpu, uint32_t max_instructions) {
     return interp_step(cpu, max_instructions);
 }

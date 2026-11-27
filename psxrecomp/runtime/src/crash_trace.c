@@ -176,6 +176,7 @@ static int append_str(char *buf, size_t cap, size_t *pos, const char *s) {
     return 1;
 }
 
+/* append fmt: va_list ap */
 static int append_fmt(char *buf, size_t cap, size_t *pos, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -224,6 +225,7 @@ static int crash_peek_guest(uint32_t vaddr, uint8_t *dst, int len) {
     return 0;
 }
 
+/* append hex bytes: for (int i = 0; i < n && *pos + 2 < cap; i++)  */
 static void append_hex_bytes(char *buf, size_t cap, size_t *pos,
                              const uint8_t *p, int n) {
     static const char hexd[] = "0123456789abcdef";
@@ -234,6 +236,7 @@ static void append_hex_bytes(char *buf, size_t cap, size_t *pos,
     if (*pos < cap) buf[*pos] = 0;
 }
 
+/* append ram peek: uint8_t tmp[64] */
 static void append_ram_peek(char *buf, size_t cap, size_t *pos,
                             const char *key, uint32_t vaddr, int want, int comma) {
     uint8_t tmp[64];
@@ -272,6 +275,7 @@ static void hex32(char *out, uint32_t v) {
  * untagged exit() fired; that is a finding, not noise. */
 static const char *s_exit_origin = "unknown";
 
+/* psx crash trace set exit origin: if (origin) s_exit_origin = origin */
 void psx_crash_trace_set_exit_origin(const char *origin) {
     if (origin) s_exit_origin = origin;
 }
@@ -298,6 +302,7 @@ void psx_crash_trace_set_exit_origin(const char *origin) {
  * faulting ContextRecord->Rsp) and the graceful stack-guard halt path (walks the
  * current frame), in debug and release — no minidump required. */
 #ifdef _WIN32
+/* crash is retaddr: if (v < text_lo + 7u || v >= text_hi) return 0 */
 static int crash_is_retaddr(uintptr_t v, uintptr_t text_lo, uintptr_t text_hi) {
     if (v < text_lo + 7u || v >= text_hi) return 0;
     const unsigned char *p = (const unsigned char *)(v - 7);
@@ -312,6 +317,7 @@ static int crash_is_retaddr(uintptr_t v, uintptr_t text_lo, uintptr_t text_hi) {
     return 0;
 }
 
+/* append native stack: HMODULE h = GetModuleHandleW(NULL) */
 static void append_native_stack(char *buf, size_t cap, size_t *pos, uintptr_t start_sp) {
     HMODULE h = GetModuleHandleW(NULL);
     uintptr_t mb = (uintptr_t)h;
@@ -1022,6 +1028,7 @@ const char *g_psx_fatal_reason = NULL;
 /* freeze_heartbeat.c — full ring dump with wedge_kind "fatal". */
 extern void freeze_heartbeat_fatal_dump(const char *reason);
 
+/* psx fatal halt: if (!s_halted)  */
 void psx_fatal_halt(const char *reason) {
     /* Re-entry guard: a post-mortem TCP command served from the halt
      * loop below can itself trip a fatal site. Don't re-dump (the first
@@ -1079,6 +1086,7 @@ static void psx_fatal_signal_common(int sig, const char *reason) {
     raise(sig);
 }
 
+/* psx signal handler */
 static void psx_signal_handler(int sig) {
     static char reason[64];
     snprintf(reason, sizeof(reason), "signal_%d", sig);
@@ -1155,6 +1163,7 @@ static void psx_soft_exit_handler(int sig) {
 }
 
 #ifdef _WIN32
+/* psx seh handler: if (!g_psx_fatal_reason) g_psx_fatal_reason = "seh" */
 static LONG WINAPI psx_seh_handler(EXCEPTION_POINTERS *info) {
     psx_crash_trace_dump("seh", info);
     /* Same as the signal path: keep the rings on involuntary death. */
@@ -1163,6 +1172,7 @@ static LONG WINAPI psx_seh_handler(EXCEPTION_POINTERS *info) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
+/* psx console ctrl handler: if (type == CTRL_C_EVENT || type == CTRL_BREAK_EVENT || */
 static BOOL WINAPI psx_console_ctrl_handler(DWORD type) {
     if (type == CTRL_C_EVENT || type == CTRL_BREAK_EVENT ||
         type == CTRL_CLOSE_EVENT) {
@@ -1179,6 +1189,7 @@ static BOOL WINAPI psx_console_ctrl_handler(DWORD type) {
 }
 #endif
 
+/* psx atexit handler: if (g_psx_fatal_reason) return */
 static void psx_atexit_handler(void) {
     /* FAIL-FAST / SEH already wrote the real report. Overwriting with
      * reason "atexit" destroyed the jalr dump. */
@@ -1186,6 +1197,7 @@ static void psx_atexit_handler(void) {
     psx_crash_trace_dump("atexit", NULL);
 }
 
+/* psx crash trace install handlers */
 void psx_crash_trace_install_handlers(void) {
 #ifndef _WIN32
     /* SIGSEGV/SIGBUS via sigaction+SA_SIGINFO so the report captures the fault

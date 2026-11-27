@@ -60,15 +60,18 @@ constexpr size_t kMaxDecodeQueue = 32;
 constexpr size_t kMaxPngFileBytes = size_t{64} * 1024 * 1024;
 #endif
 
+/* make key: return (uint64_t{texture_hash} << 32) | palette_hash */
 uint64_t make_key(uint32_t texture_hash, uint32_t palette_hash) {
     return (uint64_t{texture_hash} << 32) | palette_hash;
 }
 
+/* write error: if (!error || capacity == 0) return */
 void write_error(char* error, size_t capacity, const std::string& message) {
     if (!error || capacity == 0) return;
     std::snprintf(error, capacity, "%s", message.c_str());
 }
 
+/* trim: [](unsigned char c) { return std::isspace(c) != 0; }) */
 std::string trim(std::string value) {
     const auto first = std::find_if_not(value.begin(), value.end(),
         [](unsigned char c) { return std::isspace(c) != 0; });
@@ -78,12 +81,14 @@ std::string trim(std::string value) {
     return std::string(first, last);
 }
 
+/* ascii lower: for (char& c : value) */
 std::string ascii_lower(std::string value) {
     for (char& c : value)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return value;
 }
 
+/* ends with ci: return lower.size() >= wanted.size() && */
 bool ends_with_ci(const std::string& value, const char* suffix) {
     const std::string lower = ascii_lower(value);
     const std::string wanted = ascii_lower(suffix);
@@ -91,6 +96,7 @@ bool ends_with_ci(const std::string& value, const char* suffix) {
            lower.compare(lower.size() - wanted.size(), wanted.size(), wanted) == 0;
 }
 
+/* parse hex component: if (!out || text.empty() || text.size() > 8) return false */
 bool parse_hex_component(const std::string& text, uint32_t* out) {
     if (!out || text.empty() || text.size() > 8) return false;
     uint32_t value = 0;
@@ -106,6 +112,7 @@ bool parse_hex_component(const std::string& text, uint32_t* out) {
     return true;
 }
 
+/* parse key text: if (dash == std::string::npos || text.find('-', dash + 1) != std::str... */
 bool parse_key_text(const std::string& text,
                     uint32_t* texture_hash,
                     uint32_t* palette_hash) {
@@ -116,6 +123,7 @@ bool parse_key_text(const std::string& text,
            parse_hex_component(text.substr(dash + 1), palette_hash);
 }
 
+/* parse png filename: if (ascii_lower(path.extension().string()) != ".png") return false */
 bool parse_png_filename(const fs::path& path,
                         uint32_t* texture_hash,
                         uint32_t* palette_hash) {
@@ -123,6 +131,7 @@ bool parse_png_filename(const fs::path& path,
     return parse_key_text(path.stem().string(), texture_hash, palette_hash);
 }
 
+/* crc table: std::array<uint32_t, 256> result */
 const std::array<uint32_t, 256>& crc_table() {
     static const std::array<uint32_t, 256> table = [] {
         std::array<uint32_t, 256> result{};
@@ -137,6 +146,7 @@ const std::array<uint32_t, 256>& crc_table() {
     return table;
 }
 
+/* crc byte: return crc_table()[(crc ^ value) & 0xFFu] ^ (crc >> 8) */
 uint32_t crc_byte(uint32_t crc, uint8_t value) {
     return crc_table()[(crc ^ value) & 0xFFu] ^ (crc >> 8);
 }
@@ -154,16 +164,19 @@ struct Fragment {
     unsigned source_y = 0;
 };
 
+/* intersects: return a.x < b.x + b.width && b.x < a.x + a.width && */
 bool intersects(const Rect& a, const Rect& b) {
     return a.x < b.x + b.width && b.x < a.x + a.width &&
            a.y < b.y + b.height && b.y < a.y + a.height;
 }
 
+/* contains point: return x >= rect.x && x < rect.x + rect.width && */
 bool contains_point(const Rect& rect, unsigned x, unsigned y) {
     return x >= rect.x && x < rect.x + rect.width &&
            y >= rect.y && y < rect.y + rect.height;
 }
 
+/* physical fragments: std::vector<Fragment> result */
 std::vector<Fragment> physical_fragments(unsigned x,
                                          unsigned y,
                                          unsigned width,
@@ -201,6 +214,7 @@ std::vector<Fragment> physical_fragments(unsigned x,
     return result;
 }
 
+/* physical rects: std::vector<Rect> result */
 std::vector<Rect> physical_rects(unsigned x,
                                  unsigned y,
                                  unsigned width,
@@ -211,6 +225,7 @@ std::vector<Rect> physical_rects(unsigned x,
     return result;
 }
 
+/* subtract fragment: if (!intersects(original.rect, cut)) return {original */
 std::vector<Fragment> subtract_fragment(const Fragment& original,
                                         const Rect& cut) {
     if (!intersects(original.rect, cut)) return {original};
@@ -239,6 +254,7 @@ std::vector<Fragment> subtract_fragment(const Fragment& original,
     return result;
 }
 
+/* subtract rect: std::vector<Rect> result */
 std::vector<Rect> subtract_rect(const Rect& original, const Rect& cut) {
     const Fragment source{original, 0, 0};
     std::vector<Rect> result;
@@ -260,6 +276,7 @@ struct Upload {
     std::vector<uint16_t> index_tiles;
 };
 
+/* fragment bounds: Rect bounds */
 Rect fragment_bounds(const std::vector<Fragment>& fragments) {
     Rect bounds{};
     for (const Fragment& fragment : fragments) {
@@ -279,21 +296,25 @@ Rect fragment_bounds(const std::vector<Fragment>& fragments) {
     return bounds;
 }
 
+/* append u16 le */
 void append_u16_le(std::vector<uint8_t>& output, uint16_t value) {
     output.push_back(static_cast<uint8_t>(value));
     output.push_back(static_cast<uint8_t>(value >> 8));
 }
 
+/* append u32 le */
 void append_u32_le(std::vector<uint8_t>& output, uint32_t value) {
     append_u16_le(output, static_cast<uint16_t>(value));
     append_u16_le(output, static_cast<uint16_t>(value >> 16));
 }
 
+/* append u64 le */
 void append_u64_le(std::vector<uint8_t>& output, uint64_t value) {
     append_u32_le(output, static_cast<uint32_t>(value));
     append_u32_le(output, static_cast<uint32_t>(value >> 32));
 }
 
+/* take u16 le: if (!cursor || !*cursor || !out || end - *cursor < 2) return false */
 bool take_u16_le(const uint8_t** cursor, const uint8_t* end, uint16_t* out) {
     if (!cursor || !*cursor || !out || end - *cursor < 2) return false;
     const uint8_t* p = *cursor;
@@ -303,6 +324,7 @@ bool take_u16_le(const uint8_t** cursor, const uint8_t* end, uint16_t* out) {
     return true;
 }
 
+/* take u32 le: uint16_t low = 0, high = 0 */
 bool take_u32_le(const uint8_t** cursor, const uint8_t* end, uint32_t* out) {
     uint16_t low = 0, high = 0;
     if (!take_u16_le(cursor, end, &low) ||
@@ -313,6 +335,7 @@ bool take_u32_le(const uint8_t** cursor, const uint8_t* end, uint32_t* out) {
     return true;
 }
 
+/* take u64 le: uint32_t low = 0, high = 0 */
 bool take_u64_le(const uint8_t** cursor, const uint8_t* end, uint64_t* out) {
     uint32_t low = 0, high = 0;
     if (!take_u32_le(cursor, end, &low) ||
@@ -323,6 +346,7 @@ bool take_u64_le(const uint8_t** cursor, const uint8_t* end, uint64_t* out) {
     return true;
 }
 
+/* valid fragment: return rect.width != 0 && rect.height != 0 && */
 bool valid_fragment(const Upload& upload, const Fragment& fragment) {
     const Rect& rect = fragment.rect;
     return rect.width != 0 && rect.height != 0 &&
@@ -335,6 +359,7 @@ bool valid_fragment(const Upload& upload, const Fragment& fragment) {
            rect.height <= unsigned{upload.height} - fragment.source_y;
 }
 
+/* parse tracking state: if (!data || size < kTrackingStateHeaderBytes || */
 bool parse_tracking_state(const uint8_t* data, size_t size,
                           uint64_t* out_next_serial,
                           std::vector<Upload>* out_uploads) {
@@ -408,6 +433,7 @@ bool parse_tracking_state(const uint8_t* data, size_t size,
     return true;
 }
 
+/* covered by upload: for (const Rect& wanted : query)  */
 bool covered_by_upload(const Upload& upload, const std::vector<Rect>& query) {
     for (const Rect& wanted : query) {
         std::vector<Rect> uncovered{wanted};
@@ -475,6 +501,7 @@ struct PixelLease {
     std::shared_ptr<DecodedImage> image;
 };
 
+/* evict decode cache: while (cache.used + incoming > cache.budget)  */
 void evict_decode_cache(DecodeCache& cache, size_t incoming = 0) {
     while (cache.used + incoming > cache.budget) {
         auto victim = cache.items.end();
@@ -491,6 +518,7 @@ void evict_decode_cache(DecodeCache& cache, size_t incoming = 0) {
 }
 
 #ifndef HD_TEXTURE_PACK_DISABLE_PNG_DECODE
+/* decode worker: for (;;)  */
 void decode_worker(DecodeCache* cache) {
 #ifdef _WIN32
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
@@ -564,6 +592,7 @@ void decode_worker(DecodeCache* cache) {
 }
 #endif
 
+/* directory has pack png: std::error_code ec */
 bool directory_has_pack_png(const fs::path& directory) {
     std::error_code ec;
     for (fs::directory_iterator it(directory, ec), end; !ec && it != end; it.increment(ec)) {
@@ -575,6 +604,7 @@ bool directory_has_pack_png(const fs::path& directory) {
     return false;
 }
 
+/* parse hashes ini: if (!mappings) return */
 void parse_hashes_ini(const fs::path& path,
                       std::unordered_map<uint64_t, std::string>* mappings) {
     if (!mappings) return;
@@ -599,6 +629,7 @@ void parse_hashes_ini(const fs::path& path,
     }
 }
 
+/* query rectangles: query.depth == HD_TEXTURE_DEPTH_8BPP ? 2u : 1u */
 std::vector<Rect> query_rectangles(const HdTextureDrawQuery& query) {
     const unsigned pixels_per_word = query.depth == HD_TEXTURE_DEPTH_4BPP ? 4u :
                                      query.depth == HD_TEXTURE_DEPTH_8BPP ? 2u : 1u;
@@ -633,6 +664,7 @@ std::vector<Rect> query_rectangles(const HdTextureDrawQuery& query) {
     return result;
 }
 
+/* fill entry: if (!entry) return */
 void fill_entry(const EntryRecord& record, HdTexturePackEntry* entry) {
     if (!entry) return;
     entry->texture_hash = record.texture_hash;
@@ -663,10 +695,12 @@ struct HdTexturePack {
     DecodeCache decode;
 };
 
+/* upload index cell: return ty * kUploadIndexCols + tx */
 unsigned upload_index_cell(unsigned tx, unsigned ty) {
     return ty * kUploadIndexCols + tx;
 }
 
+/* upload index clear: if (!pack) return */
 void upload_index_clear(HdTexturePack* pack) {
     if (!pack) return;
     for (auto& bucket : pack->upload_index) bucket.clear();
@@ -674,6 +708,7 @@ void upload_index_clear(HdTexturePack* pack) {
     for (Upload& upload : pack->uploads) upload.index_tiles.clear();
 }
 
+/* upload index remove: if (!pack) return */
 void upload_index_remove(HdTexturePack* pack, Upload& upload) {
     if (!pack) return;
     for (const uint16_t tile : upload.index_tiles) {
@@ -685,6 +720,7 @@ void upload_index_remove(HdTexturePack* pack, Upload& upload) {
     pack->upload_by_serial.erase(upload.serial);
 }
 
+/* upload index add: if (!pack || upload.fragments.empty() || upload.bounds.width == 0 || */
 void upload_index_add(HdTexturePack* pack, Upload& upload) {
     if (!pack || upload.fragments.empty() || upload.bounds.width == 0 ||
         upload.bounds.height == 0)
@@ -709,11 +745,13 @@ void upload_index_add(HdTexturePack* pack, Upload& upload) {
     }
 }
 
+/* upload index refresh */
 void upload_index_refresh(HdTexturePack* pack, Upload& upload) {
     upload_index_remove(pack, upload);
     upload_index_add(pack, upload);
 }
 
+/* upload index rebuild: if (!pack) return */
 void upload_index_rebuild(HdTexturePack* pack) {
     if (!pack) return;
     for (auto& bucket : pack->upload_index) bucket.clear();
@@ -739,6 +777,7 @@ void upload_index_rebuild(HdTexturePack* pack) {
     }
 }
 
+/* upload index collect: if (!pack || !out_serials) return */
 void upload_index_collect(const HdTexturePack* pack,
                           const std::vector<Rect>& query,
                           std::vector<uint64_t>* out_serials) {
@@ -770,6 +809,7 @@ void upload_index_collect(const HdTexturePack* pack,
 
 extern "C" {
 
+/* hd texture pack create: if (out_pack) *out_pack = nullptr */
 int hd_texture_pack_create(const char* explicit_root,
                            HdTexturePack** out_pack,
                            char* error,
@@ -882,10 +922,12 @@ int hd_texture_pack_create(const char* explicit_root,
     }
 }
 
+/* hd texture pack destroy: delete pack */
 void hd_texture_pack_destroy(HdTexturePack* pack) {
     delete pack;
 }
 
+/* hd texture pack get info: if (!out_info) return */
 void hd_texture_pack_get_info(const HdTexturePack* pack,
                               HdTexturePackInfo* out_info) {
     if (!out_info) return;
@@ -899,6 +941,7 @@ void hd_texture_pack_get_info(const HdTexturePack* pack,
     out_info->logical_mapping_count = pack->logical_mapping_count;
 }
 
+/* hd texture pack lookup: if (out_entry) std::memset(out_entry, 0, sizeof(*out_entry)) */
 int hd_texture_pack_lookup(const HdTexturePack* pack,
                            uint32_t texture_hash,
                            uint32_t palette_hash,
@@ -912,6 +955,7 @@ int hd_texture_pack_lookup(const HdTexturePack* pack,
     return HD_TEXTURE_LOOKUP_FOUND;
 }
 
+/* hd texture crc32 words le: if (!words && word_count != 0) return 0 */
 uint32_t hd_texture_crc32_words_le(const uint16_t* words, size_t word_count) {
     if (!words && word_count != 0) return 0;
     uint32_t crc = 0xFFFFFFFFu;
@@ -922,6 +966,7 @@ uint32_t hd_texture_crc32_words_le(const uint16_t* words, size_t word_count) {
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* hd texture hash clut: if (depth == HD_TEXTURE_DEPTH_16BPP) return 0 */
 uint32_t hd_texture_hash_clut(const uint16_t* vram,
                               size_t vram_word_count,
                               uint16_t clut_x,
@@ -940,6 +985,7 @@ uint32_t hd_texture_hash_clut(const uint16_t* vram,
     return hd_texture_crc32_words_le(palette.data(), count);
 }
 
+/* hd texture pack invalidate: if (!pack || width_words == 0 || height == 0 || */
 void hd_texture_pack_invalidate(HdTexturePack* pack,
                                 uint16_t x,
                                 uint16_t y,
@@ -1000,6 +1046,7 @@ void hd_texture_pack_invalidate(HdTexturePack* pack,
     if (erased_upload) upload_index_rebuild(pack);
 }
 
+/* hd texture pack track upload: if (out_texture_hash) *out_texture_hash = 0 */
 int hd_texture_pack_track_upload(HdTexturePack* pack,
                                  uint16_t x,
                                  uint16_t y,
@@ -1045,6 +1092,7 @@ int hd_texture_pack_track_upload(HdTexturePack* pack,
     return 1;
 }
 
+/* hd texture pack reset tracking: if (pack)  */
 void hd_texture_pack_reset_tracking(HdTexturePack* pack) {
     if (pack) {
         pack->uploads.clear();
@@ -1053,6 +1101,7 @@ void hd_texture_pack_reset_tracking(HdTexturePack* pack) {
     }
 }
 
+/* hd texture pack tracking state save: if (!out_data || !out_size) return 0 */
 int hd_texture_pack_tracking_state_save(const HdTexturePack* pack,
                                         uint8_t** out_data,
                                         size_t* out_size) {
@@ -1134,6 +1183,7 @@ int hd_texture_pack_tracking_state_save(const HdTexturePack* pack,
     }
 }
 
+/* hd texture pack tracking state check: try  */
 int hd_texture_pack_tracking_state_check(const uint8_t* data, size_t size) {
     try {
         uint64_t next_serial = 0;
@@ -1143,6 +1193,7 @@ int hd_texture_pack_tracking_state_check(const uint8_t* data, size_t size) {
     }
 }
 
+/* hd texture pack tracking state load: try  */
 int hd_texture_pack_tracking_state_load(HdTexturePack* pack,
                                         const uint8_t* data,
                                         size_t size) {
@@ -1161,10 +1212,12 @@ int hd_texture_pack_tracking_state_load(HdTexturePack* pack,
     }
 }
 
+/* hd texture pack tracking upload count: return pack ? pack->uploads.size() : 0 */
 size_t hd_texture_pack_tracking_upload_count(const HdTexturePack* pack) {
     return pack ? pack->uploads.size() : 0;
 }
 
+/* hd texture pack match: if (out_match) std::memset(out_match, 0, sizeof(*out_match)) */
 int hd_texture_pack_match(HdTexturePack* pack,
                           const HdTextureDrawQuery* query,
                           HdTextureMatch* out_match) {
@@ -1222,6 +1275,7 @@ int hd_texture_pack_match(HdTexturePack* pack,
     return HD_TEXTURE_LOOKUP_FOUND;
 }
 
+/* hd texture pack match draw: if (depth > HD_TEXTURE_DEPTH_16BPP)  */
 int hd_texture_pack_match_draw(HdTexturePack* pack,
                                uint16_t texpage,
                                uint16_t clut_x,
@@ -1249,6 +1303,7 @@ int hd_texture_pack_match_draw(HdTexturePack* pack,
     return hd_texture_pack_match(pack, &query, out_match);
 }
 
+/* hd texture pack set decode budget: if (!pack) return */
 void hd_texture_pack_set_decode_budget(HdTexturePack* pack,
                                        size_t budget_bytes) {
     if (!pack) return;
@@ -1257,6 +1312,7 @@ void hd_texture_pack_set_decode_budget(HdTexturePack* pack,
     evict_decode_cache(pack->decode);
 }
 
+/* hd texture pack request decode: return HD_TEXTURE_LOOKUP_ERROR */
 int hd_texture_pack_request_decode(HdTexturePack* pack,
                                    uint32_t texture_hash,
                                    uint32_t palette_hash) {
@@ -1296,6 +1352,7 @@ int hd_texture_pack_request_decode(HdTexturePack* pack,
 #endif
 }
 
+/* hd texture pack acquire decoded: if (out_pixels) std::memset(out_pixels, 0, sizeof(*out_pixels)) */
 int hd_texture_pack_acquire_decoded(HdTexturePack* pack,
                                     uint32_t texture_hash,
                                     uint32_t palette_hash,
@@ -1319,6 +1376,7 @@ int hd_texture_pack_acquire_decoded(HdTexturePack* pack,
     return HD_TEXTURE_LOOKUP_FOUND;
 }
 
+/* hd texture pixels release: if (!pixels) return */
 void hd_texture_pixels_release(HdTexturePixels* pixels) {
     if (!pixels) return;
     delete static_cast<PixelLease*>(pixels->lease);

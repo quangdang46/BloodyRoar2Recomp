@@ -71,6 +71,7 @@ static uint64_t s_hblank_num = 3413ull * 451584ull; /* NTSC horizontal_total*451
 static uint32_t s_hblank_den = 715909u;
 static uint64_t s_hblank_carry;
 
+/* timers hblank period configure: if (num == 0 || den == 0) return */
 void timers_hblank_period_configure(uint64_t num, uint32_t den) {
     if (num == 0 || den == 0) return;
     s_hblank_num = num;
@@ -85,6 +86,7 @@ void timers_hblank_period_configure(uint64_t num, uint32_t den) {
  * heartbeat even when the main thread is saturated. */
 uint64_t g_timer_irq_fired[3] = { 0, 0, 0 };
 
+/* timers get debug: if (t < 0 || t > 2) return */
 void timers_get_debug(int t, uint16_t *counter, uint16_t *target,
                       uint32_t *mode, uint64_t *irq_fired) {
     if (t < 0 || t > 2) return;
@@ -99,12 +101,14 @@ extern uint32_t i_stat;
 /* Central IRQ-raise choke point (interrupts.c) — also records the device ring. */
 extern void psx_irq_raise(uint32_t bit, uint32_t detail);
 
+/* timers init: s_hblank_carry = 0 */
 void timers_init(void) {
     memset(timers, 0, sizeof(timers));
     memset(timer_frac, 0, sizeof(timer_frac));
     s_hblank_carry = 0;
 }
 
+/* timers get snapshot: for (int i = 0; i < 3; i++)  */
 void timers_get_snapshot(uint16_t counter[3], uint32_t mode[3],
                          uint16_t target[3],  int32_t  irq_line[3],
                          uint32_t frac[3]) {
@@ -117,6 +121,7 @@ void timers_get_snapshot(uint16_t counter[3], uint32_t mode[3],
     }
 }
 
+/* timers set snapshot: for (int i = 0; i < 3; i++)  */
 void timers_set_snapshot(const uint16_t counter[3], const uint32_t mode[3],
                          const uint16_t target[3],  const int32_t  irq_line[3],
                          const uint32_t frac[3]) {
@@ -189,6 +194,7 @@ static void timer_tick_one(int t) {
     }
 }
 
+/* timer advance counts: Timer* tm = &timers[t] */
 static void timer_advance_counts(int t, uint32_t ticks) {
     Timer* tm = &timers[t];
     while (ticks > 0) {
@@ -220,6 +226,7 @@ static void timer_advance_counts(int t, uint32_t ticks) {
     }
 }
 
+/* timer advance divided: if (divisor == 0) divisor = 1 */
 static void timer_advance_divided(int t, uint32_t cycles, uint32_t divisor) {
     if (divisor == 0) divisor = 1;
     uint32_t total = timer_frac[t] + cycles;
@@ -239,6 +246,7 @@ static void timer_advance_hblank(int t, uint32_t cycles) {
         timer_advance_counts(t, ticks);
 }
 
+/* timers advance: if (cycles == 0) return */
 void timers_advance(uint32_t cycles) {
     if (cycles == 0) return;
 
@@ -318,6 +326,7 @@ uint32_t timers_cycles_to_irq(uint32_t i_mask) {
     return best;
 }
 
+/* timers read: int timer = (addr - TIMER_BASE) >> 4 */
 uint32_t timers_read(uint32_t addr) {
     int timer = (addr - TIMER_BASE) >> 4;
     int reg   = (addr - TIMER_BASE) & 0x0F;
@@ -356,6 +365,7 @@ uint32_t timers_read(uint32_t addr) {
     }
 }
 
+/* timers write: int timer = (addr - TIMER_BASE) >> 4 */
 void timers_write(uint32_t addr, uint32_t value) {
     int timer = (addr - TIMER_BASE) >> 4;
     int reg   = (addr - TIMER_BASE) & 0x0F;
@@ -383,6 +393,7 @@ void timers_write(uint32_t addr, uint32_t value) {
     }
 }
 
+/* timers tick: if (!timer_uses_sysclk(1))  */
 void timers_tick(int cycles) {
     /* Timer 1 in HBlank mode: ~263 HBlanks per NTSC frame */
     if (!timer_uses_sysclk(1)) {

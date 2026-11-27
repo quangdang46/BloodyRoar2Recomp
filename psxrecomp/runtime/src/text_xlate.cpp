@@ -41,17 +41,21 @@ namespace fs = std::filesystem;
 // ---------------------------------------------------------------------------
 constexpr uint32_t kRamSize = 2u * 1024u * 1024u;
 
+/* ram fold: uint32_t p = va & 0x1FFFFFFFu */
 inline bool ram_fold(uint32_t va, uint32_t* pa_out) {
     uint32_t p = va & 0x1FFFFFFFu;
     if (p < 0x00800000u) { *pa_out = p & (kRamSize - 1u); return true; }
     return false;  // I/O / BIOS / scratchpad — not translatable text storage
 }
+/* grb */
 inline uint8_t grb(uint8_t* ram, uint32_t va) {
     uint32_t pa; return ram_fold(va, &pa) ? ram[pa] : 0u;
 }
+/* gwb: uint32_t pa; if (ram_fold(va, &pa)) ram[pa] = v */
 inline void gwb(uint8_t* ram, uint32_t va, uint8_t v) {
     uint32_t pa; if (ram_fold(va, &pa)) ram[pa] = v;
 }
+/* va in ram: uint32_t pa; return ram_fold(va, &pa); */
 inline bool va_in_ram(uint32_t va) { uint32_t pa; return ram_fold(va, &pa); }
 // Bless a just-written patch region into the text-image guard (see the extern
 // above). gwb writes RAM directly; this syncs the guard's reference so the patch
@@ -97,10 +101,14 @@ struct EncodingProfile {
 
 // ---- Shift-JIS profile (Tsumu) --------------------------------------------
 inline bool sj_lead(uint8_t c)  { return (c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xFC); }
+/* sj trail: return (c >= 0x40 && c <= 0x7E) || (c >= 0x80 && c <= 0xFC); */
 inline bool sj_trail(uint8_t c) { return (c >= 0x40 && c <= 0x7E) || (c >= 0x80 && c <= 0xFC); }
+/* sj kana: return c >= 0xA1 && c <= 0xDF; */
 inline bool sj_kana(uint8_t c)  { return c >= 0xA1 && c <= 0xDF; }               // halfwidth katakana
+/* sj ascii: return c >= 0x20 && c <= 0x7E; */
 inline bool sj_ascii(uint8_t c) { return c >= 0x20 && c <= 0x7E; }
 
+/* sj first byte textish: return sj_ascii(c) || sj_kana(c) || sj_lead(c) */
 bool sj_first_byte_textish(uint8_t c) {
     return sj_ascii(c) || sj_kana(c) || sj_lead(c);
 }
@@ -182,6 +190,7 @@ uint16_t fw_sjis_for_ascii(uint32_t cp) {
     }
 }
 
+/* sj transcode: size_t i = 0 */
 void sj_transcode(const std::string& utf8, std::vector<uint8_t>& out) {
     size_t i = 0;
     while (i < utf8.size()) {
@@ -432,6 +441,7 @@ std::string           g_dir;                  // translations/ directory (for re
 // scratch isn't re-captured as a bogus "Japanese" record.
 uint32_t g_scratch_ring[32] = {0};
 std::atomic<uint32_t> g_scratch_pos{0};
+/* scratch recent: for (uint32_t i = 0; i < 32; ++i)  */
 bool scratch_recent(uint32_t va) {
     for (uint32_t i = 0; i < 32; ++i) {
         uint32_t s = g_scratch_ring[i];
@@ -439,6 +449,7 @@ bool scratch_recent(uint32_t va) {
     }
     return false;
 }
+/* scratch note: g_scratch_ring[g_scratch_pos.fetch_add(1, std::memory_order_relaxed) ... */
 void scratch_note(uint32_t va) {
     g_scratch_ring[g_scratch_pos.fetch_add(1, std::memory_order_relaxed) & 31u] = va;
 }
@@ -473,6 +484,7 @@ std::vector<uint16_t> hex_to_halfwords(const std::string& hex) {
     return hw;
 }
 
+/* load tables locked: for (auto& kv : g_inv) kv.second.translated = false */
 void load_tables_locked() {
     g_table.clear();
     g_glyph_labels.clear();
@@ -904,6 +916,7 @@ extern "C" void text_xlate_on_dispatch(CPUState* cpu, uint32_t target) {
     }
 }
 
+/* text xlate vram upload: if (g_vram_patch_n.load(std::memory_order_relaxed) <= 0) return */
 extern "C" void text_xlate_vram_upload(int x, int y, int w, int h) {
     // Hot path: one relaxed load when no patches are configured / lang off.
     if (g_vram_patch_n.load(std::memory_order_relaxed) <= 0) return;
@@ -912,6 +925,7 @@ extern "C" void text_xlate_vram_upload(int x, int y, int w, int h) {
     vram_patches_apply_locked(x, y, w, h, false);
 }
 
+/* text xlate init: if (env && *env) g_lang = env */
 extern "C" void text_xlate_init(const char* project_root, const char* language) {
     const char* env = std::getenv("PSX_LANG");
     if (env && *env) g_lang = env;
@@ -925,6 +939,7 @@ extern "C" void text_xlate_init(const char* project_root, const char* language) 
     load_tables_locked();
 }
 
+/* text xlate set language: std::string want = (env && *env) ? env : (language ? language : "") */
 extern "C" void text_xlate_set_language(const char* language) {
     // PSX_LANG env is an authoring/testing override — if set it pins the language
     // and the launcher's choice is ignored (matches text_xlate_init precedence).
@@ -936,6 +951,7 @@ extern "C" void text_xlate_set_language(const char* language) {
     load_tables_locked();            // re-selects the target column + re-arms APPLY
 }
 
+/* text xlate debug json: if (!out || cap <= 0) return 0 */
 extern "C" int text_xlate_debug_json(const char* subcmd, char* out, int cap) {
     if (!out || cap <= 0) return 0;
     std::string sc = subcmd ? subcmd : "stats";

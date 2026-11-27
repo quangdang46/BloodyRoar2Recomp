@@ -9,6 +9,7 @@ static SDL_AudioStream *s_audio_stream;
 static PsxSdlAudioCallback s_audio_callback;
 static void *s_audio_userdata;
 
+/* psx sdl3 audio feed: Uint8 buffer[16384] */
 static void SDLCALL psx_sdl3_audio_feed(
     void *, SDL_AudioStream *stream, int additional_amount, int)
 {
@@ -21,6 +22,7 @@ static void SDLCALL psx_sdl3_audio_feed(
     }
 }
 
+/* psx sdl audio open: if (!want || s_audio_stream) return 0 */
 extern "C" SDL_AudioDeviceID psx_sdl_audio_open(
     const PsxSdlAudioSpec *want, PsxSdlAudioSpec *have)
 {
@@ -60,6 +62,7 @@ extern "C" SDL_AudioDeviceID psx_sdl_audio_open(
     return device;
 }
 
+/* psx sdl audio resume: return s_audio_stream && SDL_ResumeAudioStreamDevice(s_audio_stream) */
 extern "C" int psx_sdl_audio_resume(SDL_AudioDeviceID)
 {
     return s_audio_stream && SDL_ResumeAudioStreamDevice(s_audio_stream)
@@ -67,6 +70,7 @@ extern "C" int psx_sdl_audio_resume(SDL_AudioDeviceID)
                : -1;
 }
 
+/* psx sdl audio close: if (s_audio_stream) SDL_DestroyAudioStream(s_audio_stream) */
 extern "C" void psx_sdl_audio_close(SDL_AudioDeviceID)
 {
     if (s_audio_stream) SDL_DestroyAudioStream(s_audio_stream);
@@ -75,11 +79,13 @@ extern "C" void psx_sdl_audio_close(SDL_AudioDeviceID)
     s_audio_userdata = nullptr;
 }
 
+/* psx sdl audio clear: if (s_audio_stream) (void)SDL_ClearAudioStream(s_audio_stream) */
 extern "C" void psx_sdl_audio_clear(SDL_AudioDeviceID)
 {
     if (s_audio_stream) (void)SDL_ClearAudioStream(s_audio_stream);
 }
 
+/* psx sdl audio queued size: if (!s_audio_stream) return 0 */
 extern "C" Uint32 psx_sdl_audio_queued_size(SDL_AudioDeviceID)
 {
     if (!s_audio_stream) return 0;
@@ -87,6 +93,7 @@ extern "C" Uint32 psx_sdl_audio_queued_size(SDL_AudioDeviceID)
     return queued > 0 ? (Uint32)queued : 0;
 }
 
+/* psx sdl audio queue: return s_audio_stream && */
 extern "C" int psx_sdl_audio_queue(
     SDL_AudioDeviceID, const void *data, Uint32 bytes)
 {
@@ -96,11 +103,13 @@ extern "C" int psx_sdl_audio_queue(
                : -1;
 }
 
+/* psx sdl audio lock: if (s_audio_stream) (void)SDL_LockAudioStream(s_audio_stream) */
 extern "C" void psx_sdl_audio_lock(SDL_AudioDeviceID)
 {
     if (s_audio_stream) (void)SDL_LockAudioStream(s_audio_stream);
 }
 
+/* psx sdl audio unlock: if (s_audio_stream) (void)SDL_UnlockAudioStream(s_audio_stream) */
 extern "C" void psx_sdl_audio_unlock(SDL_AudioDeviceID)
 {
     if (s_audio_stream) (void)SDL_UnlockAudioStream(s_audio_stream);
@@ -108,6 +117,7 @@ extern "C" void psx_sdl_audio_unlock(SDL_AudioDeviceID)
 
 #else
 
+/* psx sdl audio open: SDL_AudioSpec requested */
 extern "C" SDL_AudioDeviceID psx_sdl_audio_open(
     const PsxSdlAudioSpec *want, PsxSdlAudioSpec *have)
 {
@@ -134,38 +144,45 @@ extern "C" SDL_AudioDeviceID psx_sdl_audio_open(
     return device;
 }
 
+/* psx sdl audio resume: return 0 */
 extern "C" int psx_sdl_audio_resume(SDL_AudioDeviceID device)
 {
     SDL_PauseAudioDevice(device, 0);
     return 0;
 }
 
+/* psx sdl audio close */
 extern "C" void psx_sdl_audio_close(SDL_AudioDeviceID device)
 {
     SDL_CloseAudioDevice(device);
 }
 
+/* psx sdl audio clear */
 extern "C" void psx_sdl_audio_clear(SDL_AudioDeviceID device)
 {
     SDL_ClearQueuedAudio(device);
 }
 
+/* psx sdl audio queued size: return SDL_GetQueuedAudioSize(device) */
 extern "C" Uint32 psx_sdl_audio_queued_size(SDL_AudioDeviceID device)
 {
     return SDL_GetQueuedAudioSize(device);
 }
 
+/* psx sdl audio queue: return SDL_QueueAudio(device, data, bytes) */
 extern "C" int psx_sdl_audio_queue(
     SDL_AudioDeviceID device, const void *data, Uint32 bytes)
 {
     return SDL_QueueAudio(device, data, bytes);
 }
 
+/* psx sdl audio lock */
 extern "C" void psx_sdl_audio_lock(SDL_AudioDeviceID device)
 {
     SDL_LockAudioDevice(device);
 }
 
+/* psx sdl audio unlock */
 extern "C" void psx_sdl_audio_unlock(SDL_AudioDeviceID device)
 {
     SDL_UnlockAudioDevice(device);

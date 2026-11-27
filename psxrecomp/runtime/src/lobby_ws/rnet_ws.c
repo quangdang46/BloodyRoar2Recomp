@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #endif
 
+/* socket would block: return WSAGetLastError() == WSAEWOULDBLOCK */
 static int socket_would_block(void)
 {
 #if defined(_WIN32)
@@ -22,6 +23,7 @@ static int socket_would_block(void)
 #endif
 }
 
+/* socket interrupted: return WSAGetLastError() == WSAEINTR */
 static int socket_interrupted(void)
 {
 #if defined(_WIN32)
@@ -34,6 +36,7 @@ static int socket_interrupted(void)
 static const char *B64 =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+/* b64 encode: size_t i = 0, o = 0 */
 static void b64_encode(const uint8_t *in, size_t n, char *out)
 {
     size_t i = 0, o = 0;
@@ -79,6 +82,7 @@ static void b64_encode(const uint8_t *in, size_t n, char *out)
     }
 }
 
+/* rnet ws accept key: char concat[128] */
 int rnet_ws_accept_key(const char *client_key, char out_b64[32])
 {
     char concat[128];
@@ -96,6 +100,7 @@ int rnet_ws_accept_key(const char *client_key, char out_b64[32])
     return 0;
 }
 
+/* send all: size_t sent = 0 */
 static int send_all(int fd, const void *buf, size_t len)
 {
     const char *p = (const char *)buf;
@@ -120,6 +125,7 @@ static int send_all(int fd, const void *buf, size_t len)
     return 0;
 }
 
+/* rnet ws write text: size_t len */
 int rnet_ws_write_text(int fd, const char *text, int client_mask)
 {
     size_t len;
@@ -170,6 +176,7 @@ int rnet_ws_write_text(int fd, const char *text, int client_mask)
     return rc;
 }
 
+/* rnet ws read text: uint8_t h0, h1 */
 int rnet_ws_read_text(int fd, char *buf, size_t cap, int *closed)
 {
     uint8_t h0, h1;
