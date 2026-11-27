@@ -17,7 +17,7 @@ source-to-source transform that:
 Usage: python3 game/gen_cps_clean.py 0x80197B30 [more addrs...]
 Prints the transformed C for each addr to stdout (for inspection / paste).
 """
-import re, sys, glob, os
+import re, sys, glob, os, bisect
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GEN = os.path.join(ROOT, 'generated')
@@ -779,6 +779,37 @@ def fold_setcc(body):
     return '\n'.join(out)
 
 
+_LBL_ONLY_RE = re.compile(
+    r'^[}\s]*\}?\s*else\s*\{?\s*$|^[{};\s]*$')
+
+
+def fold_fallthrough_gotos(body):
+    """Delete `goto block_X;` when block_X is the NEXT block_ label in layout
+    order and only braces/else/comments intervene — CPS emitters place the
+    not-taken/dispatch target immediately after the branch, so the goto is a
+    no-op fallthrough (~1500 sites across cps_clean.c). Conservative: any
+    executable line between the goto and the next label keeps the goto."""
+    ls = body.split('\n')
+    labpos = [(i, re.match(r'\s*block_([0-9A-Fa-f]+):', l).group(1))
+              for i, l in enumerate(ls)
+              if re.match(r'\s*block_[0-9A-Fa-f]+:', l)]
+    lis = [p for p, _ in labpos]
+    drop = set()
+    for i, l in enumerate(ls):
+        gm = re.match(r'\s*goto block_([0-9A-Fa-f]+);.*$', l)
+        if not gm:
+            continue
+        j = bisect.bisect_right(lis, i)
+        if j >= len(lis) or labpos[j][1] != gm.group(1):
+            continue
+        if all(_LBL_ONLY_RE.match(ls[k].strip()) or
+               not ls[k].strip() or ls[k].strip().startswith('/*') or
+               ls[k].strip().startswith('*')
+               for k in range(i + 1, labpos[j][0])):
+            drop.add(i)
+    return '\n'.join(l for i, l in enumerate(ls) if i not in drop)
+
+
 def _gpr_names(m):
     """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
@@ -907,7 +938,9 @@ def fix_label_decls(core):
         fixed.append(ln)
         if _LBL_RE.match(ln):
             j = i + 1
-            while j < len(ls) and not ls[j].strip():
+            while j < len(ls) and (not ls[j].strip() or
+                                   ls[j].strip().startswith('/*') or
+                                   ls[j].strip().startswith('*')):
                 j += 1
             if j < len(ls) and _DECL_RE.match(ls[j]):
                 fixed.append('    ;')
@@ -941,6 +974,7 @@ def emit_fn(addr):
     core = fold_idioms(core)
     core = fold_cps_readability(core)
     core = fold_setcc(core)
+    core = fold_fallthrough_gotos(core)
     core = name_comment_targets(core)
     core = fix_label_decls(core)
     if 'alias_body' in name:
