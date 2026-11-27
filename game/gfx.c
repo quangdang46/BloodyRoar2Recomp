@@ -12059,7 +12059,7 @@ b108:
   c->gpr[19] = c->gpr[7];                            /* s3 = a3 */
   c->gpr[20] = br2_ld32(c->gpr[29] + 16);            /* s4 = lw sp+16 (a4) */
   c->gpr[21] = br2_ld32(c->gpr[29] + 20);            /* s5 = lw sp+20 (a5) */
-  /* fall through */
+  /* fallthrough */
 
 b13C:                                               /* record loop head */
   c->gpr[8] = (uint32_t)(int32_t)(int16_t)br2_ld16(c->gpr[16] + 12); /* lh sx16 */
@@ -12169,7 +12169,7 @@ b1D8:                                               /* epilogue: restore SPAD */
   c->gpr[20] = br2_ld32(c->gpr[8] + 1000);            /* s4  <- 0x1f8003e8 */
   c->gpr[21] = br2_ld32(c->gpr[8] +  996);            /* s5  <- 0x1f8003e4 */
   c->gpr[22] = br2_ld32(c->gpr[8] +  992);            /* s6  <- 0x1f8003e0 */
-  /* fall through */
+  /* fallthrough */
 
 b200:
   { uint32_t _jt = c->gpr[31];                        /* jr $ra */
