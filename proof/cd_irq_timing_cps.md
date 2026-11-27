@@ -1195,3 +1195,25 @@ per-addr cycle cost from fn_size markers in generated/*.c, which
 the shared generated/ tree refreshed upstream. 10,870 wrappers,
 0 skipped. Full rebuild EU + USA; headless :5177 frame 26061,
 clean_fallback_stats count=0.
+
+## Batch 61 (orch/w5/e05) — anchor-aware folds + full regen (upstream transformer catch-up)
+
+REGRESSION FOUND + FIXED: w5e02's instruction-anchor salvage
+(aa82719a, /* 0xADDR: 0xENC */ trailing comments on op lines)
+silently disabled every fold_cps_readability pattern — the regexes
+required end-of-line after the statement, so anchored lines never
+matched and regen would have emitted unfolded LUI/sign-extend forms.
+Fixed by _split_trail(): match the comment-stripped code stem, then
+re-attach ALL trailing comment groups on folded output (fold note +
+both instruction anchors preserved, zero traceability loss).
+
+Full regen of both pipeline files onto current transformer:
+- cps_clean.c: 66,229 lines — dead cpst_* helper block stripped
+  (mode-aware file_hdr), per-instruction anchors added, `-> cps_X`
+  dispatch-target names, `;;` fixes, canonical renames.map headers
+- cd_irq_probe.c: 157,444 lines — same treatment in --timing mode
+- Folds verified live in output: `v0 = 0x801BEEF0u; /* 0x801C0000
+  -4368 */ /* 0x80126178: 0x3C02801C */ /* 0x8012617C: 0x2442EEF0 */`
+
+Verified: clang -fsyntax-only clean; build EU + USA; headless :5183
+frame 14324, clean_fallback_stats count=0.

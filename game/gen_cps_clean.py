@@ -636,6 +636,21 @@ def _off_val(s):
     return int(s, 16) if s.lower().startswith('0x') else int(s)
 
 
+# Instruction anchors (/* 0xADDR: 0xENC */) salvaged onto op lines are
+# trailing comment groups — the fold patterns below must match the code
+# stem only and re-attach every comment or the anchors would silently
+# disable the folds (and dropping them would lose traceability).
+_TRAIL_RE = re.compile(r'((?:\s*/\*.*?\*/)+)\s*$')
+
+
+def _split_trail(ln):
+    """Split trailing /* */ comment groups off a code line -> (code, trail)."""
+    m = _TRAIL_RE.search(ln)
+    if m:
+        return ln[:m.start()].rstrip(), m.group(1).strip()
+    return ln.rstrip(), ''
+
+
 def fold_cps_readability(body):
     lines = body.split('\n')
     out = []
@@ -646,34 +661,46 @@ def fold_cps_readability(body):
         if (_DISPATCH_RET_RE.match(ln) and _DISPATCH_RET_RE.match(prev_sig)):
             i += 1
             continue
-        m1 = _LUI_RE.match(ln)
+        code, trail = _split_trail(ln)
+        m1 = _LUI_RE.match(code)
         if m1:
             var, ind = m1.group(2), m1.group(1)
             base = int(m1.group(3), 16) << 16
             if i + 1 < len(lines):
-                m2 = _OFF_RE.match(lines[i + 1])
+                code2, trail2 = _split_trail(lines[i + 1])
+                m2 = _OFF_RE.match(code2)
                 if m2 and m2.group(2) == var:
                     off = _off_val(m2.group(4))
                     if m2.group(3) == '-':
                         off = -off
                     val = (base + off) & 0xFFFFFFFF
-                    out.append(f'{ind}{var} = 0x{val:08X}u;'
-                               f'  /* 0x{base:08X} {off} */')
+                    cmts = f'  /* 0x{base:08X} {off} */'
+                    if trail:
+                        cmts += '  ' + trail
+                    if trail2:
+                        cmts += '  ' + trail2
+                    out.append(f'{ind}{var} = 0x{val:08X}u;{cmts}')
                     prev_sig = out[-1]
                     i += 2
                     continue
             # bare LUI const build: X = 0xHHHH << 16 -> X = 0xHHHH0000u
-            cmt = (m1.group(4) or f'/* 0x{base:08X} */').strip()
+            cmt = trail or f'/* 0x{base:08X} */'
             out.append(f'{ind}{var} = 0x{base:08X}u;  {cmt}')
             prev_sig = out[-1]
             i += 1
             continue
-        m1 = _SHL_RE.match(ln)
+        m1 = _SHL_RE.match(code)
         if m1 and i + 1 < len(lines):
-            m2 = _SRA_RE.match(lines[i + 1])
+            code2, trail2 = _split_trail(lines[i + 1])
+            m2 = _SRA_RE.match(code2)
             if m2 and m2.group(1) == m1.group(2):
                 var, ind = m1.group(2), m1.group(1)
-                out.append(f'{ind}{var} = (int32_t)(int16_t){var};')
+                cmts = ''
+                if trail:
+                    cmts += '  ' + trail
+                if trail2:
+                    cmts += '  ' + trail2
+                out.append(f'{ind}{var} = (int32_t)(int16_t){var};{cmts}')
                 prev_sig = out[-1]
                 i += 2
                 continue
