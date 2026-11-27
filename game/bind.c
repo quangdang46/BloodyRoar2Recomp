@@ -1407,6 +1407,7 @@ void halt_baddata(void) { for(;;) { } }
 
 /* ---- UNPORTED weak stubs (game.c callees) ----
  * Guest functions not yet ported. Weak defs keep the tree
+ * linking when real ports land. */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif

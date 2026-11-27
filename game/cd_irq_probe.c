@@ -20,7 +20,7 @@ extern void psx_restore_state_escape(void);
 
 /* --timing unaligned word ops: verbatim ports of the generated
  * SLES_017.22_decls.h psx_lwl/lwr/swl/swr (static inline there, so
- * invisible to game/*.c). Loads keep the full psx_cyc_load_word
+ * invisible to game-dir sources). Loads keep the full psx_cyc_load_word
  * interlock; stores keep psx_store_cycle_barrier + read-modify-write. */
 static inline uint32_t cpst_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value, uint32_t rt, uint32_t reg_mask) {
     uint32_t word = psx_cyc_load_word(cpu, addr & ~3u, rt, reg_mask);

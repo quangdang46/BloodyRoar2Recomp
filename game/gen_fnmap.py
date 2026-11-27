@@ -96,7 +96,7 @@ for n in drop:
     del names[n]; addr_src.pop(n,None)
 # ---- emit fnmap.c ----
 out=['''/* Auto-generated guest-code-address -> host-function map.
- * Regenerate: scan src/*.c for non-static FUN_/LAB_ defs and @0x
+ * Regenerate: scan src-dir sources for non-static FUN_/LAB_ defs and @0x
  * marker defs (excludes bind.c weak stubs). Do not edit by hand. */
 
 #include <stdint.h>
