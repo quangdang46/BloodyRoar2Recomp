@@ -8284,71 +8284,38 @@
 
 80139664 impact_fx_type_alias
 
-80141da8 ev_cmd_dispatch_alias
 
-80141db0 ev_cmd_dispatch_alias
 
-80141db8 ev_cmd_dispatch_alias
 
-80141dc0 ev_cmd_dispatch_alias
 
-80141dcc ev_cmd_dispatch_alias
 
-80141de8 ev_cmd_dispatch_alias
 
-80141e10 ev_cmd_dispatch_alias
 
-80141e38 ev_cmd_dispatch_alias
 
-80141e68 ev_cmd_dispatch_alias
 
-80141e74 ev_cmd_dispatch_alias
 
-80141e7c ev_cmd_dispatch_alias
 
-80141e8c ev_cmd_dispatch_alias
 
-80141ea4 ev_cmd_dispatch_alias
 
-80141ebc ev_cmd_dispatch_alias
 
-80141ee0 ev_cmd_dispatch_alias
 
-80141ef0 ev_cmd_dispatch_alias
 
-80141f08 ev_cmd_dispatch_alias
 
-80141f28 ev_cmd_dispatch_alias
 
-80141f38 ev_cmd_dispatch_alias
 
-80141f4c ev_cmd_dispatch_alias
 
-80141f54 ev_cmd_dispatch_alias
 
-80141f78 ev_cmd_dispatch_alias
 
-80141f90 ev_cmd_dispatch_alias
 
-80141fbc ev_cmd_dispatch_alias
 
-80141fe8 ev_cmd_dispatch_alias
 
-80141ff4 ev_cmd_dispatch_alias
 
-80142000 ev_cmd_dispatch_alias
 
-8014207c ev_cmd_dispatch_alias
 
-80142084 ev_cmd_dispatch_alias
 
-801420ac ev_cmd_dispatch_alias
 
-801420b8 ev_cmd_dispatch_alias
 
-801420ec ev_cmd_dispatch_alias
 
-801420f0 ev_cmd_dispatch_alias
 
 801428f4 ev24_fx_spawn_alias
 
@@ -8390,265 +8357,135 @@
 
 80142a3c ev24_fx_spawn_alias
 
-80142f74 action_from_input_alias
 
-80142f84 action_from_input_alias
 
-80142f90 action_from_input_alias
 
-80142fa0 action_from_input_alias
 
-80142fb4 action_from_input_alias
 
-80142fbc action_from_input_alias
 
-80142fe8 action_from_input_alias
 
-80143004 action_from_input_alias
 
-8014301c action_from_input_alias
 
-80143030 action_from_input_alias
 
-80143038 action_from_input_alias
 
-80143040 action_from_input_alias
 
-80143054 action_from_input_alias
 
-8014305c action_from_input_alias
 
-80143070 action_from_input_alias
 
-80143084 action_from_input_alias
 
-80143090 action_from_input_alias
 
-80143098 action_from_input_alias
 
-801430b4 action_from_input_alias
 
-801430c0 action_from_input_alias
 
-801430dc action_from_input_alias
 
-801430f0 action_from_input_alias
 
-80143104 action_from_input_alias
 
-80143118 action_from_input_alias
 
-80143124 action_from_input_alias
 
-80143130 action_from_input_alias
 
-80143144 action_from_input_alias
 
-80143158 action_from_input_alias
 
-8014316c action_from_input_alias
 
-80143170 action_from_input_alias
 
-80143198 action_from_input_alias
 
-801431a4 action_from_input_alias
 
-801431b8 action_from_input_alias
 
-801431c4 action_from_input_alias
 
-801431cc action_from_input_alias
 
-801431e4 action_from_input_alias
 
-80143220 action_from_input_alias
 
-80143228 action_from_input_alias
 
-80143238 action_from_input_alias
 
-8014324c action_from_input_alias
 
-80143254 action_from_input_alias
 
-80143260 action_from_input_alias
 
-80143278 action_from_input_alias
 
-801432b4 action_from_input_alias
 
-801432cc action_from_input_alias
 
-801432d0 action_from_input_alias
 
-801432d8 action_from_input_alias
 
-801432ec action_from_input_alias
 
-801432f0 action_from_input_alias
 
-801432fc action_from_input_alias
 
-80143314 action_from_input_alias
 
-80143330 action_from_input_alias
 
-80143348 action_from_input_alias
 
-80143354 action_from_input_alias
 
-80143360 action_from_input_alias
 
-80143384 action_from_input_alias
 
-8014339c action_from_input_alias
 
-801433a4 action_from_input_alias
 
-801433b8 action_from_input_alias
 
-801433cc action_from_input_alias
 
-801433d0 action_from_input_alias
 
-801433e4 action_from_input_alias
 
-801433f4 action_from_input_alias
 
-80143404 action_from_input_alias
 
-8014342c action_from_input_alias
 
-80143448 action_from_input_alias
 
-80143458 action_from_input_alias
 
-80143480 action_from_input_alias
 
-80143484 action_from_input_alias
 
-801434ac action_from_input_alias
 
-801434b0 action_from_input_alias
 
-801434b4 action_from_input_alias
 
-801434cc action_from_input_alias
 
-8014359c cmd_input_parse_cps
 
-801435ac cmd_input_parse_cps
 
-801435b8 cmd_input_parse_cps
 
-801435dc cmd_input_parse_cps
 
-8014360c cmd_input_parse_cps
 
-80143630 cmd_input_parse_cps
 
-8014363c cmd_input_parse_cps
 
-80143644 cmd_input_parse_cps
 
-80143650 cmd_input_parse_cps
 
-8014365c cmd_input_parse_cps
 
-80143678 cmd_input_parse_cps
 
-8014368c cmd_input_parse_cps
 
-801436a0 cmd_input_parse_cps
 
-801436a8 cmd_input_parse_cps
 
-801436b8 cmd_input_parse_cps
 
-801436d0 cmd_input_parse_cps
 
-801436e4 cmd_input_parse_cps
 
-801436ec cmd_input_parse_cps
 
-80143700 cmd_input_parse_cps
 
-80143714 cmd_input_parse_cps
 
-80143724 cmd_input_parse_cps
 
-80143734 cmd_input_parse_cps
 
-80143748 cmd_input_parse_cps
 
-8014377c cmd_input_parse_cps
 
-80143798 cmd_input_parse_alias
 
-80143804 cmd_input_parse_cps
 
-8014380c cmd_input_parse_cps
 
-80143820 cmd_input_parse_cps
 
-80143834 cmd_input_parse_cps
 
-80143838 cmd_input_parse_cps
 
-8014385c cmd_input_parse_cps
 
-80143894 cmd_input_parse_cps
 
-801438c4 cmd_input_parse_cps
 
-801438d4 cmd_input_parse_cps
 
-801438e0 cmd_input_parse_cps
 
-801438f0 cmd_input_parse_cps
 
-801438fc cmd_input_parse_cps
 
-80143948 cmd_input_parse_cps
 
-80143950 cmd_input_parse_cps
 
-80143970 cmd_input_parse_cps
 
-80143978 cmd_input_parse_alt_3978
 
-801439c4 cmd_input_parse_cps
 
-801439cc cmd_input_parse_cps
 
-801439d0 cmd_input_parse_cps
 
-801439d8 cmd_input_parse_cps
 
-801439e8 cmd_input_parse_cps
 
-801439f0 cmd_input_parse_cps
 
-80143a18 cmd_input_parse_cps
 
-80143a28 cmd_input_parse_cps
 
-80143a2c cmd_input_parse_cps
 
-80143a34 cmd_input_parse_cps
 
-80143a48 cmd_input_parse_cps
 
-80143a58 cmd_input_parse_cps
 
-80143a64 cmd_input_parse_cps
 
-80143aa4 cmd_input_parse_cps
 
-80143aa8 cmd_input_parse_cps
 
-80143ab4 cmd_input_parse_cps
 
 
 
@@ -8815,97 +8652,51 @@
 
 
 
-801481f0 battle_bringup_a_cps
 
-80148224 battle_bringup_a_alt_8224
 
-80148234 battle_bringup_a_cps
 
-8014823c battle_bringup_a_cps
 
-80148248 battle_bringup_a_cps
 
-80148254 battle_bringup_a_cps
 
-8014825c battle_bringup_a_cps
 
-80148278 battle_bringup_a_cps
 
-80148280 battle_bringup_a_cps
 
-80148288 battle_bringup_a_cps
 
-801482b0 battle_bringup_a_cps
 
-801482b8 battle_bringup_a_cps
 
-801482c0 battle_bringup_a_cps
 
-801482e0 battle_bringup_a_cps
 
-801482e8 battle_bringup_a_cps
 
-801482ec battle_bringup_a_cps
 
-801482f4 battle_bringup_a_cps
 
-801482fc battle_bringup_a_cps
 
-80148304 battle_bringup_a_alt_8304
 
-80148310 battle_bringup_a_cps
 
-80148318 battle_bringup_a_cps
 
-80148324 battle_bringup_a_cps
 
-80148334 battle_bringup_a_cps
 
-8014833c battle_bringup_a_cps
 
-80148344 battle_bringup_a_cps
 
-8014836c battle_bringup_a_cps
 
-80148374 battle_bringup_a_cps
 
-8014837c battle_bringup_a_cps
 
-80148380 battle_bringup_a_alt_8380
 
-8014838c battle_bringup_a_cps
 
-80148394 battle_bringup_a_cps
 
-8014839c battle_bringup_a_cps
 
-801483b0 battle_bringup_a_cps
 
-801483c8 battle_bringup_a_cps
 
-801483e0 battle_bringup_a_cps
 
-801483f8 battle_bringup_a_cps
 
-80148410 battle_bringup_a_cps
 
-80148428 battle_bringup_a_cps
 
-80148448 battle_bringup_a_cps
 
-80148460 battle_bringup_a_cps
 
-80148478 battle_bringup_a_cps
 
-80148490 battle_bringup_a_cps
 
-801484a4 battle_bringup_a_cps
 
-801484ac battle_bringup_a_cps
 
-801484c0 battle_bringup_a_cps
 
-801484c4 battle_bringup_a_cps
 
 80150f30 ko_count_announce_cps_e03
 
@@ -9635,441 +9426,223 @@
 
 801579f0 confirm_code_tail_set
 
-80163f04 hud_score_draw_alt
 
-80163f10 hud_score_draw_alt
 
-80163f2c hud_score_draw_alt
 
-80163fc0 hud_score_draw_alt
 
-80163fe0 hud_score_draw_alt
 
-80164010 hud_score_draw_alt
 
-8016401c hud_score_draw_alt
 
-80164040 hud_score_draw_alt
 
-80164068 hud_score_draw_alt
 
-80164070 hud_score_draw_alt
 
-8016408c hud_score_draw_alt
 
-801640a0 hud_score_draw_alt
 
-801640a8 hud_score_draw_alt
 
-801640d8 hud_score_draw_alt
 
-801640e4 hud_score_draw_alt
 
-80164108 hud_score_draw_alt
 
-80164110 hud_score_draw_alt
 
-80164124 hud_score_draw_alt
 
-80164130 hud_score_draw_alt
 
-80164138 hud_score_draw_alt
 
-80164140 hud_score_draw_alt
 
-80164154 hud_score_draw_alt
 
-80164190 hud_score_draw_alt
 
-801641bc hud_score_draw_alt
 
-801641c8 hud_score_draw_alt
 
-801641ec hud_score_draw_alt
 
-80164210 hud_score_draw_alt
 
-80164218 hud_score_draw_alt
 
-8016422c hud_score_draw_alt
 
-80164268 hud_score_draw_alt
 
-801642a0 hud_score_draw_alt
 
-801642ac hud_score_draw_alt
 
-801642d0 hud_score_draw_alt
 
-801642f4 hud_score_draw_alt
 
-801642fc hud_score_draw_alt
 
-80164310 hud_score_draw_alt
 
-8016434c hud_score_draw_alt
 
-80164384 hud_score_draw_alt
 
-80164390 hud_score_draw_alt
 
-801643b4 hud_score_draw_alt
 
-801643bc hud_score_draw_alt
 
-801643dc hud_score_draw_alt
 
-80164400 hud_score_draw_alt
 
-80164418 hud_score_draw_alt
 
-80164434 hud_score_draw_alt
 
-80164448 hud_score_draw_alt
 
-80164450 hud_score_draw_alt
 
-80164458 hud_score_draw_alt
 
-8016446c hud_score_draw_alt
 
-80164480 hud_score_draw_alt
 
-80164498 hud_score_draw_alt
 
-801644c8 hud_score_draw_alt
 
-801644e8 hud_score_draw_alt
 
-80164514 hud_score_draw_alt
 
-80164530 hud_score_draw_alt
 
-80164538 hud_score_draw_alt
 
-80164544 hud_score_draw_alt
 
-80164564 hud_score_draw_alt
 
-8016456c hud_score_draw_alt
 
-8016457c hud_score_draw_alt
 
-80164584 hud_score_draw_alt
 
-801645b0 hud_score_draw_alt
 
-801645e0 hud_score_draw_alt
 
-801645f8 hud_score_draw_alt
 
-80164604 hud_score_draw_alt
 
-80164610 hud_score_draw_alt
 
-80164638 hud_score_draw_alt
 
-80164f7c player_name_entry_alt
 
-80164f88 player_name_entry_alt
 
-80164f90 player_name_entry_alt
 
-80164f98 player_name_entry_alt
 
-80164fa0 player_name_entry_alt
 
-80164fa8 player_name_entry_alt
 
-80164fb0 player_name_entry_alt
 
-80164fb4 player_name_entry_alt
 
-80164fcc player_name_entry_alt
 
-80164fdc player_name_entry_alt
 
-80164fec player_name_entry_alt
 
-80164ff4 player_name_entry_alt
 
-80164ffc player_name_entry_alt
 
-80165004 player_name_entry_alt
 
-8016500c player_name_entry_alt
 
-80165014 player_name_entry_alt
 
-80165020 player_name_entry_alt
 
-80165028 player_name_entry_alt
 
-80165030 player_name_entry_alt
 
-80165038 player_name_entry_alt
 
-80165044 player_name_entry_alt
 
-8016504c player_name_entry_alt
 
-80165054 player_name_entry_alt
 
-8016505c player_name_entry_alt
 
-80165064 player_name_entry_alt
 
-8016506c player_name_entry_alt
 
-80165074 player_name_entry_alt
 
-80165084 player_name_entry_alt
 
-80165090 player_name_entry_alt
 
-801650ac player_name_entry_alt
 
-801650b4 player_name_entry_alt
 
-801650fc player_name_entry_alt
 
-80165110 player_name_entry_alt
 
-8016511c player_name_entry_alt
 
-80165130 player_name_entry_alt
 
-8016513c player_name_entry_alt
 
-80165154 player_name_entry_alt
 
-80165174 player_name_entry_alt
 
-80165194 player_name_entry_alt
 
-801651a4 player_name_entry_alt
 
-801651ac player_name_entry_alt
 
-801651c0 player_name_entry_alt
 
-801651c8 player_name_entry_alt
 
-801651dc player_name_entry_alt
 
-801651e4 player_name_entry_alt
 
-801651e8 player_name_entry_alt
 
-801651ec player_name_entry_alt
 
-80165204 player_name_entry_alt
 
-8016520c player_name_entry_alt
 
-8016521c player_name_entry_alt
 
-80165234 player_name_entry_alt
 
-80165238 player_name_entry_alt
 
-80165240 player_name_entry_alt
 
-80165258 player_name_entry_alt
 
-80165278 player_name_entry_alt
 
-80165290 player_name_entry_alt
 
-801652a4 player_name_entry_alt
 
-801652b0 player_name_entry_alt
 
-801652bc player_name_entry_alt
 
-801652d0 player_name_entry_alt
 
-801652f4 player_name_entry_alt
 
-80165300 player_name_entry_alt
 
-80165304 player_name_entry_alt
 
-80165318 player_name_entry_alt
 
-80165324 player_name_entry_alt
 
-80165328 player_name_entry_alt
 
-80165370 player_name_entry_alt
 
-8016537c player_name_entry_alt
 
-80165384 player_name_entry_alt
 
-8016538c player_name_entry_alt
 
-80165390 player_name_entry_alt
 
-801653cc player_name_entry_alt
 
-801653dc player_name_entry_alt
 
-801653e4 player_name_entry_alt
 
-801653ec player_name_entry_alt
 
-801653fc player_name_entry_alt
 
-80165404 player_name_entry_alt
 
-80165410 player_name_entry_alt
 
-8016541c player_name_entry_alt
 
-80165430 player_name_entry_alt
 
-80165444 player_name_entry_alt
 
-801654a0 player_name_entry_alt
 
-801654a8 player_name_entry_alt
 
-801654b8 player_name_entry_alt
 
-801654bc player_name_entry_alt
 
-801654c0 player_name_entry_alt
 
-801654cc player_name_entry_alt
 
-801654dc player_name_entry_alt
 
-801654f0 player_name_entry_alt
 
-80165500 player_name_entry_alt
 
-8016550c player_name_entry_alt
 
-80165530 player_name_entry_alt
 
-80165550 player_name_entry_alt
 
-80165560 player_name_entry_alt
 
-80165564 player_name_entry_alt
 
-80165580 player_name_entry_alt
 
-80165590 player_name_entry_alt
 
-80165598 player_name_entry_alt
 
-8016559c player_name_entry_alt
 
-801655a4 player_name_entry_alt
 
-801655ac player_name_entry_alt
 
-801655c4 player_name_entry_alt
 
-801655f0 player_name_entry_alt
 
-80165600 player_name_entry_alt
 
-80165608 player_name_entry_alt
 
-80165620 player_name_entry_alt
 
-8016563c player_name_entry_alt
 
-80165658 player_name_entry_alt
 
-80165660 player_name_entry_alt
 
-80165664 player_name_entry_alt
 
-8016566c player_name_entry_alt
 
-8016568c player_name_entry_alt
 
-801656ac player_name_entry_alt
 
-801656bc player_name_entry_alt
 
-801656c0 player_name_entry_alt
 
-801656dc player_name_entry_alt
 
-801656e4 player_name_entry_alt
 
-801656ec player_name_entry_alt
 
-801656fc player_name_entry_alt
 
-80165708 player_name_entry_alt
 
-8016572c player_name_entry_alt
 
-80165740 player_name_entry_alt
 
-80165750 player_name_entry_alt
 
-80165758 player_name_entry_alt
 
-80165768 player_name_entry_alt
 
-80165780 player_name_entry_alt
 
-80165784 player_name_entry_alt
 
-8016578c player_name_entry_alt
 
-8016579c player_name_entry_alt
 
-801657ac player_name_entry_alt
 
-801657bc player_name_entry_alt
 
-801657d0 player_name_entry_alt
 
-801657e8 player_name_entry_alt
 
-801657ec player_name_entry_alt
 
-80165800 player_name_entry_alt
 
-8016580c player_name_entry_alt
 
-80165828 player_name_entry_alt
 
-80165830 player_name_entry_alt
 
-80165838 player_name_entry_alt
 
-80165844 player_name_entry_alt
 
-80165854 player_name_entry_alt
 
-80165864 player_name_entry_alt
 
-8016586c player_name_entry_alt
 
-80165878 player_name_entry_alt
 
-80165888 player_name_entry_alt
 
-8016589c player_name_entry_alt
 
-801658a4 player_name_entry_alt
 
-801658ac player_name_entry_alt
 
-801658b4 player_name_entry_alt
 
-801658bc player_name_entry_alt
 
-801658d0 player_name_entry_alt
 
 80168448 mc_op_result_poll_alt
 
@@ -10101,451 +9674,228 @@
 
 80168624 mc_file_cmd_stable_poll_alt
 
-8016fd38 battle_flow_state_machine_alt
 
-8016fd50 battle_flow_state_machine_alt
 
-8016fd6c battle_flow_state_machine_alt
 
-8016fd74 battle_flow_state_machine_alt
 
-8016fd7c battle_flow_state_machine_alt
 
-8016fd84 battle_flow_state_machine_alt
 
-8016fd8c battle_flow_state_machine_alt
 
-8016fda0 battle_flow_state_machine_alt
 
-8016fda8 battle_flow_state_machine_alt
 
-8016fdb0 battle_flow_state_machine_alt
 
-8016fdc0 battle_flow_state_machine_alt
 
-8016fdd4 battle_flow_state_machine_alt
 
-8016fddc battle_flow_state_machine_alt
 
-8016fdf0 battle_flow_state_machine_alt
 
-8016fe10 battle_flow_state_machine_alt
 
-8016fe24 battle_flow_state_machine_alt
 
-8016fe3c battle_flow_state_machine_alt
 
-8016fe44 battle_flow_state_machine_alt
 
-8016fe4c battle_flow_state_machine_alt
 
-8016fe58 battle_flow_state_machine_alt
 
-8016fe60 battle_flow_state_machine_alt
 
-8016fe68 battle_flow_state_machine_alt
 
-8016fe70 battle_flow_state_machine_alt
 
-8016fe78 battle_flow_state_machine_alt
 
-8016fe90 battle_flow_state_machine_alt
 
-8016fe94 battle_flow_state_machine_alt
 
-8016fe9c battle_flow_state_machine_alt
 
-8016fea4 battle_flow_state_machine_alt
 
-8016febc battle_flow_state_machine_alt
 
-8016fed0 battle_flow_state_machine_alt
 
-8016fed8 battle_flow_state_machine_alt
 
-8016fee0 battle_flow_state_machine_alt
 
-8016fef4 battle_flow_state_machine_alt
 
-8016fefc battle_flow_state_machine_alt
 
-8016ff04 battle_flow_state_machine_alt
 
-8016ff20 battle_flow_state_machine_alt
 
-8016ff28 battle_flow_state_machine_alt
 
-8016ff44 battle_flow_state_machine_alt
 
-8016ff64 battle_flow_state_machine_alt
 
-8016ff78 battle_flow_state_machine_alt
 
-8016ff80 battle_flow_state_machine_alt
 
-8016ff88 battle_flow_state_machine_alt
 
-8016ff90 battle_flow_state_machine_alt
 
-8016ff98 battle_flow_state_machine_alt
 
-8016ffa0 battle_flow_state_machine_alt
 
-8016ffb4 battle_flow_state_machine_alt
 
-8016ffc4 battle_flow_state_machine_alt
 
-8016ffd0 battle_flow_state_machine_alt
 
-8016ffd8 battle_flow_state_machine_alt
 
-8016ffe0 battle_flow_state_machine_alt
 
-8016fff0 battle_flow_state_machine_alt
 
-8016fff8 battle_flow_state_machine_alt
 
-80170008 battle_flow_state_machine_alt
 
-80170018 battle_flow_state_machine_alt
 
-8017002c battle_flow_state_machine_alt
 
-8017003c battle_flow_state_machine_alt
 
-80170044 battle_flow_state_machine_alt
 
-80170050 battle_flow_state_machine_alt
 
-80170058 battle_flow_state_machine_alt
 
-80170060 battle_flow_state_machine_alt
 
-80170070 battle_flow_state_machine_alt
 
-80170080 battle_flow_state_machine_alt
 
-80170088 battle_flow_state_machine_alt
 
-8017008c battle_flow_state_machine_alt
 
-801700ac battle_flow_state_machine_alt
 
-801700bc battle_flow_state_machine_alt
 
-801700c0 battle_flow_state_machine_alt
 
-801700d0 battle_flow_state_machine_alt
 
-801700d8 battle_flow_state_machine_alt
 
-801700e8 battle_flow_state_machine_alt
 
-801700fc battle_flow_state_machine_alt
 
-80170104 battle_flow_state_machine_alt
 
-80170110 battle_flow_state_machine_alt
 
-80170118 battle_flow_state_machine_alt
 
-80170120 battle_flow_state_machine_alt
 
-80170130 battle_flow_state_machine_alt
 
-8017013c battle_flow_state_machine_alt
 
-80170144 battle_flow_state_machine_alt
 
-80170158 battle_flow_state_machine_alt
 
-80170168 battle_flow_state_machine_alt
 
-80170170 battle_flow_state_machine_alt
 
-80170178 battle_flow_state_machine_alt
 
-80170180 battle_flow_state_machine_alt
 
-80170188 battle_flow_state_machine_alt
 
-80170190 battle_flow_state_machine_alt
 
-80170198 battle_flow_state_machine_alt
 
-801701ac battle_flow_state_machine_alt
 
-801701c8 battle_flow_state_machine_alt
 
-801701e0 battle_flow_state_machine_alt
 
-801701e8 battle_flow_state_machine_alt
 
-801701f0 battle_flow_state_machine_alt
 
-801701f8 battle_flow_state_machine_alt
 
-80170208 battle_flow_state_machine_alt
 
-80170218 battle_flow_state_machine_alt
 
-8017022c battle_flow_state_machine_alt
 
-80170234 battle_flow_state_machine_alt
 
-8017023c battle_flow_state_machine_alt
 
-80170244 battle_flow_state_machine_alt
 
-8017024c battle_flow_state_machine_alt
 
-80170254 battle_flow_state_machine_alt
 
-8017025c battle_flow_state_machine_alt
 
-80170260 battle_flow_state_machine_alt
 
-80170270 battle_flow_state_machine_alt
 
-8017027c battle_flow_state_machine_alt
 
-80170284 battle_flow_state_machine_alt
 
-80170290 battle_flow_state_machine_alt
 
-801702a8 battle_flow_state_machine_alt
 
-801702b0 battle_flow_state_machine_alt
 
-801702b8 battle_flow_state_machine_alt
 
-801702c0 battle_flow_state_machine_alt
 
-801702e0 battle_flow_state_machine_alt
 
-801702e4 battle_flow_state_machine_alt
 
-801702f4 battle_flow_state_machine_alt
 
-801702fc battle_flow_state_machine_alt
 
-8017030c battle_flow_state_machine_alt
 
-80170318 battle_flow_state_machine_alt
 
-80170324 battle_flow_state_machine_alt
 
-80170334 battle_flow_state_machine_alt
 
-8017034c battle_flow_state_machine_alt
 
-8017035c battle_flow_state_machine_alt
 
-8017036c battle_flow_state_machine_alt
 
-80170370 battle_flow_state_machine_alt
 
-80170380 battle_flow_state_machine_alt
 
-80170384 battle_flow_state_machine_alt
 
-80170388 battle_flow_state_machine_alt
 
-80170394 battle_flow_state_machine_alt
 
-801703a0 battle_flow_state_machine_alt
 
-801703b4 battle_flow_state_machine_alt
 
-801703c8 battle_flow_state_machine_alt
 
-801703d8 battle_flow_state_machine_alt
 
-801703ec battle_flow_state_machine_alt
 
-801703f4 battle_flow_state_machine_alt
 
-801703fc battle_flow_state_machine_alt
 
-80170420 battle_flow_state_machine_alt
 
-80170428 battle_flow_state_machine_alt
 
-80170448 battle_flow_state_machine_alt
 
-80170458 battle_flow_state_machine_alt
 
-80170460 battle_flow_state_machine_alt
 
-80170468 battle_flow_state_machine_alt
 
-8017048c battle_flow_state_machine_alt
 
-80170494 battle_flow_state_machine_alt
 
-801704b4 battle_flow_state_machine_alt
 
-801704bc battle_flow_state_machine_alt
 
-801704d4 battle_flow_state_machine_alt
 
-801704e4 battle_flow_state_machine_alt
 
-80170500 battle_flow_state_machine_alt
 
-80170508 battle_flow_state_machine_alt
 
-80170510 battle_flow_state_machine_alt
 
-80170518 battle_flow_state_machine_alt
 
-80170524 battle_flow_state_machine_alt
 
-80170544 battle_flow_state_machine_alt
 
-8017054c battle_flow_state_machine_alt
 
-80170550 battle_flow_state_machine_alt
 
-8017058c battle_flow_state_machine_alt
 
-801705a4 battle_flow_state_machine_alt
 
-801705b8 battle_flow_state_machine_alt
 
-801705c8 battle_flow_state_machine_alt
 
-801705dc battle_flow_state_machine_alt
 
-801705e4 battle_flow_state_machine_alt
 
-801705ec battle_flow_state_machine_alt
 
-80170610 battle_flow_state_machine_alt
 
-80170618 battle_flow_state_machine_alt
 
-80170638 battle_flow_state_machine_alt
 
-80170648 battle_flow_state_machine_alt
 
-80170650 battle_flow_state_machine_alt
 
-80170658 battle_flow_state_machine_alt
 
-8017067c battle_flow_state_machine_alt
 
-80170684 battle_flow_state_machine_alt
 
-801706a4 battle_flow_state_machine_alt
 
-801706ac battle_flow_state_machine_alt
 
-801706c4 battle_flow_state_machine_alt
 
-801706d4 battle_flow_state_machine_alt
 
-801706f0 battle_flow_state_machine_alt
 
-801706f8 battle_flow_state_machine_alt
 
-80170700 battle_flow_state_machine_alt
 
-80170708 battle_flow_state_machine_alt
 
-80170714 battle_flow_state_machine_alt
 
-80170734 battle_flow_state_machine_alt
 
-8017073c battle_flow_state_machine_alt
 
-80170740 battle_flow_state_machine_alt
 
-8017077c battle_flow_state_machine_alt
 
-80170794 battle_flow_state_machine_alt
 
-8017079c battle_flow_state_machine_alt
 
-801707ac battle_flow_state_machine_alt
 
-801707c0 battle_flow_state_machine_alt
 
-801707d4 battle_flow_state_machine_alt
 
-801707e0 battle_flow_state_machine_alt
 
-801707e4 battle_flow_state_machine_alt
 
-80170808 battle_flow_state_machine_alt
 
-80170820 battle_flow_state_machine_alt
 
-80170830 battle_flow_state_machine_alt
 
-80170840 battle_flow_state_machine_alt
 
-80170850 battle_flow_state_machine_alt
 
-80170868 battle_flow_state_machine_alt
 
-80170878 battle_flow_state_machine_alt
 
-80170888 battle_flow_state_machine_alt
 
-8017089c battle_flow_state_machine_alt
 
-801708ac battle_flow_state_machine_alt
 
-801708c0 battle_flow_state_machine_alt
 
-801708d0 battle_flow_state_machine_alt
 
-801708d8 battle_flow_state_machine_alt
 
-801708e8 battle_flow_state_machine_alt
 
-801708f0 battle_flow_state_machine_alt
 
-801708f8 battle_flow_state_machine_alt
 
-80170900 battle_flow_state_machine_alt
 
-80170908 battle_flow_state_machine_alt
 
-80170910 battle_flow_state_machine_alt
 
-80170918 battle_flow_state_machine_alt
 
-80170928 battle_flow_state_machine_alt
 
-80170934 battle_flow_state_machine_alt
 
-80170944 battle_flow_state_machine_alt
 
-80170954 battle_flow_state_machine_alt
 
-80170960 battle_flow_state_machine_alt
 
-80170968 battle_flow_state_machine_alt
 
-80170978 battle_flow_state_machine_alt
 
-80170980 battle_flow_state_machine_alt
 
-80170988 battle_flow_state_machine_alt
 
-80170990 battle_flow_state_machine_alt
 
-80170998 battle_flow_state_machine_alt
 
-801709a0 battle_flow_state_machine_alt
 
-801709b0 battle_flow_state_machine_alt
 
-801709c0 battle_flow_state_machine_alt
 
-801709c8 battle_flow_state_machine_alt
 80175964 reset_guest_cps
 80192714 cpst_80192714
 
@@ -10803,81 +10153,43 @@
 
 80151300 confirm_bookkeeping_cps
 
-80151470 hud_announce_cps
 
-80151478 hud_announce_cps
 
-80151494 hud_announce_cps
 
-801514f4 hud_announce_cps
 
-8015153c hud_announce_cps
 
-80151540 hud_announce_cps
 
-80151560 hud_announce_cps
 
-801515a0 hud_announce_cps
 
-801515a4 hud_announce_cps
 
-80151604 hud_announce_cps
 
-80151608 hud_announce_cps
 
-80151628 hud_announce_cps
 
-80151640 hud_announce_cps
 
-80151658 hud_announce_cps
 
-8015165c hud_announce_cps
 
-80151678 hud_announce_cps
 
-801516b8 hud_announce_cps
 
-801516bc hud_announce_cps
 
-8015171c hud_announce_cps
 
-80151720 hud_announce_cps
 
-80151740 hud_announce_cps
 
-80151758 hud_announce_cps
 
-80151800 hud_announce_cps
 
-80151854 hud_announce_cps
 
-80151914 hud_announce_cps
 
-80151968 hud_announce_cps
 
-80151a28 hud_announce_cps
 
-80151a2c hud_announce_cps
 
-80151a3c hud_announce_cps
 
-80151a40 hud_announce_cps
 
-80151a5c hud_announce_cps
 
-80151bec hud_announce_cps
 
-80151c20 hud_announce_cps
 
-80151c24 hud_announce_cps
 
-80151c64 hud_announce_cps
 
-80151ca0 hud_announce_cps
 
-80151cb4 hud_announce_cps
 
-80151cbc hud_announce_cps
 
 8019a350 cd_kobj_mcall_58
 
@@ -15726,52 +15038,11 @@
 8013738c battle_intro_fsm_alias
 801373b0 battle_intro_fsm_alias
 80139de8 impact_fx_type_alias
-80141d90 ev_cmd_dispatch_alias
-80141dd4 ev_cmd_dispatch_alias
-80141df0 ev_cmd_dispatch_alias
-80141e18 ev_cmd_dispatch_alias
-80141e40 ev_cmd_dispatch_alias
-80141e84 ev_cmd_dispatch_alias
-80141e94 ev_cmd_dispatch_alias
-80141eac ev_cmd_dispatch_alias
-80141ec4 ev_cmd_dispatch_alias
-80141ef8 ev_cmd_dispatch_alias
-80141f10 ev_cmd_dispatch_alias
-80141f80 ev_cmd_dispatch_alias
-80141f98 ev_cmd_dispatch_alias
-80141fc4 ev_cmd_dispatch_alias
-801420e0 ev_cmd_dispatch_alias
 801428d4 ev24_fx_spawn_alias
 801429f4 ev24_fx_spawn_alias
-8014333c action_from_input_alias
-8014336c action_from_input_alias
-801435f0 cmd_input_parse_alias
-801435fc cmd_input_parse_alias
-801436c0 cmd_input_parse_alias
-801437a4 cmd_input_parse_alias
-801437b0 cmd_input_parse_alias
-801437bc cmd_input_parse_alias
-801437c8 cmd_input_parse_alias
-801437d4 cmd_input_parse_alias
-801437ec cmd_input_parse_alias
-801438a0 cmd_input_parse_alias
 80150f50 ko_count_announce_cps_e03
 801510c8 ko_count_announce_cps_e03
 8015130c confirm_bookkeeping_cps
-801514fc hud_announce_cps
-801515c4 hud_announce_cps
-801516dc hud_announce_cps
-801517ac hud_announce_cps
-8015186c hud_announce_cps
-801518c0 hud_announce_cps
-801519bc hud_announce_cps
-80151a10 hud_announce_cps
-80151a64 hud_announce_cps
-80151ab8 hud_announce_cps
-80151b0c hud_announce_cps
-80151b60 hud_announce_cps
-80151bb4 hud_announce_cps
-80151c50 hud_announce_cps
 80175944 reset_guest_cps
 8017597c reset_guest_cps
 80175980 reset_guest_cps

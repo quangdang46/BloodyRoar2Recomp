@@ -230,7 +230,6 @@
 80154930 post_battle_dispatch
 801506d0 battle_init
 8015143c hud_announce
-80151494 hud_announce_cps
 8012e100 hud_text_blk
 801524b0 please_wait_announce
 80166f64 fighter_reinit_tail
@@ -322,7 +321,6 @@
 80141b78 ev_spark_spawn
 801468ec fighter_emit_state_run
 80141d2c ev_cmd_dispatch
-80142084 ev_cmd_dispatch_alias
 801421c4 ev24_fx_spawn
 8013c9cc stage_env_task_spawn
 80142954 ev24_fx_spawn_alias
@@ -1618,15 +1616,8 @@
 80142df4 pad_edge_scan
 
 801434d4 cmd_input_parse
-80143798 cmd_input_parse_alias
 
 80142f3c action_from_input
-80143004 action_from_input_alias
-80143330 action_from_input_alias
-80143348 action_from_input_alias
-80143354 action_from_input_alias
-80143360 action_from_input_alias
-80143384 action_from_input_alias
 
 801454f0 seg_sphere_hit
 
@@ -2135,10 +2126,6 @@
 8018b380 prim_nclip_cull_emit_48
 8018b4b8 prim_rtps_cull_emit_58
 8018b628 prim_avsz3_cull_emit_58
-80143978 cmd_input_parse_alt_3978
-80148224 battle_bringup_a_alt_8224
-80148304 battle_bringup_a_alt_8304
-80148380 battle_bringup_a_alt_8380
 80151014 ko_count_announce_alt_1014
 80160008 memcard_op_fmt_save
 80160024 memcard_op_fmt_format
@@ -2170,11 +2157,8 @@
 80157930 confirm_code_select_alt_3
 80157938 confirm_code_select_alt_6
 80157940 confirm_code_select_alt_4
-80164070 hud_score_draw_alt
-80165174 player_name_entry_alt
 80168494 mc_op_result_poll_alt
 80168624 mc_file_cmd_stable_poll_alt
-80170050 battle_flow_state_machine_alt
 801870a4 prim_xform3_task_run_b
 80188200 prim_quad_emit_54
 80188308 prim_quad_emit_5c

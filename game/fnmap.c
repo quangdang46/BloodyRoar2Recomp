@@ -66,7 +66,6 @@ extern void LAB_80140510(void);
 extern void action_commit(void);
 extern void action_enter_fwd(void);
 extern void action_from_input(void);
-extern void action_from_input_alias(void);
 extern void action_resolve(void);
 extern void action_switch_guest(void);
 extern void always_one(void);
@@ -108,15 +107,11 @@ extern void aux_tbl_store_a(void);
 extern void aux_tbl_store_b(void);
 extern void banner_stripe_scroll(void);
 extern void battle_bringup_a(void);
-extern void battle_bringup_a_alt_8224(void);
-extern void battle_bringup_a_alt_8304(void);
-extern void battle_bringup_a_alt_8380(void);
 extern void battle_bringup_b(void);
 extern void battle_camera_step(void);
 extern void battle_config_eval(void);
 extern void battle_field_set(void);
 extern void battle_flow_state_machine(void);
-extern void battle_flow_state_machine_alt(void);
 extern void battle_frame(void);
 extern void battle_frame_tick(void);
 extern void battle_hud_draw(void);
@@ -518,8 +513,6 @@ extern void clear_battle_counters(void);
 extern void clear_f0300_records(void);
 extern void clear_f4ee8_u16s(void);
 extern void cmd_input_parse(void);
-extern void cmd_input_parse_alias(void);
-extern void cmd_input_parse_alt_3978(void);
 extern void cmd_queue_push(void);
 extern void cmd_queue_slot_next(void);
 extern void color_rec_table_init(void);
@@ -695,7 +688,6 @@ extern void ev_cam_op09(void);
 extern void ev_cam_param_dispatch(void);
 extern void ev_cam_ret_pc2(void);
 extern void ev_cmd_dispatch(void);
-extern void ev_cmd_dispatch_alias(void);
 extern void ev_spark_spawn(void);
 extern void ev_stream_dispatch(void);
 extern void event_record_walk(void);
@@ -942,14 +934,12 @@ extern void hitbox_xform_node_commit(void);
 extern void hitrec_table_clear(void);
 extern void hp_bar_tick(void);
 extern void hud_announce(void);
-extern void hud_announce_cps(void);
 extern void hud_cell_frame_set(void);
 extern void hud_digits_color(void);
 extern void hud_gauge_frame_emit(void);
 extern void hud_gauge_render(void);
 extern void hud_name_fixup(void);
 extern void hud_prim_init(void);
-extern void hud_score_draw_alt(void);
 extern void hud_slot_blitter(void);
 extern void hud_sprite_desc_init(void);
 extern void hud_state_machine(void);
@@ -1267,7 +1257,6 @@ extern void perm_table_load(void);
 extern void picker_table_shuffle(void);
 extern void player_light_apply(void);
 extern void player_name_entry(void);
-extern void player_name_entry_alt(void);
 extern void players_ctrl_init(void);
 extern void please_wait_announce(void);
 extern void popup_spawn(void);
@@ -2020,7 +2009,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80141b78, (void *)ev_spark_spawn },
   { 0x80141d2c, (void *)ev_cmd_dispatch },
   { 0x80141d34, (void *)desc_opcode_dispatch },
-  { 0x80142084, (void *)ev_cmd_dispatch_alias },
   { 0x80142108, (void *)group_fx_spawn },
   { 0x801421c4, (void *)ev24_fx_spawn },
   { 0x80142954, (void *)ev24_fx_spawn_alias },
@@ -2034,10 +2022,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80142dd8, (void *)pending_hit_b_clear },
   { 0x80142df4, (void *)pad_edge_scan },
   { 0x80142f3c, (void *)action_from_input },
-  { 0x80143384, (void *)action_from_input_alias },
   { 0x801434d4, (void *)cmd_input_parse },
-  { 0x80143798, (void *)cmd_input_parse_alias },
-  { 0x80143978, (void *)cmd_input_parse_alt_3978 },
   { 0x80143ac8, (void *)attr_flag_mask },
   { 0x80143bb8, (void *)fighter_range_code },
   { 0x80143c6c, (void *)hit_scale_calc },
@@ -2064,9 +2049,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80147cdc, (void *)sprite_blit_center_a },
   { 0x80147df4, (void *)battle_bringup_b },
   { 0x80148170, (void *)battle_bringup_a },
-  { 0x80148224, (void *)battle_bringup_a_alt_8224 },
-  { 0x80148304, (void *)battle_bringup_a_alt_8304 },
-  { 0x80148380, (void *)battle_bringup_a_alt_8380 },
   { 0x80148528, (void *)select_confirm_handler },
   { 0x801487ac, (void *)fighter_spawn_setup },
   { 0x80148cb0, (void *)width3_num_format },
@@ -2120,7 +2102,6 @@ const Br2FnEnt fn_table[] = {
   { 0x801513c8, (void *)s16_dec_with_floor },
   { 0x801513fc, (void *)slot_name_measure },
   { 0x8015143c, (void *)hud_announce },
-  { 0x80151494, (void *)hud_announce_cps },
   { 0x80151cd0, (void *)champion_win_announce },
   { 0x80151dc8, (void *)stage_fight_announce },
   { 0x8015200c, (void *)fight_timer_announce },
@@ -2334,10 +2315,8 @@ const Br2FnEnt fn_table[] = {
   { 0x80163cbc, (void *)name_rec_gate },
   { 0x80163d7c, (void *)hud_name_fixup },
   { 0x80163e38, (void *)hud_time_score_draw },
-  { 0x80164070, (void *)hud_score_draw_alt },
   { 0x80164668, (void *)results_scoreboard },
   { 0x80164ea4, (void *)player_name_entry },
-  { 0x80165174, (void *)player_name_entry_alt },
   { 0x80165908, (void *)card_sprite_load_sm },
   { 0x80165cb4, (void *)transition_screen_flow },
   { 0x801660c0, (void *)card_fade_sm },
@@ -2430,7 +2409,6 @@ const Br2FnEnt fn_table[] = {
   { 0x8016fca8, (void *)FUN_8016fca8 },
   { 0x8016fcb0, (void *)FUN_8016fcb0 },
   { 0x8016fcc4, (void *)battle_flow_state_machine },
-  { 0x80170050, (void *)battle_flow_state_machine_alt },
   { 0x801709fc, (void *)menu_res_load_sm },
   { 0x80170d38, (void *)save_channel_init_commit },
   { 0x80170fe0, (void *)save_load_state_machine },
