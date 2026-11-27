@@ -188,9 +188,6 @@ extern uint32_t clean_caller_ra(void);
 #define CDMMIO16(base, idx)        br2_ld16((base) + ((uint32_t)(idx) << 1))
 #define CDMMIO16_ST(base, idx, v)  \
     br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
-#define CDMMIO32(base, idx)        br2_ld32((base) + ((uint32_t)(idx) << 2))
-#define CDMMIO32_ST(base, idx, v)  \
-    br2_st32((base) + ((uint32_t)(idx) << 2), (uint32_t)(v))
 
 /* ---- guest globals ----
  * The g_DAT_* bindings live in bind.c (guest_for registry) — names are
@@ -379,9 +376,7 @@ uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
-#define DB16P(a) br2_ld16p(a)
 #define DB8P(a)  br2_ld8p(a)
-#define DB32P(a) br2_ld32p(a)
 #define DB32G(a) (*(uint32_t *)guest_at(a))
 #define DB8(a)   (*(uint8_t  *)guest_at(a))
 #define DB16(a)  (*(uint16_t *)guest_at(a))
@@ -832,12 +827,7 @@ extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
 
 
-#define CDB8(a)   DB8(a)
-#define CDB8P(a)  DB8P(a)
-#define CDB32(a)  DB32(a)
 #define CDB32G(a) DB32G(a)
-#define CDNAME(ch) (((uint32_t *)guest_at(0x801bc86c))[(ch) & 0xff])
-#define CDNOINTR(st) (((uint32_t *)guest_at(0x801bc8ec))[(st) & 0xff])
 
 /* shared sync-wait skeleton used by 968cc/96b4c/97698:
  * returns via out params; implemented inline per function for
