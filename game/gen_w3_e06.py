@@ -24,12 +24,9 @@ def emit(sym_host, guest_anchor, name, comment):
     """Emit one clean-C wrapper for a guest alias entry."""
     body = extract('br2eu_psx_alias_body_' + sym_host)
     core = G._GPR_RE.sub(G._gpr_names, G.transform(body))
-<<<<<<< HEAD
-=======
     core = G.rename_temps(core)
     core = G.fold_idioms(core)
     core = G.fold_cps_readability(core)
->>>>>>> orch/w5/e05
     core = G.name_comment_targets(core)
     core = core.replace('switch (entry)', 'switch (_sel)')
     out = []
