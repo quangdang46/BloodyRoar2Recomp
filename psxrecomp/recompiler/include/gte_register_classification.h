@@ -7,6 +7,7 @@
  * between static code, overlay shards, and the interpreter. */
 namespace PSXRecompGTERegisters {
 
+/* data read needs helper: return reg == 1 || reg == 3 || reg == 5 || reg == 7 || */
 constexpr bool data_read_needs_helper(uint8_t reg) {
     /* Must cover every reg gte_read_data() treats specially (gte.cpp):
      * 1,3,5,8-11 sign-extend; 7,16-19 mask to 16 bits; 15 mirrors 14;
@@ -17,12 +18,14 @@ constexpr bool data_read_needs_helper(uint8_t reg) {
            reg == 28 || reg == 29 || reg == 31;
 }
 
+/* data write needs helper: return reg == 1 || reg == 3 || reg == 5 || */
 constexpr bool data_write_needs_helper(uint8_t reg) {
     return reg == 1 || reg == 3 || reg == 5 ||
            (reg >= 7 && reg <= 19) || reg == 23 ||
            reg == 28 || reg == 29 || reg == 30 || reg == 31;
 }
 
+/* ctrl read needs helper: return reg == 4 || reg == 12 || reg == 20 || reg == 26 || */
 constexpr bool ctrl_read_needs_helper(uint8_t reg) {
     /* Must cover every reg gte_read_ctrl() sign-extends (gte.cpp):
      * 4, 12, 20, 26, 27, 29, 30. 31 kept from the legacy set. */
@@ -30,11 +33,13 @@ constexpr bool ctrl_read_needs_helper(uint8_t reg) {
            reg == 27 || reg == 29 || reg == 30 || reg == 31;
 }
 
+/* ctrl write needs helper: return reg == 4 || reg == 12 || reg == 20 || reg == 26 || */
 constexpr bool ctrl_write_needs_helper(uint8_t reg) {
     return reg == 4 || reg == 12 || reg == 20 || reg == 26 ||
            reg == 27 || reg == 29 || reg == 30 || reg == 31;
 }
 
+/* helper mask: uint32_t mask = 0 */
 constexpr uint32_t helper_mask(bool (*predicate)(uint8_t)) {
     uint32_t mask = 0;
     for (uint8_t reg = 0; reg < 32; ++reg)

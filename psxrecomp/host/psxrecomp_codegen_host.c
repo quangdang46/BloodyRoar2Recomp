@@ -61,6 +61,7 @@ static char g_tc_repair_note[320];
  * for OpenBIOS). Distinguishes intentional OpenBIOS clear from "unset". */
 static int g_wizard_bios_explicit;
 
+/* cfg or: return (v && v[0]) ? v : d */
 static const char* cfg_or(const char* v, const char* d) {
     return (v && v[0]) ? v : d;
 }
@@ -1949,6 +1950,7 @@ static int run_cli_posix(char* const argv[],
 
 static const char* k_tc_repo = "TechnicallyComputers/retcomm-toolchains";
 
+/* toolchain zip asset name: return "cmake-clang-v1-windows-x64.zip" */
 static const char* toolchain_zip_asset_name(void) {
 #if defined(_WIN32)
     return "cmake-clang-v1-windows-x64.zip";
@@ -1969,6 +1971,7 @@ static const char* toolchain_zip_asset_name(void) {
  * tools/toolchain_pack.py default_min_version(). */
 #define TOOLCHAIN_DEFAULT_MIN_VERSION "1.0.14"
 
+/* toolchain min version: if (env && env[0])  */
 static const char* toolchain_min_version(void) {
     const char* env = getenv("RETCOMM_TOOLCHAIN_MIN_VERSION");
     if (env && env[0]) {
@@ -3281,6 +3284,7 @@ static int host_portable_cmake_ready(void) {
     return toolchain_bin_is_healthy(g_toolchain_bin);
 }
 
+/* host toolchain repair note: return g_tc_repair_note[0] ? g_tc_repair_note : NULL */
 static const char* host_toolchain_repair_note(void) {
     return g_tc_repair_note[0] ? g_tc_repair_note : NULL;
 }
@@ -4403,6 +4407,7 @@ void psxrecomp_codegen_host_forward_if_built(
 #endif /* !PSX_HAS_GAME_DISPATCH */
 }
 
+/* psxrecomp codegen host relaunch or exit: char exe[512] */
 void psxrecomp_codegen_host_relaunch_or_exit(const char* disc_path) {
     char exe[512];
     const char* near_exe;
