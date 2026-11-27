@@ -1886,7 +1886,6 @@ uint32_t sprite_9slice_build(uint32_t head_g,uint32_t pos,uint32_t wh,uint32_t c
  * guest values (reg cells at 0x801b68xx hold guest pointers). */
 
 /* ---- shared externs for this batch ---- */
-extern int      str_len(char *);
 void     mdec_decode_issue(uint32_t,uint32_t);
 void     mdec_error_reset(uint32_t);
 int32_t  mdec_stat_wait_a(void);
@@ -7689,6 +7688,7 @@ extern uint32_t *gte_rtps_xform3(uint32_t *, uint16_t *, uint32_t *);
 extern void part_matrix_compute(uint32_t *, int8_t *, short *, uint32_t);
 extern int atan2_lut(int, int);
 
+/* mult equivalent: signed 32x32 -> hi:lo product into the COP1 regs. */
 static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
 {
   int64_t r = (int64_t)(int32_t)x * (int64_t)(int32_t)y;
