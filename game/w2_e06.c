@@ -34,16 +34,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-extern void *guest_at(uint32_t addr);
-extern uint32_t guest_of(const void *p);
-extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint8_t  br2_ld8(uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern void     br2_st8(uint32_t a, uint8_t v);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
 extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 
 /* ======== scriptop_wait CPS resume fragments (guest 0x80183664) ========

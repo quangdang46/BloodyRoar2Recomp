@@ -19,61 +19,8 @@
 #include <string.h>
 #include "cpu_state.h"
 
-extern void *guest_at(uint32_t addr);
-extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint8_t  br2_ld8(uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern void     br2_st8(uint32_t a, uint8_t v);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
-extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
-
-/* MIPS unaligned word accessors — faithful to psx_lwl/lwr/swl/swr on the
- * MMIO-aware cpu->read/write accessor path (no per-access cycle charge). */
-static inline uint32_t br2_lwl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t word = cpu->read_word(addr & ~3u);
-    switch (addr & 3u) {
-        case 0: return (rt_value & 0x00FFFFFFu) | (word << 24);
-        case 1: return (rt_value & 0x0000FFFFu) | (word << 16);
-        case 2: return (rt_value & 0x000000FFu) | (word << 8);
-        default: return word;
-    }
-}
-static inline uint32_t br2_lwr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t word = cpu->read_word(addr & ~3u);
-    switch (addr & 3u) {
-        case 0: return word;
-        case 1: return (rt_value & 0xFF000000u) | (word >> 8);
-        case 2: return (rt_value & 0xFFFF0000u) | (word >> 16);
-        default: return (rt_value & 0xFFFFFF00u) | (word >> 24);
-    }
-}
-static inline void br2_swl(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t aligned = addr & ~3u;
-    uint32_t word = cpu->read_word(aligned);
-    switch (addr & 3u) {
-        case 0: word = (word & 0xFFFFFF00u) | (rt_value >> 24); break;
-        case 1: word = (word & 0xFFFF0000u) | (rt_value >> 16); break;
-        case 2: word = (word & 0xFF000000u) | (rt_value >> 8); break;
-        default: word = rt_value; break;
-    }
-    cpu->write_word(aligned, word);
-}
-static inline void br2_swr(CPUState *cpu, uint32_t addr, uint32_t rt_value) {
-    uint32_t aligned = addr & ~3u;
-    uint32_t word = cpu->read_word(aligned);
-    switch (addr & 3u) {
-        case 0: word = rt_value; break;
-        case 1: word = (word & 0x000000FFu) | (rt_value << 8); break;
-        case 2: word = (word & 0x0000FFFFu) | (rt_value << 16); break;
-        default: word = (word & 0x00FFFFFFu) | (rt_value << 24); break;
-    }
-    cpu->write_word(aligned, word);
-}
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
