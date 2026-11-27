@@ -4322,8 +4322,8 @@ LAB_80144d0c:
 }
 
 /* hitbox_wall_collide @0x8014642c — hitbox vs stage wall collision resolve: push
- * out, kill velocity components, set launch/knock flags on both
- * fighters and return the collision mask. */
+ * out, kill velocity components, set launch/knock flags on f0, write the
+ * per-side pen channels 0x801f04ec-0x4f2, and return the collision mask. */
 uint hitbox_wall_collide(int f0,undefined2 *hits,int battle)
 {
   bool en_n0;
@@ -4509,7 +4509,9 @@ LAB_8014672c:
 }
 
 /* camera_aim_offset @0x80145d84 — compute camera aim offset angles from the fighter
- * pair geometry; writes per-side pen/offset channels 0x801f04ec-0x4f2. */
+ * pair midpoint delta; writes aim angles to f0/f1 +0x76/+0x78 and clears
+ * flag bits in +0x5c. (The 0x801f04ec-0x4f2 pen channels belong to
+ * hitbox_wall_collide.) */
 void camera_aim_offset(int f0,int f1,undefined4 ang)
 {
   bool rev;
@@ -4694,8 +4696,8 @@ void camera_aim_offset(int f0,int f1,undefined4 ang)
 }
 
 /* node_translate_tree @0x8018d700 — translate a node subtree: add (dx,-dy,dz) to
- * the node position at +0x34/+0x38/+0x3c and recurse into children
- * (+0x4c chain, +0x44/+0x48 links). */
+ * the node position at +0x34/+0x38/+0x3c, translate the +0x4c child's own
+ * position (+0x10/+0x14/+0x18), and recurse via the +0x44/+0x48 links. */
 void node_translate_tree(int node,int dx,int dy,int dz)
 {
   int child;
@@ -4765,7 +4767,7 @@ void fighter_chan_delta_accum(uint32_t node, uint32_t dx,
     if (cnt != 0) {
       if (i == 5) {
         /* chan 5: count cell t4+0x70, 40-byte records, base +0x25,
-         * pairs at record offsets {0xC,0xE,0x1C,0x24}. */
+         * pairs at record offsets {0xC,0x14,0x1C,0x24}. */
         uint32_t q = *(uint32_t *)guest_at(t0);
         uint32_t n = *(uint32_t *)guest_at(t4 + 0x70);
         uint32_t arr = *(uint32_t *)guest_at(*(uint32_t *)guest_at(q + 0x10));
@@ -6513,8 +6515,9 @@ switchD_80181ff0_caseD_9:
 
 }
 
-/* pt_box_radius_test @0x80145c90 — point vs box-with-radius test; returns
- * inside flag. */
+/* pt_box_radius_test @0x80145c90 — sphere/sphere overlap test: sum the
+ * radii r0+r1 and compare squared distance between points p and q
+ * (per-axis bounding reject first); returns inside flag. */
 bool pt_box_radius_test(int r0,int r1,int *p,int *q)
 {
   int r2;
@@ -7018,7 +7021,9 @@ switchD_8013a1f8_caseD_10:
 }
 
 /* fx_record_alloc @0x8013b088 — allocate an FX task node and initialize
- * its record payload (pos/kind/fl/aux). */
+ * its record payload: pos_g -> +8, fl -> +0x10/+0x18, aux -> +0x14,
+ * +0xc = rec+0x1c. kind is only used as kind+0x1c for the alloc size;
+ * pal_g is forwarded to task_alloc_wrap_e. */
 int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 pal_g)
 {
   int res;
@@ -7208,7 +7213,8 @@ LAB_80141918:
 }
 
 /* group_fx_spawn @0x80142108 — allocate an FX group record and store the
- * 6-word payload (arg,w0..w5) into rec+0xc..0x20. */
+ * 6-word payload w0..w5 into rec+0xc..0x20; arg goes through noop_b to
+ * the group record (+4), not the payload area. */
 void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, undefined4 w3,undefined4 w4,undefined4 w5)
 {
   int grp;
@@ -7445,7 +7451,8 @@ undefined1 table_byte_next_b(void)
 
 }
 /* sprite_strip_draw_dual @0x801721a4 — draw a dual-source sprite
- * strip (src_a/src_b palettes) with uv scale, count n and tag mode. */
+ * strip: src_a/src_b are destination sprite records advanced by 0x28
+ * per element, pal is the coordinate/UV table; n elements, tag mode. */
 void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag)
 {
   ushort *pa;
@@ -7717,7 +7724,7 @@ void hud_digits_color(int val,int cell)
 }
 
 /* fighter_height_check @0x80172a04 — return the height-limit code for a fighter:
- * bit 0x10 set -> constant 2, else 0x1dff < f+0xd8 short -> 1/0. */
+ * bit 0x10 set -> true, else 0x1dff < f+0xd6 short. */
 bool fighter_height_check(int f)
 {
   if ((*(byte *)guest_at((uint32_t)(uintptr_t)((f + 5) ))& 0x10) == 0) {
@@ -7804,9 +7811,10 @@ undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 
 }
 
-/* rtps_point_xform @0x8018d538/xform2 — GTE RTPS point transform: load matrix rt,
- * transform s16 vec3 in -> out; xform applies the flag-controlled
- * perspective divide variant. */
+/* rtps_point_xform @0x8018d538/xform2 — GTE RTPS point transform: transform
+ * s16 vec3 in -> out via cop2 op 0x486012. flag==0 additionally loads
+ * rt[0..4] into the RT control regs first (xform2 always loads them);
+ * no perspective divide in either. */
 int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 {
   undefined4 in_zero;
@@ -7870,7 +7878,8 @@ int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 }
 
 /* rotmat_rtps_build @0x8018de6c — build an RTPS rotation matrix from a packed
- * euler angle word (10-bit fields + sign/axis flags) into m[0..8]. */
+ * euler angle word (10-bit fields + sign/axis flags) into the packed
+ * five-word form m[0..4] (m[4] low half only). */
 uint * rotmat_rtps_build(uint ang,uint *m)
 {
   int ia;
@@ -8590,7 +8599,8 @@ undefined4 noop_c(int node)
 }
 
 /* node_tree_free @0x801ac758 — recursively free a node tree: release all
- * children in the +0x10 array then the node itself. */
+ * children reachable via the +0x10 array, the +0x1c/+0x20/+0x24 triple,
+ * and the +0x18/+0x48/+0x14 single slots (the node itself is not freed). */
 void node_tree_free(int node)
 {
   int i;
@@ -8855,7 +8865,8 @@ char * strchr_bounded(char *s,char c,int n)
 
 }
 
-/* mem_move @0x8018f7e0 — memmove over guest memory; returns dst. */
+/* mem_move @0x8018f7e0 — memmove over guest memory; returns the advanced
+ * dst (dst+n) on the forward path, original dst on the backward path. */
 undefined1 * mem_move(undefined1 *s,undefined1 *src,int n)
 {
   undefined1 tmp;
@@ -9171,7 +9182,8 @@ LAB_801373c0:
  * _a @0x801725a4/_b @0x80172640/_c @0x80137e70/_d @0x80137f0c/
  * _e @0x80137fb8/_f @0x80138040) binding guest fn pointers
  * (0x80137680/0x80137824/0x80137acc/0x80137cd0 family);
- * payload words w0.. are copied verbatim into the node pay area. */
+ * payload words w0.. are copied verbatim into the node pay area
+ * (except _e, which derives pay[0] and rearranges w1/w2). */
 int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
@@ -9672,9 +9684,10 @@ code_r0x8016d2ec:
 
 }
 
-/* hud_text_blk_alt @0x8012e078 — 0x1f80038c text-block variant:
- * same field init as hud_text_blk, but str is a host pointer
- * converted via guest_of; see hud_text_blk. */
+/* hud_text_blk_alt @0x8012e078 — 0x1f80038c text-block variant of
+ * hud_text_blk: near-identical field init except +0x0e (_DAT_1f80039a)
+ * = 0xffff (vs 8), str is a host pointer converted via guest_of,
+ * and font is passed unmasked. */
 void hud_text_blk_alt(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
@@ -9737,7 +9750,8 @@ void please_wait_announce(uint32_t ent,int en)
 }
 
 /* ctr_clamp — signed counter adjust on a0+0xa0 gated by mode byte
- * a0+0x9c (mode 0, mode>5, or mode==5&&+0x9b==0); clamps [-inf,0xff].
+ * a0+0x9c (mode 0, mode>5, or mode==5&&+0x9b==0); clamps result to
+ * [0,0xff] (negatives stored as 0).
  * Disasm 0x80159eec-0x80159f58. */
 void ctr_clamp(uint32_t ent,int32_t delta)
 {
@@ -10560,8 +10574,9 @@ void camera_track_step(int cam,int fa,int fb)
 }
 
 /* u16_step_toward @0x80133828/fixed_approach_s16 — fixed-point
- * approach helpers: step a u16/s16 value toward target by step,
- * return arrived flag. */
+ * approach helpers: step a u16/s16 value toward target by step;
+ * return the signed residual movement (0 only when delta == 0,
+ * the reaching step can still return nonzero). */
 int u16_step_toward(ushort *cur,ushort *tgt,short step)
 {
   ushort old;
@@ -10892,7 +10907,9 @@ void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 
 
 /* gte_xform_accum @0x80194840 — accumulate a vec3 transform: acc +=
- * vec transformed by tr matrix. */
+ * per-element GTE transform. tr is a scalar operand loaded into cop2
+ * data reg 0x4000 (not a matrix); vec components go to 0x4800/0x5000/
+ * 0x5800 and cop2 op 0x198003d produces the s16 results. */
 void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 {
   undefined4 old;
@@ -10922,8 +10939,8 @@ void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 }
 
 /* gte_rtps_xform3 @0x80194960 family — GTE RTPS vec3 transforms:
- * load matrix/angles, transform, write s16 outputs; _t/_nold/_1/_raw
- * are the transpose/normal/raw-input variants. */
+ * load matrix/angles, transform, write s16 outputs; _t is the RT+TR
+ * (with-translation) variant appending out[5..7]. */
 uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 {
   uint t0;
@@ -11153,8 +11170,8 @@ void gte_cw_d000_set(undefined4 cw)
 
 }
 
-/* gte_op_a00428 @0x80195398 — composite GTE op at guest 0xa00428:
- * transform + flag fixup writing r0-r2 outputs. */
+/* gte_op_a00428 @0x80195398 — GTE SQR (square vector): load vec3 from
+ * in into cop2 data regs, run op 0xa00428, write MAC1-3 results to out. */
 undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
   undefined4 res;
@@ -12122,7 +12139,8 @@ void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 }
 
 /* lazy_node_wrap @0x801ac070 — attach a lazy node via node_lazy_attach
- * and fill its pay fields (proto/arg/aux). */
+ * (proto selects the node class) and fill its pay fields: arg @+0x20,
+ * 0 @+0x24, aux @+0x28. */
 int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 {
   int node;
@@ -12319,7 +12337,8 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 }
 
 /* prim_list_gte_invoke @0x801871bc/persp_step — walk a primitive
- * list applying the GTE step (perspective divide variant) per element. */
+ * list applying the GTE basis transform (gte_xform3_ip/t_ip + MVMVA)
+ * per element, then call_guest4 the record's emit callbacks. */
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
@@ -13671,8 +13690,10 @@ void iris_wipe_spawn(int req,int arg)
 
 }
 
-/* gte_xform3_ip @0x80186e64/t_ip — GTE transform writing results
- * back through the input pointer (in-place variant). */
+/* gte_xform3_ip @0x80186e64/t_ip — GTE basis-vector transform: load rt[0..4]
+ * into RT ctrl regs, MVMVA-transform the three packed basis vectors in
+ * `in`, and write the packed results into GTE ctrl regs 0x4000-0x6000
+ * (light-matrix slots). Returns rt; nothing is stored through in. */
 undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 {
   uint t0;
@@ -13716,7 +13737,10 @@ undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 
 }
 
-/* gte_xform3_t_ip @0x80186f5c — see gte_xform3_ip. */
+/* gte_xform3_t_ip @0x80186f5c — see gte_xform3_ip; same three basis
+ * transforms but results land in RT ctrl regs 0-4 plus a fourth
+ * transformed vector and rt[5..7] translation in TR ctrl regs
+ * 0x2800/0x3000/0x3800 — i.e. the full RT+TR matrix build. */
 undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 {
   uint t0;
@@ -13855,7 +13879,8 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 
 }
 
-/* vec2_rot @0x8018b050 — rotate a packed s16 vec2 by angle pair. */
+/* vec2_rot @0x8018b050 — build s16 rotation-matrix elements from an
+ * angle pair: dst[0..2] = sin/cos LUT products (no input vector). */
 undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 {
   undefined2 c0;
@@ -13875,8 +13900,9 @@ undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 
 }
 
-/* angle_gte_vec @0x8018b0a0 — compute the heading angle of a vec2
- * into out. */
+/* angle_gte_vec @0x8018b0a0 — build a packed GTE matrix/vector record
+ * in out from the angle pair (x,y are angles, not a vector): seeds
+ * 0x1000 constants and fills rotation terms via sin/cos lookups. */
 uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 {
   int sx;
@@ -14351,7 +14377,10 @@ int isqrt(int n)
 
 }
 
-/* gte_rtps_xform3_t @0x80194c50 — see gte_rtps_xform3 (_t = transpose-angle variant). */
+/* gte_rtps_xform3_t @0x80194c50 — see gte_rtps_xform3 (_t = RT+TR
+ * variant: same three basis transforms into out[0..4], plus a fourth
+ * transform whose MAC results + rm[5..7] translation append as
+ * out[5..7]). */
 uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 {
   uint t0;
@@ -15154,7 +15183,8 @@ void prim_packet_init(int pkt,int a1,int a2,uint fl)
 }
 
 /* verts_offset_apply @0x801acfe4 — verts_*_apply — vertex-array passes: offset / rgb /
- * add / sub transforms over n verts with color stride. */
+ * add / sub transforms over cnt verts with color stride; n is the guest
+ * base address the per-vertex pointers index into. */
 void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
   uint *cz;
@@ -15326,8 +15356,8 @@ int fixed_point_divide(int num,int den)
 
 /* keyframe_cursor_search — capstone-verified keyframe cursor search.
    node: +0x6 lh count, +0xa/+0xe lh cursors, +0x18 table, +0x2c lw total.
-   entries stride 0x14, field +4 = frame time. Ends: tween_apply(node,idx,acc)
-   then lhu(+0x2c)->+0xa. */
+   entries stride 0x14, field +4 = frame time. Ends: lhu(+0x2c)->+0xa
+   then tween_apply(node,idx,acc). */
 /* keyframe_cursor_search @0x801a972c — binary/linear search for the
  * keyframe cursor position in a sequence. */
 void keyframe_cursor_search(uint *cur)
@@ -16771,8 +16801,8 @@ void brightness_packet_send(int32_t val)
 }
 
 /* hud_sprite_desc_init @0x80136ddc — HUD/sprite descriptor block init @0x801f0660.
- * Four 0x5c-byte descriptor groups + 0x68-byte mirror copy.
- * Faithful to disasm (sb/sh/sw widths verified). */
+ * Four interleaved field clusters inside a 0x68-byte block, then a
+ * 0x68-byte mirror copy to +0x68. Faithful to disasm (sb/sh/sw widths verified). */
 void hud_sprite_desc_init(void)
 {
   uint8_t *b = (uint8_t *)guest_at(0x801f0660);
@@ -16832,7 +16862,7 @@ void sprite_desc_table_init(uint32_t tbl)
 }
 
 /* announce_param_block_init_alt — variant of announce_param_block_init: same param block @0x1f80038c
- * but field +0xa preset to 0x1e (vs 0xf). Disasm-verified widths. */
+ * but field +0xc preset to 0x1e (vs 0xf). Disasm-verified widths. */
 void announce_param_block_init_alt(uint32_t tbl,uint32_t a1,const void *a2,
                   uint32_t a3,uint32_t arg5,int32_t arg6)
 {
@@ -16985,7 +17015,7 @@ extern void clear_f0300_records(void);
 
 /* rec_copy_init — if byte @0x1f800099 == 0: copy 0x44-byte record
  * 0x8011f484 + idx*0x44 -> 0x1f8002f8, init record @0x801f0228
- * (+0=src guest addr, +4/+6/+8/+0xa u16=1, +0x14 u16=0).
+ * (+0=src guest addr, +4 u16=0, +6/+8/+0xa u16=1, +0x14 u16=0).
  * Disasm 0x8012e97c-0x8012ea10. */
 void rec_copy_init(uint32_t rec)
 {
@@ -17122,8 +17152,8 @@ LAB_80137790:
 
 /* LAB_80137acc — channel command interpreter task. Guest 0x80137acc.
  * [2] script cursor (guest addr), [3] handler table base (guest addr),
- * [1] record table base (guest addr); byte +0x10 current op,
- * byte +0x12 repeat index. */
+ * [1] record table base (guest addr); halfword +0x10 current op,
+ * halfword +0x12 repeat index. */
 void LAB_80137acc(int *ctx)
 {
   short idx;
@@ -17233,7 +17263,7 @@ LAB_80137c14:
 
 /* LAB_80137cd0 — channel-script cursor task (variant B). Guest 0x80137cd0.
  * [1] kill-notify ptr, [2] u16 table base, [3] jump-table base,
- * [4] script cursor; byte +0x14 countdown, byte +0x16 repeat index. */
+ * [4] script cursor; halfword +0x14 countdown, halfword +0x16 repeat index. */
 void LAB_80137cd0(int *ctx)
 {
   short w;
@@ -17301,7 +17331,7 @@ void LAB_80137cd0(int *ctx)
 
 /* LAB_8013eb04 — speech/effect emitter task (spawns 0x8013e72c subtasks).
  * Guest 0x8013eb04. Data: [4] flag, [5] record-table base, [6] cursor,
- * byte +0x1c index, byte +0x1e countdown; [2]/[3] receive RTPS outputs. */
+ * halfword +0x1c index, u16 +0x1e countdown; [2]/[3] receive RTPS outputs. */
 void LAB_8013eb04(int *ctx)
 {
   undefined1 pb;
@@ -18100,8 +18130,9 @@ extern int spr_pool_b_alloc();   /* weak-stubbed in bind.c; returns prim ptr */
 extern void *spr_desc_slot_alloc(void);   /* gfx.c — returns host ptr */
 
 /* guest debug_line_putc @0x8018ee28 — debug line-buffer putc: tab expands to
- * spaces to col&7==0, CR resets col, other chars bump col per 0x801b6701
- * class table; appends to 32B buf @0x801f68f0 flushed via bios_tramp_b035. */
+ * spaces to col&7==0, LF (0xa) emits CR and resets col, other chars bump
+ * col per 0x801b6701 class table; appends to 32B buf @0x801f68f0 flushed
+ * via bios_tramp_b035. */
 void debug_line_putc(int ch)
 {
   int c;
@@ -18302,11 +18333,12 @@ void paired_task_cb(int arg)
 
 /* guest task_packet_emit @0x8013e0f0 — allocates a type-0xb task node
  * (callback 0x8014dbd8, args 0/0xc4) and fills the node's +0x10 packet
- * buffer: u16 angle fields from lut_cos/lut_sin(ang+0x400)>>6 at +0xb8/+0xbc,
- * a 3x3 u16 matrix copied column-wise from a1 (+0xa0..+0xb4) with the
- * two middle entries scaled by the trig results <<2, then two passes of
- * four 0x28-byte packet records (tag 0x09000000) whose byte fields depend
- * on the u8 flag at arg+2. Disasm 0x8013e0f0-0x8013e370. */
+ * buffer: u16 angle fields from lut_cos/lut_sin(hdg+0x400)>>6 at +0xb8/+0xbc
+ * (hdg = f+0x4e heading; ang is stored raw at +0xc0/+0xc2), a 3x3 u16
+ * matrix copied column-wise from a1 (+0xa0..+0xb4) with the two middle
+ * entries scaled by the trig results <<2, then two passes of two
+ * 0x28-byte packet records each (blk = pkt + i*0x50, tag 0x09000000)
+ * whose byte fields depend on the u8 flag at f+2. Disasm 0x8013e0f0-0x8013e370. */
 void task_packet_emit(int f,int m,int ang)
 {
   int node;
