@@ -1045,4 +1045,3 @@ block_80181F18:;
     psx_check_interrupts_at(cpu, jr_target);
     cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
-

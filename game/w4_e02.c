@@ -664,4 +664,3 @@ block_80194940:
     psx_check_interrupts_at(cpu, jr_target);
     cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
-
