@@ -182,6 +182,7 @@ block_80183BB4:
     cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
+/* scriptop_wait_atk3_self — CPS piece-entry wrapper: resume scriptop_wait_atk3_body */
 void scriptop_wait_atk3_self(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -189,6 +190,7 @@ void scriptop_wait_atk3_self(void)
   scriptop_wait_atk3_body(cpu);
 }
 
+/* scriptop_wait_atk3_foe — CPS piece-entry wrapper: resume scriptop_wait_atk3_body */
 void scriptop_wait_atk3_foe(void)
 {
   CPUState *cpu = clean_cpu_state();
