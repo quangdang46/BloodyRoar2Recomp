@@ -1095,3 +1095,44 @@ Post-`2b57002` runtime sweep on current master (`proof/arcade_combat_verified.md
   deferred CD coroutine resumes and streaming/FMV completes.
 
 **No known mode wedges remain.** All selectable modes boot and run.
+
+### Session update 22 (readability campaign — ev.c / cps_clean band / resolve.c)
+
+Clean-room readability passes on `orch/w4/e02` (all build-clean,
+headless-verified):
+
+- **`game/ev.c`** (`281f1fc`): Ghidra-isms renamed in the 4 remaining
+  functions (`ev5_action_select`, `ev_spark_spawn`, `ev_cmd_dispatch`,
+  `ev24_fx_spawn`) — `param_*`/`uVar*`/`iVar*`/`puVar*` → role names.
+  `g_DAT_*`/`PTR_FUN_*` externs kept (shared symbols, bind.c-owned).
+- **`game/cps_clean.c` band 0x80190000–0x80197fff** (`f15413f`,
+  `e90d657`, `db91115`, `e0b95f6`): 231 dead duplicate dispatch lines
+  removed; `lui`+`addiu` and `<<16`/`>>16` sign-extend idioms folded;
+  all 54 band bodies carry semantic `note:` comments. The 10 large
+  entangled bodies stay in CPS transliteration form — restructuring
+  them safely needs the `gen_cps_clean.py` template, not hand edits.
+- **`game/resolve.c`** (31 commits): complete readability pass —
+  ~1900 mechanical identifiers renamed, all 39 functions doc'd with
+  `FUN_<addr>` guest addresses (renames.map-sourced), field-offset
+  map in header, consolidated real prototypes, compound-assignment
+  idioms normalized, 39 dead `DAT_`/`_DAT_` aliases + 3 dead extern
+  fns + 2 dead extern globals + 0 unused prototypes removed.
+- **Real bug found & fixed** (`3e904b2`): `action_commit` steering
+  gate had `*ctrl < '\0'` — always false under unsigned `byte`;
+  guest `lb`/`bltz` sign test restored as `(*ctrl & 0x80) != 0`
+  (file's own convention). Found via `-Wtautological-compare`.
+- **Verification method that worked**: strict-warning sweeps
+  (gcc `-Wall -Wextra -Wshadow -Wmissing-prototypes
+  -Wdeclaration-after-statement -Wtautological-compare
+  -Wtype-limits`, clang bug-catchers + `--analyze`) caught the only
+  real defect; peer-commit mining surfaced the team idiom set
+  (`x = x op y`→`op=`, `+1`→`++`, `FUN_<addr>` doc annotations,
+  dead-decl sweeps). Final headless verify post-all-commits:
+  frames 23,681→50,872, no crash.
+
+**Convention notes for future passes**: guest addresses stay as
+`LAB_*`/`DAT_*`/`FUN_*` on this branch (peer branches rename them
+semantically — merge will reconcile); `DAT_X` vs `_DAT_X` spellings
+are both live (`&DAT_X` = host ptr to cell, `_DAT_X` = value);
+register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
+`goto LAB_*` structure are deliberate faithful-port artifacts.
