@@ -218,7 +218,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   uint8_t *desc;
   
   /* spr is a guest address (callers pass the heap cursor
-   * _DAT_801e3cfc); resolve before dereferencing. spr + 0x14
+   * 0x801e3cfc); resolve before dereferencing. spr + 0x14
    * stays a guest address for gpu_load_image_cmd's a1. */
   desc = (uint8_t *)guest_at((uint32_t)spr);
   if ((*(uint32_t *)(desc + 4) & 8) != 0) {
@@ -558,7 +558,7 @@ uint32_t gpu_graph_reset(uint32_t arg)
 
 /* ======== 0x801919ac ======== */
 
-/* Draw-env -> GPU display timing. param_1 is a guest address of the
+/* Draw-env -> GPU display timing. env_g is a guest address of the
  * 20-int8_t env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
  * bridged to host here. Returns the host env pointer. */
 uint32_t draw_env_timing(uint32_t env_g)
@@ -1035,7 +1035,7 @@ void printf_forward(const char *fmt, ...)
 }
 
 /* sprite_attr_init_a — sprite/OAM attribute block init (u16 fields + tail
- * bytes). param_1 = host pointer to the attr struct. */
+ * bytes). attr_g = guest addr of the attr struct (bridged to host). */
 void sprite_attr_init_a(uint32_t attr_g,uint16_t x,uint16_t y,
                   uint16_t w,int32_t h)
 {
@@ -1084,8 +1084,8 @@ void sprite_attr_init_b(uint32_t attr_g,uint16_t x,uint16_t y,
 
 /* ---- batch29: sprite-attr bit helpers (guest-addr convention) ---- */
 
-/* bitfield_or_write — unaligned bitfield OR-write: inserts param_2 (8-bit
- * value) at bit offset derived from param_1 alignment. param_1 is a
+/* bitfield_or_write — unaligned bitfield OR-write: inserts val (8-bit
+ * value) at bit offset derived from p alignment. p is a
  * host pointer (sole caller hud_sprite_desc_init passes arena ptrs). */
 void bitfield_or_write(const void *p,int val)
 {
@@ -1097,7 +1097,7 @@ void bitfield_or_write(const void *p,int val)
 }
 
 /* spr_desc_a/4060/4090 — per-slot sprite descriptor helpers.
- * param_1 = guest address of a 0x28-int8_t slot record. */
+ * slot_g = guest address of a 0x28-int8_t slot record. */
 void spr_desc_a(uint32_t slot_g)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -1141,7 +1141,7 @@ void text_win_init(uint32_t w,int32_t h)
   guest_memset_b(0x801b7740,0,0x180);
 }
 
-/* text_line_select — select active text line (bounds vs DAT_801b78c0). */
+/* text_line_select — select active text line (bounds vs 0x801b78c0). */
 void text_line_select(int32_t line)
 {
   if ((0 <= line) && (line <= (int32_t)GP8(0x801b78c0))) {
@@ -1151,7 +1151,7 @@ void text_line_select(int32_t line)
 }
 
 /* text_widget_alloc — allocate one 0x30-int8_t text-string widget slot.
- * Returns slot index or -1 when DAT_801b78c0 >= 8. */
+ * Returns slot index or -1 when 0x801b78c0 >= 8. */
 int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
                      uint16_t aux,int32_t mode,int32_t count)
 {
@@ -1211,7 +1211,7 @@ int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
 
 /* spr_attr_alloc_a — sprite-attr slot alloc with 0x5000000/0x28000000|
  * 0x2a000000 tag packing (same cluster as spr_desc_slot_alloc/c824).
- * param_1 = guest address of the head pointer cell. */
+ * head_g = guest address of the head pointer cell. */
 extern void *spr_pool_a_alloc(void);
 uint32_t spr_attr_alloc_a(uint32_t head_g,int16_t x0,int16_t y0,
                       int16_t w,int16_t h,uint32_t tag,
@@ -1256,7 +1256,7 @@ uint32_t spr_attr_alloc_a(uint32_t head_g,int16_t x0,int16_t y0,
 }
 
 /* spr_attr_alloc_b — sprite-attr slot alloc variant: fixed tag
- * 0x2c808080, *param_1 head cell gets 0x9000000 tag. Same
+ * 0x2c808080, *head_g head cell gets 0x9000000 tag. Same
  * guest-addr + pointer-tag conventions as spr_attr_alloc_a. */
 extern void *spr_pool_b_alloc(void);
 uint32_t spr_attr_alloc_b(uint32_t head_g,uint32_t pxy,uint32_t pc,
@@ -1302,9 +1302,9 @@ uint32_t spr_attr_alloc_b(uint32_t head_g,uint32_t pxy,uint32_t pc,
   return ret;
 }
 
-/* hud_gauge_render — HUD gauge/frame sprite renderer. param_1 = guest
+/* hud_gauge_render — HUD gauge/frame sprite renderer. st_g = guest
  * addr of fighter-state block (+0xc attr u32, +0x20/+0x22 s16 x/y);
- * param_2 = guest addr of sprite-list head cell; param_3 low nibble =
+ * head_g = guest addr of sprite-list head cell; variant low nibble =
  * palette set, bits 4-7 = layout variant. Emits spr_attr_alloc_b/8c824/
  * 8ce70/8c92c sprite records + hud_text_d tile blits. */
 extern void hud_text_d(uint32_t,uint32_t,const void *,int32_t,int32_t,int32_t);
@@ -1486,11 +1486,11 @@ void *spr_pool_b_alloc(void)
 /* ======== 0x8018e590 ======== */
 
 /* printf core: emits formatted text via console_emit (putc) /
- * console_pct ('%'), returns char count. param_1 = channel (unused
- * here — callee globals), param_2 = fmt, param_3 = u32 arg array.
+ * console_pct ('%'), returns char count. chan = channel (unused
+ * here — callee globals), fmt = fmt, args = u32 arg array.
  * Flags: '-' left, '+' sign, ' ' space, '#' alt, '0' pad, digit width,
  * '.' precision, '*' width/precision from args, l/h length, d/i/u/o/x/X/p/c/s/n.
- * Elided-arg sites verified against disasm: sign emit passes iVar21,
+ * Elided-arg sites verified against disasm: sign emit passes sign,
  * space pads pass 0x20. */
 extern void console_emit(uint32_t);
 extern void console_pct(void);
@@ -1823,10 +1823,10 @@ void console_pct(void)
 /* ======== 0x8018c1f4 ======== */
 
 /* 9-slice/frame sprite builder: allocates from pool B
- * (spr_pool_b_alloc), writes corner/edge UVs derived from param_3 (w/h
- * packed bytes) and param_2 (pos), param_4 color at +0xc, tag
+ * (spr_pool_b_alloc), writes corner/edge UVs derived from wh (w/h
+ * packed bytes) and pos, col color at +0xc, tag
  * 0x2e808080 at +4, links slot[0] = old_head|0x9000000 and stores
- * compressed slot ptr into *param_1 head cell. Disasm-verified. */
+ * compressed slot ptr into *head_g head cell. Disasm-verified. */
 uint32_t sprite_9slice_build(uint32_t head_g,uint32_t pos,uint32_t wh,uint32_t col)
 {
   uint32_t *pkt;
@@ -2123,7 +2123,7 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
 /* Text-window printf: vsprintf into the 0x30-int8_t window slot at
  * 0x801b7740 + win*0x30 (fields: +0x1c limit, +0x24 line buffer guest
  * ptr, +0x28 cursor). a0 selects the window; if a0 is out of range it
- * is itself the format string and DAT_801b78c4 picks the window.
+ * is itself the format string and 0x801b78c4 picks the window.
  * Supported specs: %d %x %X %c %s %% plus decimal width; '0' flag only
  * affects %x (zero-pad into the digit buffer). Faithful quirks kept:
  * unknown specs emit `count` bytes from a stale pointer, return is the
@@ -2162,7 +2162,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   iargs[2] = a3;
   va_start(ap,a3);
   if ((sel < 0) || ((int32_t)GP32(0x801b78c0) <= sel)) {
-    /* out-of-range a0: it is the format string; window = DAT_801b78c4 */
+    /* out-of-range a0: it is the format string; window = 0x801b78c4 */
     win = GP32(0x801b78c4);
     if (GP32(0x801b7740 + win * 0x30 + 0x24) == 0) {
       va_end(ap);
@@ -2443,7 +2443,7 @@ void vram_tile_decode(uint8_t *vram)
 {
   const uint8_t *s = (const uint8_t *)guest_at(0x801b6930);
   /* vram: host pointer from the clean_table wrapper, guest-address
-   * value from game.c scene_entry (_DAT_801f4758 = 0x80010000+0x6f000) —
+   * value from game.c scene_entry (0x801f4758 = 0x80010000+0x6f000) —
    * resolve either form. */
   uint8_t *base;
   {
@@ -5112,7 +5112,7 @@ void gpu_reg_cells_init(uint32_t val)
 
 /* ======== 0x80192ec0 ======== */
 
-/* gpu_reg_cmd_commit — issue param_1 | 0x10000000 through the pointer
+/* gpu_reg_cmd_commit — issue cmd | 0x10000000 through the pointer
  * cell @0x801b8428, then return *(*0x801b8424) & 0x00FFFFFF. The cell
  * contents are device/register addresses (can be 0x1F80xxxx MMIO), so
  * both dereferences go through br2_ld32/br2_st32. Disasm
@@ -6193,7 +6193,7 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
 /* ======== 0x8018bb38 ======== */
 
 /* flag_801b55d0_set — sets the flag word @0x801b55d0 to 1 and returns 1.
- * The flag is polled as (DAT_801b55d0 & 1) by the record/string emit
+ * The flag is polled as (0x801b55d0 & 1) by the record/string emit
  * paths (battle.c). Disasm 0x8018bb38-0x8018bb44 (lui v1,0x801b;
  * li v0,1; sw v0,0x55d0(v1); jr ra). */
 uint32_t flag_801b55d0_set(void)
@@ -12039,15 +12039,14 @@ uint32_t prim_xform3_task_run(void)
   }
 
   /* block_8018B100 — entry: blez a3 -> shared epilogue; delay t0 = SPAD */
-  { int _bc = ((int32_t)c->gpr[7] <= 0);
-    c->gpr[8] = 0x1F800000u;                        /* delay: t0 = 0x1F800000 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B200u);
-      goto b200;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B108u);
-      goto b108;
-    } }
+  c->gpr[8] = 0x1F800000u;                        /* delay: t0 = 0x1F800000 (unconditional) */
+  if ((int32_t)c->gpr[7] <= 0) {                   /* blez a3 */
+    psx_check_interrupts_at(c, 0x8018B200u);
+    goto b200;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B108u);
+    goto b108;
+  }
 
 b108:
   /* save caller s0-s6 + ra into scratchpad 0x1F8003E0..0x3FC */
@@ -12069,26 +12068,23 @@ b108:
 b13C:                                               /* record loop head */
   c->gpr[8] = (uint32_t)(int32_t)(int16_t)br2_ld16(c->gpr[16] + 12); /* lh sx16 */
   c->gpr[5] = br2_ld32(c->gpr[16]);                  /* delay: a1 = lw(s0) prim */
-  { int _bc = (c->gpr[8] != c->gpr[0]);              /* bne t0,zero -> skip */
-    c->gpr[4] = c->gpr[21];                          /* delay: a0 = s5 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B14Cu);
-      goto b14C;
-    } }
+  c->gpr[4] = c->gpr[21];                          /* delay: a0 = s5 (unconditional) */
+  if (c->gpr[8] != c->gpr[0]) {                     /* bne t0,zero -> skip */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B14Cu);
+    goto b14C;
+  }
 
 b14C:
-  { int _bc = (c->gpr[5] == c->gpr[0]);              /* beq a1,zero -> skip */
-    /* nop delay slot */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B154u);
-      goto b154;
-    } }
+  if (c->gpr[5] == c->gpr[0]) {                    /* beq a1,zero -> skip (nop delay) */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B154u);
+    goto b154;
+  }
 
 b154:
   c->gpr[31] = 0x8018B15Cu;                          /* jal link */
@@ -12125,15 +12121,14 @@ b198:
   c->gpr[5]  = c->gpr[17];                            /* a1 = s1 */
   c->gpr[22] = br2_ld32(c->gpr[18]);                  /* s6 = lw(s2) count */
   /* nop delay slot */
-  { int _bc = (c->gpr[22] == c->gpr[0]);              /* beq s6,zero -> next rec */
-    c->gpr[18] = c->gpr[18] + 4;                      /* delay: s2 += 4 (entries) */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1B0u);
-      goto b1B0;
-    } }
+  c->gpr[18] = c->gpr[18] + 4;                      /* delay: s2 += 4 (entries, unconditional) */
+  if (c->gpr[22] == c->gpr[0]) {                     /* beq s6,zero -> next rec */
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1B0u);
+    goto b1B0;
+  }
 
 b1B0:                                               /* task-entry loop */
   c->gpr[7] = br2_ld32(c->gpr[18] + 4);               /* a3 = ent[1] */
@@ -12147,27 +12142,25 @@ b1B0:                                               /* task-entry loop */
     return c->gpr[2]; }
 
 b1C4:
-  { int _bc = ((int32_t)c->gpr[22] > 0);              /* bgtz s6 -> next entry */
-    c->gpr[18] = c->gpr[18] + 16;                     /* delay: s2 += 16 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B1B0u);
-      goto b1B0;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1CCu);
-      goto b1CC;
-    } }
+  c->gpr[18] = c->gpr[18] + 16;                     /* delay: s2 += 16 (unconditional) */
+  if ((int32_t)c->gpr[22] > 0) {                     /* bgtz s6 -> next entry */
+    psx_check_interrupts_at(c, 0x8018B1B0u);
+    goto b1B0;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1CCu);
+    goto b1CC;
+  }
 
 b1CC:                                               /* record loop tail */
   c->gpr[19] = c->gpr[19] + 0xFFFFFFFFu;              /* s3-- */
-  { int _bc = ((int32_t)c->gpr[19] > 0);              /* bgtz s3 -> next record */
-    c->gpr[16] = c->gpr[16] + 40;                     /* delay: s0 += 0x28 */
-    if (_bc) {
-      psx_check_interrupts_at(c, 0x8018B13Cu);
-      goto b13C;
-    } else {
-      psx_check_interrupts_at(c, 0x8018B1D8u);
-      goto b1D8;
-    } }
+  c->gpr[16] = c->gpr[16] + 40;                     /* delay: s0 += 0x28 (unconditional) */
+  if ((int32_t)c->gpr[19] > 0) {                     /* bgtz s3 -> next record */
+    psx_check_interrupts_at(c, 0x8018B13Cu);
+    goto b13C;
+  } else {
+    psx_check_interrupts_at(c, 0x8018B1D8u);
+    goto b1D8;
+  }
 
 b1D8:                                               /* epilogue: restore SPAD */
   c->gpr[4]  = c->gpr[16];                            /* a0 = final record ptr */
