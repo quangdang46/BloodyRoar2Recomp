@@ -3074,7 +3074,7 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
         dst = (int32_t)MB32(0x1f800008);
       }
       y = y + stride;
-      announce_param_block_init((uint32_t)dst,(uint32_t)MB32(0x1f80000c),
+      announce_param_block_init((uint32_t)dst,MB32(0x1f80000c),
                    str,(uint32_t)(y_q16 >> 0x10),
                    (int32_t)(int16_t)auxw,(int32_t)aux);
       y_q16 = y_q16 + stride * 0x10000;
@@ -7637,9 +7637,9 @@ L_case408:                                     /* 0x8012f408 */
   if (btns & 2) {
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
     doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x52,(uint16_t)MB16(0x8011f944u + doff));
-    MW16(cursor + 0x54,(uint16_t)MB16(0x8011f944u + doff + 2));
-    MW16(cursor + 0x56,(uint16_t)MB16(0x8011f944u + doff + 4));
+    MW16(cursor + 0x52,MB16(0x8011f944u + doff));
+    MW16(cursor + 0x54,MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x56,MB16(0x8011f944u + doff + 4));
   }
   /* shared velocity block 0x8012f46c */
   dv[0] = dv[1] = 0;                            /* sp+0x10..0x17 = 0 */
@@ -7732,9 +7732,9 @@ L_case8e4:                                     /* 0x8012f8e4 */
     MW16(cursor + 0x5c,0);
     MW16(cursor + 0x7e,(uint16_t)((MB16(cursor + 0x7e) + 1) & 7));
     doff = (uint32_t)MBS16(cursor + 0x7e) * 8u;
-    MW16(cursor + 0x4a,(uint16_t)MB16(0x8011f944u + doff));
-    MW16(cursor + 0x4c,(uint16_t)MB16(0x8011f944u + doff + 2));
-    MW16(cursor + 0x4e,(uint16_t)MB16(0x8011f944u + doff + 4));
+    MW16(cursor + 0x4a,MB16(0x8011f944u + doff));
+    MW16(cursor + 0x4c,MB16(0x8011f944u + doff + 2));
+    MW16(cursor + 0x4e,MB16(0x8011f944u + doff + 4));
   }
   goto L_end;
 
@@ -9108,7 +9108,7 @@ L_state10:                                    /* 0x80147f24 */
    * o2[] offset table) loads INTO the heap data region, NOT the tag table.
    * Passing ttab (0x801c47c0) overwrote the master decode tag table, so the
    * offset_table_lookup below read foreign data -> wild +1.8MB cursor jump. */
-  if (cd_file_load_sm(0x82,(uint32_t)MB32(0x801c47b8)) == 0) goto L_store;
+  if (cd_file_load_sm(0x82,MB32(0x801c47b8)) == 0) goto L_store;
   cur_st = 0;
   for (i = 0; i < 0xc; i++)                   /* 0x80147f44 loop */
     o2[i] = offset_table_lookup(MB32(0x801c47b8),i + 0x10);
@@ -10135,7 +10135,7 @@ int32_t pending_work_drain(uint32_t obj)
 int32_t descriptor_fetch(uint32_t ctrl,uint32_t desc,uint32_t cur)
 {
 
-  uint32_t idx = ((uint32_t)(int32_t)(int16_t)MBS16(cur + 2) * 2u
+  uint32_t idx = ((uint32_t)(int32_t)MBS16(cur + 2) * 2u
                   + MB8(ctrl + 5)) & 1u;
   skeleton_init(ctrl, MB32(desc + 0x10) + idx * 28u, desc);
   return (int32_t)(cur + 4u);
@@ -10417,7 +10417,7 @@ void dual_sprite_attr_emit(uint32_t ot,uint32_t x1,uint32_t y,
   sprite_node_emit_a(ot, (int32_t)(x1 - x0), (int32_t)y,
                (int32_t)x0, stk1, 0, stk2, 0, stk2, 3);
   spr_attr_alloc_a(ot, (int16_t)x1, (int16_t)y,
-               (int16_t)MBS16(0x1f800020u), (int16_t)x0, stk1, 0);
+               MBS16(0x1f800020u), (int16_t)x0, stk1, 0);
 }
 
 /* descblk_variant_b — descriptor variant @0x8012e2a0 (36 insns, 7 args):
