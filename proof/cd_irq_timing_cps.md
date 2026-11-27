@@ -907,3 +907,33 @@ cpst_, a real peer port, or generated-leaf coverage.
 
 Verified: clean build EU + USA; headless :5093 frames 20944 -> 25655+
 attract CD streaming, no wedge.
+
+## Batch 46 (orch/w5/e05) — CONSISTENCY AUDIT: zero genuine gaps
+
+Full bidirectional audit of the cpst_ coverage surface:
+
+1. DEAD-DEFS: all 743 cps_ defs in cps_clean.c are live — 739 via
+   direct map rows, 4 via alternate paths (cps_801835d0 w2_e06 call,
+   cps_80195cf0/cps_801a8ee0 fnmap aliases, cps_8017bad4 alias rows
+   8017baf0+). Zero dead.
+
+2. ROW->BODY: 2647 cpst_ map rows audited against body case/entry
+   sets — 2646 verified. ONE known approximation: 8019b310 ->
+   cpst_8019b308 where 0x8019B310 is a mid-block instruction addr
+   (batch-9 row; runs the whole entry block — off-by-one-instr
+   approximation, verified non-wedging since batch 9).
+
+3. CASE->ROW: 203 cpst_ _cont cases lack a same-symbol map row —
+   ALL intentional: 187 shadowed by peer-port rows (scriptop_*,
+   printf_* piece ports own those addrs), 16 in the printf_core
+   cluster (cpst_8018e590/cpst_8018e8d0 cases at printf_arg_*/
+   printf_flags_* addrs) shadowed by gfx_emit_p06.c peer ports —
+   the exact ports un-shadowed in batch 24. Re-adding rows would
+   re-violate peer-ports-win. Cases remain as harmless fallbacks.
+
+4. GENERATED-REACHABLE: zero br2_call_generated/psx_dispatch_call/
+   call_guest sites inside cd_irq_probe.c bodies.
+
+CONCLUSION: timed coverage surface is self-consistent. Every
+reachable addr in 0x8018-0x801B resolves to timed cpst_, real peer
+clean-C port, or intentional generated-leaf. No code changes.
