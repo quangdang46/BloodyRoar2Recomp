@@ -18,6 +18,7 @@ static uint8_t QY[64], QC[64];
 static uint16_t SCALEW[64];
 static uint16_t BLK[6][24]; static int BLKN[6];
 
+/* make input: for(int i=0;i<64;i++) SCALEW[i]=(uint16_t)(0x1000 + (i*53%777) - 388) */
 static void make_input(void){
     for(int i=0;i<64;i++) SCALEW[i]=(uint16_t)(0x1000 + (i*53%777) - 388);
     for(int i=0;i<64;i++){ QY[i]=(uint8_t)(2+(i%17)); QC[i]=(uint8_t)(3+(i%13)); }
@@ -42,6 +43,7 @@ static void make_input(void){
 
 /* ---------------- drive the REAL mdec.c ---------------- */
 static uint8_t OUT[1024]; static int OUTN;
+/* run real: for(int i=0;i<128;i+=4){ uint32_t w=qbytes[i]|(qbytes[i+1]<<8)|(qbyte... */
 static void run_real(void){
     mdec_init();
     /* control: enable nothing special; we feed via port 0 directly */
@@ -72,11 +74,17 @@ static const uint8_t bz[64]={
  0x1c,0x15,0x0e,0x07,0x0f,0x16,0x1d,0x24,0x2b,0x32,0x39,0x3a,0x33,0x2c,0x25,0x1e,
  0x17,0x1f,0x26,0x2d,0x34,0x3b,0x3c,0x35,0x2e,0x27,0x2f,0x36,0x3d,0x3e,0x37,0x3f};
 static int16_t bmat[64];
+/* bsx: int s=32-bits;return (int)(((int32_t)((uint32_t)v<<s))>>s); */
 static int bsx(int bits,int v){int s=32-bits;return (int)(((int32_t)((uint32_t)v<<s))>>s);}
+/* b10: return (int16_t)bsx(10,v); */
 static int b10(int v){return (int16_t)bsx(10,v);}
+/* bm9: v=bsx(9,v);if(v<-128)v=-128;if(v>127)v=127;return v; */
 static int bm9(int v){v=bsx(9,v);if(v<-128)v=-128;if(v>127)v=127;return v;}
+/* bmin: return a<b?a:b;} static int bmax(int a,int b){return a>b?a:b; */
 static int bmin(int a,int b){return a<b?a:b;} static int bmax(int a,int b){return a>b?a:b;}
+/* bset: for(int i=0;i<64;i++)bmat[((i&7)<<3)|((i>>3)&7)]=(int16_t)((int16_t)SCALEW[i]>>3); */
 static void bset(void){for(int i=0;i<64;i++)bmat[((i&7)<<3)|((i>>3)&7)]=(int16_t)((int16_t)SCALEW[i]>>3);}
+/* bdq: memset(C,0,64*sizeof(int16_t)); int p=0,ci=0,qs=0 */
 static void bdq(int16_t*C,const uint16_t*w,int n,const uint8_t*QM){
     memset(C,0,64*sizeof(int16_t)); int p=0,ci=0,qs=0;
     while(p<n){ uint16_t V=w[p++];
@@ -89,9 +97,11 @@ static void bdq(int16_t*C,const uint16_t*w,int n,const uint8_t*QM){
                     if(q)t=(int32_t)((uint32_t)((c*q)>>3)<<4)+(c?((c<0)?8:-8):0); else t=(uint32_t)(c*2)<<4;
                     C[bz[ci]]=bmin(0x3FFF,bmax(-0x4000,t)); ci++; } } } }
 }
+/* bidct: for(int c=0;c<8;c++)for(int x=0;x<8;x++){int s=0;for(int u=0;u<8;u++)... */
 static void bidct(int16_t*in,int16_t*out){ int16_t t[64];
     for(int c=0;c<8;c++)for(int x=0;x<8;x++){int s=0;for(int u=0;u<8;u++)s+=in[c*8+u]*bmat[x*8+u];t[x*8+c]=(int16_t)((s+0x4000)>>15);}
     for(int c=0;c<8;c++)for(int x=0;x<8;x++){int s=0;for(int u=0;u<8;u++)s+=t[c*8+u]*bmat[x*8+u];out[c*8+x]=(int16_t)bm9((s+0x4000)>>15);} }
+/* byuv: int16_t Cr[64],Cb[64],Y[4][64], cr8[64],cb8[64],y8[4][64] */
 static void byuv(int8_t y,int8_t cb,int8_t cr,int*r,int*g,int*b){
     *r=bm9(y+(((359*cr)+0x80)>>8)); *g=bm9(y+((((-88*cb)&~0x1F)+((-183*cr)&~0x07)+0x80)>>8)); *b=bm9(y+(((454*cb)+0x80)>>8));
     *r^=0x80;*g^=0x80;*b^=0x80; }
@@ -101,6 +111,7 @@ static void byuv(int8_t y,int8_t cb,int8_t cr,int*r,int*g,int*b){
 static int b555(uint8_t c){int v=(c+4)>>3;if(v>0x1F)v=0x1F;return v;}
 
 static uint16_t ref_px[256];
+/* run ref: int16_t Cr[64],Cb[64],Y[4][64], cr8[64],cb8[64],y8[4][64] */
 static void run_ref(void){
     bset();
     int16_t Cr[64],Cb[64],Y[4][64], cr8[64],cb8[64],y8[4][64];

@@ -18,6 +18,7 @@ static uint8_t  QUANT[64];
 static uint16_t RLE[8];
 static int RLE_N;
 
+/* make input: for (int i = 0; i < 64; i++) SCALE_WORDS[i] = (uint16_t)(0x1000 + (i ... */
 static void make_input(void) {
     for (int i = 0; i < 64; i++) SCALE_WORDS[i] = (uint16_t)(0x1000 + (i * 53 % 777) - 388); /* signed-ish */
     for (int i = 0; i < 64; i++) QUANT[i] = (uint8_t)(2 + (i % 17));
@@ -40,16 +41,23 @@ static const uint8_t my_zig[64] = {
     0x17,0x1f,0x26,0x2d,0x34,0x3b,0x3c,0x35, 0x2e,0x27,0x2f,0x36,0x3d,0x3e,0x37,0x3f
 };
 static int16_t my_scale[64];
+/* my sign extend 10: return (int16_t)((int16_t)(v<<6)>>6); */
 static int16_t my_sign_extend_10(uint16_t v){ return (int16_t)((int16_t)(v<<6)>>6); }
+/* my clamp: return v<lo?lo:(v>hi?hi:v); */
 static int my_clamp(int v,int lo,int hi){ return v<lo?lo:(v>hi?hi:v); }
+/* my sign x to s32: int s=32-bits; return (int)(((int32_t)((uint32_t)v<<s))>>s); */
 static int my_sign_x_to_s32(int bits,int v){ int s=32-bits; return (int)(((int32_t)((uint32_t)v<<s))>>s); }
+/* my mask9: v=my_sign_x_to_s32(9,v); if(v<-128)v=-128; if(v>127)v=127; return v; */
 static int my_mask9(int v){ v=my_sign_x_to_s32(9,v); if(v<-128)v=-128; if(v>127)v=127; return v; }
+/* my set scale: for(uint32_t i=0;i<64;i++){ uint32_t t=((i&7u)<<3)|((i>>3)&7u); my_scale[t]=(int16_t)((int16_t)SCALE_WORDS[i]>>3);} */
 static void my_set_scale(void){ for(uint32_t i=0;i<64;i++){ uint32_t t=((i&7u)<<3)|((i>>3)&7u); my_scale[t]=(int16_t)((int16_t)SCALE_WORDS[i]>>3);} }
+/* my idct: int16_t tmp[64] */
 static void my_idct(int16_t *block){
     int16_t tmp[64];
     for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0;u<8;u++) s+=(int)block[col*8+u]*(int)my_scale[x*8+u]; tmp[x*8+col]=(int16_t)((s+0x4000)>>15);}
     for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0;u<8;u++) s+=(int)tmp[col*8+u]*(int)my_scale[x*8+u]; block[col*8+x]=(int16_t)my_mask9((s+0x4000)>>15);}
 }
+/* my dequant: int p=0; uint16_t word=RLE[p++] */
 static void my_dequant(int16_t *block, const uint8_t *quant){
     memset(block,0,64*sizeof(int16_t));
     int p=0; uint16_t word=RLE[p++];
@@ -63,6 +71,7 @@ static void my_dequant(int16_t *block, const uint8_t *quant){
         block[my_zig[k]]=(int16_t)my_clamp(tmp,-0x4000,0x3FFF);
     }
 }
+/* my yuv */
 static void my_yuv(int y,int cr,int cb,int*r,int*g,int*b){
     *r=my_mask9(y+(((359*cr)+0x80)>>8));
     *g=my_mask9(y+((((-88*cb)&~0x1F)+((-183*cr)&~0x07)+0x80)>>8));
@@ -78,17 +87,26 @@ static const uint8_t be_zig[64] = {
     0x17,0x1f,0x26,0x2d,0x34,0x3b,0x3c,0x35, 0x2e,0x27,0x2f,0x36,0x3d,0x3e,0x37,0x3f
 };
 static int16_t be_idctmat[64];
+/* be sign x: int s=32-bits; return (int)(((int32_t)((uint32_t)v<<s))>>s); */
 static int be_sign_x(int bits,int v){ int s=32-bits; return (int)(((int32_t)((uint32_t)v<<s))>>s); }
+/* be sign 10 to s16: return (int16_t)be_sign_x(10,v); */
 static int16_t be_sign_10_to_s16(int v){ return (int16_t)be_sign_x(10,v); }
+/* be mask9: v=be_sign_x(9,v); if(v<-128)v=-128; if(v>127)v=127; return v; */
 static int be_mask9(int v){ v=be_sign_x(9,v); if(v<-128)v=-128; if(v>127)v=127; return v; }
+/* be min: return a<b?a:b;} static int be_max(int a,int b){return a>b?a:b; */
 static int be_min(int a,int b){return a<b?a:b;} static int be_max(int a,int b){return a>b?a:b;}
+/* be set scale: for(int i=0;i<64;i++){ be_idctmat[((i&7)<<3)|((i>>3)&7)]=(int16_t)((i... */
 static void be_set_scale(void){ /* mdec.cpp:647, transposed >>3 */
     for(int i=0;i<64;i++){ be_idctmat[((i&7)<<3)|((i>>3)&7)]=(int16_t)((int16_t)SCALE_WORDS[i]>>3);} }
+/* be idct 1d int16: for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0... */
 static void be_idct_1d_int16(int16_t *in,int16_t *out){
     for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0;u<8;u++) s+=in[col*8+u]*be_idctmat[x*8+u]; out[x*8+col]=(int16_t)((s+0x4000)>>15);} }
+/* be idct 1d int8: for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0... */
 static void be_idct_1d_int8(int16_t *in,int16_t *out){
     for(int col=0;col<8;col++) for(int x=0;x<8;x++){ int s=0; for(int u=0;u<8;u++) s+=in[col*8+u]*be_idctmat[x*8+u]; out[col*8+x]=(int16_t)be_mask9((s+0x4000)>>15);} }
+/* be idct: int16_t t[64]; be_idct_1d_int16(in,t); be_idct_1d_int8(t,out); */
 static void be_idct(int16_t *in,int16_t *out){ int16_t t[64]; be_idct_1d_int16(in,t); be_idct_1d_int8(t,out); }
+/* be dequant: int p=0; int CoeffIndex=0; int QScale=0 */
 static void be_dequant(int16_t *Coeff,const uint8_t *QM){ /* WriteImageData, mdec.cpp:425 */
     memset(Coeff,0,64*sizeof(int16_t));
     int p=0; int CoeffIndex=0; int QScale=0;
@@ -116,6 +134,7 @@ static void be_dequant(int16_t *Coeff,const uint8_t *QM){ /* WriteImageData, mde
         }
     }
 }
+/* be yuv */
 static void be_yuv(int8_t y,int8_t cb,int8_t cr,int*r,int*g,int*b){
     *r=be_mask9(y+(((359*cr)+0x80)>>8));
     *g=be_mask9(y+((((-88*cb)&~0x1F)+((-183*cr)&~0x07)+0x80)>>8));
