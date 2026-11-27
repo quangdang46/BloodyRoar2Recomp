@@ -130,10 +130,10 @@ void scriptop_bra_subops(void)
 block_80183008:
     v0 = cpu->read_word(s1 + 56);          /* 0x80183008 lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x8018300C: 0x00000000 */
-    int _bc_80183010 = ((int32_t)v0 <= 0);  /* 0x80183010 blez v0 */
+    int cond_v0_le_0 = ((int32_t)v0 <= 0);  /* 0x80183010 blez v0 */
     /* delay slot (always executes) */
     /* nop */  /* 0x80183014: 0x00000000 */
-    if (_bc_80183010) {
+    if (cond_v0_le_0) {
         psx_check_interrupts_at(cpu, 0x80183024u);
         goto block_80183024;  /* taken: cmp<=0 -> else operand */
     } else {
@@ -158,10 +158,10 @@ block_80183024:
 block_80183034:
     v1 = cpu->read_word(s1 + 36);          /* 0x80183034 lw v1,0x24(s1) — sel */
     /* nop */  /* 0x80183038: 0x00000000 */
-    int _bc_8018303C = (v1 != zero);       /* 0x8018303C bne v1,zero */
+    int cond_v1_ne_zero = (v1 != zero);       /* 0x8018303C bne v1,zero */
     /* delay slot (always executes) */
     v0 = s0 + 8;                           /* 0x80183040 addiu v0,s0,8 — pc+8 */
-    if (_bc_8018303C) {
+    if (cond_v1_ne_zero) {
         psx_check_interrupts_at(cpu, 0x80183218u);
         goto block_80183218;  /* taken: sel!=0 -> base+sel */
     } else {
@@ -180,10 +180,10 @@ block_80183044:
 block_8018304C:
     v0 = cpu->read_word(s1 + 56);          /* 0x8018304C lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x80183050: 0x00000000 */
-    int _bc_80183054 = (v0 == zero);       /* 0x80183054 beq v0,zero — jump if ==0 */
+    int cond_v0_eq_zero = (v0 == zero);       /* 0x80183054 beq v0,zero — jump if ==0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x80183058 addiu v0,s0,4 — pc+4 */
-    if (_bc_80183054) {
+    if (cond_v0_eq_zero) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -202,10 +202,10 @@ block_8018305C:
 block_8018306C:
     v0 = cpu->read_word(s1 + 56);          /* 0x8018306C lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x80183070: 0x00000000 */
-    int _bc_80183074 = (v0 != zero);       /* 0x80183074 bne v0,zero — jump if !=0 */
+    int cond_v0_ne_zero = (v0 != zero);       /* 0x80183074 bne v0,zero — jump if !=0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x80183078 addiu v0,s0,4 — pc+4 */
-    if (_bc_80183074) {
+    if (cond_v0_ne_zero) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -224,10 +224,10 @@ block_8018307C:
 block_8018308C:
     v0 = cpu->read_word(s1 + 56);          /* 0x8018308C lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x80183090: 0x00000000 */
-    int _bc_80183094 = ((int32_t)v0 <= 0);  /* 0x80183094 blez v0 — jump if <=0 */
+    int cond_v0_le_0_2 = ((int32_t)v0 <= 0);  /* 0x80183094 blez v0 — jump if <=0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x80183098 addiu v0,s0,4 — pc+4 */
-    if (_bc_80183094) {
+    if (cond_v0_le_0_2) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -246,10 +246,10 @@ block_8018309C:
 block_801830AC:
     v0 = cpu->read_word(s1 + 56);          /* 0x801830AC lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x801830B0: 0x00000000 */
-    int _bc_801830B4 = ((int32_t)v0 < 0);   /* 0x801830B4 bltz v0 — jump if <0 */
+    int cond_v0_lt_0 = ((int32_t)v0 < 0);   /* 0x801830B4 bltz v0 — jump if <0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x801830B8 addiu v0,s0,4 — pc+4 */
-    if (_bc_801830B4) {
+    if (cond_v0_lt_0) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -268,10 +268,10 @@ block_801830BC:
 block_801830CC:
     v0 = cpu->read_word(s1 + 56);          /* 0x801830CC lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x801830D0: 0x00000000 */
-    int _bc_801830D4 = ((int32_t)v0 >= 0);  /* 0x801830D4 bgez v0 — jump if >=0 */
+    int cond_v0_ge_0 = ((int32_t)v0 >= 0);  /* 0x801830D4 bgez v0 — jump if >=0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x801830D8 addiu v0,s0,4 — pc+4 */
-    if (_bc_801830D4) {
+    if (cond_v0_ge_0) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -290,10 +290,10 @@ block_801830DC:
 block_801830EC:
     v0 = cpu->read_word(s1 + 56);          /* 0x801830EC lw v0,0x38(s1) — cmp */
     /* nop */  /* 0x801830F0: 0x00000000 */
-    int _bc_801830F4 = ((int32_t)v0 > 0);   /* 0x801830F4 bgtz v0 — jump if >0 */
+    int cond_v0_gt_0 = ((int32_t)v0 > 0);   /* 0x801830F4 bgtz v0 — jump if >0 */
     /* delay slot (always executes) */
     v0 = s0 + 4;                           /* 0x801830F8 addiu v0,s0,4 — pc+4 */
-    if (_bc_801830F4) {
+    if (cond_v0_gt_0) {
         psx_check_interrupts_at(cpu, 0x80183224u);
         goto block_80183224;  /* taken: cond met -> pc+4 */
     } else {
@@ -316,10 +316,10 @@ block_8018310C:
     a2 = zero;                             /* 0x80183110 move a2,zero — sum = 0 */
     a3 = cpu->read_byte(s0 + 2);           /* 0x80183114 lbu a3,2(s0) — n */
     /* nop */  /* 0x80183118: 0x00000000 */
-    int _bc_8018311C = (a3 == zero);       /* 0x8018311C beq a3,zero — n==0 skip */
+    int cond_a3_eq_zero = (a3 == zero);       /* 0x8018311C beq a3,zero — n==0 skip */
     /* delay slot (always executes) */
     v1 = a2;                               /* 0x80183120 move v1,a2 — i = 0 */
-    if (_bc_8018311C) {
+    if (cond_a3_eq_zero) {
         psx_check_interrupts_at(cpu, 0x80183148u);
         goto block_80183148;  /* taken: n==0 -> skip weight table build */
     } else {
@@ -365,10 +365,10 @@ block_80183148:
     psx_muldiv_stall(cpu);                 /* 0x80183174 mflo t0 */
     a0 = (int32_t)t0 >> 8;                 /* 0x80183178 sra a0,t0,8 — (b*sum)>>8 */
     a0 = a0 - v0;                          /* 0x8018317C subu a0,a0,v0 — X -= w[0] */
-    int _bc_80183180 = ((int32_t)a0 < 0);   /* 0x80183180 bltz a0 — X<0 done */
+    int cond_a0_lt_0 = ((int32_t)a0 < 0);   /* 0x80183180 bltz a0 — X<0 done */
     /* delay slot (always executes) */
     v1 = zero;                             /* 0x80183184 move v1,zero — pick = 0 */
-    if (_bc_80183180) {
+    if (cond_a0_lt_0) {
         psx_check_interrupts_at(cpu, 0x801831A4u);
         goto block_801831A4;  /* taken: X<0 -> pick stays 0 */
     } else {
@@ -385,10 +385,10 @@ block_8018318C:
     v0 = cpu->read_half(a1);               /* 0x80183190 lhu v0,0(a1) — w[i] */
     /* nop */  /* 0x80183194: 0x00000000 */
     a0 = a0 - v0;                          /* 0x80183198 subu a0,a0,v0 — X -= w[i] */
-    int _bc_8018319C = ((int32_t)a0 >= 0);  /* 0x8018319C bgez a0 — keep going */
+    int cond_a0_ge_0 = ((int32_t)a0 >= 0);  /* 0x8018319C bgez a0 — keep going */
     /* delay slot (always executes) */
     v1 = v1 + 1;                           /* 0x801831A0 addiu v1,v1,1 — pick++ */
-    if (_bc_8018319C) {
+    if (cond_a0_ge_0) {
         psx_check_interrupts_at(cpu, 0x8018318Cu);
         goto block_8018318C;  /* taken: loop */
     } else {
@@ -404,10 +404,10 @@ block_801831A4:
     v1 = v1 + v0;                          /* 0x801831B4 addu v1,v1,v0 — +pick*2 */
     v1 = cpu->read_half(v1);               /* 0x801831B8 lhu v1,0(v1) — sel */
     /* nop */  /* 0x801831BC: 0x00000000 */
-    int _bc_801831C0 = (v1 != zero);       /* 0x801831C0 bne v1,zero */
+    int cond_v1_ne_zero_2 = (v1 != zero);       /* 0x801831C0 bne v1,zero */
     /* delay slot (always executes) */
     cpu->write_word(s1 + 36, v1);          /* 0x801831C4 sw v1,0x24(s1) — sel */
-    if (_bc_801831C0) {
+    if (cond_v1_ne_zero_2) {
         psx_check_interrupts_at(cpu, 0x80183218u);
         goto block_80183218;  /* taken: sel!=0 -> base+sel */
     } else {
@@ -447,9 +447,9 @@ block_8018322C:
     s2 = cpu->read_word(sp + 56);          /* 0x80183234 lw s2,0x38(sp) */
     s1 = cpu->read_word(sp + 52);          /* 0x80183238 lw s1,0x34(sp) */
     s0 = cpu->read_word(sp + 48);          /* 0x8018323C lw s0,0x30(sp) */
-    uint32_t _jt_80183240 = ra;  /* latch indirect target before delay slot */
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     sp = sp + 72;                          /* 0x80183244 addiu sp,sp,0x48 */
-    psx_check_interrupts_at(cpu, _jt_80183240);
-    cpu->pc = _jt_80183240; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
