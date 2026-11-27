@@ -8431,7 +8431,7 @@ void op_field_store_idx(uint8_t *a0,uint32_t *a1)
 
 /* ======== batch34: 0x801a0a/0x801a18/0x801a51/0x801a6b/0x801a9b/0x801ac/0x801ad/0x801ae ======== */
 
-extern void text_win_printf();
+extern int32_t text_win_printf(int32_t,uint32_t,uint32_t,uint32_t,...);
 extern int *task_node_alloc(int,uint32_t,uint32_t,int,int,int);
 extern void tween_apply(int16_t *,int,int);
 extern void gp_20_store_default(void);
@@ -8558,10 +8558,10 @@ void op_ctx8_lazy_fill(int16_t *a0)
 /* 0x801acf34 — four text_win_printf dumps of a0 fields. */
 void op_dbg_dump4(uint32_t *a0)
 {
-  text_win_printf((const char *)guest_at(0x80126098),a0[0]);
-  text_win_printf((const char *)guest_at(0x801260a8),a0[2]);
-  text_win_printf((const char *)guest_at(0x801260b8),a0[8]);
-  text_win_printf((const char *)guest_at(0x801260c8),a0[1]);
+  text_win_printf((int32_t)0x80126098,a0[0],clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x801260a8,a0[2],clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x801260b8,a0[8],clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x801260c8,a0[1],clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   return;
 }
 
@@ -8569,11 +8569,11 @@ void op_dbg_dump4(uint32_t *a0)
 void op_dbg_dump5(uint32_t a0,uint32_t a1)
 {
   (void)a0;
-  text_win_printf((const char *)guest_at(0x80125fd8),a1);
-  text_win_printf((const char *)guest_at(0x80125fe8),*(uint32_t *)guest_at(a1));
-  text_win_printf((const char *)guest_at(0x80126044),*(uint32_t *)guest_at(a1 + 4));
-  text_win_printf((const char *)guest_at(0x80126054),*(uint32_t *)guest_at(a1 + 8) + 0x10);
-  text_win_printf((const char *)guest_at(0x80126064),*(int16_t *)guest_at(a1 + 0xc));
+  text_win_printf((int32_t)0x80125fd8,a1,clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80125fe8,*(uint32_t *)guest_at(a1),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126044,*(uint32_t *)guest_at(a1 + 4),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126054,*(uint32_t *)guest_at(a1 + 8) + 0x10,clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126064,*(int16_t *)guest_at(a1 + 0xc),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   return;
 }
 
@@ -8592,7 +8592,7 @@ void op_dbg_dump_tbl(uint32_t a0,uint32_t a1)
     cur = *(uint32_t *)guest_at(cur + 4);
     off = next + nxt;
   } while (cur != first);
-  text_win_printf((const char *)guest_at(0x80126074),a1,off,first);
+  text_win_printf((int32_t)0x80126074,a1,off,first);
   return;
 }
 
@@ -9013,7 +9013,7 @@ int op_node_count16(uint32_t a0)
     }
     tab += 4;
   }
-  text_win_printf((const char *)guest_at(0x80126008),cnt);
+  text_win_printf((int32_t)0x80126008,cnt,clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   return cnt;
 }
 
@@ -9075,7 +9075,7 @@ void op_node_count_flagged(uint32_t a0,uint32_t a1)
       if (cur == first) break;
     }
   }
-  text_win_printf((const char *)guest_at(0x80126088),a1,cnt);
+  text_win_printf((int32_t)0x80126088,a1,cnt,clean_cpu_state()->gpr[7]);
   return;
 }
 
@@ -9099,10 +9099,10 @@ void op_dbg_dump_ring(uint32_t a0,uint32_t a1)
 void op_dbg_dump_node(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t addr = 0x801ff268 + a1 * 60 + a2 * 12;
-  text_win_printf((const char *)guest_at(0x801ceec),a0);
-  text_win_printf((const char *)guest_at(0x80126014),*(uint32_t *)guest_at(addr));
-  text_win_printf((const char *)guest_at(0x80126024),*(uint32_t *)guest_at(addr + 4));
-  text_win_printf((const char *)guest_at(0x80126034),*(uint32_t *)guest_at(addr + 8));
+  text_win_printf((int32_t)0x801ceec,a0,clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126014,*(uint32_t *)guest_at(addr),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126024,*(uint32_t *)guest_at(addr + 4),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
+  text_win_printf((int32_t)0x80126034,*(uint32_t *)guest_at(addr + 8),clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   return;
 }
 
