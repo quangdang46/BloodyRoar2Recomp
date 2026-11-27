@@ -656,9 +656,9 @@ bb_80157c80:
     if ((int)(dir_n & 0xff) < (int)(int16_t)DAT_801bef72) {
       /* guest div @0x80157E2C + mfhi: signed div HI = nm % dv;
        * dv==0 -> HI = dividend (recompiler no-trap semantics). */
-      int32_t _dv = (int32_t)(dir_n & 0xff);
-      int32_t _nm = (int32_t)(int16_t)DAT_801bef72;
-      DAT_801bef72 = (uint16_t)(_dv == 0 ? _nm : _nm % _dv);
+      int32_t dv = (int32_t)(dir_n & 0xff);
+      int32_t nm = (int32_t)(int16_t)DAT_801bef72;
+      DAT_801bef72 = (uint16_t)(dv == 0 ? nm : nm % dv);
     }
     if (!(DAT_801bef72)) {
       DAT_801bef72 = (uint16_t)DAT_801bef6c;
@@ -2685,10 +2685,10 @@ int hud_name_fixup(char *name)
  * written on the in-range fill path. Else shift records [idx..count-2]
  * up one and fill slot: name[0..3], src[3]->+4, u32 src+0xf0->+8,
  * u16 src+0xe0->+0xc, u16 src+0xe6->+0xe. */
-void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t count)
+void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_arg,int32_t count)
 {
   uint8_t *rec = a0 + a1 * 16;
-  const uint8_t *a3 = (const uint8_t *)a3_;
+  const uint8_t *a3 = (const uint8_t *)a3_arg;
   int32_t i;
   if (a1 >= count || a1 < 0) {
     return;
@@ -2706,11 +2706,11 @@ void name_rec_insert(uint8_t *a0,int32_t a1,uint8_t *a2,const void *a3_,int32_t 
  * in [2,6); else rec_sorted_lookup lookup on table @0x801c1304 keyed by
  * src+0xe0, then name_rec_insert insert (str arg or default @0x80121fa4).
  * Disasm 0x80163cbc-0x80163d78. */
-void name_rec_gate(uint8_t *src,const void *a1_)
+void name_rec_gate(uint8_t *src,const void *a1_arg)
 {
   int8_t gate = *(int8_t *)guest_at(0x1f80009c);
   uint8_t *tab = (uint8_t *)guest_at(0x801c1304);
-  const uint8_t *str = (const uint8_t *)a1_;
+  const uint8_t *str = (const uint8_t *)a1_arg;
   int32_t r;
   if (gate >= 2 && gate < 6) return;
   r = rec_sorted_lookup(tab,*(uint16_t *)(src + 0xe0),0xa);
