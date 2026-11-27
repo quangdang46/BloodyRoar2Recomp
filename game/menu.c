@@ -12954,18 +12954,19 @@ void system_tick_frame(void)
   uint32_t ot = MB32(io + 8);
   uint32_t env = MB32(io + 4);
   uint32_t ts = cd_timer_read(1);
-  uint32_t stat, v0, slot, idx;
+  uint32_t stat, slot, idx, env_sv;
   int32_t i;
   MW16(io + 0x1e, (uint16_t)(ts - MB16(0x801e83acu)));
   if (MB8(io + 0x13) != 0) {
     if (MB8(io + 0x15) != 0) {
+        uint32_t elapsed;
       if (MB32(0x801e8500u) == 0)
         gpu_pkt_unlink_n(ot + 0x207c, 0x81f);
       for (;;) {
         stat = gpu_stat_sign();
         if (MB32(0x801e8500u) != stat) break;
-        v0 = (cd_timer_read(1) - ts) & 0xffffu;
-        if (v0 >= 0xc) break;
+        elapsed = (cd_timer_read(1) - ts) & 0xffffu;
+        if (elapsed >= 0xc) break;
       }
       MW32(0x801e8500u, stat);
     }
@@ -12975,9 +12976,9 @@ void system_tick_frame(void)
       gpu_draw_env_put(env);
     }
   }
-  v0 = MB32(io + 0xe4);
+  env_sv = MB32(io + 0xe4);
   MW32(io + 0xe4, 0);
-  MW32(io + 0xe0, v0);
+  MW32(io + 0xe0, env_sv);
   MW16(0x801e83aeu, (uint16_t)cd_timer_read(1));
   i = (int32_t)(int16_t)MB16(io + 0xd0);
   while (i != 0) {
