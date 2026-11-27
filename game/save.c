@@ -446,7 +446,7 @@ void memcard_tick(void)
         return;
       }
       goto bb_80157c80;
-    case ' ':
+    case 0x20:
       brightness_packet_send(0);
       if ((DAT_801bef64 & 0x10) == 0) {
         DAT_801bef6d = 0x23;
@@ -456,11 +456,11 @@ void memcard_tick(void)
       DAT_801bef6d++;
       DAT_801bef74++;
       return;
-    case '!':
+    case 0x21:
       cd_cmd_issue_async(1,0);
       DAT_801bef6d++;
       return;
-    case '\"':
+    case 0x22:
       cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
@@ -475,11 +475,11 @@ void memcard_tick(void)
       }
       DAT_801bef6d--;
       return;
-    case '#':
+    case 0x23:
       cd_cmd_issue_async(0x13,0);
       DAT_801bef6d++;
       return;
-    case '$':
+    case 0x24:
       cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
       if (cd_rc != 2) {
         if (cd_rc != 5) {
@@ -489,7 +489,7 @@ void memcard_tick(void)
         return;
       }
       break;
-    case '0':
+    case 0x30:
       break;
     }
     goto case_30_80157ebc;
@@ -525,7 +525,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = ' ';
+      DAT_801bef6d = 0x20;
     }
     break;
   case 0x15:
@@ -536,7 +536,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = ' ';
+      DAT_801bef6d = 0x20;
     }
     break;
   case 0x16:
@@ -545,7 +545,7 @@ void memcard_tick(void)
       DAT_801bef6d++;
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = ' ';
+      DAT_801bef6d = 0x20;
     }
     break;
   case 0x17:
@@ -589,24 +589,24 @@ bb_80157c80:
       DAT_801bef6d--;
     }
     else if (cd_rc == 5) {
-      DAT_801bef6d = ' ';
+      DAT_801bef6d = 0x20;
     }
     break;
-  case ' ':
+  case 0x20:
     brightness_packet_send(0);
     DAT_801bef74++;
     if ((DAT_801bef64 & 0x10) == 0) {
-      DAT_801bef6d = '#';
+      DAT_801bef6d = 0x23;
     }
     else {
       DAT_801bef6d++;
     }
     break;
-  case '!':
+  case 0x21:
     cd_cmd_issue_async(1,0);
     DAT_801bef6d++;
     break;
-  case '\"':
+  case 0x22:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc == 2) {
       if ((DAT_801bef64 & 0x10) == 0) {
@@ -620,11 +620,11 @@ bb_80157c80:
       DAT_801bef6d--;
     }
     break;
-  case '#':
+  case 0x23:
     cd_cmd_issue_async(0x13,0);
     DAT_801bef6d++;
     break;
-  case '$':
+  case 0x24:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
@@ -634,11 +634,11 @@ bb_80157c80:
       return;
     }
     goto case_30_80157ebc;
-  case '0':
+  case 0x30:
     cd_cmd_issue_async(1,0);
     DAT_801bef6d++;
     break;
-  case '1':
+  case 0x31:
     cd_rc = cd_sync_wait_a(1,(uint8_t *)guest_of(&DAT_801bef64));
     if (cd_rc != 2) {
       if (cd_rc != 5) {
@@ -918,7 +918,7 @@ case_0_8015fbc4:
       else {
         deferred_cmd_post(0x400,0xd,0);
 bb_8015fc08:
-        local_bd = ' ';
+        local_bd = 0x20;
       }
       break;
     case 0x12:
@@ -1176,8 +1176,8 @@ bb_80160464:
       ow_flag = 1;
       local_bd = 0x11;
       break;
-    case ' ':
-    case '!':
+    case 0x20:
+    case 0x21:
       if (a0) goto bb_8015f8c0;
 bb_801604f4:
       if (local_b8 == 1) {
