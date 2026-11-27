@@ -2031,15 +2031,6 @@ int cd_dispatch_tbl8(int a0,uint32_t a1)
   return (int)call_guest(fn,(uint32_t)a0,a1);
 }
 
-/* Two-level CD register cells: cell @0x801bcbXX holds a guest
- * pointer; the register byte/half/word lives at *cell. */
-static uint8_t *cdcell_u8(uint32_t cell)
-{ return (uint8_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-static uint16_t *cdcell_u16(uint32_t cell)
-{ return (uint16_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-static uint32_t cdcell_u32(uint32_t cell)
-{ return *(uint32_t *)guest_at(*(uint32_t *)guest_at(cell)); }
-
 /* cd_reg_init_seq — CD register init sequence: threshold fields on
  * channel block, then command bytes 2/3/2 with params 0x80/0/0x80/0
  * and status 0x20 through cells 0x801bcb0c/10/14/18.
