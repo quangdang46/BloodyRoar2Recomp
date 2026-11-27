@@ -1280,8 +1280,13 @@ void battle_camera_step(uint cam,byte *f0,byte *f1,int battle)
   undefined1 *dst;
   int t2;
   undefined4 stp;
-  short ba;
-  uint ff;
+  /* ba/ff are guest $s2/$s5 (subu @0x80131750 -> gpr[18], lbu @0x80131748
+   * -> gpr[21]): only the cam+0x78==0 init blocks write them, but the
+   * t1==1/2/3 approach paths read them whenever cam+0x78 was left
+   * nonzero by an earlier state — i.e. the callee-saved register
+   * values live at that point (entry values if unwritten this call). */
+  short ba = (short)br2_gpr(18);
+  uint ff = br2_gpr(21);
   /* Guest vec3 slots: target_angles_depth_set / target_depth_set read
    * 3 contiguous s16 through ang_prev; FUN_80194630, pair_depth_set and
    * midpoint_angles_set read/write 3 contiguous u32 through dv,
@@ -5260,7 +5265,10 @@ void cmd_input_parse(int ctrl_g)
   short *rc;
   int t14;
   int st;
-  ushort btn;
+  /* btn is guest $t5 (and 0xFFDF @0x80143834 on gpr[13]): the inner
+   * switch's >7 fallthrough reads it without a write — previous loop
+   * iteration's value, or the caller's $t5 on the first pass. */
+  ushort btn = (ushort)br2_gpr(13);
   int i;
   int *hd;
   uint opc;
@@ -5462,7 +5470,10 @@ void action_from_input(int ctrl_g)
   uint *rec;
   short *tm;
   short *cnt;
-  ushort t3;
+  /* t3 is guest $t3 (and 0xFFDF @0x801433CC on gpr[11]): lim[2] values
+   * outside 0-7 fall through the switch and read it stale — previous
+   * k-iteration's value, or the caller's $t3 on the first pass. */
+  ushort t3 = (ushort)br2_gpr(11);
   int k;
   uint *btn;
   st = *(int *)guest_at((uint32_t)(uintptr_t)((ctrl_g + 0x38)));
@@ -10677,9 +10688,12 @@ void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
   int t4;
   int nd;
   int q;
-  int t3;
+  /* t3/sp are dead-path false positives: q is bounded while(q<4) so
+   * the q==0..3 chain always assigns t3, and (tp+0x4c & 3) is always
+   * <4 so the sp branches cover every case. */
+  int t3 = 0;
   short o1;
-  int sp;
+  int sp = 0;
   int hdg;
   undefined1 *tp;
   int base;
@@ -12386,7 +12400,14 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
   undefined4 in_s5 = br2_gpr(21);
   undefined4 in_s6 = br2_gpr(22);
   undefined4 in_ra = br2_gpr(31);
-  int num;
+  /* Two distinct guest counters the decompiler merged into num:
+   * num_out = $s3 ← $a3=total @0x801870E4, decremented @0x80187180 and
+   * tested @0x80187184 (outer list loop); num_in = $s6, loaded from
+   * *lst[7] @0x80187130, decremented @0x80187174, tested @0x80187178
+   * (inner record loop). Sharing one host local made the outer loop
+   * exit after a single record pass. */
+  int num_out = total;
+  int num_in;
   if (0 < total) {
     setCopControlWord(2,0xe800,0x555);
     setCopControlWord(2,0xf000,0x400);
@@ -12405,10 +12426,10 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
         setCopReg(2,in_zero,lst[1]);
         setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
-        num = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
+        num_in = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
         rp = (int *)guest_at((uint32_t)(uintptr_t)(lst[7] ))+ 1;
-        if (num != 0) {
+        if (num_in != 0) {
           t1 = getCopReg(2,0xd000);
           t2 = getCopReg(2,0xd800);
           setCopControlWord(2,0x2800,t0);
@@ -12426,17 +12447,17 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
             uint32_t prim_a1 = (uint32_t)a1
                 + (uint32_t)(int)*(int16_t *)((char *)lst + 0xe);
             do {
-              num = num + -1;
+              num_in = num_in + -1;
               call_guest4((uint32_t)rp[3],(uint32_t)rp[2],prim_a1,
                           (uint32_t)a2,(uint32_t)rp[1]);
               rp = rp + 4;
-            } while (0 < num);
+            } while (0 < num_in);
           }
         }
       }
-      num = num + -1;
+      num_out = num_out + -1;
       lst = lst + 10;
-    } while (0 < num);
+    } while (0 < num_out);
   }
   return lst;
 
