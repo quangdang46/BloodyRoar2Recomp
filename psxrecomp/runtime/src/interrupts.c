@@ -274,6 +274,8 @@ void psx_dbg_null_jr(CPUState* cpu, uint32_t target)
  * edge-suppressed (they repeat every block while blocked); DELIVER is always
  * recorded (once per interrupt); the not-pending (idle) case emits nothing but
  * still updates the edge key so the next gate/deliver is captured. */
+/* Record an IRQ delivery decision into the event ring (edge-suppressed
+ * for GATE; DELIVER carries the architectural take-PC in aux). */
 static void irq_record_outcome(uint8_t kind, uint8_t detail, uint32_t aux) {
     static uint16_t s_last = 0xFFFFu;
     uint16_t key = ((uint16_t)kind << 8) | detail;
@@ -417,6 +419,7 @@ static uint32_t vblank_period_next(void) {
     return p;
 }
 
+/* Lazily init the CRTC VBlank period + phase accumulator. */
 static void vblank_period_ensure(void) {
     if (s_vblank_period_ready) return;
     s_vblank_period_ready = 1;
@@ -428,6 +431,7 @@ static void vblank_period_ensure(void) {
  * frame). Called once at disc identification; NTSC is the compiled-in
  * default. Resets the phase accumulator — mid-run calls are only valid
  * at boot before the first frame. */
+/* Set the VBlank period in guest cycles (NTSC default; call at boot). */
 void psx_vblank_period_configure(uint64_t num, uint32_t den) {
     if (num == 0 || den == 0) return;
     s_vblank_period_num = num;
@@ -594,6 +598,7 @@ void interrupts_cosim_irq_dump(char *out, int cap)
 }
 #endif
 
+/* Track the last guest cycle where the SIO seq advanced. */
 static void note_sio_progress_cycle(void) {
     uint32_t cur_sio_seq = sio_get_seq();
     if (cur_sio_seq != last_sio_seq_seen) {
@@ -602,6 +607,8 @@ static void note_sio_progress_cycle(void) {
     }
 }
 
+/* Defer VBlank while a memory-card protocol is mid-transfer and SIO
+ * made progress within VBLANK_DEFER_STALE_CYCLES. */
 static int should_defer_vblank_for_sio(void) {
     if (!sio_card_protocol_active()) return 0;
     uint64_t now = psx_get_cycle_count();
@@ -651,6 +658,8 @@ uint64_t g_spu_sample_mode_rejects;
 uint64_t g_spu_sample_pump_null_rejects;
 uint64_t g_spu_sample_ctrl_rejects;
 
+/* Register the mid-frame audio pump called on VBlank edges + SPU
+ * sample boundaries (keeps SPU time flowing through guest busy-waits). */
 void psx_set_midframe_audio_pump(void (*fn)(void)) { s_midframe_audio_pump = fn; }
 
 /* While SPU IRQ9 is enabled, expose each 44.1-kHz sample as a device deadline
@@ -659,6 +668,7 @@ void psx_set_midframe_audio_pump(void (*fn)(void)) { s_midframe_audio_pump = fn;
  * multiple hardware IRQ edges into one latch, slowing IRQ-driven audio engines
  * and blocking cutscene synchronization. Keep an explicit opt-out for bisecting
  * old captures; faithful per-sample scheduling is the production default. */
+/* Cached PSX_SPU_SAMPLE_EVENTS gate (default on). */
 static int spu_sample_event_mode(void) {
     static int enabled = -1;
     if (enabled < 0) {
@@ -668,6 +678,8 @@ static int spu_sample_event_mode(void) {
     return enabled;
 }
 
+/* Cycles to the next 768-cycle SPU sample boundary (UINT32_MAX when
+ * disabled/gated off) — feeds the device deadline scheduler. */
 uint32_t psx_spu_sample_event_cycles_to_next(void) {
     g_spu_sample_deadline_queries++;
     if (!spu_sample_event_mode()) {
@@ -697,6 +709,8 @@ uint32_t psx_spu_sample_event_cycles_to_next(void) {
     return delta;
 }
 
+/* Pump the audio callback when the cycle count lands on a sample
+ * boundary with SPU IRQ9 enabled. */
 void psx_spu_sample_event_service(void) {
     g_spu_sample_service_checks++;
     if (!spu_sample_event_mode() || !s_midframe_audio_pump)
@@ -719,6 +733,8 @@ void psx_spu_sample_event_service(void) {
     }
 }
 
+/* Fire one VBlank: advance period, DEQ/ENQ ring, raise IRQ2, tick
+ * timers/CDROM/LCF, run the mid-frame audio pump. */
 static void fire_vblank_edge(void) {
     /* Subtract one VBlank period rather than reset to 0 so cycle overshoot
      * carries forward. Prevents long-running blocks from rounding multiple
@@ -746,6 +762,7 @@ static void fire_vblank_edge(void) {
     if (s_midframe_audio_pump) s_midframe_audio_pump();
 }
 
+/* Fire every VBlank edge whose period has elapsed (SIO-deferred). */
 void interrupts_service_scheduled_events(void) {
     note_sio_progress_cycle();
     if (in_exception) return;
@@ -756,20 +773,24 @@ void interrupts_service_scheduled_events(void) {
     }
 }
 
+/* Guest cycles until the next VBlank edge (0 if due now). */
 uint32_t interrupts_cycles_to_vblank(void) {
     vblank_period_ensure();
     if (cycles_since_vblank >= s_vblank_cur_period) return 0;
     return s_vblank_cur_period - cycles_since_vblank;
 }
 
+/* Guest cycles elapsed since the last VBlank edge. */
 uint32_t interrupts_get_cycles_since_vblank(void) {
     return cycles_since_vblank;
 }
 
+/* Set the since-VBlank counter (savestate/netplay sync). */
 void interrupts_set_cycles_since_vblank(uint32_t v) {
     cycles_since_vblank = v;
 }
 
+/* Advance the interrupt clock and service due VBlank edges. */
 void interrupts_advance_cycles(uint32_t cycles) {
     cycles_since_vblank += cycles;
     interrupts_service_scheduled_events();
@@ -859,6 +880,7 @@ jmp_buf exception_jmpbuf;  /* non-static so traps.c can deferred-longjmp */
  * single global exception_jmpbuf always holds the latest-armed frame, so the
  * current epoch identifies every longjmp's target. */
 uint64_t g_exc_setjmp_epoch = 0;
+/* Epoch of the live exception setjmp frame (longjmp-target identity). */
 uint64_t psx_exception_setjmp_epoch(void) { return g_exc_setjmp_epoch; }
 /* The fiber that owns the current exception setjmp. A longjmp must run on
  * that same fiber/stack, so a non-owner defers by switching back to it
@@ -909,10 +931,15 @@ static uint64_t s_last_interrupt_check_cycle = UINT64_MAX;
  * rewind or load#N can hit the 16K poll edge at a different guest point. */
 static uint32_t s_fast_maintenance = 0;
 
+/* Guest PC of the most recent interrupt-check call. */
 uint32_t psx_last_irq_check_pc(void) { return s_last_interrupt_check_pc; }
+/* Resume PC latched by the compiled IRQ-delivery path. */
 uint32_t psx_compiled_irq_resume_pc(void) { return s_compiled_interrupt_resume_pc; }
+/* Guest cycle of the most recent interrupt check. */
 uint64_t psx_last_irq_check_cycle(void) { return s_last_interrupt_check_cycle; }
+/* Total psx_check_interrupts invocations. */
 uint64_t psx_interrupt_total_checks(void) { return total_checks; }
+/* Fast-path IRQ maintenance counter (host-only diagnostic). */
 uint32_t psx_interrupt_fast_maintenance(void) { return s_fast_maintenance; }
 int psx_irq_resume_context_snapshot_site(void)
 {
@@ -1009,6 +1036,7 @@ void psx_defer_switch_set_default(int on)
     s_defer_switch_default = on ? 1 : 0;
 }
 
+/* Cached PSX_DEFER_SWITCH gate (default on). */
 static int defer_switch_enabled(void) {
     static int s = -1;
     if (s < 0) { const char *e = getenv("PSX_DEFER_SWITCH");
@@ -1016,10 +1044,12 @@ static int defer_switch_enabled(void) {
     return s;
 }
 
+/* Compare PCs ignoring the KSEG mirror bit. */
 static int same_guest_pc(uint32_t a, uint32_t b) {
     return (((a ^ b) & 0x1FFFFFFFu) == 0);
 }
 
+/* True while executing inside the exception handler. */
 int psx_get_in_exception(void) { return in_exception; }
 
 /* Co-sim (COSIM_ORACLE.md): fold the GENUINE guest-timing interrupt statics into the
@@ -1029,6 +1059,7 @@ int psx_get_in_exception(void) { return in_exception; }
  * interp backends by call frequency and would be a false first-divergence. The one
  * quantity that is a real guest-cycle timing value is cycles_since_vblank (drives the
  * VBLANK deadline); in_exception mirrors the architectural handler-active state. */
+/* Fold genuine guest-timing IRQ state into the co-sim state hash. */
 uint64_t interrupts_cosim_hash(uint64_t h) {
     const uint64_t P = 1099511628211ULL;
     uint32_t v = cycles_since_vblank;
@@ -1072,6 +1103,8 @@ uint32_t g_rfe_noexc_sp      = 0;
 uint32_t g_rfe_noexc_tcb     = 0;
 static int  g_rfe_noexc_latched = 0;
 
+/* Diagnostic: count/latch ReturnFromException escapes outside an
+ * exception context. */
 void psx_rfe_mark_escape(void) {
     g_rfe_mark_total++;
     {
@@ -1209,6 +1242,7 @@ void psx_get_freeze_diag(uint64_t *out_total_checks,
     if (out_exc_reentry_blocks)  *out_exc_reentry_blocks = exception_reentry_blocks;
 }
 
+/* Reset all interrupt state for boot/rematch (incl. I_STAT/I_MASK). */
 void interrupts_init(void) {
     dispatch_count = 0;
     in_exception = 0;
@@ -1257,6 +1291,8 @@ void interrupts_init(void) {
     }
 }
 
+/* Re-anchor interrupt timing after a savestate load (cooldown,
+ * resume latches, VBlank phase preserved from the snap). */
 void interrupts_resync_after_restore(void) {
     /* Absolute guest-cycle timestamps from the pre-load timeline are invalid
      * once psx_cycle_count rewinds (typical: save → play N seconds → load).
@@ -1362,6 +1398,7 @@ void interrupts_log_last_vblank_irqctx(const char *tag)
  * record the requested code, switch back to the owner, and the post-switch
  * check in traps.c psx_change_thread_fiber executes the longjmp on the
  * correct stack. */
+/* longjmp on the fiber owning the exception setjmp (deferred if needed). */
 static void deferred_exception_longjmp(int code) {
     /* Dead-frame guard: exception_jmpbuf is only a valid target while the
      * setjmp frame that armed it is still on a live host stack. Once every
@@ -1394,11 +1431,13 @@ static void deferred_exception_longjmp(int code) {
     longjmp(exception_jmpbuf, code);
 }
 
+/* longjmp to the armed exception handler frame. */
 void psx_exception_longjmp(void) {
     debug_server_log_restore_event(2, debug_cpu_ptr ? debug_cpu_ptr->pc : 0, 1);
     deferred_exception_longjmp(1);
 }
 
+/* Escape hatch for savestate-restore longjmps. */
 void psx_restore_state_escape(void) {
     if (in_exception) {
         debug_server_log_restore_event(1, debug_cpu_ptr ? debug_cpu_ptr->pc : 0, 2);
@@ -1421,6 +1460,7 @@ void psx_restore_state_escape(void) {
  * PRECISE_IRQ_SLICE.md). Each peripheral owns its own next-IRQ query; this just
  * takes the min. Every query is a conservative UNDER-estimate (smaller distance
  * => slice more => never run past an event), so this is too. */
+/* Guest cycles to the next scheduled device/IRQ event. */
 uint32_t cycles_to_next_event(void) {
     uint32_t best = 0xFFFFFFFFu;
     /* VBLANK is paced here (interrupts.c owns cycles_since_vblank). The deferred
@@ -1468,6 +1508,7 @@ void psx_interrupt_check_path_diag(uint64_t *entry, uint64_t *fast_sr,
     if (irq_deliv) *irq_deliv = g_irq_deliver_count;
 }
 
+/* True if an IRQ is pending+deliverable at the current cycle. */
 int psx_interrupt_delivery_needed(const CPUState* cpu) {
     if (s_defer_switch_pending) { s_need_defer++; return 1; }
     if ((i_stat & i_mask) == 0) { s_skip_none++; return 0; }
@@ -1492,6 +1533,7 @@ int psx_interrupt_delivery_needed(const CPUState* cpu) {
     return 1;
 }
 
+/* Inner interrupt-check body (delivery + dispatch). */
 void psx_check_interrupts_run(CPUState* cpu) {
     psx_cyc_batch_flush();
     extern int g_ls_suppress_record;
@@ -2656,6 +2698,7 @@ irq_deliver_eval:
  *
  * csr layout: arm64 stores x19..x30 as 6 stp pairs (96 bytes); x86-64 stores
  * rbx,rbp,r12..r15 as 6 movq (48 bytes). */
+/* Per-block interrupt check entry (compiled path). */
 void psx_check_interrupts(CPUState* cpu) {
     /* Fast path: no deliverable interrupt source, not inside an exception,
      * and no deferred cooperative switch pending.  psx_check_interrupts_run()
@@ -2754,6 +2797,7 @@ void psx_check_interrupts(CPUState* cpu) {
  * interrupts via psx_check_interrupts (cpu->pc / scratch sentinel). Forwarding
  * here gives the mmx6 baseline interrupt behavior — sufficient to build+run the
  * current generated code on the good baseline for instrumented comparison. */
+/* Interrupt check pinned to an explicit resume PC. */
 void psx_check_interrupts_at(CPUState* cpu, uint32_t resume_pc) {
     uint32_t prev = s_compiled_interrupt_resume_pc;
     s_compiled_interrupt_resume_pc = resume_pc;
@@ -2761,11 +2805,13 @@ void psx_check_interrupts_at(CPUState* cpu, uint32_t resume_pc) {
     s_compiled_interrupt_resume_pc = prev;
 }
 
+/* True if an interrupt check already ran this cycle for resume_pc. */
 int psx_interrupts_checked_at_current_cycle(uint32_t resume_pc) {
     return s_last_interrupt_check_cycle == psx_get_cycle_count() &&
            same_guest_pc(s_last_interrupt_check_pc, resume_pc);
 }
 
+/* Dispatch-entry interrupt check for generated code. */
 void psx_check_interrupts_dispatch_entry(CPUState* cpu, uint32_t resume_pc) {
     /* CD/DMA handler-entry probe (PSX_CDPROBE): the fight-entry wedge waits on
      * DeliverEvent(0xF0000009,0x20) which only cd_dma_chan_reset emits, reached

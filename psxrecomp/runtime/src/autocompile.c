@@ -32,16 +32,20 @@ enum { AC_IDLE = 0, AC_RUNNING = 1, AC_DONE = 2 };
 #ifdef _WIN32
 static volatile LONG s_state     = AC_IDLE;
 static volatile LONG s_exit_code = -1;
+/* Atomic load of the autocompile state machine state. */
 static int ac_state_load(void) {
     return (int)InterlockedCompareExchange(&s_state, AC_IDLE, AC_IDLE);
 }
+/* Atomic store of the autocompile state machine state. */
 static void ac_state_store(int value) {
     InterlockedExchange(&s_state, (LONG)value);
 }
 #else
 static int s_state     = AC_IDLE;
 static int s_exit_code = -1;
+/* Atomic load of the autocompile state machine state. */
 static int ac_state_load(void) { return s_state; }
+/* Atomic store of the autocompile state machine state. */
 static void ac_state_store(int value) { s_state = value; }
 #endif
 static uint32_t     s_runs      = 0;
@@ -56,6 +60,7 @@ static uint64_t     s_retry_not_before_ms = 0;
 #define AC_RETRY_INITIAL_MS 1000ull
 #define AC_RETRY_MAX_MS   300000ull
 
+/* Monotonic millisecond clock for backoff/retry timing. */
 static uint64_t autocompile_now_ms(void) {
 #ifdef _WIN32
     return (uint64_t)GetTickCount64();
@@ -83,6 +88,7 @@ static void autocompile_report_broken_once(void);
 static void autocompile_report_broken_once(void) { }
 #endif
 
+/* Record a compile failure; bumps consecutive-fail backoff. */
 static void autocompile_note_failure(void) {
     s_fails++;
     if (s_consecutive_fails < 31u) s_consecutive_fails++;
@@ -95,6 +101,7 @@ static void autocompile_note_failure(void) {
     autocompile_report_broken_once();
 }
 
+/* Record a compile success; clears failure backoff. */
 static void autocompile_note_success(void) {
     s_consecutive_fails = 0;
     s_retry_not_before_ms = 0;
@@ -131,6 +138,7 @@ static int          s_shard_result_seen = 0;  /* did we parse a result line? */
  * reason, instead of a state that has to be reconstructed from counters. */
 static char s_degraded[600];
 
+/* Latch the first degraded-mode cause (kept for status JSON). */
 static void autocompile_set_degraded(const char *fmt, ...) {
     if (s_degraded[0]) return;          /* keep the FIRST cause, not the last */
     va_list ap;
@@ -263,6 +271,7 @@ static int shard_result_values(const char *line, unsigned *ok_out,
     return 1;
 }
 
+/* Parse a "shard result" output line into ok/failed/skipped. */
 static int shard_result_line_locked(const char *line) {
     unsigned ok = 0, failed = 0, skipped = 0;
     if (!shard_result_values(line, &ok, &failed, &skipped)) return 0;
@@ -273,6 +282,7 @@ static int shard_result_line_locked(const char *line) {
     return 1;
 }
 
+/* Consume one pending child output line (shard result vs raw). */
 static void child_line_locked(void) {
     if (shard_result_line_locked(s_child_line)) return;
     static const char marker[] = "PSX_SHARD_PUBLISHED ";
@@ -295,6 +305,7 @@ static void child_line_locked(void) {
     WakeConditionVariable(&s_publish_cv);
 }
 
+/* Incremental parser for preparer stdout -> publish items. */
 static void publish_parse_locked(const char *buf, int n) {
     for (int i = 0; i < n; i++) {
         char c = buf[i];
@@ -423,6 +434,7 @@ static DWORD WINAPI publish_prepare_thread_main(LPVOID unused) {
     return 0;
 }
 
+/* Pop the next ready publish item (emulation-thread side). */
 static PublishItem *publish_ready_pop(void) {
     PublishItem *item;
     EnterCriticalSection(&s_out_lock);
@@ -438,6 +450,7 @@ static PublishItem *publish_ready_pop(void) {
     return item;
 }
 
+/* Mark the in-flight publish commit finished. */
 static void publish_commit_finished(void) {
     EnterCriticalSection(&s_out_lock);
     if (s_publish_commit_active) s_publish_commit_active--;
@@ -445,6 +458,7 @@ static void publish_commit_finished(void) {
     LeaveCriticalSection(&s_out_lock);
 }
 
+/* True while unprocessed publish items remain. */
 static int publish_pending(void) {
     int pending;
     EnterCriticalSection(&s_out_lock);
@@ -454,12 +468,14 @@ static int publish_pending(void) {
     return pending;
 }
 
+/* Count a publish-load failure for status reporting. */
 static void publish_note_load_failure(void) {
     EnterCriticalSection(&s_out_lock);
     s_publish_load_fail_run++;
     LeaveCriticalSection(&s_out_lock);
 }
 
+/* Drop all queued publish items (shutdown/error path). */
 static int publish_discard_all(void) {
     PublishItem *raw, *ready;
     EnterCriticalSection(&s_out_lock);
@@ -491,6 +507,7 @@ static int publish_discard_all(void) {
     return 1;
 }
 
+/* Append child output to the publish parser (locked). */
 static void out_append(const char *buf, int n) {
     EnterCriticalSection(&s_out_lock);
     publish_parse_locked(buf, n);
@@ -510,10 +527,12 @@ static void out_append(const char *buf, int n) {
 }
 
 #ifdef PSX_AUTOCOMPILE_TEST
+/* Test hook: feed synthetic preparer output. */
 void autocompile_test_feed_output(const char *buf, int n) {
     out_append(buf, n);
 }
 
+/* Test hook: start the preparer thread in test mode. */
 int autocompile_test_start_preparer(void) {
     EnterCriticalSection(&s_out_lock);
     s_publish_input_done = 0;
@@ -524,6 +543,7 @@ int autocompile_test_start_preparer(void) {
     return s_prepare_thread != NULL;
 }
 
+/* Test hook: signal end of preparer input. */
 void autocompile_test_finish_input(void) {
     EnterCriticalSection(&s_out_lock);
     s_publish_input_done = 1;
@@ -531,6 +551,7 @@ void autocompile_test_finish_input(void) {
     LeaveCriticalSection(&s_out_lock);
 }
 
+/* Test hook: join the preparer thread with a timeout. */
 int autocompile_test_join_preparer(DWORD timeout_ms) {
     if (!s_prepare_thread) return 1;
     if (WaitForSingleObject(s_prepare_thread, timeout_ms) != WAIT_OBJECT_0)
@@ -540,6 +561,7 @@ int autocompile_test_join_preparer(DWORD timeout_ms) {
     return 1;
 }
 
+/* Test hook: count of ready publish items. */
 int autocompile_test_ready_count(void) {
     int count = 0;
     EnterCriticalSection(&s_out_lock);
@@ -549,6 +571,7 @@ int autocompile_test_ready_count(void) {
     return count;
 }
 
+/* Test hook: high-water mark of ready items. */
 int autocompile_test_ready_highwater(void) {
     int highwater;
     EnterCriticalSection(&s_out_lock);
@@ -557,6 +580,7 @@ int autocompile_test_ready_highwater(void) {
     return highwater;
 }
 
+/* Test hook: count of in-flight publish items. */
 int autocompile_test_preparing_count(void) {
     int preparing;
     EnterCriticalSection(&s_out_lock);
@@ -565,6 +589,7 @@ int autocompile_test_preparing_count(void) {
     return preparing;
 }
 
+/* Test hook: discard all publish items. */
 void autocompile_test_discard_all(void) {
     (void)publish_discard_all();
 }
@@ -614,6 +639,7 @@ static DWORD WINAPI watch_thread(LPVOID arg) {
  * printing the binding up front turns that class of breakage into a one-line
  * diagnosis; the msys-2.0.dll/cygwin1.dll sibling check calls it out loudly
  * before the first compile ever runs. */
+/* Report an interpreter-region hit as an autocompile candidate. */
 static void autocompile_report_interpreter(void) {
     char tok[MAX_PATH];
     size_t n = 0;
@@ -699,6 +725,7 @@ static void autocompile_report_interpreter(void) {
  * The runtime still runs (interpreted) exactly as before — this only removes
  * the silence. */
 #ifdef _WIN32
+/* Scan argv for autocompile path flags (--recompiler/--runtime-include). */
 static void autocompile_check_path_args(void) {
     static const char *flags[] = { "--recompiler", "--runtime-include" };
     for (size_t i = 0; i < sizeof(flags) / sizeof(flags[0]); i++) {
@@ -769,12 +796,15 @@ void autocompile_configure(const char *cmd, const char *cwd) {
 #endif
 }
 
+/* Configure the autocompile cache dir + captures path. */
 void autocompile_set_cache_paths(const char *cache_dir, const char *captures) {
     snprintf(s_cache_dir, sizeof(s_cache_dir), "%s", cache_dir ? cache_dir : "");
     snprintf(s_captures,  sizeof(s_captures),  "%s", captures  ? captures  : "");
 }
 
+/* True when autocompile has been configured with a command. */
 int autocompile_configured(void) { return s_cmd[0] != '\0'; }
+/* True while an autocompile run is in flight. */
 int autocompile_busy(void)       { return ac_state_load() != AC_IDLE; }
 
 /* Probe PATH for a real C compiler (gcc/cc/clang). A configured command STRING
@@ -782,6 +812,7 @@ int autocompile_busy(void)       { return ac_state_load() != AC_IDLE; }
  * overlay_autocompile_cmd, so it can't tell a dev box from a toolchain-less
  * player. This opens each candidate exe in each PATH dir — the actual "can we
  * compile a shard" signal. Memoized (PATH doesn't change mid-run). */
+/* Cached probe: is a usable C toolchain on PATH. */
 int autocompile_toolchain_available(void) {
     static int s_cached = -1;
     if (s_cached >= 0) return s_cached;
@@ -815,6 +846,7 @@ int autocompile_toolchain_available(void) {
     return found;
 }
 
+/* Request an autocompile run (state-gated + failure-backoff). */
 int autocompile_request(void) {
     /* DONE owns an unconsumed cache rescan/result. Only the emulation-thread
      * poll may return it to IDLE; never overwrite it with another child. */
@@ -1030,6 +1062,7 @@ static int parse_shard_result(void) {
 #endif
 }
 
+/* Emulation-thread pump: drain one publish item per call. */
 void autocompile_poll_main(void) {
     /* Drain at most one atomic publication per frame. The producer only sends
      * mapped-but-uninitialized images; callback wiring, validation, and
@@ -1098,6 +1131,7 @@ void autocompile_poll_main(void) {
         autocompile_note_success();
 }
 
+/* Stop the preparer thread and free publish state. */
 void autocompile_shutdown(void) {
 #ifdef _WIN32
     if (!s_out_lock_init) return;   /* never configured — nothing to stop */
@@ -1160,6 +1194,7 @@ static int json_escape_into(char *dst, int cap, const char *src, int n) {
     return o;
 }
 
+/* JSON status snapshot for the debug server. */
 int autocompile_status_json(char *out, int cap) {
     static const char *names[] = { "idle", "running", "done" };
     char tail[2048];

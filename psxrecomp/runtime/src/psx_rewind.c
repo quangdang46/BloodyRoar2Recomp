@@ -102,6 +102,8 @@ static const uint8_t FONT8[59][8] = {
 
 #if !defined(PSX_HAS_RBENGINE_SNAP)
 
+/* No-snapshot builds: the whole rewind API degrades to inert stubs so
+ * callers (host_osd, debug server, main loop) link unchanged. */
 void psx_rewind_set_depth(uint32_t depth) { (void)depth; }
 void psx_rewind_set_interval(uint32_t interval) { (void)interval; }
 void psx_rewind_set_enabled(int enabled) { (void)enabled; }

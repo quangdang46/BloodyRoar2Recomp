@@ -30,6 +30,7 @@
 #include <time.h>
 #endif
 
+/* Monotonic millisecond clock (QPC on Windows, clock_gettime else). */
 static double savestate_mono_ms(void) {
 #ifdef _WIN32
     static LARGE_INTEGER freq;
@@ -146,6 +147,7 @@ static void ensure_dir(const char* dir) {
 #endif
 }
 
+/* Free and clear the pending load-blob buffer. */
 static void clear_load_blob(void) {
     free(s_load_blob);
     s_load_blob = NULL;
@@ -178,6 +180,7 @@ static int pst_peek_bios_checksum(const char* path, uint32_t* out_cksum) {
     return 1;
 }
 
+/* True for pre-scoping state_XXXXXXXX_slotNN.pst filenames. */
 static int is_legacy_pst_name(const char* name) {
     const char* p;
     int digits;
@@ -196,6 +199,7 @@ static int is_legacy_pst_name(const char* name) {
     return 1;
 }
 
+/* Cross-platform file-exists check. */
 static int path_exists(const char* path) {
 #ifdef _WIN32
     return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
@@ -321,6 +325,7 @@ static void migrate_legacy_pst_by_bios(const char* root, uint32_t openbios_words
  * titles keep every existing state. */
 static char s_disc_token[16];
 
+/* Set the _discN token for multi-disc state filenames (0/neg clears). */
 void savestate_set_disc_scope(int disc_number) {
     if (disc_number >= 1)
         snprintf(s_disc_token, sizeof(s_disc_token), "_disc%d", disc_number);
@@ -334,6 +339,7 @@ void savestate_set_disc_scope(int disc_number) {
  * taken on. Moving them would be a guess, and guessing wrong reintroduces the
  * exact mix-up this scoping exists to prevent -- so say where they are and
  * leave them for the player to place deliberately. */
+/* Warn once about unscoped legacy .pst files that cannot be placed. */
 static void note_unscoped_legacy_states(const char* bios_dir) {
     int n = 0;
 #if defined(_WIN32)
@@ -419,15 +425,18 @@ const char* savestate_bios_token(void) {
     return s_bios_token;
 }
 
+/* Wordsum of the open BIOS image (0 if unknown). */
 uint32_t savestate_openbios_wordsum(void) {
     return s_openbios_wordsum;
 }
 
+/* BIOS identity pair used to key/validate savestate files. */
 void savestate_get_integrity(uint32_t* bios_checksum, uint32_t* entry_pc) {
     if (bios_checksum) *bios_checksum = s_bios_checksum;
     if (entry_pc) *entry_pc = s_entry_pc;
 }
 
+/* Build the .pst path for a slot (keyed by entry_pc + disc scope). */
 int savestate_slot_path(int slot, char* out, size_t cap) {
     if (!s_configured || !out || cap == 0) return 0;
     if (slot < 0 || slot >= SAVESTATE_SLOTS) return 0;
@@ -439,6 +448,7 @@ int savestate_slot_path(int slot, char* out, size_t cap) {
     return 1;
 }
 
+/* Build the .thumb screenshot path for a slot. */
 static int savestate_thumb_path(int slot, char* out, size_t cap) {
     if (!s_configured || !out || cap == 0) return 0;
     if (slot < 0 || slot >= SAVESTATE_SLOTS) return 0;
@@ -448,6 +458,7 @@ static int savestate_thumb_path(int slot, char* out, size_t cap) {
     return 1;
 }
 
+/* True if the slot has a non-empty .pst on disk. */
 int savestate_slot_exists(int slot) {
     char path[600];
     FILE* f;
@@ -461,6 +472,7 @@ int savestate_slot_exists(int slot) {
     return sz > 0;
 }
 
+/* Last-modified time of the slot file (0 when absent). */
 int savestate_slot_mtime(int slot, int64_t* out_time) {
     char path[600];
     if (out_time) *out_time = 0;
@@ -482,6 +494,7 @@ int savestate_slot_mtime(int slot, int64_t* out_time) {
 #endif
 }
 
+/* Render and save a thumbnail for the slot. */
 int savestate_capture_thumb(int slot) {
     char path[600];
     FILE* f;
@@ -521,6 +534,7 @@ int savestate_capture_thumb(int slot) {
     return fclose(f) == 0;
 }
 
+/* Read a slot thumbnail into an ARGB buffer (scaled to w/h). */
 int savestate_read_thumb(int slot, uint32_t* out_argb, int out_w, int out_h) {
     char path[600];
     FILE* f;
@@ -547,6 +561,7 @@ int savestate_read_thumb(int slot, uint32_t* out_argb, int out_w, int out_h) {
     return 1;
 }
 
+/* Check a slot file loads under the current BIOS identity. */
 int savestate_slot_compatible(int slot, char* reason, size_t reason_cap) {
     uint8_t* data = NULL;
     size_t size = 0;
@@ -569,6 +584,7 @@ int savestate_slot_compatible(int slot, char* reason, size_t reason_cap) {
     return ok;
 }
 
+/* Read a whole slot .pst into a malloc'd buffer. */
 int savestate_read_slot(int slot, uint8_t** data_out, size_t* size_out) {
     char path[600];
     FILE* f;
@@ -597,6 +613,7 @@ int savestate_read_slot(int slot, uint8_t** data_out, size_t* size_out) {
     return 1;
 }
 
+/* Write a slot .pst atomically-ish (tmp + rename). */
 int savestate_write_slot(int slot, const void* data, size_t size) {
     char path[600];
     FILE* f;
@@ -647,6 +664,7 @@ static int netplay_user_blocked(void) {
     return 1;
 }
 
+/* Queue a save request (slot bounds + state checks). */
 static int request_save_inner(int slot) {
     if (!s_configured) { fprintf(stderr, "savestate: not configured\n"); return 0; }
     if (slot < 0 || slot >= SAVESTATE_SLOTS) return 0;
@@ -660,6 +678,7 @@ static int request_save_inner(int slot) {
     return 1;
 }
 
+/* Queue a load request (slot bounds + state checks). */
 static int request_load_inner(int slot) {
     if (!s_configured) { fprintf(stderr, "savestate: not configured\n"); return 0; }
     if (slot < 0 || slot >= SAVESTATE_SLOTS) return 0;
@@ -679,27 +698,32 @@ static int request_load_inner(int slot) {
     return 1;
 }
 
+/* Public save request. */
 int savestate_request_save(int slot) {
     if (netplay_user_blocked()) return 0;
     return request_save_inner(slot);
 }
 
+/* Public load request. */
 int savestate_request_load(int slot) {
     if (netplay_user_blocked()) return 0;
     return request_load_inner(slot);
 }
 
+/* Protocol-flavored save request (menu/CLI path). */
 int savestate_request_save_protocol(int slot) {
     /* Follow-host sync: guests must write the host-authoritative .pst. */
     return request_save_inner(slot);
 }
 
+/* Protocol-flavored load request. */
 int savestate_request_load_protocol(int slot) {
     /* Follow-host sync: guests must apply the host-authoritative .pst. */
     clear_load_blob();
     return request_load_inner(slot);
 }
 
+/* Queue a load from an in-memory blob (netplay/transfer). */
 int savestate_request_load_blob_protocol(const void* data, size_t size) {
     uint8_t* copy;
     if (!s_configured) {
@@ -727,10 +751,12 @@ int savestate_request_load_blob_protocol(const void* data, size_t size) {
     return 1;
 }
 
+/* True while a save or load request is queued. */
 int savestate_pending(void) {
     return (s_save_pending >= 0 || s_load_pending >= 0) ? 1 : 0;
 }
 
+/* JSON status snapshot for the debug server / launcher. */
 void savestate_status_json(char* buf, size_t cap) {
     if (!buf || cap == 0) return;
     snprintf(buf, cap,
@@ -741,28 +767,33 @@ void savestate_status_json(char* buf, size_t cap) {
              s_status_last_slot);
 }
 
+/* Consume the load-completed flag (edge-triggered). */
 int savestate_take_load_completed(void) {
     int v = s_load_completed;
     s_load_completed = 0;
     return v;
 }
 
+/* Consume the load-failed flag. */
 int savestate_take_load_failed(void) {
     int v = s_load_failed;
     s_load_failed = 0;
     return v;
 }
 
+/* Consume the save-failed flag. */
 int savestate_take_save_failed(void) {
     int v = s_save_failed;
     s_save_failed = 0;
     return v;
 }
 
+/* Guest PC at the last successful save. */
 uint32_t savestate_last_save_pc(void) {
     return s_last_save_pc;
 }
 
+/* Per-frame pump: execute pending save/load at a safe boundary. */
 void savestate_poll(CPUState* cpu, uint32_t resume_pc) {
     if (s_save_pending < 0 && s_load_pending < 0) return;   /* hot path: nothing staged */
 
