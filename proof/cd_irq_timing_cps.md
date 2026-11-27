@@ -959,3 +959,23 @@ cd_irq_probe.c: 156,688 lines.
 
 Verified: clean build EU + USA; headless :5101 frames 9623 -> 15365+
 attract CD streaming, no wedge.
+
+## Batch 48 (orch/w5/e05) — entry-level coverage audit: 100%
+
+Re-ran the dispatch-table diff post-batch-47: fully-uncovered func
+entries in 0x8018-0x801B = **0**, partial = **0**. Every generated
+function entry in the CD/IRQ region now resolves to clean coverage
+(cpst_ body, peer port, or fnmap clean target). The only known
+residual is embedded entry 0x8019EB78 (transformer limitation:
+non-first-block embedded entry).
+
+Band scan for context: 0x8012-0x8017 game-logic has 515
+fully-uncovered func entries + 8 partial — the generated frontier
+peers are actively hand-porting (cps_clean_annotation_complete.md).
+Deliberately NOT swept: mechanical cpst_ rows there would shadow
+in-flight peer ports (same violation class as batch-24 audit) and
+the band is untimed-by-convention anyway.
+
+Post-region 0x801C+: zero uncovered entries.
+
+No code changes — audit only.
