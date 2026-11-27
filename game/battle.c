@@ -17698,7 +17698,7 @@ extern int  cd_search_file(undefined4 *path,uint32_t arg);  /* guest 0x80197b30 
 extern int cd_file_rec_find(uint32_t a0,uint32_t a1);  /* cd.c 0x801980ec */
 extern int cd_strncmp12_eq(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e08 */
 extern uint32_t cd_dir_scan(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e28 */
-extern int  cd_mode_flag_set(int opcode,void *param_addr,int param_val);
+extern uint32_t cd_mode_flag_set(int8_t opcode,int param_addr,uint32_t param_val);
 extern int  cd_timer_read(int mode);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
@@ -17851,11 +17851,16 @@ void pad_record_init(void)
   int tb;
   int ent;
   int nd;
-  byte cdbuf [4];
-  undefined4 sent [8];
+  /* guest frame 0x50: param block @sp+0x28 ({0x80} mode byte read by the
+   * CD BIOS via param_addr), cd_search_file's 0x18-byte record lands at
+   * sp+0x10. Both must live in guest RAM — host stack pointers would be
+   * dereferenced as guest addresses by the delegated generated issue path. */
+  uint32_t pri_frm = br2_guest_frame(0x50);
+  byte *cdbuf = (byte *)guest_at(pri_frm + 0x28);
+  undefined4 *sent = (undefined4 *)guest_at(pri_frm + 0x10);
   cdbuf[0] = 0x80;
   do {
-    t = cd_mode_flag_set(0xe,cdbuf,0);
+    t = (int)cd_mode_flag_set(0xe,(int)(pri_frm + 0x28),0);
   } while (t == 0);
   if (*(byte *)guest_at(0x801c4580) == 0) {
     cd_timer_read(3);
@@ -17894,6 +17899,7 @@ void pad_record_init(void)
       tb = tb + 1;
     } while (0 < t);
   }
+  br2_guest_frame_free();
   return;
 }
 
