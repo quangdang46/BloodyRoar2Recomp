@@ -273,45 +273,44 @@ extern uint8_t  *_g_system_config_ptr;
 #define _DAT_801f35f4   (*(uint32_t *)g_DAT_801f35f4)
 
 /* ---- callee externs ----
- * The `name()` decls below are deliberately unprototyped: the Ghidra
- * defs disagree with call sites on arg counts/types (e.g. ret_one is
- * defined (void) but called with 2 args; mc_data_* take uint32_t p11
- * but callers pass host pointers). Tightening them requires a
- * per-callsite ABI audit — do NOT "fix" without one. */
+ * Most decls below are now prototyped (per-callsite ABI audit).
+ * Remaining `()` decls are deliberate: ret_one/ret_stub_b are called
+ * with args the (void) defs provably ignore — a real prototype would
+ * make those call sites constraint violations. */
 extern void brightness_packet_send(int32_t);
 extern void mc_state_init(void);
-extern int cd_cmd_issue_async();
-extern int cd_sync_wait_a();
-extern int cd_result_wait_b_fwd();
+extern uint32_t cd_cmd_issue_async(int8_t,int);
+extern uint32_t cd_sync_wait_a(int,uint8_t *);
+extern uint32_t cd_result_wait_b_fwd(int,uint32_t);
 extern void cd_file_open(int32_t,uint8_t *);
-extern int cd_stamp_to_sector();
+extern int cd_stamp_to_sector(const void *);
 extern uint32_t cd_dir_read_wrap(uint32_t);
-extern void slot_status_fill();
-extern void cd_reg_window_update();
+extern void slot_status_fill(uint8_t *);
+extern void cd_reg_window_update(uint8_t *);
 extern void cd_reg_window_u16(int32_t,uint32_t);
-extern int mc_action_dispatch_b();
-extern int mc_action_dispatch();
+extern int32_t mc_action_dispatch_b(uint32_t,uint32_t);
+extern int32_t mc_action_dispatch(uint32_t,uint32_t);
 extern int ret_one();
-extern int deferred_cmd_exec();
-extern void save_rec_table_copy();
+extern int deferred_cmd_exec(uint32_t,int32_t);
+extern void save_rec_table_copy(uint32_t *,uint32_t,int32_t);
 extern int save_blk_cmp32(void);
-extern int mc_data_write();
+extern int mc_data_write(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern int mc_op_dispatch(uint32_t);
-extern int mc_read_queue();
+extern int mc_read_queue(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern int mc_op_dispatch_b(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern int mc_data_read();
+extern int mc_data_read(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern int sprintf_core(char *,char *,...);
 extern void announce_param_block_init(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
-extern void scroll_offset_accumulate();
-extern void print_mode_dispatch_b();
-extern int intro_movie_state();
-extern void deferred_cmd_post();
+extern void scroll_offset_accumulate(int16_t,int16_t);
+extern void print_mode_dispatch_b(int32_t,uint32_t,uint32_t);
+extern int32_t intro_movie_state(int32_t);
+extern void deferred_cmd_post(uint32_t,int,short);
 extern int dialog_sel_dispatch(intptr_t,uint32_t);
-extern void menu_stepper_state_advance();
-extern void hud_gauge_render();
+extern void menu_stepper_state_advance(void *);
+extern void hud_gauge_render(uint32_t,uint32_t,uint32_t);
 extern void empty_ret(void);
 extern int frame_divisor_get(void);
-extern void scroll_offset_set();
+extern void scroll_offset_set(int32_t,int32_t);
 extern void battle_session_arm(intptr_t,int);
 extern void frame_tick(intptr_t);
 extern void bios_kobj_tramp(void);
@@ -1210,7 +1209,7 @@ void memcard_slot_poll(void)
   int slot_i;
   char status_buf[24];
 
-  slot_status_fill(status_buf);
+  slot_status_fill((uint8_t *)status_buf);
   slot_flag = &DAT_801f24d0;
   slot_i = 0;
   rec = &DAT_801f24d1;
@@ -1380,9 +1379,9 @@ void save_block_init(void)
 void save_tables_commit(void)
 
 {
-  save_rec_table_copy(&DAT_801c1264,0,10);
-  save_rec_table_copy(&DAT_801c1304,5,10);
-  save_rec_table_copy(&DAT_801c13a4,0,10);
+  save_rec_table_copy((uint32_t *)&DAT_801c1264,0,10);
+  save_rec_table_copy((uint32_t *)&DAT_801c1304,5,10);
+  save_rec_table_copy((uint32_t *)&DAT_801c13a4,0,10);
   return;
 }
 
@@ -3024,7 +3023,7 @@ extern int tween_seq_alloc(int,uint16_t,uint32_t,uint32_t,int16_t,uint16_t,uint3
 extern int *node_lazy_attach(int,int,int,int);
 extern int cd_file_load_sm(int32_t,uint32_t);
 extern int sprite_quad_emit(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t spr_slot_pkt_submit();
+extern uint32_t spr_slot_pkt_submit(uint32_t *,uint32_t,uint32_t,uint32_t);
 extern void sprite_9slice_build(uint32_t,uint32_t,uint32_t,uint32_t);
 extern void spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 extern void spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
@@ -3578,9 +3577,9 @@ check:
 
 /* ---- dialog_sel_dispatch @0x80160598 (188 insns) ----
    a0 = guest dialog-state ptr, a1 = selector (u16). */
-extern void hud_text_b();
-extern int u16_counter_step_pad_a();
-extern void banner_stripe_scroll();
+extern void hud_text_b(uint32_t,uint32_t,const void *,uint32_t,uint16_t,short);
+extern int u16_counter_step_pad_a(uint32_t,int32_t,int32_t);
+extern uint32_t banner_stripe_scroll(int32_t,int32_t,int32_t,int16_t);
 int dialog_sel_dispatch(intptr_t a0,uint32_t a1)
 {
   /* a0 is a guest address when reached via clean_table, but the menu
@@ -3796,10 +3795,10 @@ tick:
                     (int16_t)*(uint16_t *)(ctx + 0x22),
                     (uint32_t)(bright * 0x10101),3);
     }
-    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0,0xefff0088,0x7c000000);
-    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0x100,0xefff008a,0x7c400000);
-    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00000,0xefff0099,0x7c800000);
-    spr_slot_pkt_submit(*(uint32_t *)(ctx + 8) + 4,0xf00100,0xefff009b,0x7cc00000);
+    spr_slot_pkt_submit((uint32_t *)(uintptr_t)(*(uint32_t *)(ctx + 8) + 4),0,0xefff0088,0x7c000000);
+    spr_slot_pkt_submit((uint32_t *)(uintptr_t)(*(uint32_t *)(ctx + 8) + 4),0x100,0xefff008a,0x7c400000);
+    spr_slot_pkt_submit((uint32_t *)(uintptr_t)(*(uint32_t *)(ctx + 8) + 4),0xf00000,0xefff0099,0x7c800000);
+    spr_slot_pkt_submit((uint32_t *)(uintptr_t)(*(uint32_t *)(ctx + 8) + 4),0xf00100,0xefff009b,0x7cc00000);
 poll:
     /* guest a0 = 0x1f800000 (immediate) — pass the guest address. */
     frame_tick(0x1f800000);
@@ -5407,7 +5406,7 @@ after678:
             p3 = ((vv + 0x1df) & 0x1ff) << 22;
             p3 |= hi;
             p3 |= (t0v & 3) << 6;
-            spr_slot_pkt_submit(ctx8, (uint32_t)(((yc + 8) << 16) | 4),
+            spr_slot_pkt_submit((uint32_t *)(uintptr_t)ctx8, (uint32_t)(((yc + 8) << 16) | 4),
                          0x3e37009d, (uint32_t)p3);
           }
         }
@@ -5583,8 +5582,8 @@ poll:
 /* ---- dialog_sel_dispatch_wide @0x8015bdc0 (613 insns) ----
    a0 = guest dialog-state ptr, a1 = selector. Sibling of
    dialog_sel_dispatch: same init, wider selector dispatch. */
-extern int u16_counter_step_pad_b();
-extern void round_announce_block();
+extern int u16_counter_step_pad_b(uint32_t,int32_t);
+extern void round_announce_block(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
 
 int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 {
@@ -5661,7 +5660,7 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       if (u16_counter_step_pad_b(ctx8,8) == 0) return 0;
       BDC0_STATUS();
     case 6:
-      if (u16_counter_step_pad_a(a0 + 0x1e,8) == 0) return 0;
+      if (u16_counter_step_pad_b(a0 + 0x1e,8) == 0) return 0;
       BDC0_STATUS();
     default:
       return 0;
@@ -7731,8 +7730,8 @@ extern uint32_t *rotmat_rtps_build(uint32_t,uint32_t *);
 extern uint32_t *angle_vec_build(uint32_t,uint32_t *);
 extern uint32_t *angle_pair_rotmat(uint32_t,uint32_t,uint32_t *);
 extern uint32_t  rand_lcg(void);
-extern void tween_dur_spread();
-extern void prim_attr_word_set();
+extern void tween_dur_spread(int,int);
+extern void prim_attr_word_set(int,uint16_t);
 extern uint32_t tween_ensure(int);
 extern void obj_flag34_set(int);
 extern void obj_flag34_clear(int);
@@ -7989,19 +7988,19 @@ void *op_wrap_8dac0_b(int16_t *a0,uint32_t a1)
 #define BR2_GP50 (*(uint32_t *)guest_at(0x801bef2c))
 
 extern uint32_t *prim_group_build(uint32_t,int,uint32_t,uint32_t);
-extern int anim_node_alloc();
-extern int op_anim_delta_walk();
-extern int op_node_alloc_init();
+extern int anim_node_alloc(uint32_t,int32_t);
+extern int op_anim_delta_walk(uint32_t,int32_t);
+extern int op_node_alloc_init(int32_t,int32_t,int32_t,int32_t,uint32_t);
 extern int *op_job_alloc_init(int32_t,int32_t,uint32_t,uint32_t,uint32_t);
-extern int op_ctx_node_attach();
-extern void op_job_submit_init();
+extern int op_ctx_node_attach(uint32_t,uint32_t);
+extern void op_job_submit_init(int32_t,int32_t,uint32_t,uint32_t);
 extern uint32_t cd_svc_50(uint32_t,uint32_t);
 extern uint32_t cd_svc_4e(uint32_t,uint32_t,uint32_t);
 extern int fx_group_alloc(uint32_t,uint32_t,int,int);
 extern uint32_t tween_chan_alloc(int,int);
 extern void tween_seek(int,int);
-extern int lut_sin_q12();
-extern int lut_cos_q12();
+extern int lut_sin_q12(uint32_t);
+extern int lut_cos_q12(int);
 extern int task_alloc_wrap_f(uint32_t,uint32_t,uint32_t,int);
 extern int angle_from_xy(int,int);
 extern uint32_t noop_c(int);

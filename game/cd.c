@@ -26,7 +26,7 @@ uint32_t cd_read_open(int);
 uint32_t cd_cmd_issue(int8_t,uint32_t,uint32_t,int);
 bool cd_read_setup(uint32_t,uint32_t,uint32_t);
 int cd_chan_boot_init(int);
-void cd_result_wait_b_fwd(int,uint32_t);
+uint32_t cd_result_wait_b_fwd(int,uint32_t);
 void printf_forward(const char *, ...);
 extern void br2_irq_poll(void);
 extern int br2_bail_pending(void);
@@ -613,14 +613,14 @@ void vsync_wait_n(int frame_target,int timeout)
 /* ======== 0x80195d44 ======== */
 
 /* cd_result_wait_b_fwd — resolve guest-addr out_buf via guest_at, forward to cd_result_wait_b. */
-void cd_result_wait_b_fwd(int a0,uint32_t out_buf)
+uint32_t cd_result_wait_b_fwd(int a0,uint32_t out_buf)
 
 {
   /* out_buf arrives as a raw guest address (uint32_t); the callee's
-   * uint8_t* is a host pointer into guest memory — resolve it. */
-  cd_result_wait_b(a0,out_buf ? (uint8_t *)guest_at(out_buf)
-                                   : (uint8_t *)0);
-  return;
+   * uint8_t* is a host pointer into guest memory — resolve it.
+   * Guest tail is jr ra with v0 passthrough — return the callee's v0. */
+  return cd_result_wait_b(a0,out_buf ? (uint8_t *)guest_at(out_buf)
+                                      : (uint8_t *)0);
 }
 
 /* ======== 0x801961cc ======== */

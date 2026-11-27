@@ -17498,9 +17498,9 @@ void LAB_8013eb04(int *ctx)
 /* ======== batch29: small task/effect wrappers + list walkers ===== */
 /* externs for batch29 callees */
 extern int  cd_dispatch_tbl4(int a0,uint32_t a1);
-extern int  mdec_stat_wait_a();
-extern int  mdec_stat_wait_b();
-extern int  mdec_status_read();   /* guest 0x8018fe44 — no C def yet (weak-stub needed) */
+extern int32_t mdec_stat_wait_a(void);
+extern int32_t mdec_stat_wait_b(void);
+extern uint32_t mdec_status_read(void);
 extern void gpu_load_image_cmd(uint32_t rect,uint32_t src);
 extern uint32_t gpu_rect(const void *p);
 

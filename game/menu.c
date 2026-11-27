@@ -44,11 +44,11 @@ extern void menu_stepper_button_wait(void *,uint32_t);
 extern int frame_present(intptr_t ctx);
 extern uint32_t banner_stripe_scroll(int32_t,int32_t,int32_t,int16_t);
 extern int intro_movie_state(int32_t which);
-extern int hud_gauge_render(uint32_t st_g, uint32_t head_g, uint32_t variant);
-extern int print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2);
+extern void hud_gauge_render(uint32_t st_g, uint32_t head_g, uint32_t variant);
+extern void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2);
 extern int scroll_offset_set(int32_t x,int32_t y);
 extern int scroll_offset_accumulate(int16_t x,int16_t y);
-extern int sprite_desc_table_init();
+extern void sprite_desc_table_init(uint32_t);
 extern void announce_param_block_init(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
 extern void announce_param_block_init_alt(uint32_t,uint32_t,const void *,uint32_t,uint32_t,int32_t);
 extern void rec_copy_init(uint32_t);
@@ -115,7 +115,7 @@ extern void fighter_frame(int8_t *,uint8_t *);
 extern int FUN_8018b100(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
-extern int spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_t attr);
+extern uint32_t spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_t attr);
 extern uint32_t spr_attr_alloc_a(uint32_t,int16_t,int16_t,int16_t,int16_t,uint32_t,int32_t);
 extern int cd_file_load_sm(int file_id,uint32_t dst);
 extern int printf_forward(const char *fmt, ...);
@@ -132,12 +132,12 @@ extern int draw_env_timing(uint32_t env_g);
 extern int sprite_attr_init_a(uint32_t attr_g, uint16_t x, uint16_t y, uint16_t w, int32_t h);
 extern int sprite_attr_init_b(uint32_t attr_g, uint16_t x, uint16_t y, uint16_t w, uint16_t aux);
 extern int cd_dir_table_set(uint32_t a0,uint32_t a1);
-extern int cd_mode_flag_set();
+extern uint32_t cd_mode_flag_set(int8_t,int,uint32_t);
 extern int cd_mode_set_0e(uint32_t s0);
 extern int cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s2);
 extern int cd_mc_state_machine(void);
 extern int cd_chan_boot_fwd(void);
-extern int cd_chan_attr_push();
+extern void cd_chan_attr_push(uint32_t);
 extern int cd_subsys_reset_wrap();
 extern int cd_chan_block_boot(void);
 
@@ -11049,9 +11049,9 @@ void versus_state_init(uint32_t state)
 
 /* ======== batch42 ======== */
 
-extern int hit_chain_clear();
-extern int pending_hit_a_clear();
-extern int pending_hit_b_clear();
+extern void hit_chain_clear(uint8_t *);
+extern void pending_hit_a_clear(uint8_t *);
+extern void pending_hit_b_clear(uint8_t *);
 extern int32_t options_menu_alloc(void);
 extern int atan2_lut(int32_t,int32_t);
 extern int gte_sqr_vec3_b(uint32_t *,uint32_t *);

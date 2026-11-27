@@ -2710,9 +2710,9 @@ int32_t set_graph_debug(uint32_t level)
  * tbl[3..9], 0x801c11e0, 0x414) over table @0x801b45f4; ret 0 clears
  * @0x801c15f0 and returns uint8_t @(*(u32*)0x1f8000c0)+0x22, ret<8&&!=0
  * ->1, ret>=8 ->0. Disasm 0x8015f590-0x8015f63c. */
-extern int32_t mc_data_read(int32_t,uint32_t,uint32_t,uint32_t,uint32_t,
-                            uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
-                            uint32_t,uint32_t,uint32_t);
+extern int mc_data_read(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
+                        uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,
+                        uint32_t,uint32_t,uint32_t);
 int32_t memcard_info_query(void)
 {
   uint32_t *tbl = (uint32_t *)guest_at(0x801b45f4);
