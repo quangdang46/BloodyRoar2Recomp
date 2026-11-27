@@ -14,6 +14,7 @@
 
 #define PKG_WS "psx.enhancement.widescreen"
 
+/* builtin widescreen activate: char text[16] = "" */
 static void builtin_widescreen_activate(void) {
     char text[16] = "";
     const int have = psx_mod_option_value(PKG_WS, "widescreen", "aspect",

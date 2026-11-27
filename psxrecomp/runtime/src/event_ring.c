@@ -31,6 +31,7 @@ static uint8_t current_mode(void) {
     return MODE_STATIC;
 }
 
+/* event ring record aux: EventEntry *e = &s_ring[s_seq & (EVENT_RING_CAP - 1u)] */
 void event_ring_record_aux(uint16_t kind, uint8_t detail, uint32_t aux) {
 #if EVENT_RING_ENABLED
     EventEntry *e = &s_ring[s_seq & (EVENT_RING_CAP - 1u)];
@@ -50,15 +51,18 @@ void event_ring_record_aux(uint16_t kind, uint8_t detail, uint32_t aux) {
 #endif
 }
 
+/* event ring record */
 void event_ring_record(uint16_t kind, uint8_t detail) {
     event_ring_record_aux(kind, detail, 0u);
 }
 
+/* event ring clear: s_seq = 0 */
 void event_ring_clear(void) {
     s_seq = 0;
     memset(s_ring, 0, sizeof(s_ring));
 }
 
+/* kind name: switch (k)  */
 static const char *kind_name(uint16_t k) {
     switch (k) {
         case EV_IRQ_DELIVER:  return "IRQ_DELIVER";
@@ -74,6 +78,7 @@ static const char *kind_name(uint16_t k) {
         default:              return "NONE";
     }
 }
+/* mode name: switch (m)  */
 static const char *mode_name(uint8_t m) {
     switch (m) {
         case MODE_STATIC:         return "STATIC";
@@ -83,6 +88,7 @@ static const char *mode_name(uint8_t m) {
     }
 }
 
+/* format entry: return snprintf(out, cap, */
 static int format_entry(char *out, int cap, const EventEntry *e) {
     return snprintf(out, cap,
         "{\"seq\":%llu,\"cycle\":%llu,\"kind\":\"%s\",\"mode\":\"%s\","
@@ -94,6 +100,7 @@ static int format_entry(char *out, int cap, const EventEntry *e) {
         (unsigned)e->detail, e->aux);
 }
 
+/* event ring dump file: FILE *f = fopen(path ? path : "event_ring.json", "w") */
 int event_ring_dump_file(const char *path) {
     FILE *f = fopen(path ? path : "event_ring.json", "w");
     if (!f) return -1;
@@ -113,6 +120,7 @@ int event_ring_dump_file(const char *path) {
     return count;
 }
 
+/* event ring dump json: uint64_t total = s_seq */
 int event_ring_dump_json(char *out, int cap, int max_entries) {
     uint64_t total = s_seq;
     uint64_t want  = (max_entries > 0) ? (uint64_t)max_entries : 256;
@@ -136,6 +144,7 @@ int event_ring_dump_json(char *out, int cap, int max_entries) {
 static DecompEntry s_decomp[DECOMP_TRACE_CAP];
 static uint64_t     s_decomp_seq;
 
+/* decomp trace record: DecompEntry *e = &s_decomp[s_decomp_seq & (DECOMP_TRACE_CAP - 1u)] */
 void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
                          uint8_t mode, uint32_t len) {
     DecompEntry *e = &s_decomp[s_decomp_seq & (DECOMP_TRACE_CAP - 1u)];
@@ -149,11 +158,13 @@ void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
     e->pad   = 0;
 }
 
+/* decomp trace clear: s_decomp_seq = 0 */
 void decomp_trace_clear(void) {
     s_decomp_seq = 0;
     memset(s_decomp, 0, sizeof(s_decomp));
 }
 
+/* decomp tag name: switch (t)  */
 static const char *decomp_tag_name(uint8_t t) {
     switch (t) {
         case 0: return "dispatch";
@@ -195,10 +206,12 @@ static const char *decomp_tag_name(uint8_t t) {
     }
 }
 
+/* decomp trace dump json: return decomp_trace_dump_json_range(out, cap, 0, max_entries) */
 int decomp_trace_dump_json(char *out, int cap, int max_entries) {
     return decomp_trace_dump_json_range(out, cap, 0, max_entries);
 }
 
+/* decomp trace dump json range: uint64_t total = s_decomp_seq */
 int decomp_trace_dump_json_range(char *out, int cap, uint64_t seq_lo,
                                  int max_entries) {
     uint64_t total = s_decomp_seq;

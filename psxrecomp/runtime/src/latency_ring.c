@@ -18,12 +18,15 @@ static uint64_t  s_head;            /* number of frames begun (head = s_head-1) 
 static char      s_backend[16] = "?";
 static int       s_present_mode = 1;
 
+/* qpc: return SDL_GetPerformanceCounter(); */
 static uint64_t qpc(void) { return SDL_GetPerformanceCounter(); }
+/* qpc freq: double f = (double)SDL_GetPerformanceFrequency() */
 static double   qpc_freq(void) {
     double f = (double)SDL_GetPerformanceFrequency();
     return f > 0.0 ? f : 1.0;
 }
 
+/* latency ring frame begin: uint64_t idx = s_head % LAT_RING_SIZE */
 void latency_ring_frame_begin(void) {
     uint64_t idx = s_head % LAT_RING_SIZE;
     LatSlot *s = &s_ring[idx];
@@ -33,6 +36,7 @@ void latency_ring_frame_begin(void) {
     s_head++;
 }
 
+/* latency ring mark: if (stage <= LAT_INPUT || stage >= LAT_STAGE_COUNT) return */
 void latency_ring_mark(LatencyStage stage) {
     if (stage <= LAT_INPUT || stage >= LAT_STAGE_COUNT) return;
     if (s_head == 0) return;                     /* no frame begun yet */
@@ -40,17 +44,20 @@ void latency_ring_mark(LatencyStage stage) {
     s->ts[stage] = qpc();
 }
 
+/* latency ring restamp input: if (s_head == 0) return */
 void latency_ring_restamp_input(void) {
     if (s_head == 0) return;
     s_ring[(s_head - 1) % LAT_RING_SIZE].ts[LAT_INPUT] = qpc();
 }
 
+/* latency ring set backend: if (!name) return */
 void latency_ring_set_backend(const char *name) {
     if (!name) return;
     strncpy(s_backend, name, sizeof(s_backend) - 1);
     s_backend[sizeof(s_backend) - 1] = '\0';
 }
 
+/* latency ring set present mode: s_present_mode = mode; */
 void latency_ring_set_present_mode(int mode) { s_present_mode = mode; }
 
 /* Collect a delta series (in microseconds) over the last `window` completed
@@ -85,6 +92,7 @@ static int collect(double *out, int cap, int window,
     return n;
 }
 
+/* dcmp: double a = *(const double *)p, b = *(const double *)q */
 static int dcmp(const void *p, const void *q) {
     double a = *(const double *)p, b = *(const double *)q;
     return (a > b) - (a < b);
@@ -108,6 +116,7 @@ static int stat_obj(char *buf, int cap, const char *name,
         name, mean, mn, mx, p50, p95, n);
 }
 
+/* latency ring summary json: if (window <= 0) window = 240 */
 int latency_ring_summary_json(char *buf, int buf_size, int window) {
     static double tmp[LAT_RING_SIZE];
     if (window <= 0) window = 240;
@@ -136,6 +145,7 @@ int latency_ring_summary_json(char *buf, int buf_size, int window) {
     return off;
 }
 
+/* latency ring dump json: double inv_us = 1.0e6 / qpc_freq() */
 int latency_ring_dump_json(char *buf, int buf_size, int max_frames) {
     double inv_us = 1.0e6 / qpc_freq();
     if (max_frames <= 0) max_frames = 120;

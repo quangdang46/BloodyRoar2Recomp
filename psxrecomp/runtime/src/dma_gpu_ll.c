@@ -13,6 +13,7 @@ static uint32_t s_ot_tr_next[OT_TRACE_CAP];
 static uint32_t s_ot_tr_n;
 static uint32_t s_ot_tr_start;
 static int      s_ot_tr_on = -1;
+/* ot trace reset: if (s_ot_tr_on < 0)  */
 static void ot_trace_reset(void) {
     if (s_ot_tr_on < 0) {
         const char *e = getenv("BR2_OT_TRACE");
@@ -20,11 +21,13 @@ static void ot_trace_reset(void) {
     }
     s_ot_tr_n = 0;
 }
+/* ot trace push: if (!s_ot_tr_on) return */
 static void ot_trace_push(uint32_t addr, uint32_t next) {
     if (!s_ot_tr_on) return;
     uint32_t i = s_ot_tr_n & (OT_TRACE_CAP - 1u);
     s_ot_tr_addr[i] = addr; s_ot_tr_next[i] = next; s_ot_tr_n++;
 }
+/* ot trace dump: if (!s_ot_tr_on || s_ot_tr_n == 0) return */
 static void ot_trace_dump(void) {
     if (!s_ot_tr_on || s_ot_tr_n == 0) return;
     uint32_t start = s_ot_tr_n > OT_TRACE_CAP ? s_ot_tr_n - OT_TRACE_CAP : 0;
@@ -45,11 +48,13 @@ static void ot_trace_dump(void) {
 #define DMA_GPU_LL_HEADER_CYCLES 1u
 #define DMA_GPU_LL_SETUP_CYCLES  0u
 
+/* resolve address: return ops->resolve_address ? ops->resolve_address(opaque, address) :... */
 static uint32_t resolve_address(const DMAGPULinkedListOps *ops, void *opaque,
                                 uint32_t address) {
     return ops->resolve_address ? ops->resolve_address(opaque, address) : address;
 }
 
+/* finish: int hit_limit = state->hit_limit != 0 */
 static void finish(DMAGPULinkedList *state,
                    const DMAGPULinkedListOps *ops, void *opaque) {
     int hit_limit = state->hit_limit != 0;
@@ -60,6 +65,7 @@ static void finish(DMAGPULinkedList *state,
     if (ops->complete) ops->complete(opaque, hit_limit);
 }
 
+/* dma gpu ll start: state->active = 1 */
 void dma_gpu_ll_start(DMAGPULinkedList *state, uint32_t start_addr,
                       uint32_t max_nodes) {
     memset(state, 0, sizeof(*state));
@@ -74,15 +80,18 @@ void dma_gpu_ll_start(DMAGPULinkedList *state, uint32_t start_addr,
     ot_trace_reset();
 }
 
+/* dma gpu ll cancel */
 void dma_gpu_ll_cancel(DMAGPULinkedList *state) {
     memset(state, 0, sizeof(*state));
 }
 
+/* dma gpu ll cycles to event: if (!state->active) return UINT32_MAX */
 uint32_t dma_gpu_ll_cycles_to_event(const DMAGPULinkedList *state) {
     if (!state->active) return UINT32_MAX;
     return state->cycles_remaining ? state->cycles_remaining : 1u;
 }
 
+/* dma gpu ll advance: if (!state->active || cycles == 0 || !ops || !ops->read_word) return */
 void dma_gpu_ll_advance(DMAGPULinkedList *state, uint32_t cycles,
                         const DMAGPULinkedListOps *ops, void *opaque) {
     if (!state->active || cycles == 0 || !ops || !ops->read_word) return;

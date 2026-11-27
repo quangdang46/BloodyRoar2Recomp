@@ -48,6 +48,7 @@ void psx_dispatch(CPUState *cpu, uint32_t addr)
     psx_bios_active->dispatch(cpu, addr);
 }
 
+/* psx dispatch call: if (!psx_bios_active || !psx_bios_active->dispatch_call) return */
 void psx_dispatch_call(CPUState *cpu, uint32_t addr, uint32_t return_addr)
 {
     if (!psx_bios_active || !psx_bios_active->dispatch_call) return;
@@ -68,6 +69,7 @@ const PsxBiosBackend *psx_bios_find(const char *image_id)
     return 0;
 }
 
+/* psx bios bundled: for (uint32_t i = 0; i < psx_bios_registry_count; i++)  */
 const PsxBiosBackend *psx_bios_bundled(void)
 {
     for (uint32_t i = 0; i < psx_bios_registry_count; i++) {
@@ -77,6 +79,7 @@ const PsxBiosBackend *psx_bios_bundled(void)
     return 0;
 }
 
+/* psx bios activate: if (!backend || !backend->image) return 0 */
 int psx_bios_activate(const PsxBiosBackend *backend)
 {
     if (!backend || !backend->image) return 0;

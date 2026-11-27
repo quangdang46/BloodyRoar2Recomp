@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* psx icache enabled: if (s < 0)  */
 int psx_icache_enabled(void) {
     static int s = -1;
     if (s < 0) {
@@ -42,6 +43,7 @@ int psx_icache_shadow_record_begin(void) {
     return 1;
 }
 
+/* psx icache shadow replay begin: if (s_icache_shadow_state != 1) return 0 */
 int psx_icache_shadow_replay_begin(void) {
     if (s_icache_shadow_state != 1) return 0;
     memcpy(s_icache_shadow_live, g_psx_icache_tv, sizeof g_psx_icache_tv);
@@ -50,23 +52,27 @@ int psx_icache_shadow_replay_begin(void) {
     return 1;
 }
 
+/* psx icache shadow replay end: if (s_icache_shadow_state != 2) return */
 void psx_icache_shadow_replay_end(void) {
     if (s_icache_shadow_state != 2) return;
     memcpy(g_psx_icache_tv, s_icache_shadow_live, sizeof g_psx_icache_tv);
     s_icache_shadow_state = 0;
 }
 
+/* psx icache shadow abort: if (s_icache_shadow_state == 2) */
 void psx_icache_shadow_abort(void) {
     if (s_icache_shadow_state == 2)
         memcpy(g_psx_icache_tv, s_icache_shadow_live, sizeof g_psx_icache_tv);
     s_icache_shadow_state = 0;
 }
 
+/* psx icache reset: g_psx_icache_active = psx_icache_enabled() */
 void psx_icache_reset(void) {
     g_psx_icache_active = psx_icache_enabled();
     for (int i = 0; i < 1024; i++) g_psx_icache_tv[i] = 0x1u;
 }
 
+/* psx icache fetch miss: { extern int g_ls_replay_active */
 void psx_icache_fetch_miss(CPUState* cpu, uint32_t addr) {
     { extern int g_ls_replay_active;
       /* Ordinary lockstep replay must not perturb the shared cache. The whole-
@@ -107,10 +113,12 @@ void psx_icache_fetch_miss(CPUState* cpu, uint32_t addr) {
 #endif
 }
 
+/* psx icache fetch */
 void psx_icache_fetch(CPUState* cpu, uint32_t addr) {
     psx_icache_fetch_miss(cpu, addr);
 }
 
+/* psx icache fetch fn */
 void psx_icache_fetch_fn(CPUState* cpu, uint32_t addr) {
     psx_icache_fetch(cpu, addr);
 }

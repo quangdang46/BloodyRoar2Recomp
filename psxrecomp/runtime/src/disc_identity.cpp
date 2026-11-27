@@ -25,11 +25,13 @@ namespace PSXRecompV4 {
 
 namespace {
 
+/* uppercase ascii: for (char& c : s) c = (char)std::toupper((unsigned char)c) */
 std::string uppercase_ascii(std::string s) {
     for (char& c : s) c = (char)std::toupper((unsigned char)c);
     return s;
 }
 
+/* read at: if (!f.good()) return false */
 bool read_at(std::ifstream& f, uint64_t offset, uint8_t* out, size_t len) {
     f.clear();
     f.seekg((std::streamoff)offset, std::ios::beg);
@@ -38,6 +40,7 @@ bool read_at(std::ifstream& f, uint64_t offset, uint8_t* out, size_t len) {
     return f.gcount() == (std::streamsize)len;
 }
 
+/* is iso pvd: return sector[0] == 0x01 && std::memcmp(&sector[1], "CD001", 5) == 0 ... */
 bool is_iso_pvd(const uint8_t* sector) {
     return sector[0] == 0x01 && std::memcmp(&sector[1], "CD001", 5) == 0 && sector[6] == 0x01;
 }
@@ -101,6 +104,7 @@ std::string scan_boot_serial(const std::vector<uint8_t>& buf) {
     return std::string();
 }
 
+/* crc32 stream: uint32_t crc = 0xFFFFFFFFu */
 uint32_t crc32_stream(std::ifstream& f) {
     f.clear();
     f.seekg(0, std::ios::beg);
@@ -115,6 +119,7 @@ uint32_t crc32_stream(std::ifstream& f) {
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* hex sha256: uint8_t dig[32] */
 std::string hex_sha256(const std::string& canonical) {
     uint8_t dig[32];
     psx_sha256_compute(reinterpret_cast<const uint8_t*>(canonical.data()),
@@ -126,6 +131,7 @@ std::string hex_sha256(const std::string& canonical) {
     return std::string(hex);
 }
 
+/* fill toc from mount: v.from_cue = resolved.from_cue */
 void fill_toc_from_mount(DiscIdentity& v, const DiscPathResolution& resolved) {
     v.from_cue = resolved.from_cue;
     v.cue_fallback = resolved.cue_fallback;
@@ -159,12 +165,14 @@ void fill_toc_from_mount(DiscIdentity& v, const DiscPathResolution& resolved) {
     v.disc_fp = hex_sha256(toc.str());
 }
 
+/* is chd path: std::string ext = path.extension().string() */
 bool is_chd_path(const fs::path& path) {
     std::string ext = path.extension().string();
     for (char& c : ext) c = (char)std::tolower((unsigned char)c);
     return ext == ".chd";
 }
 
+/* crc32 chd: uint32_t crc = 0xFFFFFFFFu */
 bool crc32_chd(PS1::ISOReader& disc, uint32_t& result) {
     uint32_t crc = 0xFFFFFFFFu;
     std::vector<uint8_t> sector(2352);
@@ -179,6 +187,7 @@ bool crc32_chd(PS1::ISOReader& disc, uint32_t& result) {
 
 }  // namespace
 
+/* apply netplay disc expect: id.netplay_ok = true */
 void apply_netplay_disc_expect(DiscIdentity& id, const NetplayDiscExpect& expect) {
     id.netplay_ok = true;
     id.netplay_detail.clear();
@@ -225,6 +234,7 @@ void apply_netplay_disc_expect(DiscIdentity& id, const NetplayDiscExpect& expect
     }
 }
 
+/* identify disc: DiscIdentity v */
 DiscIdentity identify_disc(const fs::path& path,
                            const std::string& expected_serial,
                            uint32_t expected_crc, bool has_expected_crc,
@@ -394,6 +404,7 @@ DiscIdentity identify_disc(const fs::path& path,
     return v;
 }
 
+/* disc boot stem: if (path.empty()) return std::string() */
 std::string disc_boot_stem(const fs::path& path) {
     if (path.empty()) return std::string();
     // A .cue names the data track through its sheet; opening the resolved data

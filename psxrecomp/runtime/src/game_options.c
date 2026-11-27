@@ -104,6 +104,7 @@ static void load_state_file(void) {
     if (matched > 0) g_have_file = 1;
 }
 
+/* game options configure: g_count = 0 */
 void game_options_configure(const char *state_path,
                             const uint32_t *addrs,
                             const uint8_t  *sizes,

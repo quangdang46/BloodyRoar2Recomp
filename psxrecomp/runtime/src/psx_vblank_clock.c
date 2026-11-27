@@ -2,6 +2,7 @@
 
 #include <limits.h>
 
+/* psx vblank clock next: uint64_t fraction */
 void psx_vblank_clock_next(PSXVBlankClock *clock) {
     uint64_t fraction;
     if (!clock || clock->period_denominator == 0u) return;
@@ -15,6 +16,7 @@ void psx_vblank_clock_next(PSXVBlankClock *clock) {
     clock->fraction = (uint32_t)fraction;
 }
 
+/* psx vblank clock configure: uint64_t floor64 */
 int psx_vblank_clock_configure(PSXVBlankClock *clock,
                                uint64_t period_numerator,
                                uint32_t period_denominator) {
@@ -31,6 +33,7 @@ int psx_vblank_clock_configure(PSXVBlankClock *clock,
     return 1;
 }
 
+/* psx vblank clock restore fraction: if (!clock || clock->period_denominator == 0u || */
 int psx_vblank_clock_restore_fraction(PSXVBlankClock *clock,
                                       uint32_t fraction) {
     if (!clock || clock->period_denominator == 0u ||
@@ -48,6 +51,7 @@ int psx_vblank_clock_restore_fraction(PSXVBlankClock *clock,
     return 1;
 }
 
+/* psx vblank clock cycles for frames ceil: uint64_t whole, fractional */
 uint64_t psx_vblank_clock_cycles_for_frames_ceil(
     const PSXVBlankClock *clock, uint32_t frames) {
     uint64_t whole, fractional;
@@ -61,6 +65,7 @@ uint64_t psx_vblank_clock_cycles_for_frames_ceil(
         ? UINT64_MAX : whole + fractional;
 }
 
+/* psx vblank clock frames for cycles floor: uint64_t lo, hi */
 uint64_t psx_vblank_clock_frames_for_cycles_floor(
     const PSXVBlankClock *clock, uint64_t cycles) {
     uint64_t lo, hi;

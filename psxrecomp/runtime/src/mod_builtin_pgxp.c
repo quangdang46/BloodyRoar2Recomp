@@ -25,12 +25,14 @@
 extern void gte_geometry_correction_set(int enabled);
 extern void gpu_texture_correction_set(int enabled);
 
+/* pgxp option flag: char text[16] = "" */
 static int pgxp_option_flag(const char* feature, const char* id) {
     char text[16] = "";
     return psx_mod_option_value(PKG_PGXP, feature, id, text, sizeof text) &&
            strcmp(text, "true") == 0;
 }
 
+/* builtin pgxp activate */
 static void builtin_pgxp_activate(void) {
     gte_geometry_correction_set(1);
     gpu_texture_correction_set(1);   /* also arms the shadow engine */

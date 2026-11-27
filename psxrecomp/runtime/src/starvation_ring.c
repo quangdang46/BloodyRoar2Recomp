@@ -22,6 +22,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+/* host us now: LARGE_INTEGER f, c */
 static uint64_t host_us_now(void) {
     LARGE_INTEGER f, c;
     static LARGE_INTEGER freq = {0};
@@ -31,6 +32,7 @@ static uint64_t host_us_now(void) {
 }
 #else
 #include <sys/time.h>
+/* host us now: return (uint64_t)ts.tv_sec * 1000000ULL + (uint64_t)ts.tv_nsec / 1000... */
 static uint64_t host_us_now(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -54,6 +56,7 @@ static uint64_t        s_seq = 0;
 static _Atomic uint64_t s_last_heartbeat_us = 0;
 static int             s_dump_done = 0;
 
+/* heartbeat load: return atomic_load_explicit(&s_last_heartbeat_us, memory_order_relaxed) */
 static uint64_t heartbeat_load(void) {
     return atomic_load_explicit(&s_last_heartbeat_us, memory_order_relaxed);
 }
@@ -67,6 +70,7 @@ static uint64_t heartbeat_load(void) {
  * watchdog) — needed while bringing up a renderer whose per-op submit model is
  * deliberately slow (a single heavy frame can legitimately exceed 4 s). */
 #define STARVATION_TIMEOUT_US_DEFAULT (4 * 1000000ULL)
+/* starvation timeout us: if (!resolved)  */
 static uint64_t starvation_timeout_us(void) {
     static int resolved = 0;
     static uint64_t timeout = STARVATION_TIMEOUT_US_DEFAULT;
@@ -78,11 +82,13 @@ static uint64_t starvation_timeout_us(void) {
     return timeout;
 }
 
+/* starvation watchdog heartbeat: memory_order_relaxed) */
 void starvation_watchdog_heartbeat(void) {
     atomic_store_explicit(&s_last_heartbeat_us, host_us_now(),
                           memory_order_relaxed);
 }
 
+/* starvation ring reset: s_seq = 0 */
 void starvation_ring_reset(void) {
     memset(s_ring, 0, sizeof(s_ring));
     s_seq = 0;
@@ -90,6 +96,7 @@ void starvation_ring_reset(void) {
     s_dump_done = 0;
 }
 
+/* starvation ring record: StarvationEntry *e = &s_ring[s_seq & (STARVATION_RING_CAP - 1)] */
 void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
                             uint16_t ctrl, uint16_t stat,
                             int shift_active, int shift_remaining,
@@ -129,6 +136,7 @@ void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
     e->i_mask               = i_mask;
 }
 
+/* kind name: switch (k)  */
 static const char *kind_name(uint8_t k) {
     switch (k) {
     case SR_EVT_TX_DATA_WRITE: return "TX_WRITE";
@@ -184,8 +192,10 @@ void starvation_ring_pc_sample(void) {
     e->i_mask               = i_mask;
 }
 
+/* starvation ring total: return s_seq; */
 uint64_t starvation_ring_total(void) { return s_seq; }
 
+/* starvation ring get: if (seq >= s_seq) return 0; /* not written yet */ */
 int starvation_ring_get(uint64_t seq, StarvationEntry *out) {
     if (seq >= s_seq) return 0;                                /* not written yet */
     if (s_seq - seq > STARVATION_RING_CAP) return 0;           /* evicted */
@@ -194,6 +204,7 @@ int starvation_ring_get(uint64_t seq, StarvationEntry *out) {
     return 1;
 }
 
+/* starvation ring dump: if (s_dump_done) return; /* dump exactly once */ */
 void starvation_ring_dump(const char *path) {
     if (s_dump_done) return;  /* dump exactly once */
     s_dump_done = 1;
@@ -252,6 +263,7 @@ void starvation_ring_dump(const char *path) {
     fclose(f);
 }
 
+/* starvation watchdog check: if (s_dump_done) return */
 void starvation_watchdog_check(void) {
     if (s_dump_done) return;
     /* Load the heartbeat BEFORE sampling the clock. The IO thread stamps it
@@ -279,6 +291,7 @@ void starvation_watchdog_check(void) {
 
 #else
 
+/* starvation ring record */
 void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
                             uint16_t ctrl, uint16_t stat,
                             int shift_active, int shift_remaining,
@@ -295,12 +308,19 @@ void starvation_ring_record(uint8_t kind, uint8_t tx, uint8_t rx,
     (void)active_device; (void)mc_state; (void)pad_state;
     (void)selected_slot; (void)g_sio_timing_active;
 }
+/* starvation watchdog heartbeat */
 void starvation_watchdog_heartbeat(void) {}
+/* starvation watchdog check */
 void starvation_watchdog_check(void) {}
+/* starvation ring dump: (void)path; */
 void starvation_ring_dump(const char *path) { (void)path; }
+/* starvation ring reset */
 void starvation_ring_reset(void) {}
+/* starvation ring pc sample */
 void starvation_ring_pc_sample(void) {}
+/* starvation ring total: return 0; */
 uint64_t starvation_ring_total(void) { return 0; }
+/* starvation ring get: (void)seq; (void)out; return 0; */
 int starvation_ring_get(uint64_t seq, StarvationEntry *out) { (void)seq; (void)out; return 0; }
 
 #endif /* STARVATION_RING_ENABLED */

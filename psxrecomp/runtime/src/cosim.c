@@ -73,8 +73,10 @@ static inline uint64_t fold(uint64_t h, uint64_t v) {
  * just stashes the last leader PC for human-readable reporting — the actual compare is
  * the cycle-keyed checkpoint below, which aligns across both backends. */
 void cosim_block(uint32_t pc) { g_last_leader_pc = pc; }
+/* cosim last block: return g_last_leader_pc; */
 uint32_t cosim_last_block(void) { return g_last_leader_pc; }
 
+/* cosim cycles to next checkpoint: return 0; /* checkpoints are icount-keyed; no cycle sub-step cap need... */
 uint32_t cosim_cycles_to_next_checkpoint(void) {
     return 0;   /* checkpoints are icount-keyed; no cycle sub-step cap needed */
 }
@@ -109,11 +111,13 @@ static void cosim_record_checkpoint(uint64_t icount, uint32_t pc) {
     g_run_budget--;
 }
 
+/* cosim tick */
 void cosim_tick(void) {
     /* Retained for the psx_advance_cycles call sites; checkpointing moved to
      * the icount key in cosim_instr (see cosim_record_checkpoint comment). */
 }
 
+/* cosim instr: g_last_leader_pc = pc */
 void cosim_instr(uint32_t pc) {
     g_last_leader_pc = pc;
     g_icount++;
@@ -145,6 +149,7 @@ void cosim_instr(uint32_t pc) {
  */
 static void handle_line(sock_t s, char *line);
 
+/* send line: size_t n = strlen(buf) */
 static int send_line(sock_t s, const char *buf) {
     size_t n = strlen(buf);
     size_t off = 0;
@@ -156,6 +161,7 @@ static int send_line(sock_t s, const char *buf) {
     return 1;
 }
 
+/* server loop: sock_t ls = socket(AF_INET, SOCK_STREAM, 0) */
 static void server_loop(unsigned short port) {
     sock_t ls = socket(AF_INET, SOCK_STREAM, 0);
     if (ls == (sock_t)-1) return;
@@ -192,6 +198,7 @@ static void server_loop(unsigned short port) {
     }
 }
 
+/* handle line: char out[1024] */
 static void handle_line(sock_t s, char *line) {
     char out[1024];
     char cmd[32] = {0};
@@ -357,8 +364,10 @@ static void handle_line(sock_t s, char *line) {
 }
 
 #ifdef _WIN32
+/* server thread: server_loop((unsigned short)(uintptr_t)p); return 0; */
 static DWORD WINAPI server_thread(LPVOID p) { server_loop((unsigned short)(uintptr_t)p); return 0; }
 #else
+/* server thread: server_loop((unsigned short)(uintptr_t)p); return NULL; */
 static void *server_thread(void *p) { server_loop((unsigned short)(uintptr_t)p); return NULL; }
 #endif
 

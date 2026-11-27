@@ -131,6 +131,7 @@ static void trim(char *s) {
     if (start != s) memmove(s, start, strlen(start) + 1);
 }
 
+/* name to scancode: if (!name || !*name) return SDL_SCANCODE_UNKNOWN */
 static SDL_Scancode name_to_scancode(const char *name) {
     if (!name || !*name) return SDL_SCANCODE_UNKNOWN;
     SDL_Scancode sc = SDL_GetScancodeFromName(name);
@@ -164,6 +165,7 @@ static SDL_Scancode name_to_scancode(const char *name) {
     return SDL_SCANCODE_UNKNOWN;
 }
 
+/* scancode to name: if (sc == SDL_SCANCODE_UNKNOWN) return "None" */
 static const char *scancode_to_name(SDL_Scancode sc) {
     if (sc == SDL_SCANCODE_UNKNOWN) return "None";
     if (PSXKB_IS_MOUSE_SC(sc)) {
@@ -215,6 +217,7 @@ static void derive_ini_path(const char *exe_path) {
     snprintf(s_ini_path, sizeof(s_ini_path), "%skeybinds.ini", dir);
 }
 
+/* write player section: for (int i = 0; i < PSXKB_N; i++)  */
 static void write_player_section(FILE *f, const char *section,
                                  const PsxPlayerBinds *pb,
                                  const PsxPlayerBinds *alt) {
@@ -231,6 +234,7 @@ static void write_player_section(FILE *f, const char *section,
     fprintf(f, "\n");
 }
 
+/* write ini: FILE *f = fopen(path, "w") */
 static void write_ini(const char *path) {
     FILE *f = fopen(path, "w");
     if (!f) return;
@@ -262,6 +266,7 @@ static void write_ini(const char *path) {
     printf("[Keybinds] Wrote %s\n", path);
 }
 
+/* player all unbound: for (int i = 0; i < PSXKB_N; i++)  */
 static int player_all_unbound(const PsxPlayerBinds *pb) {
     for (int i = 0; i < PSXKB_N; i++) {
         SDL_Scancode sc = *(const SDL_Scancode *)((const char *)pb + s_buttons[i].offset);
@@ -279,6 +284,7 @@ static void promote_empty_players(void) {
     }
 }
 
+/* load ini: FILE *f = fopen(path, "r") */
 static void load_ini(const char *path) {
     FILE *f = fopen(path, "r");
     if (!f) return;
@@ -336,12 +342,15 @@ void psx_keybinds_init(const char *exe_path) {
     else       write_ini(s_ini_path);
 }
 
+/* psx keybinds get: return &s_binds; */
 const PsxKeyBinds *psx_keybinds_get(void) { return &s_binds; }
 
+/* player binds c: if (player < 1 || player > PSXKB_MAX_PLAYERS) return &s_binds.player[0] */
 static const PsxPlayerBinds *player_binds_c(int player) {
     if (player < 1 || player > PSXKB_MAX_PLAYERS) return &s_binds.player[0];
     return &s_binds.player[player - 1];
 }
+/* player binds: if (player < 1 || player > PSXKB_MAX_PLAYERS) return &s_binds.player[0] */
 static PsxPlayerBinds *player_binds(int player) {
     if (player < 1 || player > PSXKB_MAX_PLAYERS) return &s_binds.player[0];
     return &s_binds.player[player - 1];
@@ -370,6 +379,7 @@ static int held(const uint8_t *keys, const PsxPlayerBinds *pb, int i) {
     return held_sc(keys, p) || held_sc(keys, a);
 }
 
+/* psx keybinds pad word: if (!keys || player < 1 || player > PSXKB_MAX_PLAYERS) return 0xFFFF */
 uint16_t psx_keybinds_pad_word(const uint8_t *keys, int player) {
     if (!keys || player < 1 || player > PSXKB_MAX_PLAYERS) return 0xFFFF;
     const PsxPlayerBinds *pb = player_binds_c(player);
@@ -381,6 +391,7 @@ uint16_t psx_keybinds_pad_word(const uint8_t *keys, int player) {
     return b;
 }
 
+/* psx keybinds sticks: if (!keys || !out || player < 1 || player > PSXKB_MAX_PLAYERS) return */
 void psx_keybinds_sticks(const uint8_t *keys, int player, uint8_t out[4]) {
     if (!keys || !out || player < 1 || player > PSXKB_MAX_PLAYERS) return;
     const PsxPlayerBinds *pb = player_binds_c(player);
@@ -394,6 +405,7 @@ void psx_keybinds_sticks(const uint8_t *keys, int player, uint8_t out[4]) {
     if (held(keys, pb, PSX_KB_RS_DOWN))  out[3] = 0xFF;
 }
 
+/* psx keybinds dpad active: if (!keys || player < 1 || player > PSXKB_MAX_PLAYERS) return 0 */
 int psx_keybinds_dpad_active(const uint8_t *keys, int player) {
     if (!keys || player < 1 || player > PSXKB_MAX_PLAYERS) return 0;
     const PsxPlayerBinds *pb = player_binds_c(player);
@@ -405,15 +417,18 @@ int psx_keybinds_dpad_active(const uint8_t *keys, int player) {
 
 int psx_keybinds_button_count(void) { return PSXKB_N; }
 
+/* psx keybinds button name: if (button < 0 || button >= PSXKB_N) return "?" */
 const char *psx_keybinds_button_name(int button) {
     if (button < 0 || button >= PSXKB_N) return "?";
     return s_buttons[button].name;
 }
+/* psx keybinds button label: if (button < 0 || button >= PSXKB_N) return "?" */
 const char *psx_keybinds_button_label(int button) {
     if (button < 0 || button >= PSXKB_N) return "?";
     return s_buttons[button].label;
 }
 
+/* psx keybinds get button: if (button < 0 || button >= PSXKB_N) return SDL_SCANCODE_UNKNOWN */
 SDL_Scancode psx_keybinds_get_button(int player, int button) {
     if (button < 0 || button >= PSXKB_N) return SDL_SCANCODE_UNKNOWN;
     if (player < 1 || player > PSXKB_MAX_PLAYERS) return SDL_SCANCODE_UNKNOWN;
@@ -433,6 +448,7 @@ static void take_key(int player, int button, int alt, SDL_Scancode sc) {
     }
 }
 
+/* psx keybinds set button: if (button < 0 || button >= PSXKB_N) return */
 void psx_keybinds_set_button(int player, int button, SDL_Scancode sc) {
     if (button < 0 || button >= PSXKB_N) return;
     if (player < 1 || player > PSXKB_MAX_PLAYERS) return;
@@ -440,29 +456,34 @@ void psx_keybinds_set_button(int player, int button, SDL_Scancode sc) {
     *(SDL_Scancode *)((char *)player_binds(player) + s_buttons[button].offset) = sc;
 }
 
+/* player alt binds: if (player < 1 || player > PSXKB_MAX_PLAYERS) */
 static PsxPlayerBinds *player_alt_binds(int player) {
     if (player < 1 || player > PSXKB_MAX_PLAYERS)
         return &s_alt_binds.player[0];
     return &s_alt_binds.player[player - 1];
 }
 
+/* psx keybinds get button alt: if (button < 0 || button >= PSXKB_N) return SDL_SCANCODE_UNKNOWN */
 SDL_Scancode psx_keybinds_get_button_alt(int player, int button) {
     if (button < 0 || button >= PSXKB_N) return SDL_SCANCODE_UNKNOWN;
     return *(SDL_Scancode *)((char *)player_alt_binds(player) + s_buttons[button].offset);
 }
 
+/* psx keybinds set button alt: if (button < 0 || button >= PSXKB_N) return */
 void psx_keybinds_set_button_alt(int player, int button, SDL_Scancode sc) {
     if (button < 0 || button >= PSXKB_N) return;
     take_key(player, button, 1, sc);
     *(SDL_Scancode *)((char *)player_alt_binds(player) + s_buttons[button].offset) = sc;
 }
 
+/* psx keybinds reset player: if (player < 1 || player > PSXKB_MAX_PLAYERS) return */
 void psx_keybinds_reset_player(int player) {
     if (player < 1 || player > PSXKB_MAX_PLAYERS) return;
     *player_binds(player) = s_default_binds.player[0];
     memset(player_alt_binds(player), 0, sizeof(PsxPlayerBinds)); /* alts: unbound */
 }
 
+/* psx keybinds save: if (!s_ini_path[0]) strcpy(s_ini_path, "keybinds.ini") */
 void psx_keybinds_save(void) {
     if (!s_ini_path[0]) strcpy(s_ini_path, "keybinds.ini");
     write_ini(s_ini_path);

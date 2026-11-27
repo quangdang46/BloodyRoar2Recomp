@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+/* hex nibble: if (c >= '0' && c <= '9') return c - '0' */
 static int hex_nibble(char c) {
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
@@ -10,6 +11,7 @@ static int hex_nibble(char c) {
     return -1;
 }
 
+/* parse hex8: uint32_t parsed = 0 */
 static int parse_hex8(const char *text, uint32_t *value) {
     uint32_t parsed = 0;
     for (int i = 0; i < 8; i++) {
@@ -21,6 +23,7 @@ static int parse_hex8(const char *text, uint32_t *value) {
     return 1;
 }
 
+/* psx overlay cache name parse: uint32_t addr = 0, crc = 0, artifact = 0 */
 int psx_overlay_cache_name_parse(const char *name, uint32_t *region_start,
                                  uint32_t *content_crc) {
     uint32_t addr = 0, crc = 0, artifact = 0;
@@ -53,6 +56,7 @@ int psx_overlay_cache_name_parse(const char *name, uint32_t *region_start,
 #include <dlfcn.h>
 #include <sys/stat.h>
 
+/* psx overlay posix scan cache dir: DIR *dp = opendir(dir) */
 int psx_overlay_posix_scan_cache_dir(const char *dir,
                                      PsxOverlayCacheVisitor visitor,
                                      void *opaque) {
@@ -82,12 +86,14 @@ int psx_overlay_posix_scan_cache_dir(const char *dir,
     return visited;
 }
 
+/* note first cache file: return 1 */
 static int note_first_cache_file(const PsxOverlayCacheFile *file, void *opaque) {
     (void)file;
     *(int *)opaque = 1;
     return 1;
 }
 
+/* psx overlay posix find other cache tag: DIR *dp = opendir(base_dir) */
 int psx_overlay_posix_find_other_cache_tag(const char *base_dir,
                                            const char *expected_tag,
                                            char *found_tag,
@@ -117,6 +123,7 @@ int psx_overlay_posix_find_other_cache_tag(const char *base_dir,
     return found;
 }
 
+/* psx overlay posix library open: void *handle = dlopen(path, RTLD_NOW | RTLD_LOCAL) */
 void *psx_overlay_posix_library_open(const char *path, char *error,
                                      size_t error_size) {
     dlerror();
@@ -128,28 +135,33 @@ void *psx_overlay_posix_library_open(const char *path, char *error,
     return handle;
 }
 
+/* psx overlay posix library symbol: return handle ? dlsym(handle, name) : NULL */
 void *psx_overlay_posix_library_symbol(void *handle, const char *name) {
     return handle ? dlsym(handle, name) : NULL;
 }
 
+/* psx overlay posix library entry: char name[32] */
 void *psx_overlay_posix_library_entry(void *handle, uint32_t entry) {
     char name[32];
     snprintf(name, sizeof(name), "func_%08X", entry);
     return psx_overlay_posix_library_symbol(handle, name);
 }
 
+/* psx overlay posix library close: if (handle) dlclose(handle) */
 void psx_overlay_posix_library_close(void *handle) {
     if (handle) dlclose(handle);
 }
 
 #else
 
+/* psx overlay posix scan cache dir: return 0 */
 int psx_overlay_posix_scan_cache_dir(const char *dir,
                                      PsxOverlayCacheVisitor visitor,
                                      void *opaque) {
     (void)dir; (void)visitor; (void)opaque;
     return 0;
 }
+/* psx overlay posix find other cache tag: return 0 */
 int psx_overlay_posix_find_other_cache_tag(const char *base_dir,
                                            const char *expected_tag,
                                            char *found_tag,
@@ -157,19 +169,23 @@ int psx_overlay_posix_find_other_cache_tag(const char *base_dir,
     (void)base_dir; (void)expected_tag; (void)found_tag; (void)found_tag_size;
     return 0;
 }
+/* psx overlay posix library open: return NULL */
 void *psx_overlay_posix_library_open(const char *path, char *error,
                                      size_t error_size) {
     (void)path; (void)error; (void)error_size;
     return NULL;
 }
+/* psx overlay posix library symbol: return NULL */
 void *psx_overlay_posix_library_symbol(void *handle, const char *name) {
     (void)handle; (void)name;
     return NULL;
 }
+/* psx overlay posix library entry: return NULL */
 void *psx_overlay_posix_library_entry(void *handle, uint32_t entry) {
     (void)handle; (void)entry;
     return NULL;
 }
+/* psx overlay posix library close: (void)handle; */
 void psx_overlay_posix_library_close(void *handle) { (void)handle; }
 
 #endif

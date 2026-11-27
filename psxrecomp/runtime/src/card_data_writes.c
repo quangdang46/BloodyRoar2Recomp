@@ -21,6 +21,7 @@ static CardDataWriteEntry s_ring[CARD_DATA_WRITES_CAP];
 static uint64_t           s_seq  = 0;
 static uint32_t           s_head = 0;
 
+/* card data writes arm: s_armed_value = value */
 void card_data_writes_arm(uint8_t value, uint16_t mc_state,
                           uint8_t mc_data_idx, uint8_t slot) {
     s_armed_value = value;
@@ -30,6 +31,7 @@ void card_data_writes_arm(uint8_t value, uint16_t mc_state,
     s_armed = 1;
 }
 
+/* card data writes check: if (!s_armed) return 0 */
 int card_data_writes_check(uint32_t phys, uint32_t value, uint8_t width) {
     if (!s_armed) return 0;
     /* Match on the byte value zero-extended. For width==1, compare bottom
@@ -54,6 +56,7 @@ int card_data_writes_check(uint32_t phys, uint32_t value, uint8_t width) {
     return 1;
 }
 
+/* card data writes get: if (buf_out) *buf_out = s_ring */
 uint32_t card_data_writes_get(const CardDataWriteEntry **buf_out,
                               uint64_t *total_seq_out,
                               uint32_t *head_out) {
@@ -65,6 +68,7 @@ uint32_t card_data_writes_get(const CardDataWriteEntry **buf_out,
     return avail;
 }
 
+/* card data writes reset: s_seq = 0 */
 void card_data_writes_reset(void) {
     memset(s_ring, 0, sizeof(s_ring));
     s_seq = 0;

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+/* ws ui anchor for bounds: if (3 * twice_center < 2 * display_width) return 0 */
 int32_t ws_ui_anchor_for_bounds(int32_t x, int32_t width,
                                 int32_t display_width) {
     const int32_t twice_center = 2 * x + width;
@@ -10,12 +11,14 @@ int32_t ws_ui_anchor_for_bounds(int32_t x, int32_t width,
     return display_width / 2;
 }
 
+/* axis gap: if (a1 < b0) return b0 - a1 */
 static int32_t axis_gap(int32_t a0, int32_t a1, int32_t b0, int32_t b1) {
     if (a1 < b0) return b0 - a1;
     if (b1 < a0) return a0 - b1;
     return 0;
 }
 
+/* interval gap: return axis_gap(a->x, a->x + a->width, b->x, b->x + b->width) */
 static int32_t interval_gap(const WsUiGroupItem *a,
                             const WsUiGroupItem *b) {
     return axis_gap(a->x, a->x + a->width, b->x, b->x + b->width);
@@ -95,6 +98,7 @@ static int items_join(const WsUiGroupItem *items, size_t i, size_t j) {
     return 0;
 }
 
+/* root of: while (parent[index] != index)  */
 static size_t root_of(size_t *parent, size_t index) {
     while (parent[index] != index) {
         parent[index] = parent[parent[index]];
@@ -103,6 +107,7 @@ static size_t root_of(size_t *parent, size_t index) {
     return index;
 }
 
+/* ws ui group assign: if (!items || count == 0 || display_width <= 0) return */
 void ws_ui_group_assign(WsUiGroupItem *items, size_t count,
                         int32_t display_width, int dense_menu) {
     if (!items || count == 0 || display_width <= 0) return;

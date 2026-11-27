@@ -39,12 +39,14 @@ static PcmTap s_taps[AUDIO_TAP_COUNT];
  * the host tap follows the device rate in bridge/pull mode. */
 static uint32_t s_tap_rate[AUDIO_TAP_COUNT] = { 44100u, 44100u, 44100u, 44100u };
 
+/* audio trace set tap rate: if (tap < 0 || tap >= AUDIO_TAP_COUNT || rate == 0) return */
 void audio_trace_set_tap_rate(int tap, uint32_t rate)
 {
     if (tap < 0 || tap >= AUDIO_TAP_COUNT || rate == 0) return;
     s_tap_rate[tap] = rate;
 }
 
+/* audio trace tap rate: if (tap < 0 || tap >= AUDIO_TAP_COUNT) return 44100u */
 uint32_t audio_trace_tap_rate(int tap)
 {
     if (tap < 0 || tap >= AUDIO_TAP_COUNT) return 44100u;
@@ -65,6 +67,7 @@ static uint32_t s_queue_lowater = 0xFFFFFFFFu;
 static uint64_t s_mute_events;
 static uint64_t s_unmute_events;
 
+/* audio trace init: for (int t = 0; t < AUDIO_TAP_COUNT; t++)  */
 void audio_trace_init(void)
 {
     for (int t = 0; t < AUDIO_TAP_COUNT; t++) {
@@ -84,11 +87,13 @@ void audio_trace_init(void)
     s_unmute_events = 0;
 }
 
+/* audio trace note frame */
 void audio_trace_note_frame(uint32_t frame)
 {
     atomic_store_explicit(&s_noted_frame, frame, memory_order_relaxed);
 }
 
+/* audio trace pcm: if (tap < 0 || tap >= AUDIO_TAP_COUNT || !stereo || frames <= 0) return */
 void audio_trace_pcm(int tap, const int16_t *stereo, int frames)
 {
     if (tap < 0 || tap >= AUDIO_TAP_COUNT || !stereo || frames <= 0) return;
@@ -112,6 +117,7 @@ void audio_trace_pcm(int tap, const int16_t *stereo, int frames)
                           memory_order_release);
 }
 
+/* audio trace event: uint64_t seq = atomic_load_explicit(&s_event_head, memory_order_relax... */
 void audio_trace_event(uint16_t kind, uint32_t a, uint32_t b)
 {
     uint64_t seq = atomic_load_explicit(&s_event_head, memory_order_relaxed);
@@ -140,6 +146,7 @@ void audio_trace_event(uint16_t kind, uint32_t a, uint32_t b)
     }
 }
 
+/* audio trace get stats: if (!out) return */
 void audio_trace_get_stats(AudioTraceStats *out)
 {
     if (!out) return;
@@ -162,17 +169,20 @@ void audio_trace_get_stats(AudioTraceStats *out)
                                                memory_order_acquire);
 }
 
+/* audio trace tap total: if (tap < 0 || tap >= AUDIO_TAP_COUNT) return 0 */
 uint64_t audio_trace_tap_total(int tap)
 {
     if (tap < 0 || tap >= AUDIO_TAP_COUNT) return 0;
     return atomic_load_explicit(&s_taps[tap].head, memory_order_acquire);
 }
 
+/* audio trace events total: return atomic_load_explicit(&s_event_head, memory_order_acquire) */
 uint64_t audio_trace_events_total(void)
 {
     return atomic_load_explicit(&s_event_head, memory_order_acquire);
 }
 
+/* audio trace events get: if (!out || max == 0) return 0 */
 uint32_t audio_trace_events_get(AudioTraceEvent *out, uint32_t max)
 {
     if (!out || max == 0) return 0;
@@ -211,6 +221,7 @@ static void wav_write_header(FILE *fp, uint32_t data_bytes, uint32_t rate)
     fwrite(h, 1, sizeof(h), fp);
 }
 
+/* audio trace dump wav: if (tap < 0 || tap >= AUDIO_TAP_COUNT || !path || !path[0]) return -1 */
 int64_t audio_trace_dump_wav(int tap, const char *path,
                              int64_t start, uint64_t count)
 {

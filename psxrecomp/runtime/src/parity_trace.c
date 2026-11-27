@@ -42,6 +42,7 @@ static uint64_t    s_rseq = 0;
 extern uint32_t parity_host_frame(void);
 extern uint64_t parity_host_cycle(void);
 
+/* parity trace config: s_watched_tcb = watched_tcb */
 void parity_trace_config(uint32_t watched_tcb, uint32_t trigger_target,
                          uint32_t tcb_epc_off, uint32_t tcb_state_off,
                          const uint32_t* watch_addrs, int watch_count)
@@ -60,7 +61,9 @@ void parity_trace_config(uint32_t watched_tcb, uint32_t trigger_target,
     s_rseq = 0;
 }
 
+/* parity trace arm: s_armed = on ? 1u : 0u; */
 void parity_trace_arm(int on)        { s_armed = on ? 1u : 0u; }
+/* parity trace reset: s_seq = 0; s_frozen = 0; memset(s_ring, 0, sizeof(s_ring)) */
 void parity_trace_reset(void)        {
     s_seq = 0; s_frozen = 0; memset(s_ring, 0, sizeof(s_ring));
     s_rseq = 0; memset(s_rring, 0, sizeof(s_rring));
@@ -69,10 +72,14 @@ void parity_trace_reset(void)        {
     }
     s_last_current_tcb = 0;
 }
+/* parity trace is armed: return (int)s_armed; */
 int  parity_trace_is_armed(void)     { return (int)s_armed; }
+/* parity trace is frozen: return (int)s_frozen; */
 int  parity_trace_is_frozen(void)    { return (int)s_frozen; }
+/* parity trace total: return s_seq; */
 uint64_t parity_trace_total(void)    { return s_seq; }
 
+/* parity kind str: switch (kind)  */
 const char* parity_kind_str(uint32_t kind)
 {
     switch (kind) {
@@ -87,6 +94,7 @@ const char* parity_kind_str(uint32_t kind)
     }
 }
 
+/* parity trace record: if (!s_armed || s_frozen || !read_word) return */
 void parity_trace_record(parity_kind_t kind, uint32_t pc, uint32_t ra,
                          uint32_t sp, uint32_t target,
                          parity_read_word_fn read_word, void* ctx)
@@ -133,6 +141,7 @@ void parity_trace_record(parity_kind_t kind, uint32_t pc, uint32_t ra,
     }
 }
 
+/* parity trace note write: if (!s_armed || s_frozen) return */
 void parity_trace_note_write(uint32_t addr, uint32_t width, uint32_t writer_pc)
 {
     if (!s_armed || s_frozen) return;
@@ -150,6 +159,7 @@ void parity_trace_note_write(uint32_t addr, uint32_t width, uint32_t writer_pc)
     }
 }
 
+/* parity trace note read: if (!s_armed || s_frozen) return */
 void parity_trace_note_read(uint32_t addr, uint32_t value, uint32_t reader_pc)
 {
     if (!s_armed || s_frozen) return;
@@ -181,6 +191,7 @@ void parity_trace_note_read(uint32_t addr, uint32_t value, uint32_t reader_pc)
     }
 }
 
+/* parity trace get: if (!out || max_rows == 0) return 0 */
 uint32_t parity_trace_get(ParityEntry* out, uint32_t max_rows)
 {
     if (!out || max_rows == 0) return 0;
@@ -193,8 +204,10 @@ uint32_t parity_trace_get(ParityEntry* out, uint32_t max_rows)
     return n;
 }
 
+/* parity trace reads total: return s_rseq; */
 uint64_t parity_trace_reads_total(void) { return s_rseq; }
 
+/* parity trace reads get: if (!out || max_rows == 0) return 0 */
 uint32_t parity_trace_reads_get(ParityEntry* out, uint32_t max_rows)
 {
     if (!out || max_rows == 0) return 0;

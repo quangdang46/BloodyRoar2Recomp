@@ -11,6 +11,7 @@ static CardReadSummary s_ring[CARD_READ_SUMMARY_CAP];
 static uint32_t        s_count = 0;
 static uint64_t        s_seq   = 0;
 
+/* card read summary record: if (s_count >= CARD_READ_SUMMARY_CAP) return */
 void card_read_summary_record(uint8_t slot, uint8_t cmd, uint16_t sector,
                               uint8_t checksum, uint8_t data_idx,
                               const uint8_t *data128) {
@@ -33,17 +34,20 @@ void card_read_summary_record(uint8_t slot, uint8_t cmd, uint16_t sector,
     s_count++;
 }
 
+/* card read summary get: if (buf_out) *buf_out = s_ring */
 uint32_t card_read_summary_get(const CardReadSummary **buf_out) {
     if (buf_out) *buf_out = s_ring;
     return s_count;
 }
 
+/* card read summary reset: s_count = 0 */
 void card_read_summary_reset(void) {
     memset(s_ring, 0, sizeof(s_ring));
     s_count = 0;
     s_seq   = 0;
 }
 
+/* card read summary set dest: if (s_count == 0) return */
 void card_read_summary_set_dest(uint32_t dest_addr) {
     if (s_count == 0) return;
     /* Set on the most recent record (the one that just completed). */

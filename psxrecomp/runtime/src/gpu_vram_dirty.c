@@ -19,6 +19,7 @@ static void ensure_verify_env(void)
     s_verify = (e && e[0] && e[0] != '0') ? 1 : 0;
 }
 
+/* gpu vram dirty set tracking: if (on)  */
 void gpu_vram_dirty_set_tracking(int on)
 {
     if (on) {
@@ -33,17 +34,20 @@ void gpu_vram_dirty_set_tracking(int on)
     }
 }
 
+/* gpu vram dirty tracking: return g_psx_vram_dirty_tracking ? 1 : 0 */
 int gpu_vram_dirty_tracking(void)
 {
     return g_psx_vram_dirty_tracking ? 1 : 0;
 }
 
+/* gpu vram dirty mark row impl: y &= (GPU_VRAM_DIRTY_H - 1u) */
 void gpu_vram_dirty_mark_row_impl(uint32_t y)
 {
     y &= (GPU_VRAM_DIRTY_H - 1u);
     s_mask[y >> 6] |= (uint64_t)1u << (y & 63u);
 }
 
+/* gpu vram dirty mark rows: uint32_t i */
 void gpu_vram_dirty_mark_rows(uint32_t y0, uint32_t h)
 {
     uint32_t i;
@@ -57,6 +61,7 @@ void gpu_vram_dirty_mark_rows(uint32_t y0, uint32_t h)
         gpu_vram_dirty_mark_row_impl(y0 + i);
 }
 
+/* gpu vram dirty mark rect: if (!g_psx_vram_dirty_tracking || w <= 0 || h <= 0) */
 void gpu_vram_dirty_mark_rect(int x, int y, int w, int h)
 {
     (void)x;
@@ -69,6 +74,7 @@ void gpu_vram_dirty_mark_rect(int x, int y, int w, int h)
     gpu_vram_dirty_mark_rows((uint32_t)y, (uint32_t)h);
 }
 
+/* gpu vram dirty mark all: if (!g_psx_vram_dirty_tracking) */
 void gpu_vram_dirty_mark_all(void)
 {
     if (!g_psx_vram_dirty_tracking)
@@ -77,6 +83,7 @@ void gpu_vram_dirty_mark_all(void)
     s_all = 1;
 }
 
+/* gpu vram dirty clear: if (!g_psx_vram_dirty_tracking) */
 void gpu_vram_dirty_clear(void)
 {
     if (!g_psx_vram_dirty_tracking)
@@ -85,6 +92,7 @@ void gpu_vram_dirty_clear(void)
     s_all = 0;
 }
 
+/* gpu vram dirty any: uint32_t i */
 int gpu_vram_dirty_any(void)
 {
     uint32_t i;
@@ -99,6 +107,7 @@ int gpu_vram_dirty_any(void)
     return 0;
 }
 
+/* gpu vram dirty row count: uint32_t i, n = 0 */
 uint32_t gpu_vram_dirty_row_count(void)
 {
     uint32_t i, n = 0;
@@ -111,11 +120,13 @@ uint32_t gpu_vram_dirty_row_count(void)
     return n;
 }
 
+/* gpu vram dirty mask: return s_mask */
 const uint64_t *gpu_vram_dirty_mask(void)
 {
     return s_mask;
 }
 
+/* gpu vram dirty verify enabled: return s_verify */
 int gpu_vram_dirty_verify_enabled(void)
 {
     ensure_verify_env();

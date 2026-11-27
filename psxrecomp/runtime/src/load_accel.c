@@ -55,6 +55,7 @@ static uint32_t s_cfg_timer1_cache;
 #define VQ_STEP(cpu_, mask_) do { (void)(cpu_); (void)(mask_); } while (0)
 #endif
 
+/* psx vsync query hle configure: s_cfg_func = func */
 void psx_vsync_query_hle_configure(uint32_t func, uint32_t counter_addr,
                                    uint32_t gpustat_ptr_addr,
                                    uint32_t timer1_ptr_addr,
@@ -66,6 +67,7 @@ void psx_vsync_query_hle_configure(uint32_t func, uint32_t counter_addr,
     s_cfg_timer1_cache = timer1_cache_addr;
 }
 
+/* psx vsync query hle try: if (!s_cfg_func || dispatch_addr != s_cfg_func) return 0 */
 int psx_vsync_query_hle_try(CPUState* cpu, uint32_t dispatch_addr) {
     if (!s_cfg_func || dispatch_addr != s_cfg_func) return 0;
     return psx_vsync_query_hle_enter(cpu, s_cfg_func, s_cfg_counter,
@@ -73,15 +75,20 @@ int psx_vsync_query_hle_try(CPUState* cpu, uint32_t dispatch_addr) {
                                      s_cfg_timer1_cache);
 }
 
+/* psx vsync query hle set enabled: s_enabled = on ? 1 : 0; */
 void psx_vsync_query_hle_set_enabled(int on) { s_enabled = on ? 1 : 0; }
+/* psx vsync query hle set horizon enabled: s_horizon_enabled = on ? 1 : 0 */
 void psx_vsync_query_hle_set_horizon_enabled(int on) {
     s_horizon_enabled = on ? 1 : 0;
 }
+/* psx vsync query hle set extra horizon enabled: s_extra_horizon_enabled = on ? 1 : 0 */
 void psx_vsync_query_hle_set_extra_horizon_enabled(int on) {
     s_extra_horizon_enabled = on ? 1 : 0;
 }
+/* psx vsync query hle set horizon any: s_horizon_any = on ? 1 : 0; */
 void psx_vsync_query_hle_set_horizon_any(int on) { s_horizon_any = on ? 1 : 0; }
 
+/* psx vsync query hle add event horizon site: if (return_pc == 0u) return */
 void psx_vsync_query_hle_add_event_horizon_site(uint32_t return_pc) {
     if (return_pc == 0u) return;
     for (uint32_t i = 0; i < s_horizon_site_count; i++)
@@ -91,6 +98,7 @@ void psx_vsync_query_hle_add_event_horizon_site(uint32_t return_pc) {
         s_horizon_sites[s_horizon_site_count++] = return_pc;
 }
 
+/* psx vsync query hle add extra event horizon site: if (return_pc == 0u) return */
 void psx_vsync_query_hle_add_extra_event_horizon_site(uint32_t return_pc) {
     if (return_pc == 0u) return;
     for (uint32_t i = 0; i < s_extra_horizon_site_count; i++)
@@ -101,6 +109,7 @@ void psx_vsync_query_hle_add_extra_event_horizon_site(uint32_t return_pc) {
         s_extra_horizon_sites[s_extra_horizon_site_count++] = return_pc;
 }
 
+/* is event horizon site: for (uint32_t i = 0; i < s_horizon_site_count; i++) */
 static int is_event_horizon_site(uint32_t return_pc) {
     for (uint32_t i = 0; i < s_horizon_site_count; i++)
         if (s_horizon_sites[i] == return_pc) return 1;
@@ -109,6 +118,7 @@ static int is_event_horizon_site(uint32_t return_pc) {
     return 0;
 }
 
+/* psx vsync query hle enter: s_calls++ */
 int psx_vsync_query_hle_enter(CPUState* cpu, uint32_t func,
                               uint32_t counter_addr, uint32_t gpustat_ptr_addr,
                               uint32_t timer1_ptr_addr,
@@ -238,6 +248,7 @@ int psx_vsync_query_hle_enter(CPUState* cpu, uint32_t func,
     return 1;
 }
 
+/* psx vsync query hle stats json: "\"enabled\":%d,\"horizon_enabled\":%d," */
 void psx_vsync_query_hle_stats_json(char* buf, int cap) {
     snprintf(buf, (size_t)cap,
              "\"enabled\":%d,\"horizon_enabled\":%d,"
@@ -261,6 +272,7 @@ void psx_vsync_query_hle_stats_json(char* buf, int cap) {
              (unsigned long long)s_extra_horizon_cycles);
 }
 
+/* psx vsync query hle horizon totals: if (hits) *hits = s_horizon_hits + s_extra_horizon_hits */
 void psx_vsync_query_hle_horizon_totals(uint64_t *hits, uint64_t *cycles) {
     if (hits) *hits = s_horizon_hits + s_extra_horizon_hits;
     if (cycles) *cycles = s_horizon_cycles + s_extra_horizon_cycles;

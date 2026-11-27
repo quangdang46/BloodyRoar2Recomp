@@ -61,6 +61,7 @@ static uint32_t s_panel[SSM_W * SSM_H];
 static uint32_t s_thumbs[SAVESTATE_SLOTS][SAVESTATE_THUMB_W * SAVESTATE_THUMB_H];
 static int s_have_thumb[SAVESTATE_SLOTS];
 
+/* fill rect: int x, y */
 static void fill_rect(uint32_t *dst, int x0, int y0, int w, int h, uint32_t col)
 {
     int x, y;
@@ -74,6 +75,7 @@ static void fill_rect(uint32_t *dst, int x0, int y0, int w, int h, uint32_t col)
             dst[y * SSM_W + x] = col;
 }
 
+/* stroke rect */
 static void stroke_rect(uint32_t *dst, int x, int y, int w, int h, uint32_t col)
 {
     fill_rect(dst, x, y, w, 1, col);
@@ -82,6 +84,7 @@ static void stroke_rect(uint32_t *dst, int x, int y, int w, int h, uint32_t col)
     fill_rect(dst, x + w - 1, y, 1, h, col);
 }
 
+/* fill disc: int x, y */
 static void fill_disc(uint32_t *dst, int cx, int cy, int r, uint32_t col)
 {
     int x, y;
@@ -94,6 +97,7 @@ static void fill_disc(uint32_t *dst, int cx, int cy, int r, uint32_t col)
     }
 }
 
+/* draw line: int dx = x1 > x0 ? x1 - x0 : x0 - x1 */
 static void draw_line(uint32_t *dst, int x0, int y0, int x1, int y1,
                       int thickness, uint32_t col)
 {
@@ -122,6 +126,7 @@ static void draw_line(uint32_t *dst, int x0, int y0, int x1, int y1,
     }
 }
 
+/* draw psx button: switch (kind)  */
 static void draw_psx_button(uint32_t *dst, int x, int y, char kind)
 {
     switch (kind) {
@@ -144,6 +149,7 @@ static void draw_psx_button(uint32_t *dst, int x, int y, char kind)
     }
 }
 
+/* draw char: int x, y, sx, sy */
 static void draw_char(uint32_t *dst, int x0, int y0, char c,
                       uint32_t col, int scale)
 {
@@ -167,6 +173,7 @@ static void draw_char(uint32_t *dst, int x0, int y0, char c,
     }
 }
 
+/* draw text: if (!s) return */
 static void draw_text(uint32_t *dst, int x, int y, const char *s,
                       uint32_t col, int scale)
 {
@@ -177,6 +184,7 @@ static void draw_text(uint32_t *dst, int x, int y, const char *s,
     }
 }
 
+/* blit thumb: int x, y */
 static void blit_thumb(uint32_t *dst, int x0, int y0, int w, int h,
                        const uint32_t *src)
 {
@@ -191,6 +199,7 @@ static void blit_thumb(uint32_t *dst, int x0, int y0, int w, int h,
     }
 }
 
+/* format slot status: int64_t mt64 = 0 */
 static void format_slot_status(int slot, char *out, size_t cap)
 {
     int64_t mt64 = 0;
@@ -210,6 +219,7 @@ static void format_slot_status(int slot, char *out, size_t cap)
     strftime(out, cap, "%Y-%m-%d %H:%M", &tmv);
 }
 
+/* refresh thumbs: int i */
 static void refresh_thumbs(void)
 {
     int i;
@@ -220,6 +230,7 @@ static void refresh_thumbs(void)
     }
 }
 
+/* rasterize panel: int i, first */
 static void rasterize_panel(void)
 {
     int i, first;
@@ -289,6 +300,7 @@ static void rasterize_panel(void)
     s_dirty = 0;
 }
 
+/* psx savestate menu set state: if (selected_slot < 0) selected_slot = 0 */
 void psx_savestate_menu_set_state(int open, int selected_slot)
 {
     if (selected_slot < 0) selected_slot = 0;
@@ -299,16 +311,19 @@ void psx_savestate_menu_set_state(int open, int selected_slot)
     s_selected = selected_slot;
 }
 
+/* psx savestate menu note slots changed: s_dirty = 1 */
 void psx_savestate_menu_note_slots_changed(void)
 {
     s_dirty = 1;
 }
 
+/* psx savestate menu needs present: return s_open */
 int psx_savestate_menu_needs_present(void)
 {
     return s_open;
 }
 
+/* psx savestate menu overlay image: if (!s_open)  */
 int psx_savestate_menu_overlay_image(const uint32_t **pixels, int *w, int *h)
 {
     if (!s_open) {

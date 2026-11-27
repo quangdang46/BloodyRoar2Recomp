@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
+/* skip space: while (*p && isspace((unsigned char)*p))  */
 static const char *skip_space(const char *p)
 {
     while (*p && isspace((unsigned char)*p)) {
@@ -13,6 +14,7 @@ static const char *skip_space(const char *p)
     return p;
 }
 
+/* parse u32: char *end = NULL */
 static int parse_u32(const char **cursor, uint32_t *value)
 {
     char *end = NULL;
@@ -34,6 +36,7 @@ static int parse_u32(const char **cursor, uint32_t *value)
     return 1;
 }
 
+/* psx debug parse trace ranges: int count = 0 */
 int psx_debug_parse_trace_ranges(const char *spec,
                                  PSXDebugTraceRange *ranges,
                                  int capacity)

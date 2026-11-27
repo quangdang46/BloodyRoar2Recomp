@@ -36,6 +36,7 @@ static const CodeProvider s_gcc = {
  * none — init runs at overlay-cache setup) gets the proven path. */
 static const CodeProvider *s_active = &s_gcc;
 
+/* code provider init: s_active = &s_gcc */
 void code_provider_init(const char *cfg_backend, int gcc_configured) {
     /* overlay_backend_resolve resolves AUTO to GCC or TCC (never AUTO). Both the
      * gcc and tcc tiers are the same spawn-a-compiler->DLL->rescan provider
@@ -47,4 +48,5 @@ void code_provider_init(const char *cfg_backend, int gcc_configured) {
     s_active = &s_gcc;
 }
 
+/* code provider active: return s_active; */
 const CodeProvider *code_provider_active(void) { return s_active; }

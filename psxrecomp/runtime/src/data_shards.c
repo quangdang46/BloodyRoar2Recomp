@@ -114,8 +114,10 @@ static struct {
 static const char* s_cache_dir = 0;
 static char s_dir_buf[1024];
 
+/* ds set enabled: s_enabled = on; */
 void ds_set_enabled(int on) { s_enabled = on; }
 
+/* ds init: if (!cache_dir || !game_id) return */
 void ds_init(const char* cache_dir, const char* game_id) {
     if (!cache_dir || !game_id) return;
     snprintf(s_dir_buf, sizeof(s_dir_buf), "%s/%s/datashards", cache_dir, game_id);
@@ -147,16 +149,19 @@ static int64_t ds_index_of(uint32_t addr) {
     return -2;  /* anything else device-ish: treat as impure */
 }
 
+/* ds live byte: return idx < DS_RAM_BYTES ? memory_get_ram_ptr()[idx] */
 static uint8_t ds_live_byte(uint32_t idx) {
     return idx < DS_RAM_BYTES ? memory_get_ram_ptr()[idx]
                               : memory_get_scratchpad_ptr()[idx - DS_RAM_BYTES];
 }
 
+/* ds touch page: uint32_t pg = idx >> DS_PAGE_SHIFT */
 static void ds_touch_page(uint32_t idx) {
     uint32_t pg = idx >> DS_PAGE_SHIFT;
     if (!s_page_touched[pg]) { s_page_touched[pg] = 1; s_pages[s_npages++] = pg; }
 }
 
+/* ds poison: if (!g_ds_recording || s_poisoned) return */
 static void ds_poison(uint32_t which) {
     if (!g_ds_recording || s_poisoned) return;
     s_poisoned = 1;
@@ -188,6 +193,7 @@ void ds_note_read(uint32_t addr, uint32_t size) {
     }
 }
 
+/* ds note write: if (!g_ds_recording || s_poisoned) return */
 void ds_note_write(uint32_t addr, uint32_t size) {
     if (!g_ds_recording || s_poisoned) return;
     int64_t ix = ds_index_of(addr);
@@ -203,11 +209,13 @@ void ds_note_write(uint32_t addr, uint32_t size) {
     }
 }
 
+/* ds note mmio */
 void ds_note_mmio(uint32_t addr, int is_read) {
     (void)addr; (void)is_read;
     ds_poison(1);
 }
 
+/* ds note dma write: ds_poison(2); */
 void ds_note_dma_write(void) { ds_poison(2); }
 
 /* traps.c calls this on every guest thread switch */
@@ -229,6 +237,7 @@ static void ds_recorder_reset(void) {
     s_poisoned = 0;
 }
 
+/* ds alloc maps: if (s_rd_flag) return 1 */
 static int ds_alloc_maps(void) {
     if (s_rd_flag) return 1;
     s_rd_flag = (uint8_t*)calloc(1, DS_SPACE);
@@ -237,6 +246,7 @@ static int ds_alloc_maps(void) {
     return s_rd_flag && s_wr_flag && s_rd_orig;
 }
 
+/* ds bucket: return &s_buckets[(key >> 2) & (DS_KEY_BUCKETS - 1)] */
 static DsShard** ds_bucket(uint32_t key) {
     return &s_buckets[(key >> 2) & (DS_KEY_BUCKETS - 1)];
 }
@@ -295,6 +305,7 @@ static uint32_t ds_build_ranges(const uint8_t* flag, DsRange** out_ranges,
 
 static void ds_persist(const DsShard* s);
 
+/* ds finalize: DsShard* s = (DsShard*)calloc(1, sizeof(DsShard)) */
 static void ds_finalize(CPUState* cpu) {
     DsShard* s = (DsShard*)calloc(1, sizeof(DsShard));
     s->key = s_arm_key;
@@ -332,6 +343,7 @@ static void ds_persist(const DsShard* s) {
     fclose(f);
 }
 
+/* ds load key: for (int i = 0; i < s_loaded_n; i++) if (s_loaded_keys[i] == (int)key... */
 static void ds_load_key(uint32_t key) {
     for (int i = 0; i < s_loaded_n; i++) if (s_loaded_keys[i] == (int)key) return;
     if (s_loaded_n < 256) s_loaded_keys[s_loaded_n++] = (int)key;
@@ -393,6 +405,7 @@ static int ds_verify(const DsShard* s) {
     return 1;
 }
 
+/* ds apply: uint32_t off = 0 */
 static void ds_apply(CPUState* cpu, DsShard* s) {
     uint32_t off = 0;
     for (uint32_t r = 0; r < s->nwr; r++) {
@@ -467,6 +480,7 @@ int psx_datashard_enter(CPUState* cpu, uint32_t key) {
     return 0;
 }
 
+/* psx datashard ret: if (!g_ds_recording || cpu != s_arm_cpu) return */
 void psx_datashard_ret(CPUState* cpu) {
     if (!g_ds_recording || cpu != s_arm_cpu) return;
     if (cpu->gpr[29] != s_arm_sp || cpu->gpr[31] != s_arm_ra) return; /* callee's ret */

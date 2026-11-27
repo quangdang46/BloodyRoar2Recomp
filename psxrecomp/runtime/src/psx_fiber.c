@@ -8,6 +8,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+/* psx fiber convert thread: void* fib = ConvertThreadToFiber(NULL) */
 psx_fiber_t psx_fiber_convert_thread(void)
 {
     /* Attempt the conversion unconditionally and check the error code on
@@ -23,15 +24,19 @@ psx_fiber_t psx_fiber_convert_thread(void)
     return (psx_fiber_t)fib;
 }
 
+/* psx fiber current: return (psx_fiber_t)GetCurrentFiber(); */
 psx_fiber_t psx_fiber_current(void)      { return (psx_fiber_t)GetCurrentFiber(); }
 
+/* psx fiber create: return (psx_fiber_t)CreateFiber((SIZE_T)stack_size, */
 psx_fiber_t psx_fiber_create(size_t stack_size, psx_fiber_entry entry, void* arg)
 {
     return (psx_fiber_t)CreateFiber((SIZE_T)stack_size,
                                     (LPFIBER_START_ROUTINE)entry, arg);
 }
 
+/* psx fiber switch: SwitchToFiber((LPVOID)target); */
 void psx_fiber_switch(psx_fiber_t target) { SwitchToFiber((LPVOID)target); }
+/* psx fiber destroy: if (fiber) DeleteFiber((LPVOID)fiber); */
 void psx_fiber_destroy(psx_fiber_t fiber) { if (fiber) DeleteFiber((LPVOID)fiber); }
 
 #elif defined(__EMSCRIPTEN__)
@@ -57,6 +62,7 @@ typedef struct psx_wasm_fiber {
 
 static psx_wasm_fiber* s_wcurrent = NULL;
 
+/* psx wasm entry: psx_wasm_fiber* f = (psx_wasm_fiber*)p */
 static void psx_wasm_entry(void* p)
 {
     psx_wasm_fiber* f = (psx_wasm_fiber*)p;
@@ -64,6 +70,7 @@ static void psx_wasm_entry(void* p)
     abort();   /* BIOS thread entries never return; see POSIX trampoline */
 }
 
+/* psx fiber convert thread: if (!s_wcurrent)  */
 psx_fiber_t psx_fiber_convert_thread(void)
 {
     if (!s_wcurrent) {
@@ -76,8 +83,10 @@ psx_fiber_t psx_fiber_convert_thread(void)
     return (psx_fiber_t)s_wcurrent;
 }
 
+/* psx fiber current: return (psx_fiber_t)s_wcurrent; */
 psx_fiber_t psx_fiber_current(void) { return (psx_fiber_t)s_wcurrent; }
 
+/* psx fiber create: psx_wasm_fiber* f = (psx_wasm_fiber*)calloc(1, sizeof(*f)) */
 psx_fiber_t psx_fiber_create(size_t stack_size, psx_fiber_entry entry, void* arg)
 {
     psx_wasm_fiber* f = (psx_wasm_fiber*)calloc(1, sizeof(*f));
@@ -95,6 +104,7 @@ psx_fiber_t psx_fiber_create(size_t stack_size, psx_fiber_entry entry, void* arg
     return (psx_fiber_t)f;
 }
 
+/* psx fiber switch: psx_wasm_fiber* to = (psx_wasm_fiber*)target */
 void psx_fiber_switch(psx_fiber_t target)
 {
     psx_wasm_fiber* to   = (psx_wasm_fiber*)target;
@@ -106,6 +116,7 @@ void psx_fiber_switch(psx_fiber_t target)
     emscripten_fiber_swap(&from->ef, &to->ef);
 }
 
+/* psx fiber destroy: psx_wasm_fiber* f = (psx_wasm_fiber*)fiber */
 void psx_fiber_destroy(psx_fiber_t fiber)
 {
     psx_wasm_fiber* f = (psx_wasm_fiber*)fiber;
@@ -161,6 +172,7 @@ static void psx_fiber_trampoline(unsigned int hi, unsigned int lo)
     abort();
 }
 
+/* psx fiber convert thread: if (!s_current)  */
 psx_fiber_t psx_fiber_convert_thread(void)
 {
     if (!s_current) {
@@ -171,8 +183,10 @@ psx_fiber_t psx_fiber_convert_thread(void)
     return (psx_fiber_t)s_current;
 }
 
+/* psx fiber current: return (psx_fiber_t)s_current; */
 psx_fiber_t psx_fiber_current(void) { return (psx_fiber_t)s_current; }
 
+/* psx fiber create: if (stack_size < SIGSTKSZ) stack_size = SIGSTKSZ */
 psx_fiber_t psx_fiber_create(size_t stack_size, psx_fiber_entry entry, void* arg)
 {
     if (stack_size < SIGSTKSZ) stack_size = SIGSTKSZ;
@@ -192,6 +206,7 @@ psx_fiber_t psx_fiber_create(size_t stack_size, psx_fiber_entry entry, void* arg
     return (psx_fiber_t)f;
 }
 
+/* psx fiber switch: psx_fiber_impl* to = (psx_fiber_impl*)target */
 void psx_fiber_switch(psx_fiber_t target)
 {
     psx_fiber_impl* to   = (psx_fiber_impl*)target;
@@ -202,6 +217,7 @@ void psx_fiber_switch(psx_fiber_t target)
     /* Resumed: s_current was set back to `from` by whoever switched here. */
 }
 
+/* psx fiber destroy: psx_fiber_impl* f = (psx_fiber_impl*)fiber */
 void psx_fiber_destroy(psx_fiber_t fiber)
 {
     psx_fiber_impl* f = (psx_fiber_impl*)fiber;
