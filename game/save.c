@@ -2279,7 +2279,7 @@ int32_t blk_io_retry(uint32_t a0,void *a1)
   for (;;) {
     handle = mc_date_serial_cmp(blk,a1);
     if (handle) {
-      sel = (*(uint32_t *)(blk + 8) < 1) ? 1 : 0;
+      sel = (*(uint32_t *)(blk + 8) < 1);
       *(uint32_t *)(blk + 8) = sel;
       cd_bitstream_decode(handle,*(uint32_t *)(blk + sel * 4),
                    *(uint32_t *)guest_at(0x801f4758));
@@ -3333,11 +3333,11 @@ void select_phase_update(uint32_t a0)
     if (chan_b[1]) chan_b[4] = 0;
     if (chan_a[1] != 0 && va == chan_b[3]) {
       chan_a[3] = (uint8_t)va;
-      chan_a[4] = (chan_b[4] == 0) ? 1 : 0;
+      chan_a[4] = (chan_b[4] == 0);
     }
     if (chan_b[1] != 0 && chan_a[3] == va) {
       chan_b[3] = (uint8_t)va;
-      chan_b[4] = (chan_a[4] == 0) ? 1 : 0;
+      chan_b[4] = (chan_a[4] == 0);
     }
     ctx[0x98] = (uint8_t)vb;
   }
@@ -3544,24 +3544,24 @@ int menu_stepper_sm(uint8_t *pad)
         *(uint32_t *)(desc + 0x0c) = 0x8015b190;
         *(uint16_t *)(desc + 0x10) = 0xffff;
         *(uint16_t *)(desc + 0x12) = 0xffff;
-        *(uint16_t *)(desc + 0x14) = ((flags >> 2) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x16) = ((flags >> 3) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x18) = ((flags >> 4) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x1a) = ((flags >> 5) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x1c) = ((flags >> 6) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x1e) = ((flags >> 7) & 1) ? 1 : 0;
+        *(uint16_t *)(desc + 0x14) = ((flags >> 2) & 1);
+        *(uint16_t *)(desc + 0x16) = ((flags >> 3) & 1);
+        *(uint16_t *)(desc + 0x18) = ((flags >> 4) & 1);
+        *(uint16_t *)(desc + 0x1a) = ((flags >> 5) & 1);
+        *(uint16_t *)(desc + 0x1c) = ((flags >> 6) & 1);
+        *(uint16_t *)(desc + 0x1e) = ((flags >> 7) & 1);
         *(uint16_t *)(desc + 0x20) = *(uint16_t *)(pad + 4);
         *(uint16_t *)(desc + 0x22) = *(uint16_t *)(pad + 6);
         *(uint16_t *)(desc + 0x24) = *(uint16_t *)(pad + 8);
         *(uint16_t *)(desc + 0x26) = *(uint16_t *)(pad + 0xa);
-        *(uint16_t *)(desc + 0x28) = (flags & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x2a) = ((flags >> 1) & 1) ? 1 : 0;
+        *(uint16_t *)(desc + 0x28) = (flags & 1);
+        *(uint16_t *)(desc + 0x2a) = ((flags >> 1) & 1);
         blk = (uint8_t *)guest_at(*(uint32_t *)(ctx + 0xc0));
         *(uint16_t *)(desc + 0x2c) = blk ? blk[0x25] : 0;
         *(uint16_t *)(desc + 0x2e) = blk ? blk[0xb] : 0;
-        *(uint16_t *)(desc + 0x30) = ((flags >> 0xa) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x32) = ((flags >> 0xb) & 1) ? 1 : 0;
-        *(uint16_t *)(desc + 0x34) = ((flags >> 0xc) & 1) ? 1 : 0;
+        *(uint16_t *)(desc + 0x30) = ((flags >> 0xa) & 1);
+        *(uint16_t *)(desc + 0x32) = ((flags >> 0xb) & 1);
+        *(uint16_t *)(desc + 0x34) = ((flags >> 0xc) & 1);
         battle_session_arm((intptr_t)0x1f800000,-1);
         sm_state++;
         goto body;
@@ -4020,7 +4020,7 @@ probe:
     ret = mc_job_a_result_poll((uint32_t)chan,in,b40,0x200,
                        *(uint32_t *)guest_at(slot));
     if (ret) { br2_guest_frame_free(); return ret; }
-    hdr_flag = (*(uint8_t *)b40 < 1) ? 1 : 0;
+    hdr_flag = (*(uint8_t *)b40 < 1);
     goto stage2;
   }
   ret = mc_file_cmd_stable_poll((uint32_t)chan,in,p7);
@@ -4141,7 +4141,7 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
       if ((int32_t)dlen > 0) {
         for (i = 0; i < dlen; i++) xor_sum ^= buf[i];
       }
-      next_idx = (cur_idx < 1) ? 1 : 0;
+      next_idx = (cur_idx < 1);
       if (want_xor == (xor_sum & 0xff)) {
         uint8_t *dst = (uint8_t *)mem_ptr(dst_addr);
         uint8_t *src = buf;
@@ -4587,7 +4587,7 @@ void fighter_anim_table_init(int32_t a0)
     for (ri = 0; ri < 2; ri++) {
       uint32_t t = 0x801b4cec + ri * 8;
       uint32_t a = 0x801f50f8 + off + ri * 0x24;
-      int32_t fl = (g8(0x1f800015) < 1) ? 1 : 0;
+      int32_t fl = (g8(0x1f800015) < 1);
       rec = (uint8_t *)guest_at(a + 0x1e);
       rec[-0x1a]=0x20; rec[-0x19]=0xf0; rec[-0x18]=0xff;
       rec[-0x12]=0x20; rec[-0x11]=0xf0; rec[-0x10]=0xff;
