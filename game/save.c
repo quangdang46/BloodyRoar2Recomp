@@ -2592,7 +2592,7 @@ void fighter_link_init(uint32_t a0,uint32_t a1,uint8_t *a2,uint32_t a3)
 
 /* block_copy_ret_len — s0=*(u32*)(a1+8); guest_memcpy(a0,a1+0xc,s0);
  * returns s0. Disasm 0x801632e4-0x8016330c. */
-extern uint32_t guest_memcpy(uint32_t,uint32_t,uint32_t);
+extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 uint32_t block_copy_ret_len(uint32_t a0,uint32_t a1)
 {
   uint8_t *b = (uint8_t *)guest_at(a1);
@@ -2602,7 +2602,7 @@ uint32_t block_copy_ret_len(uint32_t a0,uint32_t a1)
   decomp_trace_record(1,a0,a1,0,len);
   /* guest_memcpy takes guest addresses; b+0xc is host, so pass the
    * guest address a1+0xc directly (b = guest_at(a1)). */
-  guest_memcpy(a0,a1 + 0xc,len);
+  guest_memcpy((uint32_t *)(uintptr_t)a0,(uint32_t *)(uintptr_t)(a1 + 0xc),(int)len);
   return len;
 }
 

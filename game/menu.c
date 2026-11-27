@@ -183,8 +183,8 @@ extern int fighter_tint_fade(int scene,int idx,int battle,int anim);
 extern void battle_hud_draw(int unused,int fighter,int aux0,int aux1);
 extern void fighter_contact_resolve(int f0,int f1,int battle);
 extern void fighter_pair_update(int f0,int f1,int battle);
-extern int prim_list_gte_invoke(int *lst,uint32_t a1,uint32_t a2,int total,uint32_t mtx_t ,uint32_t mtx_ip);
-extern int prim_list_persp_step(int *lst,uint32_t a1,uint32_t a2,int n,uint32_t arg5 ,int xf,uint32_t arg7,uint32_t arg8);
+extern int *prim_list_gte_invoke(int *lst,uint32_t a1,uint32_t a2,int total,uint32_t mtx_t ,uint32_t mtx_ip);
+extern int *prim_list_persp_step(int *lst,uint32_t a1,uint32_t a2,int n,uint32_t arg5 ,int xf,uint32_t arg7,uint32_t arg8);
 extern void dbg_marker_mode_set(int);
 extern int sprintf_core(char *,char *,...);
 extern uint32_t cd_timer_read(int);
@@ -14655,7 +14655,7 @@ extern int32_t heap_serialize(uint32_t,uint32_t,uint32_t,uint32_t,
 extern uint32_t peak_track(void);
 extern int32_t display_cur_invalidate(void);
 extern int32_t display_pair_invalidate(void);
-extern int32_t euler_rotmat(uint32_t,uint32_t,uint32_t,void *);
+extern uint16_t *euler_rotmat(uint32_t,uint32_t,uint32_t,uint16_t *);
 extern void part_link_unlink(void *,void *,int32_t);
 
 /* state_pair_init @0x8012b46c (5 insns): p = MB32(0x1f800084);

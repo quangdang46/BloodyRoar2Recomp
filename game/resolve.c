@@ -186,7 +186,7 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 /* ---- prototypes: externs + forward decls for resolve-family helpers ---- */
 extern void motion_blend_frame(uint8_t*,uint8_t*);
 extern int  atan2_lut(int,int);
-extern void gte_op_a00428(int*,int*);
+extern uint32_t *gte_op_a00428(uint32_t *,uint32_t *);
 extern uint32_t fixed_rsqrt_q12(uint32_t);
 uint16_t *euler_rotmat(uint32_t,uint32_t,uint32_t,uint16_t*);
 void hitrec_table_clear(int);
@@ -2136,7 +2136,7 @@ void action_commit(uint8_t *ctrl, uint8_t *motion)
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd4);
     dvec[2] = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xdc) -
                   *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xdc);
-    gte_op_a00428(dvec,dvec);
+    gte_op_a00428((uint32_t *)dvec,(uint32_t *)dvec);
     delta = *(int *)((char *)guest_at(*(uint32_t *)((char *)guest_at(*(uint32_t *)(ctrl + 0x2c)) + 0x20)) + 0xd8);
     tv = *(int *)((char *)guest_at(*(uint32_t *)(ctrl + 0x20)) + 0xd8);
     res = fixed_rsqrt_q12(dvec[0] + dvec[2]);
