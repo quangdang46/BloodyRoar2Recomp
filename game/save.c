@@ -3241,7 +3241,7 @@ void select_phase_update(uint32_t a0)
     if (sel_idx >= 0xb) {
       /* write pseudo-random bytes into the tables */
       int32_t r = table_byte_next_a();
-      int32_t q = (sel_idx * (int32_t)0x2e8ba2e9) >> 33; /* mfhi>>1 - sign */
+      int32_t q;
       int32_t rem;
       /* faithful: hi = mulhi(sel_idx,0x2e8ba2e9); q = (hi>>1) - (sel_idx>>31) */
       {
