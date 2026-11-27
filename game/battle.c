@@ -913,7 +913,7 @@ void fighter_flash_update(uint battle,uint slot,int ctx2,byte *rec)
   *(undefined2 *)(&DAT_801f4d7a + roff) = *(undefined2 *)(&DAT_801f4d78 + roff);
   *(short *)(&DAT_801f4d78 + roff) = (short)bright;
   val = (undefined1)bright;
-  switch(*(undefined2 *)(&DAT_801f4d72 + roff)) {
+  switch(*(short *)(&DAT_801f4d72 + roff)) {
   case 0:
     prim = &DAT_801f4d7c + slot * 0x58 + fidx * 0xbc;
     *(undefined1 *)(recp + slot * 0x2c + 0x20) = val;
@@ -1735,7 +1735,7 @@ LAB_80131b40:
     break;
   case 10:
   case 0xb:
-    switch(*(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x78)))) {
+    switch(*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x78)))) {
     case 0:
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((battle + 0x24) ))= 0x168;
       gte_cw_d000_set(0x168);
@@ -6728,7 +6728,7 @@ void impact_fx_spawn(undefined4 *pos,uint fid,int ang,int aux,uint fl)
     t3 = _DAT_801c4578;
     cur = cur + 10;
   } while (t1 < 2);
-  switch(*(undefined2 *)(rec + 0x19)) {
+  switch(*(short *)(rec + 0x19)) {
   case 0:
     t1 = task_alloc_wrap_d((undefined4)br2_gaddr(rec),(undefined4)br2_gaddr(rec + 10),(undefined4)br2_gaddr(rec + 0x14), (undefined4)br2_gaddr(&DAT_801b1b1c), (undefined4)br2_gaddr(&DAT_801b1ad8));
     if (t1 != 0) {
