@@ -182,6 +182,8 @@ typedef struct {
 
 static SpuVoice voices[SPU_VOICE_COUNT];
 
+/* Push one event into the SPU_EVENT_CAP ring (seq/frame/kind/voice/
+ * addr + voice pitch snapshot). */
 static void spu_event_record(uint8_t kind, int voice, uint32_t addr) {
     SpuEvent *e = &s_events[s_event_idx & (SPU_EVENT_CAP - 1u)];
     e->seq      = s_event_seq++;
@@ -353,6 +355,7 @@ static inline int16_t volume_reg_decode(uint16_t raw) {
  * effect immediately; a sweep-mode write starts the sweep FROM the current
  * live level (documented reading: the sweep register programs an envelope,
  * it does not itself carry a target level). The divider restarts either way. */
+/* Guest write to a volume register: direct decode or arm a sweep. */
 static void sweep_env_write(SweepEnv *sw, uint16_t raw) {
     if (!(raw & 0x8000u))
         sw->level = volume_reg_decode(raw);
@@ -374,6 +377,7 @@ static void sweep_env_write(SweepEnv *sw, uint16_t raw) {
  * wrong side of zero is clamped to 0 before stepping. Increase saturates at
  * 0x7FFF, decrease at 0, matching the ADSR clamp behaviour. Candidate for
  * oracle verification. */
+/* Advance a sweep envelope by one output sample (no-op in direct mode). */
 static void sweep_env_step(SweepEnv *sw, uint16_t raw) {
     if (!(raw & 0x8000u)) return;
     int     exp_mode  = (raw >> 14) & 1;
@@ -412,6 +416,7 @@ static inline int16_t chan_volume(uint16_t raw, const SweepEnv *sw) {
  * work-area reads/writes, and the transfer/IRQ-address/SPUCNT register
  * writes). `addr`/`len` describe the accessed byte range; the compare is at
  * 8-byte-unit granularity because that is the IRQ address register's unit. */
+/* IRQ-address compare over an 8-byte-unit range; raises IRQ9 once. */
 static void spu_irq_check(uint32_t addr, uint32_t len) {
     if (!(RREG(0x1F801DAAu) & 0x0040u)) return;   /* SPUCNT.6 IRQ enable */
     if (len == 0) return;
@@ -437,6 +442,7 @@ static inline int16_t cd_input_volume(uint16_t raw) {
     return (int16_t)raw;
 }
 
+/* Clear the CD/XA stereo input ring and its counters. */
 void spu_cd_audio_reset(void) {
     memset(cd_ring, 0, sizeof(cd_ring));
     cd_read_pos = 0;
@@ -447,6 +453,7 @@ void spu_cd_audio_reset(void) {
     cd_underflow_frames = 0;
 }
 
+/* Push stereo CD frames into the ring (drops oldest on overflow). */
 void spu_cd_audio_push(const int16_t* stereo, int frames) {
     if (!stereo || frames <= 0) return;
 
@@ -482,6 +489,7 @@ void spu_cd_audio_push(const int16_t* stereo, int frames) {
                       cd_frame_count);
 }
 
+/* Pop one stereo CD frame; 0 when the ring is empty. */
 static int cd_audio_pop(int16_t* left, int16_t* right) {
     if (cd_frame_count == 0) return 0;
     *left = cd_ring[cd_read_pos * 2u + 0u];
@@ -491,6 +499,7 @@ static int cd_audio_pop(int16_t* left, int16_t* right) {
     return 1;
 }
 
+/* Decode one 16-byte ADPCM block for a voice at block boundary. */
 static void decode_block(SpuVoice *v) {
     static const int f0[5] = { 0, 60, 115, 98, 122 };
     static const int f1[5] = { 0, 0, -52, -55, -60 };
@@ -576,6 +585,7 @@ static void decode_block(SpuVoice *v) {
  * of the noise unit; the shift/step semantics above are the documented
  * reading, but the exact counter width/reload behaviour is a candidate for
  * oracle verification against Beetle's audio OUTPUT. */
+/* Advance the LFSR noise generator by one output sample. */
 static void noise_clock(uint16_t ctrl) {
     int     step   = 4 + ((ctrl >> 8) & 3);
     int     shift  = (ctrl >> 10) & 0x0F;
@@ -651,6 +661,7 @@ static inline uint32_t rev_mbase(void) {
  * delay taps). A register value r denotes byte offset r*8 from the current
  * buffer address; the result wraps inside [mBASE<<3, 0x80000) and never
  * escapes it, whatever the register values. */
+/* Effective reverb work-area address for a register + tap bias. */
 static uint32_t rev_ea(uint32_t reg_addr, int32_t bias) {
     uint32_t base = rev_mbase();
     uint32_t size = SPU_RAM_SIZE - base;
@@ -661,6 +672,7 @@ static uint32_t rev_ea(uint32_t reg_addr, int32_t bias) {
     return (base + (uint32_t)rel) & 0x7FFFEu;
 }
 
+/* Read a saturated 16-bit reverb work-area cell (with IRQ check). */
 static int16_t rev_read(uint32_t reg_addr, int32_t bias) {
     uint32_t a = rev_ea(reg_addr, bias);
     spu_irq_check(a, 2u);
@@ -672,6 +684,7 @@ static int16_t rev_read(uint32_t reg_addr, int32_t bias) {
  * DOCUMENTED-GAP: whether a SUPPRESSED write still drives the address bus
  * (and could therefore trip the IRQ compare) is not documented; this model
  * only checks on accesses that actually happen. */
+/* Write a saturated 16-bit reverb work-area cell when wren (SPUCNT.7). */
 static void rev_write(uint32_t reg_addr, int32_t v, int wren) {
     if (!wren) return;
     uint32_t a = rev_ea(reg_addr, 0);
@@ -687,6 +700,7 @@ static void rev_write(uint32_t reg_addr, int32_t v, int wren) {
  * address. RAM accesses are performed in the documented statement order so
  * the dAPF1==0 / dAPF2==0 corner (re-read of a just-written cell) behaves
  * as literally written. */
+/* One documented IIR+APF reverb step at 22050 Hz. */
 static void reverb_step(int32_t in_l, int32_t in_r, int wren) {
     int32_t dapf1 = -((int32_t)RREG(SPU_R_DAPF1) << 3);
     int32_t dapf2 = -((int32_t)RREG(SPU_R_DAPF2) << 3);
@@ -831,8 +845,10 @@ typedef char spu_shadow_voice_count_check[
     (SPU_VOICE_COUNT == SPU_SHADOW_MAX_VOICES) ? 1 : -1];
 
 const void* spu_shadow_tap_buffer(void) { return s_shadow_tap; }
+/* Frames captured in the shadow tap buffer. */
 int         spu_shadow_tap_count(void)  { return s_shadow_tap_frame; }
 
+/* Render one output sample for a voice (ADPCM decode + ADSR + env). */
 static int16_t voice_next_sample(int idx) {
     SpuVoice *v = &voices[idx];
     if (!v->active) return 0;
@@ -938,6 +954,7 @@ static int16_t voice_next_sample(int idx) {
     return (int16_t)shaped;
 }
 
+/* KEYON: reset and start the voices in mask (attack phase, ENDX clear). */
 static void key_on(uint32_t mask) {
     for (int i = 0; i < SPU_VOICE_COUNT; i++) {
         if (!(mask & (1u << i))) continue;
@@ -965,6 +982,7 @@ static void key_on(uint32_t mask) {
  * keeps voicing while env_level decays from its current value to 0
  * at the configured Release rate. This is the boot-chime fade tail —
  * silencing immediately is what made channels appear to "cut out". */
+/* KEYOFF: enter Release phase for active voices in mask. */
 static void key_off(uint32_t mask) {
     for (int i = 0; i < SPU_VOICE_COUNT; i++) {
         if (!(mask & (1u << i))) continue;
@@ -976,6 +994,7 @@ static void key_off(uint32_t mask) {
     }
 }
 
+/* Reset all SPU state: RAM, regs, voices, reverb, noise, CD ring. */
 void spu_init(void) {
     memset(spu_ram, 0, sizeof(spu_ram));
     memset(spu_regs, 0, sizeof(spu_regs));
@@ -1017,6 +1036,7 @@ void spu_init(void) {
     spu_shadow_reset();
 }
 
+/* Mix `frames` of stereo output through voices+reverb+CD input. */
 void spu_render(int16_t* out_stereo, int frames) {
     if (!out_stereo || frames <= 0) return;
 
@@ -1346,6 +1366,7 @@ void spu_render(int16_t* out_stereo, int frames) {
     audio_trace_pcm(AUDIO_TAP_SPU_OUT, out_stereo, frames);
 }
 
+/* Fill the debug snapshot (volumes, masks, counters, CD stats). */
 void spu_debug_info(SpuDebugInfo* out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
@@ -1387,6 +1408,7 @@ typedef struct {
 static SpuTaEnt spu_ta_ring[SPU_TA_RING_CAP];
 static uint32_t spu_ta_seq;
 static int spu_ta_armed = -1;
+/* PSX_SPUDTA-gated ring record of TA/SPUCNT accesses. */
 static void spu_ta_note(uint32_t addr, uint32_t val, int is_wr) {
     if (addr != 0x1F801DA6u && addr != 0x1F801DAAu) return;
     if (spu_ta_armed < 0) {
@@ -1399,6 +1421,7 @@ static void spu_ta_note(uint32_t addr, uint32_t val, int is_wr) {
     t->cyc = (uint32_t)psx_cycle_count; t->seq = spu_ta_seq++;
     t->is_wr = (uint32_t)is_wr;
 }
+/* Total TA/SPUCNT accesses recorded by spu_ta_note. */
 uint32_t spu_ta_total(void) { return spu_ta_seq; }
 int spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
                uint32_t *cyc, uint32_t *is_wr) {
@@ -1412,6 +1435,7 @@ int spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
     return 1;
 }
 
+/* SPU register read dispatch (0x1F801C00-0x1F801DFF). */
 uint32_t spu_read(uint32_t addr) {
     if (addr >= 0x1F801C00u && addr <= 0x1F801DFFu) {
         uint32_t idx = reg_index(addr);
@@ -1513,6 +1537,7 @@ uint32_t spu_read(uint32_t addr) {
     return 0;
 }
 
+/* SPU register write dispatch with per-register side effects. */
 void spu_write(uint32_t addr, uint32_t value) {
     if (addr >= 0x1F801C00u && addr <= 0x1F801DFFu) {
         uint32_t idx = reg_index(addr);
@@ -1653,6 +1678,7 @@ void spu_write(uint32_t addr, uint32_t value) {
     }
 }
 
+/* DMA3 CPU->SPU: store one LE word at transfer_addr, advance +4. */
 void spu_dma_write(uint32_t word) {
     spu_irq_check(transfer_addr, 4u);
     if (transfer_addr + 3 < SPU_RAM_SIZE) {
@@ -1681,21 +1707,25 @@ uint32_t spu_dma_read(void) {
     return word;
 }
 
+/* DMA3 always-ready (SPU has no FIFO backpressure). */
 int spu_dma_ready(void) {
     return 1;
 }
 
+/* True when SPUCNT transfer mode matches the DMA direction. */
 int spu_dma_mode_ready(int to_spu) {
     spu_commit_applied();
     uint32_t m = (s_applied_low6 >> 4) & 3u;
     return to_spu ? (m == 2u) : (m == 3u);
 }
 
+/* Guest cycle when a pending SPUCNT transfer-mode write applies. */
 uint64_t spu_transfer_mode_apply_cycle(void) {
     spu_commit_applied();
     return s_pending_valid ? s_apply_cycle : UINT64_MAX;
 }
 
+/* Mark/clear the SPU DMA transfer-busy flag. */
 void spu_xfer_busy(int on) {
     s_xfer_busy = on ? 1 : 0;
 }
@@ -1704,6 +1734,7 @@ const uint8_t* spu_get_ram(void) {
     return spu_ram;
 }
 
+/* Snapshot one voice's live state for debug/savestate UIs. */
 void spu_get_voice_state(int idx, SpuVoiceState* out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
@@ -1736,10 +1767,12 @@ uint32_t spu_ram_peek(uint32_t addr, uint8_t *out, uint32_t len) {
     return len;
 }
 
+/* Raw SPUCNT register value. */
 uint16_t spu_ctrl_read(void) {
     return spu_regs[reg_index(0x1F801DAAu)];
 }
 
+/* Full global DSP snapshot incl. DSP-fidelity fields (issue #103). */
 void spu_get_global_state(SpuGlobalState* out) {
     if (!out) return;
     memset(out, 0, sizeof(*out));
@@ -1780,8 +1813,10 @@ void spu_get_global_state(SpuGlobalState* out) {
                     | (((spu_regs[reg_index(0x1F801D82u)] >> 15) & 1u) << 1);
 }
 
+/* Total events recorded since spu_event_reset. */
 uint64_t spu_event_total(void) { return s_event_seq; }
 
+/* Fetch up to max_count most-recent events, oldest first. */
 uint32_t spu_event_get(SpuEvent* out, uint32_t max_count) {
     if (!out || max_count == 0) return 0;
     uint64_t avail = s_event_seq < (uint64_t)SPU_EVENT_CAP
@@ -1795,6 +1830,7 @@ uint32_t spu_event_get(SpuEvent* out, uint32_t max_count) {
     return max_count;
 }
 
+/* Clear the event ring counters. */
 void spu_event_reset(void) {
     s_event_idx = 0;
     s_event_seq = 0;
@@ -1811,6 +1847,7 @@ void spu_event_reset(void) {
     4u + 4u + 4u + (28u * 2u) + (3u * 2u) + 4u + 4u + 2u + 2u + 1u + 2u + 4u + 1u \
     + 2u * (2u + 4u))
 
+/* Serialize one voice's full state to a save-state stream. */
 static int spu_w_voice(PstW *w, int idx) {
     const SpuVoice *v = &voices[idx];
     if (!pst_w_i32(w, (int32_t)v->active) || !pst_w_u32(w, v->cur_addr) ||
@@ -1831,6 +1868,7 @@ static int spu_w_voice(PstW *w, int idx) {
             return 0;
     return 1;
 }
+/* Deserialize one voice's state from a save-state stream. */
 static int spu_r_voice(PstR *r, int idx) {
     SpuVoice *v = &voices[idx];
     int32_t active = 0, sample_idx = 0;
@@ -1861,11 +1899,13 @@ static int spu_r_voice(PstR *r, int idx) {
 #define SPU_SNAPSHOT_TAIL_BYTES \
     (20u + 1u + 2u + 4u + 4u + 1u + 4u + 4u + 4u + 4u + 4u + 2u * (2u + 4u))
 
+/* Byte size of the SPU savestate section. */
 uint32_t spu_snapshot_bytes(void) {
     return (uint32_t)(SPU_REG_COUNT * 2u) +
            (SPU_VOICE_COUNT * SPU_VOICE_WIRE_BYTES) + SPU_SNAPSHOT_TAIL_BYTES;
 }
 
+/* Write the SPU savestate section (regs + voices + trailer). */
 void spu_snapshot_write(uint8_t *p) {
     PstW w;
     uint32_t n = spu_snapshot_bytes();
@@ -1895,6 +1935,7 @@ void spu_snapshot_write(uint8_t *p) {
     }
 }
 
+/* Restore the SPU savestate section; 0 on length/parse failure. */
 int spu_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     if (len != spu_snapshot_bytes()) return 0;
@@ -1921,7 +1962,9 @@ int spu_snapshot_read(const uint8_t *p, uint32_t len) {
     }
     return 1;
 }
+/* Raw SPU RAM pointer (64KB) for DMA/debug access. */
 uint8_t*  spu_get_ram_ptr(void){ return spu_ram; }
+/* SPU RAM size in bytes. */
 uint32_t  spu_get_ram_bytes(void){ return (uint32_t)sizeof(spu_ram); }
 
 void spu_snapshot_part_digests(SpuSnapPartDigests *out)

@@ -28,6 +28,8 @@ uint32_t *g_psx_cyc_local_acc = NULL;
 static int      s_cycle_replay_active = 0;
 static uint64_t s_cycle_replay_live = 0;
 
+/* Enter lockstep-replay clock mode: swap psx_cycle_count to the
+ * replay timeline. Returns 1 if replay owns the clock now. */
 int psx_cycle_replay_begin(uint64_t start_cycle) {
     extern int g_ls_replay_active;
     if (!g_ls_replay_active || s_cycle_replay_active) return 0;
@@ -37,6 +39,7 @@ int psx_cycle_replay_begin(uint64_t start_cycle) {
     return 1;
 }
 
+/* Leave replay clock mode; returns the replay timeline cycle count. */
 uint64_t psx_cycle_replay_end(void) {
     uint64_t replay_cycle = psx_cycle_count;
     if (s_cycle_replay_active) {
@@ -73,6 +76,7 @@ void psx_event_step_conservative_env_init(void) {
     if (e && e[0] == '1') g_event_step_conservative = 1;
 }
 
+/* Advance the global cycle count and service every device by c. */
 static void advance_devices(uint32_t c) {
     psx_cycle_count += (uint64_t)c;
     sio_advance(c);
@@ -174,12 +178,16 @@ uint32_t psx_idle_cycles_to_next_observable_event(void) {
     return devices_cycles_to_next_idle_event();
 }
 
+/* Recompute psx_next_service_cycle = now + nearest internal event
+ * (hard-capped at PSX_DEADLINE_HARD_CAP). */
 static void psx_devices_recompute_deadline(void) {
     uint32_t next = devices_cycles_to_next_internal_event();
     if (next > PSX_DEADLINE_HARD_CAP) next = PSX_DEADLINE_HARD_CAP;
     psx_next_service_cycle = psx_cycle_count + (uint64_t)next;
 }
 
+/* Catch devices up to psx_cycle_count in event-bounded chunks, then
+ * recompute the deadline. Re-entrant calls just absorb. */
 void psx_devices_service_to_now(void) {
     if (s_in_device_service) return;                 /* device code charged cycles: absorb */
     if (g_plp_cycle_diag) g_plp_svc_calls++;
@@ -284,10 +292,12 @@ static void psx_advance_cycles_exact(uint32_t cycles) {
     psx_next_service_cycle = 0;
 }
 
+/* Sparse starvation-watchdog tick (called on the 64K-cycle cadence). */
 void psx_cycles_watchdog_fire(void) {
     starvation_watchdog_check();
 }
 
+/* Sparse PC-sample tick for the starvation ring (1M-cycle cadence). */
 void psx_cycles_pc_sample_fire(void) {
     starvation_ring_pc_sample();
 }
@@ -345,6 +355,7 @@ void psx_advance_cycles_slow(uint32_t cycles) {
 #endif
 }
 
+/* Authoritative guest cycle count incl. unflushed batch/local acc. */
 uint64_t psx_get_cycle_count(void) {
     uint64_t n = psx_cycle_count + (uint64_t)g_psx_cyc_batch;
     if (g_psx_cyc_local_acc) n += (uint64_t)(*g_psx_cyc_local_acc);
@@ -419,12 +430,15 @@ static uint64_t s_idle_last_cycle = 0;
 static uint64_t s_idle_last_stores = 0;
 static uint64_t s_idle_last_mmio = 0;
 
+/* Snapshot GPR1-31/hi/lo for the idle-loop fingerprint compare. */
 static void idle_snapshot_regs(const CPUState *cpu) {
     for (int i = 1; i < 32; i++) s_idle_gpr[i] = cpu->gpr[i];
     s_idle_hi = cpu->hi;
     s_idle_lo = cpu->lo;
 }
 
+/* True if idle-loop elision is enabled (opt-in; off under netplay/
+ * selfcheck/COSIM). Reads PSX_IDLE_SKIP once when unset. */
 static int idle_skip_on(void) {
     /* Cycle-skip is a host enhancement; under netplay it forks peers (detector
      * streak / skip quanta are not part of the shared snap). Same for the
@@ -443,6 +457,7 @@ static int idle_skip_on(void) {
     return g_idle_skip_enabled;
 }
 
+/* Public probe for the idle-skip toggle state. */
 int psx_idle_skip_is_enabled(void) { return idle_skip_on(); }
 
 void psx_idle_note_check(CPUState *cpu, uint32_t check_pc) {
@@ -617,6 +632,7 @@ void psx_cycles_resync_after_restore(CPUState *cpu) {
     }
 }
 
+/* Zero the cycle clock and all deadline bookkeeping for a fresh boot. */
 void psx_cycles_reset_for_boot(void) {
     if (g_psx_cyc_local_acc) *g_psx_cyc_local_acc = 0;
     g_psx_cyc_local_acc    = NULL;
@@ -673,6 +689,7 @@ uint32_t psx_mult_latency_u(uint32_t rs) {  /* MULTU (unsigned) */
 
 /* DIV/DIVU latency is the fixed constant 37 — emitted directly at the op site. */
 
+/* Arm the mul/div completion deadline latency cycles out. */
 void psx_muldiv_set(CPUState* cpu, uint32_t latency) {
     cpu->muldiv_ts_done = psx_cycle_count + (uint64_t)latency;
 }
@@ -755,6 +772,7 @@ static const uint8_t PSX_GTE_LAT_M1[64] = {
     [0x3F] = 38,                         /* NCCT  */
 };
 
+/* Added (cost-1) latency for a 6-bit GTE command, from PSX_GTE_LAT_M1. */
 uint32_t psx_gte_cmd_latency(uint32_t cmd) {
     return (uint32_t)PSX_GTE_LAT_M1[cmd & 0x3Fu];
 }
@@ -767,6 +785,7 @@ void psx_gte_set(CPUState* cpu, uint32_t latency) {
     cpu->gte_ts_done = psx_cycle_count + (uint64_t)latency;
 }
 
+/* Stall guest cycles until the GTE command deadline (MTC2/CTC2/LWC2/SWC2). */
 void psx_gte_stall(CPUState* cpu) {
     if (cpu->gte_ts_done > psx_cycle_count) {
         psx_advance_cycles((uint32_t)(cpu->gte_ts_done - psx_cycle_count));
