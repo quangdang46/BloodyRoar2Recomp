@@ -12050,8 +12050,8 @@ switchD_801a776c_default:
 
 }
 
-/* obj_flag34_clear/set — clear/set flag bit 0x34 on an
- * object record. */
+/* obj_flag34_clear/set — clear/set the u16 field at +0x34
+ * on each child element of an object record. */
 void obj_flag34_clear(int obj)
 {
   int i;
