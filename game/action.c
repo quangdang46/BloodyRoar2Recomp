@@ -622,64 +622,6 @@ static void entry_setup(uint8_t *ctrl, uint32_t group)
     GS16 (motion, 0xd0) = (int16_t)z;
 }
 
-/* part_link_unlink — part link-state machine (decomp-verified).
- * src = source 0x50 record (u16 state @+0, link @+0x44),
- * dst = dest 0x50 record, mode = link mode (1 own, 3 foe).
- * Pointer fields stored as guest addresses. */
-static void part_link_state(uint16_t *src, int16_t *dst, int mode)
-{
-    int16_t state = dst[0];
-    if (state == 0) {
-        dst[0x22] = 0;
-        dst[0x23] = 0;
-        state = dst[0];
-    }
-    if (state != 2) dst[0] = (int16_t)mode;
-    dst[0x24] = 0;
-    dst[0x25] = 0;
-    *(uint32_t *)((uint8_t *)dst + 0x40) = src ? guest_of(src) : 0;
-    if (src != NULL) {
-        uint32_t src_state = *src;
-        if (mode == 3) {
-            if (src_state == 1) {
-                *src = 2;
-                *(uint32_t *)((uint8_t *)dst + 0x48) = *(uint32_t *)((uint8_t *)src + 0x44);
-            } else if (src_state < 2) {
-                if (src_state != 0) {
-                    dst[0x20] = 0;
-                    dst[0x21] = 0;
-                    goto done;
-                }
-                *src = 2;
-            } else {
-                if (src_state != 3) {
-                    dst[0x20] = 0;
-                    dst[0x21] = 0;
-                    dst[0x26] = 0;
-                    dst[0x27] = 0;
-                    return;
-                }
-                *src = 4;
-                *(uint32_t *)((uint8_t *)dst + 0x48) = *(uint32_t *)((uint8_t *)src + 0x44);
-            }
-        } else {
-            if (src_state == 2 || src_state == 4) {
-                uint32_t chain_g = *(uint32_t *)((uint8_t *)src + 0x44);
-                uint8_t *chain = (uint8_t *)guest_at(chain_g);
-                *(uint32_t *)((uint8_t *)dst + 0x48) = GU32(chain, 0x48);
-                GSU32(chain, 0x48) = guest_of(dst);
-                goto done;
-            }
-            if (src_state == 0) *src = 1;
-            else          *(uint32_t *)((uint8_t *)dst + 0x48) = *(uint32_t *)((uint8_t *)src + 0x44);
-        }
-        *(uint32_t *)((uint8_t *)src + 0x44) = guest_of(dst);
-    }
-done:
-    dst[0x26] = 0;
-    dst[0x27] = 0;
-}
-
 /* ------------------------------------------------------------------ */
 /* skeleton_init — skeleton_init: part/matrix init from S5 descriptor.  */
 /* desc = 0x1c-uint8_t block inside S5 (two per section, slot*0x1c).      */
