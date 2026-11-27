@@ -61,6 +61,7 @@ RE_GOTO_BLOCK = re.compile(r'\bgoto\s+(block_[0-9A-Fa-f]+)\s*;')
 
 
 def main():
+    """audit generated C from the game full-function-emitter."""
     cfg = audit_config.from_argv(sys.argv)
     print(f"# codegen audit (game emit): {cfg.name}")
     print(f"  full_c     = {cfg.full_c}")
@@ -116,6 +117,7 @@ def main():
     # stubs) are handled by the runtime's dirty-RAM interpreter — expected
     # to be absent from the static dispatch table.
     def is_in_code(vaddr_normalized: int) -> bool:
+        """true when the normalized vaddr lands in an emitted code region."""
         for r in cfg.regions:
             phys_lo = r.vaddr_base & cfg.kseg_mask
             phys_hi = phys_lo + (r.rom_end - r.rom_start)

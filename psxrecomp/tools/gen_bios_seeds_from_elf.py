@@ -43,6 +43,7 @@ def parse_profile(path):
     text = open(path, encoding="utf-8").read()
 
     def top_value(key, default=None):
+        """regex-scrape `key = "value"` from the ELF notes text."""
         m = re.search(r'^\s*%s\s*=\s*"([^"]+)"' % key, text, re.M)
         return m.group(1) if m else default
 
@@ -54,6 +55,7 @@ def parse_profile(path):
             r'\[\[recompiler\.address_model\.copy\]\](.*?)(?=\n\[|\Z)',
             text, re.S):
         def v(key, blk=block):
+            """scoped variant of top_value searching only block `blk`."""
             m = re.search(r'^\s*%s\s*=\s*"([^"]+)"' % key, blk, re.M)
             return m.group(1) if m else None
         copies.append({
@@ -144,6 +146,7 @@ def sanitize(s):
 
 
 def main():
+    """parse args, read the ELF, emit the seeds TOML."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", required=True)
     ap.add_argument("--elf", action="append", required=True)
@@ -155,6 +158,7 @@ def main():
     rom_base, rom_size, copies = parse_profile(args.profile)
 
     def fold(vaddr):
+        """fold a KSEG guest vaddr to its physical address."""
         phys = vaddr & KSEG_MASK
         if phys & 3:
             return None

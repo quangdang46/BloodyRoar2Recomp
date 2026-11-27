@@ -88,6 +88,7 @@ def documented_in_curated_table(doc_text: str) -> set[str]:
 
 
 def build_block(native: list[str], beetle: list[str], covered: set[str]) -> str:
+    """render one TCP-command doc block from native+beetle name lists."""
     all_names = sorted(set(native) | set(beetle))
     nset, bset = set(native), set(beetle)
 
@@ -130,6 +131,7 @@ def build_block(native: list[str], beetle: list[str], covered: set[str]) -> str:
 
 
 def main() -> int:
+    """regenerate the curated TCP command table doc."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--check",

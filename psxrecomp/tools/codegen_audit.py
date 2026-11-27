@@ -40,6 +40,7 @@ EXPECTED_TAIL_CALL_MISSES = {
 
 
 def main():
+    """run the codegen audit over the configured generated files."""
     cfg = audit_config.from_argv(sys.argv)
     print(f"# codegen audit: {cfg.name}")
     print(f"  full_c     = {cfg.full_c}")

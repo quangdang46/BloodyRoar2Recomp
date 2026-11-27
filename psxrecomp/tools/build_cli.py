@@ -16,11 +16,13 @@ TOOLS = ("psxrecomp", "psxrecomp-toml", "psxrecomp-game", "psxrecomp-bios")
 
 
 def run(command: list[str]) -> None:
+    """execute a build command, raising on failure."""
     print("+", subprocess.list2cmdline(command), flush=True)
     subprocess.run(command, cwd=ROOT, check=True)
 
 
 def platform_name() -> str:
+    """current target platform tag for artifact naming."""
     systems = {"Windows": "windows", "Linux": "linux", "Darwin": "macos"}
     machines = {
         "amd64": "x86_64",
@@ -37,6 +39,7 @@ def platform_name() -> str:
 
 
 def find_tool(build_dir: pathlib.Path, name: str, config: str) -> pathlib.Path:
+    """locate a built binary under the cmake build tree."""
     suffix = ".exe" if os.name == "nt" else ""
     filename = name + suffix
     candidates = (build_dir / filename, build_dir / config / filename)
@@ -48,6 +51,7 @@ def find_tool(build_dir: pathlib.Path, name: str, config: str) -> pathlib.Path:
 
 
 def main() -> int:
+    """build and package the developer CLI tools."""
     parser = argparse.ArgumentParser(
         description="build a redistributable PSXRecomp CLI archive")
     parser.add_argument(

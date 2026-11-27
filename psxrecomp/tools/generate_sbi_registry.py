@@ -5,6 +5,7 @@ from disc_companion import REQUIRED_SBI
 
 
 def render():
+    """emit the C table rows from the Python intake registry."""
     rows = []
     for (size, _), entry in REQUIRED_SBI.items():
         values = [entry[key] for key in ("data_sha256", "sbi_sha256", "title", "serial")]

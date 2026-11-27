@@ -132,6 +132,7 @@ DEFERRED = {
 
 
 def bucket_key_string(b):
+    """stable string key for a coverage bucket."""
     k = b["key"]
     p = k["primary_opcode_hex"]
     if p == "NOP":
@@ -144,6 +145,7 @@ def bucket_key_string(b):
 
 
 def main():
+    """aggregate the instruction inventory into the coverage report."""
     if not os.path.exists(INVENTORY_PATH):
         print(f"ERROR: inventory not found at {INVENTORY_PATH}", file=sys.stderr)
         return 2
