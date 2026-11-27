@@ -7451,8 +7451,8 @@ L_ewin:
 
   case 16: {
     int32_t spr_idx = -1, aux_b5 = 1;
-    uint32_t nv, byted;
-    int32_t v1;
+    uint32_t nv, bval;
+    int32_t tv;
     MW8(s1 + 0xb1,0xff);                 /* jal delay slot: before call */
     slot_triple_set(1,-1,-1,-1);
     slot_triple_set(2,-1,-1,-1);
@@ -7482,12 +7482,12 @@ L_ewin:
     nv = MB16(s1 + 0x8e) + 1;
     MW16(s1 + 0x8e,nv);
     hud_announce(s1,0x16,(int32_t)(int16_t)nv);
-    byted = MB8(MB32(s1 + 0xc0) + 0xd);
-    v1 = MBS16(s1 + 0x8e);
-    if (byted != 0) {
-      if (v1 < 0x15e) return 0;
+    bval = MB8(MB32(s1 + 0xc0) + 0xd);
+    tv = MBS16(s1 + 0x8e);
+    if (bval != 0) {
+      if (tv < 0x15e) return 0;
     } else {
-      if (v1 < 0x2ee) return 0;
+      if (tv < 0x2ee) return 0;
     }
     MW16(s1 + 0x8e,0);
     MW16(s1 + 0x90,0);
