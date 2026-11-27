@@ -630,7 +630,28 @@ def name_comment_targets(text):
     for rx in _COMMENT_ADDR_RES:
         # preserve the matched keyword prefix; only swap the hex token
         text = rx.sub(lambda m: _sub_addr(m, wraps), text)
+    # Branch/split dispatches carry '/* CPS taken|j|not taken: split */'
+    # with no target name — the callee addr sits in the cpu->pc operand.
+    # Append ' -> NAME' when the comment doesn't already name a target.
+    def _name_dispatch(m):
+        addr = m.group(2)[2:].lower()
+        name = wraps.get(addr)
+        if not name or '->' in m.group(1).split('/*', 1)[-1]:
+            return m.group(0)
+        if addr not in name.lower().replace('0x', ''):
+            name = f'{name} (0x{addr.upper()})'
+        return m.group(1) + ' -> ' + name + m.group(3)
+    text = _SPLIT_DISPATCH_RE.sub(_name_dispatch, text)
     return text
+
+
+# cpu->pc tail-dispatch to a literal addr whose trailing '/* ... */' comment
+# doesn't already name a target ('->'). Covers 'CPS taken|j|not taken: split',
+# 'fallthrough to split piece', etc. Register-indirect dispatches (jr $ra/v0)
+# have no 0x literal and are skipped; 'CPS jal ->' comments already have '->'.
+_SPLIT_DISPATCH_RE = re.compile(
+    r'(cpu->pc = (0x[0-9A-Fa-f]+)u; return;\s*/\* (?![^*]*->)[^*]*?)(\s*\*/)',
+    re.M)
 
 
 def _sub_addr(m, wraps):
