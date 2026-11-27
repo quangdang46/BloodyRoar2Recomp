@@ -236,6 +236,7 @@ extern "C" void     dirty_ram_register_text_image(uint32_t phys_lo,
  *   2. The boot EXE extracted from the mounted disc image (end-user installs
  *      — the disc is the same bytes the BIOS loads, i.e. the true reference).
  * Registration passes ownership of the malloc'd buffer to memory.c. */
+/* Arm the text-image guard for a load address + disc. */
 static void arm_text_image_guard(const std::string &exe_path,
                                  uint32_t load_address,
                                  const std::string &disc_path) {
@@ -408,6 +409,7 @@ static uint32_t*     sdl_pixel_buf = nullptr;
 
 typedef void (*ModFrameHook)(void);
 
+/* Mod frame-hook registry (vector). */
 static std::vector<ModFrameHook>& mod_frame_hooks() {
     static std::vector<ModFrameHook> hooks;
     return hooks;
@@ -419,6 +421,7 @@ extern "C" void mod_register_frame_hook(ModFrameHook hook) {
     if (hook) mod_frame_hooks().push_back(hook);
 }
 
+/* Invoke all registered frame hooks. */
 static void mod_call_frame_hooks() {
     auto& hooks = mod_frame_hooks();
     const size_t count = hooks.size();
@@ -500,6 +503,7 @@ static uint32_t s_live_pc[POST_LOAD_LIVE_PC_CAP];
 static uint32_t s_live_pc_n[POST_LOAD_LIVE_PC_CAP];
 static int      s_live_pc_used = 0;
 
+/* True if post-load probe is enabled (env). */
 static int post_load_probe_env_on(void) {
     if (s_post_load_probe_enabled < 0) {
         const char *e = std::getenv("PSX_POST_LOAD_PROBE");
@@ -563,6 +567,7 @@ static void present_session_reset(void) {
     smooth_60_reset();
 }
 
+/* True if FPS telemetry is enabled (env). */
 static int fps_telemetry_enabled(void) {
     if (s_fps_telemetry_enabled < 0) {
         const char *e = std::getenv("PSX_FPS_TELEMETRY");
@@ -571,6 +576,7 @@ static int fps_telemetry_enabled(void) {
     return s_fps_telemetry_enabled;
 }
 
+/* Toggle FPS telemetry on/off. */
 static void fps_telemetry_toggle(void) {
     const int enabled = fps_telemetry_enabled() ? 0 : 1;
     s_fps_telemetry_enabled = enabled;
@@ -603,11 +609,13 @@ static void fps_telemetry_toggle(void) {
  *
  * No window (headless, or before the window exists) means focus is not a
  * concept here; do not suppress in that case. */
+/* True if the host window has input focus. */
 static bool host_hotkey_input_focused(void) {
     if (!sdl_window) return true;
     return (SDL_GetWindowFlags(sdl_window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
+/* Manual fast-forward multiplier (-1=unbounded). */
 static int manual_fast_forward_multiplier(void) {
     static int value = -2; /* -2 = unread, -1 = max/unbounded */
     if (value == -2) {
@@ -615,6 +623,7 @@ static int manual_fast_forward_multiplier(void) {
         value = 4;
         if (e && e[0]) {
             if (std::strcmp(e, "max") == 0 || std::strcmp(e, "MAX") == 0 ||
+                /* (strcmp wrapper/forward). */
                 std::strcmp(e, "0") == 0) {
                 value = -1;
             } else {
@@ -627,6 +636,7 @@ static int manual_fast_forward_multiplier(void) {
     return value;
 }
 
+/* Note a stall PC into the probe table. */
 static void post_load_probe_stall_pc_note(uint32_t pc) {
     if (!pc) return;
     for (int i = 0; i < s_stall_pc_used; i++) {
@@ -641,6 +651,7 @@ static void post_load_probe_stall_pc_note(uint32_t pc) {
     s_stall_pc_used++;
 }
 
+/* Dump stall-PC table to stderr. */
 static void post_load_probe_stall_pc_dump(const char *why) {
     if (s_stall_pc_used <= 0) return;
     std::fprintf(stderr, "post_load_probe stall_pcs (%s):", why);
@@ -651,6 +662,7 @@ static void post_load_probe_stall_pc_dump(const char *why) {
     std::fprintf(stderr, "\n");
 }
 
+/* Note a live PC into the probe table. */
 static void post_load_probe_live_pc_note(uint32_t pc) {
     if (!pc) return;
     for (int i = 0; i < s_live_pc_used; i++) {
@@ -665,6 +677,7 @@ static void post_load_probe_live_pc_note(uint32_t pc) {
     s_live_pc_used++;
 }
 
+/* Dump live-PC table to stderr. */
 static void post_load_probe_live_pc_dump(const char *why) {
     if (s_live_pc_used <= 0) return;
     std::fprintf(stderr, "post_load_probe live_pcs (%s):", why);
@@ -675,6 +688,7 @@ static void post_load_probe_live_pc_dump(const char *why) {
     std::fprintf(stderr, "\n");
 }
 
+/* Arm the post-load probe window. */
 static void post_load_probe_arm(void) {
     if (!post_load_probe_env_on()) {
         s_post_load_probe_left = 0;
@@ -742,6 +756,7 @@ static void post_load_probe_arm(void) {
                  "PSX_POST_LOAD_PROBE=1; live_pc/ci/adv diag on)\n");
 }
 
+/* Per-vblank post-load probe tick. */
 static void post_load_probe_on_vblank(int turbo_active, int present_reached) {
     if (s_post_load_probe_left <= 0) return;
     s_post_load_probe_i++;
@@ -1082,6 +1097,7 @@ static uint64_t smooth_60_frame_hash(const uint32_t* pixels, size_t count) {
     return hash * 1099511628211ull;
 }
 
+/* Detect a scene cut for smooth-60. */
 static bool smooth_60_scene_cut(const uint32_t* current,
                                 const uint32_t* previous,
                                 size_t count) {
@@ -1107,6 +1123,7 @@ static bool smooth_60_scene_cut(const uint32_t* current,
            difference > (uint64_t)samples * 360u;
 }
 
+/* Present via smooth-60 frame interpolation. */
 static void smooth_60_present(uint32_t* pixels, uint32_t width, uint32_t height,
                               bool eligible) {
     if (!eligible || !pixels || !g_smooth_60fps.load(std::memory_order_acquire)) {
@@ -1196,6 +1213,7 @@ static inline int launcher_fmv_filter_to_cfg(int ls_value) {
         return PSXRecompV4::VIDEO_FMV_FILTER_DEFAULT;
     return ls_value - 1;
 }
+/* Map config FMV filter to launcher enum. */
 static inline int cfg_fmv_filter_to_launcher(int cfg_value) {
     if (cfg_value < 0 || cfg_value >= PSXRecompV4::VIDEO_FMV_FILTER_COUNT)
         cfg_value = PSXRecompV4::VIDEO_FMV_FILTER_DEFAULT;
@@ -1632,11 +1650,13 @@ static void clamp_window_aspect(int* w, int* h, int num, int den) {
     *h = width * den / num;
 }
 
+/* GCD of two ints (aspect reduce). */
 static int aspect_gcd(int a, int b) {
     while (b) { int t = a % b; a = b; b = t; }
     return a > 0 ? a : 1;
 }
 
+/* GCD of two int64s. */
 static int64_t aspect_gcd64(int64_t a, int64_t b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
@@ -1644,6 +1664,7 @@ static int64_t aspect_gcd64(int64_t a, int64_t b) {
     return a > 0 ? a : 1;
 }
 
+/* Projection aspect under netplay local viewport. */
 static void netplay_local_viewport_projection_aspect(
     int present_num, int present_den, int* proj_num, int* proj_den) {
     if (!proj_num || !proj_den) return;
@@ -1685,6 +1706,7 @@ static void netplay_local_viewport_projection_aspect(
 static int g_ws_projection_num = 4;
 static int g_ws_projection_den = 3;
 static int g_ws_projection_mode = -1;
+/* Refresh widescreen projection matrices. */
 static void refresh_widescreen_projection() {
     if (!g_ws_engaged) return;
 
@@ -2121,6 +2143,7 @@ extern "C" {
 int g_audio_host_rate = 44100;
 }
 
+/* SDL audio DRC callback (fills stream). */
 static void sdl_drc_callback(void* /*user*/, Uint8* stream, int len) {
     if (!s_drc_ready) { std::memset(stream, 0, (size_t)len); return; }
     int frames = len / (int)(2 * sizeof(int16_t)); /* stereo S16 */
@@ -2131,6 +2154,7 @@ static void sdl_drc_callback(void* /*user*/, Uint8* stream, int len) {
                     frames);
 }
 
+/* Walk upward from a path looking for a marker file. */
 static std::filesystem::path find_upward(std::filesystem::path start,
                                          const std::filesystem::path& marker) {
     std::error_code ec;
@@ -2187,6 +2211,7 @@ static std::filesystem::path exe_dir_from_argv(const char* argv0) {
     return exe_dir;
 }
 
+/* Resolve the runtime exe path from argv0. */
 static std::filesystem::path resolve_existing_runtime_path(const char* requested,
                                                            const char* argv0) {
     namespace fs = std::filesystem;
@@ -2206,10 +2231,12 @@ static std::filesystem::path resolve_existing_runtime_path(const char* requested
     return {};
 }
 
+/* Path to a sidecar config file next to the exe. */
 static std::filesystem::path sidecar_cfg_path(const char* argv0, const char* filename) {
     return exe_dir_from_argv(argv0) / filename;
 }
 
+/* Read a cached path from a sidecar file. */
 static std::filesystem::path read_cached_path(const char* argv0, const char* filename) {
     std::ifstream f(sidecar_cfg_path(argv0, filename));
     if (!f.is_open()) return {};
@@ -2221,12 +2248,14 @@ static std::filesystem::path read_cached_path(const char* argv0, const char* fil
     return line.empty() ? std::filesystem::path{} : std::filesystem::path(line);
 }
 
+/* Write a path to a sidecar cache file. */
 static void write_cached_path(const char* argv0, const char* filename,
                               const std::filesystem::path& path) {
     std::ofstream f(sidecar_cfg_path(argv0, filename), std::ios::trunc);
     if (f.is_open()) f << path.string() << "\n";
 }
 
+/* Print a launcher warning to stderr. */
 static void launcher_warning(const char* title, const std::string& msg) {
     std::fprintf(stderr, "%s: %s\n", title, msg.c_str());
 #ifdef _WIN32
@@ -2236,6 +2265,7 @@ static void launcher_warning(const char* title, const std::string& msg) {
 #endif
 }
 
+/* Print a launcher info line to stderr. */
 static void launcher_info(const char* title, const std::string& msg) {
     std::fprintf(stderr, "%s: %s\n", title, msg.c_str());
 #ifdef _WIN32
@@ -2326,6 +2356,7 @@ static std::string expected_serial_for_disc(const std::filesystem::path& disc,
     return it != g_disc_serials.end() ? it->second : std::string();
 }
 
+/* Uppercase a string in place (ASCII). */
 static std::string uppercase_ascii(std::string s) {
     for (char& c : s) {
         c = (char)std::toupper((unsigned char)c);
@@ -2351,6 +2382,7 @@ static std::string uppercase_ascii(std::string s) {
     return s;
 }
 
+/* Region label from a BIOS serial number. */
 static std::string region_label_from_serial(const std::string& serial) {
     if (serial.size() < 3) return std::string();
     const std::string up  = uppercase_ascii(serial);
@@ -2362,6 +2394,7 @@ static std::string region_label_from_serial(const std::string& serial) {
     return std::string();
 }
 
+/* Seek+read at an offset in an ifstream. */
 static bool read_at(std::ifstream& f, uint64_t offset, uint8_t* out, size_t len) {
     f.clear();
     f.seekg((std::streamoff)offset, std::ios::beg);
@@ -2385,6 +2418,7 @@ struct DiscValidation {
     std::string detail;
 };
 
+/* Validate a disc image (delegates to shared identity check). */
 static DiscValidation validate_disc_image(const std::filesystem::path& selected_path,
                                           const std::string& game_id) {
     // Delegate to the shared disc-identity module so the launch-time check and
@@ -2419,6 +2453,7 @@ static DiscValidation validate_disc_image(const std::filesystem::path& selected_
     return v;
 }
 
+/* Validate disc for launch; returns verdict. */
 static bool validate_disc_for_launch(const std::filesystem::path& path,
                                      const std::string& game_id) {
     const DiscValidation v = validate_disc_image(path, game_id);
@@ -2439,6 +2474,7 @@ static bool validate_disc_for_launch(const std::filesystem::path& path,
     return true;
 }
 
+/* Canonicalize a disc path for launch. */
 static std::filesystem::path normalize_disc_path_for_launch(const std::filesystem::path& path) {
     namespace fs = std::filesystem;
     std::error_code ec;
@@ -2493,6 +2529,7 @@ static int roster_index_for_disc(
     return -1;
 }
 
+/* Resolve the selected disc from the roster. */
 static std::filesystem::path resolve_selected_disc(
     const std::vector<std::filesystem::path>& roster, int selected_1based,
     const std::filesystem::path& persisted) {
@@ -2582,6 +2619,7 @@ static std::filesystem::path resolve_bios_path(const char* requested, const char
  * First-run setup may seed bios.cfg from a validated SCPH1001 beside the
  * install; after that, Play never invents a BIOS from random on-disk files.
  */
+/* Resolve which BIOS the runtime should use. */
 static std::filesystem::path resolve_bios_for_runtime(const char* requested,
                                                       const char* argv0,
                                                       bool requested_is_explicit) {
@@ -2615,7 +2653,9 @@ static std::filesystem::path resolve_bios_for_runtime(const char* requested,
         std::filesystem::path img = resolve_bios_path(
             s_bundled_bios_rel.empty() ? nullptr : s_bundled_bios_rel.c_str(), argv0);
         if (!img.empty() && std::filesystem::exists(img) &&
+            /* Pick a BIOS backend for a file. */
             bios_backend_for_file(img, nullptr, nullptr) == bundled &&
+            /* Activate a BIOS image for the runtime. */
             psx_bios_activate(bundled)) {
             return img;
         }
@@ -2669,6 +2709,7 @@ static std::filesystem::path resolve_bios_for_runtime(const char* requested,
     }
 }
 
+/* Resolve the disc path for the runtime. */
 static std::filesystem::path resolve_disc_for_runtime(const std::filesystem::path& config_disc,
                                                       const char* disc_override,
                                                       const std::string& game_id,
@@ -2729,6 +2770,7 @@ static std::filesystem::path resolve_disc_for_runtime(const std::filesystem::pat
     }
 }
 
+/* Resolve a BIOS file path. */
 static std::filesystem::path resolve_bios_path(const char* requested, const char* argv0) {
     namespace fs = std::filesystem;
     std::error_code ec;
@@ -2793,6 +2835,7 @@ static bool retail_bios_file_ok(const std::filesystem::path& path) {
     return crc32_compute(data.data(), data.size()) == kScph1001Crc;
 }
 
+/* Discover a retail BIOS near the exe/disc. */
 static std::filesystem::path discover_retail_bios_near(const char* argv0) {
     namespace fs = std::filesystem;
     static const char* kNames[] = {
@@ -2874,6 +2917,7 @@ static void shutdown_runtime(void);
 static int g_netplay_from_lobby = 0;
 static int g_netplay_vsync_forced_off = 0;
 
+/* Apply netplay local-viewport aspect. */
 static void apply_netplay_local_viewport_aspect(bool netplay_enabled) {
     if (!netplay_enabled ||
         g_netplay_local_viewport != 1 ||
@@ -2910,6 +2954,7 @@ static int host_refresh_matches_guest_cadence(void) {
     return std::fabs(g_host_refresh_hz - guest_hz) <= guest_hz * 0.02;
 }
 
+/* Refresh host display cadence (vsync/pacing). */
 static void refresh_host_display_cadence(int force_log, int force_probe) {
 #ifndef PSX_SDL_NO_RENDER
     if (!sdl_window)
@@ -2964,6 +3009,7 @@ static void refresh_host_display_cadence(int force_log, int force_probe) {
 #endif
 }
 
+/* True if the host driver vsync is unreliable. */
 static int host_driver_vsync_unreliable(void) {
 #ifdef _WIN32
     return 0;
@@ -2994,6 +3040,7 @@ static int host_driver_vsync_unreliable(void) {
 #endif
 }
 
+/* True if present vsync owns the frame cadence. */
 static int present_vsync_owns_cadence(void) {
     if (g_video_vsync == 0 || g_present_vsync_disabled)
         return 0;
@@ -3014,6 +3061,7 @@ extern "C" int psx_present_vsync_owns_cadence(void) {
     return present_vsync_owns_cadence();
 }
 
+/* Effective swap interval for present. */
 static int present_effective_swap_interval(void) {
     if (g_netplay_vsync_forced_off || psx_netplay_active())
         return 0;
@@ -3026,6 +3074,7 @@ static int present_effective_swap_interval(void) {
     return 0;
 }
 
+/* True if present should wall-pace. */
 static int present_should_wall_pace(void) {
     /* The single-context temporal-blend path subdivides this same stock frame
      * interval. Do not run the outer pacer as well or guest timing doubles. */
@@ -3051,6 +3100,7 @@ static int present_should_wall_pace(void) {
     return g_frame_period_ms > 0.0;
 }
 
+/* Apply the present cadence (swap interval). */
 static void apply_present_cadence(void) {
 #ifndef PSX_SDL_NO_RENDER
     const int interval = present_effective_swap_interval();
@@ -3064,6 +3114,7 @@ static void apply_present_cadence(void) {
 #endif
 }
 
+/* Log the present cadence decision. */
 static void log_present_cadence(void) {
     if (present_vsync_owns_cadence()) {
         /* The pacer still runs underneath as a deadline cap (see
@@ -3103,20 +3154,24 @@ static void log_present_cadence(void) {
     }
 }
 
+/* Uncap present for netplay host. */
 static void netplay_host_present_uncap(void) {
     g_netplay_vsync_forced_off = 1;
     apply_present_cadence();
 }
 
+/* Restore present cadence after netplay. */
 static void netplay_host_present_restore(void) {
     if (!g_netplay_vsync_forced_off) return;
     g_netplay_vsync_forced_off = 0;
     apply_present_cadence();
 }
 
+/* Netplay soft-exit path (origin + restore). */
 static void netplay_soft_exit(const char *origin) {
     psx_crash_trace_set_exit_origin(origin);
     netplay_host_present_restore();
+    /* Netplay shutdown hook (lobby-aware). */
     psx_netplay_shutdown(); /* sends BYE so the peer soft-exits too */
     if (g_netplay_from_lobby) {
         std::printf("psxrecomp: netplay ended (%s) — returning to lobby\n",
@@ -3129,6 +3184,7 @@ static void netplay_soft_exit(const char *origin) {
     std::exit(0);
 }
 
+/* Shut down the runtime (sljit note). */
 static void shutdown_runtime(void) {
     /* (sljit removed 2026-07-15: overlay_compile_worker_stop joined the
      * off-thread JIT worker here; the worker no longer exists.) */
@@ -3450,6 +3506,7 @@ struct RuntimePerfState {
 
 static RuntimePerfState g_runtime_perf;
 
+/* Parse a perf window spec (start,end). */
 static bool runtime_perf_parse_window(const char *text, uint64_t *start,
                                       uint64_t *end) {
     if (!text || !text[0]) return false;
@@ -3465,6 +3522,7 @@ static bool runtime_perf_parse_window(const char *text, uint64_t *start,
     return true;
 }
 
+/* Init runtime perf counters. */
 static void runtime_perf_init() {
     if (g_runtime_perf.initialized) return;
     g_runtime_perf.initialized = true;
@@ -3508,6 +3566,7 @@ static void runtime_perf_init() {
     std::fflush(stdout);
 }
 
+/* Take a perf snapshot. */
 static RuntimePerfSnapshot runtime_perf_snapshot(uint64_t now) {
     RuntimePerfSnapshot s;
     s.counter = now;
@@ -3535,10 +3594,12 @@ static RuntimePerfSnapshot runtime_perf_snapshot(uint64_t now) {
     return s;
 }
 
+/* Convert perf ticks to ms. */
 static double runtime_perf_ticks_ms(uint64_t ticks) {
     return (double)ticks * 1000.0 / (double)g_runtime_perf.frequency;
 }
 
+/* Per-tick bench reporter. */
 static void runtime_perf_bench_tick(uint64_t now) {
     if (!g_runtime_perf.bench_configured || g_runtime_perf.bench_reported) return;
     if (!g_runtime_perf.bench_started) {
@@ -3585,6 +3646,7 @@ static void runtime_perf_bench_tick(uint64_t now) {
     g_runtime_perf.bench_reported = true;
 }
 
+/* Frame-begin perf mark. */
 static void runtime_perf_frame_begin() {
     runtime_perf_init();
     if (!g_runtime_perf.enabled) return;
@@ -3597,6 +3659,7 @@ static void runtime_perf_frame_begin() {
     runtime_perf_bench_tick(now);
 }
 
+/* Frame-end perf mark. */
 static void runtime_perf_frame_end() {
     if (!g_runtime_perf.enabled) return;
     g_runtime_perf.last_frame_exit_counter = SDL_GetPerformanceCounter();
@@ -3607,16 +3670,19 @@ public:
     ~RuntimePerfFrameScope() { runtime_perf_frame_end(); }
 };
 
+/* Begin a perf section; returns start tick. */
 static uint64_t runtime_perf_section_begin() {
     return g_runtime_perf.enabled ? SDL_GetPerformanceCounter() : 0;
 }
 
+/* End a perf section; accumulates delta. */
 static void runtime_perf_section_end(uint64_t start, uint64_t *total) {
     if (!start) return;
     uint64_t end = SDL_GetPerformanceCounter();
     if (end >= start) *total += end - start;
 }
 
+/* Periodic perf diagnostic dump. */
 static void runtime_perf_diag_tick() {
     static bool have_last = false;
     static RuntimePerfSnapshot last;
@@ -3750,6 +3816,7 @@ static void sdl_audio_pump_midframe(void) {
     }
 }
 
+/* SDL audio update callback (tags events with vblank). */
 static void sdl_audio_update(int hard_mute_active, int turbo_sink_active) {
     {   /* Tag audio events with the vblank frame counter. */
         extern uint64_t s_frame_count;
@@ -3911,6 +3978,7 @@ static const ControllerMap& controller_map_for(const PlayerInput& p) {
     return controller_map;
 }
 
+/* Trim+copy a string. */
 static std::string trim_copy(const std::string& s) {
     size_t first = 0;
     while (first < s.size() && std::isspace((unsigned char)s[first])) first++;
@@ -3994,12 +4062,14 @@ static std::filesystem::path resolve_overlay_capture_path(
     return result.lexically_normal();
 }
 
+/* Lower copy. */
 static std::string lower_copy(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(),
                    [](unsigned char c) { return (char)std::tolower(c); });
     return s;
 }
 
+/* Parse bool value. */
 static bool parse_bool_value(const std::string& value, bool fallback) {
     std::string v = lower_copy(trim_copy(value));
     if (v == "1" || v == "true" || v == "yes" || v == "on") return true;
@@ -4007,6 +4077,7 @@ static bool parse_bool_value(const std::string& value, bool fallback) {
     return fallback;
 }
 
+/* Parse controller source. */
 static ControllerSource parse_controller_source(const std::string& raw) {
     std::string s = lower_copy(trim_copy(raw));
     ControllerSource out;
@@ -4108,6 +4179,7 @@ static ControllerSource parse_controller_source(const std::string& raw) {
     return out;
 }
 
+/* Parse source list. */
 static std::vector<ControllerSource> parse_source_list(const std::string& value) {
     std::vector<ControllerSource> sources;
     std::stringstream ss(value);
@@ -4121,6 +4193,7 @@ static std::vector<ControllerSource> parse_source_list(const std::string& value)
     return sources;
 }
 
+/* Apply sources to map. */
 static void apply_sources_to_map(ControllerMap& map, const char* name,
                                  const char* sources) {
     for (auto& entry : map) {
@@ -4131,6 +4204,7 @@ static void apply_sources_to_map(ControllerMap& map, const char* name,
     }
 }
 
+/* Set default controller mapping into. */
 static void set_default_controller_mapping_into(ControllerMap& map) {
     for (auto& entry : map) entry.sources.clear();
     /* D-pad and sticks are separate (launcher Gamepad Bindings layout). Digital
@@ -4161,11 +4235,13 @@ static void set_default_controller_mapping_into(ControllerMap& map) {
     apply_sources_to_map(map, "rs_right", "rightx+");
 }
 
+/* Set default controller mapping. */
 static void set_default_controller_mapping(void) {
     set_default_controller_mapping_into(controller_map);
     controller_maps_by_guid.clear();
 }
 
+/* Default input ini text. */
 static std::string default_input_ini_text(void) {
     return
         "; PSXRecomp input mapping. PSX buttons are active when any listed source is pressed.\n"
@@ -4207,6 +4283,7 @@ static std::string default_input_ini_text(void) {
         "rs_right = rightx+\n";
 }
 
+/* Load input config. */
 static void load_input_config(const char* argv0) {
     set_default_controller_mapping();
 
@@ -4293,6 +4370,7 @@ static void load_input_config(const char* argv0) {
     psx_keybinds_init(argv0);
 }
 
+/* Close player. */
 static void close_player(PlayerInput& p) {
     if (p.handle) {
         if (p.rumble_small || p.rumble_large)
@@ -4307,11 +4385,13 @@ static void close_player(PlayerInput& p) {
     p.rumble_warned = false;
 }
 
+/* Close controller. */
 static void close_controller(void) {
     for (int s = 0; s < PSX_MAX_PLAYERS; s++)
         close_player(g_players[s]);
 }
 
+/* Device claimed by other. */
 static int device_claimed_by_other(int self_slot, SDL_JoystickID inst) {
     for (int o = 0; o < PSX_MAX_PLAYERS; o++) {
         if (o == self_slot) continue;
@@ -4367,6 +4447,7 @@ static void open_player(PlayerInput& p, int self_slot) {
  * the small motor is fixed-strength/high-frequency. Active effects are renewed
  * every VBlank with a short lifetime so a crash or unplug cannot leave a host
  * controller vibrating indefinitely. */
+/* Update controller rumble. */
 static void update_controller_rumble(void) {
     static const bool trace = [] {
         const char* e = std::getenv("PSX_RUMBLE_TRACE");
@@ -4494,6 +4575,7 @@ static void set_player_device(PlayerInput& p, const std::string& dev, int mode) 
  * component became a D-Pad bit. Analog stick bytes still use radial rescale
  * in axes_to_pad_pair; this path is digital buttons only. Triggers share the
  * same per-axis threshold. */
+/* Controller source pressed h. */
 static bool controller_source_pressed_h(SDL_GameController* h, const ControllerSource& source,
                                         int deadzone_raw) {
     if (!h) return false;
@@ -4535,6 +4617,7 @@ static uint16_t pad_from_keyboard(int player) {
  * stick movement, and constant rotation from centre drift. controller_pad_buttons
  * suppresses these sources when the pad presents as analog. Trigger axes and
  * button sources are never suppressed. */
+/* Source is stick axis. */
 static bool source_is_stick_axis(const ControllerSource& s) {
     if (s.kind != ControllerSource::Kind::AxisPositive &&
         s.kind != ControllerSource::Kind::AxisNegative) return false;
@@ -4547,6 +4630,7 @@ static bool source_is_stick_axis(const ControllerSource& s) {
  * left/right analog-stick axes do NOT contribute button bits — see
  * source_is_stick_axis above. Digital mode passes false, so ls_* stick
  * directions still fold onto the D-pad via fold_bit. */
+/* Controller pad buttons. */
 static uint16_t controller_pad_buttons(const ControllerMap& map,
                                        SDL_GameController* h,
                                        bool suppress_stick_axes,
@@ -4615,6 +4699,7 @@ static uint16_t pad_buttons_for(const PlayerInput& p, int player, bool suppress_
  * The keyboard branch is unaffected: psx_keybinds_sticks maps that player's
  * bound stick-direction keys onto the axes, which is their only stick
  * source. */
+/* Pad sticks for. */
 static void pad_sticks_for(const PlayerInput& p, int player, uint8_t out[4]) {
     out[0] = out[1] = out[2] = out[3] = 0x80;
     if (p.kind == 1) {
@@ -4700,6 +4785,7 @@ static bool controller_stick_active(SDL_GameController* handle, int deadzone) {
     const double dz = (double)(deadzone > 0 ? deadzone : controller_deadzone);
     return std::sqrt(lx * lx + ly * ly) > dz;
 }
+/* Controller mapped dpad active. */
 static bool controller_mapped_dpad_active(const PlayerInput& p,
                                           SDL_GameController* handle,
                                           int deadzone) {
@@ -4755,6 +4841,7 @@ static PadSources pad_sources_for(const PlayerInput& p, bool dev_here) {
     return s;
 }
 
+/* Controller policy stick active. */
 static bool controller_policy_stick_active(const PlayerInput& p,
                                            const PadSources& src) {
     if (src.device && p.kind == 2 &&
@@ -4772,6 +4859,7 @@ static bool controller_policy_stick_active(const PlayerInput& p,
     }
     return false;
 }
+/* Controller policy dpad active. */
 static bool controller_policy_dpad_active(const PlayerInput& p, int player,
                                           const PadSources& src) {
     if (src.device && p.kind == 2 &&
@@ -4801,6 +4889,7 @@ static bool controller_policy_dpad_active(const PlayerInput& p, int player,
     return false;
 }
 
+/* Controller policy resolve mode. */
 static int controller_policy_resolve_mode(
     int slot, int player, int configured_mode, const PadSources& src,
     const PlayerInput& p, uint16_t buttons, const uint8_t st[4]) {
@@ -4838,6 +4927,7 @@ static int controller_policy_resolve_mode(
     return configured_mode;
 }
 
+/* Controller policy resolve override mode. */
 static int controller_policy_resolve_override_mode(
     int slot, int player, int configured_mode, uint16_t buttons,
     const uint8_t st[4], bool stick_live, bool dpad_live) {
@@ -4893,6 +4983,7 @@ static int controller_policy_resolve_override_mode(
  * downgrade. This diagnostic convenience must never alter normal player input:
  * strict single-device-per-port routing is the default, and PSX_DEV_INPUT must
  * be explicitly set to 1/true/yes/on to enable the merge. */
+/* Dev any input enabled. */
 static bool dev_any_input_enabled() {
     static int cached = -1;
     if (cached < 0) {
@@ -4910,6 +5001,7 @@ static bool dev_any_input_enabled() {
  * closes a shared device this self-heals by reopening next frame). This does NOT
  * disturb per-slot routing — SDL returns the same handle for an already-open
  * device, so reads are shared and harmless. */
+/* Dev all controllers buttons. */
 static uint16_t dev_all_controllers_buttons(bool suppress_stick_axes) {
     uint16_t btn = 0xFFFF;
     const int n = SDL_NumJoysticks();
@@ -4955,12 +5047,14 @@ static void dev_any_controller_sticks(uint8_t st[4]) {
     }
 }
 
+/* UI/state: savestate input guard arm. */
 static void savestate_input_guard_arm(void) {
     uint32_t now = (uint32_t)SDL_GetTicks();
     g_savestate_input_guard_min_until = now + 90u;
     g_savestate_input_guard_max_until = now + 700u;
 }
 
+/* Any controller button down. */
 static int any_controller_button_down(void) {
     const int n = SDL_NumJoysticks();
     for (int i = 0; i < n; i++) {
@@ -4977,6 +5071,7 @@ static int any_controller_button_down(void) {
     return 0;
 }
 
+/* UI/state: savestate resume inputs held. */
 static int savestate_resume_inputs_held(void) {
     const Uint8* keys = SDL_GetKeyboardState(NULL);
     if (keys) {
@@ -4989,6 +5084,7 @@ static int savestate_resume_inputs_held(void) {
     return any_controller_button_down();
 }
 
+/* UI/state: savestate input guard active. */
 static int savestate_input_guard_active(void) {
     uint32_t now;
     if (g_savestate_input_guard_max_until == 0)
@@ -5017,6 +5113,7 @@ static int savestate_input_guard_active(void) {
  * the resolved type goes through the same coherent request channel as real
  * sampling — never slammed mid-
  * handshake (the v0.5.0 phantom-input lesson). */
+/* Apply input override to sio. */
 static void apply_input_override_to_sio(int slot, int override_word) {
     if (slot < 0 || slot >= PSX_MAX_PLAYERS) slot = 0;
     PlayerInput& p = g_players[slot];
@@ -5207,6 +5304,7 @@ static int capture_pad_slot_exclusive(int s, PsxNetPad* out, int present_sio_slo
     return 1;
 }
 
+/* Apply pad slot to sio. */
 static void apply_pad_slot_to_sio(int s, const PsxNetPad& pad) {
     if (sio_pad_on_multitap(s) && !sio_get_multitap_analog())
         sio_set_pad_config_capable(s, 0);
@@ -5272,6 +5370,7 @@ static void capture_local_human_pad(PsxNetPad* out) {
         return;
     }
     if (seat >= 0 && seat < PSX_MAX_PLAYERS && seat != idx && seat != 0 &&
+        /* Capture pad slot exclusive. */
         capture_pad_slot_exclusive(seat, out, present)) {
         out->connected = 1;
         psx_netplay_normalize_pad(out);
@@ -5370,6 +5469,7 @@ static int netplay_timing_on(void) {
 static void netplay_note_present(void);
 static void netplay_hold_last_present_tick(void);
 
+/* Netplay note present. */
 static void netplay_note_present(void) {
     uint64_t now;
     uint32_t gap;
@@ -5384,6 +5484,7 @@ static void netplay_note_present(void) {
     s_present_last_ms = now ? now : 1ull;
 }
 
+/* Netplay local viewport slot. */
 static int netplay_local_viewport_slot(void) {
     if (g_netplay_local_viewport != 1 || !psx_netplay_active())
         return -1;
@@ -5393,6 +5494,7 @@ static int netplay_local_viewport_slot(void) {
     return (slot == 0 || slot == 1) ? slot : -1;
 }
 
+/* Crop present to netplay local viewport. */
 static int crop_present_to_netplay_local_viewport(uint32_t* pixels,
                                                   int* width,
                                                   int height) {
@@ -5414,6 +5516,7 @@ static int crop_present_to_netplay_local_viewport(uint32_t* pixels,
     return 1;
 }
 
+/* Netplay present gap stats. */
 static void netplay_present_gap_stats(uint32_t *p95_out, uint32_t *max_out) {
     unsigned n = s_present_gaps_n;
     unsigned idx;
@@ -5476,6 +5579,7 @@ static void netplay_barrier_admit(int override) {
         if (psx_netplay_peer_disconnected(
                 (psx_netplay_in_load_barrier() || !running)
                     ? 0u
+                    /* Netplay/lobby: psx netplay running liveness timeout ms. */
                     : psx_netplay_running_liveness_timeout_ms())) {
             netplay_soft_exit("netplay_peer_disconnect");
             if (psx_return_to_lobby_requested()) return;
@@ -5649,6 +5753,7 @@ static void netplay_barrier_admit(int override) {
     }
 }
 
+/* Sample pad into sio. */
 static void sample_pad_into_sio(int ov0, int ov1) {
     /* Selfcheck fighter mash owns P1 when enabled (headless-safe). */
     if (ov0 < 0) {
@@ -5688,6 +5793,7 @@ static void sample_pad_into_sio(int ov0, int ov1) {
     }
 }
 
+/* Sample headless pad into sio. */
 static void sample_headless_pad_into_sio(int ov0, int ov1) {
     if (ov0 < 0) {
         uint16_t mash = 0xFFFFu;
@@ -5777,6 +5883,7 @@ static void netplay_hold_last_present_tick(void) {
  * re-showed edge-trigger menu inputs that Live had already displayed before
  * the rewind (pad-log DUP_SIO Start/dpad). Hold-last through a full SPAN;
  * only ownership-chain catch-up deeper than that shows live progress. */
+/* Netplay replay catchup should live present. */
 static int netplay_replay_catchup_should_live_present(uint32_t remaining) {
     static uint64_t s_catchup_present_ms;
     uint64_t now = SDL_GetTicks64();
@@ -5830,6 +5937,7 @@ static size_t host_stack_used(void) {
     return (base > sp) ? (size_t)(base - sp) : 0;
 }
 #else
+/* Host stack used. */
 static size_t host_stack_used(void) { return 0; }
 #endif
 
@@ -5842,6 +5950,7 @@ static uint32_t    g_stack_used_now_kb = 0;
 static uint32_t    g_stack_frame_now   = 0;
 static uint32_t    g_stack_used_max_kb = 0;
 
+/* Stack profile sample. */
 static void stack_profile_sample(void) {
     extern uint64_t s_frame_count;
     uint32_t f  = (uint32_t)s_frame_count;
@@ -5932,6 +6041,7 @@ extern "C" int load_transition_get(uint64_t seq, LoadTransitionEntry *out) {
     return 1;
 }
 
+/* Load transition note. */
 static void load_transition_note(int read_active, int load_active,
                                  int turbo_active, int load_run) {
     static int prev_read = -1, prev_load = -1, prev_turbo = -1;
@@ -5960,6 +6070,7 @@ static void load_transition_note(int read_active, int load_active,
  * black blank on every decode burst (BPE FMV flicker). Do not regress to
  * short-gap arming for MotK merges — MotK cutovers still arm via depth24
  * exit and long idle. */
+/* Depth24 cutover tick. */
 static void depth24_cutover_tick(int depth24) {
     const int mdec_on = depth24 && mdec_recently_active(3);
     /* ~0.5s @60Hz — longer than inter-frame MDEC idle in a live movie. */
@@ -5992,6 +6103,7 @@ static void depth24_cutover_tick(int depth24) {
  *
  * Optional short cutover blank: full-frame black for 1–2 presents on movie
  * start / long idle resume only (see depth24_cutover_tick). */
+/* Depth24 fix trailing margin. */
 static void depth24_fix_trailing_margin(uint32_t *buf, uint32_t w, uint32_t h,
                                           uint32_t display_x) {
     if (!buf || w < 8u || h == 0u) return;
@@ -6068,6 +6180,7 @@ enum {
     PSX_HOTKEY_PAD_BUTTON_COMBO(((uint32_t)1u << SDL_CONTROLLER_BUTTON_BACK) | \
                                 ((uint32_t)1u << SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
 
+/* Normalize hotkey pad binding. */
 static int normalize_hotkey_pad_binding(int binding, int fallback) {
     if (PSX_HOTKEY_PAD_IS_BUTTON(binding)) {
         int code = PSX_HOTKEY_PAD_BUTTON_CODE(binding);
@@ -6087,6 +6200,7 @@ static int normalize_hotkey_pad_binding(int binding, int fallback) {
     return fallback;
 }
 
+/* Hotkey pad binding down. */
 static int hotkey_pad_binding_down(int binding) {
     SDL_GameController *h = g_players[0].handle;
     if (!h || binding == 0)
@@ -6130,16 +6244,19 @@ static int savestate_menu_slot = 0;
 static int savestate_menu_ignore_toggle_release = 0;
 static SDL_Keycode savestate_menu_open_key = 0;
 
+/* UI/state: savestate menu sync overlay. */
 static void savestate_menu_sync_overlay(void) {
     psx_savestate_menu_set_state(savestate_menu_open, savestate_menu_slot);
 }
 
+/* UI/state: savestate menu close. */
 static void savestate_menu_close(void) {
     savestate_menu_open = 0;
     savestate_menu_sync_overlay();
     host_osd_push("Save states closed", 800);
 }
 
+/* UI/state: savestate menu toggle. */
 static void savestate_menu_toggle(SDL_Keycode opened_by_key) {
     if (psx_rewind_is_open())
         return;
@@ -6153,6 +6270,7 @@ static void savestate_menu_toggle(SDL_Keycode opened_by_key) {
     savestate_menu_sync_overlay();
 }
 
+/* UI/state: savestate menu move. */
 static void savestate_menu_move(int delta) {
     savestate_menu_slot += delta;
     while (savestate_menu_slot < 0)
@@ -6162,6 +6280,7 @@ static void savestate_menu_move(int delta) {
     savestate_menu_sync_overlay();
 }
 
+/* UI/state: savestate submit slot. */
 static int savestate_submit_slot(int slot, int save) {
     if (!save && !savestate_slot_exists(slot)) {
         char msg[32];
@@ -6187,6 +6306,7 @@ static int savestate_submit_slot(int slot, int save) {
     }
 }
 
+/* UI/state: savestate menu submit. */
 static void savestate_menu_submit(int save) {
     if (savestate_submit_slot(savestate_menu_slot, save) && savestate_menu_open) {
         savestate_menu_open = 0;
@@ -6194,6 +6314,7 @@ static void savestate_menu_submit(int save) {
     }
 }
 
+/* UI/state: savestate menu slot from key. */
 static int savestate_menu_slot_from_key(SDL_Keycode key) {
     if (key >= SDLK_1 && key <= SDLK_9)
         return (int)(key - SDLK_1);
@@ -6206,6 +6327,7 @@ static int savestate_menu_slot_from_key(SDL_Keycode key) {
     return -1;
 }
 
+/* UI/state: savestate menu handle key. */
 static void savestate_menu_handle_key(SDL_Keycode key, SDL_Scancode scancode,
                                       int mod, int repeat) {
     int slot;
@@ -6236,6 +6358,7 @@ static void savestate_menu_handle_key(SDL_Keycode key, SDL_Scancode scancode,
     }
 }
 
+/* UI/state: savestate menu poll nav. */
 static void savestate_menu_poll_nav(uint32_t now_ms) {
     static int prev_load, prev_save, prev_cancel, prev_toggle;
     static int held_dir, last_step_ms;
@@ -6297,10 +6420,12 @@ static void savestate_menu_poll_nav(uint32_t now_ms) {
     }
 }
 
+/* UI/state: rewind toggle buttons down. */
 static int rewind_toggle_buttons_down(void) {
     return hotkey_pad_binding_down(g_hotkey_pad_rewind);
 }
 
+/* UI/state: rewind poll toggle buttons. */
 static void rewind_poll_toggle_buttons(void) {
     static int was_down;
     int down = rewind_toggle_buttons_down();
@@ -6309,6 +6434,7 @@ static void rewind_poll_toggle_buttons(void) {
     was_down = down;
 }
 
+/* UI/state: savestate menu poll toggle buttons. */
 static void savestate_menu_poll_toggle_buttons(void) {
     static int was_down;
     int down = hotkey_pad_binding_down(g_hotkey_pad_save_state_menu);
@@ -6323,6 +6449,7 @@ static void savestate_menu_poll_toggle_buttons(void) {
  * press, so a hold-to-run Turbo release never cancels a latched run. */
 static int g_manual_turbo_latched = 0;
 
+/* UI/state: fast forward toggle flip. */
 static void fast_forward_toggle_flip(void) {
     char msg[40];
     g_manual_turbo_latched = !g_manual_turbo_latched;
@@ -6338,6 +6465,7 @@ static void fast_forward_toggle_flip(void) {
     host_osd_push(msg, 900);
 }
 
+/* UI/state: fast forward toggle poll buttons. */
 static void fast_forward_toggle_poll_buttons(void) {
     static int was_down;
     int down = hotkey_pad_binding_down(g_hotkey_pad_fast_forward_toggle);
@@ -6346,6 +6474,7 @@ static void fast_forward_toggle_poll_buttons(void) {
     was_down = down;
 }
 
+/* UI/state: rewind poll nav. */
 static void rewind_poll_nav(uint32_t now_ms) {
     const Uint8 *keys = SDL_GetKeyboardState(NULL);
     int left = keys[SDL_SCANCODE_LEFT] ? 1 : 0;
@@ -6388,6 +6517,7 @@ static void rewind_poll_nav(uint32_t now_ms) {
     psx_rewind_nav_held(left, right, acc, can, now_ms);
 }
 
+/* UI/state: rewind pause present. */
 static void rewind_pause_present(void) {
     psx_rewind_present_tick((uint32_t)SDL_GetTicks());
 #ifndef PSX_SDL_NO_RENDER
@@ -6435,6 +6565,7 @@ static void rewind_host_pause_loop(void) {
                 const int repeat = ev.key.repeat ? 1 : 0;
 #endif
                 if (!repeat &&
+                    /* Host keymap match event. */
                     host_keymap_match_event(HOST_KEYMAP_REWIND, (int)key,
                                             (int)scancode, (int)mod)) {
                     psx_rewind_toggle();
@@ -7083,6 +7214,7 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
      * still run every tick. During MDEC-idle cutover present every frame.
      * Override: PSX_NET_FMV_PRESENT_DIV (1=every frame, 2=default, 4=legacy). */
     if (psx_netplay_active() && gpu_display_is_depth24() &&
+        /* Mdec recently active. */
         mdec_recently_active(8)) {
         static int s_fmv_present_div = -1;
         int div;
@@ -7658,6 +7790,7 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
         if (!g_present_vsync_disabled && present_ms > 250) {
             g_present_slow_count++;
             if (g_present_slow_count >= 3 &&
+                /* Sdl rendersetvsync. */
                 SDL_RenderSetVSync(sdl_renderer, 0) == 0) {
                 g_present_vsync_disabled = 1;
             }
@@ -7668,6 +7801,7 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
     return ep;
 }
 
+/* Sdl vblank present. */
 static void sdl_vblank_present(void) {
     NetplayVblankEpilogue ep = sdl_vblank_present_body();
     /* Selfcheck span-end rewind: after present-body C++ RAII, before any
@@ -7710,6 +7844,7 @@ static PSXRecompV4::NetplayDiscExpect g_netplay_disc_expect{};
  *
  * A disc with no per-disc fingerprint keeps the flat [netplay]
  * required_disc_fp, so single-disc titles are unaffected. */
+/* Netplay expect for disc. */
 static PSXRecompV4::NetplayDiscExpect netplay_expect_for_disc(
     const std::filesystem::path& disc) {
     PSXRecompV4::NetplayDiscExpect e = g_netplay_disc_expect;
@@ -7755,6 +7890,7 @@ namespace {
     const char* g_lnch_argv0         = nullptr;
     bool        g_lnch_netplay_available = false;
 
+    /* Ae bios verify. */
     int ae_bios_verify(const char* bios_path, RecompLauncherCBiosVerify* out) {
         if (!out) return 0;
         std::memset(out, 0, sizeof(*out));
@@ -7855,6 +7991,7 @@ namespace {
         }
     }
 
+    /* Ae prepare disc. */
     int ae_prepare_disc(const char* source_path, char* out_disc_path, size_t out_cap,
                         char* err_msg, size_t err_cap) {
         if (!source_path || !source_path[0] || !out_disc_path || out_cap == 0) return 0;
@@ -7922,6 +8059,7 @@ namespace {
     }
 
 #if defined(RECOMP_LAUNCHER_HAS_SBI_STATUS)
+    /* Ae import sbi. */
     int ae_import_sbi(const char* disc, const char* sbi, char* out_disc,
                       size_t out_cap, char* error, size_t error_cap) {
         try {
@@ -7938,6 +8076,7 @@ namespace {
     }
 #endif
 
+    /* Ae disc verify. */
     int ae_disc_verify(const char* disc_path, RecompLauncherCDiscVerify* out) {
         if (!disc_path || !disc_path[0] || !out) return 0;
         std::memset(out, 0, sizeof(*out));
@@ -8038,6 +8177,7 @@ namespace {
         return 1;
     }
 
+    /* Ae memcard inspect. */
     int ae_memcard_inspect(const char* card_path, RecompLauncherCMemcard* out) {
         if (!card_path || !card_path[0] || !out) return 0;
         MemcardSummary s;
@@ -8089,6 +8229,7 @@ namespace {
         uint32_t occupied = 0;
         int      port[RECOMP_LAUNCHER_NETPLAY_MAX_MEMBERS + 1];
     };
+    /* Netplay (ae_np): plan session slots. */
     static bool ae_np_plan_session_slots(const int* seats, int n, int host_seat,
                                          int my_seat, bool i_am_host,
                                          AeSlotPlan* out) {
@@ -8123,6 +8264,7 @@ namespace {
         return true;
     }
 
+    /* Netplay (ae_np): session slot count. */
     static int ae_np_session_slot_count(int player_count, int max_slots,
                                        int local_slot, int game_fallback,
                                        int slot_cap) {
@@ -8208,6 +8350,7 @@ namespace {
         g_lnch_lan_chat_count = 0;
         g_lnch_lan_chat_seq_base = g_lnch_lan_chat_seq + 1;
     }
+    /* Netplay (ae_np): lan chat push. */
     static void ae_np_lan_chat_push(const char* player_id, const char* from,
                                     const char* text, int is_system) {
         if (!text || !text[0]) return;
@@ -8322,6 +8465,7 @@ namespace {
         return exe / "netplay_lan_lobby.txt";
     }
 
+    /* Netplay (ae_np): lan sock set broadcast. */
     static void ae_np_lan_sock_set_broadcast(AeLanSock s) {
         if (s == kAeLanSockInvalid) return;
 #ifdef _WIN32
@@ -8333,6 +8477,7 @@ namespace {
 #endif
     }
 
+    /* Netplay (ae_np): lan prune discovered. */
     static void ae_np_lan_prune_discovered(void) {
         const uint32_t now = SDL_GetTicks();
         int w = 0;
@@ -8347,6 +8492,7 @@ namespace {
         g_lnch_lan_discovered_n = w;
     }
 
+    /* Netplay (ae_np): lan discovered find. */
     static int ae_np_lan_discovered_find(const char* endpoint) {
         if (!endpoint || !endpoint[0]) return -1;
         for (int i = 0; i < g_lnch_lan_discovered_n; ++i) {
@@ -8356,6 +8502,7 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): lan discovered upsert. */
     static void ae_np_lan_discovered_upsert(const AeLanDiscovered& in) {
         if (!in.endpoint[0]) return;
         const int idx = ae_np_lan_discovered_find(in.endpoint);
@@ -8378,6 +8525,7 @@ namespace {
         g_lnch_lan_discovered[g_lnch_lan_discovered_n++] = in;
     }
 
+    /* Netplay (ae_np): lan format beacon. */
     static int ae_np_lan_format_beacon(char* buf, size_t cap,
                                       const AeLanLobbyState& st) {
         if (!buf || cap < 32) return -1;
@@ -8454,6 +8602,7 @@ namespace {
         return 0;
     }
 
+    /* Netplay (ae_np): lan broadcast msg. */
     static void ae_np_lan_broadcast_msg(AeLanSock s, int port, const char* msg) {
         if (s == kAeLanSockInvalid || !msg || port <= 0 || port > 65535) return;
         sockaddr_in to{};
@@ -8475,6 +8624,7 @@ namespace {
     static uint32_t g_lan_browse_deadline = 0;
     static int g_lan_browse_file_pending = 0;
 
+    /* Netplay (ae_np): lan browse close. */
     static void ae_np_lan_browse_close(void) {
         if (g_lan_browse_sock != kAeLanSockInvalid)
             ae_np_lan_sock_close(&g_lan_browse_sock);
@@ -8482,6 +8632,7 @@ namespace {
         g_lan_browse_t0 = 0;
     }
 
+    /* Netplay (ae_np): lan browse start. */
     static void ae_np_lan_browse_start(uint32_t wait_ms) {
         if (g_lan_browse_sock != kAeLanSockInvalid)
             return; /* already collecting */
@@ -8515,6 +8666,7 @@ namespace {
             g_lan_browse_t0 + (wait_ms ? wait_ms : 250u);
     }
 
+    /* Netplay (ae_np): lan file promote without rtt. */
     static void ae_np_lan_file_promote_without_rtt(void) {
         AeLanLobbyState st;
         if (!ae_np_read_lan_file_state(&st) || st.started) {
@@ -8542,6 +8694,7 @@ namespace {
         ae_np_lan_discovered_upsert(d);
     }
 
+    /* Netplay (ae_np): lan browse pump. */
     static void ae_np_lan_browse_pump(void) {
         if (g_lan_browse_sock == kAeLanSockInvalid) {
             if (g_lan_browse_file_pending) {
@@ -8583,6 +8736,7 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): lan apply discovered caps. */
     static void ae_np_lan_apply_discovered_caps(const char* endpoint) {
         const int idx = ae_np_lan_discovered_find(endpoint);
         if (idx < 0) return;
@@ -8592,6 +8746,7 @@ namespace {
         g_lnch_rollback = d.rollback ? 1 : 0;
     }
 
+    /* Netplay (ae_np): lan fill lobby from discovered. */
     static int ae_np_lan_fill_lobby_from_discovered(
         int discovered_index, RecompLauncherCNetplayLobby* out) {
         if (!out || discovered_index < 0 ||
@@ -8611,6 +8766,7 @@ namespace {
         return 1;
     }
 
+    /* Netplay (ae_np): lan sock close. */
     static void ae_np_lan_sock_close(AeLanSock* s) {
         if (!s || *s == kAeLanSockInvalid) return;
 #ifdef _WIN32
@@ -8621,12 +8777,14 @@ namespace {
         *s = kAeLanSockInvalid;
     }
 
+    /* Netplay (ae_np): lan udp close. */
     static void ae_np_lan_udp_close(void) {
         ae_np_lan_sock_close(&g_lnch_lan_udp);
         for (int i = 0; i < kAeLanMaxSlots; ++i)
             g_lnch_lan_peer_ok[i] = false;
     }
 
+    /* Netplay (ae_np): lan sync legacy names. */
     static void ae_np_lan_sync_legacy_names(AeLanLobbyState& state) {
         if (state.max_slots < 2) state.max_slots = 2;
         if (state.max_slots > kAeLanMaxSlots) state.max_slots = kAeLanMaxSlots;
@@ -8646,6 +8804,7 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): lan occupied. */
     static int ae_np_lan_occupied(const AeLanLobbyState& state) {
         int n = 0;
         for (int i = 0; i < state.max_slots && i < kAeLanMaxSlots; ++i)
@@ -8653,6 +8812,7 @@ namespace {
         return n;
     }
 
+    /* Netplay (ae_np): lan find free slot. */
     static int ae_np_lan_find_free_slot(const AeLanLobbyState& state) {
         for (int i = 0; i < state.max_slots && i < kAeLanMaxSlots; ++i) {
             if (i == state.host_slot) continue;
@@ -8674,6 +8834,7 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): lan find slot by id. */
     static int ae_np_lan_find_slot_by_id(const AeLanLobbyState& state,
                                         const char* player_id) {
         if (!player_id || !player_id[0]) return -1;
@@ -8758,17 +8919,20 @@ namespace {
         return slot;
     }
 
+    /* Netplay (ae_np): lan clear peer slot. */
     static void ae_np_lan_clear_peer_slot(int slot) {
         if (slot < 0 || slot >= kAeLanMaxSlots) return;
         g_lnch_lan_peer_ok[slot] = false;
     }
 
+    /* Netplay (ae_np): lan set peer slot. */
     static void ae_np_lan_set_peer_slot(int slot, const sockaddr_in& addr) {
         if (slot < 0 || slot >= kAeLanMaxSlots) return;
         g_lnch_lan_peers[slot] = addr;
         g_lnch_lan_peer_ok[slot] = true;
     }
 
+    /* Netplay (ae_np): lan endpoint port. */
     static int ae_np_lan_endpoint_port(const std::string& endpoint) {
         const size_t colon = endpoint.rfind(':');
         if (colon == std::string::npos) return 7777;
@@ -8776,6 +8940,7 @@ namespace {
         return (p > 0 && p <= 65535) ? p : 7777;
     }
 
+    /* Netplay (ae_np): lan endpoint host. */
     static bool ae_np_lan_endpoint_host(const std::string& endpoint, char* host,
                                        size_t host_len) {
         if (!host || host_len == 0) return false;
@@ -8787,6 +8952,7 @@ namespace {
         return host[0] != '\0';
     }
 
+    /* Netplay (ae_np): lan set nonblock. */
     static bool ae_np_lan_set_nonblock(AeLanSock s) {
 #ifdef _WIN32
         u_long mode = 1;
@@ -8826,6 +8992,7 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): endpoint replace port. */
     static bool ae_np_endpoint_replace_port(char* endpoint, size_t cap, int port) {
         if (!endpoint || cap < 4 || port <= 0 || port > 65535) return false;
         char host[64];
@@ -8839,6 +9006,7 @@ namespace {
         return n > 0 && (size_t)n < cap;
     }
 
+    /* Netplay (ae_np): lan udp ensure. */
     static bool ae_np_lan_udp_ensure(bool bind_port, int port) {
 #ifdef _WIN32
         WSADATA wsa;
@@ -8867,6 +9035,7 @@ namespace {
         return true;
     }
 
+    /* Netplay (ae_np): lan udp sendto. */
     static void ae_np_lan_udp_sendto(const sockaddr_in& to, const char* msg) {
         if (g_lnch_lan_udp == kAeLanSockInvalid || !msg) return;
         const int n = (int)std::strlen(msg);
@@ -8877,6 +9046,7 @@ namespace {
 #endif
     }
 
+    /* Netplay (ae_np): read lan state. */
     bool ae_np_read_lan_state(AeLanLobbyState* state) {
         if (!state) return false;
         if (g_lnch_remote_lan) {
@@ -8928,6 +9098,7 @@ namespace {
         return !state->endpoint.empty();
     }
 
+    /* Netplay (ae_np): write lan state. */
     bool ae_np_write_lan_state(const AeLanLobbyState& state_in) {
         AeLanLobbyState state = state_in;
         ae_np_lan_sync_legacy_names(state);
@@ -8955,6 +9126,7 @@ namespace {
         return (bool)f;
     }
 
+    /* Netplay (ae_np): lan send update to peers. */
     static void ae_np_lan_send_update_to_peers(const AeLanLobbyState& state_in) {
         AeLanLobbyState state = state_in;
         ae_np_lan_sync_legacy_names(state);
@@ -9018,6 +9190,7 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): lan atexit cleanup. */
     static void ae_np_lan_atexit_cleanup(void) {
         if (!g_lnch_hosting_lan) return;
         std::error_code ec;
@@ -9070,6 +9243,7 @@ namespace {
         return true;
     }
 
+    /* Netplay (ae_np): read lan lobby. */
     int ae_np_read_lan_lobby(RecompLauncherCNetplayLobby* out) {
         if (!out) return 0;
         AeLanLobbyState state;
@@ -9090,6 +9264,7 @@ namespace {
         return 1;
     }
 
+    /* Netplay (ae_np): remote has same name as lan. */
     static bool ae_np_remote_has_same_name_as_lan(const char* lan_display_name) {
         static constexpr const char kLanPrefix[] = "LAN - ";
         const char* base = lan_display_name;
@@ -9104,6 +9279,7 @@ namespace {
         return false;
     }
 
+    /* Netplay (ae_np): read lan file state. */
     static bool ae_np_read_lan_file_state(AeLanLobbyState* state) {
         if (!state) return false;
         const bool prior = g_lnch_remote_lan;
@@ -9168,15 +9344,18 @@ namespace {
         return rtt;
     }
 
+    /* Netplay (ae_np): lan probe host ms. */
     static bool ae_np_lan_probe_host_ms(const std::string& endpoint, uint32_t timeout_ms) {
         return ae_np_lan_probe_rtt_ms(endpoint, timeout_ms) >= 0;
     }
 
+    /* Netplay (ae_np): lan probe host. */
     static bool ae_np_lan_probe_host(const std::string& endpoint) {
         return ae_np_lan_probe_host_ms(endpoint, 200u);
     }
 
 
+    /* Netplay (ae_np): lan parse motk2 update. */
     static int ae_np_lan_parse_motk2_update(char* body, AeLanLobbyState* out) {
         if (!body || !out) return -1;
         char* lines[8] = {};
@@ -9489,6 +9668,7 @@ namespace {
      * delay-sync bind, so PING fails mid-launch and a delete races the joiner
      * reading session_id/started from the file. Started lobbies are already
      * hidden by ae_np_lan_list_visible(). */
+    /* Netplay (ae_np): lan rescan. */
     static void ae_np_lan_rescan(void) {
         if (g_lnch_hosting_lan) {
             g_lnch_lan_latency_ms = 0;
@@ -9582,10 +9762,12 @@ namespace {
         psx_lobby_set_bios_offer(&offer);
     }
 
+    /* Netplay (ae_np): refresh bios offer from disk. */
     static void ae_np_refresh_bios_offer_from_disk(void) {
         ae_np_refresh_bios_offer(nullptr);
     }
 
+    /* Netplay (ae_np): set session bios token. */
     static void ae_np_set_session_bios_token(const char* token) {
         g_lnch_session_bios[0] = '\0';
         if (!token || !token[0]) return;
@@ -9596,10 +9778,12 @@ namespace {
                       token);
     }
 
+    /* Netplay (ae_np): clear session bios token. */
     static void ae_np_clear_session_bios_token(void) {
         g_lnch_session_bios[0] = '\0';
     }
 
+    /* Netplay (ae_np): lan clear slot bios. */
     static void ae_np_lan_clear_slot_bios(int slot) {
         if (slot < 0 || slot >= kAeLanMaxSlots) return;
         g_lnch_lan_slot_bios[slot] = {};
@@ -9618,6 +9802,7 @@ namespace {
         if (!b.can_openbios && !b.can_scph1001) b.can_openbios = 1;
     }
 
+    /* Netplay (ae_np): lan sync local slot bios. */
     static void ae_np_lan_sync_local_slot_bios(void) {
         ae_np_refresh_bios_offer_from_disk();
         const PsxLobbyBiosOffer* offer = psx_lobby_bios_offer();
@@ -9633,6 +9818,7 @@ namespace {
                                   offer->can_scph1001);
     }
 
+    /* Netplay (ae_np): lan send chat to peers. */
     static void ae_np_lan_send_chat_to_peers(const char* player_id, const char* from,
                                             const char* text) {
         char msg[448];
@@ -9644,6 +9830,7 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): lan sync local slot memcard. */
     static void ae_np_lan_sync_local_slot_memcard(void) {
         int slot = -1;
         if (g_lnch_hosting_lan) {
@@ -9834,6 +10021,7 @@ namespace {
         return 0;
     }
 
+    /* Netplay (ae_np): append lan bios join. */
     static void ae_np_append_lan_bios_join(char* msg, size_t msg_cap, int* io_off) {
         if (!msg || !io_off || *io_off < 0) return;
         ae_np_refresh_bios_offer_from_disk();
@@ -9912,6 +10100,7 @@ namespace {
         return 0;
     }
 
+    /* Ae netplay caps from settings. */
     PsxLobbyMatchCaps ae_netplay_caps_from_settings(const RecompLauncherCSettings* s) {
         PsxLobbyMatchCaps caps{};
         caps.valid = 1;
@@ -9957,6 +10146,7 @@ namespace {
         return 0;
     }
 
+    /* Netplay (ae_np): push match caps. */
     static void ae_np_push_match_caps(const RecompLauncherCSettings* settings) {
         if (!psx_lobby_in_lobby() || !psx_lobby_is_host()) return;
         const PsxLobbyMatchCaps* cur = psx_lobby_match_caps();
@@ -10010,6 +10200,7 @@ namespace {
         }
         return 0;
     }
+    /* Netplay (ae_np): guest memcard get. */
     int ae_np_guest_memcard_get(void*) {
         if (g_lnch_joined_lan) return g_lnch_lan_guest_memcard_allow ? 1 : 0;
         if (!g_lnch_hosting_lan) {
@@ -10035,6 +10226,7 @@ namespace {
         }
         return psx_lobby_seat_move_self(to_slot);
     }
+    /* Netplay (ae_np): seat swap request. */
     int ae_np_seat_swap_request(void*, int target_slot) {
         if (g_lnch_hosting_lan) {
             AeLanLobbyState st;
@@ -10063,6 +10255,7 @@ namespace {
         }
         return psx_lobby_seat_swap_request(target_slot);
     }
+    /* Netplay (ae_np): seat swap incoming. */
     int ae_np_seat_swap_incoming(void*, char* who, size_t who_cap, int* from_slot) {
         if (g_lnch_hosting_lan || g_lnch_joined_lan) {
             if (!g_lnch_lan_swap.incoming) return 0;
@@ -10072,6 +10265,7 @@ namespace {
         }
         return psx_lobby_seat_swap_incoming(who, who_cap, from_slot);
     }
+    /* Netplay (ae_np): seat swap respond. */
     int ae_np_seat_swap_respond(void*, int accept) {
         if (g_lnch_hosting_lan) {
             if (!g_lnch_lan_swap.incoming) return -1;
@@ -10091,10 +10285,12 @@ namespace {
         }
         return psx_lobby_seat_swap_respond(accept);
     }
+    /* Netplay (ae_np): seat swap outgoing. */
     int ae_np_seat_swap_outgoing(void*) {
         if (g_lnch_hosting_lan || g_lnch_joined_lan) return g_lnch_lan_swap.outgoing;
         return psx_lobby_seat_swap_outgoing();
     }
+    /* Netplay (ae_np): seat swap clear. */
     void ae_np_seat_swap_clear(void*) {
         if (g_lnch_hosting_lan || g_lnch_joined_lan) {
             if (g_lnch_lan_swap.outgoing != 1) g_lnch_lan_swap.outgoing = 0;
@@ -10121,6 +10317,7 @@ namespace {
             g_lnch_chat_was_seated = seated;
         }
     }
+    /* Netplay (ae_np): chat send. */
     int ae_np_chat_send(void*, const char* text) {
         char line[256];
         ae_np_chat_track_room();
@@ -10156,11 +10353,13 @@ namespace {
         }
         return psx_lobby_send_chat(line);
     }
+    /* Netplay (ae_np): chat count. */
     int ae_np_chat_count(void*) {
         ae_np_chat_track_room();
         if (g_lnch_hosting_lan || g_lnch_joined_lan) return g_lnch_lan_chat_count;
         return psx_lobby_chat_count();
     }
+    /* Netplay (ae_np): chat get. */
     int ae_np_chat_get(void*, int index, RecompLauncherCNetplayChatMessage* out) {
         if (!out) return 0;
         std::memset(out, 0, sizeof(*out));
@@ -10193,10 +10392,12 @@ namespace {
         if (!line[0]) return -1;
         return psx_lobby_send_server_chat(line);
     }
+    /* Netplay (ae_np): server chat count. */
     int ae_np_server_chat_count(void*) {
         if (g_lnch_hosting_lan || g_lnch_joined_lan) return 0;
         return psx_lobby_server_chat_count();
     }
+    /* Netplay (ae_np): server chat get. */
     int ae_np_server_chat_get(void*, int index, RecompLauncherCNetplayChatMessage* out) {
         if (!out) return 0;
         std::memset(out, 0, sizeof(*out));
@@ -10209,6 +10410,7 @@ namespace {
         out->seq = msg.seq;
         return 1;
     }
+    /* Netplay (ae_np): guest memcard set. */
     int ae_np_guest_memcard_set(void*, int allow) {
         if (g_lnch_joined_lan) return -1;
         if (!g_lnch_hosting_lan && psx_lobby_in_lobby() && !psx_lobby_is_host())
@@ -10223,6 +10425,7 @@ namespace {
         return 0;
     }
 
+    /* Netplay (ae_np): input delay get. */
     int ae_np_input_delay_get(void*) {
         /* Online guests show host-authoritative match_caps. */
         if (!g_lnch_hosting_lan && !g_lnch_joined_lan) {
@@ -10236,6 +10439,7 @@ namespace {
         }
         return g_lnch_lobby_input_delay;
     }
+    /* Netplay (ae_np): input delay set. */
     int ae_np_input_delay_set(void*, int delay_frames) {
         if (delay_frames < 2) delay_frames = 2;
         if (delay_frames > 20) delay_frames = 20;
@@ -10243,6 +10447,7 @@ namespace {
         ae_np_push_match_caps(nullptr);
         return 0;
     }
+    /* Netplay (ae_np): force input relay get. */
     int ae_np_force_input_relay_get(void*) {
         if (!g_lnch_hosting_lan && !g_lnch_joined_lan) {
             const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
@@ -10251,11 +10456,13 @@ namespace {
         }
         return g_lnch_force_input_relay;
     }
+    /* Netplay (ae_np): force input relay set. */
     int ae_np_force_input_relay_set(void*, int force) {
         g_lnch_force_input_relay = force ? 1 : 0;
         ae_np_push_match_caps(nullptr);
         return 0;
     }
+    /* Netplay (ae_np): force turn get. */
     int ae_np_force_turn_get(void*) {
         if (!g_lnch_hosting_lan && !g_lnch_joined_lan) {
             const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
@@ -10264,6 +10471,7 @@ namespace {
         }
         return g_lnch_force_turn;
     }
+    /* Netplay (ae_np): force turn set. */
     int ae_np_force_turn_set(void*, int force) {
         if (g_lnch_hosting_lan || g_lnch_joined_lan)
             return 0; /* LAN/Direct IP — no online delay-floor hint */
@@ -10272,6 +10480,7 @@ namespace {
         ae_np_push_match_caps(nullptr);
         return 0;
     }
+    /* Netplay (ae_np): rollback get. */
     int ae_np_rollback_get(void*) {
         if (!g_lnch_hosting_lan && !g_lnch_joined_lan) {
             const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
@@ -10280,11 +10489,13 @@ namespace {
         }
         return g_lnch_rollback;
     }
+    /* Netplay (ae_np): rollback set. */
     int ae_np_rollback_set(void*, int enable) {
         g_lnch_rollback = enable ? 1 : 0;
         ae_np_push_match_caps(nullptr);
         return 0;
     }
+    /* Netplay (ae_np): multitap analog get. */
     int ae_np_multitap_analog_get(void*) {
         if (g_force_digital_pads)
             return 0;
@@ -10295,6 +10506,7 @@ namespace {
         }
         return g_lnch_multitap_analog;
     }
+    /* Netplay (ae_np): multitap analog set. */
     int ae_np_multitap_analog_set(void*, int enable) {
         if (g_force_digital_pads)
             enable = 0;
@@ -10302,6 +10514,7 @@ namespace {
         ae_np_push_match_caps(nullptr);
         return 0;
     }
+    /* Netplay (ae_np): input prediction get. */
     int ae_np_input_prediction_get(void*) {
         if (!g_lnch_hosting_lan && !g_lnch_joined_lan) {
             const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
@@ -10314,6 +10527,7 @@ namespace {
         }
         return g_lnch_lobby_input_prediction;
     }
+    /* Netplay (ae_np): input prediction set. */
     int ae_np_input_prediction_set(void*, int prediction_frames) {
         if (prediction_frames < 2) prediction_frames = 2;
         if (prediction_frames > 16) prediction_frames = 16;
@@ -10338,10 +10552,12 @@ namespace {
         return 0;
     }
 
+    /* Netplay (ae_np): default url. */
     const char* ae_np_default_url(void*) {
         return g_lnch_lobby_url.empty() ? psx_lobby_default_url() : g_lnch_lobby_url.c_str();
     }
 
+    /* Netplay (ae_np): save identity. */
     void ae_np_save_identity(const char* player_name, const char* lobby_url) {
         if (g_lnch_settings_path.empty()) return;
         PSXRecompV4::UserSettings settings =
@@ -10358,11 +10574,13 @@ namespace {
         PSXRecompV4::save_user_settings(g_lnch_settings_path, settings);
     }
 
+    /* Netplay (ae_np): set lobby url. */
     void ae_np_set_lobby_url(void*, const char* url) {
         g_lnch_lobby_url = url && url[0] ? url : psx_lobby_default_url();
         ae_np_save_identity(nullptr, g_lnch_lobby_url.c_str());
     }
 
+    /* Netplay (ae_np): connect. */
     int ae_np_connect(void*) {
         psx_lobby_set_game_identity(lnch_netplay_lobby_game_name().c_str(), psx_lobby_game_version());
         psx_lobby_set_disc_fp(g_session_disc_fp.c_str());
@@ -10375,10 +10593,12 @@ namespace {
         return rc;
     }
 
+    /* Netplay (ae_np): connected. */
     int ae_np_connected(void*) {
         return psx_lobby_connected();
     }
 
+    /* Netplay (ae_np): lan udp pump. */
     static void ae_np_lan_udp_pump(void) {
         if (!g_lnch_hosting_lan && !(g_lnch_joined_lan && g_lnch_remote_lan))
             return;
@@ -10499,6 +10719,7 @@ namespace {
                 AeLanSlotMemcard mc_offer{};
                 (void)ae_np_parse_lan_memcard_tail(bios_tail, &mc_offer);
                 if (bios_tail &&
+                    /* Netplay (ae_np): parse lan bios tail. */
                     ae_np_parse_lan_bios_tail(bios_tail, &prefer_open, &can_open,
                                               &can_scph) == 0) {
                     ae_np_lan_store_slot_bios(slot, prefer_open, can_open, can_scph);
@@ -10635,6 +10856,7 @@ namespace {
             }
 
             if ((std::strncmp(buf, "MOTK3 LEAVE\n", 12) == 0 ||
+                 /* Strncmp. */
                  std::strncmp(buf, "MOTK1 LEAVE\n", 12) == 0) &&
                 g_lnch_hosting_lan) {
                 const bool by_id = std::strncmp(buf, "MOTK3 LEAVE\n", 12) == 0;
@@ -10933,10 +11155,12 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): connecting. */
     int ae_np_connecting(void*) {
         return psx_lobby_connecting();
     }
 
+    /* Netplay (ae_np): pump. */
     void ae_np_pump(void*) {
         psx_lobby_pump();
         ae_np_lan_browse_pump();
@@ -10967,24 +11191,29 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): set player name. */
     void ae_np_set_player_name(void*, const char* name) {
         psx_lobby_set_display_name(name && name[0] ? name : "Player");
         if (name && name[0]) ae_np_save_identity(name, nullptr);
     }
 
+    /* Netplay (ae_np): player name. */
     const char* ae_np_player_name(void*) {
         return psx_lobby_display_name();
     }
 
+    /* Netplay (ae_np): request list. */
     void ae_np_request_list(void*) {
         ae_np_lan_rescan();
         psx_lobby_request_list();
     }
 
+    /* Netplay (ae_np): list count. */
     int ae_np_list_count(void*) {
         return psx_lobby_list_count() + ae_np_lan_list_extra_count();
     }
 
+    /* Netplay (ae_np): list get. */
     int ae_np_list_get(void*, int index, RecompLauncherCNetplayLobby* out) {
         if (!out) return 0;
         const int remote_count = psx_lobby_list_count();
@@ -11019,6 +11248,7 @@ namespace {
     int ae_np_online_count(void*) {
         return psx_lobby_connected() ? psx_lobby_online_count() : 0;
     }
+    /* Netplay (ae_np): online get. */
     int ae_np_online_get(void*, int index, RecompLauncherCNetplayOnlinePlayer* out) {
         if (!out) return 0;
         PsxLobbyOnlinePlayer p{};
@@ -11037,6 +11267,7 @@ namespace {
         return 1;
     }
 
+    /* Netplay (ae_np): external ip. */
     int ae_np_external_ip(void*, char* out, size_t out_len) {
         if (!out || out_len == 0) return 0;
 #ifdef _WIN32
@@ -11191,6 +11422,7 @@ namespace {
 #endif
     }
 
+    /* Netplay (ae_np): local address get. */
     int ae_np_local_address_get(void*, int index,
                                 RecompLauncherCNetplayLocalAddress* out) {
         if (!out || index < 0) return 0;
@@ -11202,6 +11434,7 @@ namespace {
         return out->address[0] ? 1 : 0;
     }
 
+    /* Netplay (ae_np): local ip. */
     int ae_np_local_ip(void*, char* out, size_t out_len) {
         if (!out || out_len == 0) return 0;
         std::vector<RecompLauncherCNetplayLocalAddress> addrs;
@@ -11220,6 +11453,7 @@ namespace {
         return g_lnch_hosting_lan || g_lnch_joined_lan;
     }
 
+    /* Netplay (ae_np): use ws members. */
     static bool ae_np_use_ws_members(void) {
         return !ae_np_use_lan_members() && psx_lobby_in_lobby() != 0;
     }
@@ -11425,16 +11659,19 @@ namespace {
         return psx_lobby_join(lobby_id, password ? password : "", bind);
     }
 
+    /* Netplay (ae_np): last error. */
     const char* ae_np_last_error(void*) {
         const PsxLobbyJoinInfo* ji = psx_lobby_join_info();
         return (ji && ji->last_error[0]) ? ji->last_error : nullptr;
     }
 
+    /* Netplay (ae_np): clear last error. */
     void ae_np_clear_last_error(void*) {
         PsxLobbyJoinInfo* ji = const_cast<PsxLobbyJoinInfo*>(psx_lobby_join_info());
         if (ji) ji->last_error[0] = '\0';
     }
 
+    /* Netplay (ae_np): leave. */
     int ae_np_leave(void*) {
         if (g_lnch_hosting_lan) {
             for (int i = 0; i < kAeLanMaxSlots; ++i) {
@@ -11493,6 +11730,7 @@ namespace {
         g_lnch_pending_direct_launch = {};
         return psx_lobby_leave();
     }
+    /* Netplay (ae_np): in lobby. */
     int ae_np_in_lobby(void*) {
         ae_np_poll_lan_joiner_still_seated();
         if (g_lnch_hosting_lan) {
@@ -11502,11 +11740,13 @@ namespace {
         if (g_lnch_joined_lan) return 1;
         return psx_lobby_in_lobby();
     }
+    /* Netplay (ae_np): is host. */
     int ae_np_is_host(void*) {
         if (ae_np_use_lan_members()) return g_lnch_hosting_lan ? 1 : 0;
         if (ae_np_use_ws_members()) return psx_lobby_is_host();
         return psx_lobby_is_host();
     }
+    /* Netplay (ae_np): member count. */
     int ae_np_member_count(void*) {
         if (ae_np_use_ws_members()) {
             const int n = psx_lobby_member_count();
@@ -11528,26 +11768,33 @@ namespace {
      * reports no gallery and the UI's spectator section stays hidden there --
      * a spectator that is merely asked not to send is a promise, not a
      * spectator. */
+    /* Netplay (ae_np): allow spectators get. */
     int ae_np_allow_spectators_get(void*) {
         return psx_lobby_allow_spectators_pref();
     }
+    /* Netplay (ae_np): allow spectators set. */
     int ae_np_allow_spectators_set(void*, int allow) {
         if (!ae_np_use_ws_members()) return -1;
         psx_lobby_set_allow_spectators(allow);
         return 0;
     }
+    /* Netplay (ae_np): lobby allow spectators. */
     int ae_np_lobby_allow_spectators(void*) {
         return ae_np_use_ws_members() ? psx_lobby_allow_spectators() : 0;
     }
+    /* Netplay (ae_np): lobby max spectators. */
     int ae_np_lobby_max_spectators(void*) {
         return ae_np_use_ws_members() ? psx_lobby_max_spectators() : 0;
     }
+    /* Netplay (ae_np): lobby spectator count. */
     int ae_np_lobby_spectator_count(void*) {
         return ae_np_use_ws_members() ? psx_lobby_spectator_count() : 0;
     }
+    /* Netplay (ae_np): local is spectator. */
     int ae_np_local_is_spectator(void*) {
         return ae_np_use_ws_members() ? psx_lobby_local_is_spectator() : 0;
     }
+    /* Netplay (ae_np): spectator slot. */
     int ae_np_spectator_slot(void*, int index) {
         return ae_np_use_ws_members() ? psx_lobby_spectator_slot(index) : -1;
     }
@@ -11560,10 +11807,12 @@ namespace {
         const PsxLobbyMatchCaps* caps = psx_lobby_match_caps();
         return (caps && caps->valid && caps->plan_count > 0) ? caps : nullptr;
     }
+    /* Netplay (ae_np): lobby mods count. */
     int ae_np_lobby_mods_count(void*) {
         const PsxLobbyMatchCaps* caps = ae_np_plan_caps();
         return caps ? caps->plan_count : 0;
     }
+    /* Netplay (ae_np): lobby mods get. */
     int ae_np_lobby_mods_get(void*, int index, RecompLauncherCNetplayLobbyMod* out) {
         const PsxLobbyMatchCaps* caps = ae_np_plan_caps();
         if (!out || !caps || index < 0 || index >= caps->plan_count) return 0;
@@ -11583,6 +11832,7 @@ namespace {
         std::snprintf(out->options, sizeof(out->options), "%s", mod.config);
         return 1;
     }
+    /* Netplay (ae_np): lobby mods missing. */
     int ae_np_lobby_mods_missing(void*) {
         const PsxLobbyMatchCaps* caps = ae_np_plan_caps();
         if (!caps) return 0;
@@ -11595,9 +11845,12 @@ namespace {
         }
         return missing;
     }
+    /* Netplay (ae_np): lobby mods can download. */
     int ae_np_lobby_mods_can_download(void*) { return 0; }
+    /* Netplay (ae_np): mod xfer progress. */
     int ae_np_mod_xfer_progress(void*) { return -1; }
 
+    /* Netplay (ae_np): member get. */
     int ae_np_member_get(void*, int index, RecompLauncherCNetplayMember* out) {
         if (!out) return 0;
         if (ae_np_use_ws_members()) {
@@ -11707,6 +11960,7 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): move member. */
     int ae_np_move_member(void*, int from_slot, int to_slot) {
         if (from_slot < 0 || to_slot < 0 || from_slot == to_slot) return -1;
         /* Any seat may trade with any other, the host's included: the lobby
@@ -11740,6 +11994,7 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): kick member. */
     int ae_np_kick_member(void*, int slot) {
         if (g_lnch_hosting_lan) {
             AeLanLobbyState state;
@@ -11767,14 +12022,18 @@ namespace {
         return -1;
     }
 
+    /* Netplay (ae_np): local ready. */
     int ae_np_local_ready(void*) { return psx_lobby_local_ready(); }
+    /* Netplay (ae_np): all ready. */
     int ae_np_all_ready(void*) { return psx_lobby_all_ready(); }
+    /* Netplay (ae_np): set ready. */
     int ae_np_set_ready(void*, int ready) {
         if (ready)
             ae_np_refresh_bios_offer_from_disk();
         return psx_lobby_set_ready(ready);
     }
 
+    /* Netplay (ae_np): request start. */
     int ae_np_request_start(void*, const RecompLauncherCSettings* settings) {
         if (g_lnch_hosting_lan) {
             AeLanLobbyState state;
@@ -11841,6 +12100,7 @@ namespace {
         return psx_lobby_request_start(&caps);
     }
 
+    /* Netplay (ae_np): launch pending. */
     int ae_np_launch_pending(void*) {
         if ((g_lnch_hosting_lan || g_lnch_joined_lan) &&
             !g_lnch_pending_direct_launch.enabled) {
@@ -11919,6 +12179,7 @@ namespace {
         }
         return g_lnch_pending_direct_launch.enabled || psx_lobby_launch_pending();
     }
+    /* Netplay (ae_np): clear launch pending. */
     void ae_np_clear_launch_pending(void*) {
         g_lnch_pending_direct_launch = {};
         psx_lobby_clear_launch_pending();
@@ -11951,10 +12212,12 @@ namespace {
         }
     }
 
+    /* Netplay (ae_np): lan endpoint cstr. */
     const char* ae_np_lan_endpoint_cstr(void) {
         return g_lnch_lan_endpoint.empty() ? nullptr : g_lnch_lan_endpoint.c_str();
     }
 
+    /* Netplay (ae_np): fill launch. */
     int ae_np_fill_launch(void*, RecompLauncherCNetplayLaunch* out) {
         if (!out) return 0;
         if (g_lnch_pending_direct_launch.enabled) {
@@ -12144,6 +12407,7 @@ namespace {
         "Fast-forward toggle",
     };
 
+    /* Ae rui set sidecar paths. */
     void ae_rui_set_sidecar_paths(const char* argv0) {
         const auto exe = exe_dir_from_argv(argv0 ? argv0 : "");
         g_rui_keybinds_path = (exe / "keybinds.ini").string();
@@ -13373,6 +13637,7 @@ int main(int argc, char** argv) {
     {
         std::string mod_error;
         if (!PSXRecompV4::mod_runtime_initialize(
+                /* Exe dir from argv. */
                 exe_dir_from_argv(argv[0]) / "mods", game_id,
                 game_entry_pc, text_guard_exe_path, &mod_error)) {
             std::fprintf(stderr, "psxrecomp: mods unavailable: %s\n",
@@ -13978,6 +14243,7 @@ int main(int argc, char** argv) {
                             resolve_bios_path(ls.bios_path, argv[0]);
                         std::error_code ec;
                         if (!resolved.empty() &&
+                            /* Exists. */
                             std::filesystem::exists(resolved, ec)) {
                             auto abs = std::filesystem::weakly_canonical(resolved, ec);
                             if (ec) abs = std::filesystem::absolute(resolved, ec);
@@ -16429,6 +16695,7 @@ soft_return_lobby:
                     ae_np_set_session_bios_token(caps->session_bios);
                 std::filesystem::path session_path;
                 if (g_lnch_session_bios[0] &&
+                    /* Resolve match session bios path. */
                     resolve_match_session_bios_path(
                         g_lnch_session_bios,
                         ls.bios_path[0] ? std::filesystem::path(ls.bios_path)
@@ -16462,6 +16729,7 @@ soft_return_lobby:
             {
                 std::string mod_error;
                 if (net_cfg.enabled &&
+                    /* Mod runtime netplay plan applied. */
                     PSXRecompV4::mod_runtime_netplay_plan_applied()) {
                     /* host netplay plan already staged by the launcher; keep it
                      * across the rematch */
