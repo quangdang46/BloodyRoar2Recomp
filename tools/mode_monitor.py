@@ -15,6 +15,7 @@ SECS = int(sys.argv[3]) if len(sys.argv) > 3 else 150
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF; UP=0xFFEF; SELECT=0xFFFE
 
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(40):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), 3); break
@@ -41,13 +42,16 @@ def cmd(c, timeout=8):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def press(btn, frames, slot=0):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 def state():
+    """Snapshot the scratchpad game-state block and return a dict of fields."""
     st = rd(0x1f800000, 0xa4)
     if len(st) < 0xa4: return None
     return {
@@ -60,18 +64,22 @@ def state():
     }
 
 def frame_no():
+    """Query the frame counter via the 'frame' debug command."""
     return cmd({"cmd": "frame"}, 5).get('frame')
 
 def freeze():
+    """Run freeze_check and keep the bail/call counters."""
     r = cmd({"cmd": "freeze_check", "window": 64}, 15)
     keep = {k: r.get(k) for k in ('bce_calls','pbd_calls','bce_phase','pbd_phase') if k in r}
     return keep
 
 def cdrom():
+    """Query cdrom_state and return the pending/reading/irq/last-sector fields."""
     r = cmd({"cmd": "cdrom_state"}, 10)
     return {k: r.get(k) for k in ('pending','reading','irq_flag','last_sector') if k in r}
 
 def dump_diag(tag):
+    """Collect registers/chain diagnostics under a tag."""
     out = {"tag": tag, "mode": MODE, "port": PORT, "t": time.time()}
     for name, c in [
         ("cdrom_state", {"cmd":"cdrom_state"}),

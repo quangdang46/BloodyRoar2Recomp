@@ -8,6 +8,7 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4382
 OUT  = sys.argv[2] if len(sys.argv) > 2 else "/tmp/diag_crash.jsonl"
 
 def cmd(c, timeout=6):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), timeout)
         s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout)
@@ -28,6 +29,7 @@ def cmd(c, timeout=6):
         return {'err': str(e)}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r['hex']) if r.get('ok') and r.get('hex') else b''
 

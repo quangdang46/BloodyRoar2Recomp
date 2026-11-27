@@ -2,6 +2,7 @@
 import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4890
 def cmd(c,timeout=10):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(80):
         try: s=socket.create_connection(('127.0.0.1',PORT),3); break
         except OSError: time.sleep(0.1)

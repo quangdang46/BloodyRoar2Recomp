@@ -7,6 +7,7 @@
 import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4371
 def cmd(c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(50):
         try: s=socket.create_connection(('127.0.0.1',PORT),10); break
         except OSError: time.sleep(0.2)
@@ -26,9 +27,12 @@ def cmd(c):
     try: return json.loads(b.split(b'\n')[0])
     except: return {}
 def rd_state(n=0x9d):
+    """Read scratchpad state bytes via read_scratch; returns bytes or b''."""
     r=cmd({"cmd":"read_scratch","offset":0,"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
-def press(btn,frames,slot): return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
+def press(btn,frames,slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF
 t0=time.time(); stage="title"; sent={}
 while time.time()-t0<240:

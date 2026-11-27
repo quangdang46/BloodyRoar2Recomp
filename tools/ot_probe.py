@@ -3,6 +3,7 @@
 import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 5250
 def cmd(c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s=socket.create_connection(('127.0.0.1',PORT),2); s.sendall((json.dumps(c)+'\n').encode()); s.settimeout(2); b=b''
         while True:
@@ -18,9 +19,12 @@ def cmd(c):
         except: return {}
     except Exception as e: return {'err':str(e)}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({'cmd':'read_ram','addr':hex(a),'len':hex(n)})
     return bytes.fromhex(r['hex']) if r.get('ok') and r.get('hex') else b''
-def w32(b,o): return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else None
+def w32(b,o):
+    """Read a 32-bit guest word at address a (None on failure)."""
+    return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else None
 t0=time.time()
 while time.time()-t0<160:
     st=rd(0x1f800000,0xa0)

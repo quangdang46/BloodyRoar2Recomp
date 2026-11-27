@@ -13,6 +13,7 @@ TOML = os.path.join(ROOT, "game_1pad.toml")
 OUTDIR = os.path.join(ROOT, "proof")
 
 def cmd(port, c, timeout=10):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', port), 3)
     except OSError:
@@ -36,10 +37,12 @@ def cmd(port, c, timeout=10):
         return {}
 
 def rd(port, a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd(port, {"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def u32(b, o):
+    """Extract a little-endian u32 at offset o (0 if short)."""
     return int.from_bytes(b[o:o+4], 'little') if len(b) >= o+4 else None
 
 def deref_chain(port):
@@ -65,6 +68,7 @@ def deref_chain(port):
     return out
 
 def dump_diag(port, tag):
+    """Collect registers/chain diagnostics under a tag."""
     d = {"tag": tag, "t": time.time(), "port": port}
     d["regs"] = cmd(port, {"cmd": "get_registers"}, 15)
     d["chain"] = deref_chain(port)
@@ -134,6 +138,7 @@ def arm(port):
     cmd(port, {"cmd": "gwatch", "addr": "0x80008FC0", "len": 32})
 
 def main():
+    """Entry point: run the watch/nav loop until timeout or exit condition."""
     ports = [int(x) for x in sys.argv[1:]] or list(range(9990, 9998))
     procs = {}
     mash = {}

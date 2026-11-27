@@ -50,6 +50,7 @@ START=0xfff7; CROSS=0xbfff; DOWN=0xffbf; UP=0xffdf
 LEFT=0xfeff; RIGHT=0xf7ff
 
 def cmd(c, tries=10, to=30):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(tries):
         try:
             s=socket.create_connection(('127.0.0.1',PORT),3)
@@ -70,19 +71,23 @@ def cmd(c, tries=10, to=30):
     return {}
 
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":hex(n)})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def st():
+    """Compact state tuple (gs, dat1, sig bytes) from the scratchpad header."""
     b=rd(0x1f800000,0xa0)
     if len(b)<0xa0: return None
     return (b[0],b[1],b[0x9b],b[0x9c])
 
 def press(btn,frames,slot=0):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd":"press","slot":slot,"buttons":btn&0xffff,
                 "frames":frames},tries=12,to=90)
 
 def frame_no():
+    """Query the frame counter via the 'frame' debug command."""
     return cmd({"cmd":"frame"},tries=3,to=15).get('frame')
 
 T0=time.time()

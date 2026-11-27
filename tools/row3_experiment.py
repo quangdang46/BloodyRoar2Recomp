@@ -12,6 +12,7 @@ START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF; UP=0xFFEF; SELECT=0xFFFE
 L1=0xFFEF  # placeholder; raw map: bit11=L1? we'll probe
 
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(40):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), 3); break
@@ -38,19 +39,24 @@ def cmd(c, timeout=8):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def press(btn, frames, slot=0):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 def setin(btn, slot=0):
+    """set_input helper: hold `buttons` on `slot`."""
     return cmd({"cmd": "set_input", "slot": slot, "buttons": btn & 0xFFFF})
 
 def clearin(slot=0):
+    """clear_input helper for `slot`."""
     return cmd({"cmd": "clear_input", "slot": slot})
 
 def state():
+    """Snapshot the scratchpad game-state block and return a dict of fields."""
     st = rd(0x1f800000, 0xb8)
     if len(st) < 0xb8: return None
     return {
@@ -65,9 +71,11 @@ def state():
     }
 
 def frame_no():
+    """Query the frame counter via the 'frame' debug command."""
     return cmd({"cmd": "frame"}, 5).get('frame')
 
 def log(*a):
+    """Append a timestamped line to the log file."""
     print("t=%.0f" % (time.time()-t0), *a, flush=True)
 
 t0 = time.time()

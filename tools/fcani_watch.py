@@ -3,6 +3,7 @@
 import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4890
 def cmd(c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(60):
         try: s=socket.create_connection(('127.0.0.1',PORT),10); break
         except OSError: time.sleep(0.2)
@@ -22,10 +23,15 @@ def cmd(c):
     try: return json.loads(b.split(b'\n')[0])
     except: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
-def u32(b,o): return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else 0
-def u16(b,o): return int.from_bytes(b[o:o+2],'little') if len(b)>=o+2 else 0
+def u32(b,o):
+    """Extract a little-endian u32 at offset o (0 if short)."""
+    return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else 0
+def u16(b,o):
+    """Extract a little-endian u16 at offset o (0 if short)."""
+    return int.from_bytes(b[o:o+2],'little') if len(b)>=o+2 else 0
 
 t0=time.time(); last=None
 while time.time()-t0<300:

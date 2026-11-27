@@ -8,6 +8,7 @@ import socket, json, struct, sys, time, os
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5370
 
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(40):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), 3); break
@@ -34,12 +35,16 @@ def cmd(c, timeout=8):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
-def press(btn, frames, slot): return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
+def press(btn, frames, slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 def bioscount(idx):
+    """Dump the BIOS-call counters table and print per-table counts."""
     r = cmd({"cmd": "bioscall_dump", "count": 400}, 15)
     for e in (r.get('counts') or []):
         if e.get('table') == '0x000000B0' and e.get('index') == idx:
@@ -47,10 +52,12 @@ def bioscount(idx):
     return 0
 
 def last_sector_frame():
+    """Return the frame number of the last CD sector via cdrom_state."""
     r = cmd({"cmd": "cdrom_state"}, 10)
     return (r.get('last_sector') or {}).get('frame')
 
 def dump_wedge(tag):
+    """Dump the wedge-state command set (irq_state, etc.) under a tag."""
     out = {"tag": tag, "t": time.time()}
     for name, c in [
         ("irq_state", {"cmd":"irq_state"}),

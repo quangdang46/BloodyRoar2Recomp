@@ -16,6 +16,7 @@ CMDS = [
 ]
 
 def cmd(c, timeout=4):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(("127.0.0.1", PORT), timeout)
         s.sendall((json.dumps(c) + "\n").encode())
@@ -41,6 +42,7 @@ def cmd(c, timeout=4):
         return {"err": str(e)}
 
 def main():
+    """Entry point: run the watch/nav loop until timeout or exit condition."""
     out = open(OUT, "a", buffering=1)
     n = 0
     while True:

@@ -13,6 +13,7 @@ DIAG = ["cdrom_state","dma_state","irq_state","vblank_rate","spu_ta",
         "get_registers","cdrom_trace_dump"]
 
 def cmd(c, timeout=5):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(("127.0.0.1", PORT), timeout)
         s.sendall((json.dumps(c) + "\n").encode())
@@ -33,6 +34,7 @@ def cmd(c, timeout=5):
         return {"err": str(e)}
 
 def frame_no():
+    """Query the frame counter via the 'frame' debug command."""
     r = cmd({"cmd":"frame"})
     # frame reply shape unknown; try common keys
     for k in ("frame","frame_count","count","value"):
@@ -42,6 +44,7 @@ def frame_no():
     return r
 
 def main():
+    """Entry point: run the watch/nav loop until timeout or exit condition."""
     last = None; same = 0; dumped = False
     out = open(OUT, "w", buffering=1)
     while True:

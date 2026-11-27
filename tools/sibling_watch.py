@@ -4,11 +4,13 @@
 import socket,json,time,sys
 PORTS=[int(x) for x in sys.argv[1:]] or [4397,4401,4404,4405,4520]
 def conn(p):
+    """Open a TCP connection to the debug server, retrying briefly."""
     for _ in range(30):
         try: return socket.create_connection(('127.0.0.1',p),5)
         except OSError: time.sleep(0.3)
     return None
 def cmd(p,c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     s=conn(p)
     if not s: return {}
     try:
@@ -26,6 +28,7 @@ def cmd(p,c):
     try: return json.loads(b.split(b'\n')[0])
     except: return {}
 def rd(p,a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd(p,{"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
 armed={}

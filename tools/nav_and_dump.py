@@ -5,6 +5,7 @@ import socket, json, struct, sys, time
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5399
 
 def cmd(c, timeout=20):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     s = socket.create_connection(('127.0.0.1', PORT), 5)
     s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout); b = b''
     while True:
@@ -24,18 +25,22 @@ def cmd(c, timeout=20):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": hex(n)})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def w(b, o):
+    """Extract a little-endian u32 word at offset o (0 if short)."""
     return struct.unpack('<I', b[o:o+4])[0] if len(b) >= o + 4 else 0
 
 def press(btn, frames, slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 START = 0xFFF7; CROSS = 0xBFFF; DOWN = 0xFFBF
 
 def dump(tag):
+    """Dump scratchpad/pad diagnostic bytes."""
     print('=== DUMP %s ===' % tag, flush=True)
     st = rd(0x1f800000, 0x20)
     if len(st) < 0x20:
@@ -58,6 +63,7 @@ def dump(tag):
         print('%s +207c=%08x' % (name, cell))
         # follow +207c chain
         def follow(head24, limit=80):
+            """Follow a pointer chain from head24, returning visited nodes."""
             cur = head24 & 0xffffff
             seen = set(); out = []
             for _ in range(limit):

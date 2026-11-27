@@ -7,6 +7,7 @@ PORT=int(sys.argv[3]) if len(sys.argv)>3 else 4371
 ADDR=int(sys.argv[1],16)
 HITS=int(sys.argv[2]) if len(sys.argv)>2 else 3
 def cmd(c,timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(60):
         try: s=socket.create_connection(('127.0.0.1',PORT),timeout); break
         except OSError: time.sleep(0.2)

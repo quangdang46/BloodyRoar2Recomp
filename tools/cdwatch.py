@@ -6,6 +6,7 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5340
 OUT = "proof/cdwatch_%d.jsonl" % PORT
 
 def cmd(c, timeout=5):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), 2)
         s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout); b = b''
@@ -26,6 +27,7 @@ def cmd(c, timeout=5):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 

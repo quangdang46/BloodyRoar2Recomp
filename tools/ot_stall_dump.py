@@ -5,6 +5,7 @@ import socket, json, struct, sys, time
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5417
 
 def cmd(c, timeout=20):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     s = socket.create_connection(('127.0.0.1', PORT), 5)
     s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout); b = b''
     while True:
@@ -24,13 +25,16 @@ def cmd(c, timeout=20):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": hex(n)})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def w(b, o):
+    """Extract a little-endian u32 word at offset o (0 if short)."""
     return struct.unpack('<I', b[o:o+4])[0] if len(b) >= o + 4 else 0
 
 def follow(head24, limit=100):
+    """Follow a pointer chain from head24, returning visited nodes."""
     cur = head24 & 0xffffff
     seen = set(); out = []
     for _ in range(limit):
@@ -47,6 +51,7 @@ def follow(head24, limit=100):
     return out, cur
 
 def dump(tag):
+    """Dump scratchpad/pad diagnostic bytes."""
     print('=== DUMP %s ===' % tag, flush=True)
     st = rd(0x1f800000, 0x20)
     if len(st) < 0x20:

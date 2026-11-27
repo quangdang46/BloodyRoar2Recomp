@@ -13,6 +13,7 @@ EXE = ROOT + "/build/BloodyRoar2_Recompiled"
 DISC = ROOT + "/disc/Bloody Roar 2 - Bringer of the New Age (Europe).cue"
 
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), 3)
     except OSError:
@@ -31,12 +32,14 @@ def cmd(c, timeout=8):
         return {}
 
 def rd8(addr):
+    """read_ram helper for a single byte; returns int or None."""
     r = cmd({"cmd": "read_ram", "addr": hex(addr), "len": 1})
     if r.get("ok") and r.get("hex"):
         return int(r["hex"], 16)
     return None
 
 def alive(pid):
+    """Return True if pid is alive (kill(pid,0) probe)."""
     try: os.kill(pid, 0); return True
     except OSError: return False
 
