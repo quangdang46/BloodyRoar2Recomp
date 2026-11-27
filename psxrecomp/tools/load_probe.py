@@ -146,6 +146,7 @@ def run(c, secs, tick, out):
 
     now_t = time.monotonic()
     for b in bursts.get("bursts", []):
+        """Interpolated series value at time t for a block.."""
         ta, tb = frame_to_t(b["start_frame"]), frame_to_t(b["end_frame"])
         if ta is None or tb is None:
             continue  # burst outside the monitored span

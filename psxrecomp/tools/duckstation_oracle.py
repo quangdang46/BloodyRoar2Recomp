@@ -118,6 +118,7 @@ class OracleError(RuntimeError):
 # patches modifying the build system. We do not patch it. We build in an
 # environment it supports instead -- which is what --container does.
 def refused_environment() -> Optional[str]:
+    """True if the container runtime is refused here.."""
     osr = Path("/etc/os-release")
     if osr.is_file():
         try:
@@ -136,6 +137,7 @@ def refused_environment() -> Optional[str]:
 
 
 def container_engine() -> Optional[str]:
+    """First available container engine (podman/docker).."""
     for engine in ("podman", "docker"):
         if which(engine):
             return engine
@@ -143,15 +145,18 @@ def container_engine() -> Optional[str]:
 
 
 def image_tag(pin: Dict[str, Any]) -> str:
+    """Docker tag for the pinned oracle image.."""
     return f"localhost/retcomm/duckstation-oracle:{pin['upstream_base'][:12]}"
 
 
 def image_exists(engine: str, tag: str) -> bool:
+    """True if the oracle image is present locally.."""
     rc, _ = capture([engine, "image", "exists", tag])
     return rc == 0
 
 
 def log(msg: str) -> None:
+    """Print an [oracle] log line.."""
     print(f"[oracle] {msg}", flush=True)
 
 
@@ -181,6 +186,7 @@ def data_root() -> Path:
 
 
 def oracle_root() -> Path:
+    """Oracle install root from env or default.."""
     env = os.environ.get("RETCOMM_ORACLE_DIR")
     if env:
         return Path(env).expanduser()
@@ -188,15 +194,18 @@ def oracle_root() -> Path:
 
 
 def download_cache() -> Path:
+    """Download cache dir under data root.."""
     return data_root() / "downloads"
 
 
 def exe_name() -> str:
+    """Oracle binary name for this platform.."""
     return "duckstation-qt.exe" if sys.platform == "win32" else "duckstation-qt"
 
 
 class Layout:
     def __init__(self, root: Optional[Path] = None):
+        """Layout ctor: src/build/app dirs.."""
         self.root = root or oracle_root()
         self.src = self.root / "src"
         self.build = self.root / "build"
@@ -207,19 +216,23 @@ class Layout:
 
     @property
     def binary(self) -> Path:
+        """Path to the installed oracle binary.."""
         return self.app / exe_name()
 
     @property
     def launcher(self) -> Path:
+        """Path to the run-oracle launcher script.."""
         return self.app / ("run-oracle.cmd" if sys.platform == "win32"
                            else "run-oracle")
 
     @property
     def built_binary(self) -> Path:
+        """Path to the freshly built binary.."""
         return self.build / "bin" / exe_name()
 
 
 def load_pin() -> Dict[str, Any]:
+    """Load the pinned upstream manifest.."""
     if not PIN_PATH.is_file():
         raise OracleError(f"missing pin file: {PIN_PATH}")
     with open(PIN_PATH, "r", encoding="utf-8") as f:
@@ -232,6 +245,7 @@ def load_pin() -> Dict[str, Any]:
 
 def run(cmd: List[str], cwd: Optional[Path] = None, env: Optional[Dict[str, str]] = None,
         check: bool = True, quiet: bool = False) -> int:
+    """Run a command, streaming output.."""
     if not quiet:
         log("$ " + " ".join(str(c) for c in cmd))
     proc = subprocess.run([str(c) for c in cmd], cwd=str(cwd) if cwd else None,
@@ -242,16 +256,19 @@ def run(cmd: List[str], cwd: Optional[Path] = None, env: Optional[Dict[str, str]
 
 
 def capture(cmd: List[str], cwd: Optional[Path] = None) -> Tuple[int, str]:
+    """Run a command capturing stdout/stderr.."""
     proc = subprocess.run([str(c) for c in cmd], cwd=str(cwd) if cwd else None,
                           capture_output=True, text=True)
     return proc.returncode, (proc.stdout + proc.stderr).strip()
 
 
 def which(name: str) -> Optional[str]:
+    """shutil.which wrapper.."""
     return shutil.which(name)
 
 
 def distro_id() -> str:
+    """Host distro id from /etc/os-release.."""
     try:
         for line in Path("/etc/os-release").read_text().splitlines():
             if line.startswith("ID_LIKE="):
@@ -285,6 +302,7 @@ def pick_compilers(cc: Optional[str], cxx: Optional[str]) -> Tuple[str, str, Opt
 
 
 def doctor(args: argparse.Namespace) -> int:
+    """doctor subcommand: check install health.."""
     lay = Layout(Path(args.root) if args.root else None)
     ok = True
     print(f"install root : {lay.root}")
@@ -367,10 +385,12 @@ def doctor(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 def git_repo_ok(path: Path) -> bool:
+    """True if path looks like a git checkout.."""
     return (path / ".git").exists()
 
 
 def fetch_source(lay: Layout, pin: Dict[str, Any], force: bool = False) -> None:
+    """Clone/checkout the pinned DuckStation source.."""
     url = pin["upstream_url"]
     base = pin["upstream_base"]
     lay.root.mkdir(parents=True, exist_ok=True)
@@ -412,6 +432,7 @@ def deps_platform() -> Tuple[str, str]:
 
 
 def expected_sha(src: Path, archive: str) -> Optional[str]:
+    """Expected dep archive SHA from PREBUILT-SHA256SUMS.."""
     sums = src / "dep" / "PREBUILT-SHA256SUMS"
     if not sums.is_file():
         return None
@@ -423,6 +444,7 @@ def expected_sha(src: Path, archive: str) -> Optional[str]:
 
 
 def sha256_file(path: Path) -> str:
+    """Streaming SHA256 hex digest of a file.."""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
@@ -431,6 +453,7 @@ def sha256_file(path: Path) -> str:
 
 
 def fetch_deps(lay: Layout, force: bool = False) -> None:
+    """Download and verify pinned prebuilt deps.."""
     archive, dirname = deps_platform()
     version_file = lay.src / "dep" / "PREBUILT-VERSION"
     if not version_file.is_file():
@@ -495,6 +518,7 @@ def fetch_deps(lay: Layout, force: bool = False) -> None:
 
 
 def apply_patch(lay: Layout, pin: Dict[str, Any]) -> None:
+    """Apply the pinned oracle patch to the source.."""
     patch = PATCH_DIR / pin["patch"]
     if not patch.is_file():
         raise OracleError(f"missing oracle patch: {patch}")
@@ -513,6 +537,7 @@ def apply_patch(lay: Layout, pin: Dict[str, Any]) -> None:
 
 
 def cmd_setup(args: argparse.Namespace) -> int:
+    """setup subcommand: fetch source+deps+patch.."""
     lay = Layout(Path(args.root) if args.root else None)
     pin = load_pin()
     fetch_source(lay, pin, force=args.force)
@@ -528,6 +553,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 def build_image(lay: Layout, pin: Dict[str, Any], engine: str, force: bool = False) -> str:
+    """Build/pull the containerized builder image.."""
     tag = image_tag(pin)
     if image_exists(engine, tag) and not force:
         log(f"builder image present: {tag}")
@@ -551,6 +577,7 @@ def build_image(lay: Layout, pin: Dict[str, Any], engine: str, force: bool = Fal
 
 def in_container(engine: str, tag: str, lay: Layout, script: str,
                  env: Optional[Dict[str, str]] = None) -> None:
+    """Container run prefix for build commands.."""
     cmd = [engine, "run", "--rm",
            "-v", f"{lay.root}:/oracle",
            "-w", "/oracle"]
@@ -561,6 +588,7 @@ def in_container(engine: str, tag: str, lay: Layout, script: str,
 
 
 def cmd_image(args: argparse.Namespace) -> int:
+    """image subcommand: build the oracle docker image.."""
     lay = Layout(Path(args.root) if args.root else None)
     pin = load_pin()
     engine = container_engine()
@@ -576,6 +604,7 @@ def cmd_image(args: argparse.Namespace) -> int:
 
 def cmake_args(lay: Layout, args: argparse.Namespace, cc: str, cxx: str,
                linker: Optional[str], src: str, build: str) -> List[str]:
+    """CMake configure args for the oracle build.."""
     cfg = ["cmake", "-S", src, "-B", build, "-G", "Ninja",
            "-DCMAKE_BUILD_TYPE=Release",
            f"-DCMAKE_C_COMPILER={cc}", f"-DCMAKE_CXX_COMPILER={cxx}"]
@@ -596,6 +625,7 @@ def cmake_args(lay: Layout, args: argparse.Namespace, cc: str, cxx: str,
 
 
 def cmd_build(args: argparse.Namespace) -> int:
+    """build subcommand: compile the oracle.."""
     lay = Layout(Path(args.root) if args.root else None)
     pin = load_pin()
     if not (lay.src / "CMakeLists.txt").is_file():
@@ -725,6 +755,7 @@ def bundle_dirs(lay: Layout) -> List[Path]:
 
 
 def write_launcher(lay: Layout) -> None:
+    """Write the run-oracle launcher script.."""
     if sys.platform == "win32":
         lay.launcher.write_text(
             "@echo off\r\nsetlocal\r\n"
@@ -792,6 +823,7 @@ def seed_settings(lay: Layout, timeout: float = 20.0) -> None:
 
 
 def cmd_install(args: argparse.Namespace) -> int:
+    """install subcommand: stage binary+manifest.."""
     lay = Layout(Path(args.root) if args.root else None)
     pin = load_pin()
     if not lay.built_binary.is_file():
@@ -886,6 +918,7 @@ def cmd_install(args: argparse.Namespace) -> int:
 def write_manifest(lay: Layout, pin: Dict[str, Any], stage: str,
                    bios: Optional[str] = None,
                    container: Optional[bool] = None) -> None:
+    """Write/merge the oracle manifest JSON.."""
     doc: Dict[str, Any] = {}
     if lay.manifest.is_file():
         try:
@@ -914,6 +947,7 @@ def write_manifest(lay: Layout, pin: Dict[str, Any], stage: str,
 
 
 def port_open(port: int, host: str = "127.0.0.1", timeout: float = 1.0) -> bool:
+    """True if a TCP port accepts connections.."""
     try:
         with socket.create_connection((host, port), timeout=timeout):
             return True
@@ -922,6 +956,7 @@ def port_open(port: int, host: str = "127.0.0.1", timeout: float = 1.0) -> bool:
 
 
 def oracle_ping(port: int, timeout: float = 3.0) -> Optional[Dict[str, Any]]:
+    """Ping the oracle debug server.."""
     try:
         s = socket.create_connection(("127.0.0.1", port), timeout=timeout)
     except OSError:
@@ -942,6 +977,7 @@ def oracle_ping(port: int, timeout: float = 3.0) -> Optional[Dict[str, Any]]:
 
 
 def state(lay: Layout) -> Dict[str, str]:
+    """Collect oracle status state dict.."""
     pin = load_pin()
     port = int(pin.get("oracle_port", 4371))
     out = {
@@ -1023,6 +1059,7 @@ def status_doc(lay: Layout) -> Dict[str, Any]:
 
 
 def cmd_status(args: argparse.Namespace) -> int:
+    """status subcommand: print oracle state.."""
     lay = Layout(Path(args.root) if args.root else None)
     if args.json:
         print(json.dumps(status_doc(lay), indent=1))
@@ -1041,6 +1078,7 @@ def cmd_status(args: argparse.Namespace) -> int:
 
 
 def cmd_path(args: argparse.Namespace) -> int:
+    """path subcommand: print oracle paths.."""
     lay = Layout(Path(args.root) if args.root else None)
     print(lay.binary if args.binary else lay.root)
     return 0
@@ -1051,6 +1089,7 @@ def cmd_path(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 def cmd_start(args: argparse.Namespace) -> int:
+    """start subcommand: launch the oracle.."""
     lay = Layout(Path(args.root) if args.root else None)
     pin = load_pin()
     port = int(args.port or pin.get("oracle_port", 4371))
@@ -1108,6 +1147,7 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 
 def cmd_stop(args: argparse.Namespace) -> int:
+    """stop subcommand: terminate the oracle.."""
     lay = Layout(Path(args.root) if args.root else None)
     if not lay.pidfile.is_file():
         log("no pidfile; nothing started by this tool")
@@ -1129,6 +1169,7 @@ def cmd_stop(args: argparse.Namespace) -> int:
 
 
 def cmd_all(args: argparse.Namespace) -> int:
+    """all subcommand: setup+build+install+start.."""
     rc = cmd_setup(args)
     if rc:
         return rc
@@ -1141,6 +1182,7 @@ def cmd_all(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 def main(argv=None) -> int:
+    """duckstation_oracle CLI entry point.."""
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=None,
@@ -1149,6 +1191,7 @@ def main(argv=None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     def build_opts(p):
+        """Add build-related CLI options to a parser.."""
         p.add_argument("--cc", default=None, help="C compiler (default: clang, else gcc)")
         p.add_argument("--cxx", default=None, help="C++ compiler")
         p.add_argument("--jobs", type=int, default=0)
