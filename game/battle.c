@@ -8804,7 +8804,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   int off;
   undefined4 res;
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   int tmp;
   int scl;
   undefined4 at_val;
@@ -8832,7 +8832,7 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
   }
   at_val = (at_val & 0xffff0000) | (uint16_t)(short)(tmp >> 0xc);
   setCopReg(2,in_zero,res);
-  setCopReg(2,extraout_at,at_val);
+  setCopReg(2,at_out,at_val);
   copFunction(2,0x180001);
   tmp = getCopReg(2,0xe);
   if (tmp < 0) {
@@ -12047,7 +12047,7 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   undefined4 t0;
   undefined4 t1;
   undefined4 t2;
@@ -12077,7 +12077,7 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
         gte_xform3_ip((undefined4 *)guest_at((uint32_t)arg6),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)arg5),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         setCopReg(2,in_zero,lst[1]);
-        setCopReg(2,extraout_at,lst[2]);
+        setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         num = *(int *)guest_at((uint32_t)(uintptr_t)(lst[7]));
         t0 = getCopReg(2,0xc800);
@@ -13606,7 +13606,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
-  undefined4 extraout_at;
+  undefined4 at_out;
   int t;
   int vp;
   int sz;
@@ -13644,7 +13644,7 @@ int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
         vp = *lst + 0x20;
         gte_xform3_t_ip((undefined4 *)guest_at((uint32_t)xf),(undefined2 *)guest_at((uint32_t)(*lst + 0x20)));
         setCopReg(2,in_zero,lst[1]);
-        setCopReg(2,extraout_at,lst[2]);
+        setCopReg(2,at_out,lst[2]);
         copFunction(2,0x480012);
         t = getCopReg(2,0xc800);
         sz = getCopReg(2,0xd800);
