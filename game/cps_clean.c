@@ -25192,7 +25192,7 @@ block_80133428:
 
 /* cps_80133450 — clean CPS transliteration of br2eu_func_80133450 (guest 0x80133450)
  * from SLES_017.22_full_05.c.
- * split piece of cps_80133428 */
+ * split piece of cps_80133428 — fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_80133450(void)
 {
 /* math fragment: continues at 0x8013345c */
@@ -25214,7 +25214,7 @@ block_80133450:
 
 /* cps_8013345c — clean CPS transliteration of br2eu_func_8013345C (guest 0x8013345c)
  * from SLES_017.22_full_05.c.
- * split piece of cps_80133450 */
+ * split piece of cps_80133450 — fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_8013345c(void)
 {
 /* math fragment: continues at 0x80133488 */
@@ -25488,7 +25488,7 @@ block_80133580:
 
 /* cps_80133588 — clean CPS transliteration of br2eu_func_80133588 (guest 0x80133588)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133578 */
+ * split piece of cps_80133578 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near fixed_approach_s16. */
 void cps_80133588(void)
 {
 /* math fragment: continues at 0x8013358c */
@@ -26155,7 +26155,7 @@ block_801338AC:
 
 /* cps_801338b4 — clean CPS transliteration of br2eu_func_801338B4 (guest 0x801338b4)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338ac */
+ * split piece of cps_801338ac — CPS fallthrough stub — continues at 0x801338B4 */
 void cps_801338b4(void)
 {
 /* math fragment: continues at 0x801338b8 */
@@ -26171,7 +26171,7 @@ block_801338B4:
 
 /* cps_801338b8 — clean CPS transliteration of br2eu_func_801338B8 (guest 0x801338b8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338ac */
+ * split piece of cps_801338ac — CPS fallthrough stub — continues at 0x801338B4 */
 void cps_801338b8(void)
 {
 /* math fragment: continues at 0x801338bc */
@@ -26187,7 +26187,7 @@ block_801338B8:
 
 /* cps_801338bc — clean CPS transliteration of br2eu_func_801338BC (guest 0x801338bc)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338b8 */
+ * split piece of cps_801338b8 — CPS fallthrough stub — continues at 0x801338B4 */
 void cps_801338bc(void)
 {
 /* math leaf/terminal piece. */
@@ -26224,7 +26224,7 @@ block_801338FC:
 
 /* cps_80133900 — clean CPS transliteration of br2eu_func_80133900 (guest 0x80133900)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338fc */
+ * split piece of cps_801338fc — CPS fallthrough stub — continues at 0x80133900 */
 void cps_80133900(void)
 {
 /* math fragment: continues at 0x8013390c */
@@ -26246,7 +26246,7 @@ block_80133900:
 
 /* cps_8013390c — clean CPS transliteration of br2eu_func_8013390C (guest 0x8013390c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133900 */
+ * split piece of cps_80133900 — CPS fallthrough stub — continues at 0x80133900 */
 void cps_8013390c(void)
 {
 /* math fragment: continues at 0x8013392C */
@@ -26288,7 +26288,7 @@ block_8013391C:
 
 /* cps_80133928 — clean CPS transliteration of br2eu_func_80133928 (guest 0x80133928)
  * from SLES_017.22_full_06.c.
- * split piece of cps_8013390c */
+ * split piece of cps_8013390c — CPS fallthrough stub — continues at 0x80133900 */
 void cps_80133928(void)
 {
 /* math fragment: continues at 0x8013392c */
@@ -26304,7 +26304,7 @@ block_80133928:
 
 /* cps_8013392c — clean CPS transliteration of br2eu_func_8013392C (guest 0x8013392c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133900 */
+ * split piece of cps_80133900 — CPS fallthrough stub — continues at 0x80133900 */
 void cps_8013392c(void)
 {
 /* math leaf/terminal piece. */
@@ -26609,7 +26609,7 @@ block_80133EBC:
 
 /* cps_80133ef0 — clean CPS transliteration of br2eu_func_80133EF0 (guest 0x80133ef0)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133ebc */
+ * split piece of cps_80133ebc — fixed-point muldiv step — 1 RMW pairs on s1+4 */
 void cps_80133ef0(void)
 {
 /* math fragment: continues at 0x801340c4 */
@@ -26670,7 +26670,7 @@ block_80134080:
 
 /* cps_801340a8 — clean CPS transliteration of br2eu_func_801340A8 (guest 0x801340a8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80134080 */
+ * split piece of cps_80134080 — CPS leaf — 2 stores, 3 loads */
 void cps_801340a8(void)
 {
 /* vec3_step_toward_q_spd piece: continues at 0x801340b4 */
@@ -26691,7 +26691,7 @@ block_801340A8:
 
 /* cps_801340b4 — clean CPS transliteration of br2eu_func_801340B4 (guest 0x801340b4)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80134080 */
+ * split piece of cps_80134080 — CPS leaf — 2 stores, 3 loads */
 void cps_801340b4(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -26713,7 +26713,7 @@ block_801340B4:
 
 /* cps_801340c4 — clean CPS transliteration of br2eu_func_801340C4 (guest 0x801340c4)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801340b4 */
+ * split piece of cps_801340b4 — CPS leaf — 2 stores, 3 loads */
 void cps_801340c4(void)
 {
 /* vec3_step_toward_q_spd terminal piece. */
@@ -28513,7 +28513,7 @@ block_80135264:
 
 /* cps_80135298 — clean CPS transliteration of br2eu_func_80135298 (guest 0x80135298)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135238 */
+ * split piece of cps_80135238 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135298(void)
 {
 /* particle fragment: continues at 0x801352a0 */
@@ -28638,7 +28638,7 @@ block_801352FC:
 
 /* cps_80135314 — clean CPS transliteration of br2eu_func_80135314 (guest 0x80135314)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135298 */
+ * split piece of cps_80135298 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135314(void)
 {
 /* particle fragment: continues at 0x8013531c */
@@ -28655,7 +28655,7 @@ block_80135314:
 
 /* cps_8013531c — clean CPS transliteration of br2eu_func_8013531C (guest 0x8013531c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135238 */
+ * split piece of cps_80135238 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_8013531c(void)
 {
 /* particle fragment: continues at 0x80135320 */
@@ -30562,7 +30562,7 @@ block_801361A4:
 
 /* cps_801361a8 — clean CPS transliteration of br2eu_func_801361A8 (guest 0x801361a8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801361a4 */
+ * split piece of cps_801361a4 — CPS fallthrough stub — continues at 0x801361A8 */
 void cps_801361a8(void)
 {
 /* vec/GTE fragment: continues at 0x801361bc */
@@ -31903,7 +31903,7 @@ block_80136970:
 
 /* cps_80136974 — clean CPS transliteration of br2eu_func_80136974 (guest 0x80136974)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136950 */
+ * split piece of cps_80136950 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136974(void)
 {
 /* vec/GTE fragment: continues at 0x80136978 */
@@ -31919,7 +31919,7 @@ block_80136974:
 
 /* cps_80136978 — clean CPS transliteration of br2eu_func_80136978 (guest 0x80136978)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136944 */
+ * split piece of cps_80136944 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136978(void)
 {
 /* vec/GTE thunk -> deferred_cmd_post */
@@ -32040,7 +32040,7 @@ block_80136A10:
 
 /* cps_80136a34 — clean CPS transliteration of br2eu_func_80136A34 (guest 0x80136a34)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801369d4 */
+ * split piece of cps_801369d4 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136a34(void)
 {
 /* vec/GTE fragment: continues at 0x80136a7c */
@@ -32233,7 +32233,7 @@ block_80136B18:
 
 /* cps_80136b2c — clean CPS transliteration of br2eu_func_80136B2C (guest 0x80136b2c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136b18 */
+ * split piece of cps_80136b18 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136b2c(void)
 {
 /* vec/GTE fragment: continues at 0x80136b34 */
@@ -32260,7 +32260,7 @@ block_80136B2C:
 
 /* cps_80136b34 — clean CPS transliteration of br2eu_func_80136B34 (guest 0x80136b34)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136b2c */
+ * split piece of cps_80136b2c — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136b34(void)
 {
 /* vec/GTE leaf/terminal piece. */
@@ -32308,7 +32308,7 @@ block_80136B70:
 
 /* cps_80136b78 — clean CPS transliteration of br2eu_func_80136B78 (guest 0x80136b78)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136b70 */
+ * split piece of cps_80136b70 — CPS fallthrough stub — continues at 0x80136B78 */
 void cps_80136b78(void)
 {
 /* vec/GTE fragment: continues at 0x80136b80 */
@@ -32860,7 +32860,7 @@ block_80137074:
 
 /* cps_80137088 — clean CPS transliteration of br2eu_func_80137088 (guest 0x80137088)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137074 */
+ * split piece of cps_80137074 — CPS leaf — 1 jal(s), 0 stores, 3 loads */
 void cps_80137088(void)
 {
 /* vec_emit_spawn piece: continues at 0x8013784c */
@@ -32898,7 +32898,7 @@ block_80137528:
 
 /* cps_8013752c — clean CPS transliteration of br2eu_func_8013752C (guest 0x8013752c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137528 */
+ * split piece of cps_80137528 — CPS fallthrough stub — continues at 0x8013752C */
 void cps_8013752c(void)
 {
 /* battle_intro_fsm_alias piece: continues at 0x80137878 */
@@ -32920,7 +32920,7 @@ block_8013752C:
 
 /* cps_80137548 — clean CPS transliteration of br2eu_func_80137548 (guest 0x80137548)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013752c */
+ * split piece of cps_8013752c — CPS fallthrough stub — continues at 0x8013752C */
 void cps_80137548(void)
 {
 /* battle_intro_fsm_alias piece: continues at 0x80137878 */
@@ -32970,7 +32970,7 @@ block_8013783C:
 
 /* cps_8013784c — clean CPS transliteration of br2eu_func_8013784C (guest 0x8013784c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013783c */
+ * split piece of cps_8013783c — CPS fallthrough stub — continues at 0x8013784C */
 void cps_8013784c(void)
 {
 /* script_stream_tick piece: continues at 0x80137878 */
@@ -33011,7 +33011,7 @@ block_8013785C:
 
 /* cps_80137868 — clean CPS transliteration of br2eu_func_80137868 (guest 0x80137868)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013784c */
+ * split piece of cps_8013784c — CPS fallthrough stub — continues at 0x8013784C */
 void cps_80137868(void)
 {
 /* script_stream_tick piece: continues at 0x80137878 */
@@ -33339,7 +33339,7 @@ block_80137974:
 
 /* cps_80137abc — clean CPS transliteration of br2eu_func_80137ABC (guest 0x80137abc)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013784c */
+ * split piece of cps_8013784c — CPS fallthrough stub — continues at 0x8013784C */
 void cps_80137abc(void)
 {
 /* script_stream_tick piece: continues at 0x80137C04 */
@@ -33566,7 +33566,7 @@ block_80137B8C:
 
 /* cps_80137bb8 — clean CPS transliteration of br2eu_func_80137BB8 (guest 0x80137bb8)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137b58 */
+ * split piece of cps_80137b58 — record_half_step_i: s16 read step. */
 void cps_80137bb8(void)
 {
 /* script_stream_tick thunk -> task_slot_step */
@@ -33588,7 +33588,7 @@ block_80137BB8:
 
 /* cps_80137bc4 — clean CPS transliteration of br2eu_func_80137BC4 (guest 0x80137bc4)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137b58 */
+ * split piece of cps_80137b58 — record_half_step_i: s16 read step. */
 void cps_80137bc4(void)
 {
 /* script_stream_tick thunk -> task_slot_step */
@@ -33604,7 +33604,7 @@ block_80137BC4:
 
 /* cps_80137bc8 — clean CPS transliteration of br2eu_func_80137BC8 (guest 0x80137bc8)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137b74 */
+ * split piece of cps_80137b74 — record_half_step_i: s16 read step. */
 void cps_80137bc8(void)
 {
 /* script_stream_tick thunk -> task_slot_step */
@@ -33810,7 +33810,7 @@ block_80137CA4:
 
 /* cps_80137cb4 — clean CPS transliteration of br2eu_func_80137CB4 (guest 0x80137cb4)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137c04 */
+ * split piece of cps_80137c04 — record_half_step_i: s16 read step. */
 void cps_80137cb4(void)
 {
 /* script_stream_tick piece: continues at 0x80137cb4 */
@@ -35030,7 +35030,7 @@ void cps_801388dc(void)
 
 /* cps_801388ec — clean CPS transliteration of br2eu_func_801388EC (guest 0x801388ec)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388dc */
+ * split piece of cps_801388dc — CPS fallthrough stub — continues at 0x801388EC */
 void cps_801388ec(void)
 {
 /* slot_triple_tick piece -> slot_triple_set */
@@ -35085,7 +35085,7 @@ void cps_8013890c(void)
 
 /* cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388ec */
+ * split piece of cps_801388ec — CPS fallthrough stub — continues at 0x801388EC */
 void cps_80138910(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35108,7 +35108,7 @@ void cps_80138910(void)
 
 /* cps_8013892c — clean CPS transliteration of br2eu_func_8013892C (guest 0x8013892c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388ec */
+ * split piece of cps_801388ec — CPS fallthrough stub — continues at 0x801388EC */
 void cps_8013892c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -37218,7 +37218,7 @@ block_80139F1C:
 
 /* cps_80139f20 — clean CPS transliteration of br2eu_func_80139F20 (guest 0x80139f20)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f1c */
+ * split piece of cps_80139f1c — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f20(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f28 */
@@ -37238,7 +37238,7 @@ block_80139F20:
 
 /* cps_80139f28 — clean CPS transliteration of br2eu_func_80139F28 (guest 0x80139f28)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f20 */
+ * split piece of cps_80139f20 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f28(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139F90 */
@@ -37312,7 +37312,7 @@ block_80139F40:
 
 /* cps_80139f58 — clean CPS transliteration of br2eu_func_80139F58 (guest 0x80139f58)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f40 */
+ * split piece of cps_80139f40 — CPS fallthrough stub — continues at 0x80139F58 */
 void cps_80139f58(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f68 */
@@ -37335,7 +37335,7 @@ block_80139F58:
 
 /* cps_80139f68 — clean CPS transliteration of br2eu_func_80139F68 (guest 0x80139f68)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f28 */
+ * split piece of cps_80139f28 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f68(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f78 */
@@ -37358,7 +37358,7 @@ block_80139F68:
 
 /* cps_80139f78 — clean CPS transliteration of br2eu_func_80139F78 (guest 0x80139f78)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f28 */
+ * split piece of cps_80139f28 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f78(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f8c */
@@ -37380,7 +37380,7 @@ block_80139F78:
 
 /* cps_80139f8c — clean CPS transliteration of br2eu_func_80139F8C (guest 0x80139f8c)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f40 */
+ * split piece of cps_80139f40 — CPS fallthrough stub — continues at 0x80139F58 */
 void cps_80139f8c(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139f90 */
@@ -37396,7 +37396,7 @@ block_80139F8C:
 
 /* cps_80139f90 — clean CPS transliteration of br2eu_func_80139F90 (guest 0x80139f90)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f20 */
+ * split piece of cps_80139f20 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139f90(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x80139fb0 */
@@ -37439,7 +37439,7 @@ block_80139F9C:
 
 /* cps_80139fb0 — clean CPS transliteration of br2eu_func_80139FB0 (guest 0x80139fb0)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f90 */
+ * split piece of cps_80139f90 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139fb0(void)
 {
 /* impact_fx_emit_tick thunk -> impact_fx_spawn */
@@ -37459,7 +37459,7 @@ block_80139FB0:
 
 /* cps_80139fb8 — clean CPS transliteration of br2eu_func_80139FB8 (guest 0x80139fb8)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139fb0 */
+ * split piece of cps_80139fb0 — CPS fallthrough stub — continues at 0x80139F20 */
 void cps_80139fb8(void)
 {
 /* impact_fx_emit_tick piece: continues at 0x8013a4e4 */
@@ -38585,7 +38585,7 @@ block_8013AB68:
 
 /* cps_8013ab7c — clean CPS transliteration of br2eu_func_8013AB7C (guest 0x8013ab7c)
  * from SLES_017.22_full_08.c.
- * split piece of cps_8013ab68 */
+ * split piece of cps_8013ab68 — record_half_step_j: s16 read/write leaf step. */
 void cps_8013ab7c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -39765,7 +39765,7 @@ block_8013B544:
 
 /* cps_8013b548 — clean CPS transliteration of br2eu_func_8013B548 (guest 0x8013b548)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013b544 */
+ * split piece of cps_8013b544 — angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b548(void)
 {
 /* iris_wipe_update piece: continues at 0x8013b578 */
@@ -42080,7 +42080,7 @@ block_8013C568:
 
 /* cps_8013c578 — clean CPS transliteration of br2eu_func_8013C578 (guest 0x8013c578)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013c540 */
+ * split piece of cps_8013c540 — gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE ops — loads rotation+translation into GTE for a transform. */
 void cps_8013c578(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -42560,7 +42560,7 @@ block_8013C84C:
 
 /* cps_8013c898 — clean CPS transliteration of br2eu_func_8013C898 (guest 0x8013c898)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013c984 */
+ * split piece of cps_8013c984 — gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE transform kernel. */
 void cps_8013c898(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -42586,7 +42586,7 @@ block_8013C898:
 
 /* cps_8013c89c — clean CPS transliteration of br2eu_func_8013C89C (guest 0x8013c89c)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013c898 */
+ * split piece of cps_8013c898 — gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE transform kernel. */
 void cps_8013c89c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -42602,7 +42602,7 @@ block_8013C89C:
 
 /* cps_8013c8a0 — clean CPS transliteration of br2eu_func_8013C8A0 (guest 0x8013c8a0)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013c898 */
+ * split piece of cps_8013c898 — gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE transform kernel. */
 void cps_8013c8a0(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -45227,7 +45227,7 @@ block_8013E654:
 
 /* cps_8013e71c — clean CPS transliteration of br2eu_func_8013E71C (guest 0x8013e71c)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e654 */
+ * split piece of cps_8013e654 — record field update — reads/writes v0+6 and v0+12 */
 void cps_8013e71c(void)
 {
 /* task/trig leaf/terminal piece. */
@@ -45287,7 +45287,7 @@ block_8013E72C:
 
 /* cps_8013e778 — clean CPS transliteration of br2eu_func_8013E778 (guest 0x8013e778)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e72c */
+ * split piece of cps_8013e72c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e778(void)
 {
 /* task/trig fragment: continues at 0x8013e784 */
@@ -45316,7 +45316,7 @@ block_8013E778:
 
 /* cps_8013e784 — clean CPS transliteration of br2eu_func_8013E784 (guest 0x8013e784)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e778 */
+ * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e784(void)
 {
 /* task/trig fragment: continues at 0x8013e788 */
@@ -45332,7 +45332,7 @@ block_8013E784:
 
 /* cps_8013e788 — clean CPS transliteration of br2eu_func_8013E788 (guest 0x8013e788)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e778 */
+ * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e788(void)
 {
 /* task/trig fragment: continues at 0x8013e790 */
@@ -45452,7 +45452,7 @@ block_8013E7D0:
 
 /* cps_8013e7dc — clean CPS transliteration of br2eu_func_8013E7DC (guest 0x8013e7dc)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e7d0 */
+ * split piece of cps_8013e7d0 — task_slot_free_wrap: task_slot_step + task_node_free — advance then free task node. */
 void cps_8013e7dc(void)
 {
 /* task/trig fragment: continues at 0x8013e800 */
@@ -45479,7 +45479,7 @@ block_8013E7DC:
 
 /* cps_8013e800 — clean CPS transliteration of br2eu_func_8013E800 (guest 0x8013e800)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e7dc */
+ * split piece of cps_8013e7dc — task_slot_free_wrap: task_slot_step + task_node_free — advance then free task node. */
 void cps_8013e800(void)
 {
 /* task/trig fragment: continues at 0x8013e80c */
@@ -45500,7 +45500,7 @@ block_8013E800:
 
 /* cps_8013e80c — clean CPS transliteration of br2eu_func_8013E80C (guest 0x8013e80c)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e778 */
+ * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e80c(void)
 {
 /* task/trig fragment: continues at 0x8013e818 */
@@ -45518,7 +45518,7 @@ block_8013E80C:
 
 /* cps_8013e818 — clean CPS transliteration of br2eu_func_8013E818 (guest 0x8013e818)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e80c */
+ * split piece of cps_8013e80c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e818(void)
 {
 /* task/trig fragment: continues at 0x8013e820 */
@@ -45534,7 +45534,7 @@ block_8013E818:
 
 /* cps_8013e820 — clean CPS transliteration of br2eu_func_8013E820 (guest 0x8013e820)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e818 */
+ * split piece of cps_8013e818 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e820(void)
 {
 /* task/trig fragment: continues at 0x8013e82c */
@@ -45557,7 +45557,7 @@ block_8013E820:
 
 /* cps_8013e82c — clean CPS transliteration of br2eu_func_8013E82C (guest 0x8013e82c)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e820 */
+ * split piece of cps_8013e820 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e82c(void)
 {
 /* task/trig fragment: continues at 0x8013e850 */
@@ -45586,7 +45586,7 @@ block_8013E82C:
 
 /* cps_8013e850 — clean CPS transliteration of br2eu_func_8013E850 (guest 0x8013e850)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e82c */
+ * split piece of cps_8013e82c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e850(void)
 {
 /* task/trig fragment: continues at 0x8013e858 */
@@ -45607,7 +45607,7 @@ block_8013E850:
 
 /* cps_8013e858 — clean CPS transliteration of br2eu_func_8013E858 (guest 0x8013e858)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e850 */
+ * split piece of cps_8013e850 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e858(void)
 {
 /* task/trig fragment: continues at 0x8013e86c */
@@ -45641,7 +45641,7 @@ block_8013E858:
 
 /* cps_8013e86c — clean CPS transliteration of br2eu_func_8013E86C (guest 0x8013e86c)
  * from SLES_017.22_full_09.c.
- * split piece of cps_8013e858 */
+ * split piece of cps_8013e858 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e86c(void)
 {
 /* task/trig fragment: continues at 0x8013e874 */
@@ -46388,7 +46388,7 @@ block_8013ED50:
 
 /* cps_8013ed80 — clean CPS transliteration of br2eu_func_8013ED80 (guest 0x8013ed80)
  * from SLES_017.22_full_10.c.
- * split piece of cps_8013ed24 */
+ * split piece of cps_8013ed24 — record_half_step_k: s16 read step. */
 void cps_8013ed80(void)
 {
 /* task/trig fragment: continues at 0x8013f888 */
@@ -46576,7 +46576,7 @@ block_8013F8E8:
 
 /* cps_8013f904 — clean CPS transliteration of br2eu_func_8013F904 (guest 0x8013f904)
  * from SLES_017.22_full_10.c.
- * split piece of cps_8013f828 */
+ * split piece of cps_8013f828 — ctx field reader — reads s6+2410/2414; builds 6-word stack frame */
 void cps_8013f904(void)
 {
 /* node_list_walk_e piece -> task_slot_step */
@@ -47109,7 +47109,7 @@ block_8013FC38:
 
 /* cps_8013fd2c — clean CPS transliteration of br2eu_func_8013FD2C (guest 0x8013fd2c)
  * from SLES_017.22_full_10.c.
- * split piece of cps_8013fc38 */
+ * split piece of cps_8013fc38 — gte_sxy_pack_ctrl: gte_rtps3_sxy_pack_ctrl + GTE ops — packs screen-space xy coords via GTE RTPS. */
 void cps_8013fd2c(void)
 {
 /* node_list_walk_e piece: continues at 0x8013fd48 */
