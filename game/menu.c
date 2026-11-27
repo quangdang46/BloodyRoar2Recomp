@@ -3645,7 +3645,7 @@ void select_confirm_handler(uint32_t battle_g,uint32_t player,uint8_t *recs,
                   uint32_t btns,int32_t direct)
 {
   uint8_t *b = (uint8_t *)guest_at(battle_g);
-  uint8_t *s1 = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
+  uint8_t *precb = (uint8_t *)guest_at(0x1f8000e8 + player * 0x108);
   uint8_t mode = b[0x9b];
   uint8_t *rec = recs + player * 0x30;
   uint8_t *tbl = (uint8_t *)guest_at(0x801b239c);
@@ -3657,33 +3657,33 @@ void select_confirm_handler(uint32_t battle_g,uint32_t player,uint8_t *recs,
       uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x1b] = tbl[*(uint32_t *)(rec + 0x1c)];
     }
-    if (direct != 0) s1[3] = rec[0x1c];
-    else s1[3] = tbl[*(uint32_t *)(rec + 0x1c)];
+    if (direct != 0) precb[3] = rec[0x1c];
+    else precb[3] = tbl[*(uint32_t *)(rec + 0x1c)];
   }
   if (select_phase_gate(battle_g,player) == 0) {
     uint16_t *ph = (uint16_t *)(b + 0xb4);
     if ((ph[player] & 0xf00) == 0x200) {
-      selection_stat_bump(s1,0);
-      if (btns & 0x800) s1[4] = 3;
-      if (btns & 0x20)  s1[4] = 2;
-      if (btns & 0x40)  s1[4] = 1;
-      if (btns & 0x80)  s1[4] = 0;
+      selection_stat_bump(precb,0);
+      if (btns & 0x800) precb[4] = 3;
+      if (btns & 0x20)  precb[4] = 2;
+      if (btns & 0x40)  precb[4] = 1;
+      if (btns & 0x80)  precb[4] = 0;
       uint32_t foe = player ^ 1;
       if (ph[foe] & 0x1000) ph[foe] &= 0xefff; else ph[foe] |= 0x1000;
       ph[player] = (ph[player] & 0xf000) | 0x300;
       uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
-      cr[0x1b] = s1[3];
+      cr[0x1b] = precb[3];
     }
   } else {
     if (mode == 0) {
       uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(b + 0xc0)) + player;
       cr[0x19] = cr[0x19] & 3;
-      s1[4] = (uint8_t)(player ^ 1);
+      precb[4] = (uint8_t)(player ^ 1);
     } else if (0 <= (int8_t)mode && mode < 5) {
-      if (btns & 0x800) s1[4] = 3;
-      if (btns & 0x20)  s1[4] = 2;
-      if (btns & 0x40)  s1[4] = 1;
-      if (btns & 0x80)  s1[4] = 0;
+      if (btns & 0x800) precb[4] = 3;
+      if (btns & 0x20)  precb[4] = 2;
+      if (btns & 0x40)  precb[4] = 1;
+      if (btns & 0x80)  precb[4] = 0;
     }
   }
 }
@@ -4435,15 +4435,15 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
 {
   uint8_t *b = (uint8_t *)guest_at(battle_g);
 
-  uint8_t *v1, *crecs;
+  uint8_t *subrec, *crecs;
   /* sprintf buf = guest $sp+0x18 (frame -0x38) = entry_sp-0x20; hud_text_blk_alt
    * re-reads it through nested frames, so the write->draw span inside the
-   * v1[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
+   * subrec[1]!=0 branch runs inside a reserved guest frame (sp+0x18 -> frm+0x20). */
   uint8_t *buf;
   int32_t a2, txt_y;
   if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
-  v1 = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
-  if (v1[1] != 0) {
+  subrec = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
+  if (subrec[1] != 0) {
     extern uint32_t br2_guest_frame(uint32_t);
     extern void br2_guest_frame_free(void);
     uint32_t sfa_frm = br2_guest_frame(0x38);
@@ -4488,7 +4488,7 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
     return;
   }
   /* obj+1 clear path */
-  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(v1 + 0xe2);
+  a2 = (int32_t)*(uint16_t *)(side + 0xe2) + (int32_t)*(uint16_t *)(subrec + 0xe2);
   if (a2 == 0 &&
       (*(uint16_t *)(b + side[2] * 2 + 0xb4) & 0x1000) != 0) a2 = 1;
   if (a2 != 0) {
@@ -12002,7 +12002,7 @@ void hp_bar_tick(void)
 {
   uint32_t rec_a = 0x801f4700u;
   uint32_t rec_b = rec_a;
-  uint32_t s0, v1, a2, v0, idx, flag, sum, prod, cnt, adj;
+  uint32_t fcnt, gbase, bidx, idx, flag, sum, prod, cnt, adj;
   /* guest rect = $sp+0x10 (frame -0x28) = entry_sp-0x18; it is filled
    * near the top and re-read by gpu_load_image_cmd at the bottom across
    * cd_mc_state_machine/cd_fileop_forward nested frames, so reserve the
@@ -12019,8 +12019,8 @@ void hp_bar_tick(void)
     }
   }
   memcpy(guest_at(hpb_rect), guest_at(rec_a + 0x2c), 8);
-  s0 = MB32(rec_a + 0x14);
-  MW32(rec_a + 0x14, s0 < 1u ? 1u : 0u);
+  fcnt = MB32(rec_a + 0x14);
+  MW32(rec_a + 0x14, fcnt < 1u ? 1u : 0u);
   if (MB32(0x801f473cu) != 0) {
     int32_t rem;
     idx = MB32(rec_a + 0x28) * 8u + rec_a;
@@ -12040,24 +12040,24 @@ void hp_bar_tick(void)
   } else {
     MW16(0x801f472cu, MB16(0x801f472cu) + MB16(0x801f4730u));
   }
-  a2 = MB32(rec_b + 0x28);
-  idx = a2 * 8u + rec_b;
+  bidx = MB32(rec_b + 0x28);
+  idx = bidx * 8u + rec_b;
   sum = (uint32_t)(int32_t)(MBS16(idx + 0x18) + MBS16(idx + 0x1c));
   if ((int32_t)MB16(rec_b + 0x2c) < (int32_t)sum) {
     cnt = (uint32_t)MBS16(rec_b + 0x32);
-    v1 = (uint32_t)MBS16(rec_b + 0x30) << 4;
+    gbase = (uint32_t)MBS16(rec_b + 0x30) << 4;
     adj = cnt - 1;
     if ((int32_t)adj < 0) adj = cnt + 0xe;
-    prod = (uint32_t)((int32_t)(v1 * ((adj >> 4) + 1)));
+    prod = (uint32_t)((int32_t)(gbase * ((adj >> 4) + 1)));
     /* cd_fileop_forward forwards only a0/a1 to mdec_pump_b; cnt/prod
-     * (a2/a3) are dead registers in the guest thunk. */
+     * (bidx/a3) are dead registers in the guest thunk. */
     cd_fileop_forward(MB32(rec_b + (MB32(rec_b + 0x14) * 4u) + 0xc),
                  prod >> 1);
   } else {
     /* a0 still = lh(entry+0x1c): unsigned idx<a0 flag, +0x34 and
      * the 0x801f473c gate store that sx16 value. */
     uint32_t lim = (uint32_t)(int32_t)MBS16(idx + 0x1c);
-    flag = a2 < lim ? 1u : 0u;
+    flag = bidx < lim ? 1u : 0u;
     MW32(rec_b + 0x28, flag);
     idx = rec_b + flag * 8u;
     MW32(rec_b + 0x34, lim);
@@ -12065,7 +12065,7 @@ void hp_bar_tick(void)
     MW16(rec_b + 0x2e, MB16(idx + 0x1a));
     MW32(0x801f473cu, lim);
   }
-  idx = 0x801f4700u + s0 * 4u;
+  idx = 0x801f4700u + fcnt * 4u;
   gpu_load_image_cmd(hpb_rect, MB32(idx + 0xc));
   br2_guest_frame_free();
 }
