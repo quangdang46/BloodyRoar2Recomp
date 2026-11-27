@@ -8,6 +8,7 @@ OUT = open(sys.argv[2] if len(sys.argv) > 2 else "/tmp/cdstarve.jsonl", "a", buf
 MAXT = float(sys.argv[3]) if len(sys.argv) > 3 else 3600
 
 def cmd(c, timeout=15, raw=False):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(80):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), timeout); break
@@ -99,13 +100,16 @@ WATCH = [
 ]
 
 def log(rec):
+    """Append a timestamped line to the log file."""
     OUT.write(json.dumps(rec) + '\n')
 
 def read_words(addr, count):
+    """mem_words helper: return the word list for addr/count."""
     r = cmd({'cmd': 'mem_words', 'addr': hex(addr), 'count': count})
     return r.get('words', [])
 
 def main():
+    """Entry point: run the watch/nav loop until timeout or exit condition."""
     log({'ev': 'start', 'port': PORT, 'pcs': PCS_STR})
     # arm probes
     r = cmd({'cmd': 'pc_probe_arm', 'pcs': PCS_STR, 'n': 48})
@@ -173,6 +177,7 @@ def main():
     log({'ev': 'exit'})
 
 def dump_all(tag):
+    """Collect all diagnostic dumps (pc_probe, irq, dma, cdrom, bios) under one tag."""
     out = {'ev': 'dump', 'tag': tag}
     for name in ['pc_probe_dump', 'irq_state', 'dma_state', 'cdrom_state',
                  'bios_svc_trace', 'sp_ring', 'dispatch_tail', 'frame',

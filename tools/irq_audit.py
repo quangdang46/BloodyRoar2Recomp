@@ -13,6 +13,7 @@ OUTDIR = os.path.join(ROOT, "proof")
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 9996
 
 def cmd(c, timeout=15):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), 3)
     except OSError:
@@ -43,6 +44,7 @@ def arm():
     cmd({"cmd": "rwatchpc_arm", "lo": "0x1FFE00", "hi": "0x1FFE80", "rt": 31})
 
 def dump(tag):
+    """Dump scratchpad/pad diagnostic bytes."""
     d = {"tag": tag, "t": time.time(), "port": PORT}
     d["regs"] = cmd({"cmd": "get_registers"}, 15)
     d["frame"] = cmd({"cmd": "frame"}, 15)
@@ -61,6 +63,7 @@ def dump(tag):
     return path
 
 def main():
+    """Entry point: run the watch/nav loop until timeout or exit condition."""
     log = open(os.path.join(OUTDIR, "emu_irq_%d.log" % PORT), "w")
     pr = subprocess.Popen([BIN, "--game", TOML, "--disc", DISC,
                            "--debug-port", str(PORT), "--headless"],

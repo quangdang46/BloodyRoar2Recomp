@@ -10,6 +10,7 @@ DUR  = float(sys.argv[2]) if len(sys.argv) > 2 else 2400
 IVL  = float(sys.argv[3]) if len(sys.argv) > 3 else 6.0
 
 def cmd(c, timeout=10):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(60):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), 3); break
@@ -36,15 +37,20 @@ def cmd(c, timeout=10):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def u32(b, off):
+    """Extract a little-endian u32 at offset o (0 if short)."""
     return struct.unpack('<I', b[off:off+4])[0] if len(b) >= off+4 else None
 def u16(b, off):
+    """Extract a little-endian u16 at offset o (0 if short)."""
     return struct.unpack('<H', b[off:off+2])[0] if len(b) >= off+2 else None
 
-def press(btn, frames, slot): return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
+def press(btn, frames, slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF; ATK=[0xEFFF,0x7FFF,0xDFFF,0xBFFF]
 t0=time.time(); stage="init"; sent={}; mash_i=0

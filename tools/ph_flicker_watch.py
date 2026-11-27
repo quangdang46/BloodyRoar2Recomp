@@ -6,6 +6,7 @@ import socket,json,time,sys,os
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4522
 OUT=sys.argv[2] if len(sys.argv)>2 else "/tmp/ph_flicker_capture.jsonl"
 def cmd(c,timeout=10):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(60):
         try: s=socket.create_connection(('127.0.0.1',PORT),timeout); break
         except OSError: time.sleep(0.2)
@@ -25,13 +26,17 @@ def cmd(c,timeout=10):
     try: return json.loads(b.split(b'\n')[0])
     except: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
-def press(btn,frames,slot): return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
+def press(btn,frames,slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF
 
 out=open(OUT,"a",buffering=1)
 def log(ev,**kw):
+    """Append a timestamped line to the log file."""
     rec={"t":round(time.time(),3),"ev":ev}; rec.update(kw)
     out.write(json.dumps(rec)+"\n")
     print(json.dumps(rec),flush=True)

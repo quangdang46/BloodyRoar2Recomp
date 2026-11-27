@@ -7,6 +7,7 @@ import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4880
 OUT=sys.argv[2] if len(sys.argv)>2 else "/tmp/ani_stomp_capture.jsonl"
 def cmd(c,timeout=15):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(80):
         try: s=socket.create_connection(('127.0.0.1',PORT),timeout); break
         except OSError: time.sleep(0.2)
@@ -26,16 +27,21 @@ def cmd(c,timeout=15):
     try: return json.loads(b.split(b'\n')[0])
     except Exception: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
 def w32(a):
+    """Read a 32-bit guest word at address a (None on failure)."""
     b=rd(a,4)
     return int.from_bytes(b,'little') if len(b)==4 else None
-def press(btn,frames,slot): return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
+def press(btn,frames,slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF
 
 out=open(OUT,"a",buffering=1)
 def log(ev,**kw):
+    """Append a timestamped line to the log file."""
     rec={"t":round(time.time(),3),"ev":ev}; rec.update(kw)
     out.write(json.dumps(rec)+"\n")
     print(json.dumps(rec)[:1500],flush=True)

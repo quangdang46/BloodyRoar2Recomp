@@ -5,6 +5,7 @@
 import socket, json, sys, time
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 5370
 def cmd(c,timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(40):
         try: s=socket.create_connection(('127.0.0.1',PORT),3); break
         except OSError: time.sleep(0.2)
@@ -24,9 +25,12 @@ def cmd(c,timeout=8):
         except: return {}
     except: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
-def press(b,f,slot=0): return cmd({"cmd":"press","slot":slot,"buttons":b&0xFFFF,"frames":f})
+def press(b,f,slot=0):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd":"press","slot":slot,"buttons":b&0xFFFF,"frames":f})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF; ATK=0xEFFF
 t0=time.time(); stage="title"; sent={}; spam_i=0
 print("arcade pad2-spam port=%d"%PORT,flush=True)

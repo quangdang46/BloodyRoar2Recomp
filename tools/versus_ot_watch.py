@@ -5,6 +5,7 @@ import socket, json, struct, sys, time
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 5310
 
 def cmd(c, timeout=6):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), 3)
         s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout); b = b''
@@ -27,13 +28,16 @@ def cmd(c, timeout=6):
         return {}
 
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": hex(n)})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 
 def w32(b, o):
+    """Read a 32-bit guest word at address a (None on failure)."""
     return struct.unpack('<I', b[o:o+4])[0] if len(b) >= o + 4 else 0
 
 def press(btn, frames, slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 
 START = 0xFFF7; CROSS = 0xBFFF; DOWN = 0xFFBF
@@ -44,6 +48,7 @@ CELLS = [
 ]
 
 def snap():
+    """Snapshot named guest cells into a dict."""
     out = {}
     for a, n in CELLS:
         out[n] = w32(rd(a, 4), 0)

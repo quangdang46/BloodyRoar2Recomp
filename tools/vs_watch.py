@@ -3,6 +3,7 @@
 import socket,json,time,sys
 PORT=int(sys.argv[1]) if len(sys.argv)>1 else 4512
 def cmd(c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(60):
         try: s=socket.create_connection(('127.0.0.1',PORT),10); break
         except OSError: time.sleep(0.2)
@@ -22,9 +23,12 @@ def cmd(c):
     try: return json.loads(b.split(b'\n')[0])
     except: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({"cmd":"read_ram","addr":hex(a),"len":n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b""
-def press(btn,frames,slot): return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
+def press(btn,frames,slot):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
+    return cmd({"cmd":"press","slot":slot,"buttons":btn&0xFFFF,"frames":frames})
 START=0xFFF7; CROSS=0xBFFF; DOWN=0xFFBF
 armed={'w':False,'g':False}
 t0=time.time(); stage="title"; sent={}

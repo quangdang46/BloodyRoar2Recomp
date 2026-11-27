@@ -8,6 +8,7 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 4382
 OUT  = sys.argv[2] if len(sys.argv) > 2 else "/tmp/postmortem.json"
 
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', PORT), timeout)
         s.sendall((json.dumps(c) + '\n').encode()); s.settimeout(timeout)

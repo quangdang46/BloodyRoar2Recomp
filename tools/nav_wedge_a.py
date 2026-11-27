@@ -3,6 +3,7 @@ import socket, json, sys, time
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 9940
 START=0xfff7; DOWN=0xffbf
 def cmd(c, timeout=8):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     for _ in range(40):
         try:
             s = socket.create_connection(('127.0.0.1', PORT), 3); break
@@ -28,9 +29,11 @@ def cmd(c, timeout=8):
     except Exception:
         return {}
 def rd(a, n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r = cmd({"cmd": "read_ram", "addr": hex(a), "len": n})
     return bytes.fromhex(r["hex"]) if r.get("ok") and r.get("hex") else b''
 def press(btn, frames, slot=0):
+    """Inject a pad button press (buttons&0xFFFF) for `frames` frames on `slot`."""
     return cmd({"cmd": "press", "slot": slot, "buttons": btn & 0xFFFF, "frames": frames})
 t0=time.time(); stage="boot"; sent={}
 print("nav wedgeA port=%d"%PORT, flush=True)

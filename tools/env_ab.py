@@ -10,6 +10,7 @@ TOML = os.path.join(ROOT, "game_1pad.toml")
 OUTDIR = os.path.join(ROOT, "proof")
 
 def cmd(port, c, timeout=10):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s = socket.create_connection(('127.0.0.1', port), 3)
     except OSError:
@@ -33,6 +34,7 @@ def cmd(port, c, timeout=10):
         return {}
 
 def run(port, env_extra, tag):
+    """Spawn the emulator subprocess with the given env and log file."""
     log = open(os.path.join(OUTDIR, "emu_%s_%d.log" % (tag, port)), "w")
     env = dict(os.environ); env.update(env_extra)
     pr = subprocess.Popen([BIN, "--game", TOML, "--disc", DISC,

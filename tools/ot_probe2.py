@@ -2,6 +2,7 @@
 import socket,json,time,sys
 PORT=5250
 def cmd(c):
+    """Send a JSON command to the runtime debug server; return the parsed reply ({} on failure)."""
     try:
         s=socket.create_connection(('127.0.0.1',PORT),1); s.sendall((json.dumps(c)+'\n').encode()); s.settimeout(1); b=b''
         while True:
@@ -17,9 +18,12 @@ def cmd(c):
         except: return {}
     except Exception: return {}
 def rd(a,n):
+    """read_ram helper: fetch n guest bytes at address a (b'' on failure)."""
     r=cmd({'cmd':'read_ram','addr':hex(a),'len':hex(n)})
     return bytes.fromhex(r['hex']) if r.get('ok') and r.get('hex') else b''
-def w(b,o=0): return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else 0
+def w(b,o=0):
+    """Extract a little-endian u32 word at offset o (0 if short)."""
+    return int.from_bytes(b[o:o+4],'little') if len(b)>=o+4 else 0
 t0=time.time(); last=''
 while time.time()-t0<170:
     st=rd(0x1f800000,0xa4)
