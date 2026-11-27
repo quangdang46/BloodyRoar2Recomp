@@ -12,19 +12,6 @@ extern uint16_t br2_ld16(uint32_t a);
 extern void     br2_st16(uint32_t a, uint16_t v);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
-#define DB16(a) (*(uint16_t *)guest_at(a))
-/* swl_guest — unaligned word store: RMW of the aligned word,
- * byte lane selected by addr&3 (guest swl semantics). */
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
 /*
  * GPU image upload through the indirect GP0/status and DMA register cells.
  * The block PCs are registered in clean_cps.map because every status poll

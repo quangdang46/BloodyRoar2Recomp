@@ -10,19 +10,6 @@ extern uint16_t br2_ld16(uint32_t a);
 extern void     br2_st8(uint32_t a, uint8_t v);
 extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
-#define DB16(a) (*(uint16_t *)guest_at(a))
-/* swl_guest — unaligned word store: RMW of the aligned word,
- * byte lane selected by addr&3 (guest swl semantics). */
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
 uint32_t draw_env_timing_status_store(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -153,8 +140,6 @@ block_80191C78:
   return cpu->gpr[2];
 }
 
-/* draw_env_timing_interpolate — draw-env timing stage 2: lerp
- * between the stored endpoints by the phase counter. */
 uint32_t draw_env_timing_interpolate(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -276,8 +261,6 @@ block_80191D08:
   return cpu->gpr[2];
 }
 
-/* draw_env_timing_span_clamp — draw-env timing stage 3: clamps
- * the interpolated value into the scroll span window. */
 uint32_t draw_env_timing_span_clamp(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -396,8 +379,6 @@ block_80191D78:
   return cpu->gpr[2];
 }
 
-/* draw_env_timing_axis_limit — draw-env timing stage 4
- * (0x80191D80): final per-axis limit/quantize step. */
 uint32_t draw_env_timing_axis_limit(void)
 {
   CPUState *cpu = clean_cpu_state();
