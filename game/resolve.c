@@ -81,7 +81,7 @@ extern int32_t *g__DAT_801f04a4;
 /* additional guest globals (batch3 ports) */
 extern uint8_t *g_DAT_80123844, *g_DAT_801247a8;
 extern uint8_t *g_DAT_801f3600, *g_DAT_801f36ba;
-extern uint8_t *g_DAT_801f0db0, *g_DAT_801f0db4, *g_DAT_801f0ae0, *g_DAT_801f0ae4;
+extern uint8_t *g_DAT_801f0db0, *g_DAT_801f0db4;
 extern uint8_t *g_DAT_801f0ad8, *g_DAT_1f8000b1, *g_DAT_801b1d48;
 extern uint16_t *g_DAT_1f80038c;
 extern int32_t *g_DAT_801f35f4i;
