@@ -2134,8 +2134,9 @@ void action_commit(byte *ctrl, byte *motion)
   /* steering block (only when +0x5c bit16 set and ctrl sign
    * clear): rotate launch dir toward foe, write motion+0x106/0x108
    * steering offsets and apply the resulting rotmat to the actor
-   * position vector. */
-  if (((*(uint *)(ctrl + 0x5c) & 0x10000) == 0) || (*ctrl < '\0')) {
+   * position vector. ctrl[0] sign is the guest lb/bltz test,
+   * written as & 0x80 (byte is unsigned; a < 0 compare is dead). */
+  if (((*(uint *)(ctrl + 0x5c) & 0x10000) == 0) || ((*ctrl & 0x80) != 0)) {
     *(undefined2 *)(motion + 0x106) = 0;
     *(undefined2 *)(motion + 0x108) = 0;
   }
