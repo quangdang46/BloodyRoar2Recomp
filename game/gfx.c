@@ -102,6 +102,13 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define spr_desc_tbl_a   (*(uint32_t *)g_DAT_801f642c)
 #define spr_desc_tbl_b   (*(uint32_t *)g_DAT_801f68b4)
 #define frame_tag  (*(uint32_t *)g__DAT_1f8000dc)
+/* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a). */
+#define GP32(a)   (*(uint32_t *)guest_at(a))
+#define GP8(a)    (*(uint8_t  *)guest_at(a))
+#define GP16(a)   (*(uint16_t *)guest_at(a))
+#define GP32S(a)  (*(int32_t  *)guest_at(a))
+#define GP16S(a)  (*(int16_t  *)guest_at(a))
+
 #define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
 #define gpu_mode_state   (*(uint8_t  *)g_DAT_801b8321)
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
@@ -109,13 +116,12 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define disp_height   (*(uint16_t *)g_DAT_801b8326)
 #define draw_env   ((uint32_t *)guest_at(0x801b8330))
 #define disp_env_shadow   ((uint32_t *)guest_at(0x801b838c))
-#define disp_env_tail   (*(int32_t  *)guest_at(0x801b839c))
-#define otag_r_tag   (*(uint32_t *)guest_at(0x801b83e0))
+#define otag_r_tag   (GP32(0x801b83e0))
 
 /* GPU func table: PTR_PTR_801b8318 -> 0x801b82d8 (verified in
  * payload). Entries are guest addrs of libgpu syscall impls;
  * dispatch via gpu_invoke (weak no-op until ported). */
-#define GPU_TBL()  ((uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318)))
+#define GPU_TBL()  ((uint32_t *)guest_at(GP32(0x801b8318)))
 /* gpu_call — dispatch GPU_TBL()[off>>2] through gpu_invoke with a0-a3. */
 static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
                          uint32_t a2, uint32_t a3)
@@ -138,17 +144,10 @@ uint32_t gpu_rect(const void *p)
 static void gpu_dbg(const char *fmt, ...)
 {
     /* PTR_FUN_801b831c -> debug/trace printf (guest func addr) */
-    uint32_t fn = *(uint32_t *)guest_at(0x801b831c);
+    uint32_t fn = GP32(0x801b831c);
     (void)fn; (void)fmt;
 }
 #define GPU_DBG(...) gpu_dbg(__VA_ARGS__)
-
-/* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a). */
-#define GP32(a)   (*(uint32_t *)guest_at(a))
-#define GP8(a)    (*(uint8_t  *)guest_at(a))
-#define GP16(a)   (*(uint16_t *)guest_at(a))
-#define GP32S(a)  (*(int32_t  *)guest_at(a))
-#define GP16S(a)  (*(int16_t  *)guest_at(a))
 
 /* ======== 0x8018bd50 ======== */
 
@@ -444,7 +443,7 @@ void gpu_clear_otag_r(uint32_t addr,uint32_t tag)
    * guest; 0 here — ClearOTagR impl reads only a0/a1). */
   gpu_call(0x2c,addr,tag,0,0);
   otag_r_tag = 0x41b83cc;
-  *(uint32_t *)guest_at(addr) = 0x1b83e0;
+  GP32(addr) = 0x1b83e0;
   return;
 }
 
@@ -1194,7 +1193,7 @@ int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
     GP32(0x801b7768 + slot) = 0;
     GP32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
     GP32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
-    *(uint8_t *)guest_at(GP32(0x801b7764 + slot)) = 0;
+    GP8(GP32(0x801b7764 + slot)) = 0;
     tmp = GP32S(0x801b7760 + GP8(0x801b78c0) * 0x30);
     i = 0;
     if (0 < count) {
@@ -1672,8 +1671,8 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
           break;
         case 0x6e:
           args = (const uint32_t *)(ap + 1);
-          if (lng || !sht) *(uint32_t *)guest_at(*ap) = (uint32_t)count;
-          else *(uint16_t *)guest_at(*ap) = (uint16_t)count;
+          if (lng || !sht) GP32(*ap) = (uint32_t)count;
+          else GP16(*ap) = (uint16_t)count;
           emit_kind = 0;
           break;
         case 0x70:
@@ -1794,34 +1793,35 @@ void console_emit(uint32_t c)
   int8_t ch = (int8_t)(c << 24 >> 24);
   if (ch == 9) {
     do { console_emit(0x20); }
-    while ((*(int32_t *)guest_at(0x801b6790) & 7) != 0);
+    while ((GP32S(0x801b6790) & 7) != 0);
     return;
   }
   if (ch == 0xa) {
     console_emit(0xd);
-    *(int32_t *)guest_at(0x801b6790) = 0;
+    GP32S(0x801b6790) = 0;
   } else {
     if ((ctype_bitmap_801b6701[ch & 0xff] & 0x97) != 0)
       *(int32_t *)guest_at(0x801b6790) += 1;
+      GP32S(0x801b6790) += 1;
   }
-  int32_t cnt = *(int32_t *)guest_at(0x801b6794);
+  int32_t cnt = GP32S(0x801b6794);
   if (0x1f < cnt) {
     bios_tramp_b035(1,guest_at(0x801f68f0),cnt);
-    *(int32_t *)guest_at(0x801b6794) = 0;
+    GP32S(0x801b6794) = 0;
     cnt = 0;
   }
-  *(uint8_t *)guest_at(0x801f68f0u + (uint32_t)cnt) = (uint8_t)c;
-  *(int32_t *)guest_at(0x801b6794) = cnt + 1;
+  GP8(0x801f68f0u + (uint32_t)cnt) = (uint8_t)c;
+  GP32S(0x801b6794) = cnt + 1;
 }
 
 /* console_pct — flush console string buffer: bios_tramp_b035(1,
  * buf@0x801f68f0,cnt) then reset the count cell @0x801b6794. */
 void console_pct(void)
 {
-  int32_t cnt = *(int32_t *)guest_at(0x801b6794);
+  int32_t cnt = GP32S(0x801b6794);
   if (0 < cnt) {
     bios_tramp_b035(1,guest_at(0x801f68f0),cnt);
-    *(int32_t *)guest_at(0x801b6794) = 0;
+    GP32S(0x801b6794) = 0;
   }
 }
 
@@ -1911,7 +1911,7 @@ void mdec_decode_issue(uint32_t bfr_g,uint32_t size)
   MDECREG_ST(0x801b68c0, bfr_g + 4);
   sz = ((size >> 5) << 0x10) | 0x20;
   MDECREG_ST(0x801b68c4, sz);
-  MDECREG_ST(0x801b68f0, *(uint32_t *)guest_at(bfr_g));
+  MDECREG_ST(0x801b68f0, GP32(bfr_g));
   MDECREG_ST(0x801b68c8, 0x1000201);
   return;
 }
@@ -2320,7 +2320,7 @@ void gp_20_store(uint32_t val)
 
 {
   /* $gp = 0x801beedc (set at 0x801261f8: lui/addiu $gp); +0x20 cell */
-  *(uint32_t *)guest_at(0x801beefc) = val;
+  GP32(0x801beefc) = val;
   return;
 }
 
@@ -2339,7 +2339,7 @@ int32_t aux_tbl_store_a(uint32_t val,int32_t idx)
 
 {
   if (idx < 5) {
-    *(uint32_t *)guest_at(0x801ff638 + idx * 4) = val;
+    GP32(0x801ff638 + idx * 4) = val;
     return 1;
   }
   return 0;
@@ -2351,7 +2351,7 @@ int32_t aux_tbl_store_b(uint32_t val,int32_t idx)
 
 {
   if (idx < 5) {
-    *(uint32_t *)guest_at(0x801ff620 + idx * 4) = val;
+    GP32(0x801ff620 + idx * 4) = val;
     return 1;
   }
   return 0;
@@ -2390,16 +2390,16 @@ void spr_tbl_init_a(void)
   uint8_t *rec;
   uint32_t dc;
   int i;
-  if (*(int32_t *)guest_at(0x801b55e4) >= 0) return;
+  if (GP32S(0x801b55e4) >= 0) return;
   rec = (uint8_t *)guest_at(0x801f5d10);
-  dc = *(uint32_t *)guest_at(0x1f8000dc) - 2;
+  dc = GP32(0x1f8000dc) - 2;
   for (i = 0; i < 0x18; i++) {
     *(uint32_t *)rec = dc;
     rec[7] = 5;
     rec[0xb] = 0x28;
     rec -= 0x28;
   }
-  *(uint32_t *)guest_at(0x801b55e4) = 0;
+  GP32(0x801b55e4) = 0;
 }
 
 /* spr_tbl_init_b — same pattern for second table: flag @0x801b55e8,
@@ -2410,16 +2410,16 @@ void spr_tbl_init_b(void)
   uint8_t *rec;
   uint32_t dc;
   int i;
-  if (*(int32_t *)guest_at(0x801b55e8) >= 0) return;
+  if (GP32S(0x801b55e8) >= 0) return;
   rec = (uint8_t *)guest_at(0x801f5ea4);
-  dc = *(uint32_t *)guest_at(0x1f8000dc) - 2;
+  dc = GP32(0x1f8000dc) - 2;
   for (i = 0; i < 8; i++) {
     *(uint32_t *)rec = dc;
     rec[7] = 8;
     rec[0xb] = 0x38;
     rec -= 0x34;
   }
-  *(uint32_t *)guest_at(0x801b55e8) = 0;
+  GP32(0x801b55e8) = 0;
 }
 
 /* gpu_pkt_attr_set — GPU packet attr bit setter on host word *a0:
@@ -2773,7 +2773,7 @@ uint32_t cpu_regs_snapshot(void)
  * 0x80191074-0x80191080. */
 uint32_t gpu_flag_8322_read(void)
 {
-  return (uint32_t)*(uint8_t *)guest_at(0x801c8322);
+  return (uint32_t)GP8(0x801c8322);
 }
 
 /* ======== 0x80192944 ======== */
@@ -5682,7 +5682,7 @@ static void prim_emit_desc(uint32_t a1,uint32_t a2,
   *s1 = GP32(a2 + 0x10);
   *s2 = GP32(a2 + 0x18);
   *s3 = GP32(a2 + 0x24);
-  *s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
+  *s5 = (int32_t)GP16S(a2 + 0x30);
 }
 
 /* 3-index record stream: packed u16 idx0/idx1 + lh idx2, stride 6.
@@ -5705,7 +5705,7 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   w  = GP32(s2);
   i0 = w & 0xffffu;
   i1 = w >> 16;
-  i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+  i2 = (uint32_t)(int32_t)GP16S(s2 + 4);
   p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
   p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
   p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
@@ -5722,9 +5722,9 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     s5 -= 1;
     copFunction(2, 0x0280030);                  /* RTPT */
 
-    i0 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2);
-    i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
-    i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+    i0 = (uint32_t)(int32_t)GP16S(s2);
+    i1 = (uint32_t)(int32_t)GP16S(s2 + 2);
+    i2 = (uint32_t)(int32_t)GP16S(s2 + 4);
     p  = s1 + (i0 << 3);
     va0 = GP32(p); va1 = GP32(p + 4);
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
@@ -5735,7 +5735,7 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     gte_swc2(s0 + 8, 12);
     gte_swc2(s0 + 0x10, 13);
     mac0   = (int32_t)getCopReg(2, GTE_DREG(24));
-    flags  = (int32_t)*(int16_t *)guest_at(s3);
+    flags  = (int32_t)GP16S(s3);
     if (mac0 >= 0 || (flags & 0x200) != 0) {
       slot = a0 + ((uint32_t)t1s << 2);
       if (t1s >= 10) {
@@ -5773,7 +5773,7 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   w  = GP32(s2);
   i0 = w & 0xffffu;
   i1 = w >> 16;
-  i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+  i2 = (uint32_t)(int32_t)GP16S(s2 + 4);
   p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
   p  = s1 + (i1 << 3); gte_lwc2(p,2);     gte_lwc2(p + 4,3);
   p  = s1 + (i2 << 3); gte_lwc2(p,4);     gte_lwc2(p + 4,5);
@@ -5790,9 +5790,9 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     s5 -= 1;
     copFunction(2, 0x0280030);                  /* RTPT */
 
-    i0 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2);
-    i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
-    i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
+    i0 = (uint32_t)(int32_t)GP16S(s2);
+    i1 = (uint32_t)(int32_t)GP16S(s2 + 2);
+    i2 = (uint32_t)(int32_t)GP16S(s2 + 4);
     p  = s1 + (i0 << 3);
     va0 = GP32(p); va1 = GP32(p + 4);
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
@@ -5802,7 +5802,7 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     gte_swc2(s0 + 8, 12);
     gte_swc2(s0 + 0x10, 13);
     mac0  = (int32_t)getCopReg(2, GTE_DREG(24));
-    flags = (int32_t)*(int16_t *)guest_at(s3);
+    flags = (int32_t)GP16S(s3);
     old   = GP32(a0);                    /* guest loads *a0 on pass AND fail */
     if (mac0 >= 0 || (flags & 0x200) != 0) {
       gte_swc2(s0 + 0x18, 14);
@@ -5870,7 +5870,7 @@ uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     gte_swc2(s0 + 0x10, 13);
     gte_swc2(s0 + 0x18, 14);
     mac0  = (int32_t)getCopReg(2, GTE_DREG(24));
-    flags = (int32_t)*(int16_t *)guest_at(s3);
+    flags = (int32_t)GP16S(s3);
     if (mac0 >= 0 || (flags & 0x200) != 0) {
       slot = a0 + ((uint32_t)t1s << 2);
       gte_lwc2(t4,0); gte_lwc2(t4 + 4,1);
@@ -5949,7 +5949,7 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     link = 0x09000000u | old;
     mac0 = (int32_t)getCopReg(2, GTE_DREG(24)); /* pre-RTPS MAC0 */
     copFunction(2, 0x0180001);                  /* RTPS — unconditional */
-    flags = (int32_t)*(int16_t *)guest_at(s3);
+    flags = (int32_t)GP16S(s3);
     /* Guest stores the link word unconditionally here: it sits in the
      * delay-slot path shared by the mac0>=0 pass and the (flags+0x200)!=0
      * pass, ahead of the *a0/swc2+0x20 stores that stay gated. */
