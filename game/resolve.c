@@ -60,15 +60,6 @@ extern int32_t *g__DAT_801f04a4;
  * g__DAT_801f04a4 is the host pointer to that cell; dereference the
  * u32 guest-pointer cell and translate before indexing the pointee. */
 #define _DAT_801f04a4 ((int32_t *)guest_at(*(uint32_t *)g__DAT_801f04a4))
-#define _DAT_801f4d70   (*g_DAT_801f4d70)
-#define _DAT_801f4d72   (*g_DAT_801f4d72)
-#define _DAT_801f4d76   (*g_DAT_801f4d76)
-#define _DAT_801f596c   (*g_DAT_801f596c)
-#define _DAT_801f596d   (*g_DAT_801f596d)
-#define _DAT_801f5970   (*g_DAT_801f5970)
-#define _DAT_801f5971   (*g_DAT_801f5971)
-#define _DAT_801b55d0   (*g_DAT_801b55d0)
-#define _DAT_801f04c9   (*g_DAT_801f04c9)
 #define _DAT_801f04ec   (*g_DAT_801f04ec)
 #define _DAT_801f04ee   (*g_DAT_801f04ee)
 #define _DAT_801f04f0   (*g_DAT_801f04f0)
@@ -86,14 +77,6 @@ extern int32_t *g__DAT_801f04a4;
 #define DAT_801f5971   (*g_DAT_801f5971)
 #define DAT_801b55d0   (*g_DAT_801b55d0)
 #define DAT_801f04c9   (*g_DAT_801f04c9)
-#define DAT_801f04ec   (*g_DAT_801f04ec)
-#define DAT_801f04ee   (*g_DAT_801f04ee)
-#define DAT_801f04f0   (*g_DAT_801f04f0)
-#define DAT_801f04f2   (*g_DAT_801f04f2)
-#define DAT_801f04f4   (*g_DAT_801f04f4)
-#define DAT_801f04f6   (*g_DAT_801f04f6)
-#define DAT_801f04f8   (*g_DAT_801f04f8)
-#define DAT_801f04fa   (*g_DAT_801f04fa)
 
 /* additional guest globals (batch3 ports) */
 extern uint8_t *g_DAT_80123844, *g_DAT_801247a8;
@@ -108,8 +91,6 @@ extern int32_t *g_DAT_801f35f4i;
 #define DAT_801f3600   (*g_DAT_801f3600)
 #define DAT_801f0db0   (*g_DAT_801f0db0)
 #define DAT_801f0db4   (*g_DAT_801f0db4)
-#define DAT_801f0ae0   (*g_DAT_801f0ae0)
-#define DAT_801f0ae4   (*g_DAT_801f0ae4)
 #define DAT_801f0ad8   (*g_DAT_801f0ad8)
 #define DAT_1f8000b1   (*g_DAT_1f8000b1)
 #define DAT_801b1d48   (*g_DAT_801b1d48)
@@ -118,8 +99,6 @@ extern int32_t *g_DAT_801f35f4i;
 #define _DAT_1f80038e  g_DAT_1f80038c[1]
 #define _DAT_1f800390  g_DAT_1f80038c[2]
 #define DAT_1f80038c   g_DAT_1f80038c[0]
-#define DAT_1f80038e   g_DAT_1f80038c[1]
-#define DAT_1f800390   g_DAT_1f80038c[2]
 
 /* guest-address <-> host-pointer bridge (bind.c) */
 extern void *guest_at(uint32_t addr);
@@ -188,17 +167,11 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 #define _DAT_1f8003a8 (*g__DAT_1f8003a8)
 #define _DAT_1f8003ac (*g__DAT_1f8003ac)
 #define _DAT_1f8003b0 (*(int16_t *)g__DAT_1f8003b0) /* guest lh/sh @0x1f8003b0 (0x80185048) */
-#define _DAT_1f8003b4 (*g__DAT_1f8003b4)
-#define _DAT_1f8003b8 (*g__DAT_1f8003b8)
-#define _DAT_1f8003bc (*g__DAT_1f8003bc)
 #define _DAT_1f8003c0 (*(int16_t *)g__DAT_1f8003c0) /* guest sh @0x1f8003c0 (0x80185048) */
 #define _DAT_1f8003c4 (*(int16_t *)g__DAT_1f8003c4) /* guest sh @0x1f8003c4 */
 #define _DAT_1f8003c8 (*(int16_t *)g__DAT_1f8003c8) /* guest sh @0x1f8003c8 */
 #define _DAT_1f8003cc (*(int16_t *)g__DAT_1f8003cc) /* guest sh @0x1f8003cc */
 #define _DAT_1f8003d0 (*(int16_t *)g__DAT_1f8003d0) /* guest sh @0x1f8003d0 */
-#define _DAT_1f8003d4 (*g__DAT_1f8003d4)
-#define _DAT_1f8003d8 (*g__DAT_1f8003d8)
-#define _DAT_1f8003dc (*g__DAT_1f8003dc)
 #define _DAT_1f8003e0 (*g__DAT_1f8003e0)
 #define _DAT_1f8003e4 (*g__DAT_1f8003e4)
 #define _DAT_1f8003e8 (*g__DAT_1f8003e8)
@@ -207,22 +180,10 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 #define _DAT_1f8003f4 (*g__DAT_1f8003f4)
 #define _DAT_1f8003f8 (*g__DAT_1f8003f8)
 #define _DAT_1f8003fc (*g__DAT_1f8003fc)
-#define _DAT_1f8003a2 (*(uint16_t *)&_DAT_1f8003a0)
-#define _DAT_1f8003a6 (*(uint16_t *)&_DAT_1f8003a4)
-#define _DAT_1f8003aa (*(uint16_t *)&_DAT_1f8003a8)
-#define _DAT_1f8003ae (*(uint16_t *)&_DAT_1f8003ac)
-#define _DAT_1f8003b2 (*(uint16_t *)&_DAT_1f8003b0)
-#define _DAT_1f8003b6 (*(uint16_t *)&_DAT_1f8003b4)
-#define _DAT_1f8003ba (*(uint16_t *)&_DAT_1f8003b8)
-#define _DAT_1f8003be (*(uint16_t *)&_DAT_1f8003bc)
 #define _DAT_1f8003c2 (*(uint16_t *)&_DAT_1f8003c0)
 #define _DAT_1f8003c6 (*(uint16_t *)&_DAT_1f8003c4)
 #define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
 #define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
-#define _DAT_1f8003d2 (*(uint16_t *)&_DAT_1f8003d0)
-#define _DAT_1f8003d6 (*(uint16_t *)&_DAT_1f8003d4)
-#define _DAT_1f8003da (*(uint16_t *)&_DAT_1f8003d8)
-#define _DAT_1f8003de (*(uint16_t *)&_DAT_1f8003dc)
 
 /* ---- action-commit + state helpers (action_commit family) ---- */
 extern void motion_blend_frame(byte*,byte*);
