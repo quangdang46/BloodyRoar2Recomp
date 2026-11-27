@@ -33,6 +33,8 @@ extern uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
 
+/* swl_guest — unaligned word store: RMW of the aligned word,
+ * byte lane selected by addr&3 (guest swl semantics). */
 static void swl_guest(uint32_t addr, uint32_t v)
 {
   uint32_t al = addr & ~3u;
@@ -46,6 +48,9 @@ static void swl_guest(uint32_t addr, uint32_t v)
   DB32(al) = w;
 }
 
+/* prim_ot_link_indexed — ordering-table link: slot = ot +
+ * (otz&0x1ffc); writes out<<8 into the slot and back-links the
+ * old head into out+2. */
 static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 {
   uint32_t slot = ot + (otz & 0x1ffcu);
