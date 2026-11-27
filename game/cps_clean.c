@@ -1427,7 +1427,7 @@ void cps_80126358(void)
     /* Address: 0x80126358, Size: 48 bytes, Blocks: 3 */
 
     /* jump-table dispatch: v0 = word[0x8012E7F0 + v1*4]; jr v0.
-       Fallback arm: jal 0x801560F8(1), byte[s1]=1 -> cps_80126344.
+       Fallback arm: jal 0x801560F8(1), byte[s1]=1 -> main_state_byte_gate (0x80126344).
        CPS-blocked. */
 
 block_80126358:
@@ -1684,7 +1684,7 @@ void cps_80126420(void)
     /* Address: 0x80126420, Size: 48 bytes, Blocks: 5 */
 
     /* state-3 step: jal 0x80165CB4(3) + 0x80165CB4(1); byte[s1]==3 gate
-       -> byte[s1]=4 via cps_80126344; tail rec lookup -> cps_80126450.
+       -> byte[s1]=4 via main_state_byte_gate (0x80126344); tail rec lookup -> cps_80126450.
        CPS-blocked. */
 
 block_80126420:
@@ -1962,7 +1962,7 @@ void cps_8012651c(void)
 
     /* Address: 0x8012651C, Size: 16 bytes, Blocks: 1 */
 
-    /* state gate: byte[s1] != s4(4) -> cps_80126344 loop, else ->
+    /* state gate: byte[s1] != s4(4) -> main_state_byte_gate (0x80126344) loop, else ->
        cps_8012652C. CPS-blocked. */
 
 block_8012651C:
@@ -1999,7 +1999,7 @@ void cps_8012652c(void)
     }
     /* Address: 0x8012652C, Size: 28 bytes, Blocks: 2 */
 
-    /* state-4 commit: byte[s1]=s2(5) -> cps_80126344; then
+    /* state-4 commit: byte[s1]=s2(5) -> main_state_byte_gate (0x80126344); then
        byte[rec+32]==0 ? a0=2 -> cps_80126550 : -> cps_8012654C.
        CPS-blocked. */
 
@@ -2230,7 +2230,7 @@ void cps_801265b8(void)
 
     /* Address: 0x801265B8, Size: 8 bytes, Blocks: 1 */
 
-    /* state commit: byte[s1]=v0 -> cps_80126344 loop. CPS-blocked. */
+    /* state commit: byte[s1]=v0 -> main_state_byte_gate (0x80126344) loop. CPS-blocked. */
 
 block_801265B8:
     /* delay slot (always executes) */
@@ -2258,7 +2258,7 @@ void cps_801265c0(void)
     }
     /* Address: 0x801265C0, Size: 28 bytes, Blocks: 2 */
 
-    /* state-6 commit: byte[s1]=6 -> cps_80126344; then
+    /* state-6 commit: byte[s1]=6 -> main_state_byte_gate (0x80126344); then
        byte[rec+32]==0 ? a0=2 -> cps_801265E4 : -> cps_801265E0.
        CPS-blocked. */
 
@@ -2394,7 +2394,7 @@ void cps_80126610(void)
 
     /* Address: 0x80126610, Size: 12 bytes, Blocks: 1 */
 
-    /* state gate: byte[s1] != s0(6) -> cps_80126344 loop, else v0=3 ->
+    /* state gate: byte[s1] != s0(6) -> main_state_byte_gate (0x80126344) loop, else v0=3 ->
        cps_8012661C. CPS-blocked. */
 
 block_80126610:
@@ -2431,7 +2431,7 @@ void cps_8012661c(void)
     }
     /* Address: 0x8012661C, Size: 36 bytes, Blocks: 3 */
 
-    /* state-3 commit variant: byte[s1]=3 -> cps_80126344; then
+    /* state-3 commit variant: byte[s1]=3 -> main_state_byte_gate (0x80126344); then
        byte[rec+32]==0 ? a0=2 : a0=1 -> cps_80126640. CPS-blocked. */
 
 block_8012661C:
@@ -2659,7 +2659,7 @@ void cps_801266a4(void)
     }
     /* Address: 0x801266A4, Size: 16 bytes, Blocks: 2 */
 
-    /* state commit: jal 0x80164EA4(0), byte[s1]=s0(5) -> cps_80126344.
+    /* state commit: jal 0x80164EA4(0), byte[s1]=s0(5) -> main_state_byte_gate (0x80126344).
        CPS-blocked. */
 
 block_801266A4:
@@ -2695,7 +2695,7 @@ void cps_801266b4(void)
     }
     /* Address: 0x801266B4, Size: 32 bytes, Blocks: 3 */
 
-    /* state commit: byte[s1]=11, byte[s1+2]=s4(4) -> cps_80126344;
+    /* state commit: byte[s1]=11, byte[s1+2]=s4(4) -> main_state_byte_gate (0x80126344);
        then jal 0x801560F8(1), byte[s1+2]==3 ? -> cps_801266F0 :
        cps_801266D8. CPS-blocked. */
 
@@ -2765,7 +2765,7 @@ void cps_801266d8(void)
     }
     /* Address: 0x801266D8, Size: 24 bytes, Blocks: 3 */
 
-    /* state gate: byte[s1+2]!=s4(4) -> cps_80126344 loop; else jal
+    /* state gate: byte[s1+2]!=s4(4) -> main_state_byte_gate (0x80126344) loop; else jal
        0x8015B9A0 -> cps_801266F8. CPS-blocked. */
 
 block_801266D8:
@@ -2833,8 +2833,8 @@ void cps_801266f8(void)
     }
     /* Address: 0x801266F8, Size: 12 bytes, Blocks: 2 */
 
-    /* state gate: v0==0 -> cps_80126344 loop; else byte[s1]=s2(5) ->
-       cps_80126344. CPS-blocked. */
+    /* state gate: v0==0 -> main_state_byte_gate (0x80126344) loop; else byte[s1]=s2(5) ->
+       main_state_byte_gate (0x80126344). CPS-blocked. */
 
 block_801266F8:
     int cond_801266F8 = (v0 == zero);  /* save branch cond before delay slot */
