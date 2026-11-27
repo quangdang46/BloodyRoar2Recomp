@@ -9580,7 +9580,7 @@ int mc_job_issue_b(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
 {
   uint32_t *cblk = (uint32_t *)guest_at(0x801febe0);
-  /* cmd blk crosses the BIOS boundary (FUN_801a0220/801a0250 kernel
+  /* cmd blk crosses the BIOS boundary (bios_tramp_b032/b036 kernel
    * services) — must be guest RAM, so reserve a real guest frame. */
   extern uint32_t br2_guest_frame(uint32_t);
   extern void br2_guest_frame_free(void);
