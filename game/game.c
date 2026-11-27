@@ -703,7 +703,7 @@ L_80126350:
         match_mode_set(mmode);
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
-            goto switchD_80126370_caseD_80126344;
+            goto L_80126344_dispatch;
     case 7: /* 0x80126624 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
