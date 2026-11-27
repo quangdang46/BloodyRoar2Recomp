@@ -26,24 +26,11 @@
  */
 #include <stdint.h>
 #include <string.h>
-#include "types.h"
-#include "ani.h"
 #include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
-extern uint16_t *euler_rotmat(uint32_t,uint32_t,uint32_t,uint16_t *);
 extern int32_t skeleton_init(uint32_t,uint32_t,uint32_t);
-
-typedef uint8_t  uint8_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
-typedef uint16_t uint16_t;
-typedef uint32_t uint32_t;
-typedef uint8_t  uint8_t;
-typedef uint8_t  uint8_t;
-typedef uint64_t uint64_t;
-typedef uint64_t uint64_t;
 
 /* Guest raw-offset accessors. */
 #define GU8(p,o)   (((const uint8_t *)(p))[(o)])
