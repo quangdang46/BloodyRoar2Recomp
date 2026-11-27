@@ -5200,8 +5200,6 @@ void cps_8012844c(void)
         }
     }
     /* Address: 0x8012844C, Size: 12 bytes, Blocks: 2 */
-    /* CPS piece (cps_8012844c):-> 0x8018428/0x8018458.
-       CPS-blocked. */
 
     more = (v1 != v0);
     /* delay slot (always executes) */
@@ -35117,8 +35115,6 @@ void cps_8013892c(void)
   if (!cpu) return;
 
     /* Address: 0x8013892C, Size: 16 bytes, Blocks: 1 */
-    /* CPS piece (cps_8013892c): ra = read_word(sp + 20); s0 = read_word(sp + 16);.
-       CPS-blocked. */
 
     ra = cpu->read_word(sp + 20);
     s0 = cpu->read_word(sp + 16);
@@ -47761,8 +47757,6 @@ void cps_80140c98(void)
   if (!cpu) return;
 
     /* Address: 0x80140C98, Size: 8 bytes, Blocks: 1 */
-    /* CPS piece (cps_80140c98): dispatch/leaf piece.
-       CPS-blocked. */
 
 block_80140C98:
     uint32_t jt_80140C98 = ra;  /* latch indirect target before delay slot */
@@ -48021,8 +48015,6 @@ void cps_80142c50(void)
   if (!cpu) return;
 
     /* Address: 0x80142C50, Size: 12 bytes, Blocks: 1 */
-    /* CPS piece (cps_80142c50):-> 0x8012c50.
-       CPS-blocked. */
 
 block_80142C50:
     v0 = v1;
@@ -48493,8 +48485,6 @@ void cps_80143d30(void)
   if (!cpu) return;
 
     /* Address: 0x80143D30, Size: 8 bytes, Blocks: 1 */
-    /* CPS piece (cps_80143d30): dispatch/leaf piece.
-       CPS-blocked. */
 
 block_80143D30:
     uint32_t jt_80143D30 = ra;  /* latch indirect target before delay slot */
@@ -49750,8 +49740,6 @@ void cps_80147dec(void)
   if (!cpu) return;
 
     /* Address: 0x80147DEC, Size: 8 bytes, Blocks: 1 */
-    /* CPS piece (cps_80147dec): dispatch/leaf piece.
-       CPS-blocked. */
 
 block_80147DEC:
     uint32_t jt_80147DEC = ra;  /* latch indirect target before delay slot */
@@ -57369,8 +57357,6 @@ void cps_8015e8bc(void)
         }
     }
     /* Address: 0x8015E8BC, Size: 320 bytes, Blocks: 19 */
-    /* CPS piece (cps_8015e8bc): s2 = read_word(sp + 64); s1 = read_word(sp + 60); s0 = read_word(sp + 56); v1 = read_word(v0 + 16724);-> 0x801CFDC/0x80174D8/0x8013154/0x801BFCC.
-       CPS-blocked. */
 
     v0 = 0x801B0000u;  /* 0x801B0000 */
     v1 = cpu->read_word(v0 + 16724);
@@ -62386,8 +62372,6 @@ void cps_80175a18(void)
   if (!cpu) return;
 
     /* Address: 0x80175A18, Size: 100 bytes, Blocks: 1 */
-    /* CPS piece (cps_80175a18): a0 = (int32_t)(int16_t)read_half(a2 + 176); write_half(a2 + 216, zero); 
-       CPS-blocked. */
 
 block_80175A18:
     /* entity motion-state init: scale = (s16[@a2+176] * u8[@a2+222]) * 0x51EB851F >> 37
@@ -62509,8 +62493,6 @@ void cps_8017a990(void)
         }
     }
     /* Address: 0x8017A990, Size: 40 bytes, Blocks: 3 */
-    /* CPS piece (cps_8017a990): write_word(a1 + 76, zero); v0 = read_half(a2);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017A994: 0x00000000 */
@@ -62599,8 +62581,6 @@ void cps_8017a9d0(void)
         }
     }
     /* Address: 0x8017A9D0, Size: 44 bytes, Blocks: 2 */
-    /* CPS piece (cps_8017a9d0): v0 = read_word(a1 + 136); write_word(a1 + 136, v0); v0 = read_half(a2);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017A9D4: 0x00000000 */
@@ -62810,8 +62790,6 @@ void cps_8017ad78(void)
         }
     }
     /* Address: 0x8017AD78, Size: 64 bytes, Blocks: 6 */
-    /* CPS piece (cps_8017ad78): v0 = read_word(a1 + 148);-> 0x801AC44/0x801AE00.
-       CPS-blocked. */
 
 compare:
     int match = (v1 == v0);  /* save branch cond before delay slot */
@@ -62942,8 +62920,6 @@ void cps_8017b5f4(void)
         }
     }
     /* Address: 0x8017B5F4, Size: 84 bytes, Blocks: 5 */
-    /* CPS piece (cps_8017b5f4): v1 = read_half(a2 + 2); v0 = read_word(a0 + 48); v0 = read_half(a2);-> 0x801B664.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017B5F8: 0x00000000 */
@@ -63484,8 +63460,6 @@ void cps_8017b860(void)
         }
     }
     /* Address: 0x8017B860, Size: 84 bytes, Blocks: 5 */
-    /* CPS piece (cps_8017b860): v0 = read_word(a0 + 32); v0 = read_half(v0 + 380); write_half(a1 + 216, v0); v1 = (int32_t)(int16_t)read_half(a0 + 78);-> 0x801B8D0.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017B864: 0x00000000 */
@@ -63864,8 +63838,6 @@ void cps_8017ba3c(void)
         }
     }
     /* Address: 0x8017BA3C, Size: 112 bytes, Blocks: 8 */
-    /* CPS piece (cps_8017ba3c): write_half(a0 + 152, v0); v1 = (int32_t)(int16_t)read_half(a0 + 152); v0 = (int32_t)(int16_t)read_half(a2 + 2); v1 = read_half(a2 + 4);-> 0x801BAC8/0x801BAD4.
-       CPS-blocked. */
 
     t0 = a0;
     v1 = cpu->read_half(a2 + 4);
@@ -64503,8 +64475,6 @@ void cps_8017c35c(void)
         }
     }
     /* Address: 0x8017C35C, Size: 88 bytes, Blocks: 5 */
-    /* CPS piece (cps_8017c35c): write_word(a3 + 84, v0); v0 = read_word(a3 + 84); write_word(a1 + 148, v0); v0 = read_half(a2 + 2);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2 + 2);
     v1 = cpu->read_half(a2);
@@ -65024,8 +64994,6 @@ void cps_8017c5b8(void)
         }
     }
     /* Address: 0x8017C5B8, Size: 72 bytes, Blocks: 5 */
-    /* CPS piece (cps_8017c5b8): v1 = read_byte(a3 + 218); v1 = read_word(a3 + 56); write_half(v1 + 276, v0); v0 = read_half(a2);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C5BC: 0x00000000 */
@@ -65217,8 +65185,6 @@ void cps_8017c7b0(void)
         }
     }
     /* Address: 0x8017C7B0, Size: 104 bytes, Blocks: 7 */
-    /* CPS piece (cps_8017c7b0): v0 = read_byte(a2 + 2); write_byte(a0 + 219, v0); v0 = read_byte(a1 + 256); v0 = read_half(a2 + 2);-> 0x801C600/0x801C61C/0x801C840.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C7B4: 0x00000000 */
@@ -65428,8 +65394,6 @@ void cps_8017c898(void)
         }
     }
     /* Address: 0x8017C898, Size: 104 bytes, Blocks: 7 */
-    /* CPS piece (cps_8017c898): write_half(a1 + 266, v0); v0 = read_half(a2 + 2); write_half(a1 + 268, v0); v0 = read_word(a0 + 92);-> 0x801c850.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017C89C: 0x00000000 */
@@ -66525,8 +66489,6 @@ void cps_8017d1d0(void)
         }
     }
     /* Address: 0x8017D1D0, Size: 108 bytes, Blocks: 7 */
-    /* CPS piece (cps_8017d1d0): v0 = read_half(s0 + 172); write_half(s0 + 214, zero); write_half(s0 + 216, zero); write_byte(s0 + 5, zero);-> 0x8016EF4/0x8010CA0/0x8015E08/0x8012D20.
-       CPS-blocked. */
 
     a1 = a0;
     v0 = cpu->read_half(a2);
@@ -66887,8 +66849,6 @@ void cps_8017d55c(void)
         }
     }
     /* Address: 0x8017D55C, Size: 100 bytes, Blocks: 7 */
-    /* CPS piece (cps_8017d55c): write_half(a1 + 178, v0); write_half(a1 + 152, zero); v0 = read_half(a2 + 2); write_half(a1 + 180, v0);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D560: 0x00000000 */
@@ -67197,8 +67157,6 @@ void cps_8017d6ac(void)
         }
     }
     /* Address: 0x8017D6AC, Size: 112 bytes, Blocks: 8 */
-    /* CPS piece (cps_8017d6ac): v0 = read_word(a0 + 32); v1 = (int32_t)(int16_t)read_half(a2 + 2); v0 = read_word(v0 + 56); v0 = (int32_t)(int16_t)read_half(a0 + 144);.
-       CPS-blocked. */
 
     v0 = cpu->read_half(a2);
     /* nop */  /* 0x8017D6B0: 0x00000000 */
@@ -67720,8 +67678,6 @@ void cps_8017da68(void)
         }
     }
     /* Address: 0x8017DA68, Size: 288 bytes, Blocks: 11 */
-    /* CPS piece (cps_8017da68): v0 = read_byte(a0 + 5);-> 0x801DA4C/0x801DA68/0x801DA64/0x801DA44.
-       CPS-blocked. */
 
     int is_one = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -67913,8 +67869,6 @@ void cps_8017e4d4(void)
         }
     }
     /* Address: 0x8017E4D4, Size: 340 bytes, Blocks: 17 */
-    /* CPS piece (cps_8017e4d4): v1 = read_word(t0 + 64); a0 = read_word(v0 + 24); v1 = read_half(a2 + 4); v0 = read_half(a0);.
-       CPS-blocked. */
 
     a3 = a0;
     v0 = cpu->read_half(a2);
@@ -68324,8 +68278,6 @@ void cps_8017e6b0(void)
         }
     }
     /* Address: 0x8017E6B0, Size: 204 bytes, Blocks: 18 */
-    /* CPS piece (cps_8017e6b0): v0 = read_byte(a0 + 5); v0 = read_word(a0 + 88);-> 0x801E694/0x801E6B0/0x801E6AC/0x801E68C.
-       CPS-blocked. */
 
     int is_one = (v1 == v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -68543,8 +68495,6 @@ void cps_8017f97c(void)
         }
     }
     /* Address: 0x8017F97C, Size: 360 bytes, Blocks: 19 */
-    /* CPS piece (cps_8017f97c): v0 = (int32_t)(int16_t)read_half(a0 + 186); v0 = read_word(a0 + 88); v0 = (int32_t)(int16_t)read_half(a0 + 184); v0 = (int32_t)(int16_t)read_half(a0 + 188);.
-       CPS-blocked. */
 
     v0 = (int32_t)(int16_t)cpu->read_half(a1 + 208);
     /* nop */  /* 0x8017F980: 0x00000000 */
@@ -68945,8 +68895,6 @@ void cps_801800a4(void)
         }
     }
     /* Address: 0x801800A4, Size: 552 bytes, Blocks: 6 */
-    /* CPS piece (cps_801800a4): v0 = read_word(a1 + 88); v0 = read_word(a2 + 32); v1 = read_word(a1 + 92); write_word(v1 + 56, v0);-> 0x801FAE4/0x801FB00/0x801FAF8/0x801D788.
-       CPS-blocked. */
     /* Hitbox bone transform, entry piece: stage the parent's baked matrix block
      * (node+0x20..0x3c) into the work node via node_xform_apply, snapshot the
      * child's local position (s3+0xd4..0xd8) into the work node, then build a
@@ -79046,8 +78994,6 @@ void cps_8018b76c(void)
         }
     }
     /* Address: 0x8018B76C, Size: 280 bytes, Blocks: 6 */
-    /* CPS piece (cps_8018b76c): write_word(t3, t1); write_word(t3, t2); t0 = read_word(a1); gte_data[0] = (read_word((a0)));-> 0x801B884/0x801B88C/0x801B76C/0x801b76c.
-       CPS-blocked. */
 
 block_8018B76C:
     
