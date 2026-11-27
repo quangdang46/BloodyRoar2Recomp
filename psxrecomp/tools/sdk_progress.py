@@ -24,6 +24,7 @@ class ProgressReporter:
         log_stream: Optional[TextIO] = None,
         mirror_logs: bool = True,
     ) -> None:
+        """Progress reporter ctor: json mode, stream, min-interval.."""
         self.json_progress = bool(json_progress)
         self.stream = stream if stream is not None else sys.stdout
         self.log_stream = log_stream if log_stream is not None else sys.stderr
@@ -31,6 +32,7 @@ class ProgressReporter:
         self._started = time.perf_counter()
 
     def _emit(self, payload: Mapping[str, Any]) -> None:
+        """Emit one JSON progress event (json mode only).."""
         if not self.json_progress:
             return
         line = json.dumps(payload, sort_keys=True, separators=(",", ":"))
@@ -38,6 +40,7 @@ class ProgressReporter:
         self.stream.flush()
 
     def event(self, event: str, **fields: Any) -> None:
+        """Record a named progress event.."""
         payload: dict[str, Any] = {
             "event": event,
             "t": round(time.perf_counter() - self._started, 3),
@@ -55,11 +58,13 @@ class ProgressReporter:
         message: Optional[str] = None,
         **fields: Any,
     ) -> None:
+        """Record a phase transition with pct/message.."""
         self.event("phase", phase=name, pct=pct, message=message, **fields)
         if message and not self.json_progress:
             print(message, file=self.log_stream, flush=True)
 
     def log(self, message: str, *, level: str = "info") -> None:
+        """Emit a log-line event.."""
         if self.json_progress:
             self.event("log", level=level, message=message)
             if self.mirror_logs:
@@ -68,9 +73,11 @@ class ProgressReporter:
             print(message, file=self.log_stream, flush=True)
 
     def result(self, **fields: Any) -> None:
+        """Emit the final result event.."""
         self.event("result", **fields)
 
     def error(self, message: str, *, code: int = 1, **fields: Any) -> None:
+        """Emit an error event and set exit code.."""
         self.event("error", message=message, code=code, **fields)
         if not self.json_progress:
             print(message, file=self.log_stream, flush=True)

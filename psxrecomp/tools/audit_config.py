@@ -22,6 +22,7 @@ except ImportError:
 
 
 def _hex(s, field_name: str) -> int:
+    """Parse a hex-string config field, raising with field name on bad input.."""
     if not isinstance(s, str):
         raise ValueError(f"{field_name}: expected hex string, got {type(s).__name__}")
     return int(s, 16)
@@ -109,6 +110,7 @@ def _find_project_root(config_path: Path) -> Path:
 
 
 def load(config_path) -> AuditConfig:
+    """Load an audit config TOML into an AuditConfig.."""
     config_path = Path(config_path).resolve()
     if not config_path.exists():
         raise FileNotFoundError(f"audit config not found: {config_path}")
