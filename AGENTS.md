@@ -1441,3 +1441,44 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   (0x8018b100, 12a named) + flat-region 1-2-addr fragments (port as
   part of parent). The whole-function hand-port campaign for
   unnamed jal-targets is effectively COMPLETE.
+
+### Session update 31 (shadow-row audit + camera-piece retirement)
+
+- **battle_camera_step CPS pieces retired** (`561b4cfb`): the 355-block
+  `cps_8012fce0` cluster + siblings (`cps_8012fb54/fb58/fcd0/fcd8/
+  31f48/31f4c`) are NOT standalone functions — they are the continuation
+  pieces of guest fn 0x8012FB10, already clean-ported as
+  `battle_camera_step` (battle.c:1266). All 383 clean_cps.map rows
+  removed; mid-fn resume addrs now fall back to the generated alias
+  body (better per-block cycle accounting than frozen-cycle cps_).
+  RULE: a `cps_*` symbol whose addr range sits inside an already-ported
+  fnmap function's span is residual CPS coverage, not a port target —
+  retire the rows, don't port the piece.
+- **Shadow-row audit verdicts** (fnmap addr ∩ clean_cps.map LHS,
+  RHS != fnmap symbol, ~65 rows): the map row SHADOWS fnmap, never
+  complements. KEEP ~44 — all CD/IRQ `cpst_` rows whose fnmap bodies
+  are call_guest4/br2_call_clean delegates (removing reintroduces the
+  §4 wedge class); sprintf_core_engine + text_format fragments same.
+  REMOVED 16 provably-dead resume PCs (pad_slot_walk x5,
+  scriptop_wait_fragment x4, printf_core_piece x7) — fnmap
+  self-delegates fall to generated, faithful. STILL OPEN: 3
+  VERIFY-RUNTIME conflicts where fnmap and map-RHS are BOTH clean
+  impls of the same guest fn — 0x80188200/0x80188308
+  (prim_quad_emit vs prim_poly_emit_*a CPS twins in w4_e02.c) and
+  0x80194470 (gte_screen_init_hi_entry vs _defer_mfhi). Need
+  insn-level diff to pick authoritative.
+- **cps_8015b190 feasibility** (menu stepper row/callback dispatch,
+  175 blocks): FEASIBLE, moderate. Selector compare chain + four
+  bounded jump tables (0x80121158/198/1D8/1F0, all <15/<6 bounds).
+  All callees clean. Dual ABI: callers pass host desc ptr via
+  fn_lookup OR guest addr via call_guest — use br2_gaddr() normalize
+  (pattern: dialog_sel_dispatch save.c:3583). u16_counter_step_pad_a
+  and mode_string_dispatch want GUEST addrs; print path prefers host
+  print_dispatch_selfdesc. Return v0=0. Next port candidate.
+- **cps_8015d69c DEFERRED** (save/media stepper, 332 blocks): feasible
+  but high-risk — menu_sprite_load_sm -> cd_file_load_sm is a
+  deliberately-delegated IRQ path; synchronous port needs
+  br2_guest_frame + br2_bail_pending checks around the sprite-load/
+  cd_timer_read retry loop or it reintroduces the starvation wedge.
+  Also documented dormant in observed traces — low runtime payoff.
+- clean_cps.map now ~10100 wrappers; session total ~520 rows retired.
