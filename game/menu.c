@@ -5910,7 +5910,7 @@ void round_announce_block(uint32_t ctx,uint32_t ctx2,const void *str,
 int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
                      void *unused)
 {
-  uint32_t s2 = sel_b;
+  uint32_t dlen;
   uint32_t ttab, state, res_id;
   int32_t  cur_st;
   (void)unused;
@@ -5947,7 +5947,7 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
     if (cd_file_load_sm(res_id, ttab) == 0) goto L_store;
     goto L_mid;
   case 0x20:
-    res_id = (s2 == 8) ? 0x3f : MB8(0x801b49f8 + s2);
+    res_id = (sel_b == 8) ? 0x3f : MB8(0x801b49f8 + sel_b);
     res_id += 0xc7;
     if (cd_file_load_sm(res_id, ttab) == 0) goto L_store;
     scratch_013_set(0);
@@ -5966,7 +5966,7 @@ int32_t battle_bringup_a(uint32_t battle,uint32_t sel_a,uint32_t sel_b,
 L_mid:                                        /* 0x80148280 */
   scratch_013_set(0);
   spr_draw_pair(ttab,0,0x1f5,1,0x200,0,1);       /* arg7 = state = 1 */
-  if (sel_a == s2 && s2 != 8) {
+  if (sel_a == sel_b && sel_b != 8) {
     spr_draw_pair(ttab,0,0x1f6,1,0x260,0,1);
     state = 0x30;
   } else {
@@ -5979,23 +5979,23 @@ L_mid:                                        /* 0x80148280 */
 
 L_tail48:                                     /* 0x80148394 */
   scratch_013_set(0);
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x31);
+  dlen = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x31);
   spr_draw_off(MB32(0x801c47b8),0x300,0x100,1);
-  MW32(0x801c47b8, MB32(0x801c47b8) + s2);   /* delay-slot store */
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x32);
+  MW32(0x801c47b8, MB32(0x801c47b8) + dlen);   /* delay-slot store */
+  dlen = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x32);
   spr_draw_off(MB32(0x801c47b8),0x280,0x100,1);
-  MW32(0x801c47b8, MB32(0x801c47b8) + s2);
-  s2 = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x30);
+  MW32(0x801c47b8, MB32(0x801c47b8) + dlen);
+  dlen = stream_block_decode(MB32(0x801c47b8),(int *)guest_at(ttab),0x30);
   spr_draw_off(MB32(0x801c47b8),0,0x1e0,1);
   {
-    uint32_t rA = s2;                        /* heapA still owes r3 */
-    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x34);
+    uint32_t rA = dlen;                        /* heapA still owes r3 */
+    dlen = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x34);
     MW32(0x801c47b8, MB32(0x801c47b8) + rA);
     spr_draw_off(MB32(0x801e3cfc),0x2c0,0,1);
-    MW32(0x801e3cfc, MB32(0x801e3cfc) + s2);
-    s2 = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x35);
+    MW32(0x801e3cfc, MB32(0x801e3cfc) + dlen);
+    dlen = stream_block_decode(MB32(0x801e3cfc),(int *)guest_at(ttab),0x35);
     spr_draw_off(MB32(0x801e3cfc),0x2c0,0x100,1);
-    MW32(0x801e3cfc, MB32(0x801e3cfc) + s2);
+    MW32(0x801e3cfc, MB32(0x801e3cfc) + dlen);
   }
   cd_timer_read(0);
   scratch_013_set(1);
