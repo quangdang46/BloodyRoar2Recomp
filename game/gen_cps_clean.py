@@ -498,60 +498,12 @@ GPR_NAMES = ['zero','at','v0','v1','a0','a1','a2','a3','t0','t1','t2','t3','t4',
              'k0','k1','gp','sp','fp','ra']
 _GPR_RE = re.compile(r'cpu->gpr\[(\d+)\]')
 
-def _cond_slug(expr):
-    """Expression-derived identifier for a saved branch-condition temp."""
-    e = re.sub(r'\((?:u?int(?:8|16|32|64)_t|char|short|ushort|byte|long|uint|'
-               r'bool|size_t)\)', '', expr.strip())
-    e = e.strip('() ')
-    e = e.replace('<<', ' §L§ ').replace('>>', ' §R§ ')
-    for a, b in (('&&', '_and_'), ('||', '_or_'), ('==', '_eq_'),
-                 ('!=', '_ne_'), ('<=', '_le_'), ('>=', '_ge_'),
-                 ('<', '_lt_'), ('>', '_gt_'), ('!', '_not_'), ('~', '_not_')):
-        e = e.replace(a, b)
-    e = e.replace(' §L§ ', '_shl_').replace(' §R§ ', '_shr_')
-    toks = re.findall(r'[A-Za-z_]\w*|0x[0-9a-fA-F]+|\d+', e)
-    s = re.sub(r'_+', '_', '_'.join(toks)).strip('_')
-    s = re.sub(r'[^A-Za-z0-9_]', '', 'cond_' + s)
-    return s[:56].rstrip('_') if len(s) > 56 else s
-
-
 def rename_temps(body):
-    """Per-function rename of generated _bc_<addr>/_jt_<addr> temps to
-    readable cond_*/jr_target names. Scoped to one emitted body so shared
-    guest addrs across sibling pieces never collide."""
-    lines = body.split('\n')
-    ren = {}
-    used = set()
-    # _bc_<addr> decls carry their predicate expr — slug it.
-    for ln in lines:
-        m = re.search(r'\b(_bc_[0-9a-fA-F]+)\b\s*=\s*(\(.*\))\s*;', ln)
-        if not m or m.group(1) in ren:
-            continue
-        base = _cond_slug(m.group(2))
-        cand, c = base, 2
-        while cand in used or cand in ren.values():
-            cand = f'{base}_{c}'
-            c += 1
-        ren[m.group(1)] = cand
-        used.add(cand)
-    # _jt_<addr> latches -> jr_target, jr_target_2, ...
-    jt = 0
-    for ln in lines:
-        for m in re.finditer(r'\b(_jt_[0-9a-fA-F]+)\b', ln):
-            addr = m.group(1)
-            if addr in ren:
-                continue
-            jt += 1
-            cand = 'jr_target' if jt == 1 else f'jr_target_{jt}'
-            while re.search(r'\b' + re.escape(cand) + r'\b', body):
-                jt += 1
-                cand = f'jr_target_{jt}'
-            ren[addr] = cand
-    if not ren:
-        return body
-    for old, new in ren.items():
-        body = re.sub(r'\b' + re.escape(old) + r'\b', new, body)
-    return body
+    """Rename generated _bc_<addr>/_jt_<addr> temps to the committed
+    addr-keyed convention cond_<ADDR> / jt_<ADDR> (the scripted band passes
+    normalized every body to this form; regen must match it)."""
+    body = re.sub(r'\b_bc_([0-9a-fA-F]+)\b', r'cond_\1', body)
+    return re.sub(r'\b_jt_([0-9a-fA-F]+)\b', r'jt_\1', body)
 
 
 _FOLD_RE = re.compile(
@@ -614,6 +566,77 @@ def fold_idioms(body):
     return '\n'.join(out)
 
 
+# f15413fe readability folds, ported into the transformer so regen keeps them:
+#  1. drop a `cpu->pc = X; return;` line when the previous emitted line is
+#     also a dispatch-return (unreachable duplicate — the first already
+#     returned; ~231 sites in cps_clean.c)
+#  2. `X = 0xHHHH << 16;` + `X +/-= off;` -> `X = 0xVVVVVVVVu; /* base off */`
+#  3. `X <<= 16;`/`X = X << 16;` + `X = (int32_t)X >> 16;` ->
+#     `X = (int32_t)(int16_t)X;`  (adjacent pairs only — delay-slot-separated
+#     pairs keep the two-step form, matching the committed convention)
+_DISPATCH_RET_RE = re.compile(r'^\s*cpu->pc = 0x[0-9a-fA-F]+u;\s*return;')
+_LUI_RE = re.compile(
+    r'^(\s*)([A-Za-z_]\w*) = 0x([0-9a-fA-F]+) << 16;\s*(/\*[^*]*\*/)?\s*$')
+_OFF_RE = re.compile(
+    r'^(\s*)([A-Za-z_]\w*) ([+\-])= (-?(?:0x[0-9a-fA-F]+|\d+));\s*$')
+_SHL_RE = re.compile(
+    r'^(\s*)([A-Za-z_]\w*) (?:<<= 16|= \2\s*<< 16);\s*$')
+_SRA_RE = re.compile(
+    r'^\s*([A-Za-z_]\w*) = \(int32_t\)\1 >> 16;\s*$')
+
+
+def _off_val(s):
+    return int(s, 16) if s.lower().startswith('0x') else int(s)
+
+
+def fold_cps_readability(body):
+    lines = body.split('\n')
+    out = []
+    prev_sig = ''
+    i = 0
+    while i < len(lines):
+        ln = lines[i]
+        if (_DISPATCH_RET_RE.match(ln) and _DISPATCH_RET_RE.match(prev_sig)):
+            i += 1
+            continue
+        m1 = _LUI_RE.match(ln)
+        if m1:
+            var, ind = m1.group(2), m1.group(1)
+            base = int(m1.group(3), 16) << 16
+            if i + 1 < len(lines):
+                m2 = _OFF_RE.match(lines[i + 1])
+                if m2 and m2.group(2) == var:
+                    off = _off_val(m2.group(4))
+                    if m2.group(3) == '-':
+                        off = -off
+                    val = (base + off) & 0xFFFFFFFF
+                    out.append(f'{ind}{var} = 0x{val:08X}u;'
+                               f'  /* 0x{base:08X} {off} */')
+                    prev_sig = out[-1]
+                    i += 2
+                    continue
+            # bare LUI const build: X = 0xHHHH << 16 -> X = 0xHHHH0000u
+            cmt = (m1.group(4) or f'/* 0x{base:08X} */').strip()
+            out.append(f'{ind}{var} = 0x{base:08X}u;  {cmt}')
+            prev_sig = out[-1]
+            i += 1
+            continue
+        m1 = _SHL_RE.match(ln)
+        if m1 and i + 1 < len(lines):
+            m2 = _SRA_RE.match(lines[i + 1])
+            if m2 and m2.group(1) == m1.group(2):
+                var, ind = m1.group(2), m1.group(1)
+                out.append(f'{ind}{var} = (int32_t)(int16_t){var};')
+                prev_sig = out[-1]
+                i += 2
+                continue
+        out.append(ln)
+        if ln.strip():
+            prev_sig = ln
+        i += 1
+    return '\n'.join(out)
+
+
 def _gpr_names(m):
     """Map a numeric gpr index capture to its architectural name."""
     return GPR_NAMES[int(m.group(1))]
@@ -643,6 +666,7 @@ def emit_fn(addr):
     core = _GPR_RE.sub(_gpr_names, transform(body))
     core = rename_temps(core)
     core = fold_idioms(core)
+    core = fold_cps_readability(core)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the

@@ -1053,3 +1053,33 @@ Verified: clean build EU + USA (fresh configure, PSX_DEBUG_TOOLS=ON —
 note: default Release configure sets PSX_NO_DEBUG_TOOLS=1, which is why
 the first rebuild had no debug port); headless :5143 frames -> 32019,
 clean_fallback_stats count=0, no wedge.
+
+## Batch 52 (orch/w5/e05) — regen cps_clean.c; port scripted-pass conventions into transformer
+
+Regen of game/cps_clean.c (--file, 743 addrs) surfaced that the scripted
+band passes (f15413fe + 834adeb6/e03447a1/2efeb7c3/e244a784/1858d225) had
+left readability conventions the transformer didn't emit. All ported into
+gen_cps_clean.py so regen is now lossless vs committed style:
+
+- rename_temps: _bc_<ADDR>/_jt_<ADDR> -> cond_<ADDR>/jt_<ADDR>
+  (was cond_<slug>/jr_target — committed file is 100% addr-keyed)
+- fold_cps_readability (new, runs after fold_idioms):
+  * drop unreachable duplicate `cpu->pc = X; return;` (prev line also a
+    dispatch-return)
+  * `X = 0xHHHH << 16; X +/-= off;` -> `X = 0xVVVVVVVVu; /* base off */`
+  * bare `X = 0xHHHH << 16;` -> `X = 0xHHHH0000u;` (the 530+ "const builds")
+  * adjacent `X <<= 16; X = (int32_t)X >> 16;` -> `(int32_t)(int16_t)X`
+    (delay-slot-separated pairs intentionally kept two-step)
+- cps_clean.c regenerated: 66,276 lines (was 69,536); header gains the
+  cpst_* unaligned-op helpers shared with cd_irq_probe.c
+- cd_irq_probe.c: fold_cps_readability applied file-wide (LUI folds fire
+  on bare builds; pair/sign folds rare due to psx_cyc_step interleave —
+  non-adjacent folding rejected: IRQ handlers can observe gpr mid-window)
+
+Known accepted losses (generated output wins): w5e02 semantic header
+annotations, 1858d225's 12 hand-rewritten bodies (0x80126178-0x80126234
+operand folding), cond slug names in cd_irq_probe.c (jr_target kept —
+addr-keyed rename needs full --timing regen, deferred).
+
+Verified: clean build EU + USA; headless :5149 frame 43516 attract CD
+streaming, clean_fallback_stats count=0, scratchpad live.
