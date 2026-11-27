@@ -136,16 +136,22 @@ static int interp_exception(CPUState *cpu, uint32_t exc_code,
 
 #ifdef PSX_COSIM
 static int g_cosim_exec_one_hooked = 0;
+/* Co-sim hook: begin one-instruction execution window. */
 static void cosim_exec_one_begin(void) { g_cosim_exec_one_hooked = 0; }
+/* Co-sim hook predicate (stub when COSIM off). */
 static int cosim_exec_one_did_hook(void) { return g_cosim_exec_one_hooked; }
+/* Co-sim hook: transfer PC to the oracle. */
 static void cosim_exec_one_transfer_hook(uint32_t pc) {
     extern void cosim_instr(uint32_t);
     cosim_instr(pc);
     g_cosim_exec_one_hooked = 1;
 }
 #else
+/* Co-sim hook: begin one-instruction execution window. */
 static void cosim_exec_one_begin(void) {}
+/* Co-sim hook predicate (stub when COSIM off). */
 static int cosim_exec_one_did_hook(void) { return 0; }
+/* Co-sim hook: transfer PC to the oracle. */
 static void cosim_exec_one_transfer_hook(uint32_t pc) { (void)pc; }
 #endif
 uint64_t g_slice_fired = 0;        /* diagnostic: slices actually run */
@@ -245,6 +251,7 @@ extern uint64_t s_frame_count;
  * ~99% of the host emu thread rescanning 64K slots per executed instruction
  * (0.3 fps).  128 probes keeps misses vanishingly rare below ~85% fill with
  * this hash; past that the tracking data was already degrading anyway. */
+/* Insert/find a PC-table slot in a given table. */
 static DirtyRamPcEntry *pc_table_get_or_insert_in(DirtyRamPcEntry *table, uint32_t pc) {
     uint32_t h = (pc * 2654435761u) & (DIRTY_RAM_PC_TABLE_SIZE - 1);
     for (uint32_t i = 0; i < 128u; i++) {
@@ -256,7 +263,9 @@ static DirtyRamPcEntry *pc_table_get_or_insert_in(DirtyRamPcEntry *table, uint32
     return NULL;
 }
 
+/* Find-or-insert pc in the global dirty-RAM PC table. */
 static DirtyRamPcEntry *pc_table_get_or_insert(uint32_t pc) {
+    /* Insert/find a PC-table slot in a given table. */
     return pc_table_get_or_insert_in(g_dirty_ram_pc_table, pc);
 }
 
@@ -288,6 +297,7 @@ extern uint32_t g_debug_last_store_pc;
  * can't leave it stuck on. NATIVE_OVERLAY (inprogress!=0) takes precedence in
  * the ring's mode resolution, so this only distinguishes INTERP from STATIC. */
 int g_dirty_interp_active = 0;
+/* True while the dirty-RAM interpreter owns execution. */
 int dirty_ram_interp_is_active(void) { return g_dirty_interp_active; }
 
 /* Innermost execution phase, for the wall-time sampler (phase_profile).
@@ -305,6 +315,7 @@ int dirty_ram_interp_is_active(void) { return g_dirty_interp_active; }
  * at entry and restores after its setjmp loop (interrupts.c), so a skipped
  * inner restore self-heals at the next bracket. */
 int g_exec_phase = 0;
+/* Current innermost execution phase (for the wall-time sampler). */
 int psx_exec_phase(void) { return g_exec_phase; }
 
 /* TCP-armed instruction-window capture (native↔interp divergence drill).
@@ -351,6 +362,7 @@ void dirty_ram_ld_delay_flush(CPUState *cpu) {
     cpu->gpr[0] = 0;
 }
 
+/* Discard pending load-delay writebacks (snap restore). */
 void dirty_ram_ld_delay_discard(void) {
     s_ld_pend_armed = 0;
     s_ld_pend_age   = 0;
@@ -358,6 +370,7 @@ void dirty_ram_ld_delay_discard(void) {
     s_ld_pend_val   = 0;
 }
 
+/* Re-anchor host-only IRQ pump ambient at the restored timeline. */
 void dirty_ram_irq_ambient_resync_after_restore(void) {
     /* Re-anchor host-only IRQ pump ambient at the restored timeline so both
      * peers take the first post-load dirty entry poll from the same phase. */
@@ -420,6 +433,7 @@ uint32_t g_ra_load_snap_gpr[32] = {0};
  * is still an empty window, so the ring stays disarmed (and zero-cost) until
  * someone sets one. */
 uint32_t g_callret_lo = 0, g_callret_hi = 0;
+/* True if a call-return watch entry is armed for this PC. */
 int callret_armed(void) { return g_callret_hi > g_callret_lo; }
 /* MUST stay field-for-field identical to the local mirror `E` in
  * debug_server.c handle_callret_watch() (which dumps this ring through an
@@ -464,6 +478,7 @@ static uint32_t callret_begin(CPUState *cpu, uint32_t pc, uint32_t target) {
       e->dexc = (uint32_t)exc; }
     return idx;
 }
+/* End a call-return watch entry. */
 static void callret_end(uint32_t idx, CPUState *cpu, uint32_t path) {
     if (idx == 0xFFFFFFFFu) return;
     CallRetEnt *e = &g_callret_ring[idx];
@@ -577,6 +592,7 @@ static int ws_cull_site(uint32_t pc) {
  * qualification + per-PC cache discipline as ws_cull_site above; additionally
  * classifies THIS bltz structurally (delay-slot width compare / addu-subu
  * pair), so an unrelated bltz in a qualifying window stays vanilla. */
+/* Widescreen-cull site classification for a BLTZ site. */
 static int ws_cull_bltz_site(uint32_t pc) {
     enum { WIN = 128 };                       /* +/- 128 words = +/- 512 bytes */
     static struct { uint32_t pc; uint32_t gen; uint32_t word; int8_t flag; } cache[WS_SITE_CACHE_SLOTS];
@@ -608,6 +624,7 @@ static int ws_cull_bltz_site(uint32_t pc) {
  * the detector's absolute-PC math matches the masked PC), cached per-PC so a hot
  * generator pays the scan once. Returns WS_BD_NONE / WS_BD_START_ZERO /
  * WS_BD_END_WIDEN. Single-threaded interp => static buffers are safe. */
+/* Widescreen backdrop site classification. */
 static int ws_backdrop_site_kind(uint32_t pc, int *out_cols) {
     enum { WIN = 128 };                          /* +/- 128 words = +/- 512 bytes */
     static struct { uint32_t pc; uint32_t gen; uint32_t word; int8_t kind; int16_t cols; } cache[WS_SITE_CACHE_SLOTS];
@@ -785,6 +802,7 @@ static uint32_t g_unsupported_pc = 0;
 static uint32_t g_unsupported_insn = 0;
 static const char *g_unsupported_reason = NULL;
 
+/* Record an unsupported-instruction abort. */
 static int abort_unsupported(uint32_t pc, uint32_t insn, const char *reason) {
     g_dirty_ram_aborts++;
     g_unsupported_seen   = 1;
@@ -814,6 +832,7 @@ static inline int phys_is_overlay_flow_region(uint32_t phys) {
     return phys >= DIRTY_RAM_KERNEL_WINDOW_END;
 }
 
+/* True if a jump target is inside a local dirty region. */
 static int is_local_dirty_target(uint32_t target) {
     uint32_t phys = target & 0x1FFFFFFFu;
     return phys_is_overlay_flow_region(phys) && dirty_ram_is_dirty(phys);
@@ -830,6 +849,7 @@ static uint32_t g_dirty_interp_chain_target = 0;
  * bytes in dirty pages; jumping into those and interpreting them as code is
  * how the original cache build produced black/blue screens.  When the target
  * word doesn't look like code, fall back to the normal dispatch path. */
+/* Heuristic: word looks like a decodable MIPS insn. */
 static int dirty_ram_word_looks_decodable(uint32_t insn) {
     if (insn == 0xFFFFFFFFu || insn == 0xFFFFFFFDu) return 0;
 
@@ -874,10 +894,12 @@ static int dirty_ram_word_looks_decodable(uint32_t insn) {
     }
 }
 
+/* Compare PCs ignoring the KSEG mirror bit. */
 static int dirty_ram_same_pc(uint32_t a, uint32_t b) {
     return (((a ^ b) & 0x1FFFFFFFu) == 0);
 }
 
+/* Snapshot/restore the dirty-pump boundary state. */
 static int dirty_ram_pump_boundary(CPUState *cpu, uint32_t committed_pc, int site) {
     uint32_t prev_safe = g_dirty_safe_resume_pc;
     int prev_site = g_cosim_dirty_pump_site;
@@ -958,6 +980,7 @@ static int dispatch_nonlocal_call(CPUState *cpu, uint32_t target,
  * code (boot, dialogue, deep-but-bounded recursion) stays far below the watermark;
  * only the runaway approaches it. Toggle off with PSX_MIXED_OWNER=0; watermark via
  * PSX_MIXED_STACK_KB (default 700; fiber ~1MB, native-stack guard ~768KB used). */
+/* Cached PSX_MIXED_OWNER gate. */
 static int psx_mixed_owner_enabled(void) {
     static int v = -1;
     if (v < 0) { const char *e = getenv("PSX_MIXED_OWNER"); v = (e && e[0] == '0') ? 0 : 1; }
@@ -973,9 +996,11 @@ static size_t interp_host_stack_used(void) {
     return (base > sp) ? (size_t)(base - sp) : 0;
 }
 #else
+/* Interp host stack usage probe. */
 static size_t interp_host_stack_used(void) { return 0; }
 #endif
 
+/* Stack watermark for the mixed-owner interp. */
 static size_t psx_mixed_stack_watermark(void) {
     static long v = -1;
     if (v < 0) { const char *e = getenv("PSX_MIXED_STACK_KB");
@@ -1020,6 +1045,7 @@ static void site_note(SiteRec *s) {
     s->cur++;
 }
 
+/* Emit one site-profile JSON object. */
 static int site_json(char *out, int cap, const char *name, const SiteRec *s) {
     int n = snprintf(out, cap, "  \"%s\": {\"max_per_frame\":%u,\"cur_frame\":%u,\"cur_count\":%u,\"history\":[",
                      name, s->maxf, s->last_frame, s->cur);
@@ -1124,6 +1150,7 @@ static void xprobe_env_init(void) {
     const char *b = getenv("PSX_XPROBE_STK_KB");     if (b && *b) g_xprobe_stk_kb     = atoi(b);
     const char *c = getenv("PSX_XPROBE_WARMUP");     if (c && *c) g_xprobe_warmup     = atoi(c);
 }
+/* Arm the xprobe divergence watcher. */
 void dirty_ram_xprobe_arm(int frame_trip, int stk_kb, int warmup) {
     g_xprobe_frame_trip = frame_trip; g_xprobe_stk_kb = stk_kb; g_xprobe_warmup = warmup;
     s_xprobe_tripped = 0;   /* (re-)arm */
@@ -1210,6 +1237,7 @@ int dirty_ram_xprobe_watch_get(int index, uint32_t *phys_out)
     return 1;
 }
 
+/* Number of armed xprobe watchpoints. */
 int dirty_ram_xprobe_watch_count(void) { return s_xprobe_watch_n; }
 static void xprobe_event(uint32_t src_pc, uint8_t op, uint8_t site, uint32_t target,
                          uint32_t ds_insn, uint32_t sp, uint32_t ra, int want_detail);
@@ -1217,6 +1245,7 @@ static void xprobe_event(uint32_t src_pc, uint8_t op, uint8_t site, uint32_t tar
  * via dispatch_call). phase 0 = before the call (ds = a0),
  * phase 1 = after it returned (ds = v0). Recorded as XOP_RES with
  * site = 20+phase so the `watched` dump shows the shard-side call + result. */
+/* Xprobe note for a call/return edge. */
 void dirty_ram_xprobe_call_note(CPUState *cpu, uint32_t target, uint32_t ra, uint8_t phase) {
     if (!g_xprobe_watch(target)) return;
     xprobe_event(ra, XOP_RES, (uint8_t)(20u + phase), target,
@@ -1359,6 +1388,7 @@ int dirty_ram_xprobe_json(char *out, int cap) {
  * In the BIOS-only build psx_dispatch_game_compiled does not exist, and the
  * two callers below are themselves gated behind the same macro. */
 #ifdef PSX_HAS_GAME_DISPATCH
+/* Decide whether the interp hands off to compiled code. */
 static int interp_enter_compiled(CPUState *cpu, uint32_t target) {
     if (target == 0x8001A954u) site_note(&g_site_interp);
     /* Decline when the target page no longer matches the static game image.
@@ -1390,6 +1420,7 @@ static int interp_enter_compiled(CPUState *cpu, uint32_t target) {
  * Branches encode their delay slot themselves before returning 1. */
 static int exec_one_fetched(CPUState *cpu, uint32_t pc, uint32_t insn,
                             uint32_t *next_pc_out);
+/* Execute one guest instruction (fetch + dispatch). */
 static int exec_one(CPUState *cpu, uint32_t pc, uint32_t *next_pc_out) {
     return exec_one_fetched(cpu, pc, fetch_word(pc & 0x1FFFFFFFu), next_pc_out);
 }
@@ -1862,6 +1893,7 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
             return 0;
         }
         default:
+            /* Record an unsupported-instruction abort. */
             return abort_unsupported(pc, insn, "SPECIAL funct");
         }
         break;
@@ -2207,6 +2239,7 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
             psx_rfe_mark_escape();
             return 0;
         }
+        /* Record an unsupported-instruction abort. */
         return abort_unsupported(pc, insn, "COP0 op");
     }
     case 0x12: { /* COP2 / GTE */
@@ -2250,6 +2283,7 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
             gte_execute(cpu, insn & 0x1FFFFFFu);
             return 0;
         }
+        /* Record an unsupported-instruction abort. */
         return abort_unsupported(pc, insn, "COP2 op");
     }
     /* CPU loads: the full per-instruction R3000A interlock (§1 + GPR_DEPRES(rs) +
@@ -2391,11 +2425,13 @@ static int exec_one_fetched_inner(CPUState *cpu, uint32_t pc, uint32_t insn,
         return 0;
     }
     default:
+        /* Record an unsupported-instruction abort. */
         return abort_unsupported(pc, insn, "primary opcode");
     }
     return 0;
 }
 
+/* Inner dispatch: resolve target and run compiled/interp. */
 static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_addr);
 
 /* Record a dirty_ram_dispatch_inner return-0 into the reject ring. Gathers
@@ -2474,6 +2510,7 @@ static void dirty_ram_reject_log(CPUState *cpu, uint32_t addr, uint32_t reason,
  * PSX_RECURSION_LIMIT. One-shot. NOT a fix — the upstream bogus-pointer divergence
  * still needs the oracle; this converts a hard crash into a catchable, diagnosed
  * bail (Rule 15: make the failure observable). */
+/* Top-level dirty-RAM dispatch entry. */
 int dirty_ram_dispatch(CPUState* cpu, uint32_t addr, uint32_t stop_addr) {
     extern int g_psx_dispatch_depth;
     extern void psx_fatal_halt(const char *reason);
@@ -2623,6 +2660,7 @@ static int precise_irq_deliverable(CPUState *cpu) {
  * Therefore the precise slicer must never hand control back at a mid-function
  * clean-text PC: it keeps interpreting (exec_one handles arbitrary mid-function
  * flow) until cpu->pc satisfies this predicate. */
+/* True if pc can be dispatched in precise mode. */
 static int precise_pc_dispatchable(uint32_t pc) {
 #ifdef PSX_HAS_GAME_DISPATCH
     uint32_t phys = pc & 0x1FFFFFFFu;
@@ -2643,6 +2681,7 @@ static int precise_pc_dispatchable(uint32_t pc) {
  * IRQ we keep interpreting to the next transfer before handing back to compiled.
  * `bcyc` = originating block's cycle budget; `deadline_entry` = entered because an
  * event is due within bcyc (vs a side-effect-only block, which runs one block). */
+/* Run the precise (per-instruction) execution mode. */
 static void psx_run_precise(CPUState *cpu, uint32_t bcyc, int deadline_entry) {
     int prev_precise = g_precise_mode;
     int prev_active  = g_dirty_interp_active;
@@ -2804,6 +2843,7 @@ static void psx_run_precise(CPUState *cpu, uint32_t bcyc, int deadline_entry) {
  * PSX_PRECISE_SLICE=1 (same binary A/B). */
 int g_psx_precise_slice = 0;
 
+/* Init precise-slice config from PSX_PRECISE_SLICE. */
 void psx_precise_slice_init_from_env(void) {
     const char *e = getenv("PSX_PRECISE_SLICE");
     g_psx_precise_slice = (e && e[0] == '1') ? 1 : 0;
@@ -2815,6 +2855,7 @@ void psx_precise_slice_init_from_env(void) {
  * interpreter and left cpu->pc at a dispatchable resume point; the caller MUST
  * `return` so its compiled body does not re-execute the same instructions).
  * Returns 0 if the whole block is provably safe to run as fast compiled C. */
+/* Precise take-point slicing (parked; see PRECISE_IRQ_SLICE.md). */
 int psx_slice_block_impl(CPUState *cpu, uint32_t block_addr, uint32_t bcyc, int side_effects) {
     /* PARKED (PRECISE_IRQ_SLICE.md): precise take-point slicing is a later
      * correctness upgrade, NOT the current FMV blocker (that is the -8 cycle
@@ -2859,6 +2900,7 @@ int psx_slice_block_impl(CPUState *cpu, uint32_t block_addr, uint32_t bcyc, int 
  * (boot crash, addr=0x8001f22080010000).  A real call frame restores
  * callee-saved regs per the ABI and keeps the wrapper's static base intact. */
 __attribute__((noinline))
+/* Inner dispatch: resolve target and run compiled/interp. */
 static int dirty_ram_dispatch_inner(CPUState* cpu, uint32_t addr, uint32_t stop_addr) {
     uint32_t phys = addr & 0x1FFFFFFFu;
     int clean_game_text_miss = 0;
@@ -3546,16 +3588,22 @@ static struct {
 static ls_op_t s_lsf_div_trace[48];
 static int     s_lsf_div_trace_n = 0, s_lsf_div_idx = 0;
 
+/* Set the lockstep record/replay PC window. */
 void ls_set_window(uint32_t lo, uint32_t hi) { s_ls_frame_lo = lo; s_ls_frame_hi = hi; }
+/* Lock record-only mode (no replay verify). */
 void ls_set_record_only(int on) { s_ls_record_only = on; }
+/* Set the function-level lockstep window. */
 void ls_func_set_window(uint32_t lo, uint32_t hi) { s_lsf_frame_lo = lo; s_lsf_frame_hi = hi; }
+/* Function-level record-only mode. */
 void ls_func_set_record_only(int on) { s_lsf_record_only = on; }
 
+/* Note an exception entry during lockstep record. */
 void ls_note_exception_entry(void) {
     if (s_lsf_active) s_lsf_saw_irq = 1;
     if (s_ls_shadow_owner == 1) s_ls_shadow_saw_exception = 1;
 }
 
+/* Begin shadow lockstep record. */
 int ls_shadow_record_begin(void) {
     if (s_ls_shadow_owner || g_ls_mode != 0 || g_ls_replay_active ||
         s_lsf_active || s_ls_prev_valid)
@@ -3572,6 +3620,7 @@ int ls_shadow_record_begin(void) {
     return 1;
 }
 
+/* End shadow lockstep record. */
 int ls_shadow_record_end(uint32_t *ops, int *saw_exception) {
     if (s_ls_shadow_owner != 1) return 0;
     g_ls_mode = 0;
@@ -3581,6 +3630,7 @@ int ls_shadow_record_end(uint32_t *ops, int *saw_exception) {
     return !s_ls_overflow;
 }
 
+/* Begin shadow lockstep replay. */
 int ls_shadow_replay_begin(void) {
     if (s_ls_shadow_owner || g_ls_mode != 0 || g_ls_replay_active ||
         s_ls_overflow)
@@ -3613,6 +3663,7 @@ int ls_shadow_replay_end(uint32_t *ops, int *mismatch_kind,
     return complete;
 }
 
+/* Abort an in-progress shadow lockstep session. */
 void ls_shadow_abort(void) {
     g_ls_mode = 0;
     g_ls_replay_active = 0;
@@ -3620,14 +3671,17 @@ void ls_shadow_abort(void) {
     s_ls_shadow_saw_exception = 0;
 }
 
+/* Suppress lockstep recording (nestable). */
 void ls_suppress_begin(void) {
     g_ls_suppress_record++;
 }
 
+/* End lockstep-record suppression. */
 void ls_suppress_end(void) {
     if (g_ls_suppress_record > 0) g_ls_suppress_record--;
 }
 
+/* Lockstep memory-read hook (record or replay-verify). */
 uint32_t ls_read_hook(uint32_t addr, int size, uint32_t real_val) {
     if (g_ls_mode == 2) {                 /* replay: serve from trace */
         if (s_ls_trace_idx >= s_ls_trace_n) { s_ls_replay_done = 1; return 0; }  /* count mismatch: benign block-boundary artifact */
@@ -3649,6 +3703,7 @@ uint32_t ls_read_hook(uint32_t addr, int size, uint32_t real_val) {
     return real_val;
 }
 
+/* Lockstep memory-write hook (record or replay-verify). */
 void ls_write_hook(uint32_t addr, int size, uint32_t val) {
     if (g_ls_mode == 2) {                 /* replay: verify against trace */
         if (s_ls_trace_idx >= s_ls_trace_n) { s_ls_replay_done = 1; return; }  /* count mismatch: benign block-boundary artifact */
@@ -3741,10 +3796,12 @@ static void ls_replay_and_compare(CPUState *cpu, uint32_t frame, uint32_t target
     }
 }
 
+/* Compare physical addresses ignoring the KSEG mirror bit. */
 static int ls_same_phys(uint32_t a, uint32_t b) {
     return (((a ^ b) & 0x1FFFFFFFu) == 0);
 }
 
+/* Copy divergence trace entries for reporting. */
 static void lsf_copy_div_trace(void) {
     int n = s_ls_trace_n;
     if (n > 48) n = 48;
@@ -3880,6 +3937,7 @@ static void lsf_replay_and_compare(CPUState *native_post, uint32_t frame,
     lsf_compare_regs(&rep, native_post, frame, entry_pc, steps);
 }
 
+/* Function-level lockstep: note a function entry. */
 void ls_func_enter(uint32_t entry_pc, CPUState *cpu) {
     if (s_lsf_frame_hi == 0 || s_lsf_div.found || !cpu) return;
     if (g_ls_replay_active || g_ls_mode != 0 || s_lsf_active) {
@@ -3906,6 +3964,7 @@ void ls_func_enter(uint32_t entry_pc, CPUState *cpu) {
     s_lsf_recording = 0;
 }
 
+/* Function-level lockstep: note a function exit. */
 void ls_func_exit(uint32_t entry_pc, CPUState *cpu, int handled) {
     if (!s_lsf_active) return;
     if (s_lsf_dispatch_entry != entry_pc) {
@@ -3942,6 +4001,7 @@ void ls_func_exit(uint32_t entry_pc, CPUState *cpu, int handled) {
     lsf_replay_and_compare(cpu, s_lsf_frame, s_lsf_entry);
 }
 
+/* True if pc is at a lockstep leader boundary. */
 void ls_at_leader(uint32_t leader_phys, CPUState *cpu) {
     if (s_lsf_active) {
         if (!s_lsf_recording && cpu && !s_lsf_div.found && g_ls_mode == 0) {
@@ -3989,6 +4049,7 @@ void ls_at_leader(uint32_t leader_phys, CPUState *cpu) {
     }
 }
 
+/* JSON divergence report for the lockstep tracer. */
 int ls_get_diverge_json(char *buf, int buflen) {
     static const char *kn[] = {"none","reg","hi","lo","write-val","read-addr",
                                "write-addr","trace-exhausted","compiled-extra-ops","path-cap"};
@@ -4010,6 +4071,7 @@ int ls_get_diverge_json(char *buf, int buflen) {
     return p;
 }
 
+/* JSON function-level lockstep report. */
 int ls_get_func_json(char *buf, int buflen) {
     static const char *kn[] = {
         "none","gpr","hi","lo","pc","write-val","read-addr","write-addr",

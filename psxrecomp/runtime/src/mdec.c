@@ -124,6 +124,8 @@ static MDECDebugEvent mdec_trace[MDEC_TRACE_CAP];
 static uint64_t mdec_trace_seq;
 static uint32_t mdec_trace_head;
 
+/* Push an MDEC event into the debug ring (suppressed during FMV-quiet
+ * debug mode / PSX_NO_DEBUG_TOOLS). */
 static void trace_event(uint32_t kind, uint32_t value) {
 #ifdef PSX_NO_DEBUG_TOOLS
     (void)kind;
@@ -150,21 +152,25 @@ static void trace_event(uint32_t kind, uint32_t value) {
 #endif
 }
 
+/* Sign-extend a 10-bit value to int16. */
 static int16_t sign_extend_10(uint16_t value) {
     return (int16_t)((int16_t)(value << 6) >> 6);
 }
 
+/* Clamp value to [lo,hi]. */
 static int clamp_int(int value, int lo, int hi) {
     if (value < lo) return lo;
     if (value > hi) return hi;
     return value;
 }
 
+/* Reset the decoded-output buffer cursors. */
 static void clear_output(void) {
     mdec.output_size = 0;
     mdec.output_pos = 0;
 }
 
+/* Grow the input halfword buffer to hold `halfwords` (doubling). */
 static int ensure_input_capacity(uint32_t halfwords) {
     if (halfwords <= mdec.input_cap) return 1;
     uint32_t new_cap = mdec.input_cap ? mdec.input_cap : 256u;
@@ -176,6 +182,7 @@ static int ensure_input_capacity(uint32_t halfwords) {
     return 1;
 }
 
+/* Grow the output byte buffer to hold `bytes` (doubling). */
 static int ensure_output_capacity(uint32_t bytes) {
     if (bytes <= mdec.output_cap) return 1;
     uint32_t new_cap = mdec.output_cap ? mdec.output_cap : 4096u;
@@ -187,6 +194,7 @@ static int ensure_output_capacity(uint32_t bytes) {
     return 1;
 }
 
+/* Append one decoded byte to the output buffer. */
 static void append_byte(uint8_t value) {
     if (!ensure_output_capacity(mdec.output_size + 1u)) return;
     mdec.output[mdec.output_size++] = value;
@@ -199,11 +207,13 @@ static uint8_t *output_reserve(uint32_t bytes) {
     return mdec.output + mdec.output_size;
 }
 
+/* Read one input byte (big-endian within each halfword). */
 static uint8_t input_byte(uint32_t byte_index) {
     uint16_t hw = mdec.input[byte_index >> 1];
     return (byte_index & 1u) ? (uint8_t)(hw >> 8) : (uint8_t)hw;
 }
 
+/* End the current MDEC command (clear busy/input state, trace). */
 static void finish_command(void) {
     mdec.expected_halfwords = 0;
     mdec.input_count = 0;
@@ -212,6 +222,7 @@ static void finish_command(void) {
     trace_event(MDEC_EVT_CMD_DONE, mdec.command);
 }
 
+/* MDEC soft reset: clear command/input/output state, keep buffers. */
 static void soft_reset(void) {
     uint16_t *input = mdec.input;
     uint32_t input_cap = mdec.input_cap;
@@ -488,6 +499,7 @@ static int decode_rle_block(int16_t *block, const uint8_t *quant,
     return 1;
 }
 
+/* Convert a signed sample to the configured output format. */
 static uint8_t to_output_u8(int value) {
     value = clamp_int(value, -128, 127);
     if (mdec.output_signed) return (uint8_t)(int8_t)value;
@@ -536,6 +548,7 @@ static uint8_t *emit_rgb_pixel(uint8_t *out, int y, int cr, int cb) {
     return out + 3;
 }
 
+/* Emit one decoded 8x8 luma block into the output buffer. */
 static void append_luma_block(const int16_t *yblk) {
     uint8_t *out = output_reserve(64u);
     if (!out) return;
@@ -678,6 +691,7 @@ static void append_color_macroblock(const int16_t *crblk, const int16_t *cbblk,
  * this per display-frame to tell "MDEC is actively producing frames" (FMV)
  * from idle. */
 static volatile uint32_t g_mdec_decode_count = 0;
+/* Guest-insn/decode activity counter for the debug server. */
 uint32_t mdec_get_decode_count(void) { return g_mdec_decode_count; }
 
 /* Streaming decode: consume as many COMPLETE blocks/macroblocks as the
@@ -688,6 +702,7 @@ uint32_t mdec_get_decode_count(void) { return g_mdec_decode_count; }
  * out-channel and deadlocked games that interleave MDEC with CD DMA.
  * `final` = the command's full input has arrived (input_count==expected), so
  * a truncated tail block is decoded rather than left pending. */
+/* Stream-decode as many complete blocks as input allows. */
 static void decode_stream_available(void) {
     if (!mdec.busy) return;
     if ((mdec.command >> 29) != MDEC_CMD_DECODE) return;
@@ -740,6 +755,7 @@ static void decode_stream_available(void) {
     }
 }
 
+/* Execute the latched MDEC command (SET_QUANT/DECODE/etc). */
 static void execute_command(void) {
     uint32_t op = mdec.command >> 29;
     if (op == MDEC_CMD_SET_QUANT) {
@@ -770,6 +786,7 @@ static void execute_command(void) {
     finish_command();
 }
 
+/* Latch a new MDEC command word and reset input state. */
 static void begin_command(uint32_t value) {
     mdec.command = value;
     mdec.output_bit15 = (uint8_t)((value >> 25) & 1u);
@@ -803,6 +820,7 @@ static void begin_command(uint32_t value) {
     }
 }
 
+/* MDEC data-register write: feed command input halfwords. */
 static void write_data(uint32_t value) {
     if (mdec.busy && mdec.input_count < mdec.expected_halfwords) {
         mdec.input[mdec.input_count++] = (uint16_t)value;
@@ -823,6 +841,7 @@ static void write_data(uint32_t value) {
     begin_command(value);
 }
 
+/* True if the MDEC decoded within the recent-activity window. */
 int mdec_recently_active(uint32_t within_frames) {
     /* Guest-cycle hysteresis (not host s_frame_count). Present-skip / Replay
      * leave s_frame_count stale so a single decode looked "recent" forever
@@ -835,6 +854,7 @@ int mdec_recently_active(uint32_t within_frames) {
     return (psx_cycle_count - mdec_last_color_decode_cycle) <= window;
 }
 
+/* Guest cycles since the last color decode. */
 uint64_t mdec_color_age_cycles(void) {
     if (mdec_last_color_decode_cycle == (uint64_t)0 - 1000u)
         return (uint64_t)0 - 1u;
@@ -843,6 +863,7 @@ uint64_t mdec_color_age_cycles(void) {
     return psx_cycle_count - mdec_last_color_decode_cycle;
 }
 
+/* Reset all MDEC state (call at machine init). */
 void mdec_init(void) {
     memset(&mdec, 0, sizeof(mdec));
     memset(mdec_trace, 0, sizeof(mdec_trace));
@@ -914,9 +935,11 @@ void mdec_init(void) {
 #endif
 }
 
+/* MDEC register read dispatch (status/queued-output). */
 uint32_t mdec_read(uint32_t addr) {
     uint32_t offset = addr & 7u;
     if (offset == 0) {
+        /* DMA3 read: pop decoded output words. */
         return mdec_dma_read_word();
     }
 
@@ -940,6 +963,7 @@ uint32_t mdec_read(uint32_t addr) {
     return status;
 }
 
+/* MDEC register write dispatch (command/data). */
 void mdec_write(uint32_t addr, uint32_t value) {
     uint32_t offset = addr & 7u;
     if (offset == 0) {
@@ -956,6 +980,7 @@ void mdec_write(uint32_t addr, uint32_t value) {
     trace_event(MDEC_EVT_CTRL_WRITE, value);
 }
 
+/* DMA3 write: feed one word into the MDEC input FIFO. */
 void mdec_dma_write_word(uint32_t value) {
     write_data(value);
 }
@@ -995,6 +1020,7 @@ uint32_t mdec_dma_write_words(const uint32_t *src, uint32_t max_words) {
     return moved;
 }
 
+/* DMA3 read: pop decoded output words. */
 uint32_t mdec_dma_read_word(void) {
     uint32_t value = 0;
     uint32_t start_pos = mdec.output_pos;
@@ -1034,6 +1060,7 @@ uint32_t mdec_dma_read_words(uint32_t *dst, uint32_t max_words) {
     return moved;
 }
 
+/* DMA3 write-side ready (input FIFO has room). */
 int mdec_dma_write_ready(void) {
     /* Input DMA is backpressured only by the input side: a live command that
      * still expects halfwords. Pending decoded output does NOT stall input —
@@ -1045,10 +1072,12 @@ int mdec_dma_write_ready(void) {
     return !mdec.busy || mdec.input_count < mdec.expected_halfwords;
 }
 
+/* DMA3 read-side ready (decoded output available). */
 int mdec_dma_read_ready(void) {
     return mdec.output_pos < mdec.output_size;
 }
 
+/* Snapshot MDEC state for the debug server. */
 void mdec_debug_get_state(MDECDebugState *out) {
     if (!out) return;
     out->command = mdec.command;
@@ -1074,6 +1103,7 @@ void mdec_debug_get_state(MDECDebugState *out) {
     out->dma_read_underflows = mdec.dma_read_underflows;
 }
 
+/* Total MDEC trace events recorded. */
 uint64_t mdec_debug_get_event_total(void) {
     return mdec_trace_seq;
 }
@@ -1091,28 +1121,33 @@ uint32_t mdec_debug_copy_events(uint64_t seq_lo, uint64_t seq_hi,
     return n;
 }
 
+/* Clear the MDEC trace ring. */
 void mdec_debug_clear(void) {
     memset(mdec_trace, 0, sizeof(mdec_trace));
     mdec_trace_seq = 0;
     mdec_trace_head = 0;
 }
 
+/* Trace hook: DMA-in transfer start. */
 void mdec_debug_dma_in_start(uint32_t addr, uint32_t words) {
     (void)addr;
     trace_event(MDEC_EVT_DMA_IN_START, words);
 }
 
+/* Trace hook: DMA-in transfer end. */
 void mdec_debug_dma_in_end(uint32_t addr, uint32_t words) {
     (void)addr;
     mdec.dma_in_words += words;
     trace_event(MDEC_EVT_DMA_IN_END, words);
 }
 
+/* Trace hook: DMA-out transfer start. */
 void mdec_debug_dma_out_start(uint32_t addr, uint32_t words) {
     (void)addr;
     trace_event(MDEC_EVT_DMA_OUT_START, words);
 }
 
+/* Trace hook: DMA-out transfer end. */
 void mdec_debug_dma_out_end(uint32_t addr, uint32_t words) {
     (void)addr;
     trace_event(MDEC_EVT_DMA_OUT_END, words);
@@ -1142,6 +1177,7 @@ uint32_t mdec_snapshot_bytes(void) {
     return (uint32_t)n;
 }
 
+/* Serialize MDEC state to a save-state stream. */
 void mdec_snapshot_write(uint8_t *p) {
     PstW w;
     uint32_t n = mdec_snapshot_bytes();
@@ -1189,6 +1225,7 @@ void mdec_snapshot_write(uint8_t *p) {
         (void)pst_w_bytes(&w, mdec.output, mdec.output_size);
 }
 
+/* Restore MDEC state from a save-state stream. */
 int mdec_snapshot_read(const uint8_t *p, uint32_t len) {
     PstR r;
     uint32_t ver = 0, input_count = 0, output_size = 0, reserved;
