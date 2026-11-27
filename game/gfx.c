@@ -388,8 +388,7 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
   pkt = (uint32_t *)spr_desc_slot_alloc();
   if (pkt == (uint32_t *)0x0) {
     ret = 0xffffffff;
-  }
-  else {
+  } else {
     pkt_g = guest_of(pkt);
     *(uint16_t *)(pkt + 4) = ((uint16_t)((uint32_t)col >> 0x10) & 0xff) + 1;
     pkt[3] = attr;
@@ -561,8 +560,7 @@ uint32_t gpu_graph_reset(uint32_t arg)
     guest_memset((uint32_t *)0x801b8330, 0xff, 0x5c);
     guest_memset((uint32_t *)0x801b838c, 0xff, 0x14);
     v = (uint32_t)gpu_mode;
-  }
-  else {
+  } else {
     if (1 < gpu_dbg_level) {
       GPU_DBG(s_ResetGraph__d_____80125430, arg);
     }
@@ -635,8 +633,7 @@ uint32_t draw_env_timing(uint32_t env_g)
       }
       else if ((int16_t)hgt < 0x231) {
         tc = tc | 2;
-      }
-      else {
+      } else {
         tc = tc | 3;
       }
     }
@@ -690,8 +687,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     if ((int)tc < 0x10) {
       td = 0x10;
-    }
-    else {
+    } else {
       td = 0x101;
       if ((int)tc < 0x102) {
         td = tc;
@@ -703,8 +699,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     if (clamp_tot) {
       tc = 0x102;
     }
-  }
-  else {
+  } else {
     tb = 0x21c;
     if ((0x21b < (int)ta) && (tb = 0xc94, (int)ta < 0xc95)) {
       tb = ta;
@@ -715,8 +710,7 @@ uint32_t draw_env_timing(uint32_t env_g)
     }
     if ((int)tc < 0x13) {
       td = 0x13;
-    }
-    else {
+    } else {
       td = 0x12f;
       if ((int)tc < 0x130) {
         td = tc;
@@ -847,8 +841,7 @@ void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
     }
     if ((int16_t)h_raw < 0) {
       h = 0;
-    }
-    else {
+    } else {
       h = disp_height - 1;
       if ((int)(int16_t)h_raw <= disp_height + -1) {
         h = h_raw;
@@ -862,8 +855,7 @@ void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
            | (uint32_t)*(uint8_t *)((char *)env + 0x19);
       *(uint32_t *)(dst + 0x20) = word;
       *(uint32_t *)(dst + 0x24) = wh;
-    }
-    else {
+    } else {
       tag = '\n';
       dxy = ((uint32_t)(uint16_t)(env[1] - env[5]) << 16) | (uint16_t)(env[0] - env[4]);
       *(uint32_t *)(dst + 0x1c) =
@@ -959,8 +951,7 @@ void gpu_rect_bounds_dbg(uint32_t name, int16_t *rect)
       }
     }
     msg = s__s_bad_RECT_801254c8;
-  }
-  else {
+  } else {
     if (gpu_dbg_level != '\x02') {
       return;
     }
@@ -2001,8 +1992,7 @@ void mdec_pump_a(int32_t code)
     MDECREG_ST(0x801b68c8, 0);
     MDECREG_ST(0x801b68d4, 0);
     MDECREG_ST(0x801b68f4, 0x60000000);
-  }
-  else {
+  } else {
     printf_forward((const char *)guest_at(0x801252e8), code);
   }
   return;
@@ -2189,8 +2179,7 @@ int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
     }
     fmt = (const char *)guest_at((uint32_t)sel);
     ai = 0;                            /* varargs start at a1 */
-  }
-  else {
+  } else {
     win = (uint32_t)sel;
     fmt = (const char *)guest_at(a1);
     ai = 1;                            /* varargs start at a2 */
@@ -2241,8 +2230,7 @@ int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
         if (av < 0) {
           ua = 0u - (uint32_t)av;
           neg = 0x2d;
-        }
-        else {
+        } else {
           ua = (uint32_t)av;
         }
         count = 0;
