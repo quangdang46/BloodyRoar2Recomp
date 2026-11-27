@@ -114,6 +114,7 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
  * payload). Entries are guest addrs of libgpu syscall impls;
  * dispatch via gpu_invoke (weak no-op until ported). */
 #define GPU_TBL()  ((uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318)))
+/* gpu_call — dispatch GPU_TBL()[off>>2] through gpu_invoke with a0-a3. */
 static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
                          uint32_t a2, uint32_t a3)
 {
@@ -129,6 +130,9 @@ uint32_t gpu_rect(const void *p)
     memcpy(guest_at((uint32_t)(guest_sp() - 0x10)), p, 8);
     return (uint32_t)(guest_sp() - 0x10);
 }
+/* gpu_dbg — debug/trace sink. PTR_FUN_801b831c points at the guest debug
+ * printf; the port intentionally drops the output (no guest-side effect),
+ * so GPU_DBG(...) calls compile to nothing observable. */
 static void gpu_dbg(const char *fmt, ...)
 {
     /* PTR_FUN_801b831c -> debug/trace printf (guest func addr) */
@@ -190,6 +194,18 @@ void gpu_pkt_unlink_n(uint32_t *head,int count)
 
 /* ======== 0x8018bf40 ======== */
 
+/* Stage an 8-byte sprite RECT at frm+0x10 inside a reserved guest frame
+ * (the guest built it at $sp+0x10) and emit the GPU load-image command.
+ * frame = the guest stack-frame size the original reserved (0x20/0x28/0x30
+ * across callers); see spr_draw_off for why a reserved frame is required. */
+static void spr_rect_frame_emit(const uint16_t rect[4], uint32_t src, uint32_t frame)
+{
+  uint32_t frm = br2_guest_frame(frame);
+  memcpy(guest_at(frm + 0x10), rect, 8);
+  gpu_load_image_cmd(frm + 0x10, src);
+  br2_guest_frame_free();
+}
+
 void spr_draw_off(int spr,short x,short y,int abs_coords)
 
 {
@@ -217,12 +233,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   }
   rect[2] = *(uint16_t *)(desc + 0x10);
   rect[3] = *(uint16_t *)(desc + 0x12);
-  {
-    uint32_t frm = br2_guest_frame(0x20);
-    memcpy(guest_at(frm + 0x10), rect, 8);
-    gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,(uint32_t)(spr + 0x14),0x20);
   return;
 }
 
@@ -247,12 +258,7 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
     rect[3] = *(uint16_t *)(desc + 0x12);
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
-    {
-      uint32_t frm = br2_guest_frame(0x20);
-      memcpy(guest_at(frm + 0x10), rect, 8);
-      gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
-      br2_guest_frame_free();
-    }
+    spr_rect_frame_emit(rect,(uint32_t)(spr + 0x14),0x20);
   }
   return;
 }
@@ -1107,6 +1113,7 @@ void spr_desc_b(uint32_t slot_g,uint32_t on)
   else               p[7] |= 2;
 }
 
+/* spr_desc_c — toggle bit0 (0x1) of slot byte 7 (on ? set : clear). */
 void spr_desc_c(uint32_t slot_g,uint32_t on)
 {
   uint8_t *p = (uint8_t *)guest_at(slot_g);
@@ -2033,12 +2040,7 @@ uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
   rect[3] = 1;
   /* guest rect = $sp+0x10 (frame 0x28, disasm 0x80193e30) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
-  {
-    uint32_t gre_frm = br2_guest_frame(0x28);
-    memcpy(guest_at(gre_frm + 0x10), rect, 8);
-    gpu_load_image_cmd(gre_frm + 0x10,src);
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,src,0x28);
   return gpu_coord_pack_b(x,y) & 0xffff;
 }
 
@@ -2070,12 +2072,7 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
   rect[2] = dim;
   /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
-  {
-    uint32_t grem_frm = br2_guest_frame(0x30);
-    memcpy(guest_at(grem_frm + 0x10), rect, 8);
-    gpu_load_image_cmd(grem_frm + 0x10,src);
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,src,0x30);
   return gpu_bits_pack_a(mode,arg3,x,y) & 0xffff;
 }
 
