@@ -61,7 +61,7 @@ void desc_ret_empty_a(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017A6E0:
+block_8017A6E0: ;
     uint32_t jt_8017A6E0 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017A6E4: 0x00000000 */
@@ -114,7 +114,7 @@ void desc_ret_a2p2(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017A9FC:
+block_8017A9FC: ;
     uint32_t jt_8017A9FC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 2;
@@ -131,7 +131,7 @@ void desc_ret_zero(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017AA04:
+block_8017AA04: ;
     uint32_t jt_8017AA04 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = zero;
@@ -170,7 +170,7 @@ void desc_ret_a2p4(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017AC44:
+block_8017AC44: ;
     uint32_t jt_8017AC44 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 4;
@@ -208,7 +208,7 @@ void desc_ret_empty_b(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017AE10:
+block_8017AE10: ;
     uint32_t jt_8017AE10 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8017AE14: 0x00000000 */
@@ -225,7 +225,7 @@ void desc_ret_a2p4_b(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017B648:
+block_8017B648: ;
     uint32_t jt_8017B648 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 4;
@@ -242,7 +242,7 @@ void desc_ret_a2p6(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017B8B4:
+block_8017B8B4: ;
     uint32_t jt_8017B8B4 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
@@ -259,7 +259,7 @@ void desc_ret_a2p6_b(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017BAAC:
+block_8017BAAC: ;
     uint32_t jt_8017BAAC = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 6;
@@ -276,7 +276,7 @@ void desc_ret_a2p2_b(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8017BD8C:
+block_8017BD8C: ;
     uint32_t jt_8017BD8C = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = a2 + 2;

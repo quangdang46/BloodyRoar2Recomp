@@ -33,7 +33,7 @@ uint32_t vec3_s32_h_normalize_store_tail(void)
   switch (cpu->pc) {
   case 0x80194678u:
     goto block_80194678;
-  default:
+  default: ;
   }
 
 block_8019466C:
