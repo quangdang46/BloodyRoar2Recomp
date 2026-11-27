@@ -1356,11 +1356,11 @@ void menu_noop(void)
 void results_scoreboard(int mode)
 
 {
-  int tmp;
+  int res, ty, ri, ry;
   undefined4 draw_mode;
   char *title_str;
   undefined2 attr;
-  int tmp2;
+  int rowy, fv;
   int rec_off;
   int row_off;
   undefined1 *name_ptr;
@@ -1400,8 +1400,8 @@ void results_scoreboard(int mode)
   }
   local_30 = &DAT_801c1304;
 LAB_80164714:
-  tmp = memcard_err_sentinel();
-  if (tmp < 0) {
+  res = memcard_err_sentinel();
+  if (res < 0) {
     _DAT_1f80008c = 0;
 joined_r0x80164744:
     /* Bail-unwind exit must preserve the DAT1 exit invariant: every normal
@@ -1444,40 +1444,40 @@ LAB_80164830:
           if (mode < 1) {
             if (mode != 0) goto LAB_80164a2c;
             title_str = s_RANKING_80122048;
-            tmp = _DAT_1f800020 + -0x62;
+            ty = _DAT_1f800020 + -0x62;
           }
           else {
             title_str = s_TIME_ATTACK_80122050;
-            tmp = _DAT_1f800020 + -0x9a;
+            ty = _DAT_1f800020 + -0x9a;
           }
 LAB_80164a00:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (tmp / 2 + local_40) * 0x10000 >> 0x10,attr,1);
+                       (ty / 2 + local_40) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 3) {
           title_str = s_SURVIVAL_8012205c;
-          tmp = _DAT_1f800020 + -0x70;
+          ty = _DAT_1f800020 + -0x70;
           goto LAB_80164a00;
         }
 LAB_80164a2c:
         rec_off = 0;
         row_off = 0;
-        tmp = rec_off;
+        ri = rec_off;
         name_ptr = local_34;
         do {
           if (DAT_1f800015 == '\0') {
-            tmp2 = row_off + 0x30;
+            rowy = row_off + 0x30;
           }
           else {
-            tmp2 = (row_off + 0x30) * 2;
+            rowy = (row_off + 0x30) * 2;
           }
           if (-1 < *(int *)((char *)local_60 + rec_off)) {
-            sprintf_core((char *)num_buf,&DAT_80121fe0,tmp + 1);
+            sprintf_core((char *)num_buf,&DAT_80121fe0,ri + 1);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
-                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)tmp2,3);
+                         (local_40 + 0x38) * 0x10000 >> 0x10,(int)(short)rowy,3);
             announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,
                          (const void *)guest_at(*(uint32_t *)((char *)&PTR_DAT_801b4254 + rec_off)),
-                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)tmp2,4);
+                         (local_40 + 0x48) * 0x10000 >> 0x10,(int)(short)rowy,4);
             if (-1 < mode) {
               if (mode < 3) {
                 draw_mode = 0;
@@ -1486,45 +1486,45 @@ LAB_80164a2c:
                 if (mode != 3) goto LAB_80164b68;
                 draw_mode = 5;
               }
-              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,tmp2,name_ptr,draw_mode);
+              hud_time_score_draw(_DAT_1f800008 + 0x14,_DAT_1f80000c,local_40 + 0x70,rowy,name_ptr,draw_mode);
             }
 LAB_80164b68:
-            tmp2 = *(int *)((char *)local_60 + rec_off);
-            if (tmp2 < _DAT_1f800020 + 0x80) {
-              *(int *)((char *)local_60 + rec_off) = tmp2 + 0x10;
+            fv = *(int *)((char *)local_60 + rec_off);
+            if (fv < _DAT_1f800020 + 0x80) {
+              *(int *)((char *)local_60 + rec_off) = fv + 0x10;
             }
           }
           rec_off = rec_off + 4;
           name_ptr = name_ptr + 0x10;
-          tmp = tmp + 1;
+          ri = ri + 1;
           row_off = row_off + 0x20;
-        } while (tmp < 5);
+        } while (ri < 5);
         attr = 0x10;
         if (DAT_1f800015 != '\0') {
           attr = 0x20;
         }
         if (mode == 0) {
           title_str = s_VS_RANKING_80122068;
-          tmp = _DAT_1f800020 + -0x8c;
+          ty = _DAT_1f800020 + -0x8c;
 LAB_80164c38:
           announce_param_block_init_b(_DAT_1f800008 + 4,_DAT_1f80000c,title_str,
-                       (tmp / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
+                       (ty / 2 + local_3c) * 0x10000 >> 0x10,attr,1);
         }
         else if (mode == 1) {
           title_str = s_SURVIVAL_8012205c;
-          tmp = _DAT_1f800020 + -0x70;
+          ty = _DAT_1f800020 + -0x70;
           goto LAB_80164c38;
         }
         rec_off = 0;
         name_tbl = &PTR_DAT_801b4254;
-        tmp = 0;
+        ry = 0;
         name_ptr = local_30;
         do {
           if (DAT_1f800015 == '\0') {
-            row_off = tmp + 0x30;
+            row_off = ry + 0x30;
           }
           else {
-            row_off = (tmp + 0x30) * 2;
+            row_off = (ry + 0x30) * 2;
           }
           sprintf_core((char *)num_buf,&DAT_80121fe0,rec_off + 1);
           announce_param_block_init_b(_DAT_1f800008 + 0x14,_DAT_1f80000c,num_buf,
@@ -1547,7 +1547,7 @@ LAB_80164d68:
           name_ptr = name_ptr + 0x10;
           name_tbl = name_tbl + 1;
           rec_off = rec_off + 1;
-          tmp = tmp + 0x20;
+          ry = ry + 0x20;
         } while (rec_off < 5);
         if (local_44 != 0) {
           fighter_reinit_tail(0x1f800000);
@@ -1565,7 +1565,7 @@ LAB_80164d68:
           DAT_1f800001 = 0xff;
           goto joined_r0x80164744;
         }
-        if ((DAT_1f800001 == 0) && (tmp = frame_divisor_get(), tmp == 0)) {
+        if ((DAT_1f800001 == 0) && (res = frame_divisor_get(), res == 0)) {
           if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
             draw_mode = 9;
             if (*(char *)(_g_system_config_ptr + 0xd) == '\0') {
