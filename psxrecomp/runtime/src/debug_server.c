@@ -7998,6 +7998,31 @@ static void handle_clean_stats(int id, const char *json)
     debug_server_send_line(buf);
     free(buf);
 }
+/* clean_fallback_stats — count + addr ring of dispatches in the timed
+ * CD/IRQ band [0x80180000,0x801C0000) that clean_try_dispatch declined
+ * (i.e. ran generated/untimed). Answers "is any untimed code still
+ * reachable" with names, not guesses. */
+extern uint64_t psx_gen_fallback_inregion_count(void);
+extern uint32_t psx_gen_fallback_inregion_at(uint32_t i);
+static void handle_clean_fallback_stats(int id, const char *json)
+{
+    (void)json;
+    uint64_t n = psx_gen_fallback_inregion_count();
+    char buf[8192];
+    int p = snprintf(buf, sizeof(buf),
+                     "{\"id\":%d,\"ok\":true,\"count\":%llu,\"addrs\":[",
+                     id, (unsigned long long)n);
+    int first = 1;
+    for (uint32_t i = 0; i < 128 && p < (int)sizeof(buf) - 24; i++) {
+        uint32_t a = psx_gen_fallback_inregion_at(i);
+        if (!a) continue;
+        p += snprintf(buf + p, sizeof(buf) - p, "%s\"0x%08X\"",
+                      first ? "" : ",", a);
+        first = 0;
+    }
+    snprintf(buf + p, sizeof(buf) - p, "]}");
+    send_fmt("%s", buf);
+}
 static void handle_clean_trace(int id, const char *json)
 {
     (void)json;
@@ -14860,6 +14885,7 @@ static const CmdEntry s_commands[] = {
     { "pad_status",        handle_pad_status },
     { "clean_trace",       handle_clean_trace },
     { "clean_stats",       handle_clean_stats },
+    { "clean_fallback_stats", handle_clean_fallback_stats },
     { "bios_svc_trace",    handle_bios_svc_trace },
     { "clear_input",       handle_clear_input },
     { "input_route_clear", handle_input_route_clear },
