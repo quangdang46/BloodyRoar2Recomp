@@ -1523,7 +1523,7 @@ uint32_t printf_core(uint32_t chan,const uint8_t *fmt,const uint32_t *args)
   intptr_t prec_raw;
   char *dcur;
   (void)chan;
-  if (fmt == 0) return 0;
+  if (fmt == NULL) return 0;
   const char *digits = s_0123456789abcdef_80124fe8;
   count = 0;
   /* Outer format loop (0x8018e5e0): plain chars go straight to
@@ -1841,7 +1841,7 @@ uint32_t sprite_9slice_build(uint32_t head_g, uint32_t pos, uint32_t wh, uint32_
   uint8_t *b;
   int32_t a2, a3, a0, v1, v0_;
   pkt = (uint32_t *)spr_pool_b_alloc();
-  if (pkt == 0) return 0xffffffff;
+  if (pkt == NULL) return 0xffffffff;
   b = (uint8_t *)pkt;
   a2 = (int32_t)(wh >> 16) & 0xff; a2 += 1;
   a0 = (int32_t)col & 0xff;
