@@ -194,6 +194,18 @@ void gpu_pkt_unlink_n(uint32_t *head,int count)
 
 /* ======== 0x8018bf40 ======== */
 
+/* Stage an 8-byte sprite RECT at frm+0x10 inside a reserved guest frame
+ * (the guest built it at $sp+0x10) and emit the GPU load-image command.
+ * frame = the guest stack-frame size the original reserved (0x20/0x28/0x30
+ * across callers); see spr_draw_off for why a reserved frame is required. */
+static void spr_rect_frame_emit(const uint16_t rect[4], uint32_t src, uint32_t frame)
+{
+  uint32_t frm = br2_guest_frame(frame);
+  memcpy(guest_at(frm + 0x10), rect, 8);
+  gpu_load_image_cmd(frm + 0x10, src);
+  br2_guest_frame_free();
+}
+
 void spr_draw_off(int spr,short x,short y,int abs_coords)
 
 {
@@ -221,12 +233,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   }
   rect[2] = *(uint16_t *)(desc + 0x10);
   rect[3] = *(uint16_t *)(desc + 0x12);
-  {
-    uint32_t frm = br2_guest_frame(0x20);
-    memcpy(guest_at(frm + 0x10), rect, 8);
-    gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,(uint32_t)(spr + 0x14),0x20);
   return;
 }
 
@@ -251,12 +258,7 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
     rect[3] = *(uint16_t *)(desc + 0x12);
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
-    {
-      uint32_t frm = br2_guest_frame(0x20);
-      memcpy(guest_at(frm + 0x10), rect, 8);
-      gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
-      br2_guest_frame_free();
-    }
+    spr_rect_frame_emit(rect,(uint32_t)(spr + 0x14),0x20);
   }
   return;
 }
@@ -2039,12 +2041,7 @@ uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
   rect[3] = 1;
   /* guest rect = $sp+0x10 (frame 0x28, disasm 0x80193e30) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
-  {
-    uint32_t gre_frm = br2_guest_frame(0x28);
-    memcpy(guest_at(gre_frm + 0x10), rect, 8);
-    gpu_load_image_cmd(gre_frm + 0x10,src);
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,src,0x28);
   return gpu_coord_pack_b(x,y) & 0xffff;
 }
 
@@ -2076,12 +2073,7 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
   rect[2] = dim;
   /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
-  {
-    uint32_t grem_frm = br2_guest_frame(0x30);
-    memcpy(guest_at(grem_frm + 0x10), rect, 8);
-    gpu_load_image_cmd(grem_frm + 0x10,src);
-    br2_guest_frame_free();
-  }
+  spr_rect_frame_emit(rect,src,0x30);
   return gpu_bits_pack_a(mode,arg3,x,y) & 0xffff;
 }
 
