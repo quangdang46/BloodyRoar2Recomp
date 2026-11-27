@@ -834,3 +834,16 @@ clean_table: 9435 wrappers (+127), 4 legit skips unchanged.
 Remaining filtered pool ~33 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :5069 frames 20202 -> 22718+
 attract CD streaming, no wedge.
+
+## Batch 42 (orch/w5/e05) — 14 leaves + 178 _cont rows
+
+14 leaves -> cpst_ (8019b7e0, 801a041c, 801a28dc, 801a45c8,
+801ac8f0, 8019fe7c, 801a35dc, 801a16f0, 8018e1d0, 8018e0b0,
+801a9f64, 801a0c68, 8019e1a0, 8019d970). 180 _cont cases -> resume
+rows (two already routed), no fnmap conflicts. Largest bodies yet —
+full state machines.
+
+clean_table: 9627 wrappers (+192), 4 legit skips unchanged.
+Remaining filtered pool ~19 unrouted cps_ bodies >=0x8018.
+Verified: clean build EU + USA; headless :5073 frames 8004 -> 13674+
+attract CD streaming, no wedge.
