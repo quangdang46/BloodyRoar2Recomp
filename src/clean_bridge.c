@@ -252,6 +252,8 @@ int br2_dbg_svc_ent(uint32_t i, uint32_t out[8])
     return 1;
 }
 
+/* svc_record — append one kernel-service request to the bios_svc ring
+ * (table/svc/a0-a3/ra; v0 filled in by the caller after dispatch). */
 static void svc_record(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1,
                        uint32_t a2, uint32_t a3, uint32_t ra)
 {

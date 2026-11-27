@@ -233,6 +233,8 @@ static void node_list_walk_core(uint32_t list_holder, uint32_t node,
     }
 }
 
+/* Guest entry-point aliases: each maps a distinct guest jump-table slot
+ * onto the shared node_list_walk_core body. */
 void node_list_walk_a(uint32_t list_holder, uint32_t node,
                       uint32_t a2, uint32_t a3)
 { node_list_walk_core(list_holder, node, a2, a3); }
