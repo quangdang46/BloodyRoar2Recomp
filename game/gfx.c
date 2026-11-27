@@ -59,7 +59,7 @@ extern uint32_t guest_gp(void);
 
 void gpu_load_image_cmd(uint32_t, uint32_t);
 void prim_packet_init_tex(int, int, int, uint32_t, int8_t *);
-uint8_t * guest_memcpy(uint32_t *, uint32_t *, int);
+uint8_t *guest_memcpy(uint32_t *, uint32_t *, int);
 void printf_forward(const char *, ...);
 void  guest_memset(uint32_t *, uint8_t, int);
 void  cd_dispatch_tblc(void);
@@ -773,7 +773,7 @@ void guest_memset(uint32_t *dst, uint8_t val, int len)
 
 /* ======== 0x8018e490 ======== */
 
-uint8_t * guest_memcpy(uint32_t *dst, uint32_t *src, int len)
+uint8_t *guest_memcpy(uint32_t *dst, uint32_t *src, int len)
 
 {
   uint8_t c;
@@ -1499,7 +1499,7 @@ void *spr_pool_b_alloc(void)
 extern void console_emit(uint32_t);
 extern void console_pct(void);
 extern int str_len(char *);
-extern char * strchr_bounded(char *, char, int);
+extern char *strchr_bounded(char *, char, int);
 extern char s_0123456789abcdef_80124fe8[];
 extern char s_0123456789ABCDEF_80125004[];
 extern char s__null__80124ffc[];
