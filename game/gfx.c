@@ -475,7 +475,7 @@ int gpu_draw_env_put(int env_g)
   gpu_prim_pkt_build(env_g + 0x1c,(uint16_t *)(uintptr_t)env_g);
   *(uint32_t *)((char *)hp + 0x1c) = *(uint32_t *)((char *)hp + 0x1c) | 0xffffff;
   gpu_call(8,GPU_TBL()[6],env_g + 0x1c,0x40,0);
-  guest_memcpy((uint32_t *)0x801b8330,(uint32_t *)env_g,0x5c);
+  guest_memcpy((uint32_t *)(uintptr_t)0x801b8330,(uint32_t *)(uintptr_t)env_g,0x5c);
   return env_g;
 }
 
@@ -720,7 +720,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   gpu_call(0x10,(ta & 0xfff) << 0xc | tb & 0xfff | 0x6000000,0,0,0);
   gpu_call(0x10,(tc & 0x3ff) << 10 | td & 0x3ff | 0x7000000,0,0,0);
   }
-  guest_memcpy((uint32_t *)0x801b838c,(uint32_t *)env_g,0x14);
+  guest_memcpy((uint32_t *)(uintptr_t)0x801b838c,(uint32_t *)(uintptr_t)env_g,0x14);
   return env_g;
 }
 
@@ -1036,7 +1036,7 @@ void printf_forward(const char *fmt, ...)
     args[i] = g ? g : (uint32_t)v;
   }
   va_end(ap);
-  printf_core(1,fmt,args);
+  printf_core(1,(const uint8_t *)fmt,args);
 }
 
 /* sprite_attr_init_a — sprite/OAM attribute block init (u16 fields + tail
