@@ -161,6 +161,12 @@ static uint32_t guest_ptr_addr(const void *p)
   return g ? g : (uint32_t)(uintptr_t)p;
 }
 
+/* OT/node link fields store the guest address's low 24 bits. */
+static uint32_t guest_link24(const void *p)
+{
+  return guest_of(p) & 0xffffff;
+}
+
 /* ======== 0x8018bd50 ======== */
 
 void gpu_pkt_unlink_n(uint32_t *head, int count)
@@ -1251,9 +1257,9 @@ uint32_t spr_attr_alloc_a(uint32_t head_g, int16_t x0, int16_t y0,
      * here leaves node[0] uninitialised and the GPU linked-list DMA
      * follows a garbage next-pointer (versus/attract OT runaway). */
     pkt[0] = *head | 0x05000000u;
-    *head = guest_of(pkt) & 0xffffff;
-    pkt[6] = guest_of(pkt) & 0xffffff | 0x2000000;
-    *head = guest_of(pkt + 6) & 0xffffff;
+    *head = guest_link24(pkt);
+    pkt[6] = guest_link24(pkt) | 0x2000000;
+    *head = guest_link24(pkt + 6);
   }
   return ret;
 }
@@ -1300,7 +1306,7 @@ uint32_t spr_attr_alloc_b(uint32_t head_g, uint32_t pxy, uint32_t pc,
     /* node[0] = old_head | 0x09000000 (link word into the packet, not
      * the head cell) — same fix as spr_attr_alloc_a. */
     pkt[0] = *head | 0x09000000u;
-    *head = guest_of(pkt) & 0xffffff;
+    *head = guest_link24(pkt);
   }
   return ret;
 }
@@ -1874,7 +1880,7 @@ uint32_t sprite_9slice_build(uint32_t head_g, uint32_t pos, uint32_t wh, uint32_
   uint32_t *head = (uint32_t *)guest_at(head_g);
   uint32_t old = *head;
   *pkt = old | 0x9000000;
-  *head = guest_of(pkt) & 0xffffff;
+  *head = guest_link24(pkt);
   return 0;
 }
 
@@ -2651,7 +2657,7 @@ int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
   }
   s1[1] = 0x2c808080;                        /* +4 tag */
   s1[0] = (int32_t)(*out | 0x09000000);
-  *out = guest_of(s1) & 0xffffff;            /* link: low24 of guest node */
+  *out = guest_link24(s1);            /* link: low24 of guest node */
   return 0;
 }
 
