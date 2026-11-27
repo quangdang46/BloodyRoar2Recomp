@@ -1,10 +1,18 @@
-/* gfx.c — OAM/sprite attribute cluster (verbatim Ghidra ports).
+/* gfx.c — clean-room ports of the guest's graphics/GPU-adjacent library
+ * code: libgpu command helpers, sprite/OAM attribute builders, MDEC,
+ * CD-channel helpers, printf/console emit, text-window widgets,
+ * scene-graph node walkers, GTE transform + primitive emitters,
+ * part skinning, HUD gauges, BIOS trampolines.
  *
  * Guest globals bound via g_* arena pointers (bind.c).
+ * Guest memory access: GP8/GP16/GP16S/GP32/GP32S(a) = *(T*)guest_at(a);
+ * br2_ldN/br2_stN byte helpers; (T*)guest_at(addr) for struct fields.
  * Pointer-compressed fields (& 0xffffff tags) round-trip through
  * guest_of(); spr_desc_slot_alloc returns a host pointer (signature
  * widened from the guest's 32-bit return — sole caller is
- * spr_slot_pkt_submit in this file). */
+ * spr_slot_pkt_submit in this file).
+ * prim_xform3_task_run is a faithful CPS coroutine: cpu->gpr[] live
+ * mirrors + goto bXXX resume dispatch (the required yield mechanism). */
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -158,7 +166,7 @@ void gpu_pkt_unlink_n(uint32_t *head,int count)
   uint32_t *prev;
   uint32_t *hp;
   uint32_t p1g, p1;
-  
+
   /* head arrives as a host pointer from the clean_table wrapper
    * (guest_at(gpr4)) but as a raw guest-address value from the game.c/
    * menu.c callers — resolve either form. The link value walked below
@@ -216,7 +224,7 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
    * frame lands on the old sp-0x10 scratch window. */
   uint16_t rect[4];
   uint8_t *desc;
-  
+
   /* spr is a guest address (callers pass the heap cursor
    * 0x801e3cfc); resolve before dereferencing. spr + 0x14
    * stays a guest address for gpu_load_image_cmd's a1. */
@@ -244,7 +252,7 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
 {
   uint16_t rect[4];
   uint8_t *desc;
-  
+
   /* spr is a guest address; see spr_draw_off. */
   desc = (uint8_t *)guest_at((uint32_t)spr);
   if ((*(uint32_t *)(desc + 4) & 8) != 0) {
@@ -281,7 +289,7 @@ void spr_desc_tbl_a_init(void)
 {
   int i;
   uint8_t *rec;
-  
+
   if (spr_pool_b_next < 0) {
     i = 0x1f;
     rec = (uint8_t *)&spr_desc_tbl_a;
@@ -307,7 +315,7 @@ void spr_desc_tbl_b_init(void)
 {
   int i;
   uint8_t *rec;
-  
+
   if (spr_slot_next < 0) {
     i = 0x1f;
     rec = (uint8_t *)&spr_desc_tbl_b;
@@ -337,7 +345,7 @@ void *spr_desc_slot_alloc(void)
   int32_t owner;
   uint32_t *slot;
   int32_t next;
-  
+
   off = (uint32_t)spr_slot_next * 0x24;
   slot = (uint32_t *)guest_at(0x801f6458 + off);
   owner = (int32_t)*slot;
@@ -362,7 +370,7 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_
   uint32_t ret;
   uint32_t pkt_g;
   uint32_t *cell;
-  
+
   /* ot_cell carries either a pkt_g address value (direct clean callers
    * pass _DAT_1f800008+n) or a host pointer (clean_table.c wrapper passes
    * guest_at(gpr4)). guest_of() resolves the host form; fall back to the
@@ -463,7 +471,7 @@ int gpu_draw_env_put(int env_g)
 {
   uint8_t *envp;
   intptr_t hp;
-  
+
   hp = (intptr_t)guest_at((uint32_t)env_g);
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDrawEnv__08x_____8012556c,env_g);
@@ -481,7 +489,7 @@ uint32_t gpu_stat_sign(void)
 
 {
   uint32_t stat;
-  
+
   stat = gpu_call(0x38,0,0,0,0);
   return stat >> 0x1f;
 }
@@ -492,7 +500,7 @@ void gpu_disp_mask_set(int enable)
 
 {
   uint32_t cmd;
-  
+
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_SetDispMask__d_____801254a0,enable);
   }
@@ -526,7 +534,7 @@ uint32_t gpu_graph_reset(uint32_t arg)
 
 {
   uint32_t v;
-  
+
   v = arg & 7;
   if (v == 0 || v == 3 || v == 5) {
     /* v==0/3 print the banner; v==5 enters at the memset (no print). */
@@ -579,7 +587,7 @@ uint32_t draw_env_timing(uint32_t env_g)
   uint16_t *env;
   uint16_t *timing_tbl;
   uint8_t  *timing_b;
-  
+
   env = (uint16_t *)guest_at(env_g);
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_PutDispEnv__08x_____801255a0,env_g);
@@ -746,7 +754,7 @@ void guest_memset(uint32_t *dst,uint8_t val,int len)
    * from in-file callers (0x801b83xx constants) — resolve either form. */
   uint32_t g1 = guest_of(dst);
   uint8_t *d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)dst);
-  
+
   i = len + -1;
   if (len != 0) {
     do {
@@ -767,7 +775,7 @@ uint8_t * guest_memcpy(uint32_t *dst,uint32_t *src,int len)
   uint8_t *wp;
   uint8_t *ret;
   uint8_t *d, *s;
-  
+
   ret = (uint8_t *)0x0;
   /* params arrive as host pointers from the clean_table wrapper but as
    * guest-address values from cd.c callers — resolve either form. */
@@ -803,7 +811,7 @@ void gpu_prim_pkt_build(int pkt_g,uint16_t *env_p)
   uint32_t wh;
   uint8_t *dst;
   uint16_t *env;
-  
+
   /* env_p: host pointer from clean_table wrapper, guest-address value
    * from gpu_draw_env_put — resolve either form. pkt_g stays a guest
    * address value in both paths. */
@@ -934,7 +942,7 @@ void gpu_rect_bounds_dbg(uint32_t name,short *rect)
    * family callers — resolve either form. */
   uint32_t p2g = guest_of(rect);
   short *rc = (short *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
-  
+
   if (gpu_dbg_level == '\x01') {
     x = (int)rc[2];
     if ((x <= disp_width) && (x + rc[0] <= (int)disp_width)) {
@@ -979,7 +987,7 @@ void cd_chan_boot_init(int chan)
   uint16_t *w;
   int i;
   uint16_t *base;
-  
+
   cd_dispatch_tblc();
   cd_chan_reg_init(chan);
   if (chan == 0) {
@@ -1901,7 +1909,7 @@ void mdec_decode_issue(uint32_t bfr_g,uint32_t size)
 
 {
   uint32_t sz;
-  
+
   mdec_stat_wait_a();
   MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
   MDECREG_ST(0x801b68c0, bfr_g + 4);
@@ -1918,7 +1926,7 @@ int32_t mdec_stat_wait_a(void)
 
 {
   int32_t cnt = 0x10;
-  
+
   if ((MDECREG(0x801b68f4) & 0x20000000) != 0) {
     for (;;) {
       cnt = cnt - 1;
@@ -1938,7 +1946,7 @@ int32_t mdec_stat_wait_b(void)
 
 {
   int32_t cnt = 0x10;
-  
+
   if ((MDECREG(0x801b68d4) & 0x100) != 0) {
     for (;;) {
       cnt = cnt - 1;
@@ -1997,7 +2005,7 @@ void mdec_pump_b(uint32_t bfr_g,uint32_t size)
 
 {
   uint32_t sz;
-  
+
   mdec_stat_wait_b();
   MDECREG_ST(0x801b68f8, MDECREG(0x801b68f8) | 0x88);
   MDECREG_ST(0x801b68d4, 0);
@@ -2033,7 +2041,7 @@ uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
 
 {
   int16_t rect[4];
-  
+
   rect[0] = (int16_t)x;
   rect[1] = (int16_t)y;
   rect[2] = 0x10;
@@ -2056,7 +2064,7 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
                                          * mode > 2 / negative mode */
   int32_t mode_i = (int32_t)mode;
   int32_t v_i = (int32_t)v;
-  
+
   rect[0] = (int16_t)x;
   rect[1] = (int16_t)y;
   rect[3] = (int16_t)h;
@@ -2105,7 +2113,7 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
 {
   uint8_t *d;
   int32_t n = (int32_t)len;
-  
+
   if (dst == 0) return;
   d = (uint8_t *)guest_at(dst);
   if (n > 0) {
@@ -2132,7 +2140,7 @@ static int32_t win_putc(uint32_t slot,int32_t c)
 {
   uint32_t pos = GP32(slot + 0x28);
   uint8_t *buf = (uint8_t *)guest_at(GP32(slot + 0x24));
-  
+
   buf[pos] = (uint8_t)c;
   pos = pos + 1;
   GP32(slot + 0x28) = pos;             /* stored even on overflow */
@@ -2156,7 +2164,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   uint8_t dbuf[0x210];
   uint8_t *dtop = dbuf + 0x210;
   const uint8_t *ep = dtop;            /* guest $s0: stale across specs */
-  
+
   iargs[0] = a1;
   iargs[1] = a2;
   iargs[2] = a3;
@@ -2201,7 +2209,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
       int32_t zflag = (c == 0x30);    /* '0' after '%' */
       int32_t width = 0;
       int32_t spec;
-      
+
       while ((uint32_t)(c - 0x30) < 10) {
         width = width * 10 + (c - 0x30);
         fmt = fmt + 1;
@@ -2218,7 +2226,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
         uint32_t ua;
         uint8_t *sp = dtop;
         int32_t neg = 0;
-        
+
         if (av < 0) {
           ua = 0u - (uint32_t)av;
           neg = 0x2d;
@@ -2244,7 +2252,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
         uint32_t hv = BR2_ARG();
         uint8_t *hp = dtop;
         static const char hexd[] = "0123456789abcdef";
-        
+
         hp = hp - 1;
         count = 0;
         for (;;) {
