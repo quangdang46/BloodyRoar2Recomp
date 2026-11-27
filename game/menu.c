@@ -6724,6 +6724,9 @@ int32_t menu_step_a(uint32_t ctr_addr,int32_t floor,uint32_t mask)
 void string_pair_emit(uint32_t unused_a,uint32_t unused_b,uint32_t unused_c,
                   uint32_t rec)
 {
+  (void)unused_a;
+  (void)unused_b;
+  (void)unused_c;
   uint32_t str_idx = MB8(rec + 0x17);
   const void *s;
   if (str_idx == 0) s = guest_at(0x801c15d0);
@@ -10091,6 +10094,7 @@ void chan_attr_rec_b(uint32_t ptr,uint32_t val)
  * v0 = s0+2. a1 (in) is dead. */
 int32_t slot_byte_commit(uint32_t obj,uint32_t unused,uint32_t cur)
 {
+  (void)unused;
 
   int32_t op = (int32_t)(int8_t)(MB16(cur) >> 8);
   MW8(obj + 5, (uint32_t)op);
@@ -10168,6 +10172,7 @@ int32_t descriptor_fetch(uint32_t ctrl,uint32_t desc,uint32_t cur)
  * if h<0 h+=15, MW16(0x801f02f6, h>>4); ret 0x801f0000. a1 dead. */
 int32_t byte2_probe_commit(uint32_t rec,uint32_t unused,uint32_t desc)
 {
+  (void)unused;
   int32_t arg = (int32_t)MBS8(desc + 2);
   if (arg == 1) {
     if (MBS8(0x1f8000b1u) != 0) return 0x801f0000;
@@ -10189,6 +10194,7 @@ int32_t byte2_probe_commit(uint32_t rec,uint32_t unused,uint32_t desc)
  * return MB16(a2+2) + MB32(a0+0x30). a1 dead. */
 uint32_t desc_cursor_advance(uint32_t ctx,uint32_t unused,uint32_t cur)
 {
+  (void)unused;
   uint32_t lim = MB16(cur) >> 8;
   if ((int32_t)table_byte_next_a() < (int32_t)lim) return cur + 4u;
   return MB16(cur + 2) + MB32(ctx + 0x30);
@@ -10722,6 +10728,7 @@ uint32_t centered_sprite_emit(uint32_t ctx,uint32_t fl,uint32_t x,
  * return s0+6. */
 uint32_t descriptor_quad_dispatch(uint32_t obj,uint32_t unused,uint32_t desc)
 {
+  (void)unused;
   int32_t tagb = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t op = tagb >> 4;
   if (op == 1) {
@@ -11082,6 +11089,7 @@ static void redraw_4recs(uint32_t start0,uint32_t str0a,
  * hit_chain_clear/42da0/42dd8(s0); return s2+2. */
 uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 {
+  (void)unused;
   int32_t tag_fl = (int32_t)(int8_t)(MB16(desc) >> 8);
   if ((tag_fl & 2) == 0) deferred_cmd_post(0x400, 7, 0);
   if ((tag_fl & 1) == 0) cond_triple_spawn(1, obj);
@@ -11109,6 +11117,8 @@ uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc)
 void dual_axis_coord_xform(uint32_t unused,uint32_t unused2,uint32_t dst,
                   uint32_t ent)
 {
+  (void)unused;
+  (void)unused2;
   uint32_t obj = MB32(ent + 0x20);
   uint32_t pos[3];
 
@@ -11193,6 +11203,7 @@ int32_t u16_wrap_counter_step(uint32_t ctr,int32_t wrap)
  * 7-> MB32(a1+0x84)=a2+2, return 0; 8-> state_pair_init(), a2+2. */
 uint32_t desc_cursor_select(uint32_t unused,uint32_t st,uint32_t desc)
 {
+  (void)unused;
   int32_t sel = (int32_t)(int8_t)(MB16(desc) >> 8);
   int32_t f94;
   if ((uint32_t)sel >= 9u) return MB32(st + 0x8c);
@@ -11846,6 +11857,7 @@ void resource_rebuild_b(void)
 void quad_gauge_emit(uint32_t head,uint32_t unused,uint32_t y,
                   uint32_t rec,uint32_t mode)
 {
+  (void)unused;
   uint32_t c0 = MB32(0x801f46f8u) >> 10;
   uint32_t c1 = MB32(0x801f36e8u) >> 10;
   uint32_t c2 = MB32(0x801f36e4u) >> 10;
@@ -14279,6 +14291,7 @@ extern uint32_t fighter_reset_fx();
 uint32_t desc_opcode_dispatch(uint32_t ent,uint32_t unused,
                       uint32_t desc,uint32_t gate)
 {
+  (void)unused;
   uint32_t arg = MB16(desc + 2);
   uint32_t op, blk, rec;
   int32_t sx8 = (int32_t)(int8_t)(arg >> 8);
