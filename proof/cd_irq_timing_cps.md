@@ -1185,3 +1185,13 @@ alias bodies. clean_table: 10,812 -> 10,870 wrappers, 0 skipped.
 
 Verified: clean build EU + USA; headless :5171 frame 24691,
 clean_fallback_stats count=0.
+
+## Batch 60 (orch/w5/e05) — post-merge clean_table regen
+
+Merged master (peers' w6e00/w5e00/w4e01 + runtime work, 191 files).
+fnmap.c regen verified in sync (zero diff). clean_table.c regen:
+cost fields shifted across the table — gen_clean_table.py derives
+per-addr cycle cost from fn_size markers in generated/*.c, which
+the shared generated/ tree refreshed upstream. 10,870 wrappers,
+0 skipped. Full rebuild EU + USA; headless :5177 frame 26061,
+clean_fallback_stats count=0.
