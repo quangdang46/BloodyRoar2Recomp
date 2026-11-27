@@ -1025,6 +1025,7 @@ static PreserveWriteJob *s_preserve_head;
 static PreserveWriteJob *s_preserve_tail;
 static int s_preserve_stop;
 
+/* Enable/disable overlay autocapture. */
 void overlay_autocapture_set_enabled(int on) {
     s_autocap_enabled = on ? 1 : 0;
 }
@@ -1036,10 +1037,12 @@ void overlay_autocapture_get_status(int *enabled, uint32_t *triggers,
     if (last_delta) *last_delta = s_autocap_last_delta;
 }
 
+/* Guest-insn delta at the last autocapture trigger. */
 uint64_t overlay_autocapture_last_insns_delta(void) {
     return s_autocap_last_insns_delta;
 }
 
+/* Read the autocapture backoff/futile counters. */
 void overlay_autocapture_get_futility(uint32_t *backoff, uint32_t *futile) {
     if (backoff) *backoff = s_autocap_backoff;
     if (futile)  *futile  = s_autocap_futile;
@@ -1087,12 +1090,15 @@ void overlay_autocapture_get_gates(int *capture_active, int *write_state,
 }
 
 #ifdef PSX_OVERLAY_CAPTURE_TEST
+/* Test hook: current autocapture write state. */
 int overlay_capture_test_write_state(void) {
     return SDL_AtomicGet(&s_autocap_write_state);
 }
+/* Test hook: write-job attempt count. */
 unsigned overlay_capture_test_write_attempts(void) {
     return s_autocap_write_job ? s_autocap_write_job->attempts : 0u;
 }
+/* Test hook: provider-pending flag. */
 int overlay_capture_test_provider_pending(void) {
     return s_autocap_provider_sig_pending != 0;
 }

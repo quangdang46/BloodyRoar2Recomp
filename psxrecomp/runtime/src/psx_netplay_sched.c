@@ -8,6 +8,8 @@
 
 #include "psx_netplay_sched.h"
 
+/* No-netplay builds: np_sched_* degrade to pass-through stubs so the
+ * timesync/admit call sites link unchanged. */
 void np_sched_bind(const PsxNpSchedBridge *bridge) { (void)bridge; }
 void np_sched_reset_session(void) {}
 uint32_t np_sched_wire_for_sim(uint32_t sim_tick) { return sim_tick; }
