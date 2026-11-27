@@ -11,7 +11,7 @@
  *                          dialog/state-handler family)
  *
  * Each clean body keeps the generated cpu->pc continuation switch and the
- * entry switch (driven by _sel = the dispatched addr the clean_table CPS
+ * entry switch (driven by entry = the dispatched addr the clean_table CPS
  * wrapper installs). Multi-addr routing lives in game/clean_cps.map. Bodies
  * were produced by the same transform as game/cps_clean.c
  * (game/gen_cps_clean.py): instrumentation stripped, cpu->read/write_*
@@ -69,7 +69,7 @@ void confirm_code_entry_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  uint32_t _sel = cpu->pc;
+  uint32_t entry = cpu->pc;
 
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
@@ -82,7 +82,7 @@ void confirm_code_entry_cps(void)
             default: break;
         }
     }
-    switch (_sel) {
+    switch (entry) {
         case 0x80157910u: goto block_80157910;
         case 0x80157918u: goto block_80157918;
         case 0x80157920u: goto block_80157920;
@@ -266,7 +266,7 @@ void memcard_dialog_cps(void)
 {
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
-  uint32_t _sel = cpu->pc;
+  uint32_t entry = cpu->pc;
 
     if (cpu->pc != 0u) {
         uint32_t _cont = cpu->pc; cpu->pc = 0;
@@ -390,7 +390,7 @@ void memcard_dialog_cps(void)
             default: break;
         }
     }
-    switch (_sel) {
+    switch (entry) {
         case 0x80157AD0u: goto block_80157AD0;
         case 0x80157B14u: goto block_80157B14;
         case 0x80157B20u: goto block_80157B20;
