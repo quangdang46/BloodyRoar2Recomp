@@ -1388,129 +1388,6 @@ void halt_baddata(void) { for(;;) { } }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 /* guest 0x80194478 = gte_screen_init_defer (renames.map). */
 void FUN_80194478(void) { gte_screen_init_defer(); }
 #if defined(__GNUC__) || defined(__clang__)
@@ -2893,9 +2770,6 @@ int ret_zero_e(int32_t arg)
     br2_guest_frame_free();
     return ret;
 }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
