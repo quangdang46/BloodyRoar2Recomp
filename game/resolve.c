@@ -183,7 +183,7 @@ extern uint32_t *g__DAT_1f8003a0,*g__DAT_1f8003a4,*g__DAT_1f8003a8,*g__DAT_1f800
 #define _DAT_1f8003ca (*(uint16_t *)&_DAT_1f8003c8)
 #define _DAT_1f8003ce (*(uint16_t *)&_DAT_1f8003cc)
 
-/* ---- action-commit + state helpers (action_commit family) ---- */
+/* ---- prototypes: externs + forward decls for resolve-family helpers ---- */
 extern void motion_blend_frame(byte*,byte*);
 extern int  atan2_lut(int,int);
 extern void gte_op_a00428(int*,int*);
@@ -2167,6 +2167,8 @@ void action_commit(byte *ctrl, byte *motion)
 
 }
 
+/* ---- pending-hit + combat-state reset helpers ---- */
+
 /* FUN_80142da0 pending_hit_a_clear - clear pending-hit-A record on the
  * ctrl+0x38 motion object and the slot hitrec table. */
 void pending_hit_a_clear(byte *ctrl)
@@ -2230,6 +2232,8 @@ void fighter_combat_reset(byte *ctrl)
   return;
 
 }
+
+/* ---- trig launch-velocity + motion turn helpers ---- */
 
 /* FUN_80144f8c trig_lut_read - launch-velocity setup for the generic
  * trig attack: angle from ctrl+0xdb (facing*0x60>>3 +0x200) scaled by
@@ -2530,6 +2534,8 @@ motion_10a_tick:
 
 }
 
+/* ---- keyframe anim advance + motion blend ---- */
+
 /* FUN_80185f64 motion_blend_frame - advance keyframe anim, copy joint pose,
  * apply yaw rotation to motion position. */
 void motion_blend_frame(byte *ctrl,byte *motion)
@@ -2635,6 +2641,8 @@ pose_copy:
   return;
 
 }
+
+/* ---- deferred-cmd ring + geometry/state helpers ---- */
 
 /* FUN_80156ef4 deferred_cmd_post - post or (0x1000) remove a deferred command
  * in the 0x20-slot ring at DAT_801f3600. */
@@ -2846,6 +2854,8 @@ unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 
 }
 
+/* ---- keyframe pose blend + skeleton step ---- */
+
 /* FUN_80185998 keyframe_blend_apply - blend keyframe pose channels into
  * motion/skeleton state at blend alpha. */
 void keyframe_blend_apply(byte *ctrl,byte *motion)
@@ -3014,6 +3024,8 @@ void deferred_cmd_reset(void)
   return;
 
 }
+/* ---- anim channel lerp family ---- */
+
 /* FUN_80185568 anim_lerp_scalar - Q12 lerp of one i16 channel toward
  * (+-src): dst += (((flip ? -src : src) - dst) * alpha + bias) >> 12,
  * bias +0xfff when the product is negative (round toward -inf kept
