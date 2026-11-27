@@ -9081,11 +9081,11 @@ extern void cmd_queue_push(int32_t,int32_t,int32_t,int32_t,uint32_t);
  * 0/4/8/0x10/0x30 have bodies; each state re-runs its gate
  * cd_file_load_sm and on failure stores the state back and returns 0.
  * On full completion stores -1 to +0x8c and returns 1. */
-int battle_bringup_b(uint32_t battle,void *a1,void *a2,void *a3)
+int battle_bringup_b(uint32_t battle,void *arr1,void *arr2,void *arr3)
 {
-  uint32_t *o1 = (uint32_t *)a1;              /* s6: 11 slots */
-  uint32_t *o2 = (uint32_t *)a2;              /* s4: 12 slots */
-  uint32_t *o3 = (uint32_t *)a3;              /* s7: 6 slots  */
+  uint32_t *o1 = (uint32_t *)arr1;              /* s6: 11 slots */
+  uint32_t *o2 = (uint32_t *)arr2;              /* s4: 12 slots */
+  uint32_t *o3 = (uint32_t *)arr3;              /* s7: 6 slots  */
   uint32_t ttab;
   int32_t state, cur_st;
   uint32_t cur, r;
@@ -9126,7 +9126,7 @@ L_state8:                                     /* 0x80147eec */
   page_table_ptr_set(0x11,2,(undefined *)0);
   cd_timer_read(0);
 L_state10:                                    /* 0x80147f24 */
-  /* gen 0x80147F28: a1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
+  /* gen 0x80147F28: arr1 = *(0x801C47B8) = heap-A cursor — file 0x82 (the
    * o2[] offset table) loads INTO the heap data region, NOT the tag table.
    * Passing ttab (0x801c47c0) overwrote the master decode tag table, so the
    * offset_table_lookup below read foreign data -> wild +1.8MB cursor jump. */
