@@ -5638,13 +5638,13 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
         uint32_t ctab  = 0x801b25ec + ((uint32_t)pi << 3);
         uint32_t offb  = p13c;
         uint32_t offa = p138;
-        uint32_t fp  = MB8(0x801b23ac + cur[3]);
-        uint32_t ptab  = 0x801b260c + (fp << 2);
+        uint32_t pidx  = MB8(0x801b23ac + cur[3]);
+        uint32_t ptab  = 0x801b260c + (pidx << 2);
         int32_t  j;
         for (j = 0; j < 2; j++) {
           uint32_t base = MB32(0x801f10c0 + (uint32_t)j * 4);
           int32_t stk5, stk6;
-          palette_attr_record_write(battle,base + offa,pi,fp);
+          palette_attr_record_write(battle,base + offa,pi,pidx);
           stk5 = MBS16(ptab);     stk6 = MBS16(ptab + 2);
           sprite_place_centered(base + offa,battle,MBS16(p134),0x180,stk5,stk6);
           stk5 = MBS16(ctab + 4); stk6 = MBS16(ctab + 6);
