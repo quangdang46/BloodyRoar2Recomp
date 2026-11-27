@@ -3343,9 +3343,9 @@ void select_phase_update(uint32_t a0)
   }
   if (chan_a[3] == chan_b[3] && chan_a[4] == chan_b[4]) {
     if (!(match_ok)) {
-      chan_b[4] = (chan_a[4] != 0) ? 0 : 1;
+      chan_b[4] = (chan_a[4] == 0);
     } else {
-      chan_a[4] = (chan_a[4] != 0) ? 0 : 1;
+      chan_a[4] = (chan_a[4] == 0);
     }
   }
   if (ctx[0x9c] == 4) {
@@ -10294,7 +10294,7 @@ int32_t fifo_space_check(void)
   free = a0 - base;
   if (((uint16_t)psx_read_half(0x1f801124) & 0x200) == 0)
     free >>= 3;
-  return (free < lim2) ? 0 : 1;
+  return free >= lim2;
 }
 
 /* dev_cmd_commit — SIO/device command commit (guest 0x801A23FC, 144B,
