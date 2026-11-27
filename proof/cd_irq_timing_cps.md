@@ -882,3 +882,28 @@ addrs 0x80125698 / 0x80120000).
 Verified: zero remaining map rows >=0x8018 -> untimed cps_; zero
 intra-file dangling refs (743 defs == 743 refs); clean build EU +
 USA; headless :5083 frames 6769 -> 10074+ attract CD streaming.
+
+## Batch 45 (orch/w5/e05) — tail-dispatch delegate gap: LAST 4
+
+Residual audit: enumerated every literal cpu->pc = 0x80XXXXXX target
+inside cd_irq_probe.c cpst_ bodies — 148 addrs in 0x8018-0x801B had
+no clean_cps.map row. All 148 have fnmap rows; 144 resolve to real
+peer clean-C ports (fine), 4 resolved to whole-body DELEGATES —
+the last untimed gaps reachable from timed bodies:
+
+  0x801990f0 cd_dir_entry_finalize (cd.c)
+  0x8019a460 cd_timer_read         (cd.c, 17 cont cases)
+  0x8019a6e0 cd_dispatch_tbl4      (cd.c)
+  0x801b0db8 scene_node_walk       (gfx.c, 46 cont cases — huge)
+
+Converted all 4 -> cpst_ + 66 _cont resume rows (4 entry addrs were
+delegates — shadowing them IS the fix; all cont addrs no-fnmap).
+clean_table: 10154 wrappers, 0 SKIPPED — the last legit skip
+(no-def cps_80175964) is gone on master.
+
+Untimed execution reachable from cpst_ tail dispatches in
+0x8018-0x801B: ZERO — every literal target now resolves to a timed
+cpst_, a real peer port, or generated-leaf coverage.
+
+Verified: clean build EU + USA; headless :5093 frames 20944 -> 25655+
+attract CD streaming, no wedge.
