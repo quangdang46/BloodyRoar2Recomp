@@ -1228,3 +1228,16 @@ anchor-annotated.
 
 Verified: clang -fsyntax-only clean; build EU + USA; headless :5189
 frame 6395, clean_fallback_stats count=0.
+
+## Batch 63 (orch/w5/e05) — post-merge clean_table regen (2nd)
+
+Merged master again (86 files, peer w5e02/w5e04/w5e05 work).
+clean_table.c regen: cost fields drifted once more — the shared
+generated/ tree's fn_size markers refreshed upstream. 10,870
+wrappers, 0 skipped. Helper-set audit clean: cps_clean.c carries
+only br2_* unaligned ops, cd_irq_probe.c only cpst_*, w3_e06.c none
+(bodies have no unaligned ops). psx_muldiv_stall extern in w3_e06
+confirmed live (1 call site).
+
+Verified: build EU + USA; headless :5197 frame 46556,
+clean_fallback_stats count=0.
