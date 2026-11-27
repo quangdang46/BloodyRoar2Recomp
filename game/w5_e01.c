@@ -1,59 +1,8 @@
 #include <stdint.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
-
-extern void *guest_at(uint32_t addr);
-extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint8_t  br2_ld8(uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern void     br2_st8(uint32_t a, uint8_t v);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
-extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
-
-#define DB16(a) (*(uint16_t *)guest_at(a))
-#define DB32(a) (*(uint32_t *)guest_at(a))
-
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-}
-
-static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
-{
-  uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
-}
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
@@ -106,7 +55,6 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
  * entry addrs in game/renames.map (except 0x801A2560 — see its
  * comment for the call_guest single-shot constraint).
  */
-
 
 /* gpu_state_patch_submit_3w (guest 0x8019E600) — DI; B0 svc 0x56 (GetC0Table, live a0-a3) -> obj; p = *(obj+0x18); copy 3 words 0x801AE670..0x801AE67C -> p+0x70..; jal 0x801957F0 (gpu_state_patch_defer); EI; restore ra, jr ra.
  * Sibling of the bind.c FUN_8019E4C8/FUN_8019E55C patch-submit family. */
@@ -198,8 +146,6 @@ block_8019E65C:
     psx_check_interrupts_at(cpu, _jt_8019E668);
     cpu->pc = _jt_8019E668; return;  /* CPS: jr $ra */
 }
-
-
 
 /* cd_hw_chan_release_all (guest 0x801A0DDC) — DI; for i=0..7 jal 0x801A11C0 (bios_tramp_b009) with a0 = *(0x8020EF70+4i) — the eight channel objects allocated by cd_hw_chan_init; EI only when the saved DI return == 1. Called by cd_block7_init (0x8019E6F0). */
 /* faithful CPS transliteration of br2eu_func_801A0DDC (guest 0x801a0ddc)
@@ -338,8 +284,6 @@ block_801A0E80:
     psx_check_interrupts_at(cpu, _jt_801A0E88);
     cpu->pc = _jt_801A0E88; return;  /* CPS: jr $ra */
 }
-
-
 
 /* cd_cmd_rx_state_default (guest 0x801A2560) — default rec[24] RX-state handler invoked by cd_cmd_state_rx when the record has no custom fn. Dispatches on rec[70] (b70): state handlers compute extent offsets (cd_extent_len 0x801A27D0 family), arm handler pairs via cd_cmd_rec_arm_extent 0x801A2808, or jalr the *(0x801BE784) notify cell. NOTE: entry addr 0x801A2560 is NOT clean-registered — clean cd_cmd_state_rx reaches it through call_guest(), which can only drive a single CPS piece; the generated entry chains into these clean continuation pieces via cpu->pc. */
 /* faithful CPS transliteration of br2eu_func_801A2560 (guest 0x801a2560)
@@ -793,8 +737,6 @@ block_801A27C0:
     cpu->pc = _jt_801A27C8; return;  /* CPS: jr $ra */
 }
 
-
-
 /* cd_cmd_rec_arm_extent (guest 0x801A2808) — gate jalr *(*(0x801BE79C)) must return 0; then rec[73]=4, rec[70]=1, rec[20]=0x801A28F4 (mid br2eu_func_801A28DC state-commit cb), rec[24]=0x801A298C (mid br2eu_func_801A2984 rx-state cb), and the extent table rec[0]/[4]/[8] is laid out from rec[227]/rec[233] (same math family as cd_extent_len). Returns 1 on arm, 0 when the gate reports busy. Called from cd_cmd_rx_state_default state-3. */
 /* faithful CPS transliteration of br2eu_func_801A2808 (guest 0x801a2808)
  * from SLES_017.22_full_49.c. */
@@ -918,8 +860,6 @@ block_801A28C8:
     psx_check_interrupts_at(cpu, _jt_801A28D4);
     cpu->pc = _jt_801A28D4; return;  /* CPS: jr $ra */
 }
-
-
 
 /* cd_cmd_rec_arm_op (guest 0x801A2EC8) — gate jalr *(*(0x801BE79C)) must return 0; then rec[70]=1, rec[20]=0x801A2F70 (mid br2eu_func_801A2F60), rec[24]=0x801A2FC4 (mid op_state_dispatch 0x801A2FB4), rec[81]=a1, rec[82]=a2, rec[83]=((a1&0xFF)^rec[228])==0. Returns 1 on arm, 0 when busy. Called by 0x801A1654 with a0=gate-result record, a1/a2 = byte params. */
 /* faithful CPS transliteration of br2eu_func_801A2EC8 (guest 0x801a2ec8)
