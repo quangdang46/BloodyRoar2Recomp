@@ -3,6 +3,8 @@
 > Read `psxrecomp/CLAUDE.md` first — it is the faithful-core constitution
 > (Architecture A locked, no interpreter, no stubs, LLE baseline). This file
 > is the **project mission + workflow** that sits above it.
+> Canonical objective docs: `docs/project/GOALS.md`, `ROADMAP.md`,
+> `PROGRESS.md` — read them for the *what/why*; this file is the *how*.
 
 ---
 
