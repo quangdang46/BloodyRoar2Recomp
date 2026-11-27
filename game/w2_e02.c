@@ -479,7 +479,7 @@ block_80182BF0:
         goto block_80182BFC;  /* not taken */
     }
 
-block_80182BFC:
+block_80182BFC:;
     int cond_v0_eq_zero_7 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 0xC000;
@@ -1017,7 +1017,7 @@ block_80182DD8:
         goto block_80182DE4;  /* not taken */
     }
 
-block_80182DE4:
+block_80182DE4:;
     int cond_v0_ne_zero = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80182DE8: 0x00000000 */
@@ -1508,7 +1508,7 @@ block_80182DD8:
         goto block_80182DE4;  /* not taken */
     }
 
-block_80182DE4:
+block_80182DE4:;
     int cond_v0_ne_zero = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80182DE8: 0x00000000 */
@@ -1997,7 +1997,7 @@ block_80182DD8:
         goto block_80182DE4;  /* not taken */
     }
 
-block_80182DE4:
+block_80182DE4:;
     int cond_v0_ne_zero = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80182DE8: 0x00000000 */
@@ -2477,7 +2477,7 @@ block_80182DD8:
         goto block_80182DE4;  /* not taken */
     }
 
-block_80182DE4:
+block_80182DE4:;
     int cond_v0_ne_zero = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80182DE8: 0x00000000 */

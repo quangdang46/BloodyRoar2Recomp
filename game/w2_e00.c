@@ -1029,7 +1029,7 @@ void ani_cat_tail_zero(void)
 
     /* Address: 0x80181EE8, Size: 8 bytes, Blocks: 1 */
 
-block_80181EE8:
+block_80181EE8:;
     uint32_t _jt_80181EE8 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     cpu->write_half(a2 + 40, (uint16_t)zero);
@@ -1089,7 +1089,7 @@ void ani_cat_tail_ret(void)
 
     /* Address: 0x80181F18, Size: 8 bytes, Blocks: 1 */
 
-block_80181F18:
+block_80181F18:;
     uint32_t _jt_80181F18 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80181F1C: 0x00000000 */

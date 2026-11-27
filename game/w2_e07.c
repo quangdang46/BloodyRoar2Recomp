@@ -618,7 +618,7 @@ block_80183930:
     v0 = (int32_t)(int16_t)cpu->read_half(s2 + 188);
     /* fall through to block_80183934 */
 
-block_80183934:
+block_80183934:;
     /* nop */  /* 0x80183934: 0x00000000 */
     int _bc_80183938 = ((int32_t)v0 > 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -662,7 +662,7 @@ block_80183964:
     v0 = cpu->read_word(s2 + 88);
     /* fall through to block_80183968 */
 
-block_80183968:
+block_80183968:;
     /* nop */  /* 0x80183968: 0x00000000 */
     int _bc_8018396C = ((int32_t)v0 >= 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -1229,7 +1229,7 @@ block_80183CBC:
     v0 = (s4 < (uint32_t)45) ? 1 : 0;  /* 0x80183CBC: 0x2E82002D */
     /* fall through to block_80183CC0 */
 
-block_80183CC0:
+block_80183CC0:;
     int _bc_80183CC0 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 0x8012 << 16;  /* 0x80120000 */
@@ -2049,7 +2049,7 @@ block_80184260:
     cpu->write_word(s2 + 56, a2);
     /* fall through to block_80184278 */
 
-block_80184278:
+block_80184278:;
     int _bc_80184278 = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 1;
