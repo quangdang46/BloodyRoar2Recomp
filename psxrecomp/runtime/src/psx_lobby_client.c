@@ -9,6 +9,7 @@
 #include <time.h>
 
 #if !defined(PSX_HAS_LOBBY_CLIENT)
+/* ---- PSX_HAS_LOBBY_CLIENT stubs: every API below is inert (returns 0/-1/void) ---- */
 
 const char *psx_lobby_default_url(void)
 {
@@ -272,6 +273,7 @@ enum {
     PSX_LOBBY_SIG_RTT_REPORT = 102
 };
 
+/* Monotonic ms clock (QPC/CLOCK_MONOTONIC — not coarse GetTickCount64). */
 static uint64_t lobby_mono_ms(void)
 {
     /* QPC / CLOCK_MONOTONIC — not GetTickCount64 (coarse Win↔Linux lobby RTT). */
@@ -324,12 +326,14 @@ enum {
 static int g_host_adv_state;
 static uint64_t g_host_adv_deadline_ms;
 
+/* Reset host-advertise state machine to idle. */
 static void lobby_host_advertise_reset(void)
 {
     g_host_adv_state = HOST_ADV_IDLE;
     g_host_adv_deadline_ms = 0;
 }
 
+/* True if an endpoint string is loopback. */
 static int host_endpoint_is_loopback(const char *ep)
 {
     if (!ep || !ep[0])
@@ -343,6 +347,7 @@ static int host_endpoint_is_loopback(const char *ep)
     return 0;
 }
 
+/* Split endpoint host:port into parts. */
 static int endpoint_host_port(const char *ep, char *host, size_t host_cap, int *port_out)
 {
     const char *colon;
@@ -361,6 +366,7 @@ static int endpoint_host_port(const char *ep, char *host, size_t host_cap, int *
     return *port_out > 0 && *port_out <= 65535;
 }
 
+/* Store the connected peer IP from the socket. */
 static void lobby_store_connected_peer_ip(int fd)
 {
     struct sockaddr_storage ss;
@@ -387,6 +393,7 @@ static void lobby_store_connected_peer_ip(int fd)
 #endif
 }
 
+/* Parse dotted-quad IPv4 into octets. */
 static int parse_ipv4_dotted(const char *host, unsigned *o)
 {
     unsigned a, b, c, d;
@@ -404,6 +411,7 @@ static int parse_ipv4_dotted(const char *host, unsigned *o)
     return 1;
 }
 
+/* True if IPv4 octets are RFC1918 private. */
 static int ipv4_is_rfc1918(const unsigned o[4])
 {
     if (!o)
@@ -417,6 +425,7 @@ static int ipv4_is_rfc1918(const unsigned o[4])
     return 0;
 }
 
+/* True if hostname is loopback (localhost/127.x). */
 static int host_is_loopback_name(const char *host)
 {
     if (!host || !host[0])
@@ -430,6 +439,7 @@ static int host_is_loopback_name(const char *host)
     return 0;
 }
 
+/* True if hostname resolves to RFC1918 (literal or name). */
 static int host_is_rfc1918_name(const char *host)
 {
     unsigned o[4];
@@ -446,6 +456,7 @@ static int host_is_rfc1918_name(const char *host)
  *   - rewrite to WS peer IP only when that peer is private/loopback and
  *     advertise is public, loopback, or a hostname (never clobber LAN with WAN)
  *   - else fall back to WS URL host string for loopback advertise only */
+/* Rewrite a relay endpoint to the lobby host when on LAN. */
 static int rewrite_relay_endpoint_to_lobby_host(char *ep, size_t cap)
 {
     char rh[128];
@@ -478,6 +489,7 @@ static int rewrite_relay_endpoint_to_lobby_host(char *ep, size_t cap)
     return 1;
 }
 
+/* True if IPv4 octets are link-local (169.254.x). */
 static int ipv4_is_link_local(const unsigned o[4])
 {
     return o && o[0] == 169 && o[1] == 254;
@@ -509,6 +521,7 @@ static int ipv4_same_lan24(const unsigned a[4], const unsigned b[4])
     return a && b && a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
 }
 
+/* Local bind port for lobby connections (default 7777). */
 static int my_bind_port(void)
 {
     char host[128];
@@ -585,12 +598,14 @@ static int lobby_host_stun_public(char *out, size_t out_len)
     return last_rc != 0 ? last_rc : -1;
 }
 
+/* Close all LAN beacon sockets. */
 static void lobby_lan_beacon_close_all(void)
 {
     rnet_lan_beacon_close(&g_lan_beacon_pub);
     rnet_lan_beacon_close(&g_lan_beacon_listen);
 }
 
+/* Publish updated LAN endpoints via beacon. */
 static void lobby_lan_beacon_publish_update(void)
 {
     char lan[PSX_LOBBY_MAX_LAN_EPS][PSX_LOBBY_ENDPOINT_LEN];
@@ -616,6 +631,7 @@ static void lobby_lan_beacon_publish_update(void)
             g_lc.join.lobby_id, lan[0]);
 }
 
+/* Per-tick LAN beacon publish/refresh. */
 static void lobby_lan_beacon_tick(void)
 {
     if (g_lc.is_host && g_lc.in_lobby && !g_lc.launch_pending) {
@@ -650,6 +666,7 @@ static void lobby_lan_beacon_tick(void)
     }
 }
 
+/* Host advertise tick (endpoint + msg broadcast). */
 static void lobby_host_advertise_tick(void)
 {
     char endpoint[RNET_ENDPOINT_TEXT_MAX];
@@ -711,11 +728,13 @@ static void lobby_host_advertise_tick(void)
             g_lc.join.host_endpoint);
 }
 
+/* Close the lobby RTT probe. */
 static void lobby_rtt_close(void)
 {
     rnet_rtt_probe_close(&g_rtt_probe);
 }
 
+/* Close the list RTT probe. */
 static void lobby_list_rtt_close(void)
 {
     rnet_rtt_probe_close(&g_list_rtt_probe);
@@ -726,6 +745,7 @@ static void lobby_list_rtt_close(void)
     memset(g_list_rtt_lobby_idx, 0, sizeof(g_list_rtt_lobby_idx));
 }
 
+/* Collect local RFC1918 addresses for LAN discovery. */
 static int collect_local_rfc1918(unsigned out[][4], int max_out)
 {
     RNetIpv4Address addrs[16];
@@ -750,6 +770,7 @@ static int collect_local_rfc1918(unsigned out[][4], int max_out)
     return count;
 }
 
+/* True if candidate already in list. */
 static int cand_already(char cands[][PSX_LOBBY_ENDPOINT_LEN], int n, const char *ep)
 {
     int i;
@@ -919,6 +940,7 @@ static void lobby_list_rtt_tick(void)
         lobby_list_rtt_close();
 }
 
+/* Clear per-member RTT samples. */
 static void member_rtt_clear(void)
 {
     int i;
@@ -932,6 +954,7 @@ static void member_rtt_clear(void)
  * a seat to its cell; -1 for a seat neither table has. Without this every
  * spectator's report was dropped as out of range and the gallery showed no
  * latency at all. */
+/* Map a member slot to its RTT sample index. */
 static int rtt_index_for_slot(int slot)
 {
     int base;
@@ -943,6 +966,7 @@ static int rtt_index_for_slot(int slot)
     return -1;
 }
 
+/* Find member slot by player id. */
 static int member_slot_for_player(const char *player_id)
 {
     int i;
@@ -955,6 +979,7 @@ static int member_slot_for_player(const char *player_id)
     return -1;
 }
 
+/* Local member slot index. */
 static int local_member_slot(void)
 {
     return member_slot_for_player(g_lc.player_id);
@@ -967,6 +992,7 @@ static int g_lobby_max_slots = 2;
  * the create goes out. */
 static int g_allow_spectators_pref;
 
+/* Clamp + set max player slots (2..8). */
 void psx_lobby_set_max_slots(int max_slots)
 {
     if (max_slots < 2) max_slots = 2;
@@ -998,6 +1024,7 @@ static void queue_send(const char *json);
 static void clear_turn_credentials(void);
 static int queue_turn_credentials_request(void);
 
+/* Clear TURN credentials + timestamp. */
 static void clear_turn_credentials(void)
 {
     memset(&g_lc.turn, 0, sizeof(g_lc.turn));
@@ -1005,6 +1032,7 @@ static void clear_turn_credentials(void)
     g_lc.turn_request_pending = 0;
 }
 
+/* Queue a TURN-credentials request to the server. */
 static int queue_turn_credentials_request(void)
 {
     if (!psx_lobby_connected())
@@ -1014,6 +1042,7 @@ static int queue_turn_credentials_request(void)
     return 0;
 }
 
+/* Queue a lobby-list request (with game filter). */
 static void queue_list_request(void)
 {
     char msg[384];
@@ -1032,6 +1061,7 @@ static void queue_list_request(void)
     }
 }
 
+/* Zero a PsxLobbyMatchCaps struct. */
 static void match_caps_clear(PsxLobbyMatchCaps *c)
 {
     if (!c) return;
@@ -1187,6 +1217,7 @@ static int json_parse_str_array(const char *json, const char *key,
     return n;
 }
 
+/* Fingerprint a lobby row's LAN endpoints. */
 static void lobby_row_lan_fingerprint(const PsxLobbyRow *row, char *out, size_t cap)
 {
     size_t o = 0;
@@ -1208,6 +1239,7 @@ static void lobby_row_lan_fingerprint(const PsxLobbyRow *row, char *out, size_t 
     }
 }
 
+/* JSON-escape a string into out[]. */
 static size_t json_escape(const char *in, char *out, size_t cap)
 {
     size_t o = 0;
@@ -1240,6 +1272,7 @@ static size_t json_escape(const char *in, char *out, size_t cap)
     return o;
 }
 
+/* Enqueue an ICE signal into the ring (if accepting). */
 static void enqueue_signal(int type, int flag, const char *text)
 {
     int i;
@@ -1259,6 +1292,7 @@ static void enqueue_signal(int type, int flag, const char *text)
     g_lc.sig_count++;
 }
 
+/* Clear the ICE signal queue. */
 void psx_lobby_clear_signals(void)
 {
     g_lc.sig_head = 0;
@@ -1266,11 +1300,13 @@ void psx_lobby_clear_signals(void)
     g_lc.sig_count = 0;
 }
 
+/* Enable/disable ICE signal acceptance. */
 void psx_lobby_set_ice_signal_accept(int accept)
 {
     g_lc.ice_signal_accept = accept ? 1 : 0;
 }
 
+/* Extract an integer field from JSON. */
 static int json_get_int(const char *json, const char *key, int def)
 {
     char pat[80];
@@ -1342,11 +1378,13 @@ static void lobby_list_parse_players(const char *json)
     g_lc.online_count = n;
 }
 
+/* Number of online lobby rows. */
 int psx_lobby_online_count(void)
 {
     return g_lc.online_count;
 }
 
+/* Get online lobby row by index. */
 int psx_lobby_online_get(int index, PsxLobbyOnlinePlayer *out)
 {
     if (!out || index < 0 || index >= g_lc.online_count) return 0;
@@ -1354,6 +1392,7 @@ int psx_lobby_online_get(int index, PsxLobbyOnlinePlayer *out)
     return 1;
 }
 
+/* Extract a boolean field from JSON. */
 static int json_get_bool(const char *json, const char *key, int def)
 {
     char pat[80];
@@ -1380,6 +1419,7 @@ static int json_get_bool(const char *json, const char *key, int def)
     return def;
 }
 
+/* Extract a nested JSON object by key. */
 static int json_extract_object(const char *json, const char *key, char *out, size_t out_cap)
 {
     char pat[80];
@@ -1408,6 +1448,7 @@ static int json_extract_object(const char *json, const char *key, char *out, siz
     return depth == 0 && n > 1;
 }
 
+/* Parse a match_caps JSON object into caps struct. */
 static void parse_match_caps_object(const char *obj, PsxLobbyMatchCaps *out)
 {
     if (!obj || !out || obj[0] != '{') return;
@@ -1443,6 +1484,7 @@ static void parse_match_caps_object(const char *obj, PsxLobbyMatchCaps *out)
     out->valid = 1;
 }
 
+/* Ingest match_caps from a server JSON message. */
 static void ingest_match_caps_from_json(const char *json)
 {
     char obj[8192];
@@ -1507,6 +1549,7 @@ static void parse_plan_mods_object(const char *json, PsxLobbyMatchCaps *caps)
     caps->plan_count = n;
 }
 
+/* Append match_caps fields to an outgoing JSON msg. */
 static int append_match_caps_json(char *dst, size_t dst_cap, const PsxLobbyMatchCaps *caps)
 {
     char lang[PSX_LOBBY_LANG_LEN];
@@ -1585,6 +1628,7 @@ static int append_match_caps_json(char *dst, size_t dst_cap, const PsxLobbyMatch
     }
 }
 
+/* Queue an outbound WS message (8-deep pending). */
 static void queue_send(const char *json)
 {
     if (g_lc.pending_n >= 8) {
@@ -1595,6 +1639,7 @@ static void queue_send(const char *json)
     g_lc.pending_n++;
 }
 
+/* Flush queued outbound messages (post-handshake). */
 static void flush_pending(void)
 {
     int i;
@@ -1607,6 +1652,7 @@ static void flush_pending(void)
     g_lc.pending_n = 0;
 }
 
+/* True if endpoint has port 0 or missing port. */
 static int endpoint_port_is_zero(const char *ep)
 {
     const char *colon;
@@ -1636,6 +1682,7 @@ static void copy_first_usable_endpoint(char *dst, size_t dst_len, const char *a,
     }
 }
 
+/* True if match caps force server input relay. */
 static int using_server_input_relay(const PsxLobbyJoinInfo *j)
 {
     if (g_lc.match_caps.valid && g_lc.match_caps.force_input_relay)
@@ -1650,6 +1697,7 @@ static int using_server_input_relay(const PsxLobbyJoinInfo *j)
     return 0;
 }
 
+/* Fill peer bind info from join response (relay-aware). */
 static void fill_peer_bind_from_join(void)
 {
     PsxLobbyJoinInfo *j = &g_lc.join;
@@ -1697,6 +1745,7 @@ static void fill_peer_bind_from_join(void)
  *
  * `key` absent is not an error: a server that predates spectators sends no
  * "spectators", and the right result there is a lobby with an empty gallery. */
+/* Parse the seats array from a lobby update. */
 static int parse_seat_array(const char *json, const char *key, int is_spectator,
                             int n)
 {
@@ -1791,6 +1840,7 @@ static int parse_seat_array(const char *json, const char *key, int is_spectator,
     return n;
 }
 
+/* Parse the slots array from a lobby update. */
 static void parse_slots_array(const char *json)
 {
     int n;
@@ -1821,6 +1871,7 @@ static void parse_slots_array(const char *json)
     g_lc.member_count = n;
 }
 
+/* Ingest the host player id from a message. */
 static void ingest_host_player_id(const char *json)
 {
     char host_id[PSX_LOBBY_ID_LEN];
@@ -1877,6 +1928,7 @@ static void drain_ws_pending(void)
     }
 }
 
+/* Push a chat message into the ring. */
 static void chat_push(const char *player_id, const char *from, const char *text,
                       int is_system)
 {
@@ -1905,6 +1957,7 @@ static void chat_push(const char *player_id, const char *from, const char *text,
     m->seq = ++g_lc.chat_seq;
 }
 
+/* Push a server chat message into the ring. */
 static void schat_push(const char *player_id, const char *from, const char *text)
 {
     PsxLobbyChatMsg *m;
@@ -1928,6 +1981,7 @@ static void schat_push(const char *player_id, const char *from, const char *text
     m->seq = ++g_lc.schat_seq;
 }
 
+/* Clear the chat ring. */
 void psx_lobby_chat_clear(void)
 {
     g_lc.chat_head = 0;
@@ -1954,6 +2008,7 @@ static void queue_hello(void)
     flush_pending();
 }
 
+/* Dispatch an inbound server JSON message by op. */
 static void handle_server_json(const char *json)
 {
     char op[32];
@@ -2456,6 +2511,7 @@ static void handle_server_json(const char *json)
     }
 }
 
+/* Set a socket non-blocking (platform-specific). */
 static int set_nonblock(int fd)
 {
 #if defined(_WIN32)
@@ -2467,6 +2523,7 @@ static int set_nonblock(int fd)
 #endif
 }
 
+/* Set a socket blocking (platform-specific). */
 static int set_block(int fd)
 {
 #if defined(_WIN32)
@@ -2496,6 +2553,7 @@ static pthread_t g_connect_thread;
 static int g_connect_thread_valid;
 #endif
 
+/* True if a connect is in progress (WSAEWOULDBLOCK etc.). */
 static int socket_connect_in_progress(void)
 {
 #if defined(_WIN32)
@@ -2506,6 +2564,7 @@ static int socket_connect_in_progress(void)
 #endif
 }
 
+/* Wait for async connect completion (select). */
 static int wait_socket_connected(int fd, int timeout_ms)
 {
     fd_set wfds;
@@ -2542,6 +2601,7 @@ static int wait_socket_connected(int fd, int timeout_ms)
     return 0;
 }
 
+/* TCP connect to host:port (non-blocking + wait). */
 static int lobby_tcp_connect(const char *host, int port, int *out_fd)
 {
     struct addrinfo hints, *res = NULL, *rp;
@@ -2583,6 +2643,7 @@ static int lobby_tcp_connect(const char *host, int port, int *out_fd)
     return 0;
 }
 
+/* Send the WebSocket upgrade handshake. */
 static int lobby_send_ws_upgrade(int fd, const char *host, int port, const char *path)
 {
     char key_raw[16];
@@ -2623,6 +2684,7 @@ static int lobby_send_ws_upgrade(int fd, const char *host, int port, const char 
 #if defined(_WIN32)
 static unsigned __stdcall lobby_connect_worker(void *arg)
 #else
+/* Connect worker thread entry. */
 static void *lobby_connect_worker(void *arg)
 #endif
 {
@@ -2656,6 +2718,7 @@ static void *lobby_connect_worker(void *arg)
 #endif
 }
 
+/* Join-connect worker thread entry. */
 static void lobby_join_connect_worker(void)
 {
 #if defined(_WIN32)
@@ -2672,6 +2735,7 @@ static void lobby_join_connect_worker(void)
 #endif
 }
 
+/* True if the connect thread is running. */
 static int lobby_connect_thread_active(void)
 {
 #if defined(_WIN32)
@@ -2719,6 +2783,7 @@ static void lobby_finish_connect_worker(void)
     g_lc.rx_http_len = 0;
 }
 
+/* Cancel an in-flight async connect. */
 static void lobby_cancel_connect_async(void)
 {
     g_connect_cancel = 1;
@@ -2768,6 +2833,7 @@ static void lobby_client_reset_keep_identity(void)
     member_rtt_clear();
 }
 
+/* Connect to the lobby server (async). */
 int psx_lobby_connect(const char *ws_url)
 {
 #if defined(_WIN32)
@@ -2849,6 +2915,7 @@ int psx_lobby_connect(const char *ws_url)
     return 0;
 }
 
+/* Disconnect from the lobby (non-blocking cancel). */
 void psx_lobby_disconnect(void)
 {
     /* Never block the UI on DNS/connect — cancel and let pump reap. */
@@ -2867,16 +2934,19 @@ void psx_lobby_disconnect(void)
     lobby_client_reset_keep_identity();
 }
 
+/* True if connected + handshake done. */
 int psx_lobby_connected(void)
 {
     return g_lc.connected && g_lc.fd >= 0;
 }
 
+/* True while a connect is in progress. */
 int psx_lobby_connecting(void)
 {
     return g_lc_tcp_connecting || lobby_connect_thread_active() || g_connect_worker_done;
 }
 
+/* Set the display name (clamped, notifies server). */
 void psx_lobby_set_display_name(const char *name)
 {
     char prev[PSX_LOBBY_NAME_LEN];
@@ -2904,6 +2974,7 @@ const char *psx_lobby_player_id(void)
     return g_lc.player_id;
 }
 
+/* First member slot that is a guest (non-host). */
 static int first_guest_member_slot(void)
 {
     int i;
@@ -2945,6 +3016,7 @@ static void lobby_rtt_ensure(void)
         (void)rnet_rtt_probe_set_peer(g_rtt_probe, peer);
 }
 
+/* Per-tick RTT probe sampling. */
 static void lobby_rtt_tick(void)
 {
     int ms = 0;
@@ -2984,6 +3056,7 @@ static void lobby_rtt_tick(void)
     }
 }
 
+/* Close the ICE RTT probe. */
 static void lobby_ice_rtt_close(void)
 {
     rnet_ice_rtt_close(&g_ice_rtt);
@@ -3012,6 +3085,7 @@ static void lobby_rtt_store_for_peer(const char *peer_id, int ms)
         g_lc.member_rtt_ms[slot] = ms;
 }
 
+/* ICE RTT emit callback. */
 static void lobby_ice_rtt_emit(const RNetSignal *msg, void *user)
 {
     (void)user;
@@ -3020,6 +3094,7 @@ static void lobby_ice_rtt_emit(const RNetSignal *msg, void *user)
     (void)psx_lobby_send_signal((int)msg->type, (int)msg->flag, msg->text);
 }
 
+/* Peer id for ICE RTT reporting. */
 static int lobby_ice_rtt_peer_id(char *out, size_t cap)
 {
     int i;
@@ -3039,6 +3114,7 @@ static int lobby_ice_rtt_peer_id(char *out, size_t cap)
     return -1;
 }
 
+/* Apply an RTT sample (ms) with dedup. */
 static void lobby_ice_rtt_apply_ms(int ms)
 {
     static int s_last_report = -1;
@@ -3321,6 +3397,7 @@ const char *psx_lobby_game_version(void)
     return effective_game_version(NULL);
 }
 
+/* Set the disc fingerprint for lobby identity. */
 void psx_lobby_set_disc_fp(const char *disc_fp)
 {
     size_t i;
@@ -3346,11 +3423,13 @@ const char *psx_lobby_disc_fp(void)
 
 static PsxLobbyModOfferBuilder g_mod_offer_builder = NULL;
 
+/* Set the mod-offer builder callback. */
 void psx_lobby_set_mod_offer_builder(PsxLobbyModOfferBuilder builder)
 {
     g_mod_offer_builder = builder;
 }
 
+/* Request the public lobby list. */
 void psx_lobby_request_list(void)
 {
     g_list_rtt_on_next_list = 1;
@@ -3358,11 +3437,13 @@ void psx_lobby_request_list(void)
     flush_pending();
 }
 
+/* Number of lobby-list rows. */
 int psx_lobby_list_count(void)
 {
     return g_lc.list_count;
 }
 
+/* Get a lobby-list row by index. */
 int psx_lobby_list_get(int index, PsxLobbyRow *out)
 {
     if (!out || index < 0 || index >= g_lc.list_count) {
@@ -3372,6 +3453,7 @@ int psx_lobby_list_get(int index, PsxLobbyRow *out)
     return 1;
 }
 
+/* Create a lobby (name/password/bind/caps). */
 int psx_lobby_create(const char *name, const char *game_name, const char *game_version,
                      const char *password, const char *host_bind,
                      const PsxLobbyMatchCaps *match_caps)
@@ -3414,6 +3496,7 @@ int psx_lobby_create(const char *name, const char *game_name, const char *game_v
     return 0;
 }
 
+/* Join a lobby by endpoint+password. */
 int psx_lobby_join(const char *lobby_id, const char *password, const char *guest_bind)
 {
     char msg[4096];
@@ -3461,6 +3544,7 @@ int psx_lobby_join(const char *lobby_id, const char *password, const char *guest
     return 0;
 }
 
+/* Leave the current lobby. */
 int psx_lobby_leave(void)
 {
     queue_send("{\"op\":\"leave\"}");
@@ -3483,36 +3567,43 @@ int psx_lobby_leave(void)
     return 0;
 }
 
+/* Set the allow-spectators preference. */
 void psx_lobby_set_allow_spectators(int allow)
 {
     g_allow_spectators_pref = allow ? 1 : 0;
 }
 
+/* The allow-spectators preference. */
 int psx_lobby_allow_spectators_pref(void)
 {
     return g_allow_spectators_pref;
 }
 
+/* Whether the joined lobby allows spectators. */
 int psx_lobby_allow_spectators(void)
 {
     return g_lc.join.allow_spectators ? 1 : 0;
 }
 
+/* Max spectators allowed in the lobby. */
 int psx_lobby_max_spectators(void)
 {
     return g_lc.join.max_spectators;
 }
 
+/* Current spectator count. */
 int psx_lobby_spectator_count(void)
 {
     return g_lc.join.spectator_count;
 }
 
+/* True if local peer is a spectator. */
 int psx_lobby_local_is_spectator(void)
 {
     return g_lc.join.local_is_spectator ? 1 : 0;
 }
 
+/* Base slot index for spectators. */
 int psx_lobby_spectator_slot_base(void)
 {
     /* The server republishes its base in every update, and the namespace is
@@ -3522,12 +3613,14 @@ int psx_lobby_spectator_slot_base(void)
                                              : PSX_LOBBY_SPECTATOR_SLOT_BASE;
 }
 
+/* Spectator slot index by position. */
 int psx_lobby_spectator_slot(int index)
 {
     if (index < 0 || index >= PSX_LOBBY_MAX_SPECTATORS) return -1;
     return psx_lobby_spectator_slot_base() + index;
 }
 
+/* Local wire slot (-1 for spectators). */
 int psx_lobby_local_wire_slot(void)
 {
     int gallery_index;
@@ -3539,6 +3632,7 @@ int psx_lobby_local_wire_slot(void)
     return g_lc.join.spectator_relay_base + gallery_index;
 }
 
+/* True if a seat/slot index is valid. */
 int psx_lobby_seat_valid(int slot)
 {
     const int base = psx_lobby_spectator_slot_base();
@@ -3547,6 +3641,7 @@ int psx_lobby_seat_valid(int slot)
     return slot >= base && slot < base + PSX_LOBBY_MAX_SPECTATORS;
 }
 
+/* Kick a member (host only). */
 int psx_lobby_kick(int slot)
 {
     char msg[64];
@@ -3562,6 +3657,7 @@ int psx_lobby_kick(int slot)
     return 0;
 }
 
+/* Move a member to a different slot (host only). */
 int psx_lobby_move_member(int from_slot, int to_slot)
 {
     char msg[96];
@@ -3582,11 +3678,13 @@ int psx_lobby_move_member(int from_slot, int to_slot)
     return 0;
 }
 
+/* True if inside a lobby session. */
 int psx_lobby_in_lobby(void)
 {
     return g_lc.in_lobby;
 }
 
+/* True if local peer is the lobby host. */
 int psx_lobby_is_host(void)
 {
     return g_lc.is_host;
@@ -3607,6 +3705,7 @@ const PsxLobbyMatchCaps *psx_lobby_match_caps(void)
     return &g_lc.match_caps;
 }
 
+/* Set match capabilities (host, broadcasts to members). */
 int psx_lobby_set_match_caps(const PsxLobbyMatchCaps *caps)
 {
     char msg[8192];
@@ -3625,11 +3724,13 @@ int psx_lobby_set_match_caps(const PsxLobbyMatchCaps *caps)
     return 0;
 }
 
+/* Number of lobby members. */
 int psx_lobby_member_count(void)
 {
     return g_lc.member_count;
 }
 
+/* Get a member by index. */
 int psx_lobby_member_get(int index, PsxLobbyMember *out)
 {
     if (!out || index < 0 || index >= g_lc.member_count) {
@@ -3639,6 +3740,7 @@ int psx_lobby_member_get(int index, PsxLobbyMember *out)
     return 1;
 }
 
+/* RTT latency for a member slot. */
 int psx_lobby_member_latency_ms(int slot)
 {
     int local, idx;
@@ -3660,16 +3762,19 @@ int psx_lobby_member_is_host(const PsxLobbyMember *member)
     return host_id && host_id[0] && strcmp(member->player_id, host_id) == 0;
 }
 
+/* Local ready flag. */
 int psx_lobby_local_ready(void)
 {
     return g_lc.local_ready;
 }
 
+/* True if all members are ready. */
 int psx_lobby_all_ready(void)
 {
     return g_lc.all_ready != 0 && g_lc.in_lobby && g_lc.join.player_count >= 2;
 }
 
+/* Set the BIOS offer for session start. */
 void psx_lobby_set_bios_offer(const PsxLobbyBiosOffer *offer)
 {
     if (!offer) {
@@ -3689,6 +3794,7 @@ const PsxLobbyBiosOffer *psx_lobby_bios_offer(void)
     return &g_lc.bios_offer;
 }
 
+/* Set the memcard offer for session start. */
 void psx_lobby_set_memcard_offer(const PsxLobbyMemcardOffer *offer)
 {
     if (!offer) {
@@ -3703,6 +3809,7 @@ const PsxLobbyMemcardOffer *psx_lobby_memcard_offer(void)
     return &g_lc.memcard_offer;
 }
 
+/* Request to move own seat. */
 int psx_lobby_seat_move_self(int to_slot)
 {
     char msg[80];
@@ -3715,6 +3822,7 @@ int psx_lobby_seat_move_self(int to_slot)
     return 0;
 }
 
+/* Request a seat swap with target slot. */
 int psx_lobby_seat_swap_request(int target_slot)
 {
     char msg[96];
@@ -3730,6 +3838,7 @@ int psx_lobby_seat_swap_request(int target_slot)
     return 0;
 }
 
+/* Poll incoming seat-swap request. */
 int psx_lobby_seat_swap_incoming(char *who, size_t who_cap, int *from_slot)
 {
     if (!g_lc.swap_in_valid) return 0;
@@ -3738,6 +3847,7 @@ int psx_lobby_seat_swap_incoming(char *who, size_t who_cap, int *from_slot)
     return 1;
 }
 
+/* Respond to an incoming seat swap. */
 int psx_lobby_seat_swap_respond(int accept)
 {
     char msg[160];
@@ -3753,16 +3863,19 @@ int psx_lobby_seat_swap_respond(int accept)
     return 0;
 }
 
+/* Outgoing seat-swap state. */
 int psx_lobby_seat_swap_outgoing(void)
 {
     return g_lc.swap_out;
 }
 
+/* Clear outgoing seat-swap state. */
 void psx_lobby_seat_swap_clear(void)
 {
     if (g_lc.swap_out != 1) g_lc.swap_out = 0;
 }
 
+/* Send a chat message. */
 int psx_lobby_send_chat(const char *text)
 {
     char esc[PSX_LOBBY_CHAT_TEXT_LEN * 2 + 8];
@@ -3778,11 +3891,13 @@ int psx_lobby_send_chat(const char *text)
     return 0;
 }
 
+/* Number of chat messages. */
 int psx_lobby_chat_count(void)
 {
     return g_lc.chat_count;
 }
 
+/* Send a server chat message. */
 int psx_lobby_send_server_chat(const char *text)
 {
     char esc[PSX_LOBBY_CHAT_TEXT_LEN * 2 + 8];
@@ -3802,11 +3917,13 @@ int psx_lobby_send_server_chat(const char *text)
     return 0;
 }
 
+/* Number of server chat messages. */
 int psx_lobby_server_chat_count(void)
 {
     return g_lc.schat_count;
 }
 
+/* Get a server chat message by index. */
 int psx_lobby_server_chat_get(int index, PsxLobbyChatMsg *out)
 {
     if (!out || index < 0 || index >= g_lc.schat_count) return 0;
@@ -3814,6 +3931,7 @@ int psx_lobby_server_chat_get(int index, PsxLobbyChatMsg *out)
     return 1;
 }
 
+/* Get a chat message by index. */
 int psx_lobby_chat_get(int index, PsxLobbyChatMsg *out)
 {
     if (!out || index < 0 || index >= g_lc.chat_count) return 0;
@@ -3821,6 +3939,7 @@ int psx_lobby_chat_get(int index, PsxLobbyChatMsg *out)
     return 1;
 }
 
+/* Settle which BIOS the session will use. */
 int psx_lobby_settle_session_bios(char *out, size_t out_cap)
 {
     int i;
@@ -3875,6 +3994,7 @@ int psx_lobby_settle_session_bios(char *out, size_t out_cap)
     return 0;
 }
 
+/* Set local ready flag (includes memcard offer). */
 int psx_lobby_set_ready(int ready)
 {
     char msg[512];
@@ -3910,6 +4030,7 @@ int psx_lobby_set_ready(int ready)
     return 0;
 }
 
+/* Request session start (host, includes caps). */
 int psx_lobby_request_start(const PsxLobbyMatchCaps *match_caps)
 {
     char msg[8192];
@@ -3935,11 +4056,13 @@ int psx_lobby_request_start(const PsxLobbyMatchCaps *match_caps)
     return 0;
 }
 
+/* True if a launch is pending. */
 int psx_lobby_launch_pending(void)
 {
     return g_lc.launch_pending;
 }
 
+/* Clear the launch-pending flag. */
 void psx_lobby_clear_launch_pending(void)
 {
     g_lc.launch_pending = 0;
@@ -3948,6 +4071,7 @@ void psx_lobby_clear_launch_pending(void)
     lobby_rtt_close();
 }
 
+/* Resume waiting-room RTT probes. */
 void psx_lobby_resume_waiting_room_rtt(void)
 {
     g_lc.ice_rtt_suspended = 0;
@@ -3955,6 +4079,7 @@ void psx_lobby_resume_waiting_room_rtt(void)
     lobby_rtt_close();
 }
 
+/* Send an ICE signal to the server. */
 int psx_lobby_send_signal(int type, int flag, const char *text)
 {
     char esc[4096];
@@ -3979,6 +4104,7 @@ int psx_lobby_send_signal(int type, int flag, const char *text)
     return 0;
 }
 
+/* Poll the next ICE signal from the queue. */
 int psx_lobby_poll_signal(int *type, int *flag, char *text, size_t text_cap)
 {
     int i;
@@ -3997,6 +4123,7 @@ int psx_lobby_poll_signal(int *type, int *flag, char *text, size_t text_cap)
     return 1;
 }
 
+/* Request TURN credentials from server. */
 int psx_lobby_request_turn_credentials(void)
 {
     if (!psx_lobby_connected())
