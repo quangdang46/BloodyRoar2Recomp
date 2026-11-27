@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+/* main: runs the gpu vk upload alignment checks */
 int main(void)
 {
     assert(vk_upload_aligned_texels(0) == 0);

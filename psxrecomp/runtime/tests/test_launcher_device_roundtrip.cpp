@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+/* main: runs the launcher device roundtrip checks */
 int main() {
     using PSXRecompV4::launcher_device_from_source;
     using PSXRecompV4::launcher_source_from_device;

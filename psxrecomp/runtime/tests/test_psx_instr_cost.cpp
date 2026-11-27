@@ -43,6 +43,7 @@ static uint32_t reference_dep_res_mask(uint32_t insn) {
     }
 }
 
+/* main: runs the psx instr cost checks */
 int main() {
     for (uint32_t op = 0; op < 64u; ++op) {
         const uint32_t function_count = (op == 0u) ? 64u : 1u;

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+/* main: runs the debug trace ranges checks */
 int main(void)
 {
     PSXDebugTraceRange ranges[3] = {{0}};

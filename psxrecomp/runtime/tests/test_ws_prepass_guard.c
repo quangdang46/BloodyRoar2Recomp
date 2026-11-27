@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* main: runs the ws prepass guard checks */
 int main(void) {
     uint32_t packet[] = {
         0x64010203u, 0x00100020u, 0x00040008u, 0x00100010u

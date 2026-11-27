@@ -7,6 +7,7 @@ static int failures;
     if (!(condition)) { fprintf(stderr, "FAIL: %s\n", message); failures++; } \
 } while (0)
 
+/* main: runs the gpu sw edges checks */
 int main(void) {
     int long_x = 0, short_x = 0;
 
