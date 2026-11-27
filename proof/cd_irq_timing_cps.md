@@ -937,3 +937,25 @@ Full bidirectional audit of the cpst_ coverage surface:
 CONCLUSION: timed coverage surface is self-consistent. Every
 reachable addr in 0x8018-0x801B resolves to timed cpst_, real peer
 clean-C port, or intentional generated-leaf. No code changes.
+
+## Batch 47 (orch/w5/e05) — uncovered piece-ENTRY sweep: 92 funcs
+
+New frontier: diffed generated/SLES_017.22_dispatch.c piece-entries
+(25976 rows) against clean_cps.map + fnmap coverage. Grouped by
+generated func — 93 fully-uncovered function ENTRIES in 0x8018-0x801B
+(entry addr absent from both maps = 100% generated/untimed; mostly
+1-block leaves, one 8-block). These are the data-pointer/jal-target
+bodies the body-pool sweep could never see (no cps_ def existed).
+
+Converted 92/93 -> cpst_ (8019eb78 skipped: embedded entry not in
+first block of br2eu_func_8019EB00 — known transformer limit).
+Added 92 entry rows + 364 _cont resume rows; 127 cont addrs already
+routed (chk_*/scriptop_*/cpst_8019eb00 peer coverage) — existing rows
+kept, new cases remain dead fallbacks (peer-ports-win preserved).
+Zero entry conflicts.
+
+clean_table: 10528 wrappers (+374), 0 skipped.
+cd_irq_probe.c: 156,688 lines.
+
+Verified: clean build EU + USA; headless :5101 frames 9623 -> 15365+
+attract CD streaming, no wedge.
