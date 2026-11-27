@@ -11606,8 +11606,13 @@ uint32_t spr_attr_alloc_c(uint32_t head_addr,uint32_t x0,uint32_t y0,
  *    spr_attr_alloc_c calls and w = -m0/-m2 (left col, x-2) vs
  *    +m1/+m3 (right col, x+16) — verified against CPS blocks.
  *  - spr_attr_alloc_c returns the record guest addr (fixed
- *    contract); a 0 return aborts the whole chain to epilogue. */
-void hud_gauge_frame_emit(uint32_t head,uint32_t flags,uint32_t x,
+ *    contract); a 0 return aborts the whole chain to epilogue.
+ *  - exit $v0 is path-dependent scratch (verified per CPS tail
+ *    block): invalid mode -> 32; alloc_c failure -> 0; mode 0x10
+ *    -> the untruncated rec4+22 sum; mode 0x20 -> m3>>3; mode 0x00
+ *    -> the 4th spr_attr_alloc_a return. The sole generated caller
+ *    (0x8015DED0 site) branches on `beq v0,zero`. */
+uint32_t hud_gauge_frame_emit(uint32_t head,uint32_t flags,uint32_t x,
                        uint32_t y,uint32_t variant)
 {
   CPUState *cpu = clean_cpu_state();
@@ -11616,8 +11621,9 @@ void hud_gauge_frame_emit(uint32_t head,uint32_t flags,uint32_t x,
   uint32_t t0, m0, m1, m2, m3;
   uint32_t s1, s5, s2, s7, s6, fp;
   uint32_t color1, color2;
+  uint32_t ret = 32;  /* invalid-mode exit $v0 (block_801589BC) */
   int32_t sx, sy;
-  uint32_t rec;
+  uint32_t rec, _nv;
   static const uint8_t _rgb[5][3] = {
     {255,255,0},{128,255,128},{255,128,128},{128,128,128},{128,128,255}};
 
@@ -11650,53 +11656,58 @@ void hud_gauge_frame_emit(uint32_t head,uint32_t flags,uint32_t x,
 
   if (mode == 0x00u) {
     /* 2x2 gauge bar: top row y+2 (m0,m2), bottom row y+11 (m1,m3);
-     * color1/color2 alternate per column, variant 0/2 per tag. */
+     * color1/color2 alternate per column, variant 0/2 per tag.
+     * Returns are unchecked; exit $v0 = last call's return. */
     spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 2u),
                      (int16_t)m0, 4, color1, 0);
     spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 2u),
                      (int16_t)m2, 4, color2, 2);
     spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 11u),
                      (int16_t)m1, 4, color1, 0);
-    spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 11u),
-                     (int16_t)m3, 4, color2, 2);
+    ret = spr_attr_alloc_a(head, (int16_t)(x + 16u), (int16_t)(y + 11u),
+                           (int16_t)m3, 4, color2, 2);
   } else if (mode == 0x10u) {
     /* vertical strip at x+16: top half y+2 (color1 m0, color2 m2),
      * bottom half y+11 (color1 m1, color2 m3); each alloc patches
      * the previous record's box edge by metric>>3. */
     rec = spr_attr_alloc_c(head, x + 16u, y + 2u, m0, 4, color1, 0);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m0 >> 3)));
     rec = spr_attr_alloc_c(head, x + 16u, y + 2u, m2, 4, color2, 2);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m2 >> 3)));
     rec = spr_attr_alloc_c(head, x + 16u, y + 11u, m1, 4, color1, 0);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m1 >> 3)));
     rec = spr_attr_alloc_c(head, x + 16u, y + 11u, m3, 4, color2, 2);
-    if (!rec) return;
-    MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m3 >> 3)));
+    if (!rec) return 0;
+    _nv = (uint32_t)MB16(rec + 22) + (m3 >> 3);
+    MW16(rec + 22, (uint16_t)_nv);
+    ret = _nv;  /* block_80158BE4: v0 = read_half + metric>>3 */
   } else if (mode == 0x20u) {
     /* two-column strip: left col x-2 with w=-m0/-m2 (color1/color2),
      * right col x+16 with w=+m1/+m3; y0 = flags (a1) for all four;
      * every record gets both box edges nudged by metric>>3. */
     uint32_t y0 = flags;
     rec = spr_attr_alloc_c(head, x - 2u, y0, 0u - m0, 4, color1, 0);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m0 >> 3)));
     MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m0 >> 3)));
     rec = spr_attr_alloc_c(head, x - 2u, y0, 0u - m2, 4, color2, 2);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m2 >> 3)));
     MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m2 >> 3)));
     rec = spr_attr_alloc_c(head, x + 16u, y0, m1, 4, color1, 0);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m1 >> 3)));
     MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m1 >> 3)));
     rec = spr_attr_alloc_c(head, x + 16u, y0, m3, 4, color2, 2);
-    if (!rec) return;
+    if (!rec) return 0;
     MW16(rec + 14, (uint16_t)(MB16(rec + 14) - (m3 >> 3)));
     MW16(rec + 22, (uint16_t)(MB16(rec + 22) + (m3 >> 3)));
+    ret = m3 >> 3;  /* block_80158D54: v0 = metric>>3 */
   }
+  return ret;
 }
 
 /* mode_select_commit — mode-select commit @0x8015e8c4 (77 insns; real

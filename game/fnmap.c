@@ -951,6 +951,7 @@ extern void hud_announce(void);
 extern void hud_announce_cps(void);
 extern void hud_cell_frame_set(void);
 extern void hud_digits_color(void);
+extern void hud_gauge_frame_emit(void);
 extern void hud_gauge_render(void);
 extern void hud_name_fixup(void);
 extern void hud_prim_init(void);
@@ -2223,6 +2224,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80158514, (void *)FUN_80158514 },
   { 0x80158528, (void *)quad_gauge_emit },
   { 0x80158698, (void *)spr_attr_alloc_c },
+  { 0x801587c0, (void *)hud_gauge_frame_emit },
   { 0x80158da8, (void *)bcd_time_frame_print },
   { 0x80158e5c, (void *)cd_sector_debug_dump },
   { 0x80159028, (void *)scene_entry },
