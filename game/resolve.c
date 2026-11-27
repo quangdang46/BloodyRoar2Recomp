@@ -3009,8 +3009,10 @@ void deferred_cmd_reset(void)
   return;
 
 }
-/* FUN_80185568 anim_lerp_scalar - Q12 lerp of one channel: dst += (src-dst)*
- * alpha >> 12, with sign flip. */
+/* FUN_80185568 anim_lerp_scalar - Q12 lerp of one i16 channel toward
+ * (+-src): dst += (((flip ? -src : src) - dst) * alpha + bias) >> 12,
+ * bias +0xfff when the product is negative (round toward -inf kept
+ * faithful to the guest sra sequence). flip!=0 negates src. */
 void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 {
   int d0;
@@ -3028,7 +3030,10 @@ void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 
 }
 
-/* FUN_801855b4 anim_lerp_vec3 - vec3 channel lerp; y scaled by yscale>>7. */
+/* FUN_801855b4 anim_lerp_vec3 - vec3 channel lerp (x,y,z i16 lanes).
+ * flip negates ONLY the x lane; y is pre-scaled by yscale>>7 when
+ * src.y > 0; z lerps raw. alpha is the shared Q12 blend factor;
+ * the guest reuses the alpha register for the z-delta product. */
 void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 {
   short sz;
@@ -3065,7 +3070,9 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 
 }
 
-/* FUN_80185680 anim_lerp_vec3_raw - vec3 lerp without the y-scale. */
+/* FUN_80185680 anim_lerp_vec3_raw - vec3 channel lerp identical to
+ * anim_lerp_vec3 but with no yscale factor: y lerps raw. Same
+ * flip-negates-x-only asymmetry and Q12 alpha semantics. */
 void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 {
   short sz;
@@ -3098,7 +3105,12 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 
 }
 
-/* FUN_801857f0 anim_lerp_packed4 - packed 4-channel lerp (packed src words). */
+/* FUN_801857f0 anim_lerp_packed4 - packed 4-channel lerp: dst is 4 i16
+ * pose lanes; src is 3 ushort words packing x (low 10 bits of src[0]
+ * <<5, sign-extended), y/z bitfields split across the src[0..1] 32-bit
+ * pair, and src[2] as the 4th channel. flip negates the x extract and
+ * src[2]; y/z bitfield extracts are unaffected. Includes the guest
+ * decomp_trace_record(53) probe on dst in guest-RAM range. */
 void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 {
   uint pk;
@@ -3146,7 +3158,9 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 
 }
 
-/* FUN_8018594c anim_lerp_aux - aux channel lerp into dst+6. */
+/* FUN_8018594c anim_lerp_aux - aux channel lerp on a byte record:
+ * the i16 lane at dst+6 lerps toward (src << 1) (src pre-scaled by
+ * the (x<<16)>>15 sign-extend idiom) by Q12 alpha; flip negates src. */
 void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 {
   int sv;
@@ -3164,7 +3178,10 @@ void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 
 }
 
-/* FUN_8018572c anim_lerp_packed3 - packed 3-channel lerp. */
+/* FUN_8018572c anim_lerp_packed3 - packed 3-channel lerp: dst is 3
+ * i16 pose lanes; src is 2 ushort words — src[0] high byte carries x
+ * (x0x10 scale), src[1] packs the y/z byte fields. flip negates only
+ * the x extract. Same decomp_trace_record(53) probe as packed4. */
 void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 {
   ushort hi;
