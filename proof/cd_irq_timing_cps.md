@@ -847,3 +847,23 @@ clean_table: 9627 wrappers (+192), 4 legit skips unchanged.
 Remaining filtered pool ~19 unrouted cps_ bodies >=0x8018.
 Verified: clean build EU + USA; headless :5073 frames 8004 -> 13674+
 attract CD streaming, no wedge.
+
+## Batch 43 (orch/w5/e05) — FINAL 19 bodies: POOL DRAINED
+
+All 19 remaining filtered bodies -> cpst_ (80191fc8, 801aa7e8,
+8019af7c, 801a6d48, 801aa618, 801afb28, 801abd94, 801a8ee0,
+8018dc20, 801ab470, 801a2560, 8019b954, 801a91e0, 801906e8,
+8019eb00, 8019e798, 801ab84c, 80190a14, 801a2984). 475 _cont
+cases -> resume rows. Three cont addrs (80190ca4/cc4/ce4) resolve
+to text_format_*_fragment SELF-DELEGATES — cpst_ rows correctly
+replace them (last 3 self-delegate skips resolved; skips now 1 =
+only the known no-def cps_80175964 peer gap).
+
+clean_table: 10087 wrappers (+460), 1 legit skip.
+Remaining unrouted cps_ bodies >=0x8018: 76 — ALL peer-port addrs,
+deliberately excluded (peer clean-C ports win). FILTERED POOL = 0.
+Every non-peer-port cps_ body in the CD/IRQ region now has timed
+cpst_ coverage. Untimed cps_ execution paths >=0x8018 remain zero.
+
+Verified: clean build EU + USA; headless :5079 frames 8171 -> 11886+
+attract CD streaming, no wedge.
