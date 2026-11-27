@@ -209,6 +209,7 @@ def clamp_future_mtimes(
 
 
 def _parse_array_items(inner: str) -> list[Any]:
+    """Parse a TOML array's inner text into items.."""
     items: list[Any] = []
     if not inner.strip():
         return items
@@ -227,6 +228,7 @@ def _parse_array_items(inner: str) -> list[Any]:
 
 
 def parse_toml_simple(text: str) -> dict[str, dict[str, Any]]:
+    """Minimal TOML parser: sections + key/value pairs.."""
     sections: dict[str, dict[str, Any]] = {"": {}}
     cur = ""
     array_key: Optional[str] = None
@@ -274,6 +276,7 @@ def parse_toml_simple(text: str) -> dict[str, dict[str, Any]]:
 
 
 def file_hashes(path: Path) -> tuple[str, str, int]:
+    """Streaming MD5+SHA1+size hasher for a file.."""
     h_md5, h_sha1 = hashlib.md5(), hashlib.sha1()
     size = 0
     with open(path, "rb") as f:
@@ -288,6 +291,7 @@ def file_hashes(path: Path) -> tuple[str, str, int]:
 
 
 def resolve_cue_bin(cue_path: Path) -> Path:
+    """Resolve a .cue path to its referenced .bin file.."""
     text = cue_path.read_text(encoding="utf-8", errors="replace")
     m = re.search(r'FILE\s+"([^"]+)"\s+BINARY', text, re.I)
     if not m:
@@ -303,6 +307,7 @@ def resolve_cue_bin(cue_path: Path) -> Path:
 
 
 def _find_recompiler_tool(project_root: Path, basename: str, env_name: str) -> Path:
+    """Locate a recompiler tool binary (env override, then PATH).."""
     env = os.environ.get(env_name, "").strip()
     if env:
         p = Path(env).expanduser()
@@ -339,14 +344,17 @@ def _find_recompiler_tool(project_root: Path, basename: str, env_name: str) -> P
 
 
 def find_psxrecomp_game(project_root: Path) -> Path:
+    """Locate the psxrecomp-game tool.."""
     return _find_recompiler_tool(project_root, "psxrecomp-game", "PSXRECOMP_GAME")
 
 
 def find_psxrecomp_bios(project_root: Path) -> Path:
+    """Locate the psxrecomp-bios tool.."""
     return _find_recompiler_tool(project_root, "psxrecomp-bios", "PSXRECOMP_BIOS")
 
 
 def find_psxrecomp_analyze(project_root: Path) -> Path:
+    """Locate the psxrecomp-analyze tool.."""
     return _find_recompiler_tool(project_root, "psxrecomp-analyze", "PSXRECOMP_ANALYZE")
 
 
@@ -356,6 +364,7 @@ def find_emitters(project_root: Path) -> tuple[Path, Path]:
 
 
 def recompiler_source_dir(project_root: Path) -> Path:
+    """Framework recompiler source dir, or None.."""
     fw = framework_root(project_root)
     src = fw / "recompiler"
     if not (src / "CMakeLists.txt").is_file():
@@ -455,6 +464,7 @@ def _analyzer_source_hash(project_root: Path) -> str:
 
 
 def _analyzer_stamp_path(tool: Path) -> Path:
+    """Analyzer source-stamp path next to the tool.."""
     return tool.parent / (tool.name + ".srcstamp")
 
 
@@ -737,6 +747,7 @@ def framework_root(project_root: Path) -> Path:
 
 
 def _copy_missing(src: Path, dest: Path) -> None:
+    """Recursively copy missing files from src to dest.."""
     if src.is_dir():
         dest.mkdir(parents=True, exist_ok=True)
         for child in src.iterdir():
@@ -787,6 +798,7 @@ def ensure_framework(
 
 
 def bios_backend_present(fw: Path, stem: str) -> bool:
+    """True if generated dispatch/full sources exist for a stem.."""
     dispatch = fw / "generated" / f"{stem}_dispatch.c"
     full = fw / "generated" / f"{stem}_full.c"
     if not dispatch.is_file() or not full.is_file():
@@ -804,6 +816,7 @@ def regen_bios_profile(
     *,
     progress: ProgressReporter,
 ) -> None:
+    """Regenerate a BIOS profile if inputs changed.."""
     fw = framework_root(project_root)
     profile = fw / profile_rel
     if not profile.is_file():
@@ -832,6 +845,7 @@ def regen_bios_profile(
 
 
 def load_sections(config: Path) -> dict[str, dict[str, Any]]:
+    """Load game.toml sections via parse_toml_simple.."""
     return parse_toml_simple(config.read_text(encoding="utf-8"))
 
 
@@ -842,6 +856,7 @@ def verify_disc_path(
     skip_hash: bool,
     progress: ProgressReporter,
 ) -> dict[str, Any]:
+    """Resolve a disc path (.cue -> .bin) for verification.."""
     path = disc.resolve()
     if path.suffix.lower() == ".cue":
         path = resolve_cue_bin(path)
@@ -884,6 +899,7 @@ class DiscVerifyError(Exception):
 
 
 def cmd_verify_disc(args: argparse.Namespace, progress: ProgressReporter) -> int:
+    """verify-disc subcommand handler.."""
     config = Path(args.config).expanduser().resolve()
     if not config.is_file():
         progress.error(f"config not found: {config}", code=EXIT_USAGE)
@@ -924,6 +940,7 @@ def run_prepare_disc(
     source: Path,
     progress: ProgressReporter,
 ) -> Path:
+    """Run tools/prepare_disc.py as a subprocess.."""
     script = ROOT / "tools" / "prepare_disc.py"
     if not script.is_file():
         raise RuntimeError(f"missing {script}")
@@ -955,6 +972,7 @@ def run_prepare_disc(
 
 
 def cmd_generate(args: argparse.Namespace, progress: ProgressReporter) -> int:
+    """generate subcommand handler.."""
     config = Path(args.config).expanduser().resolve()
     if not config.is_file():
         progress.error(f"config not found: {config}", code=EXIT_USAGE)
@@ -1212,6 +1230,7 @@ def _which_tool(name: str) -> Optional[Path]:
 
 
 def _tool_in_dir(bin_dir: Optional[Path], name: str) -> Optional[Path]:
+    """Find a tool binary inside a specific dir.."""
     if bin_dir is None:
         return None
     for cand in (name, f"{name}.exe"):
@@ -1246,6 +1265,7 @@ def _pack_sysroot_cmake_args(
 
 
 def _read_cmake_cache_generator(cache_file: Path) -> str:
+    """Read CMAKE_GENERATOR from CMakeCache.txt.."""
     if not cache_file.is_file():
         return ""
     try:
@@ -1266,6 +1286,7 @@ def _cmake_configure(
     extra: list[str],
     progress: ProgressReporter,
 ) -> None:
+    """Configure a CMake build dir (reusing cache).."""
     build_dir.mkdir(parents=True, exist_ok=True)
     cache_file = build_dir / "CMakeCache.txt"
     toolchain_bin = resolve_embedded_toolchain_bin(project_root)
@@ -1383,6 +1404,7 @@ def _cmake_build(
     target: str,
     progress: ProgressReporter,
 ) -> None:
+    """Build a CMake target with parallel jobs.."""
     jobs = os.environ.get("CMAKE_BUILD_PARALLEL_LEVEL") or str(
         os.cpu_count() or 4
     )
@@ -1417,6 +1439,7 @@ def _cmake_build(
 
 
 def _soft_stop(pid: int, timeout: int = 30) -> None:
+    """SIGTERM a process by pid, ignoring races.."""
     try:
         os.kill(pid, 15)  # SIGTERM
     except ProcessLookupError:
@@ -1434,6 +1457,7 @@ def _soft_stop(pid: int, timeout: int = 30) -> None:
 
 
 def _pgo_train_warning(*, hide_video: bool) -> str:
+    """Warning text for headless PGO training.."""
     if hide_video:
         return (
             "WARNING: PGO training is running (no video window). Do not cancel "
@@ -1461,6 +1485,7 @@ def run_pgo_train(
     hide_video: bool,
     progress: ProgressReporter,
 ) -> None:
+    """Run the PGO training pass for a build.."""
     exe, exe_err = _resolve_runtime_exe(build_dir, target, exe_basename)
     if exe is None:
         raise RuntimeError(f"PGO training cannot start: {exe_err}")
@@ -1572,6 +1597,7 @@ def run_pgo_train(
 
 
 def cmd_rebuild(args: argparse.Namespace, progress: ProgressReporter) -> int:
+    """rebuild subcommand handler.."""
     config = Path(args.config).expanduser().resolve()
     if not config.is_file():
         progress.error(f"config not found: {config}", code=EXIT_USAGE)
@@ -1759,6 +1785,7 @@ def cmd_rebuild(args: argparse.Namespace, progress: ProgressReporter) -> int:
 
 
 def cmd_pgo_train(args: argparse.Namespace, progress: ProgressReporter) -> int:
+    """pgo-train subcommand: force PGO and rebuild.."""
     args.force_pgo = True
     args.no_pgo = False
     return cmd_rebuild(args, progress)
@@ -1950,10 +1977,12 @@ def cmd_analyze(args: argparse.Namespace, progress: ProgressReporter) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the top-level argparse parser.."""
     ap = argparse.ArgumentParser(prog="psxrecomp_cli", description=__doc__)
     sub = ap.add_subparsers(dest="command", required=True)
 
     def add_common(p: argparse.ArgumentParser) -> None:
+        """Add common CLI options to a subparser.."""
         p.add_argument("--config", default="game.toml", help="game.toml path")
         p.add_argument("--project-root", default="", help="game project root")
         p.add_argument("--json-progress", action="store_true")
@@ -2173,6 +2202,7 @@ def _configure_stdio() -> None:
 
 
 def main() -> int:
+    """psxrecomp_cli entry point.."""
     _configure_stdio()
     args = build_parser().parse_args()
     progress = ProgressReporter(json_progress=bool(getattr(args, "json_progress", False)))
