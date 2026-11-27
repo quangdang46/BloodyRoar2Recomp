@@ -21,8 +21,8 @@ typedef int64_t  longlong;
 extern void    *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_gaddr(const void *p);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern uint32_t br2_call_generated(uint32_t fn,uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3);
+extern uint32_t br2_call_clean(uint32_t fn,uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
 extern uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern uint32_t br2_guest_frame(uint32_t);
@@ -132,7 +132,7 @@ extern uint32_t *g__DAT_801f022c;
 #define _DAT_801f022c  (*(int16_t *)g__DAT_801f022c) /* guest lh/sh @0x801f022c (0x8012ee48,0x8012ecbc) */
 
 /* host hooks (guest-faithful names; runtime binds implementations) */
-extern void fighter_frame(byte*,uint8_t*);
+extern void fighter_frame(byte*ctrl,uint8_t*motion);
 #define FUN_801787dc fighter_frame
 extern void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag);
 extern int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3);
@@ -199,7 +199,7 @@ extern void debug_strike_fx_a(short*pos,int x,int y,undefined4 unused,int f);
 extern void debug_strike_fx_b(short*pos,undefined4 x,undefined4 y,ushort ang,int f);
 extern void noop_fn();
 extern undefined2 *rtps_pt_xform(ushort*pt,undefined2*out);
-extern undefined4 FUN_80194660(undefined2*,undefined2*);
+extern undefined4 FUN_80194660(undefined2*in,undefined2*out);
 extern void node_xform_apply(int node,undefined4 mat,undefined4 flg);
 extern ushort attr_flag_mask(uint node);
 extern undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags);
@@ -226,7 +226,7 @@ extern void battle_hud_draw(int unused,int fighter,int aux0,int aux1);
 extern void fighter_flash_update(uint battle,uint slot,int ctx2,byte*rec);
 extern void camera_state_cache(uint unused,int battle);
 extern void player_light_apply(byte*ctrl,int side);
-extern int  atan2_lut(int,int);
+extern int  atan2_lut(int x,int y);
 
 extern void hud_text_blk_alt(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm);
 extern void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm);
@@ -246,7 +246,7 @@ extern int fixed_approach_s16(ushort *cur,short *tgt,uint step);
 extern void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec);
 extern bool burst_slot_active(int slot);
 extern void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex);
-extern undefined4 FUN_80194630(undefined4 *a0,undefined4 *a1);
+extern undefined4 FUN_80194630(undefined4 *in,undefined4 *out);
 extern void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr);
 extern uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out);
 extern uint * gte_xform3_nold(ushort *in,uint *out);
@@ -1230,16 +1230,16 @@ extern undefined4 **g_PTR_PTR_801be894;
 #define PTR_DAT_801be84c   (*g_PTR_DAT_801be84c)
 #define PTR_PTR_801be894   (*g_PTR_PTR_801be894)
 extern code    **PTR_FUN_801b1734;
-extern void     trap(int);
+extern void     trap(int code);
 extern uint8_t  *g_DAT_801e40b9, *g_DAT_801f066e, *g_DAT_1f800015, *g_DAT_801247a8, *g_DAT_801b4b6c, *g_DAT_801b4b6d, *g_DAT_801b4b6e, *g_DAT_801b4b6f, *g_DAT_801b67a0, *g_DAT_801b67a4, *g_DAT_801b67a8;
 extern uint32_t *g__DAT_1f8000c4;
 #define _DAT_1f8000c4   (*g__DAT_1f8000c4)
 extern char     s__1___02d__1x_0_80123264[];
 extern char     s_0123456789ABCDEF_80125208[], s_0123456789abcdef_8012521c[];
-extern void     setCopReg(int,int,int);
-extern void     copFunction(int,int);
-extern int      getCopReg(int,int);
-extern void     setCopControlWord(int,int,int);
+extern void     setCopReg(int fmt,int reg,int v);
+extern void     copFunction(int fmt,int op);
+extern int      getCopReg(int fmt,int reg);
+extern void     setCopControlWord(int fmt,int reg,int v);
 extern int lut_cos_q12(int angle);
 extern int lut_sin_q12(uint angle);
 extern int FUN_80194500(uint32_t a0, ...);
@@ -3177,10 +3177,10 @@ extern uint32_t *g__DAT_801f0292, *g__DAT_801f02f6, *g__DAT_801f02f8, *g__DAT_80
 #define _DAT_801f04f6   (*(int16_t *)g__DAT_801f04f6) /* guest lh/sh @0x801f04f6 */
 #define _DAT_801f04f8   (*(int16_t *)g__DAT_801f04f8) /* guest lh/sh @0x801f04f8 */
 #define _DAT_801f04fa   (*(int16_t *)g__DAT_801f04fa) /* guest lh/sh @0x801f04fa */
-extern void trig_lut_read(uint32_t,byte *);
-extern void trig_vel_flat(uint32_t,byte *);
-extern void trig_vel_up(uint32_t,byte *);
-extern void trig_vel_diag(uint32_t,byte *);
+extern void trig_lut_read(uint32_t ctrl_g,byte *motion);
+extern void trig_vel_flat(uint32_t ctrl_g,byte *motion);
+extern void trig_vel_up(uint32_t ctrl_g,byte *motion);
+extern void trig_vel_diag(uint32_t ctrl_g,byte *motion);
 
 extern uint8_t *g_DAT_1f80006c, *g_DAT_1f8000b1, *g_DAT_1f80038c, *g_DAT_1f800398, *g_DAT_1f8003a4, *g_DAT_1f8003b0, *g_DAT_801b1bd4, *g_DAT_801b1be8, *g_DAT_801b5288, *g_DAT_801b5298, *g_DAT_801b52a8, *g_DAT_801b52b8, *g_DAT_801b5370, *g_DAT_801cf88c, *g_DAT_801f0ae0, *g_DAT_801f0db0, *g_DAT_801f0fb0;
 #define DAT_1f80006c   (*g_DAT_1f80006c)
@@ -16694,15 +16694,15 @@ extern void *guest_at(uint32_t addr);
 #define BA32(a)  (*(uint32_t *)guest_at(a))
 #define BA16S(a) (*(int16_t  *)guest_at(a))
 extern char *s_Print_mode_error_8011f140;
-extern undefined4 text_win_init(uint32_t,uint32_t);
-extern uint32_t text_widget_alloc(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-extern undefined4 text_line_select(uint32_t);
-extern undefined4 printf_forward(const char *, ...);
-extern void bitfield_or_write(void *, uint32_t);
-extern void spr_desc_a(uint32_t);
-extern void spr_desc_b(uint32_t,uint32_t);
-extern void spr_desc_c(uint32_t,uint32_t);
-extern uint32_t cd_cmd_retry(uintptr_t);
+extern undefined4 text_win_init(uint32_t w,uint32_t h);
+extern uint32_t text_widget_alloc(uint32_t x,uint32_t y,uint32_t attr,uint32_t aux,uint32_t mode,uint32_t count);
+extern undefined4 text_line_select(uint32_t line);
+extern undefined4 printf_forward(const char *fmt, ...);
+extern void bitfield_or_write(void *p, uint32_t val);
+extern void spr_desc_a(uint32_t slot_g);
+extern void spr_desc_b(uint32_t slot_g,uint32_t on);
+extern void spr_desc_c(uint32_t slot_g,uint32_t on);
+extern uint32_t cd_cmd_retry(uintptr_t buf);
 
 /* announce_param_block_init @0x8012e58c — round/announce parameter block init @0x1f80038c.
  * All fields u16 (sh) except +0x1c u32 (sw); verified vs disasm. */
@@ -16894,11 +16894,11 @@ void announce_param_block_init_alt(uint32_t tbl,uint32_t a1,const void *a2,
  * calls (announce_param_block_init_b/2e184/2e61c/2e73c variants) per layout mode
  * arg6. arg5 = score/time record ptr; a2 = layout base;
  * a3 = color/attr; tbl/2 = draw env pair. */
-extern void hud_text_a(undefined4,undefined2,const void *,undefined2,undefined2,short);
-extern void hud_text_b(undefined4,undefined4,const void *,undefined4,undefined2,short);
-extern void hud_text_c(undefined4,undefined4,const void *,undefined4,undefined2,undefined4);
-extern void print_dispatch(const char *,...);
-extern void slot_name_measure(char *,uint32_t);
+extern void hud_text_a(undefined4 ot_ptr,undefined2 flags,const void *str,undefined2 attr_a,undefined2 attr_b,short tile_row);
+extern void hud_text_b(undefined4 ot_ptr,undefined4 flags,const void *str,undefined4 attr,undefined2 attr_b,short tile_row);
+extern void hud_text_c(undefined4 ot_ptr,undefined4 flags,const void *str,undefined4 attr,undefined2 attr_b,undefined4 tile_row);
+extern void print_dispatch(const char *fmt,...);
+extern void slot_name_measure(char *a0,uint32_t a1);
 /* hud_time_score_draw @0x80163e38 — draw the time/score readout: split the
  * frame counter into mm:ss:ff (clamped), sprintf_core into a reserved
  * guest-frame buffer, then render via the hud_text/announce helpers. */
@@ -17013,11 +17013,11 @@ LAB_801645f8:
   br2_guest_frame_free();
 }
 
-extern void flow_cfg_init(int);
-extern int battle_struct_init(uint32_t,uint32_t);
-extern void record_copy_1a(int);
-extern int per_side_setup(int,int);
-extern int sprite_anim_chain_build(uint32_t);
+extern void flow_cfg_init(int a0);
+extern int battle_struct_init(uint32_t battle_g,uint32_t env_g);
+extern void record_copy_1a(int idx);
+extern int per_side_setup(int side,int flag);
+extern int sprite_anim_chain_build(uint32_t a0);
 extern void clear_f0300_records(void);
 
 /* rec_copy_init — if byte @0x1f800099 == 0: copy 0x44-byte record
@@ -17695,13 +17695,13 @@ void task_cb_voice_line(int arg)
 /* ======== batch30 (rebuilt): emit chains + save/record iterators ===== */
 /* externs for batch30 callees */
 extern int  cd_search_file(undefined4 *path,uint32_t arg);  /* guest 0x80197b30 — battle.c */
-extern int cd_file_rec_find(uint32_t arg,uint32_t a1);  /* cd.c 0x801980ec */
-extern int cd_strncmp12_eq(uint32_t arg,uint32_t a1);  /* cd.c 0x80197e08 */
-extern uint32_t cd_dir_scan(uint32_t arg,uint32_t a1);  /* cd.c 0x80197e28 */
-extern int  cd_mode_flag_set(int arg,void *a1,int a2);
-extern int  cd_timer_read(int arg);
+extern int cd_file_rec_find(uint32_t a0,uint32_t a1);  /* cd.c 0x801980ec */
+extern int cd_strncmp12_eq(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e08 */
+extern uint32_t cd_dir_scan(uint32_t a0,uint32_t a1);  /* cd.c 0x80197e28 */
+extern int  cd_mode_flag_set(int opcode,void *param_addr,int param_val);
+extern int  cd_timer_read(int mode);
 extern uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b);
-extern void part_matrix_compute(undefined4 *arg,byte *a1,short *a2,undefined4 a3);
+extern void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle);
 
 /* guest channel_script_emit_chain_tick @0x80134b34 — emit chain on 203c/2078/2074 bases;
  * h26 counter +1 (h28 +=0x400 every 4th), de6c+86f5c on s1+0xc4. */
@@ -18129,7 +18129,7 @@ void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 
 /* ======== batch31: debug putc + emit chains + vec lerp + record init ===== */
 /* externs for batch31 callees */
-extern int  console_emit(int a0);
+extern int  console_emit(int c);
 extern int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2);
 extern int  rotate_xy_pairs(int n,uint32_t ang);  /* guest 0x80195570 — battle.c */
 extern int spr_pool_b_alloc();   /* weak-stubbed in bind.c; returns prim ptr */
