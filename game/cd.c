@@ -244,7 +244,7 @@ void cd_init_session(void)
 /* cd_read_poll — CD read-session poll (0x80198e2c, 18 blocks verified
  * insn-by-insn against generated/SLES_017.22_full_46.c:7029).
  *
- * Session struct base s1 = 0x801BCB9C; s2 = 0x801BCBA4 (completion flag,
+ * Session struct base s1 = 0x801bcb9c; s2 = 0x801bcba4 (completion flag,
  * set to 1 by cd_read_finish_cb, cleared by cd_init_done_cb). Loop:
  *   E5C  jal cd_timer_read(-1)          ; delay slot: s0 = -1 (every pass)
  *   E64  if ((int32)(bcb9c + 0x4B0) < now) -> exit with s0 = -1
@@ -272,7 +272,7 @@ void cd_init_session(void)
  * mode3_dispatch -> block_copy_ret_len decodes host pointers into heap
  * blocks at ~0x801B563C, and data_relocate's fixup loops then spray
  * `+= base` writes over ~600KB of guest RAM — overwriting code at
- * 0x8019A5D8 and the frame counter at 0x801BDDE0 (both verified via
+ * 0x8019A5D8 and the frame counter at 0x801bdde0 (both verified via
  * gwatch rip->save.c:9623 and read_ram vs master). This is exactly the
  * §4 deferred-coroutine starvation class: a clean-C poll loop cannot
  * supply the live $ra/resume-PC the generated CPS frame provides, so
@@ -547,11 +547,11 @@ uint32_t cd_timer_read(int mode)
  *
  * Guest semantics:
  *   sp -= 0x20; ctr = a1 << 15                 // @A5DC/A5E0 -> sp+0x10
- *   v0 = *0x801BDDE0 (VBlank frame counter, advanced by the cd_cb8 VBlank
+ *   v0 = *0x801bdde0 (VBlank frame counter, advanced by the cd_cb8 VBlank
  *        IRQ coroutine); if !((int32)v0 < a0) -> return  // @A5F0 slt/beq
  *   a3 = -1                                          // @A5FC
  *   loop @A600: ctr--; if ctr == -1 -> timeout @A620 // @A608-A618
- *               @A648: if !((int32)*0x801BDDE0 < a0) -> return
+ *               @A648: if !((int32)*0x801bdde0 < a0) -> return
  *                      else loop                     // @A64C-A658
  *   timeout @A620: a0=0x80125B38 ("VSync timeout"); jal cd_str_print
  *                  ra=0x8019A62C; a0=0 (delay @A630); jal bios_table_tramp
@@ -561,7 +561,7 @@ uint32_t cd_timer_read(int mode)
  * The frame-counter poll is the same IRQ-coroutine-driven flag class as
  * cd_timer_read's spins: br2_irq_poll supplies the per-block-boundary
  * psx_check_interrupts the generated CPS frame had, so the VBlank IRQ
- * advances *0x801BDDE0 while we spin. a1==0 makes ctr 0 -> first
+ * advances *0x801bdde0 while we spin. a1==0 makes ctr 0 -> first
  * decrement hits -1 -> the timeout/yield path runs immediately (the common
  * cd_timer_read(a0==0/1) shape). The three timeout jals go through
  * cd_jal so a0-a3 keep callee leftovers exactly like the guest (the BIOS
@@ -574,16 +574,16 @@ void vsync_wait_n(int frame_target,int timeout)
   CPUState *cpu = clean_cpu_state();
   uint32_t counter = (uint32_t)timeout << 15;
   (void)fr;
-  /* @A5F0: slt v0,*0x801BDDE0,a0 (signed); beq v0,zero -> epilogue */
-  if (!((int32_t)br2_ld32(0x801BDDE0u) < frame_target)) {
+  /* @A5F0: slt v0,*0x801bdde0,a0 (signed); beq v0,zero -> epilogue */
+  if (!((int32_t)br2_ld32(0x801bdde0u) < frame_target)) {
     br2_guest_frame_free();
     return;
   }
   for (;;) {
     counter = counter - 1u;                        /* @A608-A60C */
     if (counter == 0xFFFFFFFFu) break;             /* @A618 -> @A620 */
-    /* @A654: slt v0,*0x801BDDE0,a0; @A658 bne -> @A600, else return */
-    if (!((int32_t)br2_ld32(0x801BDDE0u) < frame_target)) {
+    /* @A654: slt v0,*0x801bdde0,a0; @A658 bne -> @A600, else return */
+    if (!((int32_t)br2_ld32(0x801bdde0u) < frame_target)) {
       br2_guest_frame_free();
       return;
     }
@@ -793,13 +793,13 @@ uint32_t cd_read_open(int reopen)
 
 /* ======== 0x80198590 ======== */
 
-/* cd_init_done_cb — trace; mc_session(*0x801BCBA8); clear done flag @0x801BCBA4. */
+/* cd_init_done_cb — trace; mc_session(*0x801bcba8); clear done flag @0x801bcba4. */
 void cd_init_done_cb(void)
 
 {
-  /* guest 0x80198590: a0 = lw(0x801BCBA8); jal 0x80195D64 (mc_session);
-   * on return sw $zero,36($s0). $s0 = 0x801C0000-13400-40 = 0x801BCB80,
-   * so the store clears the read-session completion flag @0x801BCBA4 —
+  /* guest 0x80198590: a0 = lw(0x801bcba8); jal 0x80195D64 (mc_session);
+   * on return sw $zero,36($s0). $s0 = 0x801c0000-13400-40 = 0x801bcb80,
+   * so the store clears the read-session completion flag @0x801bcba4 —
    * NOT 0x801BFFFC (earlier mis-decode; that left bcba4=1 forever and
    * cd_read_poll reported busy -> infinite 37-sector read retry). */
   CDFN(CDFN_INIT_DONE_CB,0);
@@ -900,8 +900,8 @@ void cd_cmd_state_reset(void)
 uint16_t cd_intc_busy_read(void)
 
 {
-  /* guest 0x8019A7D4: lui $v0,0x801C; lh $v0,-0x32E6($v0); jr $ra; nop
-   * -> signed halfword at guest 0x801C0000-0x32E6 = 0x801BCD1A (lh
+  /* guest 0x8019A7D4: lui $v0,0x801c; lh $v0,-0x32E6($v0); jr $ra; nop
+   * -> signed halfword at guest 0x801c0000-0x32E6 = 0x801bcd1a (lh
    * sign-extends into $v0, but the uint16_t return truncates to the
    * same 16 bits). */
   return (uint16_t)br2_ld16(0x801bcd1a);
@@ -923,7 +923,7 @@ uint16_t cd_intc_busy_read(void)
  * Block map (verified vs generated/SLES_017.22_full_46.c):
  *   87C entry : v0==0 -> 88C ; v0!=0 -> 884 (call cd_intc_dispatch first)
  *   884       : ra=88C, jal cd_intc_dispatch
- *   88C       : s0=0x801C0000-12972, a0=s0-4, v0=s0+4060, sw v0,0(s0),
+ *   88C       : s0=0x801c0000-12972, a0=s0-4, v0=s0+4060, sw v0,0(s0),
  *               ra=8A4, jal bios_tramp_b019
  *   8A4       : v0=1, sh v0,-60(s0), ra=8B0, jal cd_init_stage_a
  *   8B0       : v1=*stash_ptr, sw v0,20(v1), ra=8C0, jal cd_init_stage_b
@@ -967,7 +967,7 @@ b884:
   return c->gpr[2];
 
 b88C:
-  c->gpr[16] = 0x801C0000u;
+  c->gpr[16] = 0x801c0000u;
   c->gpr[16] = c->gpr[16] - 12972u;          /* s0 = ctx base */
   c->gpr[4]  = c->gpr[16] - 4u;              /* a0  = s0-4 */
   c->gpr[2]  = c->gpr[16] + 4060u;           /* v0  = s0+4060 */
@@ -986,7 +986,7 @@ b8A4:
   return c->gpr[2];
 
 b8B0:
-  c->gpr[3] = 0x801C0000u;
+  c->gpr[3] = 0x801c0000u;
   c->gpr[3] = br2_ld32(c->gpr[3] - 8800u);   /* v1 = stash ptr */
   br2_st32(c->gpr[3] + 20u, c->gpr[2]);      /* sw v0,20(v1) */
   c->gpr[31] = 0x8019A8C0u;
@@ -995,7 +995,7 @@ b8B0:
   return c->gpr[2];
 
 b8C0:
-  c->gpr[4] = 0x801C0000u;
+  c->gpr[4] = 0x801c0000u;
   c->gpr[4] = br2_ld32(c->gpr[4] - 8800u);   /* a0 = stash ptr */
   br2_st32(c->gpr[4] + 4u, c->gpr[2]);       /* sw v0,4(a0) */
   c->gpr[31] = 0x8019A8D0u;
@@ -1057,11 +1057,11 @@ uint32_t cd_response_pump(void)
   }
 
   /* block_801979F8 — entry: build frame, load state int8_t */
-  c->gpr[2]  = 0x801C0000u;
+  c->gpr[2]  = 0x801c0000u;
   c->gpr[2]  = br2_ld32(c->gpr[2] - 13556u);   /* v0 = *(u32*)state-cell = ptr */
   c->gpr[29] = c->gpr[29] - 40u;               /* sp -= 0x28 */
   br2_st32(c->gpr[29] + 20u, c->gpr[17]);      /* save s1 */
-  c->gpr[17] = 0x801C0000u;
+  c->gpr[17] = 0x801c0000u;
   c->gpr[17] = c->gpr[17] - 13531u;            /* s1 = state-int8_t table base */
   br2_st32(c->gpr[29] + 32u, c->gpr[31]);      /* save ra */
   br2_st32(c->gpr[29] + 28u, c->gpr[19]);      /* save s3 */
@@ -1092,7 +1092,7 @@ bA40:
     psx_check_interrupts_at(c, 0x80197A48u); goto bA48; }
 
 bA48:
-  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = 0x801c0000u;
   c->gpr[2] = br2_ld32(c->gpr[2] - 14260u);    /* v0 = *(u32*)handlerA cell */
   { int _bc = (c->gpr[2] == c->gpr[0]);        /* handlerA == NULL ? */
     if (_bc) { psx_check_interrupts_at(c, 0x80197A6Cu); goto bA6C; }
@@ -1117,7 +1117,7 @@ bA70:
     psx_check_interrupts_at(c, 0x80197A78u); goto bA78; }
 
 bA78:
-  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = 0x801c0000u;
   c->gpr[2] = br2_ld32(c->gpr[2] - 14264u);    /* v0 = *(u32*)handlerB cell */
   { int _bc = (c->gpr[2] == c->gpr[0]);        /* handlerB == NULL ? */
     if (_bc) { psx_check_interrupts_at(c, 0x80197A2Cu); goto bA2C; }  /* loop */
@@ -1138,7 +1138,7 @@ bA9C:
 
 bAA4:
   /* s0 == 0 — exit: commit state int8_t, restore frame, jr ra */
-  c->gpr[2] = 0x801C0000u;
+  c->gpr[2] = 0x801c0000u;
   c->gpr[2] = br2_ld32(c->gpr[2] - 13556u);    /* v0 = state ptr (reload) */
   br2_st8(c->gpr[2], (uint8_t)c->gpr[18]);     /* sb s2,0(ptr) — commit state */
   c->gpr[31] = br2_ld32(c->gpr[29] + 32u);     /* restore ra */
@@ -1384,7 +1384,7 @@ int cd_dispatch_tbl4(int a0,uint32_t a1)
 
 {
   /* Faithful port of generated 0x8019a6e0 (CPS chain verified): pure
-   * indirect dispatch — tbl = *0x801BDDA0, fn = *(tbl+4), jalr fn with
+   * indirect dispatch — tbl = *0x801bdda0, fn = *(tbl+4), jalr fn with
    * the caller's a0/a1 (a2/a3 are caller leftovers; call_guest zeroes
    * them, identical to the old (p1,p2,0,0) thunk). No waits, no MMIO,
    * no deferred-coroutine state — the IRQ-boundary comment was stale. */
@@ -1432,17 +1432,17 @@ void cd_read_step_cb(uint32_t a0,uint32_t a1)
 uint32_t cd_read_finish_cb(void)
 {
   /* Faithful port of generated 0x80198838 (decoded insn-by-insn):
-   *   s0 = 0x801BCB80 (lui/addiu — a fixed session struct, args unused)
+   *   s0 = 0x801bcb80 (lui/addiu — a fixed session struct, args unused)
    *   *(s0+8)  |= *(s0+0x10) << 2        // bcb88 += bcb90*4
    *   --*(s0+0x14); ++*(s0+0x20)         // bcb94--, bcba0++
    *   if (*(s0+0x14) != 0) return 1-ish  // bne -> epilogue, v0 untouched-ish
    *   mc_session_b(*(s0+0x2C))
-   *   if (*(0x801BC7B4) & 1) cd_cmd_dispatch3(*(s0+0x30))
+   *   if (*(0x801bc7b4) & 1) cd_cmd_dispatch3(*(s0+0x30))
    *   mc_session(0x80198590)             // = &cd_init_done_cb
    *   cd_cmd_issue_async(9, 0)           // Pause
    *   *(s0+0x24) = 1                     // bcba4 completion flag (delay slot
    *                                      // of the cb-null beq — always runs)
-   *   cb = *(0x801BC7B0); if (cb) return call_guest(cb,2,*(s0+0x34));
+   *   cb = *(0x801bc7b0); if (cb) return call_guest(cb,2,*(s0+0x34));
    *   return 1;
    * All calls are ordinary guest `jal`/`jalr` — reproduced via call_guest,
    * which supplies the nested-dispatch contract (caller $ra stop, a2/a3
@@ -1638,12 +1638,12 @@ void cd_cmd_bytes(uintptr_t cmd)
 #undef CDREG
 }
 
-/* cd_dispatch_tblc — indirect dispatch: call *(u32*)(*0x801bddA0 + 0xc).
+/* cd_dispatch_tblc — indirect dispatch: call *(u32*)(*0x801bdda0 + 0xc).
  * Same table family as cd_dispatch_tbl4: cells hold guest function
  * addresses, dispatched through call_guest. */
 void cd_dispatch_tblc(void)
 {
-  uint32_t tbl = DB32(0x801bddA0);
+  uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = DB32(tbl + 0xc);
   (void)call_guest(fn,0,0);
 }
@@ -1691,11 +1691,11 @@ void cd_read_param_set(uint32_t val)
    *   frame 0x18 (sp-=0x18, ra saved at sp+0x10 — dead slot, kept via
    *   br2_guest_frame so nested generated calls see the same $sp)
    *   v0 = -1
-   *   *(u32*)0x801FEB38 = a0                    // @0x80199F40 sw a0
-   *   *(u32*)0x801FEB28 = 0xFFFFFFFF            // @0x80199F4C sw v0,
+   *   *(u32*)0x801feb38 = a0                    // @0x80199F40 sw a0
+   *   *(u32*)0x801feb28 = 0xFFFFFFFF            // @0x80199F4C sw v0,
    *                                             //   jal cd_dispatch_tblc
    *                                             //   delay slot, ra=0x80199F50
-   *   a0=0x20000001, a1=0x801FEB28 (a2/a3 live leftovers)
+   *   a0=0x20000001, a1=0x801feb28 (a2/a3 live leftovers)
    *   jal cd_cmd_sequence (0x8019A00C)         // ra=0x80199F64
    *   a0=0 (delay slot), a1..a3 = cd_cmd_sequence leftovers
    *   jal bios_table_tramp (0x80199FE0)        // B0/0x5b, ra=0x80199F6C
@@ -1706,12 +1706,12 @@ void cd_read_param_set(uint32_t val)
   uint32_t fr = br2_guest_frame(0x18);
   CPUState *cpu = clean_cpu_state();
   (void)fr;
-  br2_st32(0x801FEB38u, val);
-  br2_st32(0x801FEB28u, 0xFFFFFFFFu);
+  br2_st32(0x801feb38u, val);
+  br2_st32(0x801feb28u, 0xFFFFFFFFu);
   (void)cd_jal(0x8019A680u, 0x80199F50u);          /* jal cd_dispatch_tblc */
   if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
   cpu->gpr[4] = 0x20000001u;
-  cpu->gpr[5] = 0x801FEB28u;
+  cpu->gpr[5] = 0x801feb28u;
   (void)cd_jal(0x8019A00Cu, 0x80199F64u);          /* jal cd_cmd_sequence */
   if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
   cpu->gpr[4] = 0;
@@ -1740,8 +1740,8 @@ void cd_subsystem_reset(void)
   uint16_t *p;
   CDFN(CDFN_SUBSYS_RESET,0);
   FUN_8018e300();
-  /* generated reads mode @0x801BC868 (lui 0x801C + lw -0x3798), cells
-   * @0x801BCBD0/0x801BCBDC — br2eu_func_80199070. */
+  /* generated reads mode @0x801bc868 (lui 0x801c + lw -0x3798), cells
+   * @0x801bcbd0/0x801bcbdc — br2eu_func_80199070. */
   if (DB32(0x801bc868) == 1) {
     cd_tbl4_dispatch3(0);
     cd_xchg_fefb4(0);
@@ -1752,7 +1752,7 @@ void cd_subsystem_reset(void)
    * is the join point of the mode==1 j and the else fallthrough). */
   mc_session_b(0);
   /* generated sh zero,(ptr) — u16 clears, not bytes; cells are
-   * 0x801BCBD0/0x801BCBDC (lui 0x801C + lw -0x3430/-0x343C). */
+   * 0x801bcbd0/0x801bcbdc (lui 0x801c + lw -0x3430/-0x343C). */
   p = (uint16_t *)guest_at(DB32(0x801bcbd0));
   *p = 0;
   p = (uint16_t *)guest_at(DB32(0x801bcbdc));
@@ -1769,8 +1769,8 @@ int32_t cd_probe_retry(void)
   int32_t s0;
   for (s0 = 4; s0 != -1; s0--) {
     if (cd_ready_probe() == 1) {
-      /* generated sw targets are 0x801BC848/0x801BC84C/0x801BC7B0/0x801BC7B4
-       * (br2eu_func_80195AA4: lui 0x801C + sw off -0x37B8/-0x37B4/-0x3850/-0x384C) */
+      /* generated sw targets are 0x801bc848/0x801bc84c/0x801bc7b0/0x801bc7b4
+       * (br2eu_func_80195AA4: lui 0x801c + sw off -0x37B8/-0x37B4/-0x3850/-0x384C) */
       DB32(0x801bc848) = 0x80195b4c;
       DB32(0x801bc84c) = 0x80195b74;
       DB32(0x801bc7b0) = 0x80195b9c;
@@ -1793,7 +1793,7 @@ extern void cd_handler_pair_install(void);
 void cd_channel_table_init(uint8_t *a0,uint8_t *a1)
 {
   /* BISECT: re-delegated — clean port of the channel fn-ptr/record table
-   * stores (0x801BE780+ base, 0xf0-stride channel records) broke the
+   * stores (0x801be780+ base, 0xf0-stride channel records) broke the
    * title->menu file-load path. Keep generated until re-verified. */
   call_guest4(0x801a36f0u, guest_of(a0), guest_of(a1), 0, 0);
 }
@@ -2010,7 +2010,7 @@ void cd_subchan_table_install(void)
   FUN_8018e310(0);
 }
 
-/* cd_dispatch_tbl8 — indirect dispatch: call *(u32*)(*0x801bddA0 + 8). */
+/* cd_dispatch_tbl8 — indirect dispatch: call *(u32*)(*0x801bdda0 + 8). */
 int cd_dispatch_tbl8(int a0,uint32_t a1)
 {
   uint32_t tbl = DB32(0x801bdda0);
@@ -2467,9 +2467,9 @@ int32_t cd_channel_poll(uint32_t *out_rec, uint32_t *out_ent)
   uint32_t idx = DB32(0x801fc6ac);
   uint8_t *e = (uint8_t *)guest_at(base + idx * 0x20);
   if (*(uint16_t *)e == 1) {
-    /* Generated 0x8019938C-0x801993A4: the idx reset (0x801FC6AC=0) sits in
-     * the delay slot of the 0x801FC6B4 test, so it runs UNCONDITIONALLY on
-     * state==1; only the entry-state clear is gated on 0x801FC6B4!=0. */
+    /* Generated 0x8019938C-0x801993A4: the idx reset (0x801fc6ac=0) sits in
+     * the delay slot of the 0x801fc6b4 test, so it runs UNCONDITIONALLY on
+     * state==1; only the entry-state clear is gated on 0x801fc6b4!=0. */
     uint32_t clr = DB32(0x801fc6b4);
     DB32(0x801fc6ac) = 0;
     if (clr != 0) *(uint16_t *)e = 0;
@@ -3948,20 +3948,20 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
  * op-0 DF00 store value, and the op-3 "==1" test):
  *   a0==0 -> op0  a0==1 -> op1  a0==2 -> op2  a0==3 -> op3  else ret 0.
  *
- * op1 (B9D0): sw 0 -> 0x801BDF00; poll lhu(blk+0x1a6)==lhu(0x801BDEC8)
- *   (blk = *(u32*)0x801BDEB0, cached in-reg across the loop, cap 3841
+ * op1 (B9D0): sw 0 -> 0x801bdf00; poll lhu(blk+0x1a6)==lhu(0x801bdec8)
+ *   (blk = *(u32*)0x801bdeb0, cached in-reg across the loop, cap 3841
  *   -> -2); tail: v = lhu(blk2+0x1aa); sh (v & 0xFFCF) | 0x20.
- * op0 (BA3C): identical except sw 1 -> 0x801BDF00 and tail sh v | 0x30.
- * op2 (B9A4): v = a1_param >> (*(u32*)0x801BDED8 & 31) [srlv];
- *   sh v -> 0x801BDEC8 and -> blk+0x1a6.
- * op3 (BAA4): sel = (*(u32*)0x801BDF00 != 1) ? 32 : 48; poll
+ * op0 (BA3C): identical except sw 1 -> 0x801bdf00 and tail sh v | 0x30.
+ * op2 (B9A4): v = a1_param >> (*(u32*)0x801bded8 & 31) [srlv];
+ *   sh v -> 0x801bdec8 and -> blk+0x1a6.
+ * op3 (BAA4): sel = (*(u32*)0x801bdf00 != 1) ? 32 : 48; poll
  *   (lhu(blk+0x1aa) & 0x30) == sel (cap 3841 -> -2); then jal
  *   cd_mmio_strobe_22 (DF00==1, ra=0x8019BB18) or cd_mmio_strobe_20
  *   (!=1, ra=0x8019BB28); tail BB2C programs the sector-read cells:
  *   *(u32*)0x801BDF04 = a1_param; v = (a2_param>>6) + ((a2_param&0x3f)!=0);
- *   *(u32*)0x801BDF08 = v; *(u32*)*(u32*)0x801BDEB4 = a1_param;
- *   *(u32*)*(u32*)0x801BDEB8 = (v<<16)|0x10; cmd = (DF00==1) ?
- *   0x01000200 : 0x01000201; *(u32*)*(u32*)0x801BDEBC = cmd; ret 0.
+ *   *(u32*)0x801BDF08 = v; *(u32*)*(u32*)0x801bdeb4 = a1_param;
+ *   *(u32*)*(u32*)0x801bdeb8 = (v<<16)|0x10; cmd = (DF00==1) ?
+ *   0x01000200 : 0x01000201; *(u32*)*(u32*)0x801bdebc = cmd; ret 0.
  *
  * The three 3841-iteration waits are device-deadline polls on the SPU
  * register window (blk resolves to the 0x1F801C00-family MMIO) — the
@@ -3982,10 +3982,10 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
      * Guest order: blk=*(DEB0); tgt=lhu(DEC8); v=lhu(blk+0x1a6);
      * sw (a0?1:0) -> DF00; if v!=tgt poll {i++; i>=3841 -> -2;
      * irq_poll; v=lhu(blk+0x1a6)} while v!=tgt; then tail on blk2. */
-    blk = br2_ld32(0x801BDEB0u);
-    tgt = br2_ld16(0x801BDEC8u);              /* lhu — cell is RAM */
+    blk = br2_ld32(0x801bdeb0u);
+    tgt = br2_ld16(0x801bdec8u);              /* lhu — cell is RAM */
     v = CDMMIO16(blk,0xd3);                   /* blk+0x1a6 */
-    br2_st32(0x801BDF00u, a0 == 0u ? 1u : 0u);/* sw a2reg(=1)/zero */
+    br2_st32(0x801bdf00u, a0 == 0u ? 1u : 0u);/* sw a2reg(=1)/zero */
     if (v != tgt) {
       i = 0;
       for (;;) {
@@ -3997,7 +3997,7 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
         if (v == tgt) break;
       }
     }
-    blk = br2_ld32(0x801BDEB0u);              /* tail reloads the cell */
+    blk = br2_ld32(0x801bdeb0u);              /* tail reloads the cell */
     v = CDMMIO16(blk,0xd5);                   /* blk+0x1aa */
     if (a0 == 1u) v = (v & 0xFFCFu) | 0x20u;  /* op1: (v&~0x30)|0x20 */
     else         v = v | 0x30u;              /* op0: v|0x30 */
@@ -4007,12 +4007,12 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
   }
 
   if (a0 == 2u) {
-    /* op2 — block B9A4: v = a1 >> (*(u32*)0x801BDED8 & 31); sh to
-     * 0x801BDEC8 and blk+0x1a6. */
-    uint32_t sh = br2_ld32(0x801BDED8u);
+    /* op2 — block B9A4: v = a1 >> (*(u32*)0x801bded8 & 31); sh to
+     * 0x801bdec8 and blk+0x1a6. */
+    uint32_t sh = br2_ld32(0x801bded8u);
     uint32_t w = a1 >> (sh & 31u);            /* srlv — logical */
-    blk = br2_ld32(0x801BDEB0u);
-    br2_st16(0x801BDEC8u, (uint16_t)w);
+    blk = br2_ld32(0x801bdeb0u);
+    br2_st16(0x801bdec8u, (uint16_t)w);
     CDMMIO16_ST(blk,0xd3,(uint16_t)w);
     br2_guest_frame_free();
     return 0;
@@ -4020,8 +4020,8 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
 
   if (a0 == 3u) {
     /* op3 — blocks BAA4/BABC/BAFC + strobe jal + BB2C tail. */
-    sel = (br2_ld32(0x801BDF00u) != 1u) ? 32u : 48u;
-    blk = br2_ld32(0x801BDEB0u);
+    sel = (br2_ld32(0x801bdf00u) != 1u) ? 32u : 48u;
+    blk = br2_ld32(0x801bdeb0u);
     v = CDMMIO16(blk,0xd5) & 0x30u;
     if (v != sel) {
       i = 0;
@@ -4036,7 +4036,7 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
     }
     /* jal cd_mmio_strobe_22 (DF00==1, ra=0x8019BB18) /
      *     cd_mmio_strobe_20 (!=1, ra=0x8019BB28); a2 := 0x01000000. */
-    if (br2_ld32(0x801BDF00u) == 1u)
+    if (br2_ld32(0x801bdf00u) == 1u)
       (void)cd_jal(0x8019BE50u, 0x8019BB18u);
     else
       (void)cd_jal(0x8019BE28u, 0x8019BB28u);
@@ -4049,13 +4049,13 @@ uint32_t cd_reg_window_op(uint32_t a0,uint32_t a1,uint32_t a2)
       uint32_t w = q + (r != 0u ? 1u : 0u);
       uint32_t p;
       br2_st32(0x801BDF08u, w);
-      p = br2_ld32(0x801BDEB4u);
+      p = br2_ld32(0x801bdeb4u);
       br2_st32(p, a1);                          /* sw a1 -> *DEB4 ptr */
       v = br2_ld32(0x801BDF08u);
-      p = br2_ld32(0x801BDEB8u);
+      p = br2_ld32(0x801bdeb8u);
       br2_st32(p, (v << 16) | 0x10u);
-      cmd = (br2_ld32(0x801BDF00u) == 1u) ? 0x01000200u : 0x01000201u;
-      p = br2_ld32(0x801BDEBCu);
+      cmd = (br2_ld32(0x801bdf00u) == 1u) ? 0x01000200u : 0x01000201u;
+      p = br2_ld32(0x801bdebcu);
       br2_st32(p, cmd);
     }
     br2_guest_frame_free();
@@ -4111,16 +4111,16 @@ void cd_field_copy_gated(void *a0)
  *
  * Frame 0x38 (s0-s5 + ra + a zero slot @16(sp) = saved DEE8, reproduced
  * as a C local — nothing external reads the spill). Prologue: mode a0
- * must be <10u (sltiu) else ret -1; ent = *(u32*)(0x801BE440 + mode*4);
+ * must be <10u (sltiu) else ret -1; ent = *(u32*)(0x801be440 + mode*4);
  * jal cd_range_table_member(ent) — nonzero -> ret -1.
  *
- * s1/s2 init (sh = *(u32*)0x801BDED8, sllv &31):
+ * s1/s2 init (sh = *(u32*)0x801bded8, sllv &31):
  *   mode==0: s1 = 0x10<<sh,        s2 = 0xFFF0<<sh
  *   mode!=0: v0 = 0x10000 - ent    (CE70 delay slot lui v0,1 then subu
  *           v0,v0,a0 — NOT -ent),  s1 = (0x10000-ent)<<sh, s2 = ent<<sh
  *           (ent reloaded like guest)
- * Deferred-pause save: s4 = *(0x801BDECC); if ==1 { s5=1; DECC=0 }.
- * s3=1 always; pend = *(0x801BDEE8); if !=0 { saved=pend; DEE8=0 }.
+ * Deferred-pause save: s4 = *(0x801bdecc); if ==1 { s5=1; DECC=0 }.
+ * s3=1 always; pend = *(0x801bdee8); if !=0 { saved=pend; DEE8=0 }.
  *
  * Chunk loop (back-edge CF48->CEFC while s3!=0):
  *   s0c = (s1 < 1025u) ? s1 : 0x400   [sltiu; s3=0 only on last chunk]
@@ -4129,7 +4129,7 @@ void cd_field_copy_gated(void *a0)
  *                                      a1/a2 are callee leftovers exactly
  *                                      like the guest (op2 writes neither)
  *   jal cd_reg_window_op(3, 0x801BDF20, s0c)  ra=0x8019CF34
- *   a0 = *(0x801BDE38); s1 -= 0x400; s2 += 0x400 (delay slot of next jal)
+ *   a0 = *(0x801bde38); s1 -= 0x400; s2 += 0x400 (delay slot of next jal)
  *   jal 0x8019CFB0 (BIOS B0/0xa tramp) ra=0x8019CF48
  * Epilogue: if (s5) DECC = s4; if (saved) DEE8 = saved; ret 0.
  * All jals go through cd_jal so a0-a3 keep callee leftovers like real
@@ -4144,30 +4144,30 @@ int32_t cd_mode_apply_deferred(uint32_t a0)
   CDFN(CDFN_MODE_APPLY_DEFERRED,a0);
 
   if (mode >= 10u) { br2_guest_frame_free(); return -1; }
-  ent = br2_ld32(0x801BE440u + (mode << 2));
+  ent = br2_ld32(0x801be440u + (mode << 2));
   cpu->gpr[4] = ent;
   (void)cd_jal(0x8019C060u, 0x8019CE60u);        /* jal cd_range_table_member */
   if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
   if (cpu->gpr[2] != 0) { br2_guest_frame_free(); return -1; }
 
-  sh = br2_ld32(0x801BDED8u);
+  sh = br2_ld32(0x801bded8u);
   if (mode == 0u) {
     s1 = 16u << (sh & 31u);
     s2 = 0xFFF0u << (sh & 31u);
   } else {
-    ent = br2_ld32(0x801BE440u + (mode << 2));  /* guest reloads table[mode] */
+    ent = br2_ld32(0x801be440u + (mode << 2));  /* guest reloads table[mode] */
     s1 = (0x10000u - ent) << (sh & 31u);        /* (0x10000-ent)<<sh */
     s2 = ent << (sh & 31u);
   }
 
-  s4 = br2_ld32(0x801BDECCu);
+  s4 = br2_ld32(0x801bdeccu);
   s5 = 0;
-  if (s4 == 1u) { s5 = 1; br2_st32(0x801BDECCu, 0); }
+  if (s4 == 1u) { s5 = 1; br2_st32(0x801bdeccu, 0); }
   s3 = 1;
   saved = 0;
   {
-    uint32_t pend = br2_ld32(0x801BDEE8u);
-    if (pend != 0) { saved = pend; br2_st32(0x801BDEE8u, 0); }
+    uint32_t pend = br2_ld32(0x801bdee8u);
+    if (pend != 0) { saved = pend; br2_st32(0x801bdee8u, 0); }
   }
 
   for (;;) {
@@ -4186,8 +4186,8 @@ int32_t cd_mode_apply_deferred(uint32_t a0)
     cpu->gpr[4] = 3; cpu->gpr[5] = 0x801BDF20u; cpu->gpr[6] = s0c;
     (void)cd_jal(0x8019B944u, 0x8019CF34u);
     if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; }
-    /* CF34: a0=*(0x801BDE38); s1-=0x400; s2+=0x400 (jal delay slot). */
-    cpu->gpr[4] = br2_ld32(0x801BDE38u);
+    /* CF34: a0=*(0x801bde38); s1-=0x400; s2+=0x400 (jal delay slot). */
+    cpu->gpr[4] = br2_ld32(0x801bde38u);
     s1 -= 0x400u;
     s2 += 0x400u;
     (void)cd_jal(0x8019CFB0u, 0x8019CF48u);        /* jal B0/0xa BIOS tramp */
@@ -4196,8 +4196,8 @@ int32_t cd_mode_apply_deferred(uint32_t a0)
     break;
   }
   /* CF50/CF58: restore DECC when it was saved; CF60/CF70: restore DEE8. */
-  if (s5 != 0) br2_st32(0x801BDECCu, s4);
-  if (saved != 0) br2_st32(0x801BDEE8u, saved);
+  if (s5 != 0) br2_st32(0x801bdeccu, s4);
+  if (saved != 0) br2_st32(0x801bdee8u, saved);
   br2_guest_frame_free();
   return 0;
 }
@@ -4783,7 +4783,7 @@ int32_t cd_seek_state_machine(uint32_t a0)
 uint32_t cd_chan_cmd_submit(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,
                       uint32_t a4,uint32_t a5,uint32_t a6)
 {
-  /* 0x1F801080 + ch*0x10 is the DMA channel register block, not a RAM table:
+  /* 0x1f801080 + ch*0x10 is the DMA channel register block, not a RAM table:
    * +0 MADR, +4 BCR, +8 CHCR (bit 0x10000000 = DMA busy). All three fields are
    * real MMIO — route through psx_read/write_word so the runtime's DMA engine
    * sees them. Disasm 0x80199d88-0x80199f2c. */
@@ -4953,9 +4953,9 @@ extern void FUN_8019a364(void);
 extern void FUN_8019e600(void);
 extern uint8_t *guest_memcpy(uint32_t *,uint32_t *,int);
 int cd_queue_push(uint32_t,uint32_t,uint32_t,uint32_t);
-/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801BCC90. */
+/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801bcc90. */
 void cd_chan_reset_seq(void);
-/* cd_crit_c003 — DI; bios_tramp_c003(1,0x801FEB40); EI; return 1. */
+/* cd_crit_c003 — DI; bios_tramp_c003(1,0x801feb40); EI; return 1. */
 int cd_crit_c003(void);
 /* ret_zero_f — tail pair: FUN_8019E420 then FUN_8019E600 (CPS continuation chain). */
 void ret_zero_f(void);
@@ -5060,7 +5060,7 @@ uint32_t cd_bios_cmd40_b(void)
 
 /* ======== 0x80199f7c ======== */
 
-/* cd_bios16_status — B0/0x16 status query then return ~*(u32*)0x801FEB28. */
+/* cd_bios16_status — B0/0x16 status query then return ~*(u32*)0x801feb28. */
 uint32_t cd_bios16_status(void)
 {
   cd_bios_svc_16(0,0);
@@ -5069,7 +5069,7 @@ uint32_t cd_bios16_status(void)
 
 /* ======== 0x8019a15c ======== */
 
-/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801BCC90. */
+/* cd_chan_reset_seq — kobj mcalls 0x8019A364/0x8019A310, cd_crit_c003, clear flag @0x801bcc90. */
 void cd_chan_reset_seq(void)
 {
   FUN_8019a364();
@@ -5123,7 +5123,7 @@ int cd_chan_init_trio(void)
 
 /* ======== 0x80191978 ======== */
 
-/* cd_blk5c_copy — copy the 0x5c-byte CD status block @0x801B8330 to a0; returns a0. */
+/* cd_blk5c_copy — copy the 0x5c-byte CD status block @0x801b8330 to a0; returns a0. */
 uint32_t cd_blk5c_copy(uint32_t a0)
 {
   guest_memcpy((uint32_t *)(uintptr_t)a0,(uint32_t *)(uintptr_t)0x801b8330,0x5c);
@@ -5132,7 +5132,7 @@ uint32_t cd_blk5c_copy(uint32_t a0)
 
 /* ======== 0x80191ea4 ======== */
 
-/* cd_blk14_copy — copy the 0x14-byte CD sub-block @0x801B838C to a0; returns a0. */
+/* cd_blk14_copy — copy the 0x14-byte CD sub-block @0x801b838c to a0; returns a0. */
 uint32_t cd_blk14_copy(uint32_t a0)
 {
   guest_memcpy((uint32_t *)(uintptr_t)a0,(uint32_t *)(uintptr_t)0x801b838c,0x14);
@@ -5141,7 +5141,7 @@ uint32_t cd_blk14_copy(uint32_t a0)
 
 /* ======== 0x801936b0 ======== */
 
-/* cd_timeout_arm — arm the CD timeout: deadline @0x801B845C = timer+0xF0, counter @0x801B8460 = 0. */
+/* cd_timeout_arm — arm the CD timeout: deadline @0x801b845c = timer+0xF0, counter @0x801b8460 = 0. */
 void cd_timeout_arm(void)
 {
   DB32(0x801b845c) = cd_timer_read(0xffffffff) + 0xf0;
@@ -5158,7 +5158,7 @@ void ret_zero_f(void)
 
 /* ======== 0x8019a710 ======== */
 
-/* cd_ind_dispatch_14 — indirect dispatch: call *(u32*)(*0x801BDDA0 + 0x14) with (4, a0). */
+/* cd_ind_dispatch_14 — indirect dispatch: call *(u32*)(*0x801bdda0 + 0x14) with (4, a0). */
 uint32_t cd_ind_dispatch_14(uint32_t a0)
 {
   uint32_t tbl = DB32(0x801bdda0);
@@ -5193,7 +5193,7 @@ uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 
 /* ======== 0x8019d1b0 ======== */
 
-/* cd_state9_store — store a0 to state cell @0x801BDEEC on change; fires cd_tbl8_dispatch9(a0); returns previous. */
+/* cd_state9_store — store a0 to state cell @0x801bdeec on change; fires cd_tbl8_dispatch9(a0); returns previous. */
 uint32_t cd_state9_store(uint32_t a0)
 {
   uint32_t old = DB32(0x801bdeec);
@@ -5229,7 +5229,7 @@ int32_t cd_reg_rw_d2(uint32_t a0)
 
 /* ======== 0x8019e6f0 ======== */
 
-/* cd_block7_init — wait for @0x801FEBE0 drain (IRQ poll), then cd_chan_block_init(7,0) + FUN_8019A0DDC. */
+/* cd_block7_init — wait for @0x801febe0 drain (IRQ poll), then cd_chan_block_init(7,0) + FUN_8019A0DDC. */
 void cd_block7_init(void)
 {
   while (DB32(0x801febe0) != 0) {
@@ -5242,7 +5242,7 @@ void cd_block7_init(void)
 
 /* ======== 0x8019ef30 ======== */
 
-/* cd_pending_release — if pending slot @0x801FEBF4 >= 0, release via bios_tramp_b036 and mark -1. */
+/* cd_pending_release — if pending slot @0x801febf4 >= 0, release via bios_tramp_b036 and mark -1. */
 void cd_pending_release(void)
 {
   int32_t v = (int32_t)DB32(0x801febf4);
@@ -5254,7 +5254,7 @@ void cd_pending_release(void)
 
 /* ======== 0x8019746c ======== */
 
-/* cd_chan_reset_b — trace CDFN_CHAN_RESET_B; clears cells @0x801BC848/4C/54/58 then tbl-c + tbl-8 dispatches. */
+/* cd_chan_reset_b — trace CDFN_CHAN_RESET_B; clears cells @0x801bc848/4C/54/58 then tbl-c + tbl-8 dispatches. */
 void cd_chan_reset_b(void)
 {
   CDFN(CDFN_CHAN_RESET_B,0);
@@ -5268,12 +5268,12 @@ void cd_chan_reset_b(void)
 
 /* ======== 0x8019af30 ======== */
 
-/* cd_init_stage_b — zero handler-table words @0x801BDDF4 (8), clear @0x801BDDF0, tbl8 dispatch slot 3 -> 0x8019AF7C. */
+/* cd_init_stage_b — zero handler-table words @0x801bddf4 (8), clear @0x801bddf0, tbl8 dispatch slot 3 -> 0x8019AF7C. */
 uint32_t cd_init_stage_b(void)
 {
-  /* Generated zeroes 8 handler-table words at 0x801BDDF4 (0x801C0000-8716),
+  /* Generated zeroes 8 handler-table words at 0x801bddf4 (0x801c0000-8716),
    * indices 0-7. 0x801BDDFC is index 2 — starting there would skip slots
-   * 0-1 and wrongly clear 0x801BDE14/0x801BDE18 past the table end. */
+   * 0-1 and wrongly clear 0x801bde14/0x801BDE18 past the table end. */
   cd_guest_zero32_c(0x801bddf4,8);
   br2_st32p(0x801bddf0, 0);
   cd_dispatch_tbl8(3,0x8019af7c);
@@ -5288,12 +5288,12 @@ uint32_t cd_init_stage_b(void)
  * Faithful port of generated 0x8019B0FC-0x8019B1A4 (5 blocks, no calls,
  * no loops — a leaf, so the per-block psx_check_interrupts_at has no
  * observable effect):
- *   entry = 0x801BDDF4 + idx*4   (handler-table word; generated
- *           0x8019B100-0x8019B10C: lui 0x801C + addiu -8716 =
- *           0x801BDDF4, + a0*4 — same base as the cb7/cb8 dispatchers)
+ *   entry = 0x801bddf4 + idx*4   (handler-table word; generated
+ *           0x8019B100-0x8019B10C: lui 0x801c + addiu -8716 =
+ *           0x801bddf4, + a0*4 — same base as the cb7/cb8 dispatchers)
  *   old   = *entry
  *   if (a1 == old) return old;            (no DICR touch on no-op)
- *   dicr  = *(u32*)0x801BDDF0             (pointer cell -> 0x1F8010F4
+ *   dicr  = *(u32*)0x801bddf0             (pointer cell -> 0x1F8010F4
  *                                          DICR; MMIO, so br2_ld/st)
  *   flag  = *dicr
  *   *entry = a1
@@ -5324,7 +5324,7 @@ uint32_t cd_chan_cb_set(uint32_t idx,uint32_t handler)
 
 /* ======== 0x8019ae10 ======== */
 
-/* cd_init_stage_a — init cells @0x801BDDE4/0x801BDDE0, zero32 @0x801BDDC0 (8), tbl8 dispatch slot 0 -> 0x8019AE68. */
+/* cd_init_stage_a — init cells @0x801bdde4/0x801bdde0, zero32 @0x801bddc0 (8), tbl8 dispatch slot 0 -> 0x8019AE68. */
 uint32_t cd_init_stage_a(void)
 {
   br2_st32p(0x801bdde4, 0x100);
@@ -5337,7 +5337,7 @@ uint32_t cd_init_stage_a(void)
 /* ======== batch_mass3 ======== */
 
 extern uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
-/* cd_gpu_call — table-driven gpu_invoke wrapper: fn=*(tbl+off) via *0x801B8318. */
+/* cd_gpu_call — table-driven gpu_invoke wrapper: fn=*(tbl+off) via *0x801b8318. */
 static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
                                 uint32_t a2,uint32_t a3)
 {
@@ -5361,7 +5361,7 @@ void cd_gpu_callpair_a(uint32_t a0,uint32_t a1,uint32_t a2,
 
 /* ======== 0x80191084 ======== */
 
-/* cd_gpu_defer_set — swap defer cell @0x801B832C; if trace>=2 fire cb @0x801B831C(0x80125484,a0); ret old. */
+/* cd_gpu_defer_set — swap defer cell @0x801b832c; if trace>=2 fire cb @0x801b831c(0x80125484,a0); ret old. */
 uint32_t cd_gpu_defer_set(uint32_t a0)
 {
   uint32_t old = DB32(0x801b832c);
@@ -5385,7 +5385,7 @@ void cd_gpu_call_8(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019a244 ======== */
 
-/* cd_hdr_clear_fixed — clear u16 @p+0xA on block @0x801BCC94 (dead loop kept for fidelity). */
+/* cd_hdr_clear_fixed — clear u16 @p+0xA on block @0x801bcc94 (dead loop kept for fidelity). */
 void cd_hdr_clear_fixed(void)
 {
   uint32_t p = DB32(0x801bcc94);
@@ -5401,10 +5401,10 @@ void cd_cb8_dispatch(void)
 {
   /* Faithful port of generated 0x8019AE68 (108B / 5 blocks, decoded
    * insn-by-insn against generated/SLES_017.22_full_46.c:31795):
-   *   v0 = *(u32*)0x801BDDE0; *(u32*)0x801BDDE0 = v0 + 1   // frame tick++
+   *   v0 = *(u32*)0x801bdde0; *(u32*)0x801bdde0 = v0 + 1   // frame tick++
    *   frame 0x20 (s0/s1/ra spills — dead slots, kept via br2_guest_frame)
-   *   s0 = 0x801BDDC0; s1 = 0
-   *   loop i = 0..7:  fn = *(u32*)(0x801BDDC0 + i*4)
+   *   s0 = 0x801bddc0; s1 = 0
+   *   loop i = 0..7:  fn = *(u32*)(0x801bddc0 + i*4)
    *     if (fn != 0) jalr $ra,$v0  — ra = 0x8019AEB0, a0-a3 = live
    *       leftovers (first call sees this fn's incoming regs, later calls
    *       see the previous callee's leftovers — cd_jal preserves both).
@@ -5416,9 +5416,9 @@ void cd_cb8_dispatch(void)
   uint32_t fr = br2_guest_frame(0x20);
   uint32_t i, tbl;
   (void)fr;
-  br2_st32(0x801BDDE0u, br2_ld32(0x801BDDE0u) + 1u);
+  br2_st32(0x801bdde0u, br2_ld32(0x801bdde0u) + 1u);
   i = 0;
-  tbl = 0x801BDDC0u;
+  tbl = 0x801bddc0u;
   for (;;) {
     uint32_t fn = br2_ld32(tbl);
     if (fn != 0) {
@@ -5435,7 +5435,7 @@ void cd_cb8_dispatch(void)
 
 /* ======== 0x8019bc48 ======== */
 
-/* cd_win_shift_op — window ops: shift u16 @0x801BDEC8 by (@0x801BDED8&31) into regs 2/0, then reg 3 with (a0,a1). */
+/* cd_win_shift_op — window ops: shift u16 @0x801bdec8 by (@0x801bded8&31) into regs 2/0, then reg 3 with (a0,a1). */
 uint32_t cd_win_shift_op(uint32_t a0,uint32_t a1)
 {
   uint32_t sh = (uint32_t)DB16(0x801bdec8)
@@ -5467,7 +5467,7 @@ int cd_file_load_sync(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019e730 ======== */
 
-/* cd_job_start_e — if job block @0x801FEBE0 busy print+ret 0; else arm state cells + job_slot_alloc(0x8019E798,a0); ret 1. */
+/* cd_job_start_e — if job block @0x801febe0 busy print+ret 0; else arm state cells + job_slot_alloc(0x8019E798,a0); ret 1. */
 int cd_job_start_e(uint32_t a0)
 {
   if ((int32_t)DB32(0x801febe0) > 0) {
@@ -5500,7 +5500,7 @@ int cd_init_mode_dispatch(uint32_t a0)
 
 /* ======== 0x801915a0 ======== */
 
-/* cd_prim_list_a — walk prim list a0 (count a1-1): clear tag byte +3, link each node to next via low-24 bits; tail-link @0x801B83E0. */
+/* cd_prim_list_a — walk prim list a0 (count a1-1): clear tag byte +3, link each node to next via low-24 bits; tail-link @0x801b83e0. */
 uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
 {
   uint32_t s0 = a0;
@@ -5531,7 +5531,7 @@ uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
 
 /* ======== 0x80193be4 ======== */
 
-/* cd_gpu_call_18 — poll GPU status @0x801B8434 until ready (watchdog); dispatch tbl4(2,0x80193CE0) then gpu_call(0x18,a0). */
+/* cd_gpu_call_18 — poll GPU status @0x801b8434 until ready (watchdog); dispatch tbl4(2,0x80193CE0) then gpu_call(0x18,a0). */
 int32_t cd_gpu_call_18(uint32_t a0)
 {
   for (;;) {
@@ -5571,7 +5571,7 @@ int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019aca4 ======== */
 
-/* cd_state_blk_save — save block @0x801BCD18: if flag clear, bios_tramp_b019(+0x38), set flag, stash fields to globals, crit-enter; ret s0. */
+/* cd_state_blk_save — save block @0x801bcd18: if flag clear, bios_tramp_b019(+0x38), set flag, stash fields to globals, crit-enter; ret s0. */
 uint32_t cd_state_blk_save(void)
 {
   uint32_t s0 = 0x801bcd18;
@@ -5659,7 +5659,7 @@ uint32_t cd_dma_xfer_start(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x80190fd0 ======== */
 
-/* cd_gpu_call_34 — if a0 != cached byte @0x801B8321: gpu_invoke(tbl+0x34), store byte, dispatch tbl4(2,0). ret old byte. */
+/* cd_gpu_call_34 — if a0 != cached byte @0x801b8321: gpu_invoke(tbl+0x34), store byte, dispatch tbl4(2,0). ret old byte. */
 uint32_t cd_gpu_call_34(uint32_t a0,uint32_t a1,uint32_t a2,
                       uint32_t a3)
 {
@@ -5755,7 +5755,7 @@ dir_done:
 
 /* ======== 0x801980ec ======== */
 
-/* cd_file_rec_find — scan 0x80-entry table @0x801FCD00 (stride 0x2c): match entry-no a0 + cd_strcmp name; ret index+1 or -1. */
+/* cd_file_rec_find — scan 0x80-entry table @0x801fcd00 (stride 0x2c): match entry-no a0 + cd_strcmp name; ret index+1 or -1. */
 int cd_file_rec_find(uint32_t a0,uint32_t a1)
 {
   uint32_t i, off = 0;
@@ -5779,7 +5779,7 @@ int cd_file_rec_find(uint32_t a0,uint32_t a1)
 
 /* ======== 0x801914e8 ======== */
 
-/* cd_gpu_rect_draw — validate rect dims (w/h !=0), stash params @0x801B83C0-E8, gpu_invoke(tbl+8) packet emit; ret height. */
+/* cd_gpu_rect_draw — validate rect dims (w/h !=0), stash params @0x801b83c0-E8, gpu_invoke(tbl+8) packet emit; ret height. */
 int32_t cd_gpu_rect_draw(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   int32_t v0;
@@ -5907,7 +5907,7 @@ static int32_t cd_wait_stat(void)
 
 /* ======== 0x80192634 ======== */
 
-/* cd_cmd_queue_load — arm cmd-queue DMA descriptor (cells 0x801B8438-44): end=a0+n*4-4, count=n, trigger 0x11000002, timeout_arm, poll w/ watchdog. */
+/* cd_cmd_queue_load — arm cmd-queue DMA descriptor (cells 0x801b8438-44): end=a0+n*4-4, count=n, trigger 0x11000002, timeout_arm, poll w/ watchdog. */
 int cd_cmd_queue_load(uint32_t a0,uint32_t a1)
 {
   /* 0x80192634-0x80192710. DMA-descriptor arm for the cmd queue:
@@ -6015,7 +6015,7 @@ extern uint32_t cd_queue_drain(void);
 
 /* ======== 0x80193574 ======== */
 
-/* cd_queue_poll — a0==0: arm timeout, drain queue until counters 0x801B8448==4C then wait_stat; else bounded poll w/ watchdog. */
+/* cd_queue_poll — a0==0: arm timeout, drain queue until counters 0x801b8448==4C then wait_stat; else bounded poll w/ watchdog. */
 int cd_queue_poll(uint32_t a0)
 {
   if (a0 == 0) {
@@ -6433,15 +6433,15 @@ int cd_file_open_seq(uint32_t a0,uint32_t a1)
 {
   int32_t v0;
   if (a0 != 0) return -1;
-  v0 = cd_stamp_to_sector(guest_at(0x801FEB00));
-  cd_seek_note(3, DB32(0x801FEB00), (uint32_t)v0);
+  v0 = cd_stamp_to_sector(guest_at(0x801feb00));
+  cd_seek_note(3, DB32(0x801feb00), (uint32_t)v0);
   cd_file_open(v0 + 1,(uint8_t *)guest_at(a1));
   return (int)*(int32_t *)guest_at(0x801feb04);
 }
 
 /* ======== 0x80191184 ======== */
 
-/* cd_gpu_call_3c — if a1>=2 call_guest(DB32(0x801B831C),0x801254B4,a0); then call tbl+0x3C fn(a0,0). */
+/* cd_gpu_call_3c — if a1>=2 call_guest(DB32(0x801b831c),0x801254B4,a0); then call tbl+0x3C fn(a0,0). */
 int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
@@ -6469,7 +6469,7 @@ void cd_hdr_clear(uint32_t a0)
 
 /* ======== 0x80191778 ======== */
 
-/* cd_gpu_call_8b — if a1>=2 call_guest(DB32(0x801B831C),0x80125558,a0); then call tbl+8 fn(tbl+0x18,a0). */
+/* cd_gpu_call_8b — if a1>=2 call_guest(DB32(0x801b831c),0x80125558,a0); then call tbl+8 fn(tbl+0x18,a0). */
 void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
 {
   if (a1 >= 2) {
@@ -6497,7 +6497,7 @@ void cd_dma_chan_init(uint32_t a0)
 
 /* ======== 0x80199100 ======== */
 
-/* cd_dir_entry_store — store dir entry (stride 0x20 by a0): tag=2, unaligned u32->0x801FEB00, extent->0x801FEB04, feb00_note, fire cb @0x801FEB10, clear 0x801FC69C. */
+/* cd_dir_entry_store — store dir entry (stride 0x20 by a0): tag=2, unaligned u32->0x801feb00, extent->0x801feb04, feb00_note, fire cb @0x801feb10, clear 0x801fc69c. */
 void cd_dir_entry_store(uint32_t a0,uint32_t a1)
 {
   uint8_t *e = (uint8_t *)guest_at(a1 + ((uint32_t)a0 << 5));
@@ -6530,7 +6530,7 @@ int32_t cd_seek_step(uint32_t a0,uint32_t a1)
 /* ======== 0x8019b8a4 ======== */
 
 
-/* cd_dma_xfer_start_b — mid-entry (0x8019B8A4) of cd_dma_xfer_start: MMIO channel setup, args p_a0=buf p_a1=ch p_a2=len; arms DMA cb cell @0x801BDF00. */
+/* cd_dma_xfer_start_b — mid-entry (0x8019B8A4) of cd_dma_xfer_start: MMIO channel setup, args p_a0=buf p_a1=ch p_a2=len; arms DMA cb cell @0x801bdf00. */
 void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2)
 {
   uint32_t b;
@@ -6551,7 +6551,7 @@ void cd_dma_xfer_start_b(uint32_t p_v0,uint32_t p_a0,uint32_t p_a1,uint32_t p_a2
 
 /* ======== 0x80191670 ======== */
 
-/* cd_gpu_call_2c — if a2>=2 call_guest(DB32(0x801B831C),0x80125540,a0); then call tbl fn(a0,a1). */
+/* cd_gpu_call_2c — if a2>=2 call_guest(DB32(0x801b831c),0x80125540,a0); then call tbl fn(a0,a1). */
 void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   if (a2 >= 2) {
@@ -6569,11 +6569,11 @@ void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019b7e8 ======== */
 
-/* cd_dma_chan_reset — ch reset: settle delay_3c if BDF00==0, clear status bits 0x30 with bounded poll, then DeliverEvent(0xF0000009,0x20) or direct cb @0x801BDEE8. */
+/* cd_dma_chan_reset — ch reset: settle delay_3c if BDF00==0, clear status bits 0x30 with bounded poll, then DeliverEvent(0xF0000009,0x20) or direct cb @0x801bdee8. */
 void cd_dma_chan_reset(uint32_t a0)
 {
   int i;
-  /* Generated 0x8019B7E0: the delay_3c gate is mem32[0x801BDF00] == 0
+  /* Generated 0x8019B7E0: the delay_3c gate is mem32[0x801bdf00] == 0
    * (lw $v0,-0x2100($v0) @B7E4; bnez $v0 skips the jal @B7EC), NOT the
    * a0 argument — a0 is never read by the guest body. BDF00 is the DMA
    * callback-arm cell written by cd_dma_xfer_start_b (1) / cleared at
@@ -6609,7 +6609,7 @@ void cd_dma_chan_reset(uint32_t a0)
 
 /* ======== 0x801915a8 ======== */
 
-/* cd_prim_list_b — prim-list link walk (a1 count, a2>=2 notify); tail-link @0x801B83E0 same as cd_prim_list_a. */
+/* cd_prim_list_b — prim-list link walk (a1 count, a2>=2 notify); tail-link @0x801b83e0 same as cd_prim_list_a. */
 void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint32_t s0 = a0;
@@ -6637,13 +6637,13 @@ void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
 /* ======== 0x8019aabc ======== */
 
 /* cd_chan_slot_set — per-channel slot table update @0x8019AABC (20 blocks,
- * disasm-verified). Table base 0x801C0000-0x32E4 = 0x801BCD1C, 4-int8_t slots
+ * disasm-verified). Table base 0x801c0000-0x32E4 = 0x801bcd1c, 4-int8_t slots
  * indexed by a0; returns the PREVIOUS slot word (v0 = old tbl[a0]).
  *
  * Flow: slot=base+p1*4; old=*slot; if a1==old return old; if
- * lh(0x801BCD18)==0 return old; cell=*(0x801DDDA8); tmp=lh(*cell); *cell=0
+ * lh(0x801bcd18)==0 return old; cell=*(0x801DDDA8); tmp=lh(*cell); *cell=0
  * (half); bits=gpr19 accumulates the channel bit 1<<p1 into/out of the
- * halfword @0x801BCD48 (base+44) — set when a1!=0 (slot<-a1),
+ * halfword @0x801bcd48 (base+44) — set when a1!=0 (slot<-a1),
  * cleared when a1==0 (slot<-0). Then BIOS-trampoline jals:
  *   p1==0: B0/0x5b tramp(0x80199FE0)(aux, a1=base, a2=base-4, a3=cur)
  *          then C0/0x0a tramp(0x8019A670)(3, aux, ...)
@@ -6665,13 +6665,13 @@ uint32_t cd_chan_slot_set(uint32_t a0,uint32_t a1)
 
 /* ======== 0x8019af84 ======== */
 
-/* cd_cb7_run — DICR done-mask walk: for each set ch bit clear DICR bit, call handler tbl @0x801BDDF4 cursor; tail DMA-error dump on 0x80000000/bit15. */
+/* cd_cb7_run — DICR done-mask walk: for each set ch bit clear DICR bit, call handler tbl @0x801bddf4 cursor; tail DMA-error dump on 0x80000000/bit15. */
 void cd_cb7_run(uint32_t a0)
 {
   uint32_t s3 = 0x00ffffff;
-  /* Channel mask comes from DICR via the fixed pointer cell @0x801BDDF0
+  /* Channel mask comes from DICR via the fixed pointer cell @0x801bddf0
    * (-> 0x1F8010F4), NOT from a0. The generated body (0x8019AF7C) loads
-   * *(0x801BDDF0) then dereferences it; a0 is an INTC-dispatch leftover and
+   * *(0x801bddf0) then dereferences it; a0 is an INTC-dispatch leftover and
    * is never read. a0 kept for signature parity only. */
   (void)a0;
   uint32_t s1 = (br2_ld32(DB32(0x801bddf0)) >> 24) & 0x7f;
@@ -6692,8 +6692,8 @@ void cd_cb7_run(uint32_t a0)
         br2_st32(dma, br2_ld32(dma) & ((1u << (s0 + 0x18)) | s3));
         /* tbl is a moving cursor (generated gpr[18] += 4, reads *cursor):
          * dereference *tbl, NOT tbl[s0] — the latter double-indexes and
-         * reads the wrong slot. Table base is 0x801BDDF4 (generated cursor
-         * = 0x801C0000-8716), NOT 0x801BDDFC: with the wrong base ch4's
+         * reads the wrong slot. Table base is 0x801bddf4 (generated cursor
+         * = 0x801c0000-8716), NOT 0x801BDDFC: with the wrong base ch4's
          * done bit reads slot 4 at 0x801BDE0C (=0) instead of 0x801BDE04
          * (=0x8019B7E0 cd_dma_chan_reset), so DeliverEvent never fires. */
         uint32_t h = *tbl;
@@ -6814,7 +6814,7 @@ int cd_pump_watchdog(void)
 
 /* ======== 0x80193aa0 ======== */
 
-/* cd_gpu_call_18_b — timed variant of cd_gpu_call_18: arm deadline @0x801B845C=timer+0xF0, validate rect, emit gpu packet via tbl+0x18. */
+/* cd_gpu_call_18_b — timed variant of cd_gpu_call_18: arm deadline @0x801b845c=timer+0xF0, validate rect, emit gpu packet via tbl+0x18. */
 int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   uint8_t *s0 = (uint8_t *)guest_at(a0);
@@ -6840,7 +6840,7 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
 
 /* ======== 0x8019ae70 ======== */
 
-/* cd_cb8_run_param — VBlank-ish dispatch: bump counter @0x801BDDE0=a0+1, call each of 8 tbl @0x801BDDC0 handlers with (a0,0). */
+/* cd_cb8_run_param — VBlank-ish dispatch: bump counter @0x801bdde0=a0+1, call each of 8 tbl @0x801bddc0 handlers with (a0,0). */
 void cd_cb8_run_param(uint32_t a0)
 {
   uint32_t *tbl = (uint32_t *)guest_at(0x801bddc0);
