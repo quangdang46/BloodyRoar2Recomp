@@ -1766,6 +1766,7 @@
 
 80137098 battle_intro_fsm
 80137394 battle_intro_fsm_alias
+80137528 battle_intro_fsm_tail_cps
 
 80137e70 task_alloc_wrap_c
 

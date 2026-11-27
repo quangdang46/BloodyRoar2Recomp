@@ -8817,16 +8817,16 @@ extern void battle_intro_fsm_alias(void);
     battle_intro_fsm_alias();
 }
 static void wrap_80137528(CPUState *cpu) {
-extern void cps_80137528(void);
-    cps_80137528();
+extern uint32_t battle_intro_fsm_tail_cps(void);
+    cpu->gpr[2] = (uint32_t)(battle_intro_fsm_tail_cps());
 }
 static void wrap_8013752c(CPUState *cpu) {
-extern void cps_8013752c(void);
-    cps_8013752c();
+extern uint32_t battle_intro_fsm_tail_cps(void);
+    cpu->gpr[2] = (uint32_t)(battle_intro_fsm_tail_cps());
 }
 static void wrap_80137548(CPUState *cpu) {
-extern void cps_80137548(void);
-    cps_80137548();
+extern uint32_t battle_intro_fsm_tail_cps(void);
+    cpu->gpr[2] = (uint32_t)(battle_intro_fsm_tail_cps());
 }
 static void wrap_80137570(CPUState *cpu) {
 extern uint32_t always_one(int unused);
