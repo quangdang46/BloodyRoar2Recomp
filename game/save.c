@@ -21,6 +21,7 @@ extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern uint32_t br2_guest_frame(uint32_t);
 extern void br2_guest_frame_free(void);
+extern int br2_bail_pending(void);
 extern uint32_t bios_svc(uint32_t table,uint32_t svc,uint32_t a0,uint32_t a1);
 extern uint16_t psx_read_half(uint32_t addr);
 extern void decomp_trace_record(uint8_t tag, uint32_t dst, uint32_t src,
@@ -371,8 +372,6 @@ void memcard_tick(void)
          * to cd_cmd_issue_async as a guest param address that generated
          * CD frames read after pushing below $sp, so reserve the frame
          * window (sp+0x10 -> frm+0x18) or callee frames overwrite it. */
-        extern uint32_t br2_guest_frame(uint32_t);
-        extern void br2_guest_frame_free(void);
         uint32_t mct_frm = br2_guest_frame(0x28);
         uint32_t mct_buf = mct_frm + 0x18;
         cd_file_open(DAT_801bef80,(uint8_t *)guest_at(mct_buf));
@@ -514,8 +513,6 @@ void memcard_tick(void)
        * (0x80157b44/0x80157f3c) -> entry_sp - 0x18. Same guest-frame
        * reservation as the mode-2 branch above: generated CD frames
        * would otherwise overwrite the param buf before it is read. */
-      extern uint32_t br2_guest_frame(uint32_t);
-      extern void br2_guest_frame_free(void);
       uint32_t mct_frm = br2_guest_frame(0x28);
       uint32_t mct_buf = mct_frm + 0x18;
       cd_file_open(DAT_801bef80,(uint8_t *)guest_at(mct_buf));
@@ -741,11 +738,8 @@ int memcard_file_flow(int a0)
    * lands its frame on top of the buffer. frame 0xf8 is 8 mod 16 so the
    * reservation aligns to 0x100 and guest sp+N maps to frm + N + 8;
    * sp+0x80 -> frm+0x88. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t mff_frm = br2_guest_frame(0xf8);
 
-  extern int br2_bail_pending(void);
   sm_state = 0;
   ow_flag = 0;
   dlg_type = 0;
@@ -1698,7 +1692,6 @@ void mc_confirm_dispatch(int32_t a0,uint32_t a1)
  * sync wait via cd_cmd_issue_sync(9), dialog-state globals cleared. */
 void mc_init_reset(void)
 {
-  extern int br2_bail_pending(void);
   int rc;
   brightness_packet_send(0);
   do {
@@ -2154,7 +2147,6 @@ void datetime_confirm_a(int32_t a0,uint32_t a1)
  * then publishes like datetime_confirm_a with flag bits |2. */
 void datetime_confirm_b(int32_t a0,uint32_t a1)
 {
-  extern int br2_bail_pending(void);
   uint8_t *dlg = g_DAT_801bef60;
   uint8_t *date_str;
   int32_t day_idx;
@@ -2313,9 +2305,7 @@ extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
  * the frame is a GUEST address and goes through br2_ldN/br2_stN helpers. */
 int32_t mc_date_serial_cmp(uint8_t *a0,void *a1)
 {
-  extern int32_t cd_channel_poll(uint32_t *,uint32_t *);
   extern void br2_irq_poll(void);
-  extern int br2_bail_pending(void);
   extern uint16_t br2_ld16(uint32_t a);
   extern uint32_t br2_ld32(uint32_t a);
   extern void     br2_st16(uint32_t a, uint16_t v);
@@ -2445,7 +2435,6 @@ void fighter_rec_fetch_apply(uint32_t a0,uint32_t a1,uint32_t a2)
  * +0x20 = +0x24. Disasm 0x801573ec-0x8015743c. */
 void mc_state_init(void)
 {
-  extern int br2_bail_pending(void);
   uint8_t *dlg = (uint8_t *)guest_at(0x801bef60);
   brightness_packet_send(0);
   while (cd_cmd_issue_sync(9,0,0) == 0) {
@@ -2750,8 +2739,6 @@ int mc_op_dispatch_b(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s4
     /* in/out1/out2 cross the BIOS boundary inside cd_chan_job_pump —
      * they must be guest RAM, so reserve a real guest stack frame
      * (mirrors the guest caller's sp+0x10/+0x20/+0x40 locals). */
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t fr = br2_guest_frame(0x60);
     uint32_t *in = (uint32_t *)guest_at(fr + 0x10);
     uint32_t *out1 = (uint32_t *)guest_at(fr + 0x20);
@@ -3488,7 +3475,6 @@ int menu_sprite_load_sm(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t
       *(uint32_t *)guest_at(0x801c47b8) = 0x80010000;
     } else if (pick == 1) {
       extern uint8_t *tag_table_get(void);
-      extern uint32_t guest_of(const void *p);
       *(uint32_t *)guest_at(0x801c47b8) = guest_of(tag_table_get());
     }
     state = 0x10;
@@ -3512,7 +3498,6 @@ int menu_sprite_load_sm(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t
    and persists across loop iterations (menu_stepper_state_advance may edit it). */
 int menu_stepper_sm(uint8_t *pad)
 {
-  extern int br2_bail_pending(void);
   uint8_t *ctx = (uint8_t *)guest_at(0x1f800000);
   /* The 0x38-byte stepper descriptor must be guest-resident: the +0xc
    * callback (0x8015b190, unported) is dispatched via
@@ -3784,7 +3769,6 @@ single:
    Entry clears 0x1f800001 and 0x1f80008c; exit clears 0x1f800001. */
 void card_fade_sm(uint32_t a0)
 {
-  extern int br2_bail_pending(void);
   static int32_t fade_t;
   static int32_t bright_acc;
   uint8_t *ctx = (uint8_t *)guest_at(0x1f800000);
@@ -3968,8 +3952,6 @@ int mc_data_write(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
    * buf18@+0x20 (0x28), bc0@+0x50 (0x30), b40@+0x80 (0x1080 — the
    * memcard_block_verify compare reads a4*0x20 = 0x1000 bytes for the
    * 0x80-count call, matching the guest over-read into stack). */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t fr = br2_guest_frame(0x1100);
   uint32_t *in = (uint32_t *)guest_at(fr + 0x00);
   uint8_t *buf18 = (uint8_t *)guest_at(fr + 0x20);
@@ -4085,8 +4067,6 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
      stack below $sp (same pattern as mc_data_write/mc_file_cmd).
      Layout: in@+0x00 (0x470 slot), buf@+0x488 so buf-8 lands at
      +0x480 inside the frame (the guest sp+0x10 outgoing-arg slot). */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t *in;
   uint8_t *buf;
   size_t asz;
@@ -4159,7 +4139,6 @@ int mc_data_read(uint32_t p0,uint32_t p1,uint32_t p2,uint32_t p3,
 /* ---- countdown_display_sm @0x8016ddf8 (264 insns) ---- */
 void countdown_display_sm(uint32_t a0)
 {
-  extern int br2_bail_pending(void);
   uint8_t *ctx = (uint8_t *)guest_at(0x1f800000);
   uint8_t *sel_rec;
   int32_t which;
@@ -4309,8 +4288,6 @@ poll:
 /* ---- menu_res_load_sm @0x801709fc (206 insns) ---- */
 int32_t menu_res_load_sm(uint32_t a0,uint8_t *buf_a,uint8_t *buf_b,int32_t mode)
 {
-  extern int br2_bail_pending(void);
-  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   uint8_t *ctx = (uint8_t *)guest_at(a0);
   int32_t aux = 0;
   int32_t state;
@@ -5163,7 +5140,6 @@ static int32_t shr2_trunc(int32_t v)
  * early-out each iteration. */
 void hud_state_machine(uint32_t a0)
 {
-  extern int br2_bail_pending(void);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
   uint8_t *sp20, *sp24, *c0;
   uint32_t phase = 0, mode = a0;
@@ -5786,8 +5762,6 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
         /* buf = $sp+0x18, frame -0x48 -> entry_sp-0x30; sprintf writes it
          * and BDC0_E58C reads it through nested frames, so reserve the
          * guest frame (sp+0x18 -> frm+0x20) for the write->read span. */
-        extern uint32_t br2_guest_frame(uint32_t);
-        extern void br2_guest_frame_free(void);
         uint32_t dsw_frm = br2_guest_frame(0x48);
         uint32_t dsw_buf = dsw_frm + 0x20;
         BDC0_E58C(0x801212bc,0x1000,flag);
@@ -5800,8 +5774,6 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
       return 0;
     }
     case 0x106: {
-      extern uint32_t br2_guest_frame(uint32_t);
-      extern void br2_guest_frame_free(void);
       uint32_t dsw_frm = br2_guest_frame(0x48);
       uint32_t dsw_buf = dsw_frm + 0x20;
       BDC0_E58C(0x801212d4,0x1000,flag);
@@ -6264,7 +6236,6 @@ int mc_file_cmd_stable_poll(uint32_t a0,const void *a1,uint32_t a2)
    result code (0 returns immediately). */
 int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  extern int br2_bail_pending(void);
   uint32_t aux_out = 0, job_code = 0;
   int32_t prev = 0;
   for (;;) {
@@ -6283,7 +6254,6 @@ int mc_job_a_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_
 /* ---- mc_job_b_result_poll @0x801688f0 (45 insns) ---- same shape, mc_job_issue_b */
 int mc_job_b_result_poll(uint32_t a0,const void *a1,void *a2,uint32_t a3,uint32_t a4)
 {
-  extern int br2_bail_pending(void);
   uint32_t aux_out = 0, job_code = 0;
   int32_t prev = 0;
   for (;;) {
@@ -7000,7 +6970,6 @@ int dialog_msg_dispatch(intptr_t a0, uint32_t a1)
   /* Same dual ABI as dialog_sel_dispatch: guest addr via clean_table,
    * host-into-guest desc pointer via the stepper fn_lookup leg.
    * a0 is reused below as a guest address (a0+0xNN counter addrs). */
-  extern uint32_t br2_gaddr(const void *);
   a0 = (intptr_t)br2_gaddr((const void *)a0);
   uint8_t *st = (uint8_t *)guest_at((uint32_t)a0);
   uint8_t *g  = (uint8_t *)guest_at(0x1f800000);
@@ -9585,10 +9554,6 @@ int mc_file_cmd(uint32_t a0,const void *a1,uint32_t a2)
   uint32_t *cblk = (uint32_t *)guest_at(0x801febe0);
   /* cmd blk crosses the BIOS boundary (FUN_801a0220/801a0250 kernel
    * services) — must be guest RAM, so reserve a real guest frame. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void br2_irq_poll(void);
-  extern int br2_bail_pending(void);
   uint32_t fr = br2_guest_frame(0x40);
   uint8_t *blk = (uint8_t *)guest_at(fr + 0x10);
   uint32_t a2hi;
@@ -9861,7 +9826,6 @@ void elem_flag1(uint32_t elem)
   uint32_t f = (uint32_t)br2_ld16(elem + 0x44) | 1u;
   br2_st16(elem + 0x44, (uint16_t)f);
   {
-    extern CPUState *clean_cpu_state(void);
     CPUState *cpu = clean_cpu_state();
     if (cpu != NULL) cpu->gpr[2] = f;
   }
@@ -9890,7 +9854,6 @@ void elem_pair_field_set_alt(uint32_t v0,uint32_t a0,uint32_t a1,
   br2_st16(e1 + 0x44, (uint16_t)f1);
   uint32_t e2 = br2_ld32(a1 + br2_ld32(a0 + 0x38));
   {
-    extern CPUState *clean_cpu_state(void);
     CPUState *cpu = clean_cpu_state();
     if (!(e2)) {
       if (cpu != NULL) { cpu->gpr[2] = 0; cpu->gpr[3] = e1; }
@@ -10161,7 +10124,6 @@ int op_node_alloc_init(int32_t a0,int32_t a1,int32_t a2,int32_t a3,uint32_t a4)
 extern void fifo_space_sample(uint32_t);
 int32_t dev_byte_xfer(uint8_t *a0,int32_t a1)
 {
-  extern int br2_bail_pending(void);
   uint8_t *ctx = a0;
   uint32_t dev, ctrl, buf;
   int32_t cmd, prev;
@@ -10340,7 +10302,6 @@ uint32_t dev_cmd_commit(void)
  * lui/lw 0x801BE7E4, lhu+andi 0x2 @+4, beqz back-edge, jr ra. */
 uint32_t dev_stat_bit1_wait(void)
 {
-  extern int br2_bail_pending(void);
   uint32_t dev = br2_ld32(0x801be7e4u);
   uint32_t stat;
   for (;;) {
@@ -10399,8 +10360,6 @@ uint32_t dev_stat_bit1_wait(void)
  * cross-checked vs generated/SLES_017.22_full_49.c. */
 uint32_t dev_cmd_seq(uint32_t rec, uint32_t a1)
 {
-  extern int br2_bail_pending(void);
-  extern void br2_irq_poll(void);
   CPUState *c = clean_cpu_state();
   uint32_t dev, slot, n, fn, saved_ra;
   (void)a1;
@@ -10867,7 +10826,6 @@ uint32_t dev_cmd_round_dispatch(uint32_t ctx, uint32_t a2, uint32_t a3)
  * coroutine. */
 int32_t dev_cmd_byte_send(void *a0_ctx,int32_t a1_byte)
 {
-  extern int br2_bail_pending(void);
   uint8_t *ctx = (uint8_t *)a0_ctx;
   uint32_t buf = *(uint32_t *)(ctx + 0x3c);
   uint32_t dev, ctrl;
