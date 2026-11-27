@@ -2155,7 +2155,7 @@ void cd_dir_table_set(uint32_t a0,uint32_t a1)
 
 /* cd_dir_read_wrap — wrapper: cd_dir_read(1,a0). */
 extern uint32_t cd_dir_read(uint32_t,uint32_t);
-void cd_dir_read_wrap(uint32_t a0) { cd_dir_read(1,a0); }
+uint32_t cd_dir_read_wrap(uint32_t a0) { return cd_dir_read(1,a0); }
 
 /* cd_u16_table_store — u16 table store: a2==0 -> *(u16*)(*0x801c-0x2150 +
  * a0*2) = a1; else -> same + (a1 >> *0x801c-0x2128). Disasm verified. */

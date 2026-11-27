@@ -285,7 +285,7 @@ extern int cd_sync_wait_a();
 extern int cd_result_wait_b_fwd();
 extern void cd_file_open(int32_t,uint8_t *);
 extern int cd_stamp_to_sector();
-extern int cd_dir_read_wrap();
+extern uint32_t cd_dir_read_wrap(uint32_t);
 extern void slot_status_fill();
 extern void cd_reg_window_update();
 extern void cd_reg_window_u16(int32_t,uint32_t);
@@ -635,7 +635,7 @@ bb_80157c80:
       DAT_801bef6d = 0x20;
       return;
     }
-    dir_n = cd_dir_read_wrap(&DAT_801bef8c);
+    dir_n = cd_dir_read_wrap((uint32_t)guest_of(&DAT_801bef8c));
     if ((int)dir_n < 1) {
       DAT_801bef6d--;
       return;
@@ -651,7 +651,7 @@ bb_80157c80:
     if (!(DAT_801bef72)) {
       DAT_801bef72 = (uint16_t)DAT_801bef6c;
     }
-    DAT_801bef84 = cd_stamp_to_sector(&DAT_801bef8c + (int16_t)DAT_801bef72 * 4);
+    DAT_801bef84 = cd_stamp_to_sector((uint8_t *)&DAT_801bef8c + (int16_t)DAT_801bef72 * 4);
 case_30_80157ebc:
     DAT_801bef6d = 0x10;
   }
@@ -957,7 +957,7 @@ dflt_8015fc3c:
       case 0:
         op_rc = mc_data_read(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
-                                PTR_DAT_801b4618,&DAT_801c11e0,0x414);
+                                PTR_DAT_801b4618,(uint32_t)guest_of(&DAT_801c11e0),0x414);
         if ((op_rc == 0) && (rc = save_blk_cmp32(), rc != 0)) {
           op_rc = 2;
         }
@@ -965,7 +965,7 @@ dflt_8015fc3c:
       case 1:
         op_rc = mc_data_write(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
-                                PTR_DAT_801b4618,&DAT_801c11e0,0x414);
+                                PTR_DAT_801b4618,(uint32_t)guest_of(&DAT_801c11e0),0x414);
         break;
       case 2:
         op_rc = mc_op_dispatch(op_sel);
@@ -973,7 +973,7 @@ dflt_8015fc3c:
       case 3:
         op_rc = mc_read_queue(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,
                                 DAT_801b4604,DAT_801b4608,DAT_801b460c,DAT_801b4610,DAT_801b4614,
-                                PTR_DAT_801b4618,&DAT_801c11e0,0x414);
+                                PTR_DAT_801b4618,(uint32_t)guest_of(&DAT_801c11e0),0x414);
         break;
       case 4:
         op_rc = mc_op_dispatch_b(op_sel,DAT_801b45f4,DAT_801b45f8,DAT_801b45fc,DAT_801b4600,

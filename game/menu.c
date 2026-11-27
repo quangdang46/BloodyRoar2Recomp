@@ -112,8 +112,7 @@ extern int fighter_anim_table_init(int32_t a0);
 extern int action_enter_fwd(uint32_t battle,uint8_t *ctrl,uint32_t sel);
 extern void fighter_frame(int8_t *,uint8_t *);
 #define FUN_801787dc fighter_frame
-extern int prim_xform3_task_run();
-#define FUN_8018b100 prim_xform3_task_run
+extern int FUN_8018b100(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void pad_slot_state_walk(void);
 extern uint32_t spr_attr_alloc_b(uint32_t,uint32_t,uint32_t,uint32_t,int32_t,int32_t);
 extern int spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_t attr);

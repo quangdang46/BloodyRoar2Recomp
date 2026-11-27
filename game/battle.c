@@ -6906,7 +6906,7 @@ LAB_8013a628:
   case 0x12:
     t1 = task_alloc_wrap_d((uint32_t)br2_gaddr(rec),(uint32_t)br2_gaddr(rec + 10),(uint32_t)br2_gaddr(rec + 0x14), (uint32_t)br2_gaddr(&DAT_801b1c30), (uint32_t)br2_gaddr(&DAT_801b1bfc));
     if (t1 != 0) {
-      t3 = task_alloc_wrap_c((uint32_t)(uintptr_t)((intptr_t)rec + 0xe),(uint32_t)(uintptr_t)((intptr_t)rec + 0x36),(int)guest_of(&DAT_801b1c60),(int)guest_of(&DAT_801b1c74));
+      t3 = task_alloc_wrap_c((uint32_t)br2_gaddr((uint8_t *)rec + 0xe),(uint32_t)br2_gaddr((uint8_t *)rec + 0x36),(int)guest_of(&DAT_801b1c60),(int)guest_of(&DAT_801b1c74));
       if (t3 != 0) {
         if (*(short *)(rec + 0x19) != 0x12) {
           return;
