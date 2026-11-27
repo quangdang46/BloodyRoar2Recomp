@@ -1469,6 +1469,7 @@ extern void ret_zero_a(void);
 extern void ret_zero_b(void);
 extern void ret_zero_c(void);
 extern void ret_zero_d(void);
+extern void ret_zero_e_entry_0x80161630(void);
 extern void ret_zero_f(void);
 extern void ret_zero_g(void);
 extern void rgb_triple_store(void);
@@ -2281,6 +2282,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80160514, (void *)memcard_flow_poll_node },
   { 0x80160598, (void *)dialog_sel_dispatch },
   { 0x8016088c, (void *)screen_flow_state_machine },
+  { 0x80161630, (void *)ret_zero_e_entry_0x80161630 },
   { 0x80161c54, (void *)pad_handler_a },
   { 0x80162280, (void *)pad_handler_b },
   { 0x80162838, (void *)pad_handler_c },

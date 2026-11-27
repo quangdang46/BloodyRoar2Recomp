@@ -6002,6 +6002,13 @@ extern int32_t save_flow_state_machine(void);
 extern int32_t options_state_machine(void);
 extern int32_t screen_flow_state_machine(void);
 extern int ret_zero_e(int32_t);
+/* Guest-ABI adapter for 0x80161630: ret_zero_e lives in bind.c, which
+ * gen_fnmap skips, so guest dispatch needs a scanned def. Forwards a0
+ * and returns the state machine's flag as $v0. */
+uint32_t ret_zero_e_entry_0x80161630(uint32_t a0)
+{
+    return (uint32_t)ret_zero_e((int32_t)a0);
+}
 /* printf_forward's real def is the variadic gfx.c:982
  * void printf_forward(const char *, ...). A ()-stub here would shadow-call
  * unprototyped; declare the real signature instead. */
