@@ -891,6 +891,25 @@ def emit_fn(addr):
     core = fold_cps_readability(core)
     core = fold_setcc(core)
     core = name_comment_targets(core)
+    # ISO C requires a statement after a label — a 'block_X:'/'case ...:' line
+    # directly followed by a declaration ('int cond_* = ...') is only a C23
+    # extension (-Wc23-extensions, hard error on strict pre-C23). Emit an
+    # explicit null statement so regen output is valid on any C dialect.
+    _DECL_RE = re.compile(
+        r'^\s*(?:u?int(?:8|16|32|64)_t|int|char|short|long|bool|unsigned|'
+        r'CPUState)\s+\**[A-Za-z_]\w*\s*=')
+    _LBL_RE = re.compile(r'^\s*(?:block_\w+|case 0x[0-9a-fA-F]+u?)\s*:\s*$')
+    _ls = core.split('\n')
+    _fixed = []
+    for _i, _ln in enumerate(_ls):
+        _fixed.append(_ln)
+        if _LBL_RE.match(_ln):
+            _j = _i + 1
+            while _j < len(_ls) and not _ls[_j].strip():
+                _j += 1
+            if _j < len(_ls) and _DECL_RE.match(_ls[_j]):
+                _fixed.append('    ;')
+    core = '\n'.join(_fixed)
     if 'alias_body' in name:
         # Overlapping-alias bodies take (cpu, entry): the alias-entry
         # switch dispatches on the C param, not cpu->pc. In clean CPS the
