@@ -322,6 +322,7 @@
 80141d2c ev_cmd_dispatch
 80142084 ev_cmd_dispatch_alias
 801421c4 ev24_fx_spawn
+8013c9cc stage_env_task_spawn
 80142954 ev24_fx_spawn_alias
 8017ea7c ev_stream_dispatch
 80144f8c trig_lut_read

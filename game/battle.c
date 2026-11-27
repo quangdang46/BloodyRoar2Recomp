@@ -151,6 +151,7 @@ extern void noop_b(int node,uint32_t w0,uint32_t w1);
 extern uint32_t noop_c(int node);
 extern void node_tree_free(int node);
 extern void prim_attr_word_set(int prim,uint16_t attr);
+extern void gpu_pkt_tag_0c3c(uint32_t a0g);
 extern uint32_t * prim_group_build(uint32_t prim,int attr,uint32_t a2,uint32_t a3);
 extern uint32_t tween_chan_alloc(int grp,int idx);
 extern void tween_dur_spread(int grp,int n);
@@ -7211,6 +7212,166 @@ LAB_80141918:
   }
   task_node_free((int *)(uintptr_t)t0);
   return;
+
+}
+
+/* stage_env_task_spawn @0x8013C9CC — task-node spawner for the event-24
+ * environment FX (sole caller ev24_fx_spawn @0x801421C4). Allocates a
+ * 7200-byte payload task (cb 0x8013B72C), writes the header, builds two
+ * 2496-byte regions of 48 52-byte GPU packet records, a prim group at
+ * pay+5772, and 32 prim records at pay+5776. ctx_g is a guest pointer
+ * into the 0x1F8000E8 scratch records; ctx[2]/ctx[4] select texture
+ * and attribute variants. Faithful port of cps_8013c9cc. */
+int stage_env_task_spawn(int32_t a0,uint32_t a1,uint32_t ctx_g, uint32_t a3)
+{
+  int *node;
+  uint32_t node_g;
+  uint32_t pay_g;
+  uint8_t *pay;
+  int ctx_b2;
+  int ctx_b4;
+  uint32_t texid;
+  uint32_t s4v;
+  uint32_t s5v;
+  int i;
+  int j;
+  int r;
+  int c;
+  int n;
+  int p;
+  int q;
+  uint8_t *reg;
+  uint8_t *rec;
+  uint8_t *cell;
+  uint8_t *r2;
+  uint32_t off;
+  uint8_t *wp;
+  uint32_t grp;
+  uint32_t attr;
+  int a1v;
+  int a0v;
+
+  if ((int8_t)DAT_1f8000b1 != 0) {
+    return (int32_t)(int8_t)DAT_1f8000b1;
+  }
+  node = task_node_alloc(1,2,10,0x8013B72C,0,7200);
+  if (node == (int *)0x0) {
+    return 0;
+  }
+  node_g = (uint32_t)(intptr_t)node;
+  pay_g = *(uint32_t *)guest_at(node_g + 16);
+  pay = (uint8_t *)guest_at(pay_g);
+  ctx_b2 = *(uint8_t *)guest_at(ctx_g + 2);
+  ctx_b4 = *(uint8_t *)guest_at(ctx_g + 4);
+
+  *(uint16_t *)(pay + 7192) = (uint16_t)a1;
+  *(uint16_t *)(pay + 7194) = 0;
+  *(uint16_t *)(pay + 7196) = 0;
+  *(uint16_t *)(pay + 7198) = (uint16_t)a0;
+  *(uint32_t *)(pay + 5768) = a3;
+  *(uint32_t *)(pay + 5756) = 0xFFFFFFFFu;
+  *(uint32_t *)(pay + 5764) = ctx_g;
+
+  off = 4992;
+  wp = pay + 5536;
+  for (i = 0; i < 4; i++) {
+    *(uint32_t *)wp = pay_g + off;
+    wp += 4;
+    off += 136;
+  }
+
+  for (i = 0; i < 2; i++) {
+    reg = pay + i * 2496;
+    texid = ctx_b4 != 0 ? 31002 : 31514;
+    s4v = ctx_b2 != 0 ? 64 : 0;
+    s5v = s4v | 1;
+    for (j = 0; j < 48; j++) {
+      rec = reg + j * 52;
+      *(uint16_t *)(rec + 26) = 63;
+      rec[12] = 32;
+      rec[13] = (uint8_t)s4v;
+      rec[24] = 33;
+      rec[25] = (uint8_t)s4v;
+      rec[36] = 32;
+      rec[37] = (uint8_t)s5v;
+      rec[48] = 33;
+      rec[49] = (uint8_t)s5v;
+      gpu_pkt_tag_0c3c(pay_g + i * 2496 + j * 52);
+      rec[7] = (rec[7] & 0xFE) | 2;
+      *(uint16_t *)(rec + 14) = (uint16_t)texid;
+    }
+    n = 0;
+    for (r = 0; r < 3; r++) {
+      a1v = 160 - 60 * r;
+      a0v = 120 - 60 * r;
+      for (c = 0; c < 16; c++) {
+        cell = reg + n * 52;
+        cell[4] = (uint8_t)a1v;
+        cell[5] = (uint8_t)a1v;
+        cell[6] = (uint8_t)a1v;
+        cell[16] = (uint8_t)a0v;
+        cell[17] = (uint8_t)a0v;
+        cell[18] = (uint8_t)a0v;
+        cell[28] = (uint8_t)a1v;
+        cell[29] = (uint8_t)a1v;
+        cell[30] = (uint8_t)a1v;
+        cell[40] = (uint8_t)a0v;
+        cell[41] = (uint8_t)a0v;
+        cell[42] = (uint8_t)a0v;
+        n++;
+      }
+    }
+  }
+
+  grp = (uint32_t)(intptr_t)prim_group_build(
+      (uint32_t)br2_gaddr(pay + 5772),
+      *(uint32_t *)(&DAT_801c43a8 + (ctx_b2 != 0 ? 240 : 160)),0,1);
+  *(uint32_t *)(pay + 5772) = grp;
+  if (grp == 0) {
+    task_node_free(node);
+    return 0;
+  }
+  if (ctx_b2 == 1) {
+    fighter_chan_delta_accum(grp,0,64,0);
+  }
+
+  for (p = 0; p < 2; p++) {
+    for (q = 0; q < 16; q++) {
+      r2 = pay + 5776 + p * 640 + q * 40;
+      *(uint16_t *)(r2 + 22) = 31;
+      *(uint32_t *)r2 = 0x09000000u;
+      r2[7] = 44;
+      if (ctx_b2 == 0) {
+        r2[12] = 32;
+        r2[13] = 0;
+        r2[20] = 39;
+        r2[21] = 0;
+        r2[28] = 32;
+        r2[29] = 15;
+        r2[36] = 39;
+        r2[37] = 15;
+        attr = ctx_b4 != 0 ? 30790 : 30726;
+      }
+      else {
+        r2[13] = 64;
+        r2[21] = 64;
+        r2[12] = 32;
+        r2[20] = 39;
+        r2[28] = 32;
+        r2[29] = 79;
+        r2[36] = 39;
+        r2[37] = 79;
+        attr = ctx_b4 != 0 ? 30791 : 30727;
+      }
+      *(uint16_t *)(r2 + 14) = (uint16_t)attr;
+      prim_attr_word_set((int)grp,(uint16_t)attr);
+      r2[4] = 128;
+      r2[5] = 128;
+      r2[6] = 128;
+      r2[7] = (r2[7] | 1) & 0xFD;
+    }
+  }
+  return 0;
 
 }
 

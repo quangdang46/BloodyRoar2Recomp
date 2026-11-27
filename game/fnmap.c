@@ -125,12 +125,14 @@ extern void battle_input_dispatch(void);
 extern void battle_intro_flow(void);
 extern void battle_intro_fsm(void);
 extern void battle_intro_fsm_alias(void);
+extern void battle_intro_fsm_tail_cps(void);
 extern void battle_math_init(void);
 extern void battle_reset_tail(void);
 extern void battle_round_init(void);
 extern void battle_session_arm(void);
 extern void battle_side_flag_prop(void);
 extern void battle_sides_commit(void);
+extern void battle_slot_draw(void);
 extern void battle_state_gate(void);
 extern void battle_state_gate_tail(void);
 extern void battle_state_init(void);
@@ -1248,6 +1250,7 @@ extern void paired_task_cb(void);
 extern void palette_attr_record_write(void);
 extern void part_desc_clear(void);
 extern void part_desc_clear_gate(void);
+extern void part_field4c_clear(void);
 extern void part_flag100_set(void);
 extern void part_link_tail(void);
 extern void part_link_unlink(void);
@@ -1644,6 +1647,7 @@ extern void sprite_rect_table_init(void);
 extern void sprite_slot_commit(void);
 extern void sprite_strip_draw_dual(void);
 extern void stage_char_data_load(void);
+extern void stage_env_task_spawn(void);
 extern void stage_fight_announce(void);
 extern void stat_counter_accum(void);
 extern void stat_field_dispatch(void);
@@ -1945,6 +1949,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80137048, (void *)vec_emit_spawn },
   { 0x80137098, (void *)battle_intro_fsm },
   { 0x80137394, (void *)battle_intro_fsm_alias },
+  { 0x80137528, (void *)battle_intro_fsm_tail_cps },
   { 0x80137570, (void *)always_one },
   { 0x80137578, (void *)rec16_fill },
   { 0x80137590, (void *)LAB_80137590 },
@@ -1976,6 +1981,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013b088, (void *)fx_record_alloc },
   { 0x8013b12c, (void *)iris_wipe_update },
   { 0x8013b5a8, (void *)iris_wipe_spawn },
+  { 0x8013c9cc, (void *)stage_env_task_spawn },
   { 0x8013cde8, (void *)node_list_collect },
   { 0x8013d6b0, (void *)emit_task_spawn },
   { 0x8013d7e4, (void *)confetti_burst_update },
@@ -2342,6 +2348,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80166398, (void *)fighter_spawn_tail },
   { 0x8016642c, (void *)battle_round_init },
   { 0x80166544, (void *)battle_frame_tick },
+  { 0x80166a60, (void *)battle_slot_draw },
   { 0x80166eb0, (void *)fighter_respawn_init },
   { 0x80166f64, (void *)fighter_reinit_tail },
   { 0x80166f6c, (void *)fighter_frame_triple_emit },
@@ -2459,6 +2466,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801796ec, (void *)motion_turn_update },
   { 0x80179964, (void *)part_link_unlink },
   { 0x80179a0c, (void *)part_link_tail },
+  { 0x80179a60, (void *)part_field4c_clear },
   { 0x80179a6c, (void *)part_record_reset },
   { 0x80179ae0, (void *)skeleton_init },
   { 0x8017a05c, (void *)apply_guest },
