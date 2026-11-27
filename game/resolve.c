@@ -267,7 +267,7 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
     return num / den;
 }
 
-/* action_resolve - pick next fighter action from input/state flag
+/* FUN_80176248 action_resolve - pick next fighter action from input/state flag
  * words; returns action id (or -1 = keep current). */
 int32_t action_resolve(byte *ctrl, byte *motion)
 {
@@ -1614,9 +1614,7 @@ LAB_80176d24:
   return (int)*(short *)(motion_p + 0x9a);
 }
 
-/* FUN_801787dc — per-fighter frame update. Calls the resolver and
- * applies its result to motion+0x80, then physics/anim tail. */
-/* fighter_frame - per-fighter frame update: resource drain,
+/* FUN_801787dc fighter_frame - per-fighter frame update: resource drain,
  * floor/height clamps, hit-zone tests, turn, action resolve+commit. */
 void fighter_frame(byte *ctrl, byte *motion)
 {
@@ -2015,7 +2013,7 @@ LAB_8017938c:
 
 }
 
-/* action_commit - commit resolved action: sync motion state,
+/* FUN_8017eb78 action_commit - commit resolved action: sync motion state,
  * advance timers/blends, steer toward foe, post deferred cmds. */
 void action_commit(byte *ctrl, byte *motion)
 {
@@ -2211,7 +2209,7 @@ void action_commit(byte *ctrl, byte *motion)
 
 }
 
-/* pending_hit_a_clear - clear pending-hit-A record on the
+/* FUN_80142da0 pending_hit_a_clear - clear pending-hit-A record on the
  * ctrl+0x38 motion object and the slot hitrec table. */
 void pending_hit_a_clear(byte *ctrl)
 {
@@ -2226,7 +2224,7 @@ void pending_hit_a_clear(byte *ctrl)
 
 }
 
-/* hit_chain_clear - clear hit-chain counters on the ctrl+0x38
+/* FUN_80142d20 hit_chain_clear - clear hit-chain counters on the ctrl+0x38
  * motion object and the chain table. */
 void hit_chain_clear(byte *ctrl)
 {
@@ -2241,7 +2239,7 @@ void hit_chain_clear(byte *ctrl)
 
 }
 
-/* pending_hit_b_clear - clear pending-hit-B record on the
+/* FUN_80142dd8 pending_hit_b_clear - clear pending-hit-B record on the
  * ctrl+0x38 motion object. */
 void pending_hit_b_clear(byte *ctrl)
 {
@@ -2256,7 +2254,7 @@ void pending_hit_b_clear(byte *ctrl)
 
 }
 
-/* fighter_combat_reset - full combat-state reset: deferred cmd,
+/* FUN_80178754 fighter_combat_reset - full combat-state reset: deferred cmd,
  * timers, flags, slots, reset fx, hit records. */
 void fighter_combat_reset(byte *ctrl)
 {
@@ -2275,7 +2273,7 @@ void fighter_combat_reset(byte *ctrl)
 
 }
 
-/* trig LUT readers (guest sin/cos) — host binds br2_lut tables */
+/* FUN_80144f8c trig LUT readers (guest sin/cos) — host binds br2_lut tables */
 
 void trig_lut_read(uint32_t ctrl_g, byte *motion)
 {
@@ -2317,7 +2315,7 @@ void trig_lut_read(uint32_t ctrl_g, byte *motion)
 
 }
 
-/* trig_vel_flat - set launch velocity (motion+0x90/0x98) for a
+/* FUN_8014512c trig_vel_flat - set launch velocity (motion+0x90/0x98) for a
  * flat attack from facing byte; scaled by height (+0x24). */
 void trig_vel_flat(uint32_t ctrl_g, byte *motion)
 {
@@ -2340,7 +2338,7 @@ void trig_vel_flat(uint32_t ctrl_g, byte *motion)
 
 }
 
-/* trig_vel_up - launch velocity for rising attack; extra -0x2000
+/* FUN_801451d4 trig_vel_up - launch velocity for rising attack; extra -0x2000
  * z-kick when the +5&0x10 flag is set. */
 void trig_vel_up(uint32_t ctrl_g, byte *motion)
 {
@@ -2367,7 +2365,7 @@ void trig_vel_up(uint32_t ctrl_g, byte *motion)
 
 }
 
-/* trig_vel_diag - launch velocity for diagonal attack (cos on x,
+/* FUN_801452d0 trig_vel_diag - launch velocity for diagonal attack (cos on x,
  * -sin on z). */
 void trig_vel_diag(uint32_t ctrl_g, byte *motion)
 {
@@ -2390,7 +2388,7 @@ void trig_vel_diag(uint32_t ctrl_g, byte *motion)
   return;
 
 }
-/* launch_vel_update - integrate launch velocity with turn assist;
+/* FUN_80179478 launch_vel_update - integrate launch velocity with turn assist;
  * writes ctrl+0x90 velocity and ctrl+0x9c remainder. */
 void launch_vel_update(byte *ctrl,byte *motion)
 {
@@ -2460,7 +2458,7 @@ LAB_80179618:
 
 }
 
-/* motion_turn_update - turn-rate -> flag bands + per-frame turn
+/* FUN_801796ec motion_turn_update - turn-rate -> flag bands + per-frame turn
  * step into ctrl+0x74/0x4e and motion+0xe4. */
 void motion_turn_update(byte *ctrl,byte *motion)
 {
@@ -2569,7 +2567,7 @@ LAB_801798e0:
 
 }
 
-/* motion_blend_frame - advance keyframe anim, copy joint pose,
+/* FUN_80185f64 motion_blend_frame - advance keyframe anim, copy joint pose,
  * apply yaw rotation to motion position. */
 void motion_blend_frame(byte *ctrl,byte *motion)
 {
@@ -2674,7 +2672,7 @@ LAB_8018604c:
 
 }
 
-/* deferred_cmd_post - post or (0x1000) remove a deferred command
+/* FUN_80156ef4 deferred_cmd_post - post or (0x1000) remove a deferred command
  * in the 0x20-slot ring at DAT_801f3600. */
 void deferred_cmd_post(uint cmd,int arg,short aux)
 {
@@ -2717,7 +2715,7 @@ void deferred_cmd_post(uint cmd,int arg,short aux)
 
 }
 
-/* range_circle_test - point vs packed circle/rect box; returns
+/* FUN_8018d618 range_circle_test - point vs packed circle/rect box; returns
  * 0 on hit else box radius tag. */
 int range_circle_test(int x,int y,uint *box,int radius)
 {
@@ -2745,7 +2743,7 @@ int range_circle_test(int x,int y,uint *box,int radius)
 
 }
 
-/* atan2_lut - fixed-point atan2 via octant + LUT at DAT_80123844. */
+/* FUN_8018d1bc atan2_lut - fixed-point atan2 via octant + LUT at DAT_80123844. */
 int atan2_lut(int x,int y)
 {
   bool neg;
@@ -2782,7 +2780,7 @@ int atan2_lut(int x,int y)
 
 }
 
-/* hitrec_table_clear - zero the 0x20 hit-record entries for a
+/* FUN_80142c9c hitrec_table_clear - zero the 0x20 hit-record entries for a
  * fighter slot (DAT_801f0db0). */
 void hitrec_table_clear(int slot)
 {
@@ -2801,7 +2799,7 @@ void hitrec_table_clear(int slot)
 
 }
 
-/* slot_mark2_set - set DAT_801f0ad8[slot] = 2. */
+/* FUN_801375e8 slot_mark2_set - set DAT_801f0ad8[slot] = 2. */
 void slot_mark2_set(int slot)
 {
   (&DAT_801f0ad8)[slot] = 2;
@@ -2809,7 +2807,7 @@ void slot_mark2_set(int slot)
 
 }
 
-/* fighter_reset_fx - spawn reset FX (record alloc + quad fx +
+/* FUN_80140ca0 fighter_reset_fx - spawn reset FX (record alloc + quad fx +
  * triple track) when DAT_1f8000b1 clear and reset==1. */
 void fighter_reset_fx(int reset,byte *ctrl)
 {
@@ -2821,7 +2819,7 @@ void fighter_reset_fx(int reset,byte *ctrl)
   return;
 
 }
-/* lut_cos_q12 - Q12 cos over DAT_801247a8; 0x400 units = 90 deg. */
+/* FUN_8018d298 lut_cos_q12 - Q12 cos over DAT_801247a8; 0x400 units = 90 deg. */
 int lut_cos_q12(int angle)
 {
   int idx;
@@ -2839,7 +2837,7 @@ int lut_cos_q12(int angle)
 
 }
 
-/* lut_sin_q12 - Q12 sin over DAT_801247a8. */
+/* FUN_8018d29c lut_sin_q12 - Q12 sin over DAT_801247a8. */
 int lut_sin_q12(uint angle)
 {
   int idx;
@@ -2855,7 +2853,7 @@ int lut_sin_q12(uint angle)
 
 }
 
-/* dir_rotate_wrap - rotate (vec.x,vec.z) by angle scaled by mag
+/* FUN_8018d484 dir_rotate_wrap - rotate (vec.x,vec.z) by angle scaled by mag
  * via vec2_rot_lut, wrap to +/-0x40; returns quotients. */
 unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 {
@@ -2884,7 +2882,7 @@ unsigned long long dir_rotate_wrap(undefined4 angle,int mag,short *vec)
 
 }
 
-/* keyframe_blend_apply - blend keyframe pose channels into
+/* FUN_80185998 keyframe_blend_apply - blend keyframe pose channels into
  * motion/skeleton state at blend alpha. */
 void keyframe_blend_apply(byte *ctrl,byte *motion)
 {
@@ -2970,7 +2968,7 @@ void keyframe_blend_apply(byte *ctrl,byte *motion)
 
 }
 
-/* keyframe_advance - advance keyframe timeline; stage next
+/* FUN_80185ddc keyframe_advance - advance keyframe timeline; stage next
  * frame and open the blend window. */
 void keyframe_advance(byte *ctrl,byte *motion)
 {
@@ -2998,7 +2996,7 @@ void keyframe_advance(byte *ctrl,byte *motion)
 
 }
 
-/* skeleton_pose_step - per-joint skeleton pose step: copy pose
+/* FUN_8018544c skeleton_pose_step - per-joint skeleton pose step: copy pose
  * channels, compute part matrices, build root rotmat. */
 void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 {
@@ -3034,7 +3032,7 @@ void skeleton_pose_step(byte *joints,undefined2 *pose,byte *parts,int count)
 
 }
 
-/* deferred_cmd_reset - clear deferred-cmd count and all ring
+/* FUN_801561f0 deferred_cmd_reset - clear deferred-cmd count and all ring
  * entries. */
 void deferred_cmd_reset(void)
 {
@@ -3052,7 +3050,7 @@ void deferred_cmd_reset(void)
   return;
 
 }
-/* anim_lerp_scalar - Q12 lerp of one channel: dst += (src-dst)*
+/* FUN_80185568 anim_lerp_scalar - Q12 lerp of one channel: dst += (src-dst)*
  * alpha >> 12, with sign flip. */
 void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 {
@@ -3071,7 +3069,7 @@ void anim_lerp_scalar(short *dst,short src,int flip,int alpha)
 
 }
 
-/* anim_lerp_vec3 - vec3 channel lerp; y scaled by yscale>>7. */
+/* FUN_801855b4 anim_lerp_vec3 - vec3 channel lerp; y scaled by yscale>>7. */
 void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 {
   short sz;
@@ -3108,7 +3106,7 @@ void anim_lerp_vec3(short *dst,short *src,int flip,int alpha,short yscale)
 
 }
 
-/* anim_lerp_vec3_raw - vec3 lerp without the y-scale. */
+/* FUN_80185680 anim_lerp_vec3_raw - vec3 lerp without the y-scale. */
 void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 {
   short sz;
@@ -3141,7 +3139,7 @@ void anim_lerp_vec3_raw(short *dst,short *src,int flip,int alpha)
 
 }
 
-/* anim_lerp_packed4 - packed 4-channel lerp (packed src words). */
+/* FUN_801857f0 anim_lerp_packed4 - packed 4-channel lerp (packed src words). */
 void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 {
   uint pk;
@@ -3189,7 +3187,7 @@ void anim_lerp_packed4(short *dst,ushort *src,int flip,int alpha)
 
 }
 
-/* anim_lerp_aux - aux channel lerp into dst+6. */
+/* FUN_8018594c anim_lerp_aux - aux channel lerp into dst+6. */
 void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 {
   int sv;
@@ -3207,7 +3205,7 @@ void anim_lerp_aux(byte *dst,int src,int flip,int alpha)
 
 }
 
-/* anim_lerp_packed3 - packed 3-channel lerp. */
+/* FUN_8018572c anim_lerp_packed3 - packed 3-channel lerp. */
 void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 {
   ushort hi;
@@ -3244,7 +3242,7 @@ void anim_lerp_packed3(short *dst,ushort *src,int flip,int alpha)
 
 }
 
-/* vec2_rot_lut - rotate unit direction by angle, scale by mag;
+/* FUN_8018d4fc vec2_rot_lut - rotate unit direction by angle, scale by mag;
  * returns packed Q12 (sin*-1?, cos) pair for dir_rotate_wrap. */
 undefined8 vec2_rot_lut(undefined4 angle,int mag)
 {
@@ -3259,7 +3257,7 @@ undefined8 vec2_rot_lut(undefined4 angle,int mag)
 }
 
 /* ---- event-stream runner + GTE helpers (batch21) ---- */
-/* ev_stream_dispatch — event-stream dispatcher (guest-verbatim; a2-pc
+/* FUN_8017ea7c ev_stream_dispatch — event-stream dispatcher (guest-verbatim; a2-pc
  * residual modelled explicitly: handlers get pc = motion+0x84). */
 void ev_stream_dispatch(byte *ctrl,byte *motion)
 {
@@ -3313,7 +3311,7 @@ void ev_stream_dispatch(byte *ctrl,byte *motion)
   return;
 }
 
-/* part_matrix_compute - build a part rotation matrix from euler
+/* FUN_80185048 part_matrix_compute - build a part rotation matrix from euler
  * angles + twist via GTE RTPS/RTPT ops; store to mat. */
 void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 angle)
 {
@@ -3396,7 +3394,7 @@ void part_matrix_compute(undefined4 *mat,byte *parts,short *euler,undefined4 ang
 
 }
 
-/* matrix_vec3_apply - apply the matrix to vec xyz via GTE ops;
+/* FUN_80195050 matrix_vec3_apply - apply the matrix to vec xyz via GTE ops;
  * returns vec. */
 uint * matrix_vec3_apply(undefined4 *mat,uint *vec)
 {
