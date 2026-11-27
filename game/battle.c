@@ -1262,6 +1262,9 @@ static int32_t mips_div_lo(int32_t num, int32_t den)
     return num / den;
 }
 
+/* battle_camera_step — per-frame battle camera update: track
+ * both fighters, apply shot/track modes, collision resolve and write
+ * the camera state consumed by battle_hud_draw/GTE setup. */
 void battle_camera_step(uint cam,byte *f0,byte *f1,int battle)
 {
   char fi;
@@ -2338,6 +2341,9 @@ LAB_80131f4c:
   return;
 
 }
+/* battle_hud_draw — HUD element dispatcher: digit/cell sprite
+ * emission, gauge bars, portraits and per-type element cases drawing
+ * into the shared OT via sprite_strip/prim helpers. */
 void battle_hud_draw(int unused,int fighter,int aux0,int aux1)
 {
   short r1;
@@ -3682,6 +3688,8 @@ uint fighter_range_code(int f0,int f1)
 
 }
 
+/* hit_scale_calc — compute the hit-reaction scale/launch power
+ * from attacker/defender stats for hit_react_apply. */
 int hit_scale_calc(int f0,int f1)
 {
   uint fa;
@@ -3706,6 +3714,9 @@ int hit_scale_calc(int f0,int f1)
 
 }
 
+/* hit_react_apply — apply a resolved hit: damage/guard checks,
+ * launch velocity, hit-flash, sound/anim triggers and flag updates on
+ * attacker and defender. */
 undefined4 hit_react_apply(int atk,int def,int scale,short *hits,int n)
 {
   char cnt;
@@ -6004,6 +6015,9 @@ switchD_801289e8_caseD_4:
 
 }
 
+/* fighter_script_fsm — per-fighter script bytecode VM: fetch
+ * opcode at ip, dispatch handler through the opcode table, update
+ * phase/operand regs until the script ends. */
 void fighter_script_fsm(int ctrl_g,undefined4 pad,int *script,int ctx)
 {
   byte o0;
@@ -6499,6 +6513,8 @@ switchD_80181ff0_caseD_9:
 
 }
 
+/* pt_box_radius_test — point vs box-with-radius test; returns
+ * inside flag. */
 bool pt_box_radius_test(int r0,int r1,int *p,int *q)
 {
   int r2;
@@ -6548,6 +6564,8 @@ undefined4 always_one(int unused)
 
 }
 
+/* triple_track_spawn — spawn a triple-slot angle tracker
+ * (slot_triple_*) bound to table index tid with initial value val. */
 void triple_track_spawn(int idx,undefined2 val,int tid)
 {
   undefined2 uv;
@@ -6581,6 +6599,8 @@ void triple_track_spawn(int idx,undefined2 val,int tid)
 
 }
 
+/* xform_accum_spawn — spawn an accumulated-transform FX
+ * record for mode/lvl. */
 void xform_accum_spawn(int mode,int lvl)
 {
   undefined4 tmp;
@@ -6637,6 +6657,8 @@ LAB_80138c24:
 
 }
 
+/* impact_fx_spawn — spawn an impact FX record: allocate the
+ * node, fill motion vec/color vec/scalars from pos/fid/ang/aux/fl. */
 void impact_fx_spawn(undefined4 *pos,uint fid,int ang,int aux,uint fl)
 {
   undefined2 hw;
@@ -6995,6 +7017,8 @@ switchD_8013a1f8_caseD_10:
 
 }
 
+/* fx_record_alloc — allocate an FX task node and initialize
+ * its record payload (pos/kind/fl/aux). */
 int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 pal_g)
 {
   int res;
@@ -7021,6 +7045,9 @@ int fx_record_alloc(undefined4 pos_g,int kind,uint fl,undefined4 aux,undefined4 
 
 }
 
+/* emit_task_spawn/spawn_b/quad_fx_spawn/group_fx_spawn —
+ * task-node spawners for emit/quad/group FX variants; fill pay payload
+ * and link into the task lists. */
 void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undefined2 p6)
 {
   int tmp;
@@ -7054,6 +7081,7 @@ void emit_task_spawn(int *pos,int kind,undefined2 x,short y,undefined2 p5, undef
 
 }
 
+/* see emit_task_spawn. */
 void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl)
 {
   int node;
@@ -7075,6 +7103,7 @@ void emit_task_spawn_b(undefined4 *pos,undefined4 ea,undefined4 eb,undefined4 fl
 
 }
 
+/* see emit_task_spawn (quad variant). */
 void quad_fx_spawn(int f,int kind,undefined4 *pos,undefined2 aux,ushort fl, int p6,int p7)
 {
   int d0;
@@ -7178,6 +7207,8 @@ LAB_80141918:
 
 }
 
+/* group_fx_spawn — allocate an FX group record and store the
+ * 6-word payload (arg,w0..w5) into rec+0xc..0x20. */
 void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, undefined4 w3,undefined4 w4,undefined4 w5)
 {
   int grp;
@@ -7197,6 +7228,9 @@ void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, un
 
 }
 
+/* vec3_step_toward family — move pos toward dst by at most
+ * stp units along the normalized delta; _spd/_q/_q_spd are the
+ * speed-scaled and fixed-point variants. */
 undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
@@ -7243,6 +7277,7 @@ undefined4 * vec3_step_toward(undefined4 *out,short *pos,short *dst,short stp)
 
 }
 
+/* see vec3_step_toward. */
 undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 {
   short rz;
@@ -7294,6 +7329,7 @@ undefined4 * vec3_step_toward_spd(undefined4 *out,short *pos,short *dst,int spd)
 
 }
 
+/* see vec3_step_toward. */
 undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 {
   undefined4 len2;
@@ -7338,6 +7374,7 @@ undefined4 * vec3_step_toward_q(undefined4 *out,short *pos,short *dst,short stp)
 
 }
 
+/* see vec3_step_toward. */
 undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *pos,short *dst,int spd)
 {
   short rz;
@@ -7407,6 +7444,8 @@ undefined1 table_byte_next_b(void)
   return *(undefined1 *)guest_at((uint32_t)(uintptr_t)((idx + 0x801e8400)));
 
 }
+/* sprite_strip_draw_dual — draw a dual-source sprite
+ * strip (src_a/src_b palettes) with uv scale, count n and tag mode. */
 void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0, int y0,int tag)
 {
   ushort *pa;
@@ -7545,6 +7584,7 @@ void sprite_strip_draw_dual(int src_a,int src_b,int uv,int n,ushort *pal,int x0,
 
 }
 
+/* see task_alloc_wrap_c. */
 int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
@@ -7564,6 +7604,7 @@ int task_alloc_wrap_a(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 
 }
 
+/* see task_alloc_wrap_c (5-word payload variant). */
 int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, int w4)
 {
   int node;
@@ -7912,6 +7953,8 @@ uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 
 }
 
+/* sprintf_core — printf engine: parse fmt, handle %d/%u/%x/%s/
+ * %c/%%/%n with width/precision/flags, write digits via wp cursor. */
 int sprintf_core(char *dst,char *fmt,...)
 {
   char ch;
@@ -8371,6 +8414,8 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   }
 }
 
+/* task_node_alloc — allocate a task node from pool kind/cnt/sz
+ * with callback cb and payload size; returns node or 0. */
 int * task_node_alloc(int kind,undefined4 cnt,uint sz,int cb,int cb_arg,int dsize)
 {
   int *node;
@@ -8408,6 +8453,8 @@ int * task_node_alloc(int kind,undefined4 cnt,uint sz,int cb,int cb_arg,int dsiz
 
 }
 
+/* task_node_free — free a task node back to its pool and run
+ * the destructor chain. */
 void task_node_free(int *node)
 {
   int pool;
@@ -8440,6 +8487,8 @@ void task_node_free(int *node)
 
 }
 
+/* task_pools_tick — run one tick over a task pool: invoke each
+ * live node's fn callback. */
 void task_pools_tick(int pool)
 {
   int pbase;
@@ -8486,6 +8535,9 @@ void task_pools_tick(int pool)
 
 }
 
+/* noop_a/b/c — task-payload data accessors bound at guest
+ * 0x801ad224/240/284: _a/_b store w0.. into the record at pay+8,
+ * _c returns that record pointer. */
 void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 {
   int datap;
@@ -8497,6 +8549,8 @@ void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 
 }
 
+/* fx_group_alloc — allocate an FX group node from the
+ * pool/kind/ix/iy tables (DAT -0x7fe009e0 indexed). */
 int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 {
   int node;
@@ -8516,6 +8570,7 @@ int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 
 }
 
+/* see noop_a. */
 void noop_b(int node,undefined4 w0,undefined4 w1)
 {
   int datap;
@@ -8526,12 +8581,15 @@ void noop_b(int node,undefined4 w0,undefined4 w1)
 
 }
 
+/* see noop_a. */
 undefined4 noop_c(int node)
 {
   return *(undefined4 *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x10) ))+ 8)));
 
 }
 
+/* node_tree_free — recursively free a node tree: release all
+ * children in the +0x10 array then the node itself. */
 void node_tree_free(int node)
 {
   int i;
@@ -8582,6 +8640,8 @@ void node_tree_free(int node)
 
 }
 
+/* prim_attr_word_set — write the attribute halfword into a
+ * primitive record. */
 void prim_attr_word_set(int prim,undefined2 attr)
 {
   int rec;
@@ -8647,6 +8707,8 @@ LAB_801acae8:
 
 }
 
+/* prim_group_build — build a primitive group node: allocate
+ * via prim_group_alloc and emit the member primitives. */
 undefined4 * prim_group_build(undefined4 prim,int attr,undefined4 a2,undefined4 a3)
 {
   undefined4 *grp;
@@ -8704,6 +8766,8 @@ LAB_801a6cfc:
 
 }
 
+/* tween_chan_alloc/dur_spread — allocate a tween channel
+ * for group/idx and spread its duration across channels. */
 undefined4 tween_chan_alloc(int grp,int idx)
 {
   undefined4 seq;
@@ -8735,6 +8799,7 @@ undefined4 tween_chan_alloc(int grp,int idx)
 
 }
 
+/* see tween_chan_alloc. */
 void tween_dur_spread(int grp,int n)
 {
   int i;
@@ -8958,6 +9023,8 @@ void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 
 }
 
+/* battle_intro_fsm — battle intro state machine: pool/task
+ * init phases then per-frame intro camera/fx sequencing. */
 void battle_intro_fsm(undefined4 mat,undefined4 a1,undefined4 a2,int st)
 {
   char cnt;
@@ -9681,6 +9748,8 @@ void ctr_clamp(uint32_t ent,int32_t delta)
   *(int16_t *)(rec + 0xa0) = (delta < 0x100) ? (int16_t)delta : (int16_t)0xff;
 }
 
+/* announce_param_block_init_b — init the 0x1f80038c announce
+ * param block and render the full text string. */
 void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f800396 = 0x10;
@@ -9732,6 +9801,8 @@ void slot_triple_set(int slot,int c0,int c1,int c2)
 
 }
 
+/* rec_flag1_set — latch a 3-word record into the
+ * _DAT_801f022c/234/236/238 globals and arm the flag. */
 void rec_flag1_set(undefined2 *src)
 {
   _DAT_801f022c = 1;
@@ -9742,6 +9813,9 @@ void rec_flag1_set(undefined2 *src)
 
 }
 
+/* target_angles_/depth_/pair_depth_/midpoint_angles_ —
+ * camera target helpers: write aim angles/depth for a target idx or
+ * midpoint of a fighter pair into dst buffers. */
 void target_angles_set(short *dst,int idx)
 {
   short y0;
@@ -9764,6 +9838,7 @@ void target_angles_set(short *dst,int idx)
 
 }
 
+/* see target_angles_set family. */
 void target_depth_set(short *dst,int idx)
 {
   int dep2;
@@ -9798,6 +9873,7 @@ void target_depth_set(short *dst,int idx)
 
 }
 
+/* see target_angles_set family. */
 void pair_depth_set(short *pa,short *pb,int idx)
 {
   short dmin;
@@ -9858,6 +9934,7 @@ void pair_depth_set(short *pa,short *pb,int idx)
 
 }
 
+/* see target_angles_set family. */
 void target_angles_depth_set(short *dst,int idx)
 {
   short dep;
@@ -9895,6 +9972,7 @@ void target_angles_depth_set(short *dst,int idx)
 
 }
 
+/* see target_angles_set family. */
 void midpoint_angles_set(int *pa,int *pb,int idx)
 {
   short s1;
@@ -9974,6 +10052,9 @@ void midpoint_angles_set(int *pa,int *pb,int idx)
 
 }
 
+/* dual_target_track(_b) — dual-target camera tracking:
+ * compute midpoint angles/depth between two fighters and steer the
+ * camera target (tgt record or cam+fa+fb variant). */
 void dual_target_track(int tgt,int f_a,int f_b)
 {
   short my;
@@ -10115,6 +10196,7 @@ void dual_target_track(int tgt,int f_a,int f_b)
 
 }
 
+/* see dual_target_track. */
 void dual_target_track_b(int cam,int fa,int fb)
 {
   short s1;
@@ -10231,6 +10313,8 @@ LAB_80132f50:
 
 }
 
+/* camera_track_shot/step — scripted camera shot tracking
+ * and per-frame camera step toward the tracked target. */
 void camera_track_shot(int cam,int f_a,int f_b)
 {
   undefined2 pit;
@@ -10325,6 +10409,7 @@ LAB_801332f0:
 
 }
 
+/* see camera_track_shot. */
 void camera_track_step(int cam,int fa,int fb)
 {
   ushort stp;
@@ -10469,6 +10554,9 @@ void camera_track_step(int cam,int fa,int fb)
 
 }
 
+/* u16_step_toward/fixed_approach_s16 — fixed-point
+ * approach helpers: step a u16/s16 value toward target by step,
+ * return arrived flag. */
 int u16_step_toward(ushort *cur,ushort *tgt,short step)
 {
   ushort old;
@@ -10501,6 +10589,7 @@ LAB_801338bc:
 
 }
 
+/* see u16_step_toward. */
 int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 {
   int t20;
@@ -10532,6 +10621,8 @@ int fixed_approach_s16(ushort *cur,short *tgt,uint step)
 
 }
 
+/* fighter_trail_emit — emit fighter trail particles:
+ * spawn burst slots along the motion vector with life/width taper. */
 void fighter_trail_emit(undefined4 *mat,undefined4 a1,int ent,int spec)
 {
   ushort lif;
@@ -10759,6 +10850,8 @@ LAB_80135630:
 
 }
 
+/* burst_slot_active — check whether a particle burst slot
+ * index is still live. */
 bool burst_slot_active(int slot)
 {
   return *(short *)(&DAT_801f04e4 + slot * 2) != 0;
@@ -10793,6 +10886,8 @@ void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 }
 
 
+/* gte_xform_accum — accumulate a vec3 transform: acc +=
+ * vec transformed by tr matrix. */
 void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 {
   undefined4 old;
@@ -10821,6 +10916,9 @@ void gte_xform_accum(short *acc,uint *vec,int n,undefined4 tr)
 
 }
 
+/* gte_rtps_xform3 family — GTE RTPS vec3 transforms:
+ * load matrix/angles, transform, write s16 outputs; _t/_nold/_1/_raw
+ * are the transpose/normal/raw-input variants. */
 uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 {
   uint t0;
@@ -10861,6 +10959,7 @@ uint * gte_rtps_xform3(undefined4 *rt,ushort *in,uint *out)
 
 }
 
+/* see gte_rtps_xform3. */
 uint * gte_xform3_nold(ushort *in,uint *out)
 {
   uint t0;
@@ -10896,6 +10995,7 @@ uint * gte_xform3_nold(ushort *in,uint *out)
 
 }
 
+/* gte_mvmva_add — GTE MVMVA: matrix*vector + translation add. */
 int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 {
   uint vx;
@@ -10978,6 +11078,7 @@ int * gte_mvmva_add(undefined4 *rt,uint *vec,int *out)
 
 }
 
+/* see gte_rtps_xform3 (single-output variant). */
 undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 {
   undefined4 in_zero;
@@ -11003,6 +11104,9 @@ undefined2 * gte_rtps_xform1(undefined4 *rt,undefined4 *in,undefined2 *out)
 
 }
 
+/* gte_rot_load/light_load/tr_load/cw_d000_set — load the
+ * GTE rotation matrix / light vector / translation record / control
+ * word d000 into cop2 registers. */
 void gte_rot_load(undefined4 *m)
 {
   setCopControlWord(2,0,*m);
@@ -11014,6 +11118,7 @@ void gte_rot_load(undefined4 *m)
 
 }
 
+/* see gte_rot_load. */
 void gte_light_load(undefined4 *light)
 {
   setCopControlWord(2,0x8000,*light);
@@ -11025,6 +11130,7 @@ void gte_light_load(undefined4 *light)
 
 }
 
+/* see gte_rot_load. */
 void gte_tr_load(int trec)
 {
   setCopControlWord(2,0x2800,*(undefined4 *)guest_at((uint32_t)(uintptr_t)((trec + 0x14))));
@@ -11034,6 +11140,7 @@ void gte_tr_load(int trec)
 
 }
 
+/* see gte_rot_load. */
 void gte_cw_d000_set(undefined4 cw)
 {
   setCopControlWord(2,0xd000,cw);
@@ -11041,6 +11148,8 @@ void gte_cw_d000_set(undefined4 cw)
 
 }
 
+/* gte_op_a00428 — composite GTE op at guest 0xa00428:
+ * transform + flag fixup writing r0-r2 outputs. */
 undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
   undefined4 res;
@@ -11061,6 +11170,8 @@ undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 
 }
 
+/* orbit_fx_spawn — spawn an orbiting FX record bound to
+ * variable var. */
 void orbit_fx_spawn(int var)
 {
   int tmp3;
@@ -11132,6 +11243,8 @@ void task_heads_clear(int pool)
 
 }
 
+/* task_slot_step — advance/free the current task slot
+ * (mark dead, run destructor, recycle). */
 void task_slot_step(void)
 {
   int pbase;
@@ -11160,6 +11273,8 @@ void task_slot_step(void)
 
 }
 
+/* task_slot_fns_run — invoke the fn callbacks registered
+ * on a task slot. */
 void task_slot_fns_run(int slot)
 {
   int ctx;
@@ -11190,6 +11305,8 @@ void task_slot_fns_run(int slot)
 
 }
 
+/* task_pool_init/alloc/free — task pool management:
+ * init a pool region, allocate/free nodes by pool+kind+size. */
 void task_pool_init(int pool,int kind,int count,int base)
 {
   int *hdr;
@@ -11218,6 +11335,7 @@ extern uint32_t g_tpool_fail_count, g_tpool_fail_head, g_tpool_fail_next,
                 g_tpool_fail_size, g_tpool_fail_flag;
 extern int32_t  g_tpool_fail_p1, g_tpool_fail_p2, g_tpool_fail_p3;
 
+/* see task_pool_init. */
 int task_pool_alloc(int pool,int kind,int size)
 {
   short flag;
@@ -11285,6 +11403,7 @@ int task_pool_alloc(int pool,int kind,int size)
 
 }
 
+/* see task_pool_init. */
 void task_pool_free(int pool)
 {
   short kind;
@@ -11318,6 +11437,8 @@ void task_pool_free(int pool)
 
 }
 
+/* gp_slot48_set/24_set — stash a value into the guest gp
+ * frame slots +0x48/+0x24 (callee-saved scratch for nested calls). */
 void gp_slot48_set(undefined4 v)
 {
   int gp_save = (int)guest_gp();
@@ -11326,6 +11447,7 @@ void gp_slot48_set(undefined4 v)
 
 }
 
+/* see gp_slot48_set. */
 void gp_slot24_set(undefined4 v)
 {
   int gp_save = (int)guest_gp();
@@ -11334,6 +11456,9 @@ void gp_slot24_set(undefined4 v)
 
 }
 
+/* prim_batch_emit — emit a batch of primitives: walk the
+ * descriptor streams (d0-d3/s0-s6), emit OT entries via otc cursor,
+ * tag with sel/fl/kind. */
 int prim_batch_emit(int desc,int idx,undefined4 w0,undefined4 w1,int *otc, undefined4 arg6,undefined4 arg7,int num,int sel,uint fl, undefined4 kind)
 {
   undefined2 t1;
@@ -11925,6 +12050,8 @@ switchD_801a776c_default:
 
 }
 
+/* obj_flag34_clear/set — clear/set flag bit 0x34 on an
+ * object record. */
 void obj_flag34_clear(int obj)
 {
   int i;
@@ -11938,6 +12065,9 @@ void obj_flag34_clear(int obj)
 
 }
 
+/* tween_seq_alloc/track_alloc — allocate a tween
+ * sequence/track node: pack mode/count/args into pay and bind the
+ * keyframe descriptor. */
 int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg5, undefined2 arg6,undefined4 arg7,undefined4 kind)
 {
   int node;
@@ -11973,6 +12103,8 @@ int tween_seq_alloc(int mode,undefined2 a1,undefined4 a2,undefined4 a3,short arg
 
 }
 
+/* gte_matrix_base_set — set the GTE matrix base pointer
+ * (DAT_801be838) and aux gp slot. */
 void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 {
   int gp_save = (int)guest_gp();
@@ -11982,6 +12114,8 @@ void gte_matrix_base_set(undefined4 mat,undefined4 aux)
 
 }
 
+/* lazy_node_wrap — attach a lazy node via node_lazy_attach
+ * and fill its pay fields (proto/arg/aux). */
 int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 {
   int node;
@@ -12000,6 +12134,8 @@ int lazy_node_wrap(undefined4 proto,undefined4 arg,undefined2 aux)
 
 }
 
+/* prim_group_alloc — allocate a primitive group node
+ * with attr/num/mode sizing. */
 int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, undefined4 arg7)
 {
   undefined2 ff;
@@ -12161,6 +12297,8 @@ int prim_group_alloc(undefined4 a0,int attr,int num,int mode,int flg,int arg6, u
 
 }
 
+/* node_param_quad_set — write a 4-word param quad
+ * into a node record. */
 void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, undefined4 q3)
 {
   int datap;
@@ -12173,6 +12311,8 @@ void node_param_quad_set(int node,undefined4 q0,undefined4 q1,undefined4 q2, und
 
 }
 
+/* prim_list_gte_invoke/persp_step — walk a primitive
+ * list applying the GTE step (perspective divide variant) per element. */
 int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefined4 arg5 ,undefined4 arg6)
 {
   undefined4 in_zero;
@@ -12798,6 +12938,9 @@ LAB_8012dca4:
 
 }
 
+/* text_render_simple/full — text renderer: glyph quad
+ * emission with font/cfg selection, spacing, tint and clipping into
+ * the OT. */
 undefined4 text_render_simple(uint *a0,uint font,int cfg)
 {
   byte aux;
@@ -12954,6 +13097,8 @@ LAB_8012e044:
 
 }
 
+/* particle_burst_spawn/update — spawn and per-tick
+ * update a particle burst record (type/idx bound). */
 void particle_burst_spawn(int type,int idx)
 {
   short tv;
@@ -13143,6 +13288,7 @@ void particle_burst_spawn(int type,int idx)
 
 }
 
+/* see particle_burst_spawn. */
 void particle_burst_update(int ctx,undefined4 arg,undefined4 pos,int rec)
 {
   short vx;
@@ -13301,6 +13447,8 @@ LAB_80136b18:
 
 }
 
+/* radial_glow_draw — draw a radial glow sprite quad
+ * from the record parameters. */
 void radial_glow_draw(int *rec)
 {
   undefined4 xy;
@@ -13443,6 +13591,8 @@ void radial_glow_draw(int *rec)
 
 }
 
+/* iris_wipe_spawn/update — iris wipe transition: spawn the
+ * wipe record and per-tick advance the aperture. */
 void iris_wipe_spawn(int req,int arg)
 {
   char x1;
@@ -13514,6 +13664,8 @@ void iris_wipe_spawn(int req,int arg)
 
 }
 
+/* gte_xform3_ip/t_ip — GTE transform writing results
+ * back through the input pointer (in-place variant). */
 undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 {
   uint t0;
@@ -13557,6 +13709,7 @@ undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in)
 
 }
 
+/* see gte_xform3_ip. */
 undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 {
   uint t0;
@@ -13612,6 +13765,8 @@ undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in)
 
 }
 
+/* prim_task_run — run a primitive task node: dispatch the
+ * packet emit chain for rec with mode selector. */
 int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 {
   undefined4 t1;
@@ -13693,6 +13848,7 @@ int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode)
 
 }
 
+/* vec2_rot — rotate a packed s16 vec2 by angle pair. */
 undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 {
   undefined2 c0;
@@ -13712,6 +13868,8 @@ undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
 
 }
 
+/* angle_gte_vec — compute the heading angle of a vec2
+ * into out. */
 uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 {
   int sx;
@@ -13732,6 +13890,7 @@ uint * angle_gte_vec(undefined4 x,undefined4 y,uint *out)
 
 }
 
+/* see prim_list_gte_invoke. */
 int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4 arg5 ,int xf,undefined4 arg7,undefined4 arg8)
 {
   undefined4 in_zero;
@@ -13817,6 +13976,7 @@ int * prim_list_persp_step(int *lst,undefined4 a1,undefined4 a2,int n,undefined4
 
 }
 
+/* gte_light_set — load GTE light direction/color. */
 void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 {
   setCopControlWord(2,0x6800,x);
@@ -13827,6 +13987,7 @@ void gte_light_set(undefined4 x,undefined4 y,undefined4 z)
 }
 
 
+/* gte_xform_add_off — transform vec and add offset. */
 int * gte_xform_add_off(int x,undefined4 *y,int *z)
 {
   undefined4 in_zero;
@@ -13851,6 +14012,8 @@ int * gte_xform_add_off(int x,undefined4 *y,int *z)
 
 }
 
+/* angle_pair_rotmat/angle_vec_build — build rotation
+ * artifacts from packed euler angles via the sin LUT. */
 uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 {
   int t0;
@@ -13911,6 +14074,7 @@ void vec_emit_spawn(undefined4 *rec)
 
 }
 
+/* see iris_wipe_spawn. */
 void iris_wipe_update(int *rec)
 {
   short cv;
@@ -14049,6 +14213,9 @@ void iris_wipe_update(int *rec)
 
 }
 
+/* script_op_dispatch — script opcode dispatch loop:
+ * fetch op byte, sprintf debug string, jalr handler until cont==0
+ * or iter cap. */
 undefined4 script_op_dispatch(undefined4 ctrl,undefined4 pad,int script,undefined4 ctx)
 {
   byte op;
@@ -14083,6 +14250,7 @@ undefined4 script_op_dispatch(undefined4 ctrl,undefined4 pad,int script,undefine
 
 }
 
+/* trig_sin_lookup — sine lookup by angle index. */
 int trig_sin_lookup(uint ang)
 {
   uint idx;
@@ -14104,6 +14272,7 @@ int trig_sin_lookup(uint ang)
 
 }
 
+/* see angle_pair_rotmat. */
 uint * angle_vec_build(uint ang,uint *out)
 {
   int t0;
@@ -14135,6 +14304,7 @@ uint * angle_vec_build(uint ang,uint *out)
 
 }
 
+/* rand_lcg — LCG random step. */
 uint rand_lcg(void)
 {
   _DAT_801f68e0 = _DAT_801f68e0 * 0x41c64e6d + 0x3039;
@@ -14142,6 +14312,7 @@ uint rand_lcg(void)
 
 }
 
+/* isqrt/isqrt_refine — integer square root + refinement. */
 int isqrt(int n)
 {
   int r;
@@ -14173,6 +14344,7 @@ int isqrt(int n)
 
 }
 
+/* see gte_rtps_xform3 (_t = transpose-angle variant). */
 uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 {
   uint t0;
@@ -14226,6 +14398,7 @@ uint * gte_rtps_xform3_t(undefined4 *rm,ushort *ang,uint *out)
 
 }
 
+/* gte_xform1_ir/raw — single-row GTE transform variants. */
 undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 {
   undefined4 v;
@@ -14242,6 +14415,7 @@ undefined4 * gte_xform1_ir(undefined4 *mtx,undefined4 *out)
 
 }
 
+/* see gte_xform1_ir. */
 undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 {
   undefined4 v;
@@ -14265,6 +14439,8 @@ undefined4 * gte_rtps_xform1_raw(undefined4 *mtx,undefined4 *in,undefined4 *out)
 
 }
 
+/* node_lazy_attach — attach a node of class cls from
+ * pool tables; returns node or 0. */
 int * node_lazy_attach(int n,int en,int aux,int par)
 {
   char cls;
@@ -14303,6 +14479,8 @@ int * node_lazy_attach(int n,int en,int aux,int par)
 
 }
 
+/* tween_ensure — ensure a channel has a live tween track;
+ * allocate via tween_track_alloc if missing. */
 undefined4 tween_ensure(int chan)
 {
   undefined4 ret;
@@ -14331,6 +14509,7 @@ undefined4 tween_ensure(int chan)
 
 }
 
+/* see obj_flag34_clear. */
 void obj_flag34_set(int obj)
 {
   int i;
@@ -14344,6 +14523,7 @@ void obj_flag34_set(int obj)
 
 }
 
+/* tween_seek — seek a tween sequence to position pos. */
 void tween_seek(int seq,int pos)
 {
   uint ok;
@@ -14412,6 +14592,7 @@ void tween_seek(int seq,int pos)
 
 }
 
+/* tween_seq_step — advance a tween sequence one step. */
 void tween_seq_step(short *seq)
 {
   short t;
@@ -14548,6 +14729,8 @@ LAB_801aa600:
 
 }
 
+/* prim_group_gc — garbage-collect dead entries in a
+ * primitive group. */
 void prim_group_gc(int grp)
 {
   short st;
@@ -14600,6 +14783,8 @@ LAB_801ac2ac:
 
 }
 
+/* rect_prim_spawn — spawn a rect primitive task node:
+ * write x0/y0/x1/y1 + flags into the record. */
 void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, undefined1 b0,undefined1 b1,undefined2 fl,undefined2 aux, undefined4 kind)
 {
   int t;
@@ -14670,6 +14855,7 @@ undefined4 isqrt_refine(int n)
 
 }
 
+/* cop2_clz — cop2 count-leading-zeros op. */
 undefined4 cop2_clz(undefined4 v)
 {
   undefined4 res;
@@ -14679,6 +14865,8 @@ undefined4 cop2_clz(undefined4 v)
 
 }
 
+/* gte_points_xform — transform n points: ip -> sz/sx/sy/cc
+ * output streams. */
 void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *sy, undefined2 *cc,int n)
 {
   undefined4 in_zero;
@@ -14709,6 +14897,7 @@ void gte_points_xform(undefined4 *ip,undefined4 *sz,undefined2 *sx,undefined2 *s
 
 }
 
+/* see tween_seq_alloc (track variant). */
 int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short arg5 ,undefined2 arg6,undefined2 arg7,undefined4 kind)
 {
   undefined2 fld0;
@@ -14753,6 +14942,8 @@ int tween_track_alloc(int mode,undefined2 a1,undefined4 a2,undefined2 *kf,short 
 
 }
 
+/* tween_apply — apply tween value v0->v1 with phase/dir
+ * accumulation to the seq target. */
 void tween_apply(short *seq,int v0,int v1)
 {
   short d1;
@@ -14905,6 +15096,7 @@ LAB_801a9ec0:
 
 }
 
+/* rect_prim_tick — per-tick update for a rect primitive. */
 void rect_prim_tick(uint *prim)
 {
   uint cnt;
@@ -14926,6 +15118,7 @@ void rect_prim_tick(uint *prim)
 
 }
 
+/* prim_tag_set — set the primitive tag/OT link bits. */
 void prim_tag_set(int prim)
 {
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((prim + 3) ))= 4;
@@ -14934,6 +15127,8 @@ void prim_tag_set(int prim)
 
 }
 
+/* prim_packet_init(+_tex) — init a primitive packet
+ * header: tag word + attribute flags (+tex variant binds texture). */
 void prim_packet_init(int pkt,int a1,int a2,uint fl)
 {
   uint tagw;
@@ -14951,6 +15146,8 @@ void prim_packet_init(int pkt,int a1,int a2,uint fl)
 
 }
 
+/* verts_*_apply — vertex-array passes: offset / rgb /
+ * add / sub transforms over n verts with color stride. */
 void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
   uint *cz;
@@ -14990,6 +15187,7 @@ void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, undefine
 
 }
 
+/* see verts_offset_apply. */
 void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 {
   short vi;
@@ -15026,6 +15224,7 @@ void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl)
 
 }
 
+/* see verts_offset_apply. */
 void verts_add_apply(int n,undefined4 *v,ushort *c,int d)
 {
   short dz;
@@ -15052,6 +15251,7 @@ void verts_add_apply(int n,undefined4 *v,ushort *c,int d)
 
 }
 
+/* see verts_offset_apply. */
 void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
 {
   short dz;
@@ -15082,6 +15282,7 @@ void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
 
 /* fixed_point_divide — capstone-verified fixed-point divide (2-pass Newton refinement).
    div= signed 32/32 mflo, multu= unsigned 32x32 -> mfhi:mflo. */
+/* fixed_point_divide — fixed-point division helper. */
 int fixed_point_divide(int num,int den)
 {
   uint32_t v0 = num < 0 ? (uint32_t)-num : (uint32_t)num;
@@ -15120,6 +15321,8 @@ int fixed_point_divide(int num,int den)
    node: +0x6 lh count, +0xa/+0xe lh cursors, +0x18 table, +0x2c lw total.
    entries stride 0x14, field +4 = frame time. Ends: tween_apply(node,idx,acc)
    then lhu(+0x2c)->+0xa. */
+/* keyframe_cursor_search — binary/linear search for the
+ * keyframe cursor position in a sequence. */
 void keyframe_cursor_search(uint *cur)
 {
   int unaff_gp = (int)guest_gp();
