@@ -3604,11 +3604,11 @@ int32_t select_cursor_step(int32_t row,int32_t col0)
   int32_t col = col0;
   uint8_t *grid = (uint8_t *)guest_at(0x801b3218);
   uint32_t unlocked = *(uint32_t *)(_g_system_config_ptr + 0x4c);
-  uint32_t v1 = unlocked;
+  uint32_t mask = unlocked, goff;
   int32_t ch_idx = grid[col + row * 4];
-  uint32_t ok = (v1 >> ch_idx) & 1;
+  uint32_t ok = (mask >> ch_idx) & 1;
   if (ok != 0) return (int32_t)ok;
-  v1 = (uint32_t)ch_idx * 4;
+  goff = (uint32_t)ch_idx * 4;
   goto LAB_f208;
 LAB_f248:
   ok = (unlocked >> ch_idx) & 1;
@@ -3618,12 +3618,12 @@ LAB_f24c:
   return (int32_t)ok;
 LAB_f208:
   {
-    int32_t nch = grid[col + v1];
+    int32_t nch = grid[col + goff];
     ch_idx = nch;
     if (nch != ch_idx) goto LAB_f248;
     col = (col - 1) & 3;
     if (col != col0) {
-      ch_idx = grid[col + v1];
+      ch_idx = grid[col + goff];
       ok = (unlocked >> ch_idx) & 1;
       goto LAB_f24c;
     }
