@@ -7387,6 +7387,8 @@ undefined4 * vec3_step_toward_q_spd(undefined4 *out,short *pos,short *dst,int sp
 
 }
 
+/* table_byte_next_a/b — advance the shared byte-table cursor and
+ * return the next byte (wrapping at table end). */
 undefined1 table_byte_next_a(void)
 {
   byte idx;
@@ -7396,6 +7398,7 @@ undefined1 table_byte_next_a(void)
 
 }
 
+/* table_byte_next_b — second byte-table cursor advance (see _a). */
 undefined1 table_byte_next_b(void)
 {
   byte idx;
@@ -7592,6 +7595,8 @@ int task_alloc_wrap_b(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3, i
 
 }
 
+/* hud_cell_frame_set — write the HUD cell frame/UV word for digit
+ * value val into cell record (uses DAT_801b4b54/56 + scroll offset). */
 void hud_cell_frame_set(int val,int cell)
 {
   ushort fr;
@@ -7614,6 +7619,8 @@ void hud_cell_frame_set(int val,int cell)
 
 }
 
+/* hud_digits_color — set the HUD digit color/attr fields for value
+ * val into the cell record. */
 void hud_digits_color(int val,int cell)
 {
   char c0;
@@ -7679,6 +7686,9 @@ bool fighter_height_check(int f)
 
 }
 
+/* sprite_rect_set_a/b/c — sprite rect variants: write position (x,y)
+ * and packed size (w,h) into the sprite record; _a/_b/_c differ in
+ * which corner/anchor convention they apply. */
 undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -7703,6 +7713,7 @@ undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
 
 }
 
+/* sprite_rect_set_b — see sprite_rect_set_a. */
 undefined4 sprite_rect_set_b(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -7727,6 +7738,7 @@ undefined4 sprite_rect_set_b(int rec,short x,int y,undefined4 w,int h)
 
 }
 
+/* sprite_rect_set_c — see sprite_rect_set_a. */
 undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -7751,6 +7763,9 @@ undefined4 sprite_rect_set_c(int rec,short x,int y,undefined4 w,int h)
 
 }
 
+/* rtps_point_xform/xform2 — GTE RTPS point transform: load matrix rt,
+ * transform s16 vec3 in -> out; xform applies the flag-controlled
+ * perspective divide variant. */
 int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 {
   undefined4 in_zero;
@@ -7782,6 +7797,8 @@ int * rtps_point_xform(undefined4 *rt,undefined4 *in,int *out,int flag)
 
 }
 
+/* rtps_point_xform2 — RTPS point transform without the flag variant
+ * (see rtps_point_xform). */
 int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 {
   undefined4 in_zero;
@@ -7811,6 +7828,8 @@ int * rtps_point_xform2(undefined4 *rt,undefined4 *in,int *out)
 
 }
 
+/* rotmat_rtps_build — build an RTPS rotation matrix from a packed
+ * euler angle word (10-bit fields + sign/axis flags) into m[0..8]. */
 uint * rotmat_rtps_build(uint ang,uint *m)
 {
   int ia;
@@ -7842,6 +7861,8 @@ uint * rotmat_rtps_build(uint ang,uint *m)
 
 }
 
+/* rotmat2_pair_build — build a two-angle rotation matrix from packed
+ * angle words ang0/ang1 via the DAT_801247a8 sin LUT into out[0..4]. */
 uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 {
   int t0;
@@ -8210,6 +8231,8 @@ LAB_8018f78c:
 }
 #undef local_39
 
+/* rtps_basis_xform — transform a basis-vector set through matrix rt
+ * and repack into out. */
 uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
 {
   ushort in0;
@@ -8268,6 +8291,8 @@ uint * rtps_basis_xform(undefined4 *rt,undefined2 *bas,uint *out)
 
 }
 
+/* rotmat2_build — build a rotation matrix from a single packed angle
+ * into m (RTPS layout). */
 undefined4 * rotmat2_build(uint ang,undefined4 *m)
 {
   int ia;
@@ -8727,6 +8752,7 @@ void tween_dur_spread(int grp,int n)
 
 }
 
+/* str_len — strlen over guest memory. */
 int str_len(char *s)
 {
   char ch;
@@ -8743,6 +8769,8 @@ int str_len(char *s)
 
 }
 
+/* strchr_bounded — memchr-style bounded strchr: find c in s within n
+ * bytes, return pointer or NULL. */
 char * strchr_bounded(char *s,char c,int n)
 {
   char *cur;
@@ -8761,6 +8789,7 @@ char * strchr_bounded(char *s,char c,int n)
 
 }
 
+/* mem_move — memmove over guest memory; returns dst. */
 undefined1 * mem_move(undefined1 *s,undefined1 *src,int n)
 {
   undefined1 tmp;
@@ -8790,6 +8819,8 @@ extern uint32_t g_sst_bad_state, g_sst_bad_d0, g_sst_bad_d1;
 extern uint32_t g_sst_bad_sbase, g_sst_bad_spc, g_sst_bad_count;
 extern uint32_t g_sst_bad_d2, g_sst_bad_d3, g_sst_bad_d4, g_sst_bad_d6;
 
+/* script_stream_tick — advance a channel script stream one tick:
+ * fetch opcode, dispatch handler, update cursor/counters. */
 void script_stream_tick(int *stream)
 {
   short opw;
@@ -9068,6 +9099,9 @@ LAB_801373c0:
 
 }
 
+/* task_alloc_wrap_a-f — task-node alloc wrappers binding guest fn
+ * pointers (0x80137680/0x80137824/0x80137acc/0x80137cd0 family);
+ * payload words w0.. are copied verbatim into the node pay area. */
 int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
   int node;
@@ -9087,6 +9121,7 @@ int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 
 }
 
+/* task_alloc_wrap_d — see task_alloc_wrap_c (5-word payload variant). */
 int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,int w4)
 {
   int node;
@@ -9122,6 +9157,7 @@ int task_alloc_wrap_d(undefined4 w0,undefined4 w1,undefined4 w2,undefined4 w3,in
 
 }
 
+/* task_alloc_wrap_e — see task_alloc_wrap_c (3-word payload variant). */
 int task_alloc_wrap_e(int w0,int w1,int w2)
 {
   int res;
@@ -9148,6 +9184,8 @@ int task_alloc_wrap_e(int w0,int w1,int w2)
 
 }
 
+/* task_alloc_wrap_f — see task_alloc_wrap_c; seq is the keyframe
+ * descriptor whose +2 next-index seeds the pay cursor. */
 int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 {
   short seq_next;
@@ -9169,6 +9207,8 @@ int task_alloc_wrap_f(undefined4 w0,undefined4 w1,undefined4 w2,int seq)
 
 }
 
+/* slot_triple_tick — advance a triple-slot tracker: step the angle
+ * cursor through the slot table and reset on wrap. */
 void slot_triple_tick(int *slot)
 {
   short cnt;
@@ -9198,6 +9238,8 @@ void slot_triple_tick(int *slot)
 
 }
 
+/* xform_accum_tick — per-tick update for an accumulated-transform
+ * record (advance phase, decay, emit on completion). */
 void xform_accum_tick(undefined4 *rec)
 {
   short cnt;
@@ -9220,6 +9262,7 @@ void xform_accum_tick(undefined4 *rec)
 
 }
 
+/* impact_fx_update — per-tick update for an impact FX record. */
 void impact_fx_update(int rec)
 {
   /* guest impact_fx_update @0x80138CEC: after the type switch, EVERY
@@ -9233,6 +9276,7 @@ void impact_fx_update(int rec)
   call_guest4(0x80138CECu,(uint32_t)rec,0,0,0);
 }
 
+/* impact_fx_emit_tick — emit pass for an impact FX record. */
 void impact_fx_emit_tick(int rec)
 {
   uint slot;
@@ -9292,6 +9336,7 @@ LAB_80139fb0:
 
 }
 
+/* fx_record_init — initialize an FX record payload to defaults. */
 void fx_record_init(undefined4 *rec)
 {
   undefined2 *src;
@@ -9310,6 +9355,7 @@ void fx_record_init(undefined4 *rec)
 
 }
 
+/* quad_fx_update — per-tick update for a quad FX record. */
 void quad_fx_update(int rec)
 {
   short mode;
@@ -9374,6 +9420,8 @@ LAB_801417f8:
 
 }
 
+/* angle_from_xy — heading angle from delta (x,y) via octant compare
+ * and the DAT_801247a8-ish slope math; returns a 12-bit angle. */
 int angle_from_xy(int x,int y)
 {
   int ay;
@@ -9431,6 +9479,7 @@ int angle_from_xy(int x,int y)
 
 }
 
+/* table_1f0ae0_clear — clear entry idx of the 1f0ae0 table. */
 void table_1f0ae0_clear(int idx)
 {
   int i;
@@ -9447,6 +9496,8 @@ void table_1f0ae0_clear(int idx)
 
 }
 
+/* sprite_place_centered — position a sprite record centered on (x,y)
+ * with size (w,h). */
 void sprite_place_centered(undefined4 rec,undefined4 st,short x,short y,int w, int h)
 {
   int h_s;
@@ -9459,6 +9510,8 @@ void sprite_place_centered(undefined4 rec,undefined4 st,short x,short y,int w, i
 
 }
 
+/* fighter_tint_fade — fade a fighter's tint/flash record over time for
+ * the scene/idx slot. */
 void fighter_tint_fade(int scene,int idx,int battle,int anim)
 {
   byte th1;
@@ -9649,6 +9702,8 @@ void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,u
 
 }
 
+/* slot_triple_set — load the three cursor values for a triple-slot
+ * tracker index. */
 void slot_triple_set(int slot,int c0,int c1,int c2)
 {
   int base;
