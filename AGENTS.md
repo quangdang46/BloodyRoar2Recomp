@@ -1370,3 +1370,37 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   (g_psx_precise_slice=0) — cpst_ yield checks are no-ops unless
   PSX_PRECISE_SLICE=1; the live mechanism is psx_check_interrupts_at
   per-block IRQ delivery.
+
+### Session update 29 (first whole-function cps_ hand ports)
+
+- **cps_8013c9cc → `stage_env_task_spawn`** (`3e714244`, game/battle.c):
+  ev24 env-FX task spawner. task_node_alloc(1,2,10,0x8013B72C,0,7200)
+  then two 2496-byte regions of 48×52-byte GPU packet records via
+  gpu_pkt_tag_0c3c/prim_group_build/fighter_chan_delta_accum/
+  prim_attr_word_set/task_node_free (all already clean). 80 map rows
+  removed.
+- **cps_801468ec → `fighter_emit_state_run`** (`95c56376`,
+  battle.c): 67-addr/284-instr fighter emit state machine — GTE CT0-7
+  matrix load, mode normalize via jr table @0x801202CC {0,4,2,6,1,7},
+  three bit-selected emit sections walking 4-byte record lists off
+  FighterCtrl, jal waypoint stubs 0x80136F70/80/78 via new file-local
+  `br2_waypoint_jal` (same contract as bind.c bind_jal: ra/pc/sp
+  save-restore around clean_try_dispatch→psx_dispatch_call). menu.c
+  call sites (63/929/932) repointed; bind.c FUN_801468ec body deleted.
+  renames.map:322 + fnmap.c entry; 138 clean_cps.map rows removed.
+- **★ self-delegate trap + fix**: a clean port that calls its OWN
+  guest addr through ANY bridge (br2_call_generated/br2_call_clean/
+  psx_dispatch_call/call_guest*) makes gen_clean_table.py skip the
+  wrapper (recursion through clean_try_dispatch). The no-cpu fallback
+  `if (!c)` in fighter_emit_state_run was provably dead — every bridge
+  no-ops on NULL cpu (clean_cpu_state()==g_clean_cpu) — replaced with
+  `return 0`. Rule: never self-address a bridge call in a promotable
+  port; if a fallback is needed it must not name the own addr.
+- **v0 subtlety handled**: on the "bit1 ran incl. 0x2000 leaf_c, bit2
+  clear" path guest v0 = (s6>>2)&1 = 0 (overwritten @0x80146C24/C28),
+  NOT the leaf_c result — port returns 0 there explicitly.
+- Verification: gen_clean_table 10636 wrappers/0 skipped; build clean;
+  headless versus_fight_mash frames advancing (36k+).
+- Frontier: cps_801587c0 (46a/337i, callees hud_text_d/spr_attr_alloc_*
+  clean), cps_80161630 (74a/337i, largest), cps_80126234 (guest main,
+  2 blocks) — analysis agents spawned.
