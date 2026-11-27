@@ -56,6 +56,7 @@ _failures: list[str] = []
 
 
 def check(cond: bool, what: str) -> None:
+    """Check."""
     if cond:
         print(f"  ok   {what}")
     else:
@@ -64,6 +65,7 @@ def check(cond: bool, what: str) -> None:
 
 
 def make_package(root: Path, pkg_id: str, version: str = "1.0.0") -> None:
+    """Make package."""
     d = root / pkg_id / version
     d.mkdir(parents=True, exist_ok=True)
     (d / "manifest.toml").write_text(
@@ -73,6 +75,7 @@ def make_package(root: Path, pkg_id: str, version: str = "1.0.0") -> None:
 
 
 def write_manifest(path: Path, ids: list[str]) -> Path:
+    """Write manifest."""
     path.write_text("\n".join(ids) + "\n", encoding="utf-8")
     return path
 
@@ -86,6 +89,7 @@ def run_guard(
     alt_manifests: list[Path] | None = None,
     label: str = "psx-runtime",
 ) -> subprocess.CompletedProcess[str]:
+    """Run guard."""
     argv = [
         cmake,
         f"-DPSX_MODS_DIR={mods_dir.as_posix()}",
@@ -101,6 +105,7 @@ def run_guard(
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--cmake", default=shutil.which("cmake") or "cmake")
     args = ap.parse_args()

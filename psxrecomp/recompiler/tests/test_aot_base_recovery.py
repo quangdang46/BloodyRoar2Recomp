@@ -21,6 +21,7 @@ SPEC.loader.exec_module(MOD)
 
 
 def main():
+    """Entry point: run this guard/test script."""
     true_base = 0x80106228
     nearby_false = 0x80106220
 
@@ -302,6 +303,7 @@ def main():
         blobs = {1: bytes(hed), 2: payload_a, 3: payload_b}
 
         def read_file_bytes(self, lba, size):
+            """Read file bytes."""
             return self.blobs[lba][:size]
 
     groups = MOD.hed_companion_members(FakeDisc(), [

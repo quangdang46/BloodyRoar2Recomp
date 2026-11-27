@@ -29,14 +29,17 @@ LOAD = 0x80010000
 
 
 def put(data, offset, word):
+    """Pack a word into data at offset (test helper)."""
     struct.pack_into("<I", data, offset, word)
 
 
 def jal(target):
+    """Encode a MIPS jal instruction word."""
     return 0x0C000000 | ((target >> 2) & 0x03FFFFFF)
 
 
 def make_psxexe(entry, data):
+    """Build a minimal .psxexe image from entry+data."""
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
     put(header, 0x10, entry)
@@ -79,6 +82,7 @@ def make_bounded_switch():
 
 
 def check_bounded_jump_table_discovery():
+    """Check bounded jump table discovery."""
     data, entry, table, cases, continuation = make_bounded_switch()
     found = MOD._find_jump_table_targets(
         bytes(data), LOAD, len(data), entry, LOAD + 0x100,
@@ -224,6 +228,7 @@ def check_bounded_jump_table_discovery():
 
 
 def check_composite_call_boundaries():
+    """Check composite call boundaries."""
     data = bytearray(0x100)
     cross_target = LOAD + 0x50
     put(data, 0x00, jal(cross_target))
@@ -275,6 +280,7 @@ def check_composite_call_boundaries():
 
 
 def check_static_discovery_provenance():
+    """Check static discovery provenance."""
     data = bytearray(0x80)
     entry = LOAD + 0x20
     put(data, 0x20, 0x30620008)  # andi v0,v1,8 -- frameless body
@@ -292,6 +298,7 @@ def check_static_discovery_provenance():
 
 
 def check_static_dispatch_provenance():
+    """Check static dispatch provenance."""
     data = bytearray(0x80)
     runtime_entry = LOAD + 0x20
     static_entry = LOAD + 0x40
@@ -338,6 +345,7 @@ def check_static_dispatch_provenance():
 
 
 def check_owned_direct_call_is_interior():
+    """Check owned direct call is interior."""
     data = bytearray(0x200)
     host = LOAD + 0x100
     target = host + 0x08
@@ -361,6 +369,7 @@ def check_owned_direct_call_is_interior():
 
 
 def check_discovered_host_owns_same_round_call_target():
+    """Check discovered host owns same round call target."""
     data = bytearray(0x200)
     host = LOAD + 0x100
     target = host + 0x08
@@ -388,6 +397,7 @@ def check_discovered_host_owns_same_round_call_target():
 
 
 def check_later_discovered_host_retracts_interior_root():
+    """Check later discovered host retracts interior root."""
     data = bytearray(0x200)
     host = LOAD + 0x100
     target = LOAD + 0x120
@@ -414,6 +424,7 @@ def check_later_discovered_host_retracts_interior_root():
 
 
 def check_recompiler_discovered_host_ownership(recompiler):
+    """Check recompiler discovered host ownership."""
     data = bytearray(0x200)
     host = LOAD + 0x100
     target = host + 0x08
@@ -474,6 +485,7 @@ def check_recompiler_explicit_hosted_interior(recompiler):
     put(data, 0x34, 0x00000000)
 
     def run(extra_target):
+        """Run a tool/recompiler subprocess and return the result."""
         with tempfile.TemporaryDirectory() as tmp:
             psx = os.path.join(tmp, 'hosted_interior.psx')
             seeds = os.path.join(tmp, 'seeds.txt')
@@ -512,6 +524,7 @@ def check_recompiler_explicit_hosted_interior(recompiler):
 
 
 def check_recompiler_hosted_interior_parser(recompiler):
+    """Check recompiler hosted interior parser."""
     data = bytearray(0x80)
     host = LOAD
     target = LOAD + 0x10
@@ -519,6 +532,7 @@ def check_recompiler_hosted_interior_parser(recompiler):
     put(data, 0x04, 0)
 
     def invoke(lines):
+        """Invoke the recompiler on a synthetic hosted-parser case."""
         with tempfile.TemporaryDirectory() as tmp:
             psx = os.path.join(tmp, 'hosted_parser.psx')
             seeds = os.path.join(tmp, 'seeds.txt')
@@ -548,6 +562,7 @@ def check_recompiler_hosted_interior_parser(recompiler):
 
 def assert_all_interiors_have_final_host(data, seeds, producer_ranges=(),
                                          allow_cross=True):
+    """Assert all interiors have final host."""
     roots = []
     interiors = set()
     for seed in seeds:
@@ -894,6 +909,7 @@ def check_t2_shaped_retained_partition_conflict(recompiler):
 
 
 def check_static_alias_recipe():
+    """Check static alias recipe."""
     data = bytearray(0x40)
     put(data, 0x00, 0x03E00008)
     put(data, 0x04, 0x00000000)
@@ -920,6 +936,7 @@ def check_static_alias_recipe():
 
 
 def check_optional_enrichment_fallback():
+    """Check optional enrichment fallback."""
     direct = LOAD + 0x20
     cap = {
         'schema': 'psxrecomp overlay capture v2',
@@ -1003,6 +1020,7 @@ def check_optional_enrichment_fallback():
 
 
 def check_forward_branch_root():
+    """Check forward branch root."""
     data = bytearray(0x80)
     target = LOAD + 0x40
     put(data, 0x00, 0x1000000F)  # beq zero,zero,target
@@ -1056,6 +1074,7 @@ def check_padded_return_boundary(recompiler):
 
 
 def check_recompiler_composite_contract(recompiler):
+    """Check recompiler composite contract."""
     data = bytearray(0x80)
     target = LOAD + 0x50
     put(data, 0x00, jal(target))
@@ -1072,6 +1091,7 @@ def check_recompiler_composite_contract(recompiler):
             f.write(make_psxexe(LOAD, data))
 
         def generated(allow):
+            """Write seeds+expected outputs for a generated-discovery case."""
             seeds = os.path.join(tmp, f"seeds_{allow}.txt")
             out = os.path.join(tmp, f"out_{allow}")
             with open(seeds, "w", encoding="utf-8") as f:
@@ -1091,6 +1111,7 @@ def check_recompiler_composite_contract(recompiler):
 
 
 def check_recompiler_pointer_table_call_root(recompiler):
+    """Check recompiler pointer table call root."""
     data = bytearray(0x100)
     target = LOAD + 0x50
     put(data, 0x00, jal(target))
@@ -1181,6 +1202,7 @@ def check_retained_alias_contract(recompiler):
 
 
 def check_atomic_dll_publication():
+    """Check atomic dll publication."""
     original = MOD._compile_dll_direct
     original_replace = MOD.os.replace
     original_pair_valid = MOD._runtime_valid_shard_pair_locked
@@ -1194,6 +1216,7 @@ def check_atomic_dll_publication():
                 out.write("OLD-RANGES\n")
 
             def fail_compile(_src, staged, _includes, **_kwargs):
+                """Fake compile that writes a partial shard then fails."""
                 with open(staged, "wb") as out:
                     out.write(b"partial")
                 with open(os.path.splitext(staged)[0] + ".def", "w") as out:
@@ -1209,6 +1232,7 @@ def check_atomic_dll_publication():
             assert MOD.shard_pair_files_complete(final)
 
             def good_compile(_src, staged, _includes, **_kwargs):
+                """Fake compile that writes a complete shard."""
                 with open(staged, "wb") as out:
                     out.write(b"new-complete-shard")
                 with open(os.path.splitext(staged)[0] + ".def", "w") as out:
@@ -1282,6 +1306,7 @@ m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 real = m.os.replace
 count = 0
 def crash_after(src, dst):
+    """os._exit crash injection after N file copies."""
     global count
     result = real(src, dst)
     count += 1
@@ -1330,6 +1355,7 @@ m.publish_shard_pair(sys.argv[2], sys.argv[3], sys.argv[4])
             failed_once = False
 
             def fail_one_restore(src, dst):
+                """Fail the first .old-ranges restore once."""
                 nonlocal failed_once
                 if not failed_once and str(src).endswith('.old-ranges'):
                     failed_once = True
@@ -1387,6 +1413,7 @@ m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 real = m.os.replace
 count = 0
 def pause_after_manifest(src, dst):
+    """Pause after manifest write for race testing."""
     global count
     result = real(src, dst); count += 1
     if count == 4:
@@ -1529,6 +1556,7 @@ def check_candidate_capacity_publication():
             lambda _path, _abi, _pair, entries: bool(entries))
 
         def funcs(count, base=LOAD):
+            """Generate synthetic func-id tuples."""
             return [
                 (base + index * 4, index + 1,
                  ((base + index * 4, 4),))
@@ -1536,17 +1564,20 @@ def check_candidate_capacity_publication():
             ]
 
         def pair(path, count, pair_id, base=LOAD, provenance=None):
+            """Write a fake DLL+ranges shard pair."""
             pathlib.Path(path).write_bytes(b'DLL')
             pathlib.Path(path).with_suffix('.ranges').write_text(
                 MOD.overlay_ranges_text(
                     funcs(count, base), pair_id, provenance))
 
         def pair_records(path, records, pair_id, provenance=None):
+            """Write a fake shard pair with manifest records."""
             pathlib.Path(path).write_bytes(b'DLL')
             pathlib.Path(path).with_suffix('.ranges').write_text(
                 MOD.overlay_ranges_text(records, pair_id, provenance))
 
         def staged_identity(path):
+            """Parse staged pair identity from the manifest."""
             manifest = pathlib.Path(path).with_suffix('.ranges').read_text()
             pair_id, manifest_funcs = MOD.parse_runtime_shard_manifest(
                 manifest, require_pair=False)
@@ -1628,10 +1659,12 @@ def check_candidate_capacity_publication():
             calls = {'abi': 0, 'exports': 0}
 
             def counted_abi(_path, _abi):
+                """ABI-check stub that counts calls."""
                 calls['abi'] += 1
                 return True
 
             def counted_exports(_path, _abi, _pair, entries):
+                """Exports-check stub that counts calls."""
                 calls['exports'] += 1
                 return bool(entries)
 
@@ -1689,10 +1722,12 @@ def check_candidate_capacity_publication():
             calls = {'abi': 0, 'exports': 0}
 
             def transient_abi(_path, _abi):
+                """ABI stub that fails on first call only."""
                 calls['abi'] += 1
                 return calls['abi'] > 1
 
             def transient_exports(_path, _abi, _pair, entries):
+                """Exports stub that fails on first call only."""
                 calls['exports'] += 1
                 return bool(entries) and calls['exports'] > 1
 
@@ -1884,6 +1919,7 @@ def check_candidate_capacity_publication():
             original_compile = MOD._compile_dll_direct
 
             def unexpected_link(*_args, **_kwargs):
+                """Link stub that records attempts and fails."""
                 attempted_link.append(True)
                 return False
 
@@ -1907,6 +1943,7 @@ def check_candidate_capacity_publication():
             inventory_calls = []
 
             def counted_inventory(*args, **kwargs):
+                """Wrap candidate inventory with a call counter."""
                 inventory_calls.append(True)
                 return original_inventory(*args, **kwargs)
 
@@ -1954,6 +1991,7 @@ def check_candidate_capacity_publication():
             original_compile = MOD._compile_dll_direct
 
             def racing_link(_source, staged, *_args, **_kwargs):
+                """Simulate a racing shard publish during link."""
                 pathlib.Path(staged).write_bytes(b'DLL')
                 pair(racer, 1, 0x321, LOAD + 0x40)
                 return True
@@ -2235,6 +2273,7 @@ except m.ShardCandidateCapacityError:
 
 
 def check_interior_fragment_contract():
+    """Check interior fragment contract."""
     entry = LOAD + 0x20
     assert MOD.walk_root_seed_entries([
         f"producer_range 0x{LOAD:08X} 0x{LOAD + 0x100:08X}",
@@ -2549,6 +2588,7 @@ def check_interior_fragment_contract():
     failures = []
 
     def fake_compile(specs):
+        """Fake compile_fragment_batch recording specs."""
         compile_calls.append(tuple(sorted(specs)))
         hosts = {spec['host'] for spec in specs.values()}
         if len(hosts) > 1:
@@ -2577,12 +2617,14 @@ def check_interior_fragment_contract():
     partial_served = []
 
     def partial_compile(specs):
+        """Fake compile that emits only the first entry."""
         entries = tuple(sorted(specs))
         partial_calls.append(entries)
         emitted = entries[0]
         return [(emitted, 1, [(specs[emitted]['host'], 4)])], 'built'
 
     def partial_success(_entries, ids, _status):
+        """Record served identities from partial compiles."""
         served = {identity[0] for identity in ids}
         partial_served.extend(sorted(served))
         return served
@@ -2608,6 +2650,7 @@ def check_interior_fragment_contract():
     partition_failures = []
 
     def reject_every_batch(specs):
+        """Fake batch that always rejects with an audit error."""
         partition_calls.append(tuple(sorted(specs)))
         return None, 'hosted-entry-audit: synthetic rejection'
 
@@ -2630,10 +2673,12 @@ def check_interior_fragment_contract():
     }
 
     def full_compile(specs):
+        """Fake compile that always reports capacity full."""
         full_calls.append(tuple(sorted(specs)))
         return None, 'candidate-capacity: full; synthetic'
 
     def full_batch_failure(_entries, status):
+        """Assert capacity-full failure handling."""
         assert status.startswith('candidate-capacity: full')
         capacity_full[0] = True
 
@@ -2700,6 +2745,7 @@ def check_interior_fragment_contract():
     failures = []
 
     def batch_ok(roots):
+        """Fake batch partition that succeeds for all roots."""
         calls.append(tuple(roots))
         return [(root, root, [(root, 4)]) for root in roots], "built"
 
@@ -2717,6 +2763,7 @@ def check_interior_fragment_contract():
     bad = other
 
     def batch_bisect(roots):
+        """Fake batch partition that bisects on a bad root."""
         calls.append(tuple(roots))
         if bad in roots:
             return None, "requested-entry-audit: rejected"
@@ -2739,6 +2786,7 @@ def check_interior_fragment_contract():
     current_entries = set()
 
     def left_reaches_right(roots):
+        """Fake batch partition splitting left/right."""
         calls.append(tuple(roots))
         if len(roots) > 1:
             return None, "requested-entry-audit: split"
@@ -2746,6 +2794,7 @@ def check_interior_fragment_contract():
                 (other, 2, [(other, 4)])], "built"
 
     def warm_from_success(roots, ids, _status):
+        """Record warm-cache entries from successes."""
         successes.append(tuple(roots))
         current_entries.update(ev & 0x1FFFFFFF for ev, _crc, _ranges in ids)
 
@@ -2761,6 +2810,7 @@ def check_interior_fragment_contract():
     batch_failures = []
 
     def toolchain_down(roots):
+        """Toolchain down."""
         calls.append(tuple(roots))
         return None, "compile-error (toolchain unavailable)"
 
@@ -2785,6 +2835,7 @@ def check_interior_fragment_contract():
     batch_failures.clear()
 
     def capacity_full(roots):
+        """Capacity full."""
         calls.append(tuple(roots))
         return None, "candidate-capacity: full; 4 existing >= 4"
 
@@ -2968,6 +3019,7 @@ def check_interior_fragment_contract():
         stderr = "expected stop"
 
     def stop_after_seeds(cmd, **_kwargs):
+        """Stop after seeds."""
         seeds = pathlib.Path(cmd[cmd.index("--seeds") + 1])
         seen_seeds.extend(seeds.read_text().splitlines())
         return Failed()
@@ -3019,6 +3071,7 @@ def check_tcc_runtime_define_parity():
         stderr = ''
 
     def fake_run(cmd, **_kwargs):
+        """Fake run."""
         seen.extend(cmd)
         return Result()
 
@@ -3096,12 +3149,14 @@ def check_real_batched_fragment_publication(recompiler):
         requested_batches = []
 
         def compile_missing(roots):
+            """Compile-missing batch driver."""
             requested_batches.append(tuple(roots))
             return MOD.compile_fragment_batch(
                 roots, bytes(data), LOAD, len(data), LOAD & 0x1FFFFFFF,
                 td, args, env, {}, recipe, ())
 
         def warm(_roots, func_ids, _status):
+            """Warm-cache batch driver updating current entries."""
             current_entries.update(
                 entry & 0x1FFFFFFF for entry, _crc, _ranges in func_ids)
 
@@ -3310,6 +3365,7 @@ def check_full_hosted_fixed_point(recompiler):
 
     def capture(data, function_entries, dispatch_entries, static_dispatch,
                 static_discovery, executed=()):
+        """Encode a static capture job spec."""
         encoded = MOD.base64.b64encode(bytes(data)).decode('ascii')
         to_hex = lambda entries: [f'0x{entry:08X}' for entry in entries]
         return {
@@ -3373,6 +3429,7 @@ def check_full_hosted_fixed_point(recompiler):
         assert alias_found, first.stdout
 
         def inventory():
+            """SHA256 inventory of cache files."""
             return {
                 str(path.relative_to(cache_root)): MOD.hashlib.sha256(
                     path.read_bytes()).hexdigest()
@@ -3529,6 +3586,7 @@ def check_full_candidate_cli_fastpath(recompiler):
 
 
 def check_resident_marker_fixed_point():
+    """Check resident marker fixed point."""
     with tempfile.TemporaryDirectory() as td:
         dll = pathlib.Path(td) / '0000DF80_4EE6AC69.dll'
         dll.write_bytes(b'dll')
@@ -3587,6 +3645,7 @@ def check_packaged_game_toml_resolves_bios_profile(recompiler):
         exe.write_bytes(b'not-a-ps-x-exe')
 
         def run(extra):
+            """Run a tool/recompiler subprocess and return the result."""
             return subprocess.run(
                 [recompiler, str(exe), '--overlay',
                  '--out-dir', str(pathlib.Path(td) / 'out')] + extra,
@@ -3640,6 +3699,7 @@ def check_packaged_game_toml_resolves_bios_profile(recompiler):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     default_recompiler = ROOT / "recompiler" / "build" / "psxrecomp-game.exe"
     parser = argparse.ArgumentParser()
     parser.add_argument("--recompiler", default=str(default_recompiler))

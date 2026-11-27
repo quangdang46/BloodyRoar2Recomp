@@ -25,10 +25,12 @@ LOAD = 0x80010000
 
 
 def w(words):
+    """W."""
     return b"".join(struct.pack("<I", x) for x in words)
 
 
 def make_psxexe(entry, data):
+    """Build a minimal .psxexe image from entry+data."""
     h = bytearray(2048)
     h[0:8] = b"PS-X EXE"
     struct.pack_into("<I", h, 0x10, entry)        # initial PC
@@ -38,6 +40,7 @@ def make_psxexe(entry, data):
 
 
 def jal(target):
+    """Encode a MIPS jal instruction word."""
     return 0x0C000000 | ((target >> 2) & 0x03FFFFFF)
 
 
@@ -54,6 +57,7 @@ def build_exe():
 
 
 def gen_c(recompiler, overlay, tmp):
+    """Gen c."""
     psx = os.path.join(tmp, "t.psx")
     seeds = os.path.join(tmp, "seeds.txt")
     out = os.path.join(tmp, "out")
@@ -84,6 +88,7 @@ def gen_c(recompiler, overlay, tmp):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     default_recomp = os.path.normpath(os.path.join(
         here, "..", "build", "psxrecomp-game.exe"))

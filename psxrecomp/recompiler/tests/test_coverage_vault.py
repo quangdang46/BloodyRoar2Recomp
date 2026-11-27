@@ -18,6 +18,7 @@ SPEC.loader.exec_module(MOD)
 
 class CoverageVaultHistoryTests(unittest.TestCase):
     def test_streaming_array_reader_handles_chunk_boundaries(self):
+        """Test streaming array reader handles chunk boundaries."""
         with tempfile.TemporaryDirectory() as tmp:
             source = os.path.join(tmp, "large.json")
             records = [{"value": "x" * 100}, {"value": "y" * 137}]
@@ -27,6 +28,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
                              records)
 
     def test_compaction_splits_execution_pages_and_collapses_mutable_gap(self):
+        """Test compaction splits execution pages and collapses mutable gap."""
         with tempfile.TemporaryDirectory() as tmp:
             source = os.path.join(tmp, "overlay_captures.json")
             output = os.path.join(tmp, "compacted.json")
@@ -69,6 +71,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
                 self.assertEqual(json.load(saved), compacted)
 
     def test_compaction_fails_closed_on_out_of_region_evidence(self):
+        """Test compaction fails closed on out of region evidence."""
         image = bytes(4096)
         region = {
             "load_addr": "0x80010000", "size": len(image),
@@ -84,6 +87,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
         self.assertEqual(invalid, 1)
 
     def test_capture_merge_preserves_static_dispatch_provenance(self):
+        """Test capture merge preserves static dispatch provenance."""
         with tempfile.TemporaryDirectory() as tmp:
             vault = os.path.join(tmp, 'captures.json')
             base = {
@@ -107,6 +111,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
                              ['0x80010004'])
 
     def test_cache_merge_preserves_resident_sidecar(self):
+        """Test cache merge preserves resident sidecar."""
         with tempfile.TemporaryDirectory() as tmp:
             src = os.path.join(tmp, 'source')
             dst = os.path.join(tmp, 'vault')
@@ -123,6 +128,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
                     dst, rel, '0000DF80_4EE6AC69' + ext)))
 
     def test_v1_and_verified_v2_records_survive_a_torn_tail(self):
+        """Test v1 and verified v2 records survive a torn tail."""
         with tempfile.TemporaryDirectory() as tmp:
             snapshot = os.path.join(tmp, "immutable.json")
             addendum = os.path.join(tmp, "history.jsonl")
@@ -151,6 +157,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
                              [v1_region, v2_region])
 
     def test_compact_addendum_converts_v1_and_is_idempotent(self):
+        """Test compact addendum converts v1 and is idempotent."""
         with tempfile.TemporaryDirectory() as tmp:
             persist = os.path.join(tmp, "immutable")
             os.mkdir(persist)
@@ -183,6 +190,7 @@ class CoverageVaultHistoryTests(unittest.TestCase):
             self.assertEqual(MOD._load_addendum(addendum), [region])
 
     def test_compact_addendum_failure_preserves_source(self):
+        """Test compact addendum failure preserves source."""
         with tempfile.TemporaryDirectory() as tmp:
             persist = os.path.join(tmp, "immutable")
             os.mkdir(persist)

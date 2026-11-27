@@ -19,6 +19,7 @@ SOURCE = ROOT / "runtime" / "src" / "overlay_loader.c"
 
 
 def function_body(source: str, name: str) -> str:
+    """Function body."""
     match = re.search(rf"\b(?:int|void)\s+{re.escape(name)}\s*\([^;]*?\)\s*\{{", source, re.S)
     if not match:
         raise AssertionError(f"missing function definition: {name}")
@@ -36,6 +37,7 @@ def function_body(source: str, name: str) -> str:
 
 
 def require_before(body: str, guard_pattern: str, state_pattern: str, name: str) -> None:
+    """Require before."""
     guard = re.search(guard_pattern, body)
     state = re.search(state_pattern, body)
     if not guard:
@@ -47,6 +49,7 @@ def require_before(body: str, guard_pattern: str, state_pattern: str, name: str)
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     source = SOURCE.read_text(encoding="utf-8")
 
     dispatch = function_body(source, "overlay_loader_dispatch")

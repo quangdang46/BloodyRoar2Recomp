@@ -9,6 +9,7 @@ RUNTIME_CMAKE = ROOT / "runtime" / "runtime.cmake"
 
 
 def main() -> None:
+    """Entry point: run this guard/test script."""
     text = RUNTIME_CMAKE.read_text(encoding="utf-8")
     function_fallback = """if((NOT RECOMP_UI_ROOT OR RECOMP_UI_ROOT STREQUAL \"\")
        AND EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/recomp-ui/recomp_ui.cmake\")"""

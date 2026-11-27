@@ -16,6 +16,7 @@ LOAD = 0x80010000
 
 
 def make_exe():
+    """Make exe."""
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
     struct.pack_into("<I", header, 0x10, LOAD)
@@ -26,6 +27,7 @@ def make_exe():
 
 
 def generate_dispatch(recompiler):
+    """Generate dispatch."""
     with tempfile.TemporaryDirectory() as tmp:
         exe = os.path.join(tmp, "tiny.psx")
         seeds = os.path.join(tmp, "seeds.txt")
@@ -57,6 +59,7 @@ def generate_dispatch(recompiler):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     default = os.path.normpath(
         os.path.join(here, "..", "build", "psxrecomp-game.exe")

@@ -18,6 +18,7 @@ DEBUG_SERVER = ROOT / "runtime" / "src" / "debug_server.c"
 
 
 def function_body(source: str, name: str, start_at: int = 0) -> str:
+    """Function body."""
     match = re.search(
         rf"\b(?:static\s+)?(?:int|void|uint64_t)\s+{re.escape(name)}\s*"
         rf"\([^;]*?\)\s*\{{",
@@ -39,11 +40,13 @@ def function_body(source: str, name: str, start_at: int = 0) -> str:
 
 
 def require(pattern: str, text: str, message: str) -> None:
+    """Require."""
     if not re.search(pattern, text, re.S):
         raise AssertionError(message)
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     source = LOADER.read_text(encoding="utf-8")
     overlay_api = OVERLAY_API.read_text(encoding="utf-8")
     debug = DEBUG_SERVER.read_text(encoding="utf-8")

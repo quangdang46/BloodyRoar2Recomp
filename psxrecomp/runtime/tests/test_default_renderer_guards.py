@@ -15,16 +15,19 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def require(source: str, needle: str, message: str) -> None:
+    """Require."""
     if needle not in source:
         raise AssertionError(message)
 
 
 def require_regex(source: str, pattern: str, message: str) -> None:
+    """Require regex."""
     if not re.search(pattern, source, re.S):
         raise AssertionError(message)
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     config = (ROOT / "recompiler/src/config_loader.h").read_text(encoding="utf-8")
     main_cpp = (ROOT / "runtime/src/main.cpp").read_text(encoding="utf-8")
     cli = (ROOT / "recompiler/src/main_cli.cpp").read_text(encoding="utf-8")

@@ -18,10 +18,12 @@ LOAD = 0x80010000
 
 
 def i_type(op, rs, rt, imm=0):
+    """I type."""
     return (op << 26) | (rs << 21) | (rt << 16) | (imm & 0xFFFF)
 
 
 def make_psxexe(words):
+    """Build a minimal .psxexe image from entry+data."""
     data = b"".join(struct.pack("<I", word) for word in words)
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
@@ -65,6 +67,7 @@ def generated_overlay_c(recompiler, tmp):
 
 
 def ordered(text, *needles):
+    """Ordered."""
     pos = 0
     for needle in needles:
         pos = text.find(needle, pos)
@@ -75,6 +78,7 @@ def ordered(text, *needles):
 
 
 def function_body(source, name):
+    """Function body."""
     start = source.find(f"void {name}(")
     if start < 0:
         return ""
@@ -83,6 +87,7 @@ def function_body(source, name):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.normpath(os.path.join(here, "..", ".."))
     default_recompiler = os.path.normpath(os.path.join(

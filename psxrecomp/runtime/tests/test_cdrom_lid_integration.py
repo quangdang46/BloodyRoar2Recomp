@@ -10,6 +10,7 @@ SOURCE = (Path(__file__).parents[1] / "src" / "cdrom.c").read_text(
 
 
 def function_body(name: str) -> str:
+    """Function body."""
     match = re.search(rf"\b{name}\s*\([^)]*\)\s*\{{", SOURCE)
     assert match, f"missing function: {name}"
     start = match.end()

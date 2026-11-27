@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def body(source, name):
+    """Body."""
     match = re.search(rf"\b(?:static\s+)?(?:inline\s+)?(?:int|void|uint8_t|uint16_t|uint32_t|uint64_t|DWORD|OverlayPreparedImage|PublishItem)\s*\*?\s*(?:WINAPI\s+)?{name}\s*\([^;]*?\)\s*\{{",
                       source, re.S)
     if not match:
@@ -24,6 +25,7 @@ def body(source, name):
 
 
 def main():
+    """Entry point: run this guard/test script."""
     interp = (ROOT / "runtime/src/dirty_ram_interp.c").read_text(encoding="utf-8")
     capture = (ROOT / "runtime/src/overlay_capture.c").read_text(encoding="utf-8")
     loader = (ROOT / "runtime/src/overlay_loader.c").read_text(encoding="utf-8")

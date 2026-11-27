@@ -9,6 +9,7 @@ SOURCE = Path(__file__).resolve().parents[1] / "src" / "debug_server.c"
 
 
 def function_body(source: str, name: str) -> str:
+    """Function body."""
     match = re.search(rf"\bstatic\s+void\s+{name}\s*\([^;]*?\)\s*\{{", source, re.S)
     if not match:
         raise AssertionError(f"missing function {name}")

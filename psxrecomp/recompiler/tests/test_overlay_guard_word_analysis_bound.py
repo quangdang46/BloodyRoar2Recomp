@@ -74,10 +74,12 @@ BEQL_RESERVED = 0x50800008     # beql — RESERVED on the R3000A (opcode 0x14)
 
 
 def words(seq):
+    """Words."""
     return b"".join(struct.pack("<I", w) for w in seq)
 
 
 def make_psxexe(data: bytes, guard_bytes: int) -> bytes:
+    """Build a minimal .psxexe image from entry+data."""
     header = bytearray(2048)
     header[0:8] = b"PS-X EXE"
     struct.pack_into("<I", header, 0x10, LOAD)          # initial PC
@@ -91,6 +93,7 @@ def make_psxexe(data: bytes, guard_bytes: int) -> bytes:
 
 
 def run_codegen(recompiler, root, case, data, guard_bytes):
+    """Run codegen."""
     case_dir = os.path.join(root, case)
     out_dir = os.path.join(case_dir, "out")
     os.makedirs(out_dir)
@@ -107,6 +110,7 @@ def run_codegen(recompiler, root, case, data, guard_bytes):
 
 
 def read_generated(out_dir):
+    """Read generated."""
     source = ""
     manifest = ""
     for name in sorted(os.listdir(out_dir)):
@@ -121,6 +125,7 @@ def read_generated(out_dir):
 
 
 def manifest_ranges(manifest):
+    """Manifest ranges."""
     out = []
     for line in manifest.splitlines():
         fields = line.split()
@@ -138,6 +143,7 @@ def guard_shape_payload():
 
 
 def main() -> int:
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     default_recompiler = os.path.normpath(
         os.path.join(here, "..", "build", "psxrecomp-game.exe"))

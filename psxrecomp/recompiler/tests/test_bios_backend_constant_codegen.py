@@ -10,6 +10,7 @@ import tempfile
 
 
 def main():
+    """Entry point: run this guard/test script."""
     here = os.path.dirname(os.path.abspath(__file__))
     root = os.path.normpath(os.path.join(here, "..", ".."))
     default = os.path.join(root, "recompiler", "build", "psxrecomp-bios.exe")

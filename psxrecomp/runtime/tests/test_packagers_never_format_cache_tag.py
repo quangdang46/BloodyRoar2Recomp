@@ -123,10 +123,12 @@ SHARED_SURFACE_RE = re.compile(r'release_overlay_stage|release_stage\.py')
 
 
 def _is_scanned(name):
+    """Is scanned."""
     return name.endswith(SCANNED_SUFFIXES) or name in SCANNED_NAMES
 
 
 def _walk(root):
+    """Walk."""
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames
                        if d not in SKIP_DIRS and not d.startswith('_wt-')
@@ -172,6 +174,7 @@ def framework_root():
 
 
 def main(argv=None):
+    """Entry point: run this guard/test script."""
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('--root', action='append', default=[],
                     help='extra tree to check (repeatable). In an extra tree '
