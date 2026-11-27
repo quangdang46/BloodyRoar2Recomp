@@ -2224,24 +2224,24 @@ void cd_subsys_boot(void)
 void display_frame_present(int *env,int ticks)
 
 {
-  int tmp;
+
   int w;
   
   gpu_draw_sync(0);
   memcard_tick();
   deferred_cmd_drain();
   memcard_slot_poll();
-  tmp = 0;
+  int tticks = 0;
   if (-1 < ticks) {
-    tmp = ticks;
+    tticks = ticks;
   }
-  cd_timer_read(tmp);
-  _DAT_1f80000c = (uint)(_DAT_801f4728 == 0);
+  cd_timer_read(tticks);
+  int ev3;
   if (*env == 0) {
-    tmp = env[3];
+    ev3 = env[3];
   }
   else {
-    tmp = (env[3] * 3) / 2;
+    ev3 = (env[3] * 3) / 2;
   }
   if (*env == 0) {
     w = env[5];
@@ -2249,24 +2249,25 @@ void display_frame_present(int *env,int ticks)
   else {
     w = (env[5] * 3) / 2;
   }
-  sprite_attr_init_b(_DAT_1f800004 + 0x5c,*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)) - tmp,
+  sprite_attr_init_b(_DAT_1f800004 + 0x5c,*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)) - ev3,
                (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)) - env[4],w,env[6]);
   *(undefined1 *)guest_at(_DAT_1f800004 + 0x6e) = 1;
   *(undefined2 *)guest_at(_DAT_1f800004 + 0x66) = 0x18;
   if (*env != 0) {
     *(char *)guest_at(_DAT_1f800004 + 0x6d) = (char)*env;
-    tmp = (int)*(short *)guest_at(_DAT_1f800004 + 0x60) << 1;
+    int f60 = (int)*(short *)guest_at(_DAT_1f800004 + 0x60) << 1;
     *(short *)guest_at(_DAT_1f800004 + 0x60) =
-         (short)((ulonglong)((longlong)tmp * 0x55555556) >> 0x20) - (short)(tmp >> 0x1f);
+         (short)((ulonglong)((longlong)f60 * 0x55555556) >> 0x20) - (short)(f60 >> 0x1f);
   }
+  int ev5;
   if (*env == 0) {
-    tmp = env[5];
+    ev5 = env[5];
   }
   else {
-    tmp = (env[5] * 3) / 2;
+    ev5 = (env[5] * 3) / 2;
   }
   sprite_attr_init_a(_DAT_1f800004,(int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e8)),
-               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),tmp,env[6]);
+               (int)*(short *)guest_at((uint32_t)(_DAT_1f80000c * 8 + -0x7fe0b8e6)),ev5,env[6]);
   draw_env_timing(_DAT_1f800004 + 0x5c);
   gpu_draw_env_put(_DAT_1f800004);
   gpu_draw_otag((int)_DAT_1f800008 + 0x24);
