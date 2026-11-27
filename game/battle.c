@@ -1582,7 +1582,7 @@ LAB_80130048:
     }
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x124)));
     t0 = *(int *)(f0 + 0x20);
-    goto code_r0x8013181c;
+    goto LAB_8013181c;
   case 5:
     if (*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x78) ))== 0) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x2c) ))= 0;
@@ -1597,7 +1597,7 @@ LAB_80130048:
     }
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f1 + 0x20) + 0x124)));
     t0 = *(int *)(f1 + 0x20);
-code_r0x8013181c:
+LAB_8013181c:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t0 + 300)));
     t1 = *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x78)));
     if (t1 == 2) {
@@ -2039,7 +2039,7 @@ LAB_8013062c:
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f1 + 0x20) + 0x128)));
       t0 = *(int *)(f1 + 0x20);
     }
-    goto code_r0x8013065c;
+    goto LAB_8013065c;
   case 0xf:
   case 0x11:
     if (*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x76) ))== 0xf) {
@@ -2066,7 +2066,7 @@ LAB_80130574:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x124)));
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x128)));
     t0 = *(int *)(f0 + 0x20);
-code_r0x8013065c:
+LAB_8013065c:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t0 + 300)));
     if (-0x100 < *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c)))) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= 0xff00;
@@ -5438,9 +5438,9 @@ LAB_801439c4:
   goto switchD_801435e8_default;
 LAB_801436a8:
   j = j + 1;
-  if ((int)t7 <= (int)j) goto code_r0x801436b8;
+  if ((int)t7 <= (int)j) goto LAB_801436b8;
   goto LAB_8014365c;
-code_r0x801436b8:
+LAB_801436b8:
   *tab = 0;
   goto switchD_801435e8_default;
 switchD_801435e8_caseD_0:
@@ -9612,7 +9612,7 @@ void fighter_tint_fade(int scene,int idx,int battle,int anim)
   rec = idx * 0x68;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((battle + 0x82) ))!= 0) {
     tint = (int)_DAT_801f4cb4;
-    goto code_r0x8016d2ec;
+    goto LAB_8016d2ec;
   }
   tint = (int)_DAT_801f4cb4 + (int)_DAT_801f4cb6;
   if (tint < 0x100) {
@@ -9627,7 +9627,7 @@ LAB_8016d2d4:
     _DAT_801f4cb6 = 0;
   }
   _DAT_801f4cb4 = (short)tint;
-code_r0x8016d2ec:
+LAB_8016d2ec:
   *(bool *)guest_at((uint32_t)(uintptr_t)((battle + 0x9f) ))= tint == 0xff;
   if ((tint != _DAT_801f4cb8) || (tint != _DAT_801f4cba)) {
     _DAT_801f4cba = _DAT_801f4cb8;
