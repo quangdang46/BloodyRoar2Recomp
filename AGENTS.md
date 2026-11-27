@@ -1181,5 +1181,19 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   needs a per-callsite ABI audit (in-file comment says do NOT "fix"
   without one). Do not auto-generate prototypes. Same caution likely
   applies to menu.c (19) / battle.c (2) hits.
+- **REAL BUG fixed** (`fac04fd9`): save.c op_dbg_dump* passed
+  `(const char*)guest_at(0x80126xxx)` as text_win_printf arg0 — a host
+  pointer truncated into int32_t `sel` — where the guest jal sets
+  a0 = the guest ADDRESS (verified vs br2eu_func_801ACF34). Callee
+  dual-uses sel (out-of-range => fmt guest addr via guest_at(sel)),
+  so host ptr decoded to garbage. Fixed all 16 sites + tightened the
+  extern + padded missing a2/a3 with faithful stale gpr[6]/gpr[7].
+  ABI-audit notes: arg-count audit showed mc_data_*/mc_read_queue are
+  really 13-param (earlier '7' was regex truncation); ret_one(void)
+  called with args and mc_state_init/save_blk_cmp32 edge sites are
+  harmless guest-sloppiness; angle_pair_rotmat '4-arg' was a
+  multiline-parse artifact. print_dispatch/hud_text_b/
+  announce_param_block_init take HOST string pointers — guest_at()
+  args there are CORRECT (callee guest_of()s them internally).
 - Headless verify post-commits: frame 33,915+ advancing, no crash.
-  master ~33 ahead of mine/master, unpushed.
+  master ~35 ahead of mine/master, unpushed.
