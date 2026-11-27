@@ -1175,5 +1175,11 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   build clean. `CONCAT11/12/22/44` macros kept (locally defined,
   functional). Two -Wshadow warnings remain (isqrt_refine inner `n`,
   menu.c `f1c`) — deliberate faithful-port temp reuse, not defects.
+- **-Wmissing-prototype warnings are DELIBERATE debt**: save.c's
+  `name()` extern decls (~line 315) are intentionally unprototyped —
+  Ghidra defs disagree with call sites on arg counts/types; tightening
+  needs a per-callsite ABI audit (in-file comment says do NOT "fix"
+  without one). Do not auto-generate prototypes. Same caution likely
+  applies to menu.c (19) / battle.c (2) hits.
 - Headless verify post-commits: frame 33,915+ advancing, no crash.
   master ~33 ahead of mine/master, unpushed.
