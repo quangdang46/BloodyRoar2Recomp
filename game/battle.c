@@ -5935,7 +5935,7 @@ void node_xform_apply(int node,undefined4 mat,undefined4 flg)
 
 /* attr_flag_mask @0x80143ac8 — compose the attribute flag mask for a node class:
  * base flags from DAT_1f80006c[class*2] plus per-class table words
- * selected by fl&0x80 / fl&0x40. */
+ * selected by the various fl bits (0x80/0x40/0x20/.../0x1). */
 ushort attr_flag_mask(uint node)
 {
   ushort fl;
@@ -5972,9 +5972,9 @@ ushort attr_flag_mask(uint node)
 
 }
 
-/* pad_hist_record @0x801289b4 — push pad state into the per-controller u16 history
- * ring at ctrl_g+0xcc; returns the edge-mapped button flags for this
- * pad from DAT_801cf88c. */
+/* pad_hist_record @0x801289b4 — push pad state into the u16 history
+ * ring at DAT_801cf88c (per-controller state ptr via ctrl_g+0xcc);
+ * returns the edge-mapped button flags for this pad. */
 undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags)
 {
   undefined2 *hist;
@@ -7735,8 +7735,8 @@ bool fighter_height_check(int f)
 }
 
 /* sprite_rect_set_a @0x801756b0/b/c — sprite rect variants: write position (x,y)
- * and packed size (w,h) into the sprite record; _a/_b/_c differ in
- * which corner/anchor convention they apply. */
+ * and packed size (w,h) into the sprite record; _a differs from _b/_c
+ * (which are identical to each other) in corner/anchor convention. */
 undefined4 sprite_rect_set_a(int rec,short x,int y,undefined4 w,int h)
 {
   short y1;
@@ -8979,7 +8979,10 @@ LAB_80137954:
 
 }
 
-/* slot_height_proj @0x80136b64 — ---- batch13: effect/task worker callbacks + misc ---- */
+/* slot_height_proj @0x80136b64 — project a slot height through the xf
+ * transform: load the 8-word matrix xf+0x28..0x44 into cop2 RT+TR ctrl
+ * regs, scale sin(obj+0x2a angle) by _DAT_801f0654, emit the result
+ * for the idx*0x68 slot record. */
 void slot_height_proj(undefined4 a0,int obj,int idx,int xf)
 {
   short ang;
@@ -10878,7 +10881,10 @@ bool burst_slot_active(int slot)
 
 }
 
-/* prim_packet_init_tex @0x801941e0 — ---- batch15: GTE/vector + string helpers ---- */
+/* prim_packet_init_tex @0x801941e0 — init a primitive packet header with
+ * a texture binding: tag word (flag2 selects 0xe1000200 vs 0xe1000000),
+ * attr flags fl&0x9ff (+0x400 when flag1), and a packed texdesc word at
+ * pkt+8 built from the tex record (or 0 when tex == NULL). */
 void prim_packet_init_tex(int pkt,int flag1,int flag2,uint fl,byte *tex)
 {
   uint pw;
@@ -11140,7 +11146,8 @@ void gte_rot_load(undefined4 *m)
 
 }
 
-/* gte_light_load @0x80195240 — see gte_rot_load. */
+/* gte_light_load @0x80195240 — load the 5-word light/color matrix into
+ * GTE ctrl regs 0x8000-0xa000 (light-matrix counterpart of gte_rot_load). */
 void gte_light_load(undefined4 *light)
 {
   setCopControlWord(2,0x8000,*light);
@@ -11250,7 +11257,8 @@ void orbit_fx_spawn(int var)
 
 }
 
-/* task_heads_clear @0x801a42d0 — ---- batch16: task/resource internals ---- */
+/* task_heads_clear @0x801a42d0 — clear the 16 task-pool head pointers
+ * for pool (stride 0x48, head array at pool*0x48-0x7fe00c68). */
 void task_heads_clear(int pool)
 {
   int i;
@@ -12411,7 +12419,9 @@ int * prim_list_gte_invoke(int *lst,undefined4 a1,undefined4 a2,int total,undefi
 
 }
 
-/* text_render_full @0x8012d154 — ---- batch17: announcer/round + vector math ---- */
+/* text_render_full @0x8012d154 — full text renderer: walk the string,
+ * fetch per-glyph font metrics, and emit textured quads into the
+ * packet/OT stream; font selects the glyph table, cfg the attrs. */
 undefined4 text_render_full(uint *a0,uint font,int cfg)
 {
   byte wd;
@@ -13618,7 +13628,7 @@ void radial_glow_draw(int *rec)
 }
 
 /* iris_wipe_spawn @0x8013b5a8/update — iris wipe transition: spawn the
- * wipe record and per-tick advance the aperture. */
+ * wipe record (the per-tick aperture advance lives in iris_wipe_update). */
 void iris_wipe_spawn(int req,int arg)
 {
   char x1;
@@ -14095,7 +14105,9 @@ uint * angle_pair_rotmat(uint ang0,uint ang1,uint *out)
 
 }
 
-/* vec_emit_spawn @0x80137048 — ---- batch18: task/alloc + GTE helpers ---- */
+/* vec_emit_spawn @0x80137048 — spawn a vector-emit FX group:
+ * fx_group_alloc(1,1,3,3) then store the 3-word payload rec[0..2]
+ * via noop_a. */
 void vec_emit_spawn(undefined4 *rec)
 {
   int grp;
@@ -14843,7 +14855,9 @@ void rect_prim_spawn(undefined2 x0,undefined2 y0,undefined2 x1,undefined2 y1, un
 
 }
 
-/* isqrt_refine @0x80194280 — ---- batch19: task/effect node ops ---- */
+/* isqrt_refine @0x80194280 — integer square-root refinement: paired
+ * g[]/p[] recurrences seeded n±0x5d50ad, iterated i=1..6 (see the
+ * in-body comment for the full recurrence description). */
 undefined4 isqrt_refine(int n)
 {
   /* Faithful port of guest 0x80194280: a restoring digit-recurrence integer
@@ -15163,8 +15177,9 @@ void prim_tag_set(int prim)
 
 }
 
-/* prim_packet_init @0x801acfb4(+_tex) — init a primitive packet
- * header: tag word + attribute flags (+tex variant binds texture). */
+/* prim_packet_init @0x801acfb4 — init a primitive packet
+ * header: tag word + attribute flags (texture-less variant;
+ * see prim_packet_init_tex for the tex-bound form). */
 void prim_packet_init(int pkt,int a1,int a2,uint fl)
 {
   uint tagw;
