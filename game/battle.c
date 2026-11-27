@@ -571,7 +571,7 @@ LAB_8017f680:
 
 }
 
-/* camera_state_cache — snapshot camera/light globals 0x1f80030c-0x320
+/* camera_state_cache @0x8012ee48 — snapshot camera/light globals 0x1f80030c-0x320
  * into the 0x801f025x cache; uses rec_flag1_set values when _DAT_801f022c,
  * then derives aim angles via angle_gte_vec. */
 void camera_state_cache(uint unused,int battle)
@@ -858,7 +858,7 @@ LAB_80180f88:
 
 }
 
-/* fighter_flash_update — fighter hit-flash/invuln blink update: per-fidx
+/* fighter_flash_update @0x8016cd8c — fighter hit-flash/invuln blink update: per-fidx
  * record at DAT_801f4d70 (+0xbc stride) drives prim brightness/flags. */
 void fighter_flash_update(uint battle,uint slot,int ctx2,byte *rec)
 {
@@ -3490,7 +3490,7 @@ undefined4 fighter_atk_dir(int atk,int def)
 
 }
 
-/* hit_pose_swap — on a registered hit (f1+0x9c), toggle the hit flag
+/* hit_pose_swap @0x8017eb10 — on a registered hit (f1+0x9c), toggle the hit flag
  * and swap attacker anim pose slots +0x23c<->+0x1c4 and +0x28c<->+0x264. */
 void hit_pose_swap(int f0,int f1)
 {
@@ -3513,7 +3513,7 @@ void hit_pose_swap(int f0,int f1)
 
 }
 
-/* hit_elig_check — both fighters must be in a hittable state: rejects
+/* hit_elig_check @0x801458ac — both fighters must be in a hittable state: rejects
  * dead/invalid char slots and shield/invuln flag combos on f1, then
  * checks facing flag bits on f0+0x64 vs f1+0x58. */
 undefined4 hit_elig_check(int f0,int f1)
@@ -3654,7 +3654,7 @@ undefined4 hitbox_pair_test(int f0,int f1,undefined2 *out)
 
 }
 
-/* fighter_range_code — distance-band code from relative z separation:
+/* fighter_range_code @0x80143bb8 — distance-band code from relative z separation:
  * returns 9/5 inside 0x155, 4/8 mid-range, ORs 2 beyond 0x4e3. */
 uint fighter_range_code(int f0,int f1)
 {
@@ -4508,7 +4508,7 @@ LAB_8014672c:
 
 }
 
-/* camera_aim_offset — compute camera aim offset angles from the fighter
+/* camera_aim_offset @0x80145d84 — compute camera aim offset angles from the fighter
  * pair geometry; writes per-side pen/offset channels 0x801f04ec-0x4f2. */
 void camera_aim_offset(int f0,int f1,undefined4 ang)
 {
@@ -4693,7 +4693,7 @@ void camera_aim_offset(int f0,int f1,undefined4 ang)
 
 }
 
-/* node_translate_tree — translate a node subtree: add (dx,-dy,dz) to
+/* node_translate_tree @0x8018d700 — translate a node subtree: add (dx,-dy,dz) to
  * the node position at +0x34/+0x38/+0x3c and recurse into children
  * (+0x4c chain, +0x44/+0x48 links). */
 void node_translate_tree(int node,int dx,int dy,int dz)
@@ -4889,7 +4889,7 @@ void fighter_attach_run(int f)
 
 }
 
-/* fighter_height_track — track fighter height: compare target height
+/* fighter_height_track @0x80179638 — track fighter height: compare target height
  * f+0x94 against current node height, set the +0x5c dirty bit on change,
  * and snap/zero climb state when the fighter lands. */
 void fighter_height_track(int f,int st)
@@ -5172,7 +5172,7 @@ void hitbox_corners_xform(int f0,int f1)
 
 }
 
-/* pad_edge_scan — scan the 0x10 controller pad slots and build the
+/* pad_edge_scan @0x80142df4 — scan the 0x10 controller pad slots and build the
  * per-button repeat and multi-press bitmasks at ctrl_g+0x80/+0x84,
  * with per-button hold-time table walk. */
 void pad_edge_scan(int ctrl_g)
@@ -5899,7 +5899,7 @@ undefined2 * rtps_pt_xform(ushort *pt,undefined2 *out)
 }
 
 
-/* node_xform_apply — recursively transform a node tree: RTPS the local
+/* node_xform_apply @0x8018d788 — recursively transform a node tree: RTPS the local
  * vec/angles at +0x18/+0x20, then descend +0x48 (same mat) and +0x44
  * (local mat at node+0x20) children. */
 void node_xform_apply(int node,undefined4 mat,undefined4 flg)
@@ -5931,7 +5931,7 @@ void node_xform_apply(int node,undefined4 mat,undefined4 flg)
 
 }
 
-/* attr_flag_mask — compose the attribute flag mask for a node class:
+/* attr_flag_mask @0x80143ac8 — compose the attribute flag mask for a node class:
  * base flags from DAT_1f80006c[class*2] plus per-class table words
  * selected by fl&0x80 / fl&0x40. */
 ushort attr_flag_mask(uint node)
@@ -5970,7 +5970,7 @@ ushort attr_flag_mask(uint node)
 
 }
 
-/* pad_hist_record — push pad state into the per-controller u16 history
+/* pad_hist_record @0x801289b4 — push pad state into the per-controller u16 history
  * ring at ctrl_g+0xcc; returns the edge-mapped button flags for this
  * pad from DAT_801cf88c. */
 undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags)
@@ -7207,7 +7207,7 @@ LAB_80141918:
 
 }
 
-/* group_fx_spawn — allocate an FX group record and store the
+/* group_fx_spawn @0x80142108 — allocate an FX group record and store the
  * 6-word payload (arg,w0..w5) into rec+0xc..0x20. */
 void group_fx_spawn(undefined4 arg,undefined4 w0,undefined4 w1,undefined4 w2, undefined4 w3,undefined4 w4,undefined4 w5)
 {
@@ -7716,7 +7716,7 @@ void hud_digits_color(int val,int cell)
 
 }
 
-/* fighter_height_check — return the height-limit code for a fighter:
+/* fighter_height_check @0x80172a04 — return the height-limit code for a fighter:
  * bit 0x10 set -> constant 2, else 0x1dff < f+0xd8 short -> 1/0. */
 bool fighter_height_check(int f)
 {
@@ -8536,9 +8536,9 @@ void task_pools_tick(int pool)
 
 }
 
-/* noop_a/b/c — task-payload data accessors bound at guest
- * 0x801ad224/240/284: _a/_b store w0.. into the record at pay+8,
- * _c returns that record pointer. */
+/* noop_a @0x801ad240 / noop_b @0x801ad224 / noop_c @0x801ad284 —
+ * task-payload data accessors: _a/_b store w0.. into the record at
+ * pay+8, _c returns that record pointer. */
 void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 {
   int datap;
@@ -8550,7 +8550,7 @@ void noop_a(int node,undefined4 w0,undefined4 w1,undefined4 w2)
 
 }
 
-/* fx_group_alloc — allocate an FX group node from the
+/* fx_group_alloc @0x801ad38c — allocate an FX group node from the
  * pool/kind/ix/iy tables (DAT -0x7fe009e0 indexed). */
 int fx_group_alloc(undefined4 pool,undefined4 kind,int ix,int iy)
 {
@@ -8589,7 +8589,7 @@ undefined4 noop_c(int node)
 
 }
 
-/* node_tree_free — recursively free a node tree: release all
+/* node_tree_free @0x801ac758 — recursively free a node tree: release all
  * children in the +0x10 array then the node itself. */
 void node_tree_free(int node)
 {
@@ -9167,8 +9167,10 @@ LAB_801373c0:
 
 }
 
-/* task_alloc_wrap_a-f — task-node alloc wrappers binding guest fn
- * pointers (0x80137680/0x80137824/0x80137acc/0x80137cd0 family);
+/* task_alloc_wrap_c @0x80137e70 — task-node alloc wrappers (family
+ * _a @0x801725a4/_b @0x80172640/_c @0x80137e70/_d @0x80137f0c/
+ * _e @0x80137fb8/_f @0x80138040) binding guest fn pointers
+ * (0x80137680/0x80137824/0x80137acc/0x80137cd0 family);
  * payload words w0.. are copied verbatim into the node pay area. */
 int task_alloc_wrap_c(undefined4 w0,undefined4 w1,int w2,undefined4 w3)
 {
@@ -9670,7 +9672,9 @@ code_r0x8016d2ec:
 
 }
 
-/* ---- batch14: HUD/score/round helpers (0x8012e-0x80135) ---- */
+/* hud_text_blk_alt @0x8012e078 — 0x1f80038c text-block variant:
+ * same field init as hud_text_blk, but str is a host pointer
+ * converted via guest_of; see hud_text_blk. */
 void hud_text_blk_alt(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
   _DAT_1f80038c = 0;
@@ -9749,7 +9753,7 @@ void ctr_clamp(uint32_t ent,int32_t delta)
   *(int16_t *)(rec + 0xa0) = (delta < 0x100) ? (int16_t)delta : (int16_t)0xff;
 }
 
-/* announce_param_block_init_b — init the 0x1f80038c announce
+/* announce_param_block_init_b @0x8012e334 — init the 0x1f80038c announce
  * param block and render the full text string. */
 void announce_param_block_init_b(undefined4 ot,undefined2 font,const void *str,undefined2 a3, undefined2 arg5,short tm)
 {
@@ -11149,7 +11153,7 @@ void gte_cw_d000_set(undefined4 cw)
 
 }
 
-/* gte_op_a00428 — composite GTE op at guest 0xa00428:
+/* gte_op_a00428 @0x80195398 — composite GTE op at guest 0xa00428:
  * transform + flag fixup writing r0-r2 outputs. */
 undefined4 * gte_op_a00428(undefined4 *in,undefined4 *out)
 {
@@ -11438,8 +11442,9 @@ void task_pool_free(int pool)
 
 }
 
-/* gp_slot48_set/24_set — stash a value into the guest gp
- * frame slots +0x48/+0x24 (callee-saved scratch for nested calls). */
+/* gp_slot48_set @0x801a6bb8 / gp_slot24_set @0x801a6bc4 — stash a
+ * value into the guest gp frame slots +0x48/+0x24 (callee-saved
+ * scratch for nested calls). */
 void gp_slot48_set(undefined4 v)
 {
   int gp_save = (int)guest_gp();
@@ -12051,8 +12056,9 @@ switchD_801a776c_default:
 
 }
 
-/* obj_flag34_clear/set — clear/set the u16 field at +0x34
- * on each child element of an object record. */
+/* obj_flag34_clear @0x801a74f0 / obj_flag34_set @0x801a7498 —
+ * clear/set the u16 field at +0x34 on each child element of an
+ * object record. */
 void obj_flag34_clear(int obj)
 {
   int i;
@@ -15283,7 +15289,7 @@ void verts_sub_apply(int n,undefined4 *v,ushort *c,int d)
 
 /* fixed_point_divide @0x8018d300 — capstone-verified fixed-point divide (2-pass Newton refinement).
    div= signed 32/32 mflo, multu= unsigned 32x32 -> mfhi:mflo. */
-/* fixed_point_divide — fixed-point division helper. */
+/* fixed_point_divide @0x8018d300 — fixed-point division helper. */
 int fixed_point_divide(int num,int den)
 {
   uint32_t v0 = num < 0 ? (uint32_t)-num : (uint32_t)num;
@@ -15322,7 +15328,7 @@ int fixed_point_divide(int num,int den)
    node: +0x6 lh count, +0xa/+0xe lh cursors, +0x18 table, +0x2c lw total.
    entries stride 0x14, field +4 = frame time. Ends: tween_apply(node,idx,acc)
    then lhu(+0x2c)->+0xa. */
-/* keyframe_cursor_search — binary/linear search for the
+/* keyframe_cursor_search @0x801a972c — binary/linear search for the
  * keyframe cursor position in a sequence. */
 void keyframe_cursor_search(uint *cur)
 {
@@ -16205,7 +16211,7 @@ LAB_8013ab68:
   return;
 }
 
-/* confetti_burst_update — confetti/debris burst update (16 sprites x 2 rows).
+/* confetti_burst_update @0x8013d7e4 — confetti/debris burst update (16 sprites x 2 rows).
  * in_zero->cop2 reg 0, in_at->cop2 reg 1 (0x800 encoding), verified
  * against lwc2 $0/$1 at 0x8013d8ac-0x8013d8b0. */
 void confetti_burst_update(int rec)
@@ -16453,7 +16459,7 @@ void firework_task_update(int rec)
   return;
 }
 
-/* motion_integrator_tail — motion integrator tail: rotate velocity by facing,
+/* motion_integrator_tail @0x80185c70 — motion integrator tail: rotate velocity by facing,
  * decay position deltas. Called by fighter_anim_advance when +0xc0==0. */
 void motion_integrator_tail(int f,int n)
 {
@@ -16701,7 +16707,7 @@ void print_mode_dispatch_b(int32_t mode,uint32_t a1,uint32_t a2)
   printf_forward(s_Print_mode_error_8011f140);
 }
 
-/* scroll_offset_accumulate — scroll offset accumulate (u16 pair @0x1f80037c). */
+/* scroll_offset_accumulate @0x8012cdd8 — scroll offset accumulate (u16 pair @0x1f80037c). */
 void scroll_offset_accumulate(int16_t x,int16_t y)
 {
   if (BA8(0x1f800015) != 0) y = (int16_t)(y << 1);
@@ -16764,7 +16770,7 @@ void brightness_packet_send(int32_t val)
   br2_guest_frame_free();
 }
 
-/* hud_sprite_desc_init — HUD/sprite descriptor block init @0x801f0660.
+/* hud_sprite_desc_init @0x80136ddc — HUD/sprite descriptor block init @0x801f0660.
  * Four 0x5c-byte descriptor groups + 0x68-byte mirror copy.
  * Faithful to disasm (sb/sh/sw widths verified). */
 void hud_sprite_desc_init(void)
@@ -16806,7 +16812,7 @@ void hud_sprite_desc_init(void)
   memcpy(b + 0xc8, b + 0x60, 8);
 }
 
-/* sprite_desc_table_init — 800-slot sprite descriptor table init @0x801e8528.
+/* sprite_desc_table_init @0x8012d090 — 800-slot sprite descriptor table init @0x801e8528.
  * Per slot: spr_desc_a/4060/4090 calls + 0x7f bytes + u16 0x2f. */
 void sprite_desc_table_init(uint32_t tbl)
 {
