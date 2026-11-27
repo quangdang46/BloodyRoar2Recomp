@@ -157,6 +157,12 @@ extern void display_mode_setup(uint32_t);
 extern void frame_advance_helper(void);
 extern void status_flag_cond_set(uint32_t,int);
 extern int table_byte_next_a(void);
+extern void br2_guest_frame_abandon(void);
+extern uint32_t g_cdfn_log[24];
+extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
+extern int cd_stamp_to_sector(const void *);
+extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
+extern int br2_bail_pending(void);
 extern void perm_table_apply(uint);
 extern void scroll_cfg_set(undefined1,int);
 extern void battle_session_arm(intptr_t,int);
@@ -1037,7 +1043,6 @@ joined_r0x8015c784:
    * would leak a private substate into match_loop after gs->5 (same hazard
    * as battle_flow_state_machine). */
   { extern int br2_bail_pending(void);
-    extern void br2_guest_frame_abandon(void);
     if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
@@ -1216,7 +1221,6 @@ joined_r0x8015b9e0:
   /* Bail-unwind exit must preserve the DAT1 exit invariant (0xff exit
    * writes DAT_1f800001 = 0); see system_config_menu_a. */
   { extern int br2_bail_pending(void);
-    extern void br2_guest_frame_abandon(void);
     if (br2_bail_pending()) { DAT_1f800001 = 0; br2_guest_frame_abandon(); return ret; } }
   do {
     if (DAT_1f800001 == 0xff) {
@@ -1369,8 +1373,6 @@ void results_scoreboard(int mode)
    * rank strings are re-read by announce_param_block_init_b/hud_time_score_draw
    * across the whole tally loop, so reserve the guest frame window
    * (sp+0x18 -> frm+0x20) for the function's lifetime. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t rsb_frm = br2_guest_frame(0x88);
   undefined1 *num_buf = (undefined1 *)guest_at(rsb_frm + 0x20);
   int local_60 [6];
@@ -1637,8 +1639,6 @@ void player_name_entry(void)
    * strings are re-read by announce_param_block_init / rec_u32_store
    * across the entry loop, so reserve the guest frame window
    * (sp+0x38 -> frm+0x38) for the function's lifetime. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t pne_frm = br2_guest_frame(0x90);
   undefined1 *num_buf = (undefined1 *)guest_at(pne_frm + 0x38);
   uint8_t *pne_slots = (uint8_t *)guest_at(pne_frm + 0x18);
@@ -2359,7 +2359,6 @@ void tile_stream_pump(void)
   int blk;
   undefined4 off_x;
   undefined4 off_y;
-  extern uint32_t g_cdfn_log[24];
   g_cdfn_log[13]++;   /* CDFN_TILE_STREAM_PUMP */
 
   if ((_DAT_801f4738 != 0) && (_DAT_801fc68c != 0)) {
@@ -2397,8 +2396,6 @@ void tile_stream_pump(void)
     /* guest rect lives at $sp+0x10 (frame -0x28) = entry_sp-0x18;
      * gpu_load_image_cmd reads it through nested frames, so stage it in
      * a reserved guest frame (sp+0x10 -> frm+0x18). */
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t tsp_frm = br2_guest_frame(0x28);
     uint32_t rect_g = tsp_frm + 0x18;
     memcpy(guest_at(rect_g), rect, 8);
@@ -2443,9 +2440,6 @@ void cd_stream_mode_init(undefined4 cfg_g)
 {
   int st;
   undefined1 arg_buf [8];
-  extern void cd_seek_note(uint32_t,uint32_t,uint32_t);
-  extern int  cd_stamp_to_sector(const void *);
-  extern uint32_t g_cdfn_log[24];
   uint32_t cfg_w0 = *(uint32_t *)guest_at(cfg_g);
   g_cdfn_log[14]++;   /* CDFN_STREAM_MODE_INIT */
   cd_seek_note(4, cfg_w0, (uint32_t)cd_stamp_to_sector(guest_at(cfg_g)));
@@ -3203,8 +3197,6 @@ int32_t select_screen_tick(int32_t entry_mode)
    * clobbered, wedging versus select at state 6. The reservation aligns
    * up to 0x100; the offsets below keep the guest's absolute local
    * addresses (sp+0x18/+0x40/+0x50/+0x64). */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t sst_frm = br2_guest_frame(0xf8);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address. */
@@ -4413,8 +4405,6 @@ void fight_timer_announce(uint32_t battle_g,uint8_t *side,int32_t flag)
   }
   sec_rem = secs - mins * 60;                     /* seconds */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t fta_frm = br2_guest_frame(0x38);
     buf = (uint8_t *)guest_at(fta_frm + 0x20);
     if (mins == 0) {
@@ -4450,8 +4440,6 @@ void stage_fight_announce(uint32_t battle_g,uint8_t *side)
   if (((*(uint16_t *)guest_at(*(uint32_t *)(b + 0xc8) + (2)) >> 0xb) & 1) == 0) return;
   subrec = (uint8_t *)guest_at(*(uint32_t *)(side + 0x2c));
   if (subrec[1] != 0) {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t sfa_frm = br2_guest_frame(0x38);
     buf = (uint8_t *)guest_at(sfa_frm + 0x20);
     static const uint32_t jt[6] = {
@@ -4530,8 +4518,6 @@ void champion_win_announce(uint32_t battle_g,uint8_t *side,int32_t player)
   if (cnt == 0) return;
   if (cnt >= 0x3e8) { cnt = 0x3e7; *(int16_t *)(side + 0xe2) = (int16_t)cnt; }
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t cwa_frm = br2_guest_frame(0x40);
     buf = (uint8_t *)guest_at(cwa_frm + 0x18);
     if (cnt == 1) {
@@ -4648,8 +4634,6 @@ int32_t continue_countdown(uint32_t battle_g,uint32_t player)
     int32_t quo = (int32_t)(((int32_t)(prod >> 32) << 0xb) >> 0x10); /* hi>>5 */
     int32_t rem = 9 - quo;
     int w;
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t ccd_frm = br2_guest_frame(0x38);
     buf = (uint8_t *)guest_at(ccd_frm + 0x20);
     sprintf_core((char *)buf,(char *)guest_at(0x80120824),rem);
@@ -5603,8 +5587,6 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
    * bring-up state corrupted, wedging arcade battle-init at DAT1=3.
    * frame 0x168 is 8 mod 16 so the reservation aligns to 0x170 and
    * guest sp+N maps to sst_frm + N + 8; sp+0x18 -> sst_frm+0x20. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t sst_frm = br2_guest_frame(0x168);
   /* sp+0x18 -> sst_frm+0x20; guest RAM backing so the 0x801f10bc cell
    * carries a real guest address aliasing the same bytes. */
@@ -8305,8 +8287,6 @@ int battle_frame(void)
    * guest RAM backing so pointers stored into the frame (0x801f10bc,
    * slots 0x140/0x144) are real guest addresses that alias the same
    * bytes the host-pointer accesses below use. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t b36_frm = br2_guest_frame(0x180);
   uint32_t *b36_sp = (uint32_t *)guest_at(b36_frm);
   uint8_t *T;                               /* record table = sp+0x40 */
@@ -8341,7 +8321,6 @@ int battle_frame(void)
      * host-side frame record so $sp keeps the un-returned frame, exactly as
      * generated code leaves it. */
     { extern int br2_bail_pending(void);
-      extern void br2_guest_frame_abandon(void);
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return 0; } }
     /* dispatcher @0x8014ce80 */
     st = MB8(0x1f800001);
@@ -9793,7 +9772,6 @@ L_31ac:                                       /* 0x801531ac shared tail */
  * uses the result as a cursor advance. */
 uint32_t offset_table_lookup(uint32_t tbl,int32_t idx)
 {
-  extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
   int32_t n = (int32_t)MB32(tbl);
   uint32_t off, ret;
   if (idx >= n) { decomp_trace_record(14,tbl,(uint32_t)n,(uint8_t)idx,0); return 0; }
@@ -10244,7 +10222,6 @@ void one_shot_init(void)
 {
   uint32_t base = 0x801bef60u;
   int32_t sub;
-  extern int br2_bail_pending(void);
   if (MB8(base + 0xf) != 0) return;
   brightness_packet_send(0);
   sub = MB8(base + 0xe) & 0xf;
@@ -11473,8 +11450,6 @@ void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t arg3,
      * text_render_simple re-reads it through the 0x1f80038c block
      * pointer, so reserve the guest frame window (sp+0x28 -> frm+0x28)
      * for the write->draw span. */
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t pmd_frm = br2_guest_frame(0x130);
     uint8_t *buf = (uint8_t *)guest_at(pmd_frm + 0x28);
     uint32_t blk = 0x1f80038cu;
@@ -12020,8 +11995,6 @@ void hp_bar_tick(void)
    * cd_mc_state_machine/cd_fileop_forward nested frames, so reserve the
    * guest frame window (sp+0x10 -> frm+0x18) for the function's
    * lifetime. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t hpb_frm = br2_guest_frame(0x28);
   uint32_t hpb_rect = hpb_frm + 0x18;
   if (MB32(0x801f4738u) != 0) {
@@ -12827,8 +12800,6 @@ void event_record_walk(uint32_t w)
    * in the emit phase and re-read by gte_xform_accum through nested
    * frames, so reserve the guest frame window (sp+0x10 -> frm+0x10) for
    * the function's lifetime. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t erw_frm = br2_guest_frame(0x30);
   uint32_t gbuf = erw_frm + 0x10;
   uint8_t *buf = (uint8_t *)guest_at(gbuf);
@@ -14359,8 +14330,6 @@ uint32_t desc_opcode_dispatch(uint32_t ent,uint32_t unused,
     /* vec = guest $sp+0x20 (frame -0x38) = entry_sp-0x18; emit_task_spawn_b
      * re-reads it through nested frames, so stage it in a reserved guest
      * frame (sp+0x20 -> frm+0x28). */
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t dod_frm = br2_guest_frame(0x38);
     uint32_t dod_vec = dod_frm + 0x28;
     uint32_t i2 = (uint32_t)(sx8 & 0x7f);
@@ -14752,8 +14721,6 @@ int32_t memcard_block_verify(uint32_t exp,uint32_t src,int32_t iters)
    * must live in guest RAM — a host .bss array makes guest_of() return 0
    * and the DMA lands at guest addr 0. br2_guest_frame mirrors the guest
    * stack buffer. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t fr = br2_guest_frame(0x80);
   uint32_t gbuf = fr;
   uint32_t ep = exp;
@@ -14815,8 +14782,6 @@ int32_t save_flow_state_machine(void)
    * address and generated callees receive a0 = guest_of(blk), which is
    * 0 for a host stack array — back it with the real 0x68-byte guest
    * frame (prologue addiu sp,-0x68), blk at sp+0x10 -> frm+0x10. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t sff_frm = br2_guest_frame(0x68);
   uint8_t *blk = (uint8_t *)guest_at(sff_frm + 0x10);
   int32_t state = 0;
@@ -14899,8 +14864,6 @@ int32_t options_state_machine(void)
    * sp+0x10..0x37 stepper descriptor whose +0xc callback reaches
    * generated callees as a0 = guest_of(blk). Reserve the real 0x80-byte
    * guest frame (prologue addiu sp,-0x80), blk at sp+0x10 -> frm+0x10. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t osf_frm = br2_guest_frame(0x80);
   uint8_t *blk = (uint8_t *)guest_at(osf_frm + 0x10);
   int32_t state = 0;
@@ -14985,8 +14948,6 @@ int32_t screen_flow_state_machine(void)
    * sp+0x10..0x37 stepper descriptor whose +0xc callback reaches
    * generated callees as a0 = guest_of(blk). Reserve the real 0x70-byte
    * guest frame (prologue addiu sp,-0x70), blk at sp+0x10 -> frm+0x10. */
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
   uint32_t scf_frm = br2_guest_frame(0x70);
   uint8_t *blk = (uint8_t *)guest_at(scf_frm + 0x10);
   int32_t state = 0;
