@@ -999,7 +999,7 @@ block_8012620C:
     /* delay slot (always executes) */
     /* nop */  /* 0x8012621C: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80126234u);
-    cpu->pc = 0x80126234u; return;  /* CPS jal -> cps_80126234 */
+    cpu->pc = 0x80126234u; return;  /* CPS jal -> guest_main (0x80126234) */
 }
 
 /* cps_8012621c — clean CPS transliteration of br2eu_func_8012621C (guest 0x8012621c)
@@ -1044,10 +1044,10 @@ block_80126228:
     /* nop */  /* 0x80126228: 0x00200000 */
     /* nop */  /* 0x8012622C: 0x00200000 */
     /* nop */  /* 0x80126230: 0x00200000 */
-    cpu->pc = 0x80126234u; return;  /* fallthrough to split piece -> cps_80126234 */
+    cpu->pc = 0x80126234u; return;  /* fallthrough to split piece -> guest_main (0x80126234) */
 }
 
-/* cps_80126234 — clean CPS transliteration of br2eu_func_80126234 (guest 0x80126234)
+/* cps_80126234 — clean CPS transliteration of guest_main (br2eu_func_80126234) (guest 0x80126234)
  * from SLES_017.22_full_00.c. */
 void cps_80126234(void)
 {
@@ -4469,6 +4469,14 @@ void cps_80128520(void)
 
 block_80128520:
     t7 = br2_lwr(cpu, v1 + 12, t7);  /* 0x80128520: 0x986F000C */
+    br2_swl(cpu, a0 + 3, t4);  /* 0x80128524: 0xA88C0003 */
+    br2_swr(cpu, a0, t4);  /* 0x80128528: 0xB88C0000 */
+    br2_swl(cpu, a0 + 7, t5);  /* 0x8012852C: 0xA88D0007 */
+    br2_swr(cpu, a0 + 4, t5);  /* 0x80128530: 0xB88D0004 */
+    br2_swl(cpu, a0 + 11, t6);  /* 0x80128534: 0xA88E000B */
+    br2_swr(cpu, a0 + 8, t6);  /* 0x80128538: 0xB88E0008 */
+    br2_swl(cpu, a0 + 15, t7);  /* 0x8012853C: 0xA88F000F */
+    br2_swr(cpu, a0 + 12, t7);  /* 0x80128540: 0xB88F000C */
     v1 += 16;  /* 0x80128544: 0x24630010 */
     int cond_80128548 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -4569,6 +4577,14 @@ block_801285A0:
     t6 = br2_lwr(cpu, v1 + 8, t6);  /* 0x801285B4: 0x986E0008 */
     t7 = br2_lwl(cpu, v1 + 15, t7);  /* 0x801285B8: 0x886F000F */
     t7 = br2_lwr(cpu, v1 + 12, t7);  /* 0x801285BC: 0x986F000C */
+    br2_swl(cpu, a0 + 3, t4);  /* 0x801285C0: 0xA88C0003 */
+    br2_swr(cpu, a0, t4);  /* 0x801285C4: 0xB88C0000 */
+    br2_swl(cpu, a0 + 7, t5);  /* 0x801285C8: 0xA88D0007 */
+    br2_swr(cpu, a0 + 4, t5);  /* 0x801285CC: 0xB88D0004 */
+    br2_swl(cpu, a0 + 11, t6);  /* 0x801285D0: 0xA88E000B */
+    br2_swr(cpu, a0 + 8, t6);  /* 0x801285D4: 0xB88E0008 */
+    br2_swl(cpu, a0 + 15, t7);  /* 0x801285D8: 0xA88F000F */
+    br2_swr(cpu, a0 + 12, t7);  /* 0x801285DC: 0xB88F000C */
     v1 += 16;  /* 0x801285E0: 0x24630010 */
     int cond_801285E4 = (v1 != v0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6683,6 +6699,12 @@ block_80129190:
     t2 = br2_lwr(cpu, v0 + 8, t2);  /* 0x801291A4: 0x984A0008 */
     t3 = br2_lwl(cpu, v0 + 15, t3);  /* 0x801291A8: 0x884B000F */
     t3 = br2_lwr(cpu, v0 + 12, t3);  /* 0x801291AC: 0x984B000C */
+    br2_swl(cpu, a0 + 3, t0);  /* 0x801291B0: 0xA8880003 */
+    br2_swr(cpu, a0, t0);  /* 0x801291B4: 0xB8880000 */
+    br2_swl(cpu, a0 + 7, t1);  /* 0x801291B8: 0xA8890007 */
+    br2_swr(cpu, a0 + 4, t1);  /* 0x801291BC: 0xB8890004 */
+    br2_swl(cpu, a0 + 11, t2);  /* 0x801291C0: 0xA88A000B */
+    br2_swr(cpu, a0 + 8, t2);  /* 0x801291C4: 0xB88A0008 */
     cpu->pc = 0x801291c8u; return;  /* fallthrough to split piece -> cps_801291c8 */
 }
 
@@ -6703,6 +6725,8 @@ void cps_801291c8(void)
     /* Address: 0x801291C8, Size: 28 bytes, Blocks: 2 */
 
 block_801291C8:
+    br2_swl(cpu, a0 + 15, t3);  /* 0x801291C8: 0xA88B000F */
+    br2_swr(cpu, a0 + 12, t3);  /* 0x801291CC: 0xB88B000C */
     v0 += 16;  /* 0x801291D0: 0x24420010 */
     int cond_801291D4 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -6947,6 +6971,14 @@ block_8012936C:
     t2 = br2_lwr(cpu, v0 + 8, t2);  /* 0x80129380: 0x984A0008 */
     t3 = br2_lwl(cpu, v0 + 15, t3);  /* 0x80129384: 0x884B000F */
     t3 = br2_lwr(cpu, v0 + 12, t3);  /* 0x80129388: 0x984B000C */
+    br2_swl(cpu, a2 + 3, t0);  /* 0x8012938C: 0xA8C80003 */
+    br2_swr(cpu, a2, t0);  /* 0x80129390: 0xB8C80000 */
+    br2_swl(cpu, a2 + 7, t1);  /* 0x80129394: 0xA8C90007 */
+    br2_swr(cpu, a2 + 4, t1);  /* 0x80129398: 0xB8C90004 */
+    br2_swl(cpu, a2 + 11, t2);  /* 0x8012939C: 0xA8CA000B */
+    br2_swr(cpu, a2 + 8, t2);  /* 0x801293A0: 0xB8CA0008 */
+    br2_swl(cpu, a2 + 15, t3);  /* 0x801293A4: 0xA8CB000F */
+    br2_swr(cpu, a2 + 12, t3);  /* 0x801293A8: 0xB8CB000C */
     v0 += 16;  /* 0x801293AC: 0x24420010 */
     int cond_801293B0 = (v0 != v1);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -16573,7 +16605,7 @@ void cps_8012fb54(void)
 
 block_8012FB54:
     s6 = a3;  /* 0x8012FB54: 0x00E0B021 */
-    cpu->pc = 0x8012fb58u; return;  /* fallthrough to split piece -> cps_8012fb58 */
+    cpu->pc = 0x8012fb58u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012fb58 — clean CPS transliteration of br2eu_func_8012FB58 (guest 0x8012fb58)
@@ -16787,7 +16819,7 @@ block_8012FC8C:
     cpu->write_half(s1 + 62, (uint16_t)a3);  /* 0x8012FCC4: 0xA627003E */
     cpu->write_half(s1 + 32, (uint16_t)t0);  /* 0x8012FCC8: 0xA6280020 */
     cpu->write_half(s1 + 34, (uint16_t)t1);  /* 0x8012FCCC: 0xA6290022 */
-    cpu->pc = 0x8012fcd0u; return;  /* fallthrough to split piece -> cps_8012fcd0 */
+    cpu->pc = 0x8012fcd0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012fcd0 — clean CPS transliteration of br2eu_func_8012FCD0 (guest 0x8012fcd0)
@@ -16810,12 +16842,12 @@ block_8012FCD0:
     /* delay slot (always executes) */
     cpu->write_half(s1 + 36, (uint16_t)t2);  /* 0x8012FCD4: 0xA62A0024 */
     psx_check_interrupts_at(cpu, 0x80131F48u);
-    cpu->pc = 0x80131F48u; return;  /* CPS j: split -> cps_80131f48 */
+    cpu->pc = 0x80131F48u; return;  /* CPS j: split */
 
 block_8012FCD8:
     v1 = (int32_t)(int8_t)cpu->read_byte(s1 + 128);  /* 0x8012FCD8: 0x82230080 */
     /* nop */  /* 0x8012FCDC: 0x00000000 */
-    cpu->pc = 0x8012fce0u; return;  /* fallthrough to split piece -> cps_8012fce0 */
+    cpu->pc = 0x8012fce0u; return;  /* fallthrough to split piece */
 }
 
 /* cps_8012fce0 — clean CPS transliteration of br2eu_func_8012FCE0 (guest 0x8012fce0)
@@ -19930,7 +19962,7 @@ block_801312AC:
     v1 = 0x68DB0000u;  /* 0x68DB0000 */  /* 0x801312B8: 0x3C0368DB */
     if (cond_801312B4) {
         psx_check_interrupts_at(cpu, 0x80131F4Cu);
-        cpu->pc = 0x80131F4Cu; return;  /* CPS taken: split -> cps_80131f4c */
+        cpu->pc = 0x80131F4Cu; return;  /* CPS taken: split */
     } else {
         psx_check_interrupts_at(cpu, 0x801312BCu);
     }
@@ -19964,7 +19996,7 @@ block_801312D8:
     /* delay slot (always executes) */
     /* nop */  /* 0x801312DC: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80131F4Cu);
-    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split -> cps_80131f4c */
+    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split */
 
 block_801312E0:
     cpu->write_half(s1 + 120, (uint16_t)v0);  /* 0x801312E0: 0xA6220078 */
@@ -20314,7 +20346,7 @@ block_801315F4:
     /* delay slot (always executes) */
     cpu->write_half(s1 + 34, (uint16_t)v0);  /* 0x80131614: 0xA6220022 */
     psx_check_interrupts_at(cpu, 0x80131F48u);
-    cpu->pc = 0x80131F48u; return;  /* CPS j: split -> cps_80131f48 */
+    cpu->pc = 0x80131F48u; return;  /* CPS j: split */
 
 block_80131618:
     v1 = (int32_t)(int8_t)cpu->read_byte(s1 + 128);  /* 0x80131618: 0x82230080 */
@@ -20548,7 +20580,7 @@ block_80131848:
     /* delay slot (always executes) */
     /* nop */  /* 0x8013184C: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80131F4Cu);
-    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split -> cps_80131f4c */
+    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split */
 
 block_80131850:
     v0 = 3;  /* 0x80131850: 0x24020003 */
@@ -20578,7 +20610,7 @@ block_80131864:
     /* delay slot (always executes) */
     /* nop */  /* 0x80131868: 0x00000000 */
     psx_check_interrupts_at(cpu, 0x80131F4Cu);
-    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split -> cps_80131f4c */
+    cpu->pc = 0x80131F4Cu; return;  /* CPS j: split */
 
 block_8013186C:
     v0 = (int32_t)(int16_t)cpu->read_half(s1 + 140);  /* 0x8013186C: 0x8622008C */
@@ -20875,7 +20907,7 @@ block_80131A3C:
     /* delay slot (always executes) */
     cpu->write_half(s1 + 140, (uint16_t)v0);  /* 0x80131A4C: 0xA622008C */
     psx_check_interrupts_at(cpu, 0x80131F48u);
-    cpu->pc = 0x80131F48u; return;  /* CPS j: split -> cps_80131f48 */
+    cpu->pc = 0x80131F48u; return;  /* CPS j: split */
 
 block_80131A50:
     v0 = cpu->read_word(s3 + 32);  /* 0x80131A50: 0x8E620020 */
@@ -21009,7 +21041,7 @@ block_80131B64:
     /* delay slot (always executes) */
     cpu->write_half(s1 + 36, (uint16_t)v0);  /* 0x80131B80: 0xA6220024 */
     psx_check_interrupts_at(cpu, 0x80131F48u);
-    cpu->pc = 0x80131F48u; return;  /* CPS j: split -> cps_80131f48 */
+    cpu->pc = 0x80131F48u; return;  /* CPS j: split */
 
 block_80131B84:
     a0 = 360;  /* 0x80131B84: 0x24040168 */
@@ -21478,7 +21510,7 @@ block_80131F30:
     cpu->write_half(s1 + 32, (uint16_t)v0);  /* 0x80131F3C: 0xA6220020 */
     cpu->write_half(s1 + 34, (uint16_t)v1);  /* 0x80131F40: 0xA6230022 */
     cpu->write_half(s1 + 36, (uint16_t)a0);  /* 0x80131F44: 0xA6240024 */
-    cpu->pc = 0x80131f48u; return;  /* fallthrough to split piece -> cps_80131f48 */
+    cpu->pc = 0x80131f48u; return;  /* fallthrough to split piece */
 }
 
 /* cps_80131f48 — clean CPS transliteration of br2eu_func_80131F48 (guest 0x80131f48)
@@ -21492,7 +21524,7 @@ void cps_80131f48(void)
 
 block_80131F48:
     v1 = 0x68DB0000u;  /* 0x68DB0000 */  /* 0x80131F48: 0x3C0368DB */
-    cpu->pc = 0x80131f4cu; return;  /* fallthrough to split piece -> cps_80131f4c */
+    cpu->pc = 0x80131f4cu; return;  /* fallthrough to split piece */
 }
 
 /* cps_80131f4c — clean CPS transliteration of br2eu_func_80131F4C (guest 0x80131f4c)
@@ -24050,6 +24082,10 @@ block_80133D74:
     t0 = br2_lwr(cpu, sp + 48, t0);  /* 0x80133D7C: 0x9BA80030 */
     t1 = br2_lwl(cpu, sp + 55, t1);  /* 0x80133D80: 0x8BA90037 */
     t1 = br2_lwr(cpu, sp + 52, t1);  /* 0x80133D84: 0x9BA90034 */
+    br2_swl(cpu, s2 + 3, t0);  /* 0x80133D88: 0xAA480003 */
+    br2_swr(cpu, s2, t0);  /* 0x80133D8C: 0xBA480000 */
+    br2_swl(cpu, s2 + 7, t1);  /* 0x80133D90: 0xAA490007 */
+    br2_swr(cpu, s2 + 4, t1);  /* 0x80133D94: 0xBA490004 */
     ra = cpu->read_word(sp + 68);  /* 0x80133D98: 0x8FBF0044 */
     s2 = cpu->read_word(sp + 64);  /* 0x80133D9C: 0x8FB20040 */
     s1 = cpu->read_word(sp + 60);  /* 0x80133DA0: 0x8FB1003C */
@@ -24104,6 +24140,10 @@ block_80133EF0:
     t1 = br2_lwr(cpu, sp + 16, t1);  /* 0x80133EF8: 0x9BA90010 */
     t2 = br2_lwl(cpu, sp + 23, t2);  /* 0x80133EFC: 0x8BAA0017 */
     t2 = br2_lwr(cpu, sp + 20, t2);  /* 0x80133F00: 0x9BAA0014 */
+    br2_swl(cpu, s3 + 3, t1);  /* 0x80133F04: 0xAA690003 */
+    br2_swr(cpu, s3, t1);  /* 0x80133F08: 0xBA690000 */
+    br2_swl(cpu, s3 + 7, t2);  /* 0x80133F0C: 0xAA6A0007 */
+    br2_swr(cpu, s3 + 4, t2);  /* 0x80133F10: 0xBA6A0004 */
     ra = cpu->read_word(sp + 48);  /* 0x80133F14: 0x8FBF0030 */
     s3 = cpu->read_word(sp + 44);  /* 0x80133F18: 0x8FB3002C */
     s2 = cpu->read_word(sp + 40);  /* 0x80133F1C: 0x8FB20028 */
@@ -24184,6 +24224,10 @@ void cps_801340c4(void)
 
 block_801340C4:
     t1 = br2_lwr(cpu, sp + 20, t1);  /* 0x801340C4: 0x9BA90014 */
+    br2_swl(cpu, s2 + 3, t0);  /* 0x801340C8: 0xAA480003 */
+    br2_swr(cpu, s2, t0);  /* 0x801340CC: 0xBA480000 */
+    br2_swl(cpu, s2 + 7, t1);  /* 0x801340D0: 0xAA490007 */
+    br2_swr(cpu, s2 + 4, t1);  /* 0x801340D4: 0xBA490004 */
     ra = cpu->read_word(sp + 44);  /* 0x801340D8: 0x8FBF002C */
     s2 = cpu->read_word(sp + 40);  /* 0x801340DC: 0x8FB20028 */
     s1 = cpu->read_word(sp + 36);  /* 0x801340E0: 0x8FB10024 */
@@ -34547,6 +34591,10 @@ block_8013A544:
     t7 = br2_lwr(cpu, s1 + 88, t7);  /* 0x8013A55C: 0x9A2F0058 */
     t8 = br2_lwl(cpu, s1 + 95, t8);  /* 0x8013A560: 0x8A38005F */
     t8 = br2_lwr(cpu, s1 + 92, t8);  /* 0x8013A564: 0x9A38005C */
+    br2_swl(cpu, a2 + 3, t7);  /* 0x8013A568: 0xA8CF0003 */
+    br2_swr(cpu, a2, t7);  /* 0x8013A56C: 0xB8CF0000 */
+    br2_swl(cpu, a2 + 7, t8);  /* 0x8013A570: 0xA8D80007 */
+    br2_swr(cpu, a2 + 4, t8);  /* 0x8013A574: 0xB8D80004 */
     int cond_8013A578 = (v1 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 3;  /* 0x8013A57C: 0x24020003 */
@@ -35411,10 +35459,22 @@ block_8013AC70:
     t2 = br2_lwr(cpu, v0 + 8, t2);  /* 0x8013ACA0: 0x984A0008 */
     t3 = br2_lwl(cpu, v0 + 15, t3);  /* 0x8013ACA4: 0x884B000F */
     t3 = br2_lwr(cpu, v0 + 12, t3);  /* 0x8013ACA8: 0x984B000C */
+    br2_swl(cpu, a1 + 7, t0);  /* 0x8013ACAC: 0xA8A80007 */
+    br2_swr(cpu, a1 + 4, t0);  /* 0x8013ACB0: 0xB8A80004 */
+    br2_swl(cpu, a1 + 11, t1);  /* 0x8013ACB4: 0xA8A9000B */
+    br2_swr(cpu, a1 + 8, t1);  /* 0x8013ACB8: 0xB8A90008 */
+    br2_swl(cpu, a1 + 15, t2);  /* 0x8013ACBC: 0xA8AA000F */
+    br2_swr(cpu, a1 + 12, t2);  /* 0x8013ACC0: 0xB8AA000C */
+    br2_swl(cpu, a1 + 19, t3);  /* 0x8013ACC4: 0xA8AB0013 */
+    br2_swr(cpu, a1 + 16, t3);  /* 0x8013ACC8: 0xB8AB0010 */
     t0 = br2_lwl(cpu, v0 + 19, t0);  /* 0x8013ACCC: 0x88480013 */
     t0 = br2_lwr(cpu, v0 + 16, t0);  /* 0x8013ACD0: 0x98480010 */
     t1 = br2_lwl(cpu, v0 + 23, t1);  /* 0x8013ACD4: 0x88490017 */
     t1 = br2_lwr(cpu, v0 + 20, t1);  /* 0x8013ACD8: 0x98490014 */
+    br2_swl(cpu, a1 + 23, t0);  /* 0x8013ACDC: 0xA8A80017 */
+    br2_swr(cpu, a1 + 20, t0);  /* 0x8013ACE0: 0xB8A80014 */
+    br2_swl(cpu, a1 + 27, t1);  /* 0x8013ACE4: 0xA8A9001B */
+    br2_swr(cpu, a1 + 24, t1);  /* 0x8013ACE8: 0xB8A90018 */
     int cond_8013ACEC = (v1 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     cpu->write_half(a1 + 6, (uint16_t)zero);  /* 0x8013ACF0: 0xA4A00006 */
@@ -35562,8 +35622,12 @@ block_8013ADF0:
     a1 = br2_lwr(cpu, v0, a1);  /* 0x8013ADFC: 0x98450000 */
     a2 = br2_lwl(cpu, v0 + 7, a2);  /* 0x8013AE00: 0x88460007 */
     a2 = br2_lwr(cpu, v0 + 4, a2);  /* 0x8013AE04: 0x98460004 */
+    br2_swl(cpu, a0 + 3, a1);  /* 0x8013AE08: 0xA8850003 */
+    br2_swr(cpu, a0, a1);  /* 0x8013AE0C: 0xB8850000 */
+    br2_swl(cpu, a0 + 7, a2);  /* 0x8013AE10: 0xA8860007 */
     uint32_t jt_8013AE14 = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
+    br2_swr(cpu, a0 + 4, a2);  /* 0x8013AE18: 0xB8860004 */
     psx_check_interrupts_at(cpu, jt_8013AE14);
     cpu->pc = jt_8013AE14; return;  /* CPS: jr $ra */
 }
@@ -36098,6 +36162,10 @@ block_8013B2E0:
     t0 = br2_lwr(cpu, v0 + 20, t0);  /* 0x8013B2FC: 0x98480014 */
     t1 = br2_lwl(cpu, v0 + 27, t1);  /* 0x8013B300: 0x8849001B */
     t1 = br2_lwr(cpu, v0 + 24, t1);  /* 0x8013B304: 0x98490018 */
+    br2_swl(cpu, v1 + 23, t0);  /* 0x8013B308: 0xA8680017 */
+    br2_swr(cpu, v1 + 20, t0);  /* 0x8013B30C: 0xB8680014 */
+    br2_swl(cpu, v1 + 27, t1);  /* 0x8013B310: 0xA869001B */
+    br2_swr(cpu, v1 + 24, t1);  /* 0x8013B314: 0xB8690018 */
     s4 = a0;  /* 0x8013B318: 0x0080A021 */
     int cond_8013B31C = ((int32_t)s4 > 0);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -36722,6 +36790,10 @@ block_8013B844:
     t5 = br2_lwr(cpu, sp + 56, t5);  /* 0x8013B8B0: 0x9BAD0038 */
     t6 = br2_lwl(cpu, sp + 63, t6);  /* 0x8013B8B4: 0x8BAE003F */
     t6 = br2_lwr(cpu, sp + 60, t6);  /* 0x8013B8B8: 0x9BAE003C */
+    br2_swl(cpu, sp + 75, t5);  /* 0x8013B8BC: 0xABAD004B */
+    br2_swr(cpu, sp + 72, t5);  /* 0x8013B8C0: 0xBBAD0048 */
+    br2_swl(cpu, sp + 79, t6);  /* 0x8013B8C4: 0xABAE004F */
+    br2_swr(cpu, sp + 76, t6);  /* 0x8013B8C8: 0xBBAE004C */
     v1 = (int32_t)(int16_t)cpu->read_half(sp + 56);  /* 0x8013B8CC: 0x87A30038 */
     a0 = (int32_t)(int16_t)cpu->read_half(sp + 32);  /* 0x8013B8D0: 0x87A40020 */
     v0 = (int32_t)(int16_t)cpu->read_half(sp + 60);  /* 0x8013B8D4: 0x87A2003C */
@@ -37316,6 +37388,10 @@ block_8013BBD8:
     t5 = br2_lwr(cpu, sp + 56, t5);  /* 0x8013BC2C: 0x9BAD0038 */
     t6 = br2_lwl(cpu, sp + 63, t6);  /* 0x8013BC30: 0x8BAE003F */
     t6 = br2_lwr(cpu, sp + 60, t6);  /* 0x8013BC34: 0x9BAE003C */
+    br2_swl(cpu, sp + 51, t5);  /* 0x8013BC38: 0xABAD0033 */
+    br2_swr(cpu, sp + 48, t5);  /* 0x8013BC3C: 0xBBAD0030 */
+    br2_swl(cpu, sp + 55, t6);  /* 0x8013BC40: 0xABAE0037 */
+    br2_swr(cpu, sp + 52, t6);  /* 0x8013BC44: 0xBBAE0034 */
     /* fall through to block_8013BC48 */
 
 block_8013BC48:
@@ -39023,6 +39099,10 @@ block_8013C7B0:
     t3 = br2_lwr(cpu, a0 + 7056, t3);  /* 0x8013C7C4: 0x988B1B90 */
     t5 = br2_lwl(cpu, a0 + 7063, t5);  /* 0x8013C7C8: 0x888D1B97 */
     t5 = br2_lwr(cpu, a0 + 7060, t5);  /* 0x8013C7CC: 0x988D1B94 */
+    br2_swl(cpu, v0 + 3, t3);  /* 0x8013C7D0: 0xA84B0003 */
+    br2_swr(cpu, v0, t3);  /* 0x8013C7D4: 0xB84B0000 */
+    br2_swl(cpu, v0 + 7, t5);  /* 0x8013C7D8: 0xA84D0007 */
+    br2_swr(cpu, v0 + 4, t5);  /* 0x8013C7DC: 0xB84D0004 */
     v0 = (int32_t)s1 < 17;  /* 0x8013C7E0: 0x2A220011 */
     int cond_8013C7E4 = (v0 != zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
@@ -39191,24 +39271,32 @@ block_8013C8C8:
     t5 = br2_lwl(cpu, v0 + 3, t5);  /* 0x8013C8D4: 0x884D0003 */
     t5 = br2_lwr(cpu, v0, t5);  /* 0x8013C8D8: 0x984D0000 */
     /* nop */  /* 0x8013C8DC: 0x00000000 */
+    br2_swl(cpu, a0 + -33, t5);  /* 0x8013C8E0: 0xA88DFFDF */
+    br2_swr(cpu, a0 + -36, t5);  /* 0x8013C8E4: 0xB88DFFDC */
     v0 = cpu->read_word(a3);  /* 0x8013C8E8: 0x8CE20000 */
     /* nop */  /* 0x8013C8EC: 0x00000000 */
     v0 = v1 + v0;  /* 0x8013C8F0: 0x00621021 */
     t5 = br2_lwl(cpu, v0 + 3, t5);  /* 0x8013C8F4: 0x884D0003 */
     t5 = br2_lwr(cpu, v0, t5);  /* 0x8013C8F8: 0x984D0000 */
     /* nop */  /* 0x8013C8FC: 0x00000000 */
+    br2_swl(cpu, a0 + -21, t5);  /* 0x8013C900: 0xA88DFFEB */
+    br2_swr(cpu, a0 + -24, t5);  /* 0x8013C904: 0xB88DFFE8 */
     v0 = cpu->read_word(t0);  /* 0x8013C908: 0x8D020000 */
     /* nop */  /* 0x8013C90C: 0x00000000 */
     v0 = v1 + v0;  /* 0x8013C910: 0x00621021 */
     t5 = br2_lwl(cpu, v0 + 7, t5);  /* 0x8013C914: 0x884D0007 */
     t5 = br2_lwr(cpu, v0 + 4, t5);  /* 0x8013C918: 0x984D0004 */
     /* nop */  /* 0x8013C91C: 0x00000000 */
+    br2_swl(cpu, a0 + -9, t5);  /* 0x8013C920: 0xA88DFFF7 */
+    br2_swr(cpu, a0 + -12, t5);  /* 0x8013C924: 0xB88DFFF4 */
     v0 = cpu->read_word(a3);  /* 0x8013C928: 0x8CE20000 */
     /* nop */  /* 0x8013C92C: 0x00000000 */
     v1 += v0;  /* 0x8013C930: 0x00621821 */
     t5 = br2_lwl(cpu, v1 + 7, t5);  /* 0x8013C934: 0x886D0007 */
     t5 = br2_lwr(cpu, v1 + 4, t5);  /* 0x8013C938: 0x986D0004 */
     /* nop */  /* 0x8013C93C: 0x00000000 */
+    br2_swl(cpu, a0 + 3, t5);  /* 0x8013C940: 0xA88D0003 */
+    br2_swr(cpu, a0, t5);  /* 0x8013C944: 0xB88D0000 */
     v0 = cpu->read_word(t1 + 8);  /* 0x8013C948: 0x8D220008 */
     a1++;  /* 0x8013C94C: 0x24A50001 */
     v0 = cpu->read_word(v0 + 64);  /* 0x8013C950: 0x8C420040 */
@@ -39305,7 +39393,7 @@ block_8013C99C:
     cpu->pc = jt_8013C9C4; return;  /* CPS: jr $ra */
 }
 
-/* cps_8013c9cc — clean CPS transliteration of br2eu_func_8013C9CC (guest 0x8013c9cc)
+/* cps_8013c9cc — clean CPS transliteration of stage_env_task_spawn (br2eu_func_8013C9CC) (guest 0x8013c9cc)
  * from SLES_017.22_full_09.c. */
 void cps_8013c9cc(void)
 {
@@ -40190,6 +40278,10 @@ block_8013D120:
     s7 = br2_lwr(cpu, s3 + 20, s7);  /* 0x8013D134: 0x9A770014 */
     t8 = br2_lwl(cpu, s3 + 27, t8);  /* 0x8013D138: 0x8A78001B */
     t8 = br2_lwr(cpu, s3 + 24, t8);  /* 0x8013D13C: 0x9A780018 */
+    br2_swl(cpu, v1 + 3, s7);  /* 0x8013D140: 0xA8770003 */
+    br2_swr(cpu, v1, s7);  /* 0x8013D144: 0xB8770000 */
+    br2_swl(cpu, v1 + 7, t8);  /* 0x8013D148: 0xA8780007 */
+    br2_swr(cpu, v1 + 4, t8);  /* 0x8013D14C: 0xB8780004 */
     ra = 0x8013D158u;  /* jal link before delay slot */
     /* delay slot (always executes) */
     s4 = v0 & 0x0BFF;  /* 0x8013D154: 0x30540BFF */
@@ -41135,9 +41227,17 @@ block_8013DBD8:
     t3 = br2_lwr(cpu, t5 + 4, t3);  /* 0x8013DC24: 0x99AB0004 */
     t4 = br2_lwl(cpu, t5 + 11, t4);  /* 0x8013DC28: 0x89AC000B */
     t4 = br2_lwr(cpu, t5 + 8, t4);  /* 0x8013DC2C: 0x99AC0008 */
+    br2_swl(cpu, sp + 83, t2);  /* 0x8013DC30: 0xABAA0053 */
+    br2_swr(cpu, sp + 80, t2);  /* 0x8013DC34: 0xBBAA0050 */
+    br2_swl(cpu, sp + 87, t3);  /* 0x8013DC38: 0xABAB0057 */
+    br2_swr(cpu, sp + 84, t3);  /* 0x8013DC3C: 0xBBAB0054 */
+    br2_swl(cpu, sp + 91, t4);  /* 0x8013DC40: 0xABAC005B */
+    br2_swr(cpu, sp + 88, t4);  /* 0x8013DC44: 0xBBAC0058 */
     t2 = br2_lwl(cpu, t5 + 15, t2);  /* 0x8013DC48: 0x89AA000F */
     t2 = br2_lwr(cpu, t5 + 12, t2);  /* 0x8013DC4C: 0x99AA000C */
     /* nop */  /* 0x8013DC50: 0x00000000 */
+    br2_swl(cpu, sp + 95, t2);  /* 0x8013DC54: 0xABAA005F */
+    br2_swr(cpu, sp + 92, t2);  /* 0x8013DC58: 0xBBAA005C */
     v0 = v1 << 2;  /* 0x8013DC5C: 0x00031080 */
     v0 += v1;  /* 0x8013DC60: 0x00431021 */
     v0 <<= 4;  /* 0x8013DC64: 0x00021100 */
@@ -42236,15 +42336,23 @@ block_8013E9D4:
     t2 = br2_lwl(cpu, s3 + 19, t2);  /* 0x8013E9D4: 0x8A6A0013 */
     t2 = br2_lwr(cpu, s3 + 16, t2);  /* 0x8013E9D8: 0x9A6A0010 */
     /* nop */  /* 0x8013E9DC: 0x00000000 */
+    br2_swl(cpu, a0 + -21, t2);  /* 0x8013E9E0: 0xA88AFFEB */
+    br2_swr(cpu, a0 + -24, t2);  /* 0x8013E9E4: 0xB88AFFE8 */
     t2 = br2_lwl(cpu, s3 + 15, t2);  /* 0x8013E9E8: 0x8A6A000F */
     t2 = br2_lwr(cpu, s3 + 12, t2);  /* 0x8013E9EC: 0x9A6A000C */
     /* nop */  /* 0x8013E9F0: 0x00000000 */
+    br2_swl(cpu, a0 + -13, t2);  /* 0x8013E9F4: 0xA88AFFF3 */
+    br2_swr(cpu, a0 + -16, t2);  /* 0x8013E9F8: 0xB88AFFF0 */
     t2 = br2_lwl(cpu, s3 + 7, t2);  /* 0x8013E9FC: 0x8A6A0007 */
     t2 = br2_lwr(cpu, s3 + 4, t2);  /* 0x8013EA00: 0x9A6A0004 */
     /* nop */  /* 0x8013EA04: 0x00000000 */
+    br2_swl(cpu, a0 + -5, t2);  /* 0x8013EA08: 0xA88AFFFB */
+    br2_swr(cpu, a0 + -8, t2);  /* 0x8013EA0C: 0xB88AFFF8 */
     t2 = br2_lwl(cpu, s3 + 3, t2);  /* 0x8013EA10: 0x8A6A0003 */
     t2 = br2_lwr(cpu, s3, t2);  /* 0x8013EA14: 0x9A6A0000 */
     /* nop */  /* 0x8013EA18: 0x00000000 */
+    br2_swl(cpu, a0 + 3, t2);  /* 0x8013EA1C: 0xA88A0003 */
+    br2_swr(cpu, a0, t2);  /* 0x8013EA20: 0xB88A0000 */
     v0 = cpu->read_word(a1 + 8);  /* 0x8013EA24: 0x8CA20008 */
     a0 += 40;  /* 0x8013EA28: 0x24840028 */
     v0 = cpu->read_word(v0 + 12);  /* 0x8013EA2C: 0x8C42000C */
@@ -42259,15 +42367,23 @@ block_8013E9D4:
     t2 = br2_lwl(cpu, s3 + 15, t2);  /* 0x8013EA50: 0x8A6A000F */
     t2 = br2_lwr(cpu, s3 + 12, t2);  /* 0x8013EA54: 0x9A6A000C */
     /* nop */  /* 0x8013EA58: 0x00000000 */
+    br2_swl(cpu, a0 + -21, t2);  /* 0x8013EA5C: 0xA88AFFEB */
+    br2_swr(cpu, a0 + -24, t2);  /* 0x8013EA60: 0xB88AFFE8 */
     t2 = br2_lwl(cpu, s3 + 23, t2);  /* 0x8013EA64: 0x8A6A0017 */
     t2 = br2_lwr(cpu, s3 + 20, t2);  /* 0x8013EA68: 0x9A6A0014 */
     /* nop */  /* 0x8013EA6C: 0x00000000 */
+    br2_swl(cpu, a0 + -13, t2);  /* 0x8013EA70: 0xA88AFFF3 */
+    br2_swr(cpu, a0 + -16, t2);  /* 0x8013EA74: 0xB88AFFF0 */
     t2 = br2_lwl(cpu, s3 + 3, t2);  /* 0x8013EA78: 0x8A6A0003 */
     t2 = br2_lwr(cpu, s3, t2);  /* 0x8013EA7C: 0x9A6A0000 */
     /* nop */  /* 0x8013EA80: 0x00000000 */
+    br2_swl(cpu, a0 + -5, t2);  /* 0x8013EA84: 0xA88AFFFB */
+    br2_swr(cpu, a0 + -8, t2);  /* 0x8013EA88: 0xB88AFFF8 */
     t2 = br2_lwl(cpu, s3 + 11, t2);  /* 0x8013EA8C: 0x8A6A000B */
     t2 = br2_lwr(cpu, s3 + 8, t2);  /* 0x8013EA90: 0x9A6A0008 */
     /* nop */  /* 0x8013EA94: 0x00000000 */
+    br2_swl(cpu, a0 + 3, t2);  /* 0x8013EA98: 0xA88A0003 */
+    br2_swr(cpu, a0, t2);  /* 0x8013EA9C: 0xB88A0000 */
     v0 = cpu->read_word(a1 + 8);  /* 0x8013EAA0: 0x8CA20008 */
     a0 += 40;  /* 0x8013EAA4: 0x24840028 */
     v0 = cpu->read_word(v0 + 12);  /* 0x8013EAA8: 0x8C42000C */
@@ -42455,6 +42571,14 @@ block_8013EB88:
     t7 = br2_lwr(cpu, v0 + -10, t7);  /* 0x8013EBC8: 0x984FFFF6 */
     t8 = br2_lwl(cpu, v0 + -3, t8);  /* 0x8013EBCC: 0x8858FFFD */
     t8 = br2_lwr(cpu, v0 + -6, t8);  /* 0x8013EBD0: 0x9858FFFA */
+    br2_swl(cpu, t0 + 483, t5);  /* 0x8013EBD4: 0xA90D01E3 */
+    br2_swr(cpu, t0 + 480, t5);  /* 0x8013EBD8: 0xB90D01E0 */
+    br2_swl(cpu, t0 + 487, t6);  /* 0x8013EBDC: 0xA90E01E7 */
+    br2_swr(cpu, t0 + 484, t6);  /* 0x8013EBE0: 0xB90E01E4 */
+    br2_swl(cpu, t0 + 491, t7);  /* 0x8013EBE4: 0xA90F01EB */
+    br2_swr(cpu, t0 + 488, t7);  /* 0x8013EBE8: 0xB90F01E8 */
+    br2_swl(cpu, t0 + 495, t8);  /* 0x8013EBEC: 0xA91801EF */
+    br2_swr(cpu, t0 + 492, t8);  /* 0x8013EBF0: 0xB91801EC */
     t5 = (int32_t)(int16_t)cpu->read_half(v0 + -2);  /* 0x8013EBF4: 0x844DFFFE */
     /* nop */  /* 0x8013EBF8: 0x00000000 */
     cpu->write_half(t0 + 496, (uint16_t)t5);  /* 0x8013EBFC: 0xA50D01F0 */
@@ -42841,6 +42965,10 @@ block_8013F89C:
     t2 = br2_lwr(cpu, v1 + 1740, t2);  /* 0x8013F8A0: 0x986A06CC */
     t7 = br2_lwl(cpu, v1 + 1747, t7);  /* 0x8013F8A4: 0x886F06D3 */
     t7 = br2_lwr(cpu, v1 + 1744, t7);  /* 0x8013F8A8: 0x986F06D0 */
+    br2_swl(cpu, v1 + 1735, t2);  /* 0x8013F8AC: 0xA86A06C7 */
+    br2_swr(cpu, v1 + 1732, t2);  /* 0x8013F8B0: 0xB86A06C4 */
+    br2_swl(cpu, v1 + 1739, t7);  /* 0x8013F8B4: 0xA86F06CB */
+    br2_swr(cpu, v1 + 1736, t7);  /* 0x8013F8B8: 0xB86F06C8 */
     s5++;  /* 0x8013F8BC: 0x26B50001 */
     v0 = (int32_t)s5 < 3;  /* 0x8013F8C0: 0x2AA20003 */
     int cond_8013F8C4 = (v0 != zero);  /* save branch cond before delay slot */
@@ -43170,18 +43298,34 @@ block_8013FAA8:
     t7 = br2_lwr(cpu, a1 + -8, t7);  /* 0x8013FAAC: 0x98AFFFF8 */
     t8 = br2_lwl(cpu, a1 + -1, t8);  /* 0x8013FAB0: 0x88B8FFFF */
     t8 = br2_lwr(cpu, a1 + -4, t8);  /* 0x8013FAB4: 0x98B8FFFC */
+    br2_swl(cpu, a1 + 11, t7);  /* 0x8013FAB8: 0xA8AF000B */
+    br2_swr(cpu, a1 + 8, t7);  /* 0x8013FABC: 0xB8AF0008 */
+    br2_swl(cpu, a1 + 15, t8);  /* 0x8013FAC0: 0xA8B8000F */
+    br2_swr(cpu, a1 + 12, t8);  /* 0x8013FAC4: 0xB8B8000C */
     t7 = br2_lwl(cpu, a1 + 3, t7);  /* 0x8013FAC8: 0x88AF0003 */
     t7 = br2_lwr(cpu, a1, t7);  /* 0x8013FACC: 0x98AF0000 */
     t8 = br2_lwl(cpu, a1 + 7, t8);  /* 0x8013FAD0: 0x88B80007 */
     t8 = br2_lwr(cpu, a1 + 4, t8);  /* 0x8013FAD4: 0x98B80004 */
+    br2_swl(cpu, a1 + 19, t7);  /* 0x8013FAD8: 0xA8AF0013 */
+    br2_swr(cpu, a1 + 16, t7);  /* 0x8013FADC: 0xB8AF0010 */
+    br2_swl(cpu, a1 + 23, t8);  /* 0x8013FAE0: 0xA8B80017 */
+    br2_swr(cpu, a1 + 20, t8);  /* 0x8013FAE4: 0xB8B80014 */
     t7 = br2_lwl(cpu, s2 + 3, t7);  /* 0x8013FAE8: 0x8A4F0003 */
     t7 = br2_lwr(cpu, s2, t7);  /* 0x8013FAEC: 0x9A4F0000 */
     t8 = br2_lwl(cpu, s2 + 7, t8);  /* 0x8013FAF0: 0x8A580007 */
     t8 = br2_lwr(cpu, s2 + 4, t8);  /* 0x8013FAF4: 0x9A580004 */
+    br2_swl(cpu, a1 + -5, t7);  /* 0x8013FAF8: 0xA8AFFFFB */
+    br2_swr(cpu, a1 + -8, t7);  /* 0x8013FAFC: 0xB8AFFFF8 */
+    br2_swl(cpu, a1 + -1, t8);  /* 0x8013FB00: 0xA8B8FFFF */
+    br2_swr(cpu, a1 + -4, t8);  /* 0x8013FB04: 0xB8B8FFFC */
     t7 = br2_lwl(cpu, a1 + -13, t7);  /* 0x8013FB08: 0x88AFFFF3 */
     t7 = br2_lwr(cpu, a1 + -16, t7);  /* 0x8013FB0C: 0x98AFFFF0 */
     t8 = br2_lwl(cpu, a1 + -9, t8);  /* 0x8013FB10: 0x88B8FFF7 */
     t8 = br2_lwr(cpu, a1 + -12, t8);  /* 0x8013FB14: 0x98B8FFF4 */
+    br2_swl(cpu, a1 + 3, t7);  /* 0x8013FB18: 0xA8AF0003 */
+    br2_swr(cpu, a1, t7);  /* 0x8013FB1C: 0xB8AF0000 */
+    br2_swl(cpu, a1 + 7, t8);  /* 0x8013FB20: 0xA8B80007 */
+    br2_swr(cpu, a1 + 4, t8);  /* 0x8013FB24: 0xB8B80004 */
     a1 += 48;  /* 0x8013FB28: 0x24A50030 */
     s5++;  /* 0x8013FB2C: 0x26B50001 */
     v0 = (int32_t)s5 < 3;  /* 0x8013FB30: 0x2AA20003 */
@@ -43345,10 +43489,18 @@ block_8013FC38:
     t8 = br2_lwr(cpu, s4, t8);  /* 0x8013FC40: 0x9A980000 */
     t9 = br2_lwl(cpu, s4 + 7, t9);  /* 0x8013FC44: 0x8A990007 */
     t9 = br2_lwr(cpu, s4 + 4, t9);  /* 0x8013FC48: 0x9A990004 */
+    br2_swl(cpu, s2 + 3, t8);  /* 0x8013FC4C: 0xAA580003 */
+    br2_swr(cpu, s2, t8);  /* 0x8013FC50: 0xBA580000 */
+    br2_swl(cpu, s2 + 7, t9);  /* 0x8013FC54: 0xAA590007 */
+    br2_swr(cpu, s2 + 4, t9);  /* 0x8013FC58: 0xBA590004 */
     t8 = br2_lwl(cpu, a0 + -17, t8);  /* 0x8013FC5C: 0x8898FFEF */
     t8 = br2_lwr(cpu, a0 + -20, t8);  /* 0x8013FC60: 0x9898FFEC */
     t9 = br2_lwl(cpu, a0 + -13, t9);  /* 0x8013FC64: 0x8899FFF3 */
     t9 = br2_lwr(cpu, a0 + -16, t9);  /* 0x8013FC68: 0x9899FFF0 */
+    br2_swl(cpu, s2 + 11, t8);  /* 0x8013FC6C: 0xAA58000B */
+    br2_swr(cpu, s2 + 8, t8);  /* 0x8013FC70: 0xBA580008 */
+    br2_swl(cpu, s2 + 15, t9);  /* 0x8013FC74: 0xAA59000F */
+    br2_swr(cpu, s2 + 12, t9);  /* 0x8013FC78: 0xBA59000C */
     v0 = (int32_t)(int16_t)cpu->read_half(s4);  /* 0x8013FC7C: 0x86820000 */
     v1 = (int32_t)(int16_t)cpu->read_half(a0 + -12);  /* 0x8013FC80: 0x8483FFF4 */
     /* nop */  /* 0x8013FC84: 0x00000000 */
@@ -44724,7 +44876,7 @@ block_80145964:
     cpu->pc = 0x80145968u; return;  /* fallthrough to split piece -> ret_nop (0x80145968) */
 }
 
-/* cps_801468ec — clean CPS transliteration of br2eu_func_801468EC (guest 0x801468ec)
+/* cps_801468ec — clean CPS transliteration of fighter_emit_state_run (br2eu_func_801468EC) (guest 0x801468ec)
  * from SLES_017.22_full_13.c. */
 void cps_801468ec(void)
 {
@@ -46730,7 +46882,7 @@ block_80156638:
     cpu->pc = jt_80156648; return;  /* CPS: jr $ra */
 }
 
-/* cps_801587c0 — clean CPS transliteration of br2eu_func_801587C0 (guest 0x801587c0)
+/* cps_801587c0 — clean CPS transliteration of hud_gauge_frame_emit (br2eu_func_801587C0) (guest 0x801587c0)
  * from SLES_017.22_full_20.c. */
 void cps_801587c0(void)
 {
@@ -48258,7 +48410,7 @@ block_8015B170:
     cpu->pc = jt_8015B188; return;  /* CPS: jr $ra */
 }
 
-/* cps_8015b190 — clean CPS transliteration of br2eu_func_8015B190 (guest 0x8015b190)
+/* cps_8015b190 — clean CPS transliteration of menu_stepper_row_dispatch (br2eu_func_8015B190) (guest 0x8015b190)
  * from SLES_017.22_full_21.c. */
 void cps_8015b190(void)
 {
@@ -51588,7 +51740,7 @@ block_8015DEA8:
     /* delay slot (always executes) */
     cpu->write_word(sp + 16, v0);  /* 0x8015DED0: 0xAFA20010 */
     psx_check_interrupts_at(cpu, 0x801587C0u);
-    cpu->pc = 0x801587C0u; return;  /* CPS jal -> cps_801587c0 */
+    cpu->pc = 0x801587C0u; return;  /* CPS jal -> hud_gauge_frame_emit (0x801587C0) */
 
 block_8015DED4:
     a0 = zero;  /* 0x8015DED4: 0x00002021 */

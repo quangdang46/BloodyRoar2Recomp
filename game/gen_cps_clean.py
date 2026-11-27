@@ -150,7 +150,7 @@ def unwrap_pgx_group(text):
     # gte_write_data / gte_precision_store_word / gte_read_data calls, cps_ fallthrough
     keep_re = (r'^(cpu->gpr\[|cpu->gte_data\[|cpu->(?:read|write)_(?:word|half|byte)\s*\(|'
                r'gte_write_data\s*\(|gte_precision_store_word\s*\(|gte_read_data\s*\(|'
-               r'cps_[0-9a-f]|br2_lw|br2_sw)')
+               r'cps_[0-9a-f]|br2_lw|br2_sw|psx_(?:lwl|lwr|swl|swr)\s*\()')
     if TIMING:
         keep_re = keep_re[:-1] + r'|psx_|_jt_)'
     stmts = []
