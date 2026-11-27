@@ -34,6 +34,8 @@ extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
 
+/* swl_guest — unaligned word store: RMW of the aligned word,
+ * byte lane selected by addr&3 (guest swl semantics). */
 static void swl_guest(uint32_t addr, uint32_t v)
 {
   uint32_t al = addr & ~3u;
@@ -47,6 +49,9 @@ static void swl_guest(uint32_t addr, uint32_t v)
   DB32(al) = w;
 }
 
+/* prim_ot_link_indexed — ordering-table link: slot = ot +
+ * (otz&0x1ffc); writes out<<8 into the slot and back-links the
+ * old head into out+2. */
 static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 {
   uint32_t slot = ot + (otz & 0x1ffcu);
@@ -55,6 +60,8 @@ static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
   swl_guest(out + 2, old << 8);
 }
 
+/* fixed_rsqrt_q12_zero_result — rsqrt Q12 edge: zero input ->
+ * return 0 via ra-resume. */
 uint32_t fixed_rsqrt_q12_zero_result(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -66,6 +73,8 @@ uint32_t fixed_rsqrt_q12_zero_result(void)
   return cpu->gpr[2];
 }
 
+/* fixed_rsqrt_q12_ex_failure — rsqrt Q12 edge: exponent
+ * failure -> return -1 (0xFFFFFFFF). */
 uint32_t fixed_rsqrt_q12_ex_failure(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -77,6 +86,8 @@ uint32_t fixed_rsqrt_q12_ex_failure(void)
   return cpu->gpr[2];
 }
 
+/* vec3_s32_h_normalize_store_tail — normalize tail piece: writes
+ * the s16 x/y/z result (gpr8/9/10) to *a0=gpr5, restores ra. */
 uint32_t vec3_s32_h_normalize_store_tail(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -108,6 +119,8 @@ block_80194678:
   return cpu->gpr[2];
 }
 
+/* fixed_recip_negative_shift_tail — recip tail: gpr9 = 0-gpr9
+ * (negate exponent), returns gpr13 >> (gpr9 & 31). */
 uint32_t fixed_recip_negative_shift_tail(void)
 {
   CPUState *cpu = clean_cpu_state();

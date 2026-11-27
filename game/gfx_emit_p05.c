@@ -29,6 +29,8 @@ extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
 
+/* swl_guest — unaligned word store: RMW of the aligned word,
+ * byte lane selected by addr&3 (guest swl semantics). */
 static void swl_guest(uint32_t addr, uint32_t v)
 {
   uint32_t al = addr & ~3u;
@@ -1512,6 +1514,8 @@ block_8018EBF4:
 /* The nine CPS piece-entries. Each is a coroutine continuation of
  * printf_core (0x8018E590); all mutable state lives in cpu->gpr[]/guest
  * RAM so the body survives scheduler longjmps. */
+/* printf_cps_8018e63c — guest printf entry 0x8018E63C: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e63c(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1520,6 +1524,8 @@ uint32_t printf_cps_8018e63c(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e64c — guest printf entry 0x8018E64C: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e64c(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1528,6 +1534,8 @@ uint32_t printf_cps_8018e64c(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e654 — guest printf entry 0x8018E654: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e654(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1536,6 +1544,8 @@ uint32_t printf_cps_8018e654(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e670 — guest printf entry 0x8018E670: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e670(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1544,6 +1554,8 @@ uint32_t printf_cps_8018e670(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e678 — guest printf entry 0x8018E678: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e678(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1552,6 +1564,8 @@ uint32_t printf_cps_8018e678(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e680 — guest printf entry 0x8018E680: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e680(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1560,6 +1574,8 @@ uint32_t printf_cps_8018e680(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e708 — guest printf entry 0x8018E708: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e708(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1568,6 +1584,8 @@ uint32_t printf_cps_8018e708(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e710 — guest printf entry 0x8018E710: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e710(void)
 {
   CPUState *c = clean_cpu_state();
@@ -1576,6 +1594,8 @@ uint32_t printf_cps_8018e710(void)
   return c->gpr[2];
 }
 
+/* printf_cps_8018e76c — guest printf entry 0x8018E76C: runs the
+ * shared printf_cps_body on the live CPU state. */
 uint32_t printf_cps_8018e76c(void)
 {
   CPUState *c = clean_cpu_state();
