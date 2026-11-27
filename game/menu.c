@@ -5609,7 +5609,7 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
   uint32_t p134  = 0x801b2604;          /* sp+0x134: lh-pair cursor */
   uint32_t p138  = 0xa50;               /* sp+0x138: record offset A */
   uint32_t p13c  = 0;                   /* sp+0x13c: record offset B */
-  int32_t  s6    = 0;
+  int32_t  state    = 0;
   uint8_t *p1 = side_a, *p2 = side_b;
 
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
@@ -5617,8 +5617,8 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
     decomp_trace_record(44,battle,(uint32_t)p1[3],(uint32_t)p2[3],0); }
 
   for (;;) {
-    int32_t s1;
-    if (s6 == 0) {
+    int32_t pi;
+    if (state == 0) {
       /* ---------- state 0 ---------- */
       int32_t r, r1, r2;
       r = battle_bringup_a(battle,(uint32_t)p1[3],(uint32_t)p2[3],
@@ -5632,55 +5632,55 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
       MW32(0x801f10c4,r2);              /* jal delay slot */
       record_init_sweep(battle,0);          /* a1 indeterminate in asm */
 
-      s1 = 0;
+      pi = 0;
       do {
-        uint8_t *cur = (s1 == 0) ? p1 : p2;   /* sp+0x16c / +0x170 */
-        uint32_t s3  = 0x801b25ec + ((uint32_t)s1 << 3);
-        uint32_t s7  = p13c;
-        uint32_t s6o = p138;
+        uint8_t *cur = (pi == 0) ? p1 : p2;   /* sp+0x16c / +0x170 */
+        uint32_t ctab  = 0x801b25ec + ((uint32_t)pi << 3);
+        uint32_t offb  = p13c;
+        uint32_t offa = p138;
         uint32_t fp  = MB8(0x801b23ac + cur[3]);
-        uint32_t s4  = 0x801b260c + (fp << 2);
-        int32_t  s2;
-        for (s2 = 0; s2 < 2; s2++) {
-          uint32_t base = MB32(0x801f10c0 + (uint32_t)s2 * 4);
+        uint32_t ptab  = 0x801b260c + (fp << 2);
+        int32_t  j;
+        for (j = 0; j < 2; j++) {
+          uint32_t base = MB32(0x801f10c0 + (uint32_t)j * 4);
           int32_t stk5, stk6;
-          palette_attr_record_write(battle,base + s6o,s1,fp);
-          stk5 = MBS16(s4);     stk6 = MBS16(s4 + 2);
-          sprite_place_centered(base + s6o,battle,MBS16(p134),0x180,stk5,stk6);
-          stk5 = MBS16(s3 + 4); stk6 = MBS16(s3 + 6);
-          sprite_place_centered(base + s7 + 0xaf0,battle,MBS16(s3),0x180,
+          palette_attr_record_write(battle,base + offa,pi,fp);
+          stk5 = MBS16(ptab);     stk6 = MBS16(ptab + 2);
+          sprite_place_centered(base + offa,battle,MBS16(p134),0x180,stk5,stk6);
+          stk5 = MBS16(ctab + 4); stk6 = MBS16(ctab + 6);
+          sprite_place_centered(base + offb + 0xaf0,battle,MBS16(ctab),0x180,
                        stk5,stk6);
-          if (s1 == 0) MW16(base + 0xafe,0x7d1e);
-          else         MW16(s7 + base + 0xafe,0x7e5e);
+          if (pi == 0) MW16(base + 0xafe,0x7d1e);
+          else         MW16(offb + base + 0xafe,0x7e5e);
         }
-        p134 += 4; p138 += 0x28; p13c += 0x28; s1++;
-      } while (s1 < 2);
+        p134 += 4; p138 += 0x28; p13c += 0x28; pi++;
+      } while (pi < 2);
 
       if (MB8(battle + 0x9c) == 3) {
         /* pull 4 corner u16s (-0x18) of each side record: per outer
          * iter (t1 = 0x801f10c0+4*i) two rounds over three offset
          * groups {0xa0,0xa50,0xaf0}+0x28, then one +0xf0 group. */
-        uint32_t t1 = 0x801f10c0;
+        uint32_t otcur = 0x801f10c0;
         int32_t  i1 = 0;
         do {
-          uint32_t t0 = t1;
+          uint32_t osnap = otcur;
           uint32_t o1 = 0xa0, o2 = 0xa50, o3 = 0xaf0;
           int32_t  k = 0;
           do {
             uint32_t tbl_b;
-            tbl_b = MB32(t0) + o1;
+            tbl_b = MB32(osnap) + o1;
             MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
             MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
             MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
             MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
             o1 += 0x28;
-            tbl_b = MB32(t0) + o2;
+            tbl_b = MB32(osnap) + o2;
             MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
             MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
             MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
             MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
             o2 += 0x28;
-            tbl_b = MB32(t0) + o3;
+            tbl_b = MB32(osnap) + o3;
             MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
             MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
             MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
@@ -5689,19 +5689,19 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
             k++;
           } while (k < 2);
           {
-            uint32_t tbl_b = MB32(t1) + 0xf0;
+            uint32_t tbl_b = MB32(otcur) + 0xf0;
             MW16(tbl_b + 0xa,  (uint16_t)(MB16(tbl_b + 0xa)  - 0x18));
             MW16(tbl_b + 0x12, (uint16_t)(MB16(tbl_b + 0x12) - 0x18));
             MW16(tbl_b + 0x1a, (uint16_t)(MB16(tbl_b + 0x1a) - 0x18));
             MW16(tbl_b + 0x22, (uint16_t)(MB16(tbl_b + 0x22) - 0x18));
           }
-          t1 += 4; i1++;
+          otcur += 4; i1++;
         } while (i1 < 2);
       }
-      s6 = 6;
+      state = 6;
       goto L_tail;
 
-    } else if (s6 == 6) {
+    } else if (state == 6) {
       /* ---------- state 6 ---------- */
       const uint32_t T = 0x801b2378u;
       uint32_t a1o = 0;
@@ -5833,15 +5833,15 @@ int battle_init(uint32_t battle, uint8_t *side_a, uint8_t *side_b)
 L_e7c:
       if (cnt >= 2) {
         victory_jingle_schedule((uint32_t)p1[3],(uint32_t)p2[3]);
-        s6 = 0xff;                          /* jal delay slot */
+        state = 0xff;                          /* jal delay slot */
       }
       cnt++;
     } else {
-      s1 = 0;                               /* unused: straight to tail */
+      pi = 0;                               /* unused: straight to tail */
     }
 L_tail:
     frame_tick((intptr_t)battle);
-    if (s6 == 0xff) break;
+    if (state == 0xff) break;
   }
   br2_guest_frame_free();
   return 0xff;
