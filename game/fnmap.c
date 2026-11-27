@@ -709,6 +709,7 @@ extern void fighter_height_check(void);
 extern void fighter_height_track(void);
 extern void fighter_hud_emit_pair(void);
 extern void fighter_link_init(void);
+extern void fighter_motion_step(void);
 extern void fighter_pair_update(void);
 extern void fighter_range_code(void);
 extern void fighter_rec_fetch_apply(void);
@@ -2473,6 +2474,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017c66c, (void *)desc_state_commit },
   { 0x8017c97c, (void *)slot_byte_commit },
   { 0x8017c9d4, (void *)ev20_timer_dispatch },
+  { 0x8017caf4, (void *)fighter_motion_step },
   { 0x8017cf14, (void *)descriptor_fetch },
   { 0x8017cf6c, (void *)byte2_probe_commit },
   { 0x8017cfe0, (void *)cursor_advance_thunk },

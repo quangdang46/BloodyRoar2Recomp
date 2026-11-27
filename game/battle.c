@@ -5452,6 +5452,166 @@ switchD_801435e8_caseD_0:
 
 }
 
+extern void br2_st8(uint32_t,uint8_t);
+extern void br2_st16(uint32_t,uint16_t);
+extern void fighter_reset_fx(int,uint8_t *);
+extern void slot_apply_guest(int,int);
+extern void hit_chain_clear(uint8_t *);
+extern void pending_hit_a_clear(uint8_t *);
+extern void pending_hit_b_clear(uint8_t *);
+
+/* fighter_motion_step — per-fighter motion integrator + conditional reset
+ * tail @0x8017CAF4 (55 CPS blocks). a0 = fighter state record, a1 dead,
+ * a2 = motion-param record (all guest addrs). Mode = s8(param_h0>>8)
+ * selects one of four integrator arms over the state's halfword channels
+ * (+172/+176 bounds, +192/+200/+202/+204 channels, +258/+260/+262
+ * counters, +216/+214 velocities); every arm merges at the shared commit
+ * tail which runs the battle_reset_tail-style reset sequence when the
+ * +5 flag bit and the +0/+0xe5/+0xd6 conditions hold. Returns param+4. */
+uint32_t fighter_motion_step(uint32_t st,uint32_t unused,uint32_t prm)
+{
+  (void)unused;
+  uint32_t s0 = st;
+  uint32_t s1 = prm;
+  uint32_t a1 = br2_ld32(s0 + 44);            /* char/attrib record */
+  int32_t mode = (int32_t)(int8_t)(br2_ld16(s1) >> 8);
+  int32_t v0, v1, a0;
+  int64_t prod;
+  int32_t hi, q;
+
+  if (mode == 0) {
+    /* arm 0: 3/10-rate integrator (magic 0x66666667, mult = saved*3) */
+    v0 = br2_ld16(s0 + 204);
+    a0 = (int16_t)br2_ld16(s0 + 200);
+    br2_st16(s0 + 204, (uint16_t)(v0 + 32));
+    v0 = (int16_t)br2_ld16(s0 + 172) + a0;    /* lo + cur */
+    if ((int16_t)br2_ld16(s0 + 176) >= (int32_t)v0) {
+      v0 = br2_ld16(s0 + 200);
+      if (a0 != 0) br2_st16(s0 + 202, (uint16_t)v0);
+      v1 = (int16_t)br2_ld16(s0 + 202);
+      a0 = 0x66666667;
+      v0 = v1 * 3;
+      prod = (int64_t)v0 * (int64_t)a0;
+      hi = (int32_t)(prod >> 32);
+      q = (hi >> 2) - ((int32_t)v0 >> 31);
+      v0 = (int16_t)br2_ld16(s0 + 192);
+      v1 = br2_ld16(s0 + 192);
+      if (v0 >= 0) br2_st16(s0 + 192, (uint16_t)(v1 + q * 16));
+      /* shared tail-of-arm: +200 += q, clamp vs +172/+176 */
+      v0 = br2_ld16(s0 + 200);
+      v1 = (int16_t)br2_ld16(s0 + 172);
+      v0 = (uint32_t)((int32_t)v0 + q);
+      br2_st16(s0 + 200, (uint16_t)v0);
+      v0 = (int16_t)v0;
+      v1 += v0;
+      a0 = (int16_t)br2_ld16(s0 + 176);
+      v0 = br2_ld16(s0 + 176);
+      if (a0 < v1) {
+        v0 = (uint32_t)(v0 - br2_ld16(s0 + 172));
+        br2_st16(s0 + 200, (uint16_t)v0);
+      }
+    }
+  } else if (mode == 1) {
+    /* arm 1: 1/10-rate integrator, q truncated to s16 */
+    v0 = br2_ld16(s0 + 204);
+    a0 = (int16_t)br2_ld16(s0 + 200);
+    br2_st16(s0 + 204, (uint16_t)(v0 + 32));
+    v0 = (int16_t)br2_ld16(s0 + 172) + a0;
+    if ((int16_t)br2_ld16(s0 + 176) >= (int32_t)v0) {
+      v0 = br2_ld16(s0 + 200);
+      if (a0 != 0) br2_st16(s0 + 202, (uint16_t)v0);
+      v1 = br2_ld16(s0 + 202);
+      a0 = 0x66666667;
+      v0 = (int32_t)(v1 << 16) >> 16;          /* s16 saved */
+      prod = (int64_t)v0 * (int64_t)a0;
+      hi = (int32_t)(prod >> 32);
+      q = (hi >> 2) - ((int32_t)(v1 << 16) >> 31);
+      a0 = (int16_t)q;                          /* truncate to s16 */
+      v0 = (int16_t)br2_ld16(s0 + 192);
+      v1 = br2_ld16(s0 + 192);
+      if (v0 >= 0) br2_st16(s0 + 192, (uint16_t)(v1 + a0 * 16));
+      v0 = br2_ld16(s0 + 200);
+      v1 = (int16_t)br2_ld16(s0 + 172);
+      v0 = (uint32_t)((int32_t)v0 + a0);
+      br2_st16(s0 + 200, (uint16_t)v0);
+      v0 = (int16_t)v0;
+      v1 += v0;
+      a0 = (int16_t)br2_ld16(s0 + 176);
+      v0 = br2_ld16(s0 + 176);
+      if (a0 < v1) {
+        v0 = (uint32_t)(v0 - br2_ld16(s0 + 172));
+        br2_st16(s0 + 200, (uint16_t)v0);
+      }
+    }
+  } else if (mode == 2) {
+    /* arm 2: attr-scaled double-threshold integrator (uses product LO) */
+    int32_t pm = (int16_t)br2_ld16(s1 + 2);
+    int32_t attr = br2_ld8(a1 + 218);
+    int32_t sel, acc, b0, m2, lo2, lo3, h;
+    prod = (int64_t)attr * (int64_t)pm;
+    a0 = (int32_t)prod;                          /* cpu->lo */
+    sel = br2_ld8(a1 + 5) & 0x10;
+    m2 = (int16_t)br2_ld16(a1 + (sel ? 256 : 254));
+    lo2 = (int32_t)((int64_t)a0 * (int64_t)m2);
+    if (lo2 >= 0) a0 = lo2 >> 7; else a0 = (lo2 + 127) >> 7;
+    sel = br2_ld8(s0 + 5) & 0x10;
+    m2 = (int16_t)br2_ld16(s0 + (sel ? 260 : 258));
+    lo3 = (int32_t)((int64_t)a0 * (int64_t)m2);
+    if (lo3 >= 0) a0 = lo3 >> 7; else a0 = (lo3 + 127) >> 7;
+    acc = a0 + br2_ld8(s0 + 262);
+    br2_st8(s0 + 262, (uint8_t)(acc & 0x7f));
+    a0 = acc >> 7;
+    b0 = (int16_t)br2_ld16(s0 + 192);
+    if (b0 >= 0) br2_st16(s0 + 192, (uint16_t)(a0 * 16));
+    v0 = br2_ld16(s0 + 200);
+    br2_st16(s0 + 204, 0);
+    br2_st16(s0 + 200, (uint16_t)(v0 + a0));
+    if (!(br2_ld8(a1 + 5) & 0x10) && !(br2_ld32(s0 + 108) & 0x8000)) {
+      h = a0 + (int32_t)((uint32_t)a0 >> 31);
+      br2_st16(a1 + 216, (uint16_t)(br2_ld16(a1 + 216) + (h >> 1) * 60));
+    }
+    if (br2_ld8(s0 + 5) & 0x10) {
+      br2_st16(s0 + 216, (uint16_t)(br2_ld16(s0 + 216) - a0 * 120));
+    } else {
+      prod = (int64_t)a0 * (int64_t)0x55555556;
+      q = (int32_t)(prod >> 32) - (a0 >> 31);
+      br2_st16(s0 + 216, (uint16_t)(br2_ld16(s0 + 216) + q * 60));
+    }
+  } else if (mode == 3) {
+    /* arm 3: param-driven channel set */
+    int32_t p1 = (int16_t)br2_ld16(s1 + 2);
+    if ((int16_t)br2_ld16(s0 + 192) >= 0)
+      br2_st16(s0 + 192, (uint16_t)(p1 * 16));
+    v0 = br2_ld16(s0 + 200);
+    br2_st16(s0 + 204, 0);
+    br2_st16(s0 + 200, (uint16_t)(v0 + p1));
+  }
+
+  /* shared commit tail: conditional reset sequence */
+  if (br2_ld8(s0 + 5) & 1) {
+    int rst = 0;
+    if (br2_ld8(s0) & 0x80) {
+      uint32_t p = br2_ld32(0x1f8000c0);
+      if (br2_ld8(s0 + 229) >= br2_ld8(p + 4)) rst = 1;
+    }
+    if (!rst && (int16_t)br2_ld16(s0 + 214) < 0) rst = 1;
+    if (rst) {
+      deferred_cmd_post(0x400, 7, 0);
+      fighter_reset_fx(1, (uint8_t *)guest_at(s0));
+      v0 = br2_ld16(s0 + 172);
+      br2_st16(s0 + 214, 0);
+      br2_st16(s0 + 216, 0);
+      br2_st8(s0 + 5, 0);
+      br2_st16(s0 + 174, (uint16_t)v0);
+      slot_apply_guest((int)s0, 0);
+      hit_chain_clear((uint8_t *)guest_at(s0));
+      pending_hit_a_clear((uint8_t *)guest_at(s0));
+      pending_hit_b_clear((uint8_t *)guest_at(s0));
+    }
+  }
+  return s1 + 4;
+}
+
 /* action_from_input @0x80142f3c — map controller input to the action/state
  * selection state machine (button timers, combo windows, state codes). */
 void action_from_input(int ctrl_g)

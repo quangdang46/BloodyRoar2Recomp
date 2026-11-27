@@ -1985,6 +1985,7 @@
 8017ab74 ev4_branch_dispatch
 8017b0d4 ev6_guard_sync_dispatch
 8017c9d4 ev20_timer_dispatch
+8017caf4 fighter_motion_step
 8017bad4 desc_flagbit_dispatch
 8017e840 ev_cam_param_dispatch
 8017e87c ev_cam_op00
