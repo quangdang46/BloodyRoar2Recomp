@@ -175,7 +175,6 @@ extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)
 extern uint32_t call_guest4(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t clean_caller_ra(void);
-extern void     br2_guest_ra_set(uint32_t);
 
 /* MMIO register-block accessors. The pointer cells 0x801bdeb0,
  * 0x801bdec0 and 0x801bdec4 resolve to HARDWARE addresses — the SPU
@@ -378,13 +377,8 @@ extern undefined4 cd_busy_wait(int);
 extern int cd_dispatch_tbl4(int,uint32_t);
 uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
-extern char *s__s____80125840;
 extern char *s_CD_timeout__801257a4;
 extern char *s__s___s__Sync__s__Ready__s_801257b4;
-extern char *s__s__no_param_80125848;
-extern char *s_CD_cw_80125858;
-extern char *s_CdRead__Shell_open____80125ae0;
-extern char *s_CdRead__retry____80125af8;
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
 #define DB16P(a) br2_ld16p(a)
@@ -838,18 +832,8 @@ extern int  cd_sync_wait_c(uint32_t,uint32_t);
 extern void bios_table_tramp(void);
 extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
-extern uint32_t gpu_status_cmd(uint);
 
-extern char *s_CD_sync_8012582c;
-extern char *s_CD_ready_80125834;
-extern char *s_CD_datasync_801258b0;
 extern char *s_CD_timeout__801257a4;
-extern char *s_VSync__timeout_80125b38;
-extern char *s_CdRead__sector_error_80125ac8;
-extern char *s_DiskError__801257d0;
-extern char *s_com__s_code___02x__02x__801257dc;
-extern char *s_CDROM__unknown_intr_801257f8;
-extern char *s___d__8012580c;
 extern char *s__s___s__Sync__s__Ready__s_801257b4;
 
 #define CDB8(a)   DB8(a)
