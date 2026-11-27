@@ -23819,8 +23819,8 @@ extern void cps_80179a5c(void);
     cps_80179a5c();
 }
 static void wrap_80179a60(CPUState *cpu) {
-extern void cps_80179a60(void);
-    cps_80179a60();
+extern void part_field4c_clear(void);
+    part_field4c_clear();
 }
 static void wrap_80179a6c(CPUState *cpu) {
 extern void part_record_reset(uint16_t *rec);
