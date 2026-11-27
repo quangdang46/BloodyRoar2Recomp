@@ -7768,51 +7768,51 @@ uint * rotmat_rtps_build(uint ang,uint *m)
 
 }
 
-uint * rotmat2_pair_build(uint a,uint b,uint *out)
+uint * rotmat2_pair_build(uint ang0,uint ang1,uint *out)
 {
-  int i0;
-  int i1;
-  int i2;
-  int i3;
-  uint v0;
-  uint v1;
-  uint v2;
-  int i4;
-  i0 = (a & 0x3ff) * 2;
-  i4 = (a & 0x3ff) * -2 + 0x800;
-  i3 = i0;
-  if ((a & 0x400) != 0) {
-    i3 = i4;
-    i4 = i0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
+  uint g0;
+  uint g1;
+  uint g2;
+  int t4;
+  t0 = (ang0 & 0x3ff) * 2;
+  t4 = (ang0 & 0x3ff) * -2 + 0x800;
+  t3 = t0;
+  if ((ang0 & 0x400) != 0) {
+    t3 = t4;
+    t4 = t0;
   }
-  i3 = (int)*(short *)(&DAT_801247a8 + i3);
-  if ((a & 0x800) != 0) {
-    i3 = -i3;
+  t3 = (int)*(short *)(&DAT_801247a8 + t3);
+  if ((ang0 & 0x800) != 0) {
+    t3 = -t3;
   }
-  i1 = (b & 0x3ff) * 2;
-  i2 = (b & 0x3ff) * -2 + 0x800;
-  i0 = i1;
-  if ((b & 0x400) != 0) {
-    i0 = i2;
-    i2 = i1;
+  t1 = (ang1 & 0x3ff) * 2;
+  t2 = (ang1 & 0x3ff) * -2 + 0x800;
+  t0 = t1;
+  if ((ang1 & 0x400) != 0) {
+    t0 = t2;
+    t2 = t1;
   }
-  v1 = (uint)*(short *)(&DAT_801247a8 + i0);
-  if ((b & 0x800) != 0) {
-    v1 = -v1;
+  g1 = (uint)*(short *)(&DAT_801247a8 + t0);
+  if ((ang1 & 0x800) != 0) {
+    g1 = -g1;
   }
-  v2 = (uint)*(short *)(&DAT_801247a8 + i2);
-  if ((b + 0x400 & 0x800) != 0) {
-    v2 = -v2;
+  g2 = (uint)*(short *)(&DAT_801247a8 + t2);
+  if ((ang1 + 0x400 & 0x800) != 0) {
+    g2 = -g2;
   }
-  v0 = (uint)*(short *)(&DAT_801247a8 + i4);
-  if ((a + 0x400 & 0x800) != 0) {
-    v0 = -v0;
+  g0 = (uint)*(short *)(&DAT_801247a8 + t4);
+  if ((ang0 + 0x400 & 0x800) != 0) {
+    g0 = -g0;
   }
-  out[1] = v1 & 0xffff | ((int)(v1 * i3) >> 0xc) << 0x10;
-  out[2] = v0 & 0xffff | ((int)(v2 * -i3) >> 0xc) << 0x10;
-  *out = v2 & 0xffff;
-  out[3] = i3 << 0x10 | -((int)(v1 * v0) >> 0xc) & 0xffffU;
-  *(short *)(out + 4) = (short)((int)(v2 * v0) >> 0xc);
+  out[1] = g1 & 0xffff | ((int)(g1 * t3) >> 0xc) << 0x10;
+  out[2] = g0 & 0xffff | ((int)(g2 * -t3) >> 0xc) << 0x10;
+  *out = g2 & 0xffff;
+  out[3] = t3 << 0x10 | -((int)(g1 * g0) >> 0xc) & 0xffffU;
+  *(short *)(out + 4) = (short)((int)(g2 * g0) >> 0xc);
   return out;
 
 }
