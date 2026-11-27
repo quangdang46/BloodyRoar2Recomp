@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "cpu_state.h"
 
 #define CONCAT22(hi,lo) (((uint32_t)(uint16_t)(hi) << 16) | (uint16_t)(lo))
 #define CONCAT11(hi,lo) (((uint16_t)(uint8_t)(hi) << 8) | (uint8_t)(lo))
@@ -982,6 +983,99 @@ int cd_file_pump(int cd_base,int state)
         state = 0x110;
     }
     return state;
+}
+
+/* cd_file_read_seq_cps — guest 0x801565ec (renames: cd_file_read_seq),
+ * the CD file-read sequence used by save.c's fighter_rec_fetch_apply:
+ *   cd_mode_store(0) -> cd_status_shifted_read(a1) ->
+ *   cd_seek_param_issue_clamped(a0,a2) -> poll cd_seek_complete_poll(0)
+ *   until nonzero; returns a2 in v0.
+ * 6-block CPS coroutine (clean_cps.map: entry + 5 continuation addrs).
+ * The poll loop's per-iteration psx_check_interrupts_at boundary is
+ * load-bearing: it is what lets the CD deferred-interrupt coroutine
+ * (cd_ctx_restore -> cd_chan_full_init -> cd_intc_dispatch) resume and
+ * DeliverEvent the flag TestEvent polls — a collapsed clean-C spin
+ * starves it (the reason save.c's 3-arg cd_file_read_seq delegates
+ * here). All state lives in cpu->gpr/guest RAM so scheduler longjmps
+ * preserve it; dispatches go through cpu->pc like generated CPS. */
+uint32_t cd_file_read_seq_cps(void)
+{
+    extern CPUState *clean_cpu_state(void);
+    extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+    extern uint32_t br2_ld32(uint32_t a);
+    extern void     br2_st32(uint32_t a, uint32_t v);
+    CPUState *c = clean_cpu_state();
+    uint32_t pc;
+    if (!c) return 0;
+    pc = c->pc;
+    if (pc != 0u && pc != 0x801565ecu) {
+        switch (pc) {
+        case 0x80156614u: goto b614;
+        case 0x8015661cu: goto b61C;
+        case 0x80156628u: goto b628;
+        case 0x80156630u: goto b630;
+        case 0x80156638u: goto b638;
+        default: break;
+        }
+    }
+
+    /* block_801565EC — 0x20 guest frame, args -> s0-s2, jal cd_mode_store(0) */
+    c->gpr[29] = c->gpr[29] - 32u;                  /* sp -= 0x20 */
+    br2_st32(c->gpr[29] + 20u, c->gpr[17]);         /* save s1 */
+    c->gpr[17] = c->gpr[4];                         /* s1 = a0 */
+    br2_st32(c->gpr[29] + 16u, c->gpr[16]);         /* save s0 */
+    c->gpr[16] = c->gpr[5];                         /* s0 = a1 */
+    br2_st32(c->gpr[29] + 24u, c->gpr[18]);         /* save s2 */
+    c->gpr[18] = c->gpr[6];                         /* s2 = a2 */
+    br2_st32(c->gpr[29] + 28u, c->gpr[31]);         /* save ra */
+    c->gpr[4]  = c->gpr[0];                         /* delay: a0 = 0 */
+    c->gpr[31] = 0x80156614u;                       /* jal link */
+    psx_check_interrupts_at(c, 0x8019d4d0u);
+    c->pc = 0x8019d4d0u;                            /* jal cd_mode_store */
+    return c->gpr[2];
+
+b614:
+    c->gpr[4]  = c->gpr[16];                        /* delay: a0 = s0 */
+    c->gpr[31] = 0x8015661cu;                       /* jal link */
+    psx_check_interrupts_at(c, 0x8019d470u);
+    c->pc = 0x8019d470u;                            /* jal cd_status_shifted_read */
+    return c->gpr[2];
+
+b61C:
+    c->gpr[4]  = c->gpr[17];                        /* a0 = s1 */
+    c->gpr[5]  = c->gpr[18];                        /* delay: a1 = s2 */
+    c->gpr[31] = 0x80156628u;                       /* jal link */
+    psx_check_interrupts_at(c, 0x8019d410u);
+    c->pc = 0x8019d410u;                            /* jal cd_seek_param_issue_clamped */
+    return c->gpr[2];
+
+b628:
+    c->gpr[4]  = c->gpr[0];                         /* delay: a0 = 0 */
+    c->gpr[31] = 0x80156630u;                       /* jal link */
+    psx_check_interrupts_at(c, 0x8019d500u);
+    c->pc = 0x8019d500u;                            /* jal cd_seek_complete_poll */
+    return c->gpr[2];
+
+b630:
+    { int _bc = (c->gpr[2] == c->gpr[0]);           /* poll ret == 0 ? */
+      c->gpr[2]  = c->gpr[18];                      /* delay: v0 = s2 */
+      if (_bc) {
+          psx_check_interrupts_at(c, 0x80156628u);
+          goto b628;                                /* retry poll */
+      }
+      psx_check_interrupts_at(c, 0x80156638u);
+      goto b638; }
+
+b638:
+    c->gpr[31] = br2_ld32(c->gpr[29] + 28u);        /* restore ra */
+    c->gpr[18] = br2_ld32(c->gpr[29] + 24u);        /* restore s2 */
+    c->gpr[17] = br2_ld32(c->gpr[29] + 20u);        /* restore s1 */
+    c->gpr[16] = br2_ld32(c->gpr[29] + 16u);        /* restore s0 */
+    c->gpr[29] = c->gpr[29] + 32u;                  /* sp += 0x20 */
+    { uint32_t _jt = c->gpr[31];                    /* jr ra */
+      psx_check_interrupts_at(c, _jt);
+      c->pc = _jt;
+      return c->gpr[2]; }
 }
 
 /* small frame/console helpers */
