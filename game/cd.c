@@ -377,8 +377,6 @@ extern undefined4 cd_busy_wait(int);
 extern int cd_dispatch_tbl4(int,uint32_t);
 uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
-extern char *s_CD_timeout__801257a4;
-extern char *s__s___s__Sync__s__Ready__s_801257b4;
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
 #define DB16P(a) br2_ld16p(a)
@@ -833,8 +831,6 @@ extern void bios_table_tramp(void);
 extern void bios_kobj_tramp(void);
 extern uint16_t cd_u16_swap_store(uint16_t);
 
-extern char *s_CD_timeout__801257a4;
-extern char *s__s___s__Sync__s__Ready__s_801257b4;
 
 #define CDB8(a)   DB8(a)
 #define CDB8P(a)  DB8P(a)
