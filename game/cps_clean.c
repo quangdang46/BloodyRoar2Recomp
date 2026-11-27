@@ -18577,7 +18577,7 @@ block_8012EE40:
 
 /* cps_8012f160 — clean CPS transliteration of br2eu_func_8012F160 (guest 0x8012f160)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012F164 — cps_8012f188 — clean CPS transliteration of br2eu_func_8012F188 (guest 0x8012f188) */
+ * status_text_dump epilogue: sp+=32 tail into 0x8012F164 (print_dispatch_wrap cluster). */
 void cps_8012f160(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35071,7 +35071,7 @@ block_801388FC:
 
 /* cps_8013890c — clean CPS transliteration of br2eu_func_8013890C (guest 0x8013890c)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80138910 — cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910) */
+ * a0++ index step into the 0x801388EC slot-clear sequence (clears table slot half(s0+8)*4 @0x801F0740). */
 void cps_8013890c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62429,7 +62429,7 @@ void cps_801796e4(void)
 
 /* cps_80179a5c — clean CPS transliteration of br2eu_func_80179A5C (guest 0x80179a5c)
  * from SLES_017.22_full_34.c.
- * CPS fallthrough stub — continues at 0x80179A60 — cps_80179a60 — clean CPS transliteration of br2eu_func_80179A60 (guest 0x80179a60) */
+ * field store word[a0+68]=a1 into the 0x80179A60 tail (part-link/unlink region). */
 void cps_80179a5c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -104641,7 +104641,7 @@ block_801A4FB8:
 
 /* cps_801a4fc0 — clean CPS transliteration of br2eu_func_801A4FC0 (guest 0x801a4fc0)
  * from SLES_017.22_full_50.c.
- * CPS fallthrough stub — continues at 0x801A4FC8 — cps_801a4fc8 — clean CPS transliteration of br2eu_func_801A4FC8 (guest 0x801a4fc8) */
+ * halfword pair store: half[a3+12]=a1+1, then 0x801A4FC8 writes half[a3+14]=t1, jr ra. */
 void cps_801a4fc0(void)
 {
   CPUState *cpu = clean_cpu_state();
