@@ -33,6 +33,7 @@ const AniHeader *ani_header(const uint8_t *blob)
     return (const AniHeader *)blob;
 }
 
+/* ani_sec — section base pointer for sec 0..7, NULL if absent/empty. */
 const uint8_t *ani_sec(const uint8_t *blob, int sec)
 {
     const AniHeader *h = ani_header(blob);
