@@ -57,9 +57,11 @@ for e in ents:
 if cur: txns.append(cur)
 
 # Classify: command = 2nd tx byte; id = 2nd rx byte (controller id).
-def cmd_of(t):  # command byte of a transaction: t["tx"][1] or None
+def cmd_of(t):
+    """Command byte of a transaction (t["tx"][1]) or None."""
     return t["tx"][1] if len(t["tx"]) > 1 else None
-def id_of(t):   # controller ID byte of a transaction: t["rx"][1] or None
+def id_of(t):
+    """Controller ID byte of a transaction (t["rx"][1]) or None."""
     return t["rx"][1] if len(t["rx"]) > 1 else None
 
 # Histogram to confirm parsing + see which poll IDs/commands actually occur.
