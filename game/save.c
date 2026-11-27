@@ -9015,6 +9015,7 @@ static int32_t guard_quad_emit(uint32_t a0,uint32_t a1,uint32_t a2,
   }
   return 0x00ffffff;
 }
+#undef GTE_DREG
 
 /* guard_callee_{a0,a1,b0,b1,c0,c1,d0,d1} @0x801a5bd0..0x801a6880 —
  * guard OT emit entry points: tag/count presets into guard_tri_emit /
@@ -9344,6 +9345,7 @@ void guard_dispatch_a(uint8_t *a0) { BR2_GUARD_DISPATCH(guard_callee_a0,guard_ca
 void guard_dispatch_b(uint8_t *a0) { BR2_GUARD_DISPATCH(guard_callee_b0,guard_callee_b1); return; }
 void guard_dispatch_c(uint8_t *a0) { BR2_GUARD_DISPATCH(guard_callee_c0,guard_callee_c1); return; }
 void guard_dispatch_d(uint8_t *a0) { BR2_GUARD_DISPATCH(guard_callee_d0,guard_callee_d1); return; }
+#undef BR2_GUARD_DISPATCH
 
 /* ======== batch36: 0x801a0e/0x801a17/0x801a40/0x801aef ======== */
 
@@ -9461,6 +9463,9 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   }
   return;
 }
+#undef BR2_GPC
+#undef BR2_GPF
+#undef BR2_GP50
 
 /* ======== batch66: node-type tag setters ======== */
 
