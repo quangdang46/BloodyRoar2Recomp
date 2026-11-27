@@ -3211,7 +3211,7 @@ int32_t select_screen_tick(int32_t entry_mode)
    * out of range the guest passes the incoming (caller) $s2 to
    * intro_movie_state, so seed from the live gpr. */
   uint32_t attr_idx = (uint32_t)clean_cpu_state()->gpr[18];
-  int32_t local_c8 = 0, local_c0 = 0;
+  int32_t sel_cursor = 0, ret_code = 0;
   /* guest sp-0xf8..sp frame image (prologue @0x8014f260: addiu sp,-0xf8,
    * s7=sp+0x40, sp+0x18 -> cell 0x801f10bc). Reserve the window on the
    * live guest sp (br2_guest_frame mirrors it into cpu->gpr[29]) so every
@@ -3227,18 +3227,18 @@ int32_t select_screen_tick(int32_t entry_mode)
    * carries a real guest address. */
   uint8_t *arg_blk = (uint8_t *)guest_at(sst_frm + 0x20);
   /* player_recs = two 0x30-byte player records at sp+0x40 (s7);
-   * local_a8/local_94 are Ghidra aliases into that same guest record
+   * rec_f10/rec_f24 are Ghidra aliases into that same guest record
    * array (+0x10 / +0x24), not separate host storage. */
   uint8_t *player_recs = (uint8_t *)guest_at(sst_frm + 0x48);
-  int32_t *local_a8 = (int32_t *)guest_at(sst_frm + 0x58);
-  int32_t *local_94 = (int32_t *)guest_at(sst_frm + 0x6c);
-  int32_t local_38 = 0;
-  int32_t local_34, local_30, local_2c = 0;
-  uint8_t *local_40 = (uint8_t *)guest_at(0x1f8000e8);
-  uint8_t *local_3c = (uint8_t *)guest_at(0x1f8001f0);
+  int32_t *rec_f10 = (int32_t *)guest_at(sst_frm + 0x58);
+  int32_t *rec_f24 = (int32_t *)guest_at(sst_frm + 0x6c);
+  int32_t tick_cnt = 0;
+  int32_t rdy_p0, rdy_p1, tick_gate = 0;
+  uint8_t *spad_cfg_a = (uint8_t *)guest_at(0x1f8000e8);
+  uint8_t *spad_cfg_b = (uint8_t *)guest_at(0x1f8001f0);
   *(uint32_t *)guest_at(0x801f10bc) = guest_of(arg_blk);
-  local_a8[3] = 0;
-  local_94[10] = 0;
+  rec_f10[3] = 0;
+  rec_f24[10] = 0;
   hud_sprite_desc_init();
   rgb_triple_store(0,0,0);
   flow_cfg_init(0);
@@ -3246,7 +3246,7 @@ int32_t select_screen_tick(int32_t entry_mode)
   DAT_1f800001 = 0;
   do {
     if (DAT_1f800001 == 6) {
-      fighter_spawn_setup(0x1f800000,local_40,local_3c,arg_blk,1);
+      fighter_spawn_setup(0x1f800000,spad_cfg_a,spad_cfg_b,arg_blk,1);
       if (((*(uint32_t *)g__DAT_1f80007c & 0x10) == 0) ||
           ((*(uint8_t *)g_DAT_1f8000a2 != 0 && (entry_mode != 1)))) {
         uint32_t side = 0;
@@ -3256,23 +3256,23 @@ int32_t select_screen_tick(int32_t entry_mode)
           if (st == 1) {
             if (*(int32_t *)(rec + 0x10) == 0) {
               if (*(int32_t *)(rec + 0x2c) == 0) {
-                if (local_a8[(side ^ 1) * 0xc] == 0) {
-                  thr = local_94[(side ^ 1) * 0xc];
+                if (rec_f10[(side ^ 1) * 0xc] == 0) {
+                  thr = rec_f24[(side ^ 1) * 0xc];
                   goto L_promote_chk;
                 }
-                if (local_a8[(side ^ 1) * 0xc] == 1) {
+                if (rec_f10[(side ^ 1) * 0xc] == 1) {
                   *(uint32_t *)(rec + 0x24) = 2;
                 }
               }
             }
             else if (*(int32_t *)(rec + 0x10) == 1) {
-              thr = local_94[(side ^ 1) * 0xc];
+              thr = rec_f24[(side ^ 1) * 0xc];
 L_promote_chk:
               if (0 < thr) *(uint32_t *)(rec + 0x24) = 2;
             }
           }
           else if (st < 2) {
-            if (st == 0 && local_2c != 0) {
+            if (st == 0 && tick_gate != 0) {
               ocur = *(int32_t *)(rec + 0x1c);
               uint32_t cur;
               if ((*(uint32_t *)(rec + 8) & 0x1000) != 0) {
@@ -3306,7 +3306,7 @@ L_promote_chk:
               }
             }
           }
-          else if (st == 2 && local_94[0] == 2 && local_94[0xc] == 2) {
+          else if (st == 2 && rec_f24[0] == 2 && rec_f24[0xc] == 2) {
             DAT_1f800001 = 0xf0;
           }
           rec += 0x30;
@@ -3316,10 +3316,10 @@ L_promote_chk:
           int32_t k = 0;
           rec = player_recs;
           do {
-            if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8--; }
-            if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); local_c8++; }
-            if (9 < local_c8) local_c8 = 0;
-            if (local_c8 < 0) local_c8 = 9;
+            if ((*(uint32_t *)(rec + 8) & 4) != 0) { deferred_cmd_post(0x400,0x40,0); sel_cursor--; }
+            if ((*(uint32_t *)(rec + 8) & 8) != 0) { deferred_cmd_post(0x400,0x40,0); sel_cursor++; }
+            if (9 < sel_cursor) sel_cursor = 0;
+            if (sel_cursor < 0) sel_cursor = 9;
             k++;
             rec += 0x30;
           } while (k < 2);
@@ -3327,52 +3327,52 @@ L_promote_chk:
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120690),0xd0,0x98,4);
           {
             uint32_t *ptbl = (uint32_t *)guest_at(0x801b3294);
-            uint8_t *xoff = (uint8_t *)guest_at(0x801b32f4 - 0xb0); /* (&DAT_801b32f4)[local_c8-?] */
-            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(ptbl[local_c8]),
-                         0x100 - (uint32_t)*(uint8_t *)((uintptr_t)xoff + local_c8),0xb0,3);
+            uint8_t *xoff = (uint8_t *)guest_at(0x801b32f4 - 0xb0); /* (&DAT_801b32f4)[sel_cursor-?] */
+            announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(ptbl[sel_cursor]),
+                         0x100 - (uint32_t)*(uint8_t *)((uintptr_t)xoff + sel_cursor),0xb0,3);
           }
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x80120698),200,200,4);
           announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(0x8012069c),0x110,200,4);
         }
-        int32_t row_b = local_94[10];
-        int32_t row_a = local_a8[3];
-        if (local_a8[0] == 0) local_34 = 1;
+        int32_t row_b = rec_f24[10];
+        int32_t row_a = rec_f10[3];
+        if (rec_f10[0] == 0) rdy_p0 = 1;
         else if ((DAT_1f80009b == 0 || DAT_1f80009c == 4) ||
-                 ((local_94[7] != 0 || local_94[0xc] < 1) &&
-                  (local_94[7] != 1 || local_94[0] < 0))) local_34 = 0;
-        else local_34 = 2;
-        if (local_94[7] == 0) local_30 = 1;
+                 ((rec_f24[7] != 0 || rec_f24[0xc] < 1) &&
+                  (rec_f24[7] != 1 || rec_f24[0] < 0))) rdy_p0 = 0;
+        else rdy_p0 = 2;
+        if (rec_f24[7] == 0) rdy_p1 = 1;
         else {
-          local_30 = 0;
+          rdy_p1 = 0;
           if (DAT_1f80009b != 0 && DAT_1f80009c != 4)
-            local_30 = (uint32_t)(0 < local_94[0]) << 1;
+            rdy_p1 = (uint32_t)(0 < rec_f24[0]) << 1;
         }
         {
           int16_t *t44 = (int16_t *)guest_at(0x801b3244);
           int16_t *t46 = (int16_t *)guest_at(0x801b3246);
-          if (local_34 != 0) {
+          if (rdy_p0 != 0) {
             pkv = 0xe9;
-            if (local_34 == 1) pkv = 0xb9;
+            if (rdy_p0 == 1) pkv = 0xb9;
             sprite_9slice_build(_DAT_1f800008,
-                         ((uint32_t)(t46[local_a8[3] * 2] + 0xf) << 16) |
-                         ((uint32_t)(t44[local_a8[3] * 2] + 0x24) & 0xffff),0x151d000e,
+                         ((uint32_t)(t46[rec_f10[3] * 2] + 0xf) << 16) |
+                         ((uint32_t)(t44[rec_f10[3] * 2] + 0x24) & 0xffff),0x151d000e,
                          (uint32_t)((pkv << 8) | 0x7adc00b1));
             pkv = 0x7adc;
-            if (local_94[0] < 1) pkv = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+            if (rec_f24[0] < 1) pkv = (tick_cnt + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[row_a * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[row_a * 2] + 0x1c) & 0xffff),0x3e37000e,
                          ((uint32_t)pkv << 16) | 0xc040);
           }
-          if (local_30 != 0) {
+          if (rdy_p1 != 0) {
             pkv = 0xe9;
-            if (local_30 == 1) pkv = 0xd1;
+            if (rdy_p1 == 1) pkv = 0xd1;
             sprite_9slice_build(_DAT_1f800008,
                          ((uint32_t)(t46[row_b * 2] + 0x31) << 16) |
                          ((uint32_t)(t44[row_b * 2] + 0x12) & 0xffff),0x151d000e,
                          (uint32_t)((pkv << 8) | 0x7adc00b1));
             pkv = 0x7adc;
-            if (local_94[0xc] < 1) pkv = (local_38 + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
+            if (rec_f24[0xc] < 1) pkv = (tick_cnt + 0x1e5 & 0x1ff) * 0x40 + 0x1c;
             sprite_9slice_build(_DAT_1f800008 + 4,
                          ((uint32_t)(t46[row_b * 2] + 0x1f) << 16) |
                          ((uint32_t)(t44[row_b * 2] + 0x1c) & 0xffff),0x3e37000e,
@@ -3418,9 +3418,9 @@ L_promote_chk:
           uint32_t *p47ec = (uint32_t *)guest_at(0x801b47ec);
           uint32_t *p47f0 = (uint32_t *)guest_at(0x801b47f0);
           if (entry_mode < 4 && 1 < entry_mode) {
-            uint32_t pidx = (uint32_t)local_94[10];
-            if (local_a8[0] == 0) pidx = (uint32_t)local_a8[3];
-            pidx_b = (uint32_t)(local_a8[0] != 0);
+            uint32_t pidx = (uint32_t)rec_f24[10];
+            if (rec_f10[0] == 0) pidx = (uint32_t)rec_f10[3];
+            pidx_b = (uint32_t)(rec_f10[0] != 0);
             if (entry_mode == 2) {
               int32_t xc = (((int16_t)_DAT_1f800020) -
                       (((int32_t)((uint16_t)_DAT_1f800020 << 16)) >> 31)) >> 1;
@@ -3463,8 +3463,8 @@ L_promote_chk:
               pkv = 0x140 - hh[pidx];
             }
             int32_t attrw;
-            if (local_94[pidx_b * 0xc + 2] == 0) attrw = 0x7996;
-            else { local_94[pidx_b * 0xc + 2]--; attrw = 0x7b56; }
+            if (rec_f24[pidx_b * 0xc + 2] == 0) attrw = 0x7996;
+            else { rec_f24[pidx_b * 0xc + 2]--; attrw = 0x7b56; }
             draw_slot = (int32_t)(pidx + 0xb);
             if (pidx == 8) draw_slot = 0x16;
             spr_draw_off(draw_slot * 0x8014 + -0x7fff0000,0x280,0,1);
@@ -3485,11 +3485,11 @@ LAB_80150558:
           } else {
             int32_t yc = ((int16_t)_DAT_1f800022 * 3) / 5;
             /* guest caches the two select-row indices in $s6/$fp at
-             * 0x8014F8B0 (s7+0x1c / s7+0x4c == local_a8[3] / local_94[10]) */
+             * 0x8014F8B0 (s7+0x1c / s7+0x4c == rec_f10[3] / rec_f24[10]) */
             int32_t ply_a = row_a;
             int32_t ply_b = row_b;
             uint32_t pkw;
-            if (local_34 != 0) {
+            if (rdy_p0 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[ply_a * 2]),
                            (int32_t)((uint32_t)t270[ply_a * 2] + 0), /* (&DAT_801b3270)[ply_a*2] u32? */
                            (yc + -0x34) * 0x10000 >> 16,5);
@@ -3505,7 +3505,7 @@ LAB_80150558:
                              ty >> 3,3);
               }
             }
-            if (local_30 != 0) {
+            if (rdy_p1 != 0) {
               announce_param_block_init(_DAT_1f800008,_DAT_1f80000c,(const void *)guest_at(p47ec[ply_b * 2]),
                            (int32_t)((uint32_t)t270[ply_b * 2] + 0x140),
                            (yc + -0x34) * 0x10000 >> 16,5);
@@ -3521,20 +3521,20 @@ LAB_80150558:
                              (int32_t)((_DAT_1f800020 - 0x38) * 0x10000) >> 16,ty >> 3,3);
               }
             }
-            if (local_34 != 0) {
+            if (rdy_p0 != 0) {
               int32_t attrw;
-              if (local_94[2] == 0) attrw = 0x7996;
-              else { attrw = 0x7b56; local_94[2]--; }
+              if (rec_f24[2] == 0) attrw = 0x7996;
+              else { attrw = 0x7b56; rec_f24[2]--; }
               spr_draw_off(ply_a * 0x8014 + -0x7fff0000,0x200,0,1);
               if (ply_a == 8) pkw = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe390000 | 0xff;
               else pkw = (uint32_t)_DAT_1f800022 * 0x10000 + 0xfe700000 | 200;
               spr_attr_alloc_b(_DAT_1f800008 + 4,pkw,0xfefe0008,(uint32_t)(attrw << 16),0,
                            (int16_t)_DAT_1f800022 + -200);
             }
-            if (local_30 != 0) {
+            if (rdy_p1 != 0) {
               int32_t attrw;
-              if (local_94[0xe] == 0) attrw = 0x7996;
-              else { attrw = 0x7b56; local_94[0xe]--; }
+              if (rec_f24[0xe] == 0) attrw = 0x7996;
+              else { attrw = 0x7b56; rec_f24[0xe]--; }
               spr_draw_off(ply_b * 0x8014 + -0x7fff0000,0x240,0,1);
               int32_t yp; int32_t otptr; int32_t attrc; int32_t tx;
               if (ply_b == 8) {
@@ -3552,18 +3552,18 @@ LAB_80150558:
             }
           }
         }
-        if ((*(uint32_t *)g__DAT_1f8000dc & 3) == 0 && (local_38 = local_38 + 1, 5 < local_38))
-          local_38 = 0;
+        if ((*(uint32_t *)g__DAT_1f8000dc & 3) == 0 && (tick_cnt = tick_cnt + 1, 5 < tick_cnt))
+          tick_cnt = 0;
         uint32_t gmode;
         if (entry_mode == 2) gmode = 0x19;
         else if ((*(uint8_t *)g_DAT_1f8000a2 == 0) || entry_mode == 1) gmode = 0x18;
         else gmode = 0x48;
         hud_gauge_render(0x1f800000,_DAT_1f800008,gmode);
-        local_2c++;
+        tick_gate++;
         goto LAB_80150610;
       }
       deferred_cmd_post(0x400,0xd,0);
-      local_c0 = -1;
+      ret_code = -1;
       DAT_1f800001 = 0xf0;
     } else {
       if (DAT_1f800001 < 7) {
@@ -3577,17 +3577,17 @@ LAB_80150558:
           if (mvst != 0) {
             sprite_desc_table_init(1);
             print_mode_dispatch_b(2,0,0);
-            battle_config_eval(local_40,0x1f800000,1);
-            battle_config_eval(local_3c,0x1f800000,1);
+            battle_config_eval(spad_cfg_a,0x1f800000,1);
+            battle_config_eval(spad_cfg_b,0x1f800000,1);
             post_confirm_config_build(0x1f800000,arg_blk,1);
             *(uint32_t *)g__DAT_801e8508 = 0;
             *(uint32_t *)g__DAT_801e8518 = 0x28;
-            if (*(int32_t *)(_g_system_config_ptr + 0x40) < 0) local_c8 = 9;
+            if (*(int32_t *)(_g_system_config_ptr + 0x40) < 0) sel_cursor = 9;
             uint32_t marg = 1;
             if (*(char *)(_g_system_config_ptr + 0xd) == 0) marg = 0x1f;
             mc_confirm_dispatch(marg,1);
             next_state = 6;
-            local_2c = 0;
+            tick_gate = 0;
             goto LAB_8015060c;
           }
         }
@@ -3606,17 +3606,17 @@ LAB_80150610:
       frame_tick(0x1f800000);
     }
     if (DAT_1f800001 == 0xff) {
-      if (local_c8 == 9) {
+      if (sel_cursor == 9) {
         *(uint32_t *)(_g_system_config_ptr + 0x40) |= 0x80000000;
         int32_t tb = table_byte_next_a();
         DAT_1f800098 = (uint8_t)((uint32_t)(tb * 9) >> 8);
       } else {
         *(uint32_t *)(_g_system_config_ptr + 0x40) &= 0x7fffffff;
-        DAT_1f800098 = (uint8_t)local_c8;
+        DAT_1f800098 = (uint8_t)sel_cursor;
       }
       DAT_1f800001 = 0;
       br2_guest_frame_free();
-      return local_c0;
+      return ret_code;
     }
   } while (1);
 }
