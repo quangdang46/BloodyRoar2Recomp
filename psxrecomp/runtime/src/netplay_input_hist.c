@@ -16,11 +16,13 @@ static int8_t u8_to_i8_stick(uint8_t v)
     return (int8_t)d;
 }
 
+/* i8 to u8 stick: return (uint8_t)((int)v + 0x80) */
 static uint8_t i8_to_u8_stick(int8_t v)
 {
     return (uint8_t)((int)v + 0x80);
 }
 
+/* netplay ih pad to frame: PsxNetPad n */
 void netplay_ih_pad_to_frame(const PsxNetPad *pad, uint32_t tick, uint8_t predicted,
                              RNetRbFrame *out)
 {
@@ -43,6 +45,7 @@ void netplay_ih_pad_to_frame(const PsxNetPad *pad, uint32_t tick, uint8_t predic
     out->analog = n.analog ? 1u : 0u;
 }
 
+/* netplay ih frame to pad: if (!pad) return */
 void netplay_ih_frame_to_pad(const RNetRbFrame *frame, PsxNetPad *pad)
 {
     if (!pad) return;

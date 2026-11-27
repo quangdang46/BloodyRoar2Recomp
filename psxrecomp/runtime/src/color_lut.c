@@ -35,13 +35,16 @@ static const Primaries kPhosphorSmpteC =
 static const Primaries kPhosphorTrinitron =
     {{0.625, 0.340}, {0.280, 0.595}, {0.155, 0.070}, {0.3127, 0.3290}};
 
+/* xy eq: return a.x == b.x && a.y == b.y; */
 static bool xy_eq(Xy a, Xy b) { return a.x == b.x && a.y == b.y; }
 
+/* mat apply: for (int i = 0; i < 3; ++i) */
 static void mat_apply(const Mat3* a, const double v[3], double out[3]) {
   for (int i = 0; i < 3; ++i)
     out[i] = a->m[i][0] * v[0] + a->m[i][1] * v[1] + a->m[i][2] * v[2];
 }
 
+/* mat mul: Mat3 r */
 static Mat3 mat_mul(const Mat3* a, const Mat3* b) {
   Mat3 r;
   memset(&r, 0, sizeof(r));
@@ -51,6 +54,7 @@ static Mat3 mat_mul(const Mat3* a, const Mat3* b) {
   return r;
 }
 
+/* mat cof: int r1 = (rr + 1) % 3, r2 = (rr + 2) % 3 */
 static double mat_cof(const Mat3* a, int rr, int cc) {
   const double (*m)[3] = a->m;
   int r1 = (rr + 1) % 3, r2 = (rr + 2) % 3;
@@ -58,6 +62,7 @@ static double mat_cof(const Mat3* a, int rr, int cc) {
   return m[r1][c1] * m[r2][c2] - m[r1][c2] * m[r2][c1];
 }
 
+/* mat inverse: double det = a->m[0][0] * mat_cof(a, 0, 0) + a->m[0][1] * mat_cof(a, ... */
 static Mat3 mat_inverse(const Mat3* a) {
   double det = a->m[0][0] * mat_cof(a, 0, 0) + a->m[0][1] * mat_cof(a, 0, 1) +
                a->m[0][2] * mat_cof(a, 0, 2);
@@ -68,6 +73,7 @@ static Mat3 mat_inverse(const Mat3* a) {
   return out;
 }
 
+/* xy to xyz: out[0] = c.x / c.y */
 static void xy_to_xyz(Xy c, double out[3]) {
   out[0] = c.x / c.y;
   out[1] = 1.0;
@@ -91,6 +97,7 @@ static Mat3 rgb_to_xyz(const Primaries* p) {
   return out;
 }
 
+/* bradford adaptation: {-0.7502, 1.7135, 0.0367}, */
 static Mat3 bradford_adaptation(Xy from, Xy to) {
   const Mat3 kBradford = {{{0.8951, 0.2664, -0.1614},
                            {-0.7502, 1.7135, 0.0367},
@@ -108,6 +115,7 @@ static Mat3 bradford_adaptation(Xy from, Xy to) {
   return mat_mul(&tmp, &kBradford);
 }
 
+/* rgb to rgb: Mat3 to_xyz = rgb_to_xyz(src) */
 static Mat3 rgb_to_rgb(const Primaries* src, const Primaries* dst) {
   Mat3 to_xyz = rgb_to_xyz(src);
   Mat3 dst_xyz = rgb_to_xyz(dst);
@@ -118,6 +126,7 @@ static Mat3 rgb_to_rgb(const Primaries* src, const Primaries* dst) {
   return mat_mul(&tmp, &to_xyz);
 }
 
+/* srgb oetf: return v <= 0.0031308 ? 12.92 * v : 1.055 * pow(v, 1.0 / 2.4) - 0.055 */
 static double srgb_oetf(double v) {
   return v <= 0.0031308 ? 12.92 * v : 1.055 * pow(v, 1.0 / 2.4) - 0.055;
 }
@@ -128,16 +137,19 @@ typedef struct {
   double gamma, luminance, black_floor;
 } PanelModel;
 
+/* clampd: return v < lo ? lo : (v > hi ? hi : v) */
 static double clampd(double v, double lo, double hi) {
   return v < lo ? lo : (v > hi ? hi : v);
 }
 
+/* effective gamma: darken = clampd(darken, 0.0, 1.0) */
 static double effective_gamma(double darken) {
   darken = clampd(darken, 0.0, 1.0);
   /* CRTs sit near 2.4–2.5; composite viewing in a lit room reads darker. */
   return 2.4 + 0.4 * darken;
 }
 
+/* default darken: switch (s)  */
 static double default_darken(ScreenKind s) {
   switch (s) {
     case SCREEN_COMPOSITE: return 0.25;
@@ -171,11 +183,13 @@ static bool panel_model(ScreenKind s, double darken, PanelModel* out) {
   }
 }
 
+/* quantize: v = clampd(v, 0.0, 1.0) */
 static uint8_t quantize(double v) {
   v = clampd(v, 0.0, 1.0);
   return (uint8_t)(v * 255.0 + 0.5);
 }
 
+/* target primaries: return t == DISPLAY_P3 ? &kDisplayP3 : &kSrgb */
 static const Primaries* target_primaries(DisplayTarget t) {
   return t == DISPLAY_P3 ? &kDisplayP3 : &kSrgb;
 }
@@ -186,6 +200,7 @@ struct ColorLut {
   bool passthrough;
 };
 
+/* screen kind from name: if (!name || !out) return false */
 bool screen_kind_from_name(const char* name, ScreenKind* out) {
   if (!name || !out) return false;
   if (!strcmp(name, "raw"))       { *out = SCREEN_RAW;       return true; }
@@ -195,6 +210,7 @@ bool screen_kind_from_name(const char* name, ScreenKind* out) {
   return false;
 }
 
+/* color lut create: ColorLut* lut = (ColorLut*)calloc(1, sizeof(ColorLut)) */
 ColorLut* color_lut_create(const ColorSettings* settings) {
   ColorLut* lut = (ColorLut*)calloc(1, sizeof(ColorLut));
   if (!lut) return NULL;
@@ -247,12 +263,15 @@ ColorLut* color_lut_create(const ColorSettings* settings) {
   return lut;
 }
 
+/* color lut destroy: free(lut); */
 void color_lut_destroy(ColorLut* lut) { free(lut); }
 
+/* color lut is passthrough: return lut && lut->passthrough */
 bool color_lut_is_passthrough(const ColorLut* lut) {
   return lut && lut->passthrough;
 }
 
+/* color lut map555: uint32_t idx = bgr555 & 0x7FFFu */
 void color_lut_map555(const ColorLut* lut, uint16_t bgr555,
                       uint8_t* r, uint8_t* g, uint8_t* b) {
   uint32_t idx = bgr555 & 0x7FFFu;

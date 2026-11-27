@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+/* clamp axis setting: if (value < 0) */
 static int clamp_axis_setting(int value)
 {
     if (value < 0)
@@ -11,6 +12,7 @@ static int clamp_axis_setting(int value)
     return value;
 }
 
+/* signed axis to byte: int byte = (value + 32768) >> 8 */
 static uint8_t signed_axis_to_byte(int value)
 {
     int byte = (value + 32768) >> 8;
@@ -21,6 +23,7 @@ static uint8_t signed_axis_to_byte(int value)
     return (uint8_t)byte;
 }
 
+/* psx stick to dualshock: double source_magnitude */
 void psx_stick_to_dualshock(int16_t x, int16_t y,
                             int deadzone, int anti_deadzone,
                             uint8_t *out_x, uint8_t *out_y)

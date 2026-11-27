@@ -10,6 +10,7 @@
 
 extern "C" {
 
+/* iso open: auto* reader = new PS1::ISOReader() */
 void* iso_open(const char* path) {
     auto* reader = new PS1::ISOReader();
     if (!reader->Open(path)) {
@@ -19,6 +20,7 @@ void* iso_open(const char* path) {
     return reader;
 }
 
+/* iso read sector: if (!handle) return 0 */
 int iso_read_sector(void* handle, uint32_t lba, uint8_t* buffer, int size) {
     if (!handle) return 0;
     auto* reader = static_cast<PS1::ISOReader*>(handle);
@@ -28,6 +30,7 @@ int iso_read_sector(void* handle, uint32_t lba, uint8_t* buffer, int size) {
     return 1;
 }
 
+/* iso read raw sector: if (!handle || size < 2352) return 0 */
 int iso_read_raw_sector(void* handle, uint32_t lba, uint8_t* buffer, int size) {
     if (!handle || size < 2352) return 0;
     auto* reader = static_cast<PS1::ISOReader*>(handle);
@@ -36,6 +39,7 @@ int iso_read_raw_sector(void* handle, uint32_t lba, uint8_t* buffer, int size) {
     return 1;
 }
 
+/* iso read subq: if (!handle || !buffer || size < 12 || !valid) return 0 */
 int iso_read_subq(void* handle, uint32_t lba, uint8_t* buffer, int size,
                   int* valid) {
     if (!handle || !buffer || size < 12 || !valid) return 0;
@@ -46,10 +50,12 @@ int iso_read_subq(void* handle, uint32_t lba, uint8_t* buffer, int size,
     return 1;
 }
 
+/* iso has subq replacements: return handle && static_cast<PS1::ISOReader*>(handle)->HasSubChannelR... */
 int iso_has_subq_replacements(void* handle) {
     return handle && static_cast<PS1::ISOReader*>(handle)->HasSubChannelReplacements();
 }
 
+/* iso sector count: if (!handle) return 0 */
 uint32_t iso_sector_count(void* handle) {
     if (!handle) return 0;
     auto* reader = static_cast<PS1::ISOReader*>(handle);
@@ -62,21 +68,25 @@ int iso_track_count(void* handle) {
     return static_cast<PS1::ISOReader*>(handle)->TrackCount();
 }
 
+/* iso track start lba: if (!handle) return 0 */
 uint32_t iso_track_start_lba(void* handle, int track) {
     if (!handle) return 0;
     return static_cast<PS1::ISOReader*>(handle)->TrackStartLBA(track);
 }
 
+/* iso track pregap lba: auto* reader = static_cast<PS1::ISOReader*>(handle) */
 uint32_t iso_track_pregap_lba(void* handle, int track) {
     auto* reader = static_cast<PS1::ISOReader*>(handle);
     return reader ? reader->TrackPregapLBA(track) : 0;
 }
 
+/* iso track is audio: if (!handle) return 0 */
 int iso_track_is_audio(void* handle, int track) {
     if (!handle) return 0;
     return static_cast<PS1::ISOReader*>(handle)->TrackIsAudio(track) ? 1 : 0;
 }
 
+/* iso close: if (!handle) return */
 void iso_close(void* handle) {
     if (!handle) return;
     auto* reader = static_cast<PS1::ISOReader*>(handle);

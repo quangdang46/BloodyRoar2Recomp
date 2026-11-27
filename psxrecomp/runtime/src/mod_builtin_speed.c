@@ -20,6 +20,7 @@
 #define PKG_FAST "psx.enhancement.fast-loading"
 #define PKG_CD   "psx.enhancement.cd-speed"
 
+/* speed option number: char text[32] = "" */
 static long speed_option_number(const char* pkg, const char* feature,
                                 const char* id, long fallback) {
     char text[32] = "";
@@ -31,6 +32,7 @@ static long speed_option_number(const char* pkg, const char* feature,
     return value;
 }
 
+/* speed option flag: char text[16] = "" */
 static int speed_option_flag(const char* pkg, const char* feature,
                              const char* id) {
     char text[16] = "";
@@ -38,6 +40,7 @@ static int speed_option_flag(const char* pkg, const char* feature,
            strcmp(text, "true") == 0;
 }
 
+/* builtin fast loading activate: ? 0u */
 static void builtin_fast_loading_activate(void) {
     /* Uncapped is expressed to the runtime as multiplier 0. Multiplier 1 is
      * authentic pacing -- legal, so a player can park the value there without
@@ -50,6 +53,7 @@ static void builtin_fast_loading_activate(void) {
     (void)psx_mod_set_load_acceleration(multiplier, 0u);
 }
 
+/* builtin cd speed activate: if (speed_option_flag(PKG_CD, "cd-speed", "instant"))  */
 static void builtin_cd_speed_activate(void) {
     if (speed_option_flag(PKG_CD, "cd-speed", "instant")) {
         /* Divisor 0 selects the bounded instant scheduler; only the budget

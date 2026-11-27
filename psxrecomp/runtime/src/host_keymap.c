@@ -34,10 +34,12 @@ typedef struct HostKeyAction {
 
 static HostKeyAction s_actions[HOST_KEYMAP_ACTION_COUNT];
 
+/* want default: return s_actions[action].count == 0 && !s_actions[action].explicit_un... */
 static int want_default(HostKeymapAction action) {
     return s_actions[action].count == 0 && !s_actions[action].explicit_unbound;
 }
 
+/* ieq: if (!a || !b) return 0 */
 static int ieq(const char *a, const char *b) {
     if (!a || !b) return 0;
     while (*a && *b) {
@@ -49,6 +51,7 @@ static int ieq(const char *a, const char *b) {
     return *a == 0 && *b == 0;
 }
 
+/* starts ci: if (!s || !pfx) return 0 */
 static int starts_ci(const char *s, const char *pfx) {
     if (!s || !pfx) return 0;
     while (*pfx) {
@@ -60,6 +63,7 @@ static int starts_ci(const char *s, const char *pfx) {
     return 1;
 }
 
+/* trim inplace: char *e */
 static void trim_inplace(char *s) {
     char *e;
     if (!s) return;
@@ -71,10 +75,12 @@ static void trim_inplace(char *s) {
         *--e = 0;
 }
 
+/* clear all */
 static void clear_all(void) {
     memset(s_actions, 0, sizeof(s_actions));
 }
 
+/* add bind: HostKeyAction *a */
 static void add_bind(HostKeymapAction action, int keycode, int scancode, int mods) {
     HostKeyAction *a;
     if (action < 0 || action >= HOST_KEYMAP_ACTION_COUNT) return;
@@ -87,6 +93,7 @@ static void add_bind(HostKeymapAction action, int keycode, int scancode, int mod
     a->count++;
 }
 
+/* apply defaults: if (want_default(HOST_KEYMAP_FULLSCREEN))  */
 static void apply_defaults(void) {
     if (want_default(HOST_KEYMAP_FULLSCREEN)) {
         add_bind(HOST_KEYMAP_FULLSCREEN, (int)SDLK_RETURN, (int)SDL_SCANCODE_RETURN, KMOD_ALT);
@@ -144,6 +151,7 @@ static void parse_one_token(HostKeymapAction action, char *tok) {
     add_bind(action, (int)key, (int)sc, mods);
 }
 
+/* parse value: char buf[256] */
 static void parse_value(HostKeymapAction action, const char *value) {
     char buf[256];
     char *p;
@@ -159,6 +167,7 @@ static void parse_value(HostKeymapAction action, const char *value) {
     }
 }
 
+/* action for key: if (ieq(name, "Fullscreen")) return HOST_KEYMAP_FULLSCREEN */
 static HostKeymapAction action_for_key(const char *name) {
     if (ieq(name, "Fullscreen")) return HOST_KEYMAP_FULLSCREEN;
     if (ieq(name, "Turbo")) return HOST_KEYMAP_TURBO;
@@ -172,6 +181,7 @@ static HostKeymapAction action_for_key(const char *name) {
     return HOST_KEYMAP_ACTION_COUNT;
 }
 
+/* host keymap load: FILE *f */
 void host_keymap_load(const char *config_ini_path) {
     FILE *f;
     char line[512];
@@ -223,6 +233,7 @@ void host_keymap_load(const char *config_ini_path) {
     apply_defaults();
 }
 
+/* host keymap match event: int i */
 int host_keymap_match_event(HostKeymapAction action, int keycode,
                             int scancode, int mod) {
     const HostKeyAction *a;
@@ -239,10 +250,12 @@ int host_keymap_match_event(HostKeymapAction action, int keycode,
     return 0;
 }
 
+/* host keymap match: return host_keymap_match_event(action, keycode, 0, mod) */
 int host_keymap_match(HostKeymapAction action, int keycode, int mod) {
     return host_keymap_match_event(action, keycode, 0, mod);
 }
 
+/* host keymap down: int i */
 int host_keymap_down(HostKeymapAction action, const uint8_t *keys, int mod) {
     const HostKeyAction *a;
     const int relevant = (int)(KMOD_CTRL | KMOD_ALT | KMOD_SHIFT);
@@ -304,6 +317,7 @@ static void append_overlay_safe(char *out, size_t cap, size_t *n,
         out[cap - 1] = 0;
 }
 
+/* host keymap label: size_t n = 0 */
 const char *host_keymap_label(HostKeymapAction action, char *out, size_t cap) {
     const HostKeyAction *a;
     const HostKeyBind *b;

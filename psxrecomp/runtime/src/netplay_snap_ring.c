@@ -18,6 +18,7 @@
 #  include <time.h>
 #endif
 
+/* snap mono ms: LARGE_INTEGER c */
 static double snap_mono_ms(void)
 {
 #if defined(_WIN32)
@@ -33,6 +34,7 @@ static double snap_mono_ms(void)
 #endif
 }
 
+/* netplay snap ring save: uint8_t *data = NULL */
 int netplay_snap_ring_save(NetplaySnapRing *r, uint32_t tick,
                            const CPUState *cpu, uint32_t bios_checksum,
                            uint32_t entry_pc)
@@ -74,6 +76,7 @@ int netplay_snap_ring_save(NetplaySnapRing *r, uint32_t tick,
     return 1;
 }
 
+/* netplay snap ring load: size_t size = 0 */
 int netplay_snap_ring_load(NetplaySnapRing *r, uint32_t tick, CPUState *cpu,
                            uint32_t bios_checksum, uint32_t entry_pc)
 {

@@ -20,12 +20,14 @@ static const PsxGameBackend* g_backends[PSX_GAME_BACKEND_MAX];
 static int                   g_backend_count = 0;
 static const PsxGameBackend* g_active = 0;
 
+/* psx game backend register: if (!backend) return */
 void psx_game_backend_register(const PsxGameBackend* backend) {
     if (!backend) return;
     if (g_backend_count < PSX_GAME_BACKEND_MAX)
         g_backends[g_backend_count++] = backend;
 }
 
+/* psx game backend active: if (g_active) return g_active */
 const PsxGameBackend* psx_game_backend_active(void) {
     /* A single-image build (the isolated per-region targets, or a dev run with
      * no mounted disc) has exactly one candidate, so use it without requiring
@@ -50,6 +52,7 @@ static int key_equal(const char* a, const char* b) {
     }
 }
 
+/* psx game backend match: for (int i = 0; i < g_backend_count; ++i)  */
 const PsxGameBackend* psx_game_backend_match(const char* serial) {
     for (int i = 0; i < g_backend_count; ++i) {
         if (key_equal(g_backends[i]->game_id, serial) ||
@@ -60,6 +63,7 @@ const PsxGameBackend* psx_game_backend_match(const char* serial) {
     return 0;
 }
 
+/* psx game backend select: if (be)  */
 int psx_game_backend_select(const char* serial) {
     const PsxGameBackend* be = psx_game_backend_match(serial);
     if (be) {
@@ -74,6 +78,7 @@ int psx_game_backend_select(const char* serial) {
  * clean_table.c's strong definition claims covered guest addresses first;
  * uncovered addresses still take the generated path below. */
 __attribute__((weak))
+/* clean try dispatch: (void)cpu; (void)addr; return 0; */
 int clean_try_dispatch(CPUState* cpu, uint32_t addr) { (void)cpu; (void)addr; return 0; }
 
 /* Generated-fallback observability for the timed CD/IRQ band
@@ -92,6 +97,7 @@ static uint64_t g_gen_fb_count;
 static uint32_t g_gen_fb_ring[BR2_FB_RING];
 static uint32_t g_gen_fb_pos;
 
+/* gen fb note: if (addr >= BR2_FB_LO && addr < BR2_FB_HI)  */
 static void gen_fb_note(uint32_t addr) {
     if (addr >= BR2_FB_LO && addr < BR2_FB_HI) {
         g_gen_fb_count++;
@@ -99,7 +105,9 @@ static void gen_fb_note(uint32_t addr) {
         g_gen_fb_pos = (g_gen_fb_pos + 1) & (BR2_FB_RING - 1);
     }
 }
+/* psx gen fallback inregion count: return g_gen_fb_count; */
 uint64_t psx_gen_fallback_inregion_count(void) { return g_gen_fb_count; }
+/* psx gen fallback inregion at: if (i >= BR2_FB_RING) return 0 */
 uint32_t psx_gen_fallback_inregion_at(uint32_t i) {
     if (i >= BR2_FB_RING) return 0;
     return g_gen_fb_ring[(g_gen_fb_pos + BR2_FB_RING - 1 - i) & (BR2_FB_RING - 1)];
@@ -123,21 +131,25 @@ int psx_dispatch_game_compiled(CPUState* cpu, uint32_t addr) {
     return be ? be->dispatch_compiled(cpu, addr) : 0;
 }
 
+/* psx game is function entry: return be ? be->is_function_entry(addr) : 0 */
 int psx_game_is_function_entry(uint32_t addr) {
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->is_function_entry(addr) : 0;
 }
 
+/* psx game text native ok: return be ? be->text_native_ok(addr) : 0 */
 int psx_game_text_native_ok(uint32_t addr) {
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->text_native_ok(addr) : 0;
 }
 
+/* psx game text native ok full: return be ? be->text_native_ok_full(addr) : 0 */
 int psx_game_text_native_ok_full(uint32_t addr) {
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->text_native_ok_full(addr) : 0;
 }
 
+/* psx game address in text: return be ? be->address_in_text(addr) : 0 */
 int psx_game_address_in_text(uint32_t addr) {
     const PsxGameBackend* be = psx_game_backend_active();
     return be ? be->address_in_text(addr) : 0;

@@ -18,6 +18,7 @@ static const double kMinLevel = 0.002;      /* below this the window has no verd
 static const float kMinR = 0.5f;            /* sustained correlation gate */
 static const uint32_t kMaxStrikes = 3u;
 
+/* shadow verifier init: v->gain = 1.0f */
 void shadow_verifier_init(ShadowVerifier* v) {
   memset(v, 0, sizeof(*v));
   v->gain = 1.0f;
@@ -104,6 +105,7 @@ static bool selfcheck_push(ShadowSelfCheck* s, float canon_l, float canon_r,
   return have_verdict;
 }
 
+/* verifier pause: v->proven = false */
 static void verifier_pause(ShadowVerifier* v, const char* reason) {
   v->proven = false;
   v->consec_pass = 0;
@@ -113,6 +115,7 @@ static void verifier_pause(ShadowVerifier* v, const char* reason) {
   snprintf(v->reverted, sizeof(v->reverted), "%s", reason);
 }
 
+/* shadow verifier judge: float r = 0.0f, ratio = 0.0f */
 ShadowJudgement shadow_verifier_judge(ShadowVerifier* v, float canon_l,
                                       float canon_r, float chk_l, float chk_r) {
   float r = 0.0f, ratio = 0.0f;

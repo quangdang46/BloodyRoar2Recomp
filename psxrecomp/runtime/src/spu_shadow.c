@@ -30,11 +30,13 @@ static int            s_cfg     = 0;    /* config/launcher gate (env overrides) 
 static ShadowVerifier s_verifier;
 static SpuShadowInfo  s_info;
 
+/* spu shadow set enabled: s_cfg = on ? 1 : 0 */
 void spu_shadow_set_enabled(int on) {
     s_cfg     = on ? 1 : 0;
     s_enabled = -1;  /* force re-resolution against env + new config */
 }
 
+/* spu shadow enabled: if (s_enabled < 0)  */
 bool spu_shadow_enabled(void) {
     if (s_enabled < 0) {
         /* Env (debug override) wins when present; else the config value. */
@@ -50,6 +52,7 @@ bool spu_shadow_enabled(void) {
     return s_enabled != 0;
 }
 
+/* spu shadow reset: s_info.enabled = spu_shadow_enabled() ? 1 : 0 */
 void spu_shadow_reset(void) {
     shadow_verifier_init(&s_verifier);
     memset(&s_info, 0, sizeof(s_info));
@@ -67,6 +70,7 @@ static float catmull_rom(const int16_t s[4], float t) {
     return ((a0 * t + a1) * t + a2) * t + a3;
 }
 
+/* spu shadow process: if (!spu_shadow_enabled() || !canon || frames <= 0) return */
 void spu_shadow_process(int16_t* canon, int frames) {
     if (!spu_shadow_enabled() || !canon || frames <= 0) return;
 
@@ -145,6 +149,7 @@ void spu_shadow_process(int16_t* canon, int frames) {
     }
 }
 
+/* spu shadow get info: if (!out) return */
 void spu_shadow_get_info(SpuShadowInfo* out) {
     if (!out) return;
     *out = s_info;

@@ -26,18 +26,22 @@ constexpr uint32_t CD_FRAMES_PER_SECOND = 75;
 constexpr uint32_t CD_FRAMES_PER_MINUTE = 60 * CD_FRAMES_PER_SECOND;
 constexpr uint32_t CD_LEAD_IN_FRAMES = 2 * CD_FRAMES_PER_SECOND;
 
+/* valid bcd: return (value & 0x0f) <= 9 && (value >> 4) <= 9 */
 static bool valid_bcd(uint8_t value) {
     return (value & 0x0f) <= 9 && (value >> 4) <= 9;
 }
 
+/* bcd to binary: return (value >> 4) * 10u + (value & 0x0f) */
 static uint32_t bcd_to_binary(uint8_t value) {
     return (value >> 4) * 10u + (value & 0x0f);
 }
 
+/* binary to bcd: return static_cast<uint8_t>(((value / 10u) << 4) | (value % 10u)) */
 static uint8_t binary_to_bcd(uint32_t value) {
     return static_cast<uint8_t>(((value / 10u) << 4) | (value % 10u));
 }
 
+/* subq crc: uint16_t crc = 0 */
 static uint16_t subq_crc(const uint8_t* data) {
     uint16_t crc = 0;
     for (int i = 0; i < 10; ++i) {
@@ -82,6 +86,7 @@ struct CHDState {
     }
 };
 
+/* parse chd track mode: if (std::strcmp(text, "MODE1") == 0) mode = CHDTrackMode::Mode1 */
 static bool parse_chd_track_mode(const char* text, CHDTrackMode& mode) {
     if (std::strcmp(text, "MODE1") == 0) mode = CHDTrackMode::Mode1;
     else if (std::strcmp(text, "MODE1_RAW") == 0) mode = CHDTrackMode::Mode1Raw;
@@ -95,6 +100,7 @@ static bool parse_chd_track_mode(const char* text, CHDTrackMode& mode) {
     return true;
 }
 
+/* chd span for lba: for (const CHDSpan& span : chd.spans)  */
 static const CHDSpan* chd_span_for_lba(const CHDState& chd, uint32_t lba) {
     for (const CHDSpan& span : chd.spans) {
         if (lba >= span.disc_start &&
@@ -105,6 +111,7 @@ static const CHDSpan* chd_span_for_lba(const CHDState& chd, uint32_t lba) {
     return nullptr;
 }
 
+/* read chd raw: if (!span) return false */
 static bool read_chd_raw(CHDState& chd, uint32_t lba, uint8_t* buffer,
                          CHDTrackMode* mode_out) {
     const CHDSpan* span = chd_span_for_lba(chd, lba);
@@ -142,6 +149,7 @@ static bool read_chd_raw(CHDState& chd, uint32_t lba, uint8_t* buffer,
     return true;
 }
 
+/* ISOReader: root_dir_.lba = 0 */
 ISOReader::ISOReader()
     : is_open_(false) {
     root_dir_.lba = 0;
@@ -152,6 +160,7 @@ ISOReader::~ISOReader() {
     Close();
 }
 
+/* Open: if (!std::filesystem::exists(filename))  */
 bool ISOReader::Open(const std::string& filename) {
     // Close any previously opened image (also resets tracks/segments)
     Close();
@@ -376,6 +385,7 @@ bool ISOReader::Open(const std::string& filename) {
     return true;
 }
 
+/* Close: for (BinSegment& seg : segments_)  */
 void ISOReader::Close() {
     chd_.reset();
     for (BinSegment& seg : segments_) {
@@ -393,6 +403,7 @@ void ISOReader::Close() {
     is_open_ = false;
 }
 
+/* Load SBICompanion: if (!std::filesystem::exists(path)) return true */
 bool ISOReader::LoadSBICompanion(const std::string& image_path) {
     std::filesystem::path path(image_path);
     path.replace_extension(".sbi");
@@ -432,6 +443,7 @@ bool ISOReader::LoadSBICompanion(const std::string& image_path) {
     return !subq_replacements_.empty();
 }
 
+/* Read Sub Channel Q: if (!buffer || !valid || !is_open_) return false */
 bool ISOReader::ReadSubChannelQ(uint32_t lba, uint8_t* buffer, bool* valid) const {
     if (!buffer || !valid || !is_open_) return false;
     const auto replacement = subq_replacements_.find(lba);
@@ -466,6 +478,7 @@ bool ISOReader::ReadSubChannelQ(uint32_t lba, uint8_t* buffer, bool* valid) cons
     return true;
 }
 
+/* Segment For LBA: for (BinSegment& seg : segments_)  */
 BinSegment* ISOReader::SegmentForLBA(uint32_t lba) {
     // Linear scan: images carry a handful of segments (one per track file).
     for (BinSegment& seg : segments_) {
@@ -476,6 +489,7 @@ BinSegment* ISOReader::SegmentForLBA(uint32_t lba) {
     return nullptr;
 }
 
+/* Read Sector: if (!is_open_ || !buffer)  */
 bool ISOReader::ReadSector(uint32_t lba, uint8_t* buffer) {
     if (!is_open_ || !buffer) {
         return false;
@@ -535,6 +549,7 @@ bool ISOReader::ReadSector(uint32_t lba, uint8_t* buffer) {
     }
 }
 
+/* Read Raw Sector: if (!is_open_ || !buffer)  */
 bool ISOReader::ReadRawSector(uint32_t lba, uint8_t* buffer) {
     if (!is_open_ || !buffer) {
         return false;
@@ -563,18 +578,22 @@ bool ISOReader::ReadRawSector(uint32_t lba, uint8_t* buffer) {
     return success;
 }
 
+/* Is Open: return is_open_ */
 bool ISOReader::IsOpen() const {
     return is_open_;
 }
 
+/* Get Volume ID: return volume_id_ */
 std::string ISOReader::GetVolumeID() const {
     return volume_id_;
 }
 
+/* Get Bin Path: return bin_path_ */
 std::string ISOReader::GetBinPath() const {
     return bin_path_;
 }
 
+/* Get Sector Count: if (!is_open_)  */
 uint32_t ISOReader::GetSectorCount() {
     if (!is_open_) {
         return 0;
@@ -586,10 +605,12 @@ uint32_t ISOReader::GetSectorCount() {
     return last.start_lba + last.sector_count;
 }
 
+/* Track Count: return static_cast<int>(tracks_.size()) */
 int ISOReader::TrackCount() const {
     return static_cast<int>(tracks_.size());
 }
 
+/* Track Start LBA: for (const auto& t : tracks_)  */
 uint32_t ISOReader::TrackStartLBA(int track) const {
     for (const auto& t : tracks_) {
         if (t.number == track) return t.start_lba;
@@ -597,6 +618,7 @@ uint32_t ISOReader::TrackStartLBA(int track) const {
     return 0;
 }
 
+/* Track Pregap LBA: for (const auto& t : tracks_)  */
 uint32_t ISOReader::TrackPregapLBA(int track) const {
     for (const auto& t : tracks_) {
         if (t.number == track) return t.pregap_lba;
@@ -604,6 +626,7 @@ uint32_t ISOReader::TrackPregapLBA(int track) const {
     return 0;
 }
 
+/* Track Is Audio: for (const auto& t : tracks_)  */
 bool ISOReader::TrackIsAudio(int track) const {
     for (const auto& t : tracks_) {
         if (t.number == track) return t.is_audio;
@@ -611,15 +634,18 @@ bool ISOReader::TrackIsAudio(int track) const {
     return false;
 }
 
+/* Get Root Directory: return root_dir_ */
 RootDirectoryInfo ISOReader::GetRootDirectory() const {
     return root_dir_;
 }
 
+/* Read733: return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24) */
 uint32_t ISOReader::Read733(const uint8_t* data) const {
     // Read little-endian half of both-endian 32-bit value
     return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 }
 
+/* Parse Volume Descriptor: uint8_t pvd[SECTOR_SIZE] */
 bool ISOReader::ParseVolumeDescriptor() {
     // Read Primary Volume Descriptor from sector 16
     uint8_t pvd[SECTOR_SIZE];
@@ -653,6 +679,7 @@ bool ISOReader::ParseVolumeDescriptor() {
     return true;
 }
 
+/* Parse Directory Record: uint8_t record_len = data[0] */
 bool ISOReader::ParseDirectoryRecord(const uint8_t* data, ISOFileEntry& entry) const {
     // Check record length (offset 0)
     uint8_t record_len = data[0];
@@ -702,6 +729,7 @@ bool ISOReader::ParseDirectoryRecord(const uint8_t* data, ISOFileEntry& entry) c
     return true;
 }
 
+/* List Files By LBA: std::vector<ISOFileEntry> results */
 std::vector<ISOFileEntry> ISOReader::ListFilesByLBA(uint32_t lba, uint32_t dir_size) {
     std::vector<ISOFileEntry> results;
 
@@ -752,6 +780,7 @@ std::vector<ISOFileEntry> ISOReader::ListFilesByLBA(uint32_t lba, uint32_t dir_s
     return results;
 }
 
+/* List Files: std::vector<ISOFileEntry> results */
 std::vector<ISOFileEntry> ISOReader::ListFiles(const std::string& path) {
     std::vector<ISOFileEntry> results;
 
@@ -789,6 +818,7 @@ std::vector<ISOFileEntry> ISOReader::ListFiles(const std::string& path) {
     return results;  // Directory not found
 }
 
+/* Find File: if (!is_open_)  */
 bool ISOReader::FindFile(const std::string& path, ISOFileEntry& entry) {
     // Check if file is open
     if (!is_open_) {
@@ -848,6 +878,7 @@ bool ISOReader::FindFile(const std::string& path, ISOFileEntry& entry) {
     return false;
 }
 
+/* Read File: if (!buffer)  */
 size_t ISOReader::ReadFile(const std::string& path, uint8_t* buffer, size_t max_size) {
     // Validate buffer pointer
     if (!buffer) {
@@ -887,6 +918,7 @@ size_t ISOReader::ReadFile(const std::string& path, uint8_t* buffer, size_t max_
     return bytes_read;
 }
 
+/* Get File Size: ISOFileEntry entry */
 size_t ISOReader::GetFileSize(const std::string& path) {
     // Find the file
     ISOFileEntry entry;

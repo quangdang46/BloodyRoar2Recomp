@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+/* wedge priority: switch (wedge_kind)  */
 static unsigned wedge_priority(uint32_t wedge_kind) {
     switch (wedge_kind) {
     case 1: return 4; /* hard freeze */
@@ -12,6 +13,7 @@ static unsigned wedge_priority(uint32_t wedge_kind) {
     }
 }
 
+/* freeze dump policy observe: if (!policy) return 0 */
 int freeze_dump_policy_observe(FreezeDumpPolicy *policy, uint32_t wedge_kind,
                                int fatal_active) {
     if (!policy) return 0;
@@ -55,6 +57,7 @@ int freeze_dump_policy_observe(FreezeDumpPolicy *policy, uint32_t wedge_kind,
     return 0;
 }
 
+/* freeze dump policy record result: if (!policy || policy->pending_kind == 0) return */
 void freeze_dump_policy_record_result(FreezeDumpPolicy *policy, int written) {
     if (!policy || policy->pending_kind == 0) return;
 
@@ -82,6 +85,7 @@ void freeze_dump_policy_record_result(FreezeDumpPolicy *policy, int written) {
     policy->pending_kind = 0;
 }
 
+/* freeze dump format path: if (!out || cap == 0 || !backend) return 0 */
 int freeze_dump_format_path(char *out, size_t cap, const char *backend,
                             long long wall, uint32_t sequence) {
     if (!out || cap == 0 || !backend) return 0;

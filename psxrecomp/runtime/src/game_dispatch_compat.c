@@ -18,12 +18,14 @@
 
 extern int psx_game_address_in_text(uint32_t addr);
 
+/* psx game text native ok: return psx_game_address_in_text(addr) && dirty_ram_text_native_ok(phys) */
 int psx_game_text_native_ok(uint32_t addr)
 {
     const uint32_t phys = addr & 0x1FFFFFFFu;
     return psx_game_address_in_text(addr) && dirty_ram_text_native_ok(phys);
 }
 
+/* psx game text native ok full: return 0 */
 int psx_game_text_native_ok_full(uint32_t addr)
 {
     (void)addr;
@@ -53,12 +55,14 @@ int psx_game_address_in_text(uint32_t addr)
     return 0;
 }
 
+/* psx game text native ok: return 0 */
 int psx_game_text_native_ok(uint32_t addr)
 {
     (void)addr;
     return 0;
 }
 
+/* psx game text native ok full: return 0 */
 int psx_game_text_native_ok_full(uint32_t addr)
 {
     (void)addr;

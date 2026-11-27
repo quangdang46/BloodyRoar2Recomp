@@ -13,8 +13,10 @@ static const uint32_t K[64] = {
     0x748f82eeu,0x78a5636fu,0x84c87814u,0x8cc70208u,0x90befffau,0xa4506cebu,0xbef9a3f7u,0xc67178f2u
 };
 
+/* rotr32: return (x >> n) | (x << (32 - n)); */
 static uint32_t rotr32(uint32_t x, int n) { return (x >> n) | (x << (32 - n)); }
 
+/* block: uint32_t w[64] */
 static void block(uint32_t h[8], const uint8_t b[64]) {
     uint32_t w[64];
     for (int i=0;i<16;i++) w[i]=((uint32_t)b[i*4]<<24)|((uint32_t)b[i*4+1]<<16)|
@@ -35,6 +37,7 @@ static void block(uint32_t h[8], const uint8_t b[64]) {
     h[0]+=a;h[1]+=c0;h[2]+=c;h[3]+=d;h[4]+=e;h[5]+=f;h[6]+=g;h[7]+=x;
 }
 
+/* psx sha256 init: 0x6a09e667u,0xbb67ae85u,0x3c6ef372u,0xa54ff53au, */
 void psx_sha256_init(psx_sha256_ctx* ctx) {
     static const uint32_t initial[8] = {
         0x6a09e667u,0xbb67ae85u,0x3c6ef372u,0xa54ff53au,
@@ -44,6 +47,7 @@ void psx_sha256_init(psx_sha256_ctx* ctx) {
     ctx->buffered = 0;
 }
 
+/* psx sha256 update: ctx->total += len */
 void psx_sha256_update(psx_sha256_ctx* ctx, const uint8_t* data, size_t len) {
     ctx->total += len;
     if (ctx->buffered) {
@@ -67,6 +71,7 @@ void psx_sha256_update(psx_sha256_ctx* ctx, const uint8_t* data, size_t len) {
     }
 }
 
+/* psx sha256 final: uint8_t tail[128] */
 void psx_sha256_final(psx_sha256_ctx* ctx, uint8_t out[32]) {
     uint8_t tail[128];
     size_t n=ctx->buffered,total=(n<56)?64:128;
@@ -81,6 +86,7 @@ void psx_sha256_final(psx_sha256_ctx* ctx, uint8_t out[32]) {
     }
 }
 
+/* psx sha256 compute: psx_sha256_ctx ctx */
 void psx_sha256_compute(const uint8_t *data, size_t len, uint8_t out[32]) {
     psx_sha256_ctx ctx;
     psx_sha256_init(&ctx);

@@ -106,6 +106,7 @@ extern uint32_t spu_ta_total(void);
 extern int      spu_ta_get(uint32_t i, uint32_t *addr, uint32_t *val,
                            uint32_t *cyc, uint32_t *is_wr);
 
+/* fd guest rd32: uint32_t phys = gaddr & 0x1FFFFFFFu */
 static uint32_t fd_guest_rd32(uint32_t gaddr) {
     /* KSEG0/KSEG1 cached+uncached -> physical; low mem used directly. */
     uint32_t phys = gaddr & 0x1FFFFFFFu;
@@ -119,6 +120,7 @@ static uint32_t fd_guest_rd32(uint32_t gaddr) {
  * tx/rx are capped at SIO_TXN_MAX_BYTES; we emit only the last TAIL bytes so a
  * 256-byte sector dump stays small. */
 #define FD_TXN_TAIL 24
+/* fd dump txn: if (!t) { fputs("null", f); return;  */
 static void fd_dump_txn(FILE *f, const SioTxnEntry *t, int live) {
     if (!t) { fputs("null", f); return; }
     uint16_t nb = t->byte_count;
@@ -138,6 +140,7 @@ static void fd_dump_txn(FILE *f, const SioTxnEntry *t, int live) {
     fputs("\"}", f);
 }
 
+/* freeze dump device state json: for (int i = 0; i < 8; i++)  */
 static void freeze_dump_device_state_json(FILE *f) {
     fputs("  \"device_state\":{", f);
 
@@ -1186,6 +1189,7 @@ static int hb_format_cpu_scratchpad(char *out, size_t cap) {
     return n;
 }
 
+/* freeze dump write: uint32_t wedge_kind = s_last_wedge_kind */
 static int freeze_dump_write(long long wall, uint64_t frame, uint64_t cyc,
                              uint64_t exc_reentry, uint32_t cur_fn,
                              uint32_t last_store, uint32_t i_stat_v,
@@ -1440,6 +1444,7 @@ void freeze_heartbeat_fatal_dump(const char *reason) {
                             sio_get_mc_max_state(), sio_get_tx_writes());
 }
 
+/* heartbeat write: uint64_t cyc = psx_get_cycle_count() */
 static void heartbeat_write(void) {
     uint64_t cyc = psx_get_cycle_count();
     uint64_t frame = s_frame_count;
@@ -1791,6 +1796,7 @@ static void heartbeat_write(void) {
 }
 
 #ifdef _WIN32
+/* heartbeat thread: for (;;)  */
 static DWORD WINAPI heartbeat_thread(LPVOID arg) {
     (void)arg;
     for (;;) {
@@ -1800,6 +1806,7 @@ static DWORD WINAPI heartbeat_thread(LPVOID arg) {
 }
 #endif
 
+/* freeze heartbeat start: if (s_started) return */
 void freeze_heartbeat_start(const char *backend_label) {
     /* INTENTIONALLY not gated by PSX_NO_DEBUG_TOOLS. The heartbeat thread
      * is the only observability mechanism that survives a main-thread

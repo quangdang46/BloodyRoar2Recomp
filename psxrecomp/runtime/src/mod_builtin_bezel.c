@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+/* builtin bezel activate: char path[1024] = "" */
 static void builtin_bezel_activate(void) {
     char path[1024] = "";
     if (!psx_mod_current_resource_path("artwork", path, sizeof path)) {

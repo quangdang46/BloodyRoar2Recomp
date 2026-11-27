@@ -34,6 +34,7 @@ extern void     sio_snapshot_section_ends(uint32_t out[5]);
 
 #define NP_SPAD_SIZE 1024u
 
+/* digest module: uint32_t n */
 static uint32_t digest_module(uint32_t (*bytes_fn)(void), void (*write_fn)(uint8_t *))
 {
     static uint8_t *buf;
@@ -57,6 +58,7 @@ static uint32_t digest_module(uint32_t (*bytes_fn)(void), void (*write_fn)(uint8
 
 #define NP_RAM_SIZE (2u * 1024u * 1024u)
 
+/* netplay cdrom digest: uint32_t n = cdrom_snapshot_bytes() */
 uint32_t netplay_cdrom_digest(void)
 {
     static uint8_t *buf;
@@ -75,6 +77,7 @@ uint32_t netplay_cdrom_digest(void)
     return crc32_compute(buf, n);
 }
 
+/* netplay av digest: uint32_t crc = 0xFFFFFFFFu */
 uint32_t netplay_av_digest(void)
 {
     /* GPU regs + full VRAM — GL/VK readback was forking this while core RAM
@@ -101,6 +104,7 @@ uint32_t netplay_av_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay core digest parts: uint32_t crc_cpu = 0xFFFFFFFFu */
 void netplay_core_digest_parts(const CPUState* cpu, NetplayCoreParts* out)
 {
     uint32_t crc_cpu = 0xFFFFFFFFu;
@@ -188,6 +192,7 @@ void netplay_core_digest_parts(const CPUState* cpu, NetplayCoreParts* out)
     }
 }
 
+/* netplay core digest: NetplayCoreParts p */
 uint32_t netplay_core_digest(const CPUState* cpu)
 {
     NetplayCoreParts p;
@@ -195,11 +200,13 @@ uint32_t netplay_core_digest(const CPUState* cpu)
     return p.core;
 }
 
+/* netplay spu regs digest: return digest_module(spu_snapshot_bytes, spu_snapshot_write) */
 uint32_t netplay_spu_regs_digest(void)
 {
     return digest_module(spu_snapshot_bytes, spu_snapshot_write);
 }
 
+/* spu dig regs only: if (s < 0)  */
 static int spu_dig_regs_only(void)
 {
     static int s = -1;
@@ -216,6 +223,7 @@ static int spu_dig_regs_only(void)
     return s;
 }
 
+/* netplay spu digest: uint32_t crc = 0xFFFFFFFFu */
 uint32_t netplay_spu_digest(void)
 {
     uint32_t crc = 0xFFFFFFFFu;
@@ -233,11 +241,13 @@ uint32_t netplay_spu_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay mdec digest: return digest_module(mdec_snapshot_bytes, mdec_snapshot_write) */
 uint32_t netplay_mdec_digest(void)
 {
     return digest_module(mdec_snapshot_bytes, mdec_snapshot_write);
 }
 
+/* netplay aux digest: uint32_t crc = 0xFFFFFFFFu */
 uint32_t netplay_aux_digest(void)
 {
     uint32_t crc = 0xFFFFFFFFu;
@@ -248,6 +258,7 @@ uint32_t netplay_aux_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay spad digest: uint32_t crc = 0xFFFFFFFFu */
 uint32_t netplay_spad_digest(void)
 {
     const uint8_t *sp = memory_get_scratchpad_ptr();
@@ -257,11 +268,13 @@ uint32_t netplay_spad_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay dma digest: return digest_module(dma_snapshot_bytes, dma_snapshot_write) */
 uint32_t netplay_dma_digest(void)
 {
     return digest_module(dma_snapshot_bytes, dma_snapshot_write);
 }
 
+/* netplay sio digest: uint32_t n = sio_snapshot_bytes() */
 uint32_t netplay_sio_digest(void)
 {
     /* Fold only through fsm_pace — exclude host-audit meta (byte_seq tracks
@@ -288,6 +301,7 @@ uint32_t netplay_sio_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay sio digest parts: uint32_t n = sio_snapshot_bytes() */
 void netplay_sio_digest_parts(NetplaySioParts *out)
 {
     static uint8_t *buf;
@@ -328,6 +342,7 @@ void netplay_sio_digest_parts(NetplaySioParts *out)
     out->meta = crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay baseline ext digest: uint32_t crc = 0xFFFFFFFFu */
 uint32_t netplay_baseline_ext_digest(void)
 {
     uint32_t crc = 0xFFFFFFFFu;
@@ -344,6 +359,7 @@ uint32_t netplay_baseline_ext_digest(void)
     return crc ^ 0xFFFFFFFFu;
 }
 
+/* netplay master digest: uint32_t crc */
 uint32_t netplay_master_digest(const CPUState* cpu)
 {
     uint32_t crc;

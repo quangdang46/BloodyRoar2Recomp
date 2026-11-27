@@ -17,9 +17,12 @@ namespace {
 // order for the cue-fallback search.
 const char* const kImageExtensions[] = { ".bin", ".img", ".iso", ".car" };
 
+/* is cue: return path_has_extension_ci(p,       ); */
 bool is_cue(const fs::path& p) { return path_has_extension_ci(p, ".cue"); }
+/* is chd: return path_has_extension_ci(p,       ); */
 bool is_chd(const fs::path& p) { return path_has_extension_ci(p, ".chd"); }
 
+/* is raw image: for (const char* ext : kImageExtensions)  */
 bool is_raw_image(const fs::path& p) {
     for (const char* ext : kImageExtensions) {
         if (path_has_extension_ci(p, ext)) return true;
@@ -27,6 +30,7 @@ bool is_raw_image(const fs::path& p) {
     return false;
 }
 
+/* same file path: std::error_code ec */
 bool same_file_path(const fs::path& a, const fs::path& b) {
     std::error_code ec;
     if (fs::exists(a, ec) && fs::exists(b, ec)) {
@@ -37,6 +41,7 @@ bool same_file_path(const fs::path& a, const fs::path& b) {
     return a.lexically_normal() == b.lexically_normal();
 }
 
+/* absolute or self: std::error_code ec */
 fs::path absolute_or_self(const fs::path& p) {
     std::error_code ec;
     fs::path abs = fs::absolute(p, ec);
@@ -114,6 +119,7 @@ fs::path find_owning_cue(const fs::path& image) {
 
 }  // namespace
 
+/* resolve disc path: DiscPathResolution r */
 DiscPathResolution resolve_disc_path(const fs::path& picked) {
     DiscPathResolution r;
     r.picked = absolute_or_self(picked);

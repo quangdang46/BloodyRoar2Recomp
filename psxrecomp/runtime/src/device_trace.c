@@ -18,11 +18,16 @@ static uint32_t  s_armed = 0;
 extern uint32_t parity_host_frame(void);
 extern uint64_t parity_host_cycle(void);
 
+/* device trace arm: s_armed = on ? 1u : 0u; */
 void device_trace_arm(int on)     { s_armed = on ? 1u : 0u; }
+/* device trace reset: s_seq = 0; memset(s_ring, 0, sizeof(s_ring)); */
 void device_trace_reset(void)     { s_seq = 0; memset(s_ring, 0, sizeof(s_ring)); }
+/* device trace is armed: return (int)s_armed; */
 int  device_trace_is_armed(void)  { return (int)s_armed; }
+/* device trace total: return s_seq; */
 uint64_t device_trace_total(void) { return s_seq; }
 
+/* device source str: switch (source)  */
 const char* device_source_str(uint32_t source)
 {
     switch (source) {
@@ -41,6 +46,7 @@ const char* device_source_str(uint32_t source)
     }
 }
 
+/* device trace note: if (!s_armed) return */
 void device_trace_note(uint32_t source, uint32_t detail)
 {
     if (!s_armed) return;
@@ -53,6 +59,7 @@ void device_trace_note(uint32_t source, uint32_t detail)
     s_seq++;
 }
 
+/* device trace get: if (!out || max_rows == 0) return 0 */
 uint32_t device_trace_get(DevEvent* out, uint32_t max_rows)
 {
     if (!out || max_rows == 0) return 0;

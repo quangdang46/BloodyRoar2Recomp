@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+/* psx ws widen angle q12: if (extent_pixels <= 0) return vanilla */
 uint32_t psx_ws_widen_angle_q12(uint32_t vanilla, int extent_pixels) {
     if (extent_pixels <= 0) return vanilla;
     if (vanilla == 0) return 0;
@@ -17,6 +18,7 @@ uint32_t psx_ws_widen_angle_q12(uint32_t vanilla, int extent_pixels) {
     return (uint32_t)result;
 }
 
+/* psx ws aspect cone contains: if (threshold == 0 || threshold >= 1024 || extent_pixels < 0) */
 int psx_ws_aspect_cone_contains(int32_t x, int32_t z, int32_t y,
                                 int32_t fx, int32_t fz, int32_t fy,
                                 uint32_t threshold, int extent_pixels) {

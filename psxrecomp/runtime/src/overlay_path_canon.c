@@ -8,6 +8,7 @@
 
 #ifdef _WIN32
 
+/* overlay path canonicalize handle: if (h == NULL || h == INVALID_HANDLE_VALUE || !out || cap < 2) return 0 */
 int overlay_path_canonicalize_handle(HANDLE h, char *out, size_t cap) {
     if (h == NULL || h == INVALID_HANDLE_VALUE || !out || cap < 2) return 0;
     char buf[1024];
@@ -34,6 +35,7 @@ int overlay_path_canonicalize_handle(HANDLE h, char *out, size_t cap) {
     return 1;
 }
 
+/* overlay path canonicalize: if (!path || !path[0]) return 0 */
 int overlay_path_canonicalize(const char *path, char *out, size_t cap) {
     if (!path || !path[0]) return 0;
     /* dwDesiredAccess=0 opens for attribute access only (works even on
@@ -58,6 +60,7 @@ int overlay_path_canonicalize(const char *path, char *out, size_t cap) {
 #define PATH_MAX 4096
 #endif
 
+/* overlay path canonicalize: if (!path || !path[0] || !out || cap < 2) return 0 */
 int overlay_path_canonicalize(const char *path, char *out, size_t cap) {
     if (!path || !path[0] || !out || cap < 2) return 0;
     char resolved[PATH_MAX];

@@ -13,12 +13,14 @@ static OverlayBackend s_active   = OVERLAY_BACKEND_AUTO;
 static int            s_resolved = 0;
 static char           s_last_msg[256];
 
+/* backend log */
 static void backend_log(const char *fmt, ...) {
     va_list ap; va_start(ap, fmt);
     vsnprintf(s_last_msg, sizeof(s_last_msg), fmt, ap);
     va_end(ap);
 }
 
+/* overlay backend name: switch (b)  */
 const char *overlay_backend_name(OverlayBackend b) {
     switch (b) {
         case OVERLAY_BACKEND_GCC:         return "gcc";
@@ -28,6 +30,7 @@ const char *overlay_backend_name(OverlayBackend b) {
     }
 }
 
+/* parse backend: if (!s || !*s) return dflt */
 static OverlayBackend parse_backend(const char *s, OverlayBackend dflt) {
     if (!s || !*s) return dflt;
     if (!strcmp(s, "gcc"))         return OVERLAY_BACKEND_GCC;
@@ -39,6 +42,7 @@ static OverlayBackend parse_backend(const char *s, OverlayBackend dflt) {
     return dflt;
 }
 
+/* overlay backend resolve: OverlayBackend want = parse_backend(getenv("PSX_OVERLAY_BACKEND"), */
 OverlayBackend overlay_backend_resolve(const char *cfg, int gcc_toolchain_available) {
     /* Precedence: env PSX_OVERLAY_BACKEND > game.toml [runtime] overlay_backend
      * (cfg) > AUTO. Tier order is static > gcc > tcc > interp. AUTO prefers gcc
@@ -63,4 +67,5 @@ OverlayBackend overlay_backend_resolve(const char *cfg, int gcc_toolchain_availa
     return eff;
 }
 
+/* overlay backend active: return s_active; */
 OverlayBackend overlay_backend_active(void) { return s_active; }

@@ -19,12 +19,15 @@
 /* ---- FNV-1a 64 ---- */
 #define FNV_OFF 1469598103934665603ULL
 #define FNV_PRM 1099511628211ULL
+/* fnv: for (size_t i = 0; i < n; i++) { h ^= b[i]; h *= FNV_PRM;  */
 static inline uint64_t fnv(uint64_t h, const void *p, size_t n) {
     const uint8_t *b = (const uint8_t *)p;
     for (size_t i = 0; i < n; i++) { h ^= b[i]; h *= FNV_PRM; }
     return h;
 }
+/* fnv u32: return fnv(h, &v, 4); */
 static inline uint64_t fnv_u32(uint64_t h, uint32_t v) { return fnv(h, &v, 4); }
+/* fnv u64: return fnv(h, &v, 8); */
 static inline uint64_t fnv_u64(uint64_t h, uint64_t v) { return fnv(h, &v, 8); }
 
 /* ---- runtime state accessors (existing modules) ---- */
@@ -77,6 +80,7 @@ static uint32_t s_blob_cap;
 static int32_t  s_inj_ram_phys = -1;  static uint8_t s_inj_ram_xor;
 static int32_t  s_inj_reg = -1;       static uint32_t s_inj_reg_xor;
 
+/* cosim state reset: s_ram_all_dirty = 1 */
 void cosim_state_reset(void) {
     memset(s_ram_page_h, 0, sizeof s_ram_page_h);
     memset(s_ram_page_dirty, 0, sizeof s_ram_page_dirty);
@@ -85,18 +89,23 @@ void cosim_state_reset(void) {
     s_inj_ram_phys = -1; s_inj_reg = -1;
 }
 
+/* cosim note ram write: if (phys >= RAM_SIZE) return */
 void cosim_note_ram_write(uint32_t phys, uint32_t nbytes) {
     if (phys >= RAM_SIZE) return;
     uint32_t last = phys + (nbytes ? nbytes - 1 : 0);
     if (last >= RAM_SIZE) last = RAM_SIZE - 1;
     for (uint32_t p = phys / PAGE; p <= last / PAGE; p++) s_ram_page_dirty[p] = 1;
 }
+/* cosim note vram write: (void)byte_off; (void)nbytes; s_vram_dirty = 1 */
 void cosim_note_vram_write(uint32_t byte_off, uint32_t nbytes) {
     (void)byte_off; (void)nbytes; s_vram_dirty = 1;
 }
+/* cosim inject ram: s_inj_ram_phys = (int32_t)phys; s_inj_ram_xor = xor_val; */
 void cosim_inject_ram(uint32_t phys, uint8_t xor_val) { s_inj_ram_phys = (int32_t)phys; s_inj_ram_xor = xor_val; }
+/* cosim inject reg: s_inj_reg = reg_index; s_inj_reg_xor = xor_val; */
 void cosim_inject_reg(int reg_index, uint32_t xor_val) { s_inj_reg = reg_index; s_inj_reg_xor = xor_val; }
 
+/* blob hash: uint32_t n = bytes() */
 static uint64_t blob_hash(uint64_t seed, uint32_t (*bytes)(void), void (*write)(uint8_t*)) {
     uint32_t n = bytes();
     if (n > s_blob_cap) { free(s_blob); s_blob = (uint8_t*)malloc(n); s_blob_cap = n; }
@@ -105,6 +114,7 @@ static uint64_t blob_hash(uint64_t seed, uint32_t (*bytes)(void), void (*write)(
     return fnv(fnv_u32(seed, n), s_blob, n);
 }
 
+/* hash cpu: uint64_t h = FNV_OFF */
 static uint64_t hash_cpu(const CPUState *c) {
     uint64_t h = FNV_OFF;
     uint32_t gte_data[32];
@@ -147,6 +157,7 @@ static uint64_t hash_cpu(const CPUState *c) {
     return h;
 }
 
+/* cosim state hash: CPUState *cpu = debug_cpu_ptr */
 uint64_t cosim_state_hash(CosimSubHashes *sub) {
     CosimSubHashes s; memset(&s, 0, sizeof s);
     CPUState *cpu = debug_cpu_ptr;

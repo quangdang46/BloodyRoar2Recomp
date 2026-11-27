@@ -13,11 +13,13 @@ namespace PSXRecompV4 {
 
 namespace {
 
+/* upper ascii: for (char& c : s) c = (char)std::toupper((unsigned char)c) */
 std::string upper_ascii(std::string s) {
     for (char& c : s) c = (char)std::toupper((unsigned char)c);
     return s;
 }
 
+/* equal ci: if (a.size() != b.size()) return false */
 bool equal_ci(const std::string& a, const std::string& b) {
     if (a.size() != b.size()) return false;
     for (size_t i = 0; i < a.size(); i++) {
@@ -58,6 +60,7 @@ bool parse_file_line(const std::string& line, size_t file_kw_pos,
 
 }  // namespace
 
+/* usable: if (!opened || files.empty()) return false */
 bool CueSheet::usable() const {
     if (!opened || files.empty()) return false;
     for (const CueFileRef& f : files) {
@@ -66,6 +69,7 @@ bool CueSheet::usable() const {
     return true;
 }
 
+/* has non binary file: for (const CueFileRef& f : files)  */
 bool CueSheet::has_non_binary_file() const {
     for (const CueFileRef& f : files) {
         if (!f.is_binary) return true;
@@ -73,6 +77,7 @@ bool CueSheet::has_non_binary_file() const {
     return false;
 }
 
+/* data file index: for (const CueTrackRef& t : tracks)  */
 size_t CueSheet::data_file_index() const {
     for (const CueTrackRef& t : tracks) {
         if (!t.is_audio && t.file_index < files.size()) return t.file_index;
@@ -80,10 +85,12 @@ size_t CueSheet::data_file_index() const {
     return 0;
 }
 
+/* path has extension ci: return equal_ci(p.extension().string(), std::string(dotted_ext)) */
 bool path_has_extension_ci(const fs::path& p, const char* dotted_ext) {
     return equal_ci(p.extension().string(), std::string(dotted_ext));
 }
 
+/* resolve cue relative file: if (name.find('\\') != std::string::npos)  */
 fs::path resolve_cue_relative_file(const fs::path& dir, const std::string& name) {
     fs::path named(name);
     // Cues written on Windows may use backslashes; std::filesystem on POSIX
@@ -112,6 +119,7 @@ fs::path resolve_cue_relative_file(const fs::path& dir, const std::string& name)
     return literal;
 }
 
+/* parse cue sheet: CueSheet sheet */
 CueSheet parse_cue_sheet(const fs::path& cue_path) {
     CueSheet sheet;
 
