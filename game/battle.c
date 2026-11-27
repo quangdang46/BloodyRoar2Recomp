@@ -655,7 +655,7 @@ void player_light_apply(uint8_t *ctrl,int side)
       br2_call_clean(fn_g,0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(ctrl));
     }
   }
-  gte_light_load(&DAT_801f0250);
+  gte_light_load((uint32_t *)g_DAT_801f0250);
   return;
 
 }

@@ -7725,10 +7725,10 @@ extern void ret_zero_f(void);
 extern void *fn_lookup(uint32_t);
 extern void task_invoke(uint32_t fn_guest, uint32_t arg_guest);
 extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
-extern int rotmat2_build();
-extern int rotmat_rtps_build();
-extern int angle_vec_build();
-extern int angle_pair_rotmat();
+extern uint32_t *rotmat2_build(uint32_t,uint32_t *);
+extern uint32_t *rotmat_rtps_build(uint32_t,uint32_t *);
+extern uint32_t *angle_vec_build(uint32_t,uint32_t *);
+extern uint32_t *angle_pair_rotmat(uint32_t,uint32_t,uint32_t *);
 extern uint32_t  rand_lcg(void);
 extern void tween_dur_spread();
 extern void prim_attr_word_set();
@@ -7987,7 +7987,7 @@ void *op_wrap_8dac0_b(int16_t *a0,uint32_t a1)
 #define BR2_GPF(o)   (*(uint32_t *)guest_at(BR2_GPC + (uint32_t)(o)))
 #define BR2_GP50 (*(uint32_t *)guest_at(0x801bef2c))
 
-extern int prim_group_build();
+extern uint32_t *prim_group_build(uint32_t,int,uint32_t,uint32_t);
 extern int anim_node_alloc();
 extern int op_anim_delta_walk();
 extern int op_node_alloc_init();
