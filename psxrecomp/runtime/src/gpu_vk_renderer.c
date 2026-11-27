@@ -40,8 +40,11 @@ void vk_renderer_shutdown(void) {}
 int  vk_renderer_present_vram(int a,int b,int c,int d,int e,int f){(void)a;(void)b;(void)c;(void)d;(void)e;(void)f;return 0;}
 int  vk_renderer_present_wide(int a,int b,int c,int d){(void)a;(void)b;(void)c;(void)d;return 0;}
 void vk_renderer_present_cpu(const uint32_t*p,int w,int h,int l,int f){(void)p;(void)w;(void)h;(void)l;(void)f;}
+/* Present a blank/black frame (no VRAM content) to the swapchain. */
 void vk_renderer_present_blank(void){}
+/* Full GPU→CPU sync before CPU-side VRAM reads. */
 void vk_renderer_sync_cpu(void){}
+/* Re-upload CPU VRAM mirror to GPU textures after a savestate restore. */
 void vk_renderer_restage_vram_after_savestate(void){}
 void vk_renderer_set_present_mode(int m){(void)m;}
 int  vk_perf_json(char *out,int cap,int count){(void)count; return cap>2?snprintf(out,cap,"[]"):0;}
@@ -202,6 +205,7 @@ typedef struct {
 } StagingCacheEntry;
 static StagingCacheEntry s_staging_cache[STAGING_CACHE_MAX];
 
+/* Return a staging buffer+memory pair to the cache. */
 static void staging_release(VkBuffer buf, VkDeviceMemory mem) {
     for (int i = 0; i < STAGING_CACHE_MAX; ++i) {
         if (s_staging_cache[i].buf == buf && s_staging_cache[i].mem == mem) {
@@ -214,6 +218,7 @@ static void staging_release(VkBuffer buf, VkDeviceMemory mem) {
     p_vkFreeMemory(s_dev, mem, NULL);
 }
 
+/* Free all cached staging buffers. */
 static void staging_destroy(VkBuffer buf, VkDeviceMemory mem) {
     for (int i = 0; i < STAGING_CACHE_MAX; ++i) {
         StagingCacheEntry *entry = &s_staging_cache[i];
@@ -356,6 +361,7 @@ static uint32_t perf_elapsed_us(uint64_t start) {
     return frequency ? (uint32_t)(ticks * 1000000u / frequency) : 0;
 }
 
+/* Record present-pass perf counters (idx, QPC). */
 static void perf_snapshot_present(void) {
     s_perf_cur.present_idx = s_present_idx++;
     s_perf_cur.present_qpc = SDL_GetPerformanceCounter();
@@ -475,12 +481,14 @@ static DirtyRect s_up_rects[UP_RECTS_MAX];
 static int       s_up_nrects = 0;
 
 static void rect_clear(DirtyRect *r) { r->set = 0; }
+/* Union a rect into a DirtyRect accumulator. */
 static void rect_add(DirtyRect *r, int x0, int y0, int x1, int y1) {
     if (x0 > x1 || y0 > y1) return;
     if (!r->set) { r->x0=x0; r->y0=y0; r->x1=x1; r->y1=y1; r->set=1; return; }
     if (x0 < r->x0) r->x0 = x0; if (y0 < r->y0) r->y0 = y0;
     if (x1 > r->x1) r->x1 = x1; if (y1 > r->y1) r->y1 = y1;
 }
+/* Test DirtyRect intersection with a rect. */
 static int rect_intersects(const DirtyRect *r, int x0, int y0, int x1, int y1) {
     if (!r->set) return 0;
     return !(x1 < r->x0 || x0 > r->x1 || y1 < r->y0 || y0 > r->y1);
@@ -492,6 +500,7 @@ static int rect_intersects(const DirtyRect *r, int x0, int y0, int x1, int y1) {
  * device is up; pre-ready the CPU array is fully authoritative, so a union is
  * harmless there. Mirrors the GL backend's up_add (20k-randomized-rect
  * host-test-proven merge rule). */
+/* Add a clamped upload rect to the pending-upload list. */
 static void up_add(int x0, int y0, int x1, int y1) {
     if (x0 < 0) x0 = 0; if (y0 < 0) y0 = 0;
     if (x1 > VRAM_W - 1) x1 = VRAM_W - 1;
@@ -563,6 +572,7 @@ static void vk_log(const char *msg) { fprintf(stdout, "psxrecomp: vulkan: %s\n",
 
 static int vk_die(const char *why) { fprintf(stdout, "psxrecomp: vulkan: %s\n", why); return 0; }
 
+/* Pick a VkMemoryTypeIndex matching required type+prop bits. */
 static uint32_t find_mem_type(uint32_t type_bits, VkMemoryPropertyFlags want) {
     for (uint32_t i = 0; i < s_memprops.memoryTypeCount; i++) {
         if ((type_bits & (1u << i)) &&
@@ -579,6 +589,7 @@ static void vk_gpu_sync_internal(void);   /* drain queue + reclaim work pool/sta
  * operation. */
 static VkCommandBuffer s_work_cb;
 
+/* Begin a one-shot command buffer (reuses s_work_cb if recording). */
 static VkCommandBuffer begin_oneshot(void) {
     s_perf_cur.oneshots++;
     if (s_work_cb) return s_work_cb;
@@ -601,6 +612,7 @@ static void end_oneshot(VkCommandBuffer cb) {
     s_work_pending = 1;
 }
 
+/* End+submit the one-shot command buffer and wait. */
 static void flush_work(void) {
     if (!s_work_cb) return;
     p_vkEndCommandBuffer(s_work_cb);
@@ -717,6 +729,7 @@ static int load_global_funcs(void) {
 #undef LOAD
     return 1;
 }
+/* Load all VkInstance-level function pointers via vkGetInstanceProcAddr. */
 static int load_instance_funcs(void) {
 #define LOAD(n) p_##n = (PFN_##n)p_vkGetInstanceProcAddr(s_instance, #n); if (!p_##n) return vk_die("missing " #n);
     VK_INSTANCE_FUNCS(LOAD)
@@ -725,6 +738,7 @@ static int load_instance_funcs(void) {
         p_vkGetInstanceProcAddr(s_instance, "vkGetDeviceProcAddr");
     return p_vkGetDeviceProcAddr ? 1 : vk_die("missing vkGetDeviceProcAddr");
 }
+/* Load all VkDevice-level function pointers via vkGetDeviceProcAddr. */
 static int load_device_funcs(void) {
 #define LOAD(n) p_##n = (PFN_##n)p_vkGetDeviceProcAddr(s_dev, #n); if (!p_##n) return vk_die("missing " #n);
     VK_DEVICE_FUNCS(LOAD)
@@ -763,6 +777,7 @@ static int create_instance(void) {
     return 1;
 }
 
+/* Enumerate physical devices and pick a discrete GPU. */
 static int pick_device(void) {
     uint32_t n = 0;
     p_vkEnumeratePhysicalDevices(s_instance, &n, NULL);
@@ -797,6 +812,7 @@ static int pick_device(void) {
     return 1;
 }
 
+/* Create the logical device + queue for the picked physical device. */
 static int create_device(void) {
     float prio = 1.0f;
     VkDeviceQueueCreateInfo q = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
@@ -812,6 +828,7 @@ static int create_device(void) {
     return 1;
 }
 
+/* Choose the best available VkPresentMode (fifo > mailbox > immediate). */
 static VkPresentModeKHR choose_present_mode(void) {
     uint32_t n = 0;
     p_vkGetPhysicalDeviceSurfacePresentModesKHR(s_phys, s_surface, &n, NULL);
@@ -881,10 +898,12 @@ static int create_swapchain(void) {
     return 1;
 }
 
+/* Tear down the swapchain and its image views. */
 static void destroy_swapchain(void) {
     if (s_swapchain) { p_vkDestroySwapchainKHR(s_dev, s_swapchain, NULL); s_swapchain = VK_NULL_HANDLE; }
 }
 
+/* Create fences/semaphores/mem-properties for frame sync. */
 static int create_sync(void) {
     VkCommandBufferAllocateInfo ai = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
     ai.commandPool = s_cmd_pool;
@@ -1001,6 +1020,7 @@ static int make_image(VkFormat fmt, int w, int h, VkImageUsageFlags usage,
     return 1;
 }
 
+/* Pick a depth-stencil format (D24S8 preferred, D32S8 fallback). */
 static VkFormat choose_ds_format(void) {
     VkFormat cand[2] = { VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT };
     for (int i = 0; i < 2; i++) {
@@ -1011,6 +1031,7 @@ static VkFormat choose_ds_format(void) {
     return VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
+/* Allocate a host-visible+coherent mapped VkBuffer. */
 static int create_buffer_mapped(VkDeviceSize size, VkBuffer *buf, VkDeviceMemory *mem, void **map) {
     VkBufferCreateInfo bci = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
     bci.size = size; bci.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -1363,6 +1384,7 @@ static inline uint16_t rgba8_to_rgb555(const uint8_t in[4]) {
                       (in[3] >= 0x80 ? 0x8000 : 0));
 }
 
+/* Initialize the Vulkan context for a window (SDL_Vulkan_LoadLibrary + instance). */
 int vk_renderer_init_context(SDL_Window *win) {
     s_win = win;
 #if defined(PSX_SDL3)
@@ -1408,6 +1430,7 @@ int vk_renderer_init_context(SDL_Window *win) {
     return 1;
 }
 
+/* Free the cached compute-present resources. */
 static void cpres_cache_free(void);   /* fwd: CPU-present resource cache */
 static void osd_staging_free(void);
 void vk_renderer_shutdown(void) {
@@ -1523,6 +1546,7 @@ static VkDeviceMemory s_osd_mem  = VK_NULL_HANDLE;
 static void          *s_osd_map  = NULL;
 static VkDeviceSize   s_osd_cap  = 0;
 
+/* Free the OSD staging buffer. */
 static void osd_staging_free(void) {
     if (s_osd_buf) {
         staging_destroy(s_osd_buf, s_osd_mem);
@@ -1533,6 +1557,7 @@ static void osd_staging_free(void) {
     s_osd_cap = 0;
 }
 
+/* Copy an OSD rect (text/volume/rewind/slowmo pixels) into staging. */
 static void vk_osd_copy_rect(VkCommandBuffer cb, VkImage sc,
                              const uint32_t *px, int w, int h,
                              int x, int y, VkDeviceSize buf_off) {
@@ -1558,6 +1583,7 @@ static void vk_osd_copy_rect(VkCommandBuffer cb, VkImage sc,
                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bc);
 }
 
+/* Blit all OSD layers into the swapchain image. */
 static void vk_osd_blit(VkCommandBuffer cb, VkImage sc) {
     const uint32_t *text_px = NULL, *vol_px = NULL, *rw_px = NULL, *ssm_px = NULL;
     int tw = 0, th = 0, vw = 0, vh = 0, rw = 0, rh = 0, sw = 0, sh = 0;
@@ -1631,8 +1657,10 @@ static void vk_osd_blit(VkCommandBuffer cb, VkImage sc) {
     host_osd_present_done();
 }
 
+/* End+submit the present command buffer and queue the present. */
 static void submit_present(VkCommandBuffer cb, uint32_t img_idx, uint32_t fr);
 
+/* Record image barriers + OSD blit into the present command buffer. */
 static void finish_present(VkCommandBuffer cb, VkImage sc,
                            uint32_t img_idx, uint32_t fr) {
     vk_osd_blit(cb, sc);
@@ -1679,6 +1707,7 @@ static void letterbox(int sw, int sh, int aw, int ah, VkOffset3D off[2]) {
     off[1].x = x + tw;  off[1].y = y + th;  off[1].z = 1;
 }
 
+/* Present the PSX VRAM framebuffer (linear or 4:3-corrected) to the swapchain. */
 int vk_renderer_present_vram(int disp_x, int disp_y, int w, int h,
                              int linear, int force_4_3) {
     if (!s_ctx_ok) return 0;
@@ -1932,6 +1961,7 @@ static void set_vp_full(VkCommandBuffer cb) {
     VkViewport vp = { 0.f, 0.f, (float)(VRAM_W * s_scale), (float)(VRAM_H * s_scale), 0.f, 1.f };
     p_vkCmdSetViewport(cb, 0, 1, &vp);
 }
+/* Set a pixel-space scissor rect, clamped to VRAM bounds. */
 static void set_scissor_px(VkCommandBuffer cb, int x, int y, int w, int h) {
     if (x < 0) { w += x; x = 0; } if (y < 0) { h += y; y = 0; }
     if (x + w > VRAM_W) w = VRAM_W - x; if (y + h > VRAM_H) h = VRAM_H - y;
@@ -1962,6 +1992,7 @@ static void color_self_barrier(VkCommandBuffer cb, VkImage img) {
         0, 0, NULL, 0, NULL, 1, &barrier);
 }
 
+/* Begin the geometry render pass with stencil test+write state. */
 static void begin_geo_pass(VkCommandBuffer cb) {
     /* Explicit stencil ordering across one-shot submits: this pass both TESTS
      * and WRITES the stencil (PSX mask bits) that a PRIOR submit's pass wrote.
@@ -2060,6 +2091,7 @@ static int make_staging(VkDeviceSize bytes, VkBuffer *buf, VkDeviceMemory *mem, 
     s_perf_cur.alloc_kb += (uint32_t)(bytes / 1024);
     return 1;
 }
+/* Release a staging buffer via staging_release. */
 static void free_staging(VkBuffer buf, VkDeviceMemory mem) {
     staging_release(buf, mem);
 }
@@ -2196,6 +2228,7 @@ static void vram_upload_block(int x, int y, int w, int h, const uint16_t *data) 
  * submission order is preserved: every draw appended before these writes has
  * landed by the time the upload writes VRAM, and every GPU-op entry point
  * calls this before touching VRAM so the writes land before later ops. */
+/* Flush pending CPU-side VRAM uploads to GPU textures. */
 static void flush_cpu_upload(void) {
     if (s_up_nrects == 0 || !s_ready || !s_vram) return;
     /* Snapshot + clear first (re-entrancy safe: up_add overflow calls back). */
@@ -2357,11 +2390,16 @@ static void ensure_cpu(void) {
  * backend's init calls sw_renderer_init). When Vulkan is active the SW mirror
  * is just the CPU readback target. */
 static void vkb_init(uint16_t *vram) { s_vram = vram; s_cpu_dirty = 0; sw_renderer_init(vram); }
+/* Set the render scale factor. */
 static void vkb_set_scale(int scale) { if (scale >= 1 && scale <= 4) s_scale = scale; }
+/* Return the current render scale. */
 static int  vkb_scale(void) { return s_scale; }
+/* Toggle linear vs nearest texture filtering. */
 static void vkb_set_texture_filter(int b) { s_texfilter = b ? 1 : 0; }
+/* Return the current texture-filter mode. */
 static int  vkb_texture_filter(void) { return s_texfilter; }
 
+/* Set the drawing-area scissor (drains geometry batches first). */
 static void vkb_set_draw_area(int x1, int y1, int x2, int y2) {
     /* Scissor is per-batch (one render pass uses one scissor), so drain both
      * independent geometry batches before the clip rect changes. Otherwise
@@ -2372,9 +2410,11 @@ static void vkb_set_draw_area(int x1, int y1, int x2, int y2) {
     }
     s_da_x1 = x1; s_da_y1 = y1; s_da_x2 = x2; s_da_y2 = y2;
 }
+/* Read back the drawing-area scissor. */
 static void vkb_get_draw_area(int *x1, int *y1, int *x2, int *y2) {
     if (x1) *x1 = s_da_x1; if (y1) *y1 = s_da_y1; if (x2) *x2 = s_da_x2; if (y2) *y2 = s_da_y2;
 }
+/* Set the draw offset (GP0 positioning) for geometry batches. */
 static void vkb_set_draw_offset(int x, int y) { s_off_x = x; s_off_y = y; }
 
 /* GP0 02h fill: set a VRAM rect to a solid 1555 colour. The write lands in
@@ -2396,6 +2436,7 @@ static void vkb_fill_rect(int x, int y, int w, int h, uint16_t color) {
 static int s_depth24_skip_up = 0;
 static DirtyRect s_d24_skip_fb;
 
+/* True if this transfer targets the depth24 framebuffer path. */
 static int depth24_is_fb_transfer(int x, int y, int w, int h) {
     if (!gpu_display_is_depth24() || w <= 0 || h <= 0) return 0;
     GpuDisplayInfo di;
@@ -2418,6 +2459,7 @@ static int depth24_is_fb_transfer(int x, int y, int w, int h) {
     return 0;
 }
 
+/* Mark the scanout band used for depth24 framebuffer detection. */
 static void depth24_mark_scanout_band(void) {
     GpuDisplayInfo di;
     int fb_w, fb_h, x0, y0, x1, y1;
@@ -2436,6 +2478,7 @@ static void depth24_mark_scanout_band(void) {
     rect_add(&s_d24_skip_fb, x0, y0, x1, y1);
 }
 
+/* Clear framebuffer bands skipped during depth24 mode. */
 static void depth24_clear_skipped_fb(void) {
     /* GL scissor-clears the skipped FB union. VK keeps texture uploads that
      * landed during depth24; the FB bands are overwritten by the next 15-bit
@@ -2443,6 +2486,7 @@ static void depth24_clear_skipped_fb(void) {
     rect_clear(&s_d24_skip_fb);
 }
 
+/* Decide whether CPU→GPU VRAM uploads are needed under depth24 mode. */
 static void depth24_upload_policy(void) {
     int d24 = gpu_display_is_depth24();
     if (d24 && !s_depth24_skip_up) {
@@ -2456,6 +2500,7 @@ static void depth24_upload_policy(void) {
     s_depth24_skip_up = d24;
 }
 
+/* Handle VRAM texture-window transfer-in (GP0). */
 static void vkb_vram_transfer_in(int x, int y, int w, int h, const uint16_t *data) {
     sw_vram_transfer_in(x, y, w, h, data);
     if (!s_ctx_ok) return;
@@ -2486,12 +2531,14 @@ void vk_renderer_restage_vram_after_savestate(void) {
         depth24_mark_scanout_band();
     }
 }
+/* Handle VRAM texture-window transfer-out (GP0). */
 static void vkb_vram_transfer_out(int x, int y, int w, int h, uint16_t *data) {
     ensure_cpu();   /* sync GPU-rendered content down to the CPU mirror first */
     for (int row = 0; row < h; row++)
         for (int col = 0; col < w; col++)
             data[row * w + col] = s_vram ? s_vram[(y + row) * VRAM_W + (x + col)] : 0;
 }
+/* Handle a single-pixel VRAM write (GP0). */
 static void vkb_vram_write(int x, int y, uint16_t pixel) {
     sw_vram_write(x, y, pixel);
     if (!s_ctx_ok) return;
@@ -2499,6 +2546,7 @@ static void vkb_vram_write(int x, int y, uint16_t pixel) {
     up_add(x & (VRAM_W - 1), y & (VRAM_H - 1),
            x & (VRAM_W - 1), y & (VRAM_H - 1));
 }
+/* Read a pixel from the CPU VRAM mirror (syncs GPU first if dirty). */
 static uint16_t vkb_vram_read(int x, int y) {
     ensure_cpu();   /* gated by s_gpu_dirty; cheap when nothing was drawn */
     return s_vram ? s_vram[y * VRAM_W + x] : 0;
@@ -2511,6 +2559,7 @@ static int vkb_render_display(uint32_t *o, int p, int dx, int dy, int dw, int dh
     ensure_cpu();
     return sw_render_display(o, p, dx, dy, dw, dh);
 }
+/* Render the display at hires scale via the software path. */
 static int vkb_render_display_hires(uint32_t *o, int p, int dx, int dy, int dw, int dh) {
     ensure_cpu();
     return sw_render_display_hires(o, p, dx, dy, dw, dh);
@@ -2559,6 +2608,7 @@ static void wide_free_all(void) {
  * + its own stencil image + a framebuffer on the SHARED render pass; color is
  * cleared black, stencil to 0, then both are parked in the layouts the render
  * pass expects (color/DS ATTACHMENT_OPTIMAL). */
+/* Find a free widescreen surface slot for the current scale. */
 static int wide_surf_for(int base_x) {
     if (s_wide_w <= 0 || !s_ready) return -1;
     for (int i = 0; i < VK_WIDE_MAX_SURF; i++)
@@ -2618,6 +2668,7 @@ static int wide_surf_for(int base_x) {
  * and the mirror scissor: FULL width X (the margins are the point) but the
  * DRAW-AREA Y band — native-wide only widens X; a full-height Y let draws bleed
  * across a vertical double-buffer band boundary (the GL band-flicker lesson). */
+/* Begin a render pass into a widescreen surface. */
 static void wide_pass_begin(VkCommandBuffer cb) {
     int i = s_wide_cur, S = s_scale;
     s_perf_cur.wide_passes++;
