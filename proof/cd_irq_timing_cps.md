@@ -1154,3 +1154,18 @@ stragglers resolve via fnmap rows, not clean_cps.map).
 
 Verified: clean build EU + USA; headless :5161 frame 30781,
 clean_fallback_stats count=0.
+
+## Batch 58 (orch/w5/e05) — fighter_script_fsm_cps resume rows (138)
+
+Extended the case->row audit to EVERY game/*.c clean body (fnmap +
+clean_cps.map coverage): w2_e01.c's fighter_script_fsm_cps — a peer
+body already dispatched via entry rows — carried 138 continuation
+cases in the timed band with no resume rows; a yield inside the
+script FSM resumed into generated code. Added addr ->
+fighter_script_fsm_cps rows (peer-ports-win preserved: no existing
+rows touched). clean_table: 10,674 -> 10,812 wrappers, 0 skipped.
+Remaining untimed-band case gaps (menu/ev/w3_e0x, all <0x8018 or
+peer-scope) documented but untouched per convention.
+
+Verified: clean build EU + USA; headless :5167 frame 28750,
+clean_fallback_stats count=0.
