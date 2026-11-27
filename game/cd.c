@@ -178,35 +178,22 @@ extern uint32_t clean_caller_ra(void);
 #define CDMMIO16_ST(base, idx, v)  \
     br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
 
-/* ---- guest globals ----
- * The g_DAT_* bindings live in bind.c (guest_for registry) — names are
- * load-bearing, do NOT rename them here. The CD_* macros below are the
- * readable aliases; guest address kept in each comment. */
-extern uint8_t  *g_DAT_801bc7b4;
-extern uint8_t  *g_DAT_801bcb80;
-extern uint8_t  *g_DAT_801bcb94;
-extern uint8_t  *g_DAT_801bcb98;
-extern uint8_t  *g_DAT_801bcb9c;
-extern uint8_t  *g_DAT_801bcba4;
-extern uint8_t  *g_DAT_801bcba8;
-extern uint8_t  *g_DAT_801bcbac;
-extern uint8_t  *g_DAT_801bcbb0;
-extern uint8_t  *g_DAT_801bc854;
-extern uint8_t  *g_DAT_801bc848;
-extern uint8_t  *g_DAT_801bc7c0;
+/* ---- CD context cells ----
+ * The CD_* macros below are the readable aliases over guest_at();
+ * guest address kept in each comment. */
 
-#define CD_DISPATCH_PEND   (*(uint8_t  *)g_DAT_801bc7b4)  /* u8 @0x801bc7b4: bit0 = dispatch pending */
-#define CD_RD_COUNT        (*(int32_t  *)g_DAT_801bcb80)  /* i32 @0x801bcb80: read sector count */
-#define CD_RD_RESULT       (*(int32_t  *)g_DAT_801bcb94)  /* i32 @0x801bcb94: read result/remaining (-1 err) */
-#define CD_RD_TS_ISSUE     (*(int32_t  *)g_DAT_801bcb98)  /* i32 @0x801bcb98: tick after ReadN issue */
-#define CD_RD_TS_PAUSE     (*(int32_t  *)g_DAT_801bcb9c)  /* i32 @0x801bcb9c: tick after Pause/issue */
-#define CD_RD_DONE         (*(int32_t  *)g_DAT_801bcba4)  /* i32 @0x801bcba4: read-session done flag */
-#define CD_RD_SESS_A       (*(int32_t  *)g_DAT_801bcba8)  /* i32 @0x801bcba8: mc_session handle */
-#define CD_RD_SESS_B       (*(int32_t  *)g_DAT_801bcbac)  /* i32 @0x801bcbac: mc_session_b handle */
-#define CD_RD_DISP         (*(int32_t  *)g_DAT_801bcbb0)  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
-#define CD_STATUS          (*(uint8_t *)g_DAT_801bc854)   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
-#define CD_BIOS_CB_20      (*(uint32_t *)g_DAT_801bc848)  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
-#define CD_CMD_TBL         ((int32_t  *)g_DAT_801bc7c0)   /* i32* @0x801bc7c0: per-opcode table */
+#define CD_DISPATCH_PEND   (*(uint8_t  *)guest_at(0x801bc7b4))  /* u8 @0x801bc7b4: bit0 = dispatch pending */
+#define CD_RD_COUNT        (*(int32_t  *)guest_at(0x801bcb80))  /* i32 @0x801bcb80: read sector count */
+#define CD_RD_RESULT       (*(int32_t  *)guest_at(0x801bcb94))  /* i32 @0x801bcb94: read result/remaining (-1 err) */
+#define CD_RD_TS_ISSUE     (*(int32_t  *)guest_at(0x801bcb98))  /* i32 @0x801bcb98: tick after ReadN issue */
+#define CD_RD_TS_PAUSE     (*(int32_t  *)guest_at(0x801bcb9c))  /* i32 @0x801bcb9c: tick after Pause/issue */
+#define CD_RD_DONE         (*(int32_t  *)guest_at(0x801bcba4))  /* i32 @0x801bcba4: read-session done flag */
+#define CD_RD_SESS_A       (*(int32_t  *)guest_at(0x801bcba8))  /* i32 @0x801bcba8: mc_session handle */
+#define CD_RD_SESS_B       (*(int32_t  *)guest_at(0x801bcbac))  /* i32 @0x801bcbac: mc_session_b handle */
+#define CD_RD_DISP         (*(int32_t  *)guest_at(0x801bcbb0))  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
+#define CD_STATUS          (*(uint8_t  *)guest_at(0x801bc854))   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
+#define CD_BIOS_CB_20      (*(uint32_t *)guest_at(0x801bc848))  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
+#define CD_CMD_TBL         ((int32_t  *)guest_at(0x801bc7c0))   /* i32* @0x801bc7c0: per-opcode table */
 
 /* ======== 0x8018d150 ======== */
 
@@ -2829,8 +2816,6 @@ extern uint32_t cd_chan_cmd_burst(uint32_t);
 extern uint32_t cd_queue_a_read(void);
 extern uint32_t cd_queue_a_status(void);
 
-#define CDREG32(a) (*(uint32_t *)guest_at(a))
-#define CDREG16(a) (*(uint16_t *)guest_at(a))
 
 /* cd_seek_param_issue — seek/param issue: when mode flag @0x801bdecc==0 run
  * the 0x801feb70 register-window sequence via cd_reg_window_op, else
@@ -2838,9 +2823,9 @@ extern uint32_t cd_queue_a_status(void);
  * Disasm 0x8019bbc4-0x8019bc44. */
 uint32_t cd_seek_param_issue(uint32_t a0,uint32_t a1)
 {
-  if (CDREG32(0x801bdecc) == 0) {
-    uint32_t sh = (uint32_t)CDREG16(0x801bdec8)
-                << (CDREG32(0x801bded8) & 31);   /* sllv: sa&31 */
+  if (DB32(0x801bdecc) == 0) {
+    uint32_t sh = (uint32_t)DB16(0x801bdec8)
+                << (DB32(0x801bded8) & 31);   /* sllv: sa&31 */
     cd_reg_window_op(2,sh,0);
     cd_reg_window_op(1,sh,0);
     cd_reg_window_op(3,a0,a1);
@@ -2860,19 +2845,19 @@ uint32_t cd_seek_param_issue(uint32_t a0,uint32_t a1)
 int32_t cd_reg_indexed_rw(int32_t a0,uint32_t a1)
 {
   uint32_t a3;
-  if (CDREG32(0x801bded4) != 0) {
-    uint32_t d = CDREG32(0x801bdedc);
+  if (DB32(0x801bded4) != 0) {
+    uint32_t d = DB32(0x801bdedc);
     /* divu $zero,$a1,$d; on d==0 the guest models hi=a1 (dividend) and the
      * break7 trap is a recompiler no-op (br2eu_func_8019BCF0 @0x8019BD10-
      * 0x8019BD1C), so the round-up still runs with rem==a1. */
     uint32_t rem = (d != 0) ? (a1 % d) : a1;
     if (rem != 0)
-      a1 = (a1 + d) & ~CDREG32(0x801bdee0);
+      a1 = (a1 + d) & ~DB32(0x801bdee0);
   }
-  a3 = a1 >> (CDREG32(0x801bded8) & 31);   /* srlv: sa&31 */
+  a3 = a1 >> (DB32(0x801bded8) & 31);   /* srlv: sa&31 */
   if (a0 == -2) return (int32_t)a1;
   if (a0 == -1) return (int32_t)(a3 & 0xffff);
-  CDMMIO16_ST(CDREG32(0x801bdeb0),(uint32_t)a0,(uint16_t)a3);
+  CDMMIO16_ST(DB32(0x801bdeb0),(uint32_t)a0,(uint16_t)a3);
   return (int32_t)a1;                      /* v0=a1 set in delay slot */
 }
 
@@ -2887,34 +2872,34 @@ void cd_reg_window_u16(int32_t a0,uint32_t a1)
   uint16_t *r;
   a1 &= 0x00ffffff;
   a2 = a1 >> 16;
-  if (CDREG32(0x801bde9c) & 1) {
+  if (DB32(0x801bde9c) & 1) {
     r = (uint16_t *)guest_at(0x801feb70);
     if (a0 == 1) {
       r[0] = (uint16_t)a1; r[1] = (uint16_t)a2;
-      CDREG32(0x801bde68) |= 1;
-      CDREG32(0x801bde64) |= a1;
+      DB32(0x801bde68) |= 1;
+      DB32(0x801bde64) |= a1;
       if (r[2] & a1) r[2] = (uint16_t)(r[2] & ~a1);
       if (r[3] & a2) r[3] = (uint16_t)(r[3] & ~a2);
       return;
     }
     if (a0 == 0) {
       r[2] = (uint16_t)a1; r[3] = (uint16_t)a2;
-      CDREG32(0x801bde68) |= 1;
-      CDREG32(0x801bde64) &= ~a1;         /* nor+and: clear mask */
+      DB32(0x801bde68) |= 1;
+      DB32(0x801bde64) &= ~a1;         /* nor+and: clear mask */
       if (r[0] & a1) r[0] = (uint16_t)(r[0] & ~a1);
       if (r[1] & a2) r[1] = (uint16_t)(r[1] & ~a2);
     }
     return;
   }
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   if (a0 == 1) {
     CDMMIO16_ST(blk,0xc4,(uint16_t)a1);    /* +0x188 */
     CDMMIO16_ST(blk,0xc5,(uint16_t)a2);    /* +0x18a */
-    CDREG32(0x801bde3c) |= a1;
+    DB32(0x801bde3c) |= a1;
   } else if (a0 == 0) {
     CDMMIO16_ST(blk,0xc6,(uint16_t)a1);    /* +0x18c */
     CDMMIO16_ST(blk,0xc7,(uint16_t)a2);    /* +0x18e */
-    CDREG32(0x801bde3c) &= ~a1;
+    DB32(0x801bde3c) &= ~a1;
   }
 }
 
@@ -2956,7 +2941,7 @@ void cd_chan_attr_apply(uint32_t a0)
       a2 = *(uint16_t *)(p + 4);
     }
     v0 = a2 & 0x7fff;
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xc0,(uint16_t)(v0 | a1));
   }
 
@@ -2977,46 +2962,46 @@ void cd_chan_attr_apply(uint32_t a0)
       a2 = *(uint16_t *)(p + 6);
     }
     v0 = a2 & 0x7fff;
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xc1,(uint16_t)(v0 | a1));
   }
 
   /* ---- simple u16 field copies ---- */
   if (t2 || (t1 & 0x40)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xd8,*(uint16_t *)(p + 0x10));
   }
   if (t2 || (t1 & 0x80)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xd9,*(uint16_t *)(p + 0x12));
   }
   if (t2 || (t1 & 0x400)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xda,*(uint16_t *)(p + 0x1c));
   }
   if (t2 || (t1 & 0x800)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     CDMMIO16_ST(blk,0xdb,*(uint16_t *)(p + 0x1e));
   }
 
   /* ---- +0x1aa bit ops driven by u32 fields ---- */
   if (t2 || (t1 & 0x100)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     if (*(uint32_t *)(p + 0x14) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~4u));
     else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 4));
   }
   if (t2 || (t1 & 0x200)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     if (*(uint32_t *)(p + 0x18) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~1u));
     else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 1));
   }
   if (t2 || (t1 & 0x1000)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     if (*(uint32_t *)(p + 0x20) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~8u));
     else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 8));
   }
   if (t2 || (t1 & 0x2000)) {
-    blk = CDREG32(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     if (*(uint32_t *)(p + 0x24) == 0) CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) & ~2u));
     else                            CDMMIO16_ST(blk,0xd5,(uint16_t)(CDMMIO16(blk,0xd5) | 2));
   }
@@ -3045,7 +3030,7 @@ void cd_chan_attr_push(uint32_t a0)
     if ((*(uint32_t *)p & (1u << s4)) == 0) continue;
     {
       uint32_t s3 = (uint32_t)s4 << 3;
-      E = CDREG32(0x801bdeb0) + s4 * 0x10;
+      E = DB32(0x801bdeb0) + s4 * 0x10;
       S = (uint16_t *)guest_at(0x801bde6c + s4 * 2);
 
       /* +0x10 mask: entry[2] = p.u16[+0x14] */
@@ -3213,8 +3198,8 @@ int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
         br2_irq_poll();
       }
     }
-    if (a2) *a2 = CDREG32(0x801febd4);
-    if (a1) *a1 = CDREG32(0x801febd0);
+    if (a2) *a2 = DB32(0x801febd4);
+    if (a1) *a1 = DB32(0x801febd0);
     st[2] = 0;
     return 1;
   }
@@ -3224,8 +3209,8 @@ int32_t cd_job_result(uint32_t a0,uint32_t *a1,uint32_t *a2)
     *a1 = t0;
     return 0;
   }
-  if (a2) *a2 = CDREG32(0x801febd4);
-  if (a1) *a1 = CDREG32(0x801febd0);
+  if (a2) *a2 = DB32(0x801febd4);
+  if (a1) *a1 = DB32(0x801febd0);
   st[2] = 0;
   return 1;
 }
@@ -3239,7 +3224,7 @@ int32_t cd_mc_op_wait(uint32_t a0)
 {
   uint32_t s0 = a0;
   uint32_t v0;
-  if (CDREG32(0x801febe0) != 0) {
+  if (DB32(0x801febe0) != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     return -1;
   }
@@ -3248,7 +3233,7 @@ retry:
   if (cd_chan_cmd_burst(s0) != 0) {
     uint32_t r;
     cd_pending_args_pump();
-    bios_tramp_a0ac(CDREG32(0x801febf0),0,0,0);
+    bios_tramp_a0ac(DB32(0x801febf0),0,0,0);
     do {
       if (br2_bail_pending()) return -1;
       br2_irq_poll();
@@ -3287,7 +3272,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
   int32_t v0;
   uint32_t *outa = (uint32_t *)a3;
 
-  if (CDREG32(0x801febe0) != 0) {
+  if (DB32(0x801febe0) != 0) {
     printf_forward((const char *)guest_at(0x80125e8c));
     br2_guest_frame_free();
     return -1;
@@ -3296,7 +3281,7 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
   cd_file_header_copy(a0,blk);
   cd_strcat_guard(blk,a1v);
   s2 = 0; s1 = 0;
-  CDREG32(0x801febec) |= 1u << (CDREG32(0x801febf0) & 31);  /* sllv */
+  DB32(0x801febec) |= 1u << (DB32(0x801febf0) & 31);  /* sllv */
   v0 = (int32_t)(fp + lim);
   if (v0 <= 0) goto done;
   s5 = 0; s4 = 0;
@@ -3314,18 +3299,18 @@ int32_t cd_chan_job_pump(uint32_t a0,const void *a1,const void *a2,const void *a
         if (s2 < 4) continue;
         /* 4 strikes: teardown + drain + report last error */
         v0 = (int32_t)cd_xchg_fec24(0);
-        CDREG32(0x801fec38) = (uint32_t)v0;
-        st0 = CDREG32(0x801febe0);
+        DB32(0x801fec38) = (uint32_t)v0;
+        st0 = DB32(0x801febe0);
         if ((int32_t)st0 > 0) {
           printf_forward((const char *)guest_at(0x80125ce8));
         } else {
           uint32_t *st = (uint32_t *)guest_at(0x801febe0);
           st[0] = 2; st[1] = 0; st[2] = 0;
-          CDREG32(0x801febf0) = a0;      /* delay-slot store before call */
+          DB32(0x801febf0) = a0;      /* delay-slot store before call */
           cd_job_slot_alloc(0x8019eb00,(uint32_t)a1v);
         }
         cd_job_result(0,0,&err);
-        cd_xchg_fec24(CDREG32(0x801fec38));
+        cd_xchg_fec24(DB32(0x801fec38));
         br2_guest_frame_free();
         return (int32_t)err;
       }
@@ -3367,16 +3352,16 @@ void cd_chan_reg_init(int32_t a0)
     /* DPCR |= 0xB0000 — enables the channel-4 (SPU stream) DMA. The
      * pointer cell resolves to 0x1F8010F0 (MMIO); must RMW through
      * br2 accessors, not guest_at (open-bus mirror). */
-    uint32_t dpcr = CDREG32(0x801bdec0);
+    uint32_t dpcr = DB32(0x801bdec0);
     br2_st32(dpcr, br2_ld32(dpcr) | 0xb0000u);
   }
-  CDREG32(0x801bdecc) = 0;
-  CDREG32(0x801bddd0) = 0;
-  CDREG16(0x801bdec8) = 0;
-  blk = CDREG32(0x801bdeb0);
+  DB32(0x801bdecc) = 0;
+  DB32(0x801bddd0) = 0;
+  DB16(0x801bdec8) = 0;
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xc0,0); CDMMIO16_ST(blk,0xc1,0); CDMMIO16_ST(blk,0xd5,0);
   cd_delay_3c();
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xc0,0); CDMMIO16_ST(blk,0xc1,0);
   v1 = 0;
   if ((CDMMIO16(blk,0xd7) & 0x7ff) != 0) {
@@ -3387,15 +3372,15 @@ void cd_chan_reg_init(int32_t a0)
                      (const char *)guest_at(0x80125bf8));
         break;
       }
-      blk = CDREG32(0x801bdeb0);
+      blk = DB32(0x801bdeb0);
       if ((CDMMIO16(blk,0xd7) & 0x7ff) == 0) break;
     }
   }
-  CDREG32(0x801bded4) = 2;
-  CDREG32(0x801bded8) = 3;
-  CDREG32(0x801bdedc) = 8;
-  CDREG32(0x801bdee0) = 7;
-  blk = CDREG32(0x801bdeb0);
+  DB32(0x801bded4) = 2;
+  DB32(0x801bded8) = 3;
+  DB32(0x801bdedc) = 8;
+  DB32(0x801bdee0) = 7;
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xd6,4);                            /* +0x1ac */
   CDMMIO16_ST(blk,0xc2,0); CDMMIO16_ST(blk,0xc3,0);               /* +0x184,+0x186 */
   CDMMIO16_ST(blk,0xc6,0xffff); CDMMIO16_ST(blk,0xc7,0xffff);     /* +0x18c,+0x18e */
@@ -3407,30 +3392,30 @@ void cd_chan_reg_init(int32_t a0)
   if (s0 != 0) goto tail;
 
   /* ---- arg==0: full channel-block init ---- */
-  CDREG16(0x801bdec8) = 0x200;
-  blk = CDREG32(0x801bdeb0);
+  DB16(0x801bdec8) = 0x200;
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xc8,0); CDMMIO16_ST(blk,0xc9,0); CDMMIO16_ST(blk,0xca,0); CDMMIO16_ST(blk,0xcb,0);
   CDMMIO16_ST(blk,0xd8,0); CDMMIO16_ST(blk,0xd9,0); CDMMIO16_ST(blk,0xda,0); CDMMIO16_ST(blk,0xdb,0);
   cd_reg_stream_push(0x801bdef0,0x10);
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   for (i = 0; i < 0x18; i++) {
     uint32_t e = blk + i * 0x10;          /* 0x10-int8_t stride */
     CDMMIO16_ST(e,0,0); CDMMIO16_ST(e,1,0); CDMMIO16_ST(e,2,0x3fff);
     CDMMIO16_ST(e,3,0x200); CDMMIO16_ST(e,4,0); CDMMIO16_ST(e,5,0);
   }
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xc4,0xffff); CDMMIO16_ST(blk,0xc5,0xff);       /* +0x188,+0x18a */
   cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   CDMMIO16_ST(blk,0xc6,0xffff); CDMMIO16_ST(blk,0xc7,0xff);       /* +0x18c,+0x18e */
   cd_delay_3c(); cd_delay_3c(); cd_delay_3c(); cd_delay_3c();
 
 tail:
-  blk = CDREG32(0x801bdeb0);
-  CDREG32(0x801bdee4) = 1;
+  blk = DB32(0x801bdeb0);
+  DB32(0x801bdee4) = 1;
   CDMMIO16_ST(blk,0xd5,0xc000);                       /* +0x1aa */
-  CDREG32(0x801bdee8) = 0;
-  CDREG32(0x801bdeec) = 0;
+  DB32(0x801bdee8) = 0;
+  DB32(0x801bdeec) = 0;
 }
 
 /* cd_reg_window_rmw — register-window RMW: op a0 (0=AND-NOT,1=OR,8=STORE,
@@ -3442,10 +3427,10 @@ tail:
 uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t t1 = a0, t0 = a1;
-  int alt = (int)(CDREG32(0x801bde9c) & 1);
+  int alt = (int)(DB32(0x801bde9c) & 1);
   /* base is a guest ADDRESS (RAM shadow 0x801fe9e8 or the MMIO reg
    * block); br2_ld16/st16 route each access to RAM or the device. */
-  uint32_t base = alt ? 0x801fe9e8u : CDREG32(0x801bdeb0);
+  uint32_t base = alt ? 0x801fe9e8u : DB32(0x801bdeb0);
   uint32_t v1 = br2_ld16(base + (a3 << 1)) & 0xff;
   uint32_t v0 = br2_ld16(base + (a2 << 1));
   uint32_t t2 = (v1 << 16) | v0;
@@ -3457,7 +3442,7 @@ uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
       br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) | t0));
       br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) | hb));
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
-      CDREG32(0x801bde68) |= 1u << (sh & 31);
+      DB32(0x801bde68) |= 1u << (sh & 31);
     } else {
       br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) | t0));
       br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) | hb));
@@ -3470,7 +3455,7 @@ uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
       br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) & ~t0));
       br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) & ~(uint32_t)hb));
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
-      CDREG32(0x801bde68) |= 1u << (sh & 31);
+      DB32(0x801bde68) |= 1u << (sh & 31);
     } else {
       br2_st16(base + (a2 << 1), (uint16_t)(br2_ld16(base + (a2 << 1)) & ~t0));
       br2_st16(base + (a3 << 1), (uint16_t)(br2_ld16(base + (a3 << 1)) & ~(uint32_t)hb));
@@ -3482,7 +3467,7 @@ uint32_t cd_reg_window_rmw(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
       br2_st16(base + (a2 << 1), (uint16_t)t0);
       br2_st16(base + (a3 << 1), (uint16_t)hb);
       sh = ((int32_t)(a2 - 0xc6)) >> 1;
-      CDREG32(0x801bde68) |= 1u << (sh & 31);
+      DB32(0x801bde68) |= 1u << (sh & 31);
     } else {
       br2_st16(base + (a2 << 1), (uint16_t)t0);
       br2_st16(base + (a3 << 1), (uint16_t)hb);
@@ -3524,20 +3509,20 @@ int32_t cd_chan_mode_apply(uint32_t a0)
       s4 = 1;
       if (cd_range_table_member(ent) != 0) return -1;
       mode = s0;
-      CDREG32(0x801bde54) = mode;
-      mode = CDREG32(0x801bde54);
-      CDREG32(0x801bde4c) = ((uint32_t *)guest_at(0x801be440))[mode];
+      DB32(0x801bde54) = mode;
+      mode = DB32(0x801bde54);
+      DB32(0x801bde4c) = ((uint32_t *)guest_at(0x801be440))[mode];
       src = (uint8_t *)guest_at(0x801be470 + mode * 0x44);
       memcpy(buf,src,0x44);
       if (mode == 7) {
-        CDREG32(0x801bde60) = 0x7f;
-        CDREG32(0x801bde5c) = 0x7f;
+        DB32(0x801bde60) = 0x7f;
+        DB32(0x801bde5c) = 0x7f;
       } else if (mode == 8) {
-        CDREG32(0x801bde60) = 0;
-        CDREG32(0x801bde5c) = 0x7f;
+        DB32(0x801bde60) = 0;
+        DB32(0x801bde5c) = 0x7f;
       } else {
-        CDREG32(0x801bde60) = 0;
-        CDREG32(0x801bde5c) = 0;
+        DB32(0x801bde60) = 0;
+        DB32(0x801bde5c) = 0;
       }
     } else {
       return -1;
@@ -3546,7 +3531,7 @@ int32_t cd_chan_mode_apply(uint32_t a0)
 
   /* ---- block 2: rate math (s3==0 or s3&8), mode in {7,8} ---- */
   if (s5 || (s3 & 8)) {
-    mode = CDREG32(0x801bde54);
+    mode = DB32(0x801bde54);
     if (mode >= 7 && mode < 9) {
       s6 = 1;
       if (!s4) {
@@ -3561,7 +3546,7 @@ int32_t cd_chan_mode_apply(uint32_t a0)
       hi1 = (int32_t)(prod >> 32);
       prod = (int64_t)x12 * (int64_t)0x8102409;
       hi2 = (int32_t)(prod >> 32);
-      CDREG32(0x801bde5c) = vv;
+      DB32(0x801bde5c) = vv;
       xs_u = (uint32_t)hi1 + (uint32_t)x13;
       q1 = ((int32_t)xs_u >> 6) - (x13 >> 31);
       xs_u = (uint32_t)hi2 + (uint32_t)x12;
@@ -3577,7 +3562,7 @@ int32_t cd_chan_mode_apply(uint32_t a0)
 
   /* ---- block 3: secondary rate (s3==0 or s3&0x10), mode {7,8} ---- */
   if (s5 || (s3 & 0x10)) {
-    mode = CDREG32(0x801bde54);
+    mode = DB32(0x801bde54);
     if (mode >= 7 && mode < 9) {
       fp = 1;                             /* delay slot: always */
       if (!s4) {
@@ -3596,14 +3581,14 @@ int32_t cd_chan_mode_apply(uint32_t a0)
       p_hi = (uint32_t)(int32_t)(prod >> 32);
       xs_u = p_hi + xs_u;
       q = ((int32_t)xs_u >> 6) - (xs >> 31);
-      CDREG32(0x801bde60) = vv;
+      DB32(0x801bde60) = vv;
       w[0x09] = (uint16_t)q;                  /* sp+0x22 */
     }
   }
 
   /* ---- s4: mode-active path clears fields; else flag stores ---- */
   {
-    uint32_t gmb = CDREG32(0x801bdeb0);
+    uint32_t gmb = DB32(0x801bdeb0);
     if (s4 != 0) {
       s7 = (CDMMIO16(gmb,0xd5) >> 7) & 1;
       if (s7) CDMMIO16_ST(gmb,0xd5,(uint16_t)(CDMMIO16(gmb,0xd5) & 0xff7f));
@@ -3623,10 +3608,10 @@ int32_t cd_chan_mode_apply(uint32_t a0)
   }
 
   if (s4 || s6 || fp) cd_field_copy_gated(buf);
-  if (f58) cd_mode_apply_deferred(CDREG32(0x801bde54));
-  if (s4) cd_u16_table_store(0xd1,CDREG32(0x801bde4c),0);
+  if (f58) cd_mode_apply_deferred(DB32(0x801bde54));
+  if (s4) cd_u16_table_store(0xd1,DB32(0x801bde4c),0);
   if (s7) {
-    uint32_t gmb = CDREG32(0x801bdeb0);
+    uint32_t gmb = DB32(0x801bdeb0);
     CDMMIO16_ST(gmb,0xd5,(uint16_t)(CDMMIO16(gmb,0xd5) | 0x80));
   }
   return 0;
@@ -3644,12 +3629,10 @@ void cd_bitstream_decode(int32_t a0,uint32_t a1,uint32_t a2)
   uint32_t v0,v1,at,at2;
   uint32_t a0g,a1g,a2b,a3b;
   int v0neg;
-#define FF_RD32(a)   (*(uint32_t *)guest_at(a))
-#define FF_RD16(a)   (*(uint16_t *)guest_at(a))
 #define FF_ST16(a,v) (*(uint16_t *)guest_at(a) = (uint16_t)(v))
 #define FF_ST32(a,v) (*(uint32_t *)guest_at(a) = (uint32_t)(v))
 
-  t1 = CDREG32(0x801b6900);
+  t1 = DB32(0x801b6900);
   a2b = a2 + 0x800;
   a3b = a2b + 0x10000;
   if (a0 == 0) {
@@ -3673,11 +3656,11 @@ void cd_bitstream_decode(int32_t a0,uint32_t a1,uint32_t a2)
   a1g = a1;
   t6 = a1g + t1;
   /* header parse */
-  t1 = FF_RD32(a0g);
-  t4 = (uint32_t)FF_RD16(a0g + 4) << 10;
-  t2 = (uint32_t)FF_RD16(a0g + 6);
-  v0 = FF_RD16(a0g + 8);
-  v1 = FF_RD16(a0g + 0xa);
+  t1 = DB32(a0g);
+  t4 = (uint32_t)DB16(a0g + 4) << 10;
+  t2 = (uint32_t)DB16(a0g + 6);
+  v0 = DB16(a0g + 8);
+  v1 = DB16(a0g + 0xa);
   t2 -= 3;
   if ((int32_t)t2 >= 0) t5 = 1;
   a0g += 0xc;
@@ -3699,8 +3682,8 @@ L_ffd4:
   at2 = a2b - 0x400;                        /* fff0 delay: always */
   if ((int32_t)at >= 0) at2 -= 0x400;
   t0 = ((v0 >> 0x18) << 2) + at2;
-  t1 = FF_RD16(t0);
-  t2 = FF_RD16(t0 + 2);
+  t1 = DB16(t0);
+  t2 = DB16(t0 + 2);
   t0 = 0;
   v0 <<= (t1 & 31);                         /* 9014 delay: always */
   if (t2 != 0) {
@@ -3718,7 +3701,7 @@ L_ffd4:
   at = v1 & 0x10;
   v1 &= 0xf;
   if (at) {
-    t1 = FF_RD16(a0g); a0g += 2;
+    t1 = DB16(a0g); a0g += 2;
     v0 |= t1 << (v1 & 31);
   }
   /* accumulator select: t5==1->t7, ==2->t8, >=3->t9 */
@@ -3750,7 +3733,7 @@ L_ac:
   at = v1 & 0x10;
   v1 &= 0xf;
   if (at) {
-    t1 = FF_RD16(a0g); a0g += 2;
+    t1 = DB16(a0g); a0g += 2;
     v0 |= t1 << (v1 & 31);
   }
   t0 |= t4;
@@ -3767,21 +3750,21 @@ L_f0:
   /* ---- main VLC symbol decode ---- */
   t0 = (v0 >> 0x13) << 3;
   t0 += a2b;
-  t1 = FF_RD32(t0);
+  t1 = DB32(t0);
   at = t1 & 0xff;                           /* 9108 delay: always */
   if (t1 != 0) {
-    t3 = FF_RD32(t0 + 4);
+    t3 = DB32(t0 + 4);
   } else {
     v0 <<= 8;
     v1 += 8;
     at2 = v1 & 0x10;
     v1 &= 0xf;
     if (at2) {
-      t0 = FF_RD16(a0g); a0g += 2;
+      t0 = DB16(a0g); a0g += 2;
       v0 |= t0 << (v1 & 31);
     }
     t0 = ((v0 >> 0x17) << 2) + a3b;
-    t1 = FF_RD32(t0);
+    t1 = DB32(t0);
     t3 = 0;
     at = t1 & 0xff;
   }
@@ -3790,7 +3773,7 @@ L_f0:
   at2 = v1 & 0x10;
   v1 &= 0xf;
   if (at2) {
-    t0 = FF_RD16(a0g); a0g += 2;
+    t0 = DB16(a0g); a0g += 2;
     v0 |= t0 << (v1 & 31);
   }
   t1 >>= 0x10;
@@ -3814,14 +3797,14 @@ L_d4:
   t0 = v0 >> 0x10;
   FF_ST16(a1g,t0);
   a1g += 2;
-  t0 = FF_RD16(a0g); a0g += 2;
+  t0 = DB16(a0g); a0g += 2;
   v0 <<= 0x10;
   v0 |= t0 << (v1 & 31);
   goto L_f0;
 
 L_1f8:
   /* ---- flush: pad 0xfe00 until a1g reaches limit ---- */
-  t1 = CDREG32(0x801b6928);
+  t1 = DB32(0x801b6928);
   t0 = 0xfe00;
   for (;;) {
     at = a1g - t1;
@@ -3843,8 +3826,6 @@ L_2028:
     *(uint32_t *)(s + 0x1c) = t8;
     *(uint32_t *)(s + 0x20) = t9;
   }
-#undef FF_RD32
-#undef FF_RD16
 #undef FF_ST16
 #undef FF_ST32
 }
@@ -4113,7 +4094,7 @@ void cd_field_copy_gated(void *a0)
   uint32_t fl = *(uint32_t *)p;
   int all = (fl < 1u);
   uint32_t i;
-  blk = CDREG32(0x801bdeb0);
+  blk = DB32(0x801bdeb0);
   for (i = 0; i < sizeof(T)/sizeof(T[0]); i++) {
     if (all || (fl & T[i].mask))
       CDMMIO16_ST(blk,T[i].dst >> 1,*(uint16_t *)(p + T[i].src));
@@ -4253,7 +4234,7 @@ uint32_t cd_curve_lookup(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     uint32_t i2 = (uint32_t)(0x801c0000 + ((sum & 0x7f) << 1) - 0x1cc8);
     int32_t prod;
     /* mult $v1,$v0: both lhu (zero-extended u16), signed lo product */
-    prod = (int32_t)CDREG16(i1) * (int32_t)CDREG16(i2);
+    prod = (int32_t)DB16(i1) * (int32_t)DB16(i2);
     a1r = prod >> 16;                     /* sra */
     v0 = (int32_t)(int16_t)idx;           /* idx<<16>>16 */
     if (v0 < 0) {
@@ -4453,17 +4434,17 @@ uint32_t cd_chan_cmd_burst(uint32_t a0)
     uint32_t blk = 0x801fec70 + (uint32_t)s2 * 0x20;
     cd_bzero(0x801feea0,0x80);
     cd_bzero(blk,0x20);
-    CDREG32(blk)     = 0xa0;
-    CDREG32(blk + 4) = 0;
-    CDREG16(blk + 8) = 0xffff;
+    DB32(blk)     = 0xa0;
+    DB32(blk + 4) = 0;
+    DB16(blk + 8) = 0xffff;
     memcpy(guest_at(0x801feea0),guest_at(blk),0x20);
     if (cd_chan_cmd_pump(s4,(uint32_t)(s2 + 1),0x801feea0) != 1) return 0;
   }
   for (s2 = 0; s2 < 0x14; s2++) {
     uint32_t cell = 0x801fee50 + (uint32_t)s2 * 4;
-    CDREG32(cell) = 0xffffffff;
+    DB32(cell) = 0xffffffff;
     cd_bzero(0x801feea0,0x80);
-    CDREG32(0x801feea0) = CDREG32(cell);
+    DB32(0x801feea0) = DB32(cell);
     if (cd_chan_cmd_pump(s4,(uint32_t)(s2 + 0x10),0x801feea0) != 1) return 0;
   }
   cd_bzero(0x801feea0,0x80);
@@ -4480,11 +4461,11 @@ void cd_job_slot_alloc(uint32_t a0,uint32_t a1)
 {
   uint32_t idx, i;
   (void)a1;
-  idx = CDREG32(0x801be768);
+  idx = DB32(0x801be768);
   idx = idx + 1;
   if ((int32_t)idx < 4) {
-    CDREG32(0x801be768) = idx;
-    CDREG32(0x801fef60 + idx * 4) = a0;
+    DB32(0x801be768) = idx;
+    DB32(0x801fef60 + idx * 4) = a0;
     {
       uint32_t *e = (uint32_t *)guest_at(0x801fef20 + idx * 0x10);
       for (i = 0; i < 4; i++) e[i] = 0;
@@ -4502,15 +4483,15 @@ void cd_pending_args_pump(void)
 {
   int i;
   for (i = 0; i < 8; i++)
-    cd_seek_state_machine(CDREG32(0x801fef70 + (uint32_t)i * 4));
-  CDREG32(0x801fef9c) = 0;
-  CDREG32(0x801fef98) = CDREG32(0x801fef9c);
-  CDREG32(0x801fef94) = CDREG32(0x801fef98);
-  CDREG32(0x801fef90) = CDREG32(0x801fef94);
-  CDREG32(0x801fefac) = 0;
-  CDREG32(0x801fefa8) = CDREG32(0x801fefac);
-  CDREG32(0x801fefa4) = CDREG32(0x801fefa8);
-  CDREG32(0x801fefa0) = CDREG32(0x801fefa4);
+    cd_seek_state_machine(DB32(0x801fef70 + (uint32_t)i * 4));
+  DB32(0x801fef9c) = 0;
+  DB32(0x801fef98) = DB32(0x801fef9c);
+  DB32(0x801fef94) = DB32(0x801fef98);
+  DB32(0x801fef90) = DB32(0x801fef94);
+  DB32(0x801fefac) = 0;
+  DB32(0x801fefa8) = DB32(0x801fefac);
+  DB32(0x801fefa4) = DB32(0x801fefa8);
+  DB32(0x801fefa0) = DB32(0x801fefa4);
 }
 
 /* cd_queue_a_status — queue-A status: s0 = q90 + q94*2 + q98*4 + q9c*8
@@ -4522,20 +4503,20 @@ uint32_t cd_queue_a_status(void)
   uint32_t s0;
   for (;;) {
     if (br2_bail_pending()) return 0;
-    s0 = CDREG32(0x801fef90)
-       + (CDREG32(0x801fef94) << 1)
-       + (CDREG32(0x801fef98) << 2)
-       + (CDREG32(0x801fef9c) << 3);
+    s0 = DB32(0x801fef90)
+       + (DB32(0x801fef94) << 1)
+       + (DB32(0x801fef98) << 2)
+       + (DB32(0x801fef9c) << 3);
     if (s0 != 0) break;
   }
-  cd_seek_state_machine(CDREG32(0x801fef80));
-  cd_seek_state_machine(CDREG32(0x801fef84));
-  cd_seek_state_machine(CDREG32(0x801fef88));
-  cd_seek_state_machine(CDREG32(0x801fef8c));
-  CDREG32(0x801fef9c) = 0;
-  CDREG32(0x801fef98) = CDREG32(0x801fef9c);
-  CDREG32(0x801fef94) = CDREG32(0x801fef98);
-  CDREG32(0x801fef90) = CDREG32(0x801fef94);
+  cd_seek_state_machine(DB32(0x801fef80));
+  cd_seek_state_machine(DB32(0x801fef84));
+  cd_seek_state_machine(DB32(0x801fef88));
+  cd_seek_state_machine(DB32(0x801fef8c));
+  DB32(0x801fef9c) = 0;
+  DB32(0x801fef98) = DB32(0x801fef9c);
+  DB32(0x801fef94) = DB32(0x801fef98);
+  DB32(0x801fef90) = DB32(0x801fef94);
   return (uint32_t)((int32_t)s0 >> 1);
 }
 
@@ -4548,20 +4529,20 @@ uint32_t cd_queue_b_status(void)
   uint32_t s0;
   for (;;) {
     if (br2_bail_pending()) return 0;
-    s0 = CDREG32(0x801fefa0)
-       + (CDREG32(0x801fefa4) << 1)
-       + (CDREG32(0x801fefa8) << 2)
-       + (CDREG32(0x801fefac) << 3);
+    s0 = DB32(0x801fefa0)
+       + (DB32(0x801fefa4) << 1)
+       + (DB32(0x801fefa8) << 2)
+       + (DB32(0x801fefac) << 3);
     if (s0 != 0) break;
   }
-  cd_seek_state_machine(CDREG32(0x801fef70));
-  cd_seek_state_machine(CDREG32(0x801fef74));
-  cd_seek_state_machine(CDREG32(0x801fef78));
-  cd_seek_state_machine(CDREG32(0x801fef7c));
-  CDREG32(0x801fefac) = 0;
-  CDREG32(0x801fefa8) = CDREG32(0x801fefac);
-  CDREG32(0x801fefa4) = CDREG32(0x801fefa8);
-  CDREG32(0x801fefa0) = CDREG32(0x801fefa4);
+  cd_seek_state_machine(DB32(0x801fef70));
+  cd_seek_state_machine(DB32(0x801fef74));
+  cd_seek_state_machine(DB32(0x801fef78));
+  cd_seek_state_machine(DB32(0x801fef7c));
+  DB32(0x801fefac) = 0;
+  DB32(0x801fefa8) = DB32(0x801fefac);
+  DB32(0x801fefa4) = DB32(0x801fefa8);
+  DB32(0x801fefa0) = DB32(0x801fefa4);
   return (uint32_t)((int32_t)s0 >> 1);
 }
 
@@ -4569,10 +4550,10 @@ uint32_t cd_queue_b_status(void)
  * return q90 + q94*2 + q98*4 + q9c*8. Disasm 0x801a1148-0x801a1180. */
 uint32_t cd_queue_a_read(void)
 {
-  return CDREG32(0x801fef90)
-       + (CDREG32(0x801fef94) << 1)
-       + (CDREG32(0x801fef98) << 2)
-       + (CDREG32(0x801fef9c) << 3);
+  return DB32(0x801fef90)
+       + (DB32(0x801fef94) << 1)
+       + (DB32(0x801fef98) << 2)
+       + (DB32(0x801fef9c) << 3);
 }
 
 /* ======== 0x80199440 ======== */
@@ -4755,13 +4736,13 @@ uint32_t cd_copy_u32(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
  * op = 0x20000000 / 0x22000000. Disasm 0x8019be28-0x8019be78. */
 void cd_mmio_strobe_20(void)
 {
-  uint32_t a = CDREG32(0x801bdec4);   /* -> 0x1F801014 (MMIO) */
+  uint32_t a = DB32(0x801bdec4);   /* -> 0x1F801014 (MMIO) */
   br2_st32(a,(br2_ld32(a) & 0xf0ffffffu) | 0x20000000u);
 }
 /* cd_mmio_strobe_22 — same register-cell RMW as cd_mmio_strobe_20 with op 0x22000000; guest 0x8019be50. */
 void cd_mmio_strobe_22(void)
 {
-  uint32_t a = CDREG32(0x801bdec4);
+  uint32_t a = DB32(0x801bdec4);
   br2_st32(a,(br2_ld32(a) & 0xf0ffffffu) | 0x22000000u);
 }
 
@@ -6877,10 +6858,10 @@ void cd_cb8_run_param(uint32_t a0)
  * Disasm 0x8018fe44-0x8018fe58. */
 uint32_t mdec_status_read(void)
 {
-  uint32_t reg = CDREG32(0x801b68f4);
+  uint32_t reg = DB32(0x801b68f4);
   if (reg >= 0x1f801000u && reg <= 0x1f803fffu)
     return psx_read_word(reg);
-  return CDREG32(reg);
+  return DB32(reg);
 }
 
 /* cd_strncmp — strncmp: a0 = guest string addr, a1 = host buffer
@@ -6952,7 +6933,7 @@ void cd_guest_zero32_c(uint32_t a0,uint32_t a1)
  * Disasm 0x8019d5c0-0x8019d5e0. */
 void cd_state_store(uint32_t a0)
 {
-  if (CDREG32(0x801bdee8) != a0) CDREG32(0x801bdee8) = a0;
+  if (DB32(0x801bdee8) != a0) DB32(0x801bdee8) = a0;
 }
 
 /* cd_queue_b_read — queue-B packed word (no side effects):
@@ -6960,10 +6941,10 @@ void cd_state_store(uint32_t a0)
  * of cd_queue_b_status. Disasm 0x801a1184-0x801a11bc. */
 uint32_t cd_queue_b_read(void)
 {
-  return CDREG32(0x801fefa0)
-       + (CDREG32(0x801fefa4) << 1)
-       + (CDREG32(0x801fefa8) << 2)
-       + (CDREG32(0x801fefac) << 3);
+  return DB32(0x801fefa0)
+       + (DB32(0x801fefa4) << 1)
+       + (DB32(0x801fefa8) << 2)
+       + (DB32(0x801fefac) << 3);
 }
 
 /* ======== batch_mass17: disasm-verified ports ======== */
