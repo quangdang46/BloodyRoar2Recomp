@@ -2241,14 +2241,14 @@ void cd_handler_triple_install(void)
 }
 
 /* cd_ext_init_once — one-shot CD ext-table init: guard @0x801bdea0,
- * crit-in, cd_ext_table_init(0x8019b7e0), FUN_8019b380(0xf0000009,0x20,
- * 0x2000,0) -> FUN_8019b390 -> @0x801bde38, crit-out.
+ * crit-in, cd_ext_table_init(0x8019b7e0), bios_tramp_b008(0xf0000009,0x20,
+ * 0x2000,0) -> bios_tramp_b00c -> @0x801bde38, crit-out.
  * Disasm 0x8019b308-0x8019b370. */
 extern int32_t cd_ext_table_init(uint32_t);
 extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 void cd_ext_init_once(void)
 {
-  /* OpenEvent/EnableEvent via FUN_8019b380/390 -> bios_svc6 needs the
+  /* OpenEvent/EnableEvent via bios_tramp_b008/b00c -> bios_svc6 needs the
    * guest $ra caller-token semantics the generated CPS frame supplies;
    * the clean port livelocked versus boot in the CD-event wait. Delegate
    * whole body to generated MIPS. (The 0x8019B7E0 callback arg was
@@ -4323,7 +4323,7 @@ void cd_file_header_copy(uint32_t a0,void *a1)
  * @*(u32*)0x150..+count*80 (@0x154 count) comparing names via
  * cd_strcmp; phase1 hit -> *0x801fec40 = entry+0x34; phase2
  * strcmp==0 -> entry+0x34 = 0x801a041c; tail calls BIOS svc
- * B0/0x42 trampoline (FUN_801a0520) with (a0,a1) unless phase1 miss
+ * B0/0x42 trampoline (bios_tramp_b042) with (a0,a1) unless phase1 miss
  * (returns 0). a0/a1 are HOST pointers (callers pass stack bufs).
  * Reads kernel cells 0x150/0x154 via guest_at.
  * Disasm 0x801a0280-0x801a0418. */
@@ -7063,7 +7063,7 @@ int cd_ctx_save(uint32_t a0)
  * stale regs — so 0,0). Re-polls until mask drains. Tail: while
  * *ptrA&*ptrB nonzero bump counter @0x801bddb0; at old>=0x801 print
  * "intr timeout(%04x:%04x)", reset counter, clear *ptrA. Mask==0
- * also clears counter. Ends with BIOS svc 0x17 (FUN_8019ad60
+ * also clears counter. Ends with BIOS svc 0x17 (bios_tramp_b017
  * trampoline: intc enable) and busy flag=0. First entry with
  * flag==0 prints "unexpected interrupt(%04x)" then enables intc.
  * Disasm 0x8019a8ec-0x8019aab8. */
@@ -7091,16 +7091,16 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
 }
 
 /* cd_hw_chan_init — channel/hw object init under DI/EI (0x801a0be0-
- * 0x801a0db8). Eight FUN_8019b380(object,attr,size,cb) allocations —
+ * 0x801a0db8). Eight bios_tramp_b008(object,attr,size,cb) allocations —
  * objects 0xf4000001 / 0xf0000011, attrs {4,0x8000,0x100,0x2000},
  * size 0x1000, guest cb addrs 0x801a0b10..0x801a0b9c — stored to
- * 0x8020ef70..0x8020ef8c, then each released via FUN_8019b390 in
+ * 0x8020ef70..0x8020ef8c, then each released via bios_tramp_b00c in
  * order, cd_pending_args_pump() pump, conditional EI. Guest tests the DI
  * (syscall 1) return ==1 before EI; host FUN_8018e300 is a void
  * stub, so the restore runs unconditionally — same convention as
  * every other DI/EI site in this file. */
 /* cd_hw_chan_init — delegate whole body to generated MIPS (0x801a0be0).
- * Eight FUN_8019b380(B0/0x08) allocs + FUN_8019b390(B0/0x09) frees: the
+ * Eight bios_tramp_b008(B0/0x08) allocs + bios_tramp_b00c(B0/0x09) frees: the
  * BIOS `jr 0xB0` $v0 handles must propagate through generated context
  * (session-18 boundary bug — same as cd_ext_init_once/cd_dma_chan_init). */
 void cd_hw_chan_init(void)
