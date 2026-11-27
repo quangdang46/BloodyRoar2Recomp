@@ -214,7 +214,6 @@ extern uint8_t  *g_DAT_801bc7c0;
 /* ======== 0x8018d150 ======== */
 
 uint32_t cd_mode_flag_set(int8_t,int,uint32_t);
-uint32_t cd_cmd_issue(int8_t,uint32_t,uint32_t,int);
 
 uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
 
@@ -4618,7 +4617,6 @@ void cd_mc_state_machine(void)
  * *(u32*)(ctx+0x30) deref int8_t, and self-link ctx+0x10==ctx. Returns
  * mapped u8@ctx+0x49: sel==3 or sel==2 -> 1; sel==6 -> 4; else raw.
  * Disasm 0x801a12dc-0x801a13a4. */
-uint32_t call_guest(uint32_t, uint32_t, uint32_t);
 static uint8_t *ctx_194_get(void)
 {
   uint32_t fn = *(uint32_t *)guest_at(0x801be194);
@@ -5611,9 +5609,6 @@ uint32_t cd_state_blk_save(void)
 }
 
 /* ======== batch_mass4 ======== */
-
-extern int cd_seek_state_machine(uint32_t);
-extern void cd_mmio_strobe_22(void);
 
 /* ======== 0x8019a09c ======== */
 
