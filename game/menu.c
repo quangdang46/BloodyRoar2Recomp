@@ -3062,7 +3062,7 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
   }
   int32_t y = MB32S(0x801e8508 + chan * 4);
   uint32_t auxw = MB32(0x801e8518 + chan * 4);
-  if (y < (int32_t)MB16(0x1f800020)) {
+  if (y < MB16(0x1f800020)) {
     int32_t y_q16 = y << 0x10;
     do {
       char *str; int32_t dst;
@@ -3078,7 +3078,7 @@ uint32_t banner_stripe_scroll(int32_t banner,int32_t chan,int32_t step,int16_t a
                    str,(uint32_t)(y_q16 >> 0x10),
                    (int32_t)(int16_t)auxw,(int32_t)aux);
       y_q16 = y_q16 + stride * 0x10000;
-    } while (y < (int32_t)MB16(0x1f800020));
+    } while (y < MB16(0x1f800020));
   }
   return MB32(0x801e8508 + chan * 4);
 }
@@ -10084,7 +10084,7 @@ int32_t slot_byte_commit(uint32_t obj,uint32_t unused,uint32_t cur)
  * sh d -> 0x1f80001c. */
 void elapsed_tick_clamp(void)
 {
-  int32_t d = (int32_t)cd_timer_read(1) - (int32_t)MB16(0x801e83aeu);
+  int32_t d = (int32_t)cd_timer_read(1) - MB16(0x801e83aeu);
   if (d >= 0xb) MW16(0x1f80001cu, (uint16_t)d);
 }
 
@@ -12026,7 +12026,7 @@ void hp_bar_tick(void)
   bidx = MB32(rec_b + 0x28);
   idx = bidx * 8u + rec_b;
   sum = (uint32_t)(int32_t)(MBS16(idx + 0x18) + MBS16(idx + 0x1c));
-  if ((int32_t)MB16(rec_b + 0x2c) < (int32_t)sum) {
+  if (MB16(rec_b + 0x2c) < (int32_t)sum) {
     cnt = (uint32_t)MBS16(rec_b + 0x32);
     gbase = (uint32_t)MBS16(rec_b + 0x30) << 4;
     adj = cnt - 1;
@@ -12834,7 +12834,7 @@ void event_record_walk(uint32_t w)
         }
       }
     } else if (hi == 0xfc00u) {
-      if ((int32_t)lo < (int32_t)MB16(w + 0x16)) {
+      if ((int32_t)lo < MB16(w + 0x16)) {
         MW32(w + 0x10, cur + 4u);
       } else {
         MW16(w + 0x16, MB16(w + 0x16) + 1u);
@@ -14803,10 +14803,10 @@ int32_t save_flow_state_machine(void)
           *(uint32_t *)(blk + 0x0c) = 0x8015d69cu;
           *(uint16_t *)(blk + 0x10) = 0x10;
           *(uint16_t *)(blk + 0x12) = 0xffffu;
-          *(uint16_t *)(blk + 0x14) = (uint16_t)MB8(cfg + 0xcu);
-          *(uint16_t *)(blk + 0x16) = (uint16_t)MB8(cfg + 0xdu);
-          *(uint16_t *)(blk + 0x18) = (uint16_t)MB8(cfg + 0xeu);
-          *(uint16_t *)(blk + 0x1a) = (uint16_t)MB8(cfg + 0xfu);
+          *(uint16_t *)(blk + 0x14) = MB8(cfg + 0xcu);
+          *(uint16_t *)(blk + 0x16) = MB8(cfg + 0xdu);
+          *(uint16_t *)(blk + 0x18) = MB8(cfg + 0xeu);
+          *(uint16_t *)(blk + 0x1a) = MB8(cfg + 0xfu);
           MW32(0x801f8508u, 0);
           MW32(0x801f8518u, 0x30u);
           battle_session_arm(0x1f800000u, 0xffffffffu);
