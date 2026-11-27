@@ -2502,7 +2502,7 @@ int32_t gauge_leaf_update(uint32_t a0g)
   uint8_t *rec = (uint8_t *)guest_at(a0g);
   uint8_t *cr = (uint8_t *)guest_at(*(uint32_t *)(rec + 0xc0));
   uint8_t *tb = (uint8_t *)guest_at(0x801b3f88);
-  int32_t bound, v0, lim;
+  int32_t bound, gval, lim;
   uint32_t hv;
   bound = (int32_t)tb[(uint32_t)*(int16_t *)(rec + 0xa2) +
                      (uint32_t)cr[7] * 16] * 16;
@@ -2516,39 +2516,39 @@ int32_t gauge_leaf_update(uint32_t a0g)
     *(int16_t *)(rec + 0xa0) = (int16_t)gauge_v;
     if (gauge_v < 0x100)
       return gauge_v;
-    v0 = 0xff;
+    gval = 0xff;
     goto store_ff;
   }
   default:
     break;
   }
   hv = *(uint16_t *)(rec + 0xa0);
-  v0 = hv & 0xff;
+  gval = hv & 0xff;
   if ((hv & 0x100) != 0 || rec[0x99] != 0) {
-    *(int16_t *)(rec + 0xa0) = (int16_t)v0;
+    *(int16_t *)(rec + 0xa0) = (int16_t)gval;
     lim = bound - 0x32;
-    if (v0 < lim)
+    if (gval < lim)
       *(int16_t *)(rec + 0xa0) = (int16_t)lim;
   } else {
     int32_t s = (int16_t)hv;
     if (s < bound)
       *(int16_t *)(rec + 0xa0) = (int16_t)bound;
   }
-  v0 = *(int16_t *)(rec + 0xa0);
+  gval = *(int16_t *)(rec + 0xa0);
   lim = bound + 0x1f;
-  if (lim < v0)
+  if (lim < gval)
     *(int16_t *)(rec + 0xa0) = (int16_t)lim;
-  v0 = *(int16_t *)(rec + 0xa0);
-  if (v0 < 0)
+  gval = *(int16_t *)(rec + 0xa0);
+  if (gval < 0)
     *(int16_t *)(rec + 0xa0) = 0;
-  v0 = (*(int16_t *)(rec + 0xa0) < 0x100) ? 1 : 0;
-  if (v0 != 0)
-    return v0;
+  gval = (*(int16_t *)(rec + 0xa0) < 0x100) ? 1 : 0;
+  if (gval != 0)
+    return gval;
 set_ff:
-  v0 = 0xff;
+  gval = 0xff;
 store_ff:
-  *(int16_t *)(rec + 0xa0) = (int16_t)v0;
-  return v0;
+  *(int16_t *)(rec + 0xa0) = (int16_t)gval;
+  return gval;
 }
 
 /* ======== 0x801560f8 ======== */
