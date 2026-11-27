@@ -19,9 +19,6 @@
  * Project-original clean-room code (MIT).
  */
 #include <stdint.h>
-#include <string.h>
-#include "types.h"
-#include "lut.h"
 #include "cpu_state.h"
 
 extern void *guest_at(uint32_t addr);
@@ -42,10 +39,6 @@ typedef uint16_t ushort;
 typedef uint32_t uint;
 typedef uint16_t undefined2;
 typedef uint32_t undefined4;
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint64_t undefined8;
-typedef uint64_t ulonglong;
 
 #define G16(p,o)   (*(const int16_t  *)((const uint8_t *)(p) + (o)))
 #define GU16(p,o)  (*(const uint16_t *)((const uint8_t *)(p) + (o)))
