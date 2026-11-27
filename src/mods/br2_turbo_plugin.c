@@ -17,18 +17,22 @@
  * mods, keeping online matches at the vanilla cadence.
  */
 
+/* Activation: cap the guest to a 75 Hz presentation rate. */
 static void br2_turbo_75(void) {
     (void)psx_mod_set_native_vblank_rate(75u);
 }
 
+/* Activation: cap the guest to a 120 Hz presentation rate. */
 static void br2_turbo_120(void) {
     (void)psx_mod_set_native_vblank_rate(120u);
 }
 
+/* Activation: uncap — run VBlank as fast as the host allows. */
 static void br2_turbo_uncapped(void) {
     (void)psx_mod_set_native_vblank_rate(0u);
 }
 
+/* Register the three turbo-rate activation plugins. */
 PSX_MOD_CONSTRUCTOR(br2_register_turbo_plugins) {
     (void)psx_mod_register_activation_plugin("br2.turbo.75", br2_turbo_75);
     (void)psx_mod_register_activation_plugin("br2.turbo.120", br2_turbo_120);

@@ -30,10 +30,12 @@
 
 #define PKG "br2.enhancement.performance"
 
+/* Activation: auto-skip FMV playback. */
 static void br2_fmv_skip_activate(void) {
     (void)psx_mod_set_auto_skip_fmv(1);
 }
 
+/* Register the enhancement plugins. */
 PSX_MOD_CONSTRUCTOR(br2_register_enhancement_plugins) {
     (void)psx_mod_register_activation_plugin(
         "br2.enhancement.fmv-skip", br2_fmv_skip_activate);
