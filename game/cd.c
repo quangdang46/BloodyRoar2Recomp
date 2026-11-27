@@ -178,35 +178,22 @@ extern uint32_t clean_caller_ra(void);
 #define CDMMIO16_ST(base, idx, v)  \
     br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
 
-/* ---- guest globals ----
- * The g_DAT_* bindings live in bind.c (guest_for registry) — names are
- * load-bearing, do NOT rename them here. The CD_* macros below are the
- * readable aliases; guest address kept in each comment. */
-extern uint8_t  *g_DAT_801bc7b4;
-extern uint8_t  *g_DAT_801bcb80;
-extern uint8_t  *g_DAT_801bcb94;
-extern uint8_t  *g_DAT_801bcb98;
-extern uint8_t  *g_DAT_801bcb9c;
-extern uint8_t  *g_DAT_801bcba4;
-extern uint8_t  *g_DAT_801bcba8;
-extern uint8_t  *g_DAT_801bcbac;
-extern uint8_t  *g_DAT_801bcbb0;
-extern uint8_t  *g_DAT_801bc854;
-extern uint8_t  *g_DAT_801bc848;
-extern uint8_t  *g_DAT_801bc7c0;
+/* ---- CD context cells ----
+ * The CD_* macros below are the readable aliases over guest_at();
+ * guest address kept in each comment. */
 
-#define CD_DISPATCH_PEND   (*(uint8_t  *)g_DAT_801bc7b4)  /* u8 @0x801bc7b4: bit0 = dispatch pending */
-#define CD_RD_COUNT        (*(int32_t  *)g_DAT_801bcb80)  /* i32 @0x801bcb80: read sector count */
-#define CD_RD_RESULT       (*(int32_t  *)g_DAT_801bcb94)  /* i32 @0x801bcb94: read result/remaining (-1 err) */
-#define CD_RD_TS_ISSUE     (*(int32_t  *)g_DAT_801bcb98)  /* i32 @0x801bcb98: tick after ReadN issue */
-#define CD_RD_TS_PAUSE     (*(int32_t  *)g_DAT_801bcb9c)  /* i32 @0x801bcb9c: tick after Pause/issue */
-#define CD_RD_DONE         (*(int32_t  *)g_DAT_801bcba4)  /* i32 @0x801bcba4: read-session done flag */
-#define CD_RD_SESS_A       (*(int32_t  *)g_DAT_801bcba8)  /* i32 @0x801bcba8: mc_session handle */
-#define CD_RD_SESS_B       (*(int32_t  *)g_DAT_801bcbac)  /* i32 @0x801bcbac: mc_session_b handle */
-#define CD_RD_DISP         (*(int32_t  *)g_DAT_801bcbb0)  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
-#define CD_STATUS          (*(uint8_t *)g_DAT_801bc854)   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
-#define CD_BIOS_CB_20      (*(uint32_t *)g_DAT_801bc848)  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
-#define CD_CMD_TBL         ((int32_t  *)g_DAT_801bc7c0)   /* i32* @0x801bc7c0: per-opcode table */
+#define CD_DISPATCH_PEND   (*(uint8_t  *)guest_at(0x801bc7b4))  /* u8 @0x801bc7b4: bit0 = dispatch pending */
+#define CD_RD_COUNT        (*(int32_t  *)guest_at(0x801bcb80))  /* i32 @0x801bcb80: read sector count */
+#define CD_RD_RESULT       (*(int32_t  *)guest_at(0x801bcb94))  /* i32 @0x801bcb94: read result/remaining (-1 err) */
+#define CD_RD_TS_ISSUE     (*(int32_t  *)guest_at(0x801bcb98))  /* i32 @0x801bcb98: tick after ReadN issue */
+#define CD_RD_TS_PAUSE     (*(int32_t  *)guest_at(0x801bcb9c))  /* i32 @0x801bcb9c: tick after Pause/issue */
+#define CD_RD_DONE         (*(int32_t  *)guest_at(0x801bcba4))  /* i32 @0x801bcba4: read-session done flag */
+#define CD_RD_SESS_A       (*(int32_t  *)guest_at(0x801bcba8))  /* i32 @0x801bcba8: mc_session handle */
+#define CD_RD_SESS_B       (*(int32_t  *)guest_at(0x801bcbac))  /* i32 @0x801bcbac: mc_session_b handle */
+#define CD_RD_DISP         (*(int32_t  *)guest_at(0x801bcbb0))  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
+#define CD_STATUS          (*(uint8_t  *)guest_at(0x801bc854))   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
+#define CD_BIOS_CB_20      (*(uint32_t *)guest_at(0x801bc848))  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
+#define CD_CMD_TBL         ((int32_t  *)guest_at(0x801bc7c0))   /* i32* @0x801bc7c0: per-opcode table */
 
 /* ======== 0x8018d150 ======== */
 
