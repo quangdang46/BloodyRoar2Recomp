@@ -13167,7 +13167,6 @@ int _bc_8017DBC8 = (cpu->gpr[6] == cpu->gpr[2]);
 if (_bc_8017DBC8) {
 goto block_8017DBF0;
 } else {
-goto block_8017DBD0;
 }
 block_8017DBD0:
 cpu->gpr[2] = ((int32_t)cpu->gpr[6] < 2) ? 1 : 0;
@@ -13176,7 +13175,6 @@ cpu->gpr[2] = cpu->gpr[3] & 0x0040;
 if (_bc_8017DBD4) {
 goto block_8017DC24;
 } else {
-goto block_8017DBDC;
 }
 block_8017DBDC:
 { cpu->gpr[2] = 2;
@@ -13186,7 +13184,6 @@ cpu->gpr[2] = cpu->gpr[3] & 0x0040;
 if (_bc_8017DBE0) {
 goto block_8017DC0C;
 } else {
-goto block_8017DBE8;
 }
 block_8017DBE8:
 goto block_8017DC24;
@@ -13200,7 +13197,6 @@ int _bc_8017DBFC = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DBFC) {
 goto block_8017DC20;
 } else {
-goto block_8017DC04;
 }
 block_8017DC04:
 goto block_8017E11C;
@@ -13214,7 +13210,6 @@ int _bc_8017DC18 = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DC18) {
 goto block_8017E11C;
 } else {
-goto block_8017DC20;
 }
 block_8017DC20:
 cpu->gpr[2] = cpu->gpr[3] & 0x0040;
@@ -13223,7 +13218,6 @@ int _bc_8017DC24 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DC24) {
 goto block_8017DC3C;
 } else {
-goto block_8017DC2C;
 }
 block_8017DC2C:
 { cpu->gpr[18] = br2_ld8(cpu->gpr[4] + 2);
@@ -13247,7 +13241,6 @@ cpu->gpr[2] = 0x8012 << 16;
 if (_bc_8017DC54) {
 goto block_8017E118;
 } else {
-goto block_8017DC5C;
 }
 block_8017DC5C:
 { cpu->gpr[2] = cpu->gpr[2] + 10756;
@@ -13270,7 +13263,6 @@ int _bc_8017DC84 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DC84) {
 goto block_8017E10C;
 } else {
-goto block_8017DC8C;
 }
 block_8017DC8C: ;
 int _bc_8017DC8C = (cpu->gpr[18] != cpu->gpr[0]);
@@ -13279,7 +13271,6 @@ int _bc_8017DC8C = (cpu->gpr[18] != cpu->gpr[0]);
 if (_bc_8017DC8C) {
 goto block_8017E10C;
 } else {
-goto block_8017DC94;
 }
 block_8017DC94:
 { cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
@@ -13297,7 +13288,6 @@ cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 65) ? 1 : 0;
 if (_bc_8017DCA8) {
 goto block_8017DCD0;
 } else {
-goto block_8017DCB0;
 }
 block_8017DCB0: ;
 int _bc_8017DCB0 = (cpu->gpr[2] == cpu->gpr[0]);
@@ -13306,7 +13296,6 @@ int _bc_8017DCB0 = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DCB0) {
 goto block_8017DD98;
 } else {
-goto block_8017DCB8;
 }
 block_8017DCB8: ;
 int _bc_8017DCB8 = (cpu->gpr[3] == cpu->gpr[2]);
@@ -13315,14 +13304,12 @@ int _bc_8017DCB8 = (cpu->gpr[3] == cpu->gpr[2]);
 if (_bc_8017DCB8) {
 goto block_8017E11C;
 } else {
-goto block_8017DCC0;
 }
 block_8017DCC0: ;
 int _bc_8017DCC0 = (cpu->gpr[3] == cpu->gpr[0]);
 if (_bc_8017DCC0) {
 goto block_8017DD34;
 } else {
-goto block_8017DCC8;
 }
 block_8017DCC8:
 goto block_8017DD98;
@@ -13337,7 +13324,6 @@ cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
 if (_bc_8017DCE0) {
 goto block_8017DD1C;
 } else {
-goto block_8017DCE8;
 }
 block_8017DCE8: ;
 int _bc_8017DCE8 = (cpu->gpr[2] == cpu->gpr[0]);
@@ -13346,7 +13332,6 @@ int _bc_8017DCE8 = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DCE8) {
 goto block_8017DD00;
 } else {
-goto block_8017DCF0;
 }
 block_8017DCF0: ;
 int _bc_8017DCF0 = (cpu->gpr[3] == cpu->gpr[6]);
@@ -13355,7 +13340,6 @@ int _bc_8017DCF0 = (cpu->gpr[3] == cpu->gpr[6]);
 if (_bc_8017DCF0) {
 goto block_8017DD10;
 } else {
-goto block_8017DCF8;
 }
 block_8017DCF8:
 goto block_8017E11C;
@@ -13366,7 +13350,6 @@ int _bc_8017DD00 = (cpu->gpr[3] == cpu->gpr[2]);
 if (_bc_8017DD00) {
 goto block_8017DD28;
 } else {
-goto block_8017DD08;
 }
 block_8017DD08:
 goto block_8017E11C;
@@ -13399,7 +13382,6 @@ cpu->gpr[2] = ((int32_t)cpu->gpr[3] < 257) ? 1 : 0;
 if (_bc_8017DD44) {
 goto block_8017DD80;
 } else {
-goto block_8017DD4C;
 }
 block_8017DD4C: ;
 int _bc_8017DD4C = (cpu->gpr[2] == cpu->gpr[0]);
@@ -13408,7 +13390,6 @@ int _bc_8017DD4C = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DD4C) {
 goto block_8017DD64;
 } else {
-goto block_8017DD54;
 }
 block_8017DD54: ;
 int _bc_8017DD54 = (cpu->gpr[3] == cpu->gpr[6]);
@@ -13417,7 +13398,6 @@ int _bc_8017DD54 = (cpu->gpr[3] == cpu->gpr[6]);
 if (_bc_8017DD54) {
 goto block_8017DD74;
 } else {
-goto block_8017DD5C;
 }
 block_8017DD5C:
 goto block_8017E11C;
@@ -13428,7 +13408,6 @@ int _bc_8017DD64 = (cpu->gpr[3] == cpu->gpr[2]);
 if (_bc_8017DD64) {
 goto block_8017DD8C;
 } else {
-goto block_8017DD6C;
 }
 block_8017DD6C:
 goto block_8017E11C;
@@ -13460,7 +13439,6 @@ int _bc_8017DDA4 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DDA4) {
 goto block_8017E10C;
 } else {
-goto block_8017DDAC;
 }
 block_8017DDAC: ;
 int _bc_8017DDAC = (cpu->gpr[18] != cpu->gpr[0]);
@@ -13469,7 +13447,6 @@ int _bc_8017DDAC = (cpu->gpr[18] != cpu->gpr[0]);
 if (_bc_8017DDAC) {
 goto block_8017E10C;
 } else {
-goto block_8017DDB4;
 }
 block_8017DDB4:
 { cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[7] + 274);
@@ -13515,7 +13492,6 @@ int _bc_8017DE08 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DE08) {
 goto block_8017DE50;
 } else {
-goto block_8017DE10;
 }
 block_8017DE10:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
@@ -13525,7 +13501,6 @@ int _bc_8017DE14 = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DE14) {
 goto block_8017DE50;
 } else {
-goto block_8017DE1C;
 }
 block_8017DE1C:
 cpu->gpr[2] = 0x8012 << 16;
@@ -13557,12 +13532,10 @@ int _bc_8017DE50 = ((int32_t)cpu->gpr[16] < 0);
 if (_bc_8017DE50) {
 goto block_8017E11C;
 } else {
-goto block_8017DE58;
 }
 block_8017DE58:
 cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017DE60;
 block_8017DE60:
 { cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
@@ -13585,18 +13558,15 @@ int _bc_8017DE88 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DE88) {
 goto block_8017DED0;
 } else {
-goto block_8017DE90;
 }
 block_8017DE90: ;
 int _bc_8017DE90 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017DE90) {
 goto block_8017DED0;
 } else {
-goto block_8017DE98;
 }
 block_8017DE98:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017DEA0;
 block_8017DEA0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
 { cpu->gpr[4] = 1024;
@@ -13621,7 +13591,6 @@ cpu->gpr[8] = cpu->hi;
 goto block_8017E110;
 block_8017DED0:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017DED8;
 block_8017DED8:
 cpu->gpr[3] = 0x5555 << 16;
 { cpu->gpr[3] = cpu->gpr[3] | 0x5556;
@@ -13654,7 +13623,6 @@ int _bc_8017DF14 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DF14) {
 goto block_8017DF24;
 } else {
-goto block_8017DF1C;
 }
 block_8017DF1C:
 { cpu->gpr[5] = 128;
@@ -13674,7 +13642,6 @@ int _bc_8017DF38 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DF38) {
 goto block_8017DF80;
 } else {
-goto block_8017DF40;
 }
 block_8017DF40:
 cpu->gpr[2] = (cpu->gpr[6] < (uint32_t)11) ? 1 : 0;
@@ -13684,7 +13651,6 @@ int _bc_8017DF44 = (cpu->gpr[2] == cpu->gpr[0]);
 if (_bc_8017DF44) {
 goto block_8017DF80;
 } else {
-goto block_8017DF4C;
 }
 block_8017DF4C:
 cpu->gpr[2] = 0x8012 << 16;
@@ -13716,12 +13682,10 @@ int _bc_8017DF80 = ((int32_t)cpu->gpr[16] < 0);
 if (_bc_8017DF80) {
 goto block_8017E11C;
 } else {
-goto block_8017DF88;
 }
 block_8017DF88:
 cpu->gpr[17] = 0x5555 << 16;
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017DF90;
 block_8017DF90:
 { cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
@@ -13744,18 +13708,15 @@ int _bc_8017DFB8 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017DFB8) {
 goto block_8017E000;
 } else {
-goto block_8017DFC0;
 }
 block_8017DFC0: ;
 int _bc_8017DFC0 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017DFC0) {
 goto block_8017E000;
 } else {
-goto block_8017DFC8;
 }
 block_8017DFC8:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017DFD0;
 block_8017DFD0:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
 { cpu->gpr[4] = 1024;
@@ -13780,7 +13741,6 @@ cpu->gpr[8] = cpu->hi;
 goto block_8017E038;
 block_8017E000:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017E008;
 block_8017E008:
 cpu->gpr[3] = 0x5555 << 16;
 { cpu->gpr[3] = cpu->gpr[3] | 0x5556;
@@ -13806,12 +13766,10 @@ cpu->gpr[8] = cpu->hi;
 block_8017E038:
 cpu->gpr[17] = 0x5555 << 16;
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
-goto block_8017E040;
 block_8017E040:
 { cpu->gpr[17] = cpu->gpr[17] | 0x5556;
 }
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017E048;
 block_8017E048:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
 { cpu->gpr[4] = (int32_t)cpu->gpr[2] >> 31;
@@ -13832,18 +13790,15 @@ int _bc_8017E06C = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017E06C) {
 goto block_8017E0B4;
 } else {
-goto block_8017E074;
 }
 block_8017E074: ;
 int _bc_8017E074 = (cpu->gpr[18] == cpu->gpr[0]);
 if (_bc_8017E074) {
 goto block_8017E0B4;
 } else {
-goto block_8017E07C;
 }
 block_8017E07C:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017E084;
 block_8017E084:
 { int64_t result = (int64_t)(int32_t)cpu->gpr[2] * (int64_t)(int32_t)cpu->gpr[17]; cpu->lo = (uint32_t)result; cpu->hi = (uint32_t)(result >> 32); }
 { cpu->gpr[4] = 1024;
@@ -13868,7 +13823,6 @@ cpu->gpr[8] = cpu->hi;
 goto block_8017E110;
 block_8017E0B4:
 cpu->gpr[2] = (uint32_t)(uint8_t)table_byte_next_a();
-goto block_8017E0BC;
 block_8017E0BC:
 cpu->gpr[3] = 0x5555 << 16;
 { cpu->gpr[3] = cpu->gpr[3] | 0x5556;
@@ -13901,7 +13855,6 @@ int _bc_8017E0F8 = (cpu->gpr[2] != cpu->gpr[0]);
 if (_bc_8017E0F8) {
 goto block_8017E108;
 } else {
-goto block_8017E100;
 }
 block_8017E100:
 { cpu->gpr[5] = 72;
@@ -13915,7 +13868,6 @@ block_8017E10C:
 }
 block_8017E110:
 deferred_cmd_post(cpu->gpr[4], (int)cpu->gpr[5], (short)cpu->gpr[6]);
-goto block_8017E118;
 block_8017E118:
 { cpu->gpr[2] = cpu->gpr[19] + 4;
 }
