@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 
+// main: runs the NDS profile checks
 int main(void) {
     RecompLauncherCGameInfo game;
     memset(&game, 0, sizeof(game));

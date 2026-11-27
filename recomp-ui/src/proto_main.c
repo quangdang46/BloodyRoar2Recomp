@@ -515,6 +515,7 @@ static void demo_lobby_install(RecompLauncherCGameInfo* gi, const char* mode) {
     gi->netplay = &demo_lobby_cb;
 }
 
+// main: launcher prototype entry point
 int main(int argc, char** argv) {
     (void)argc; (void)argv;
 

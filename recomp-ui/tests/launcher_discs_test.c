@@ -191,6 +191,7 @@ static void test_sbi_verification_refresh(void) {
     free(m);
 }
 
+// main: runs the launcher discs checks
 int main(int argc, char** argv) {
     const char* dir = (argc > 1) ? argv[1] : ".";
     test_token_rewriting();
