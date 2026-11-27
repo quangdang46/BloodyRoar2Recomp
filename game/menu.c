@@ -3861,8 +3861,8 @@ void fighter_spawn_setup(uint32_t battle_g,uint8_t *ab_a,uint8_t *ab_b,
   uint16_t *bp = (uint16_t *)bstate;
   uint8_t *cfg_cur = cfg;
   uint8_t *srecs = cfg + 0x28;
-  
 
+  int32_t pi, i;
 
   battle_config_eval(ab_a,battle_g,direct);
   battle_config_eval(ab_b,battle_g,direct);
