@@ -7,15 +7,10 @@
  * spr_slot_pkt_submit in this file). */
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "cpu_state.h"
-
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -35,6 +30,19 @@ extern uint8_t  br2_ld8(uint32_t a);
 extern uint16_t br2_ld16(uint32_t a);
 extern void     br2_st8(uint32_t a, uint8_t v);
 extern void     br2_st16(uint32_t a, uint16_t v);
+extern uint32_t br2_guest_frame(uint32_t);
+extern void     br2_guest_frame_free(void);
+extern void     br2_guest_frame_abandon(void);
+extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
+extern int      br2_bail_pending(void);
+extern void     br2_irq_poll(void);
+extern void     FUN_8018e300(void);
+extern void     FUN_8018e310(uint32_t);
+extern void     br2_bios_tramp(uint32_t,uint32_t);
+extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+extern void     gte_precision_store_word(uint32_t, uint8_t);
+extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+extern uint32_t guest_gp(void);
 
 void gpu_load_image_cmd(uint32_t,uint32_t);
 void prim_packet_init_tex(int,int,int,uint32_t,int8_t *);
@@ -206,8 +214,6 @@ void spr_draw_off(int spr,short x,short y,int abs_coords)
   rect[2] = *(uint16_t *)(desc + 0x10);
   rect[3] = *(uint16_t *)(desc + 0x12);
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t frm = br2_guest_frame(0x20);
     memcpy(guest_at(frm + 0x10), rect, 8);
     gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
@@ -238,8 +244,6 @@ void spr_draw_cond(int spr,short x,short y,int abs_coords)
     /* Same guest frame as spr_draw_off (0x8018bec0: frame 0x20, rect at
      * sp+0x10) — reserved frame staging, see spr_draw_off. */
     {
-      extern uint32_t br2_guest_frame(uint32_t);
-      extern void br2_guest_frame_free(void);
       uint32_t frm = br2_guest_frame(0x20);
       memcpy(guest_at(frm + 0x10), rect, 8);
       gpu_load_image_cmd(frm + 0x10,(uint32_t)(spr + 0x14));
@@ -721,11 +725,12 @@ uint32_t bios_call(uint32_t,uint32_t);
 
 extern char *s__s_bad_RECT_801254c8;
 extern char *s___d__d____d__d__801254d4;
-extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 #define GP32(a)   (*(uint32_t *)guest_at(a))
 #define GP8(a)    (*(uint8_t  *)guest_at(a))
 #define GP16(a)   (*(uint16_t *)guest_at(a))
+#define GP32S(a)  (*(int32_t  *)guest_at(a))
+#define GP16S(a)  (*(int16_t  *)guest_at(a))
 #define GPP(a)    ((uint32_t *)guest_at(a))
 #define GPTRW(a)  (*(uint32_t *)guest_at(GP32(a)))
 
@@ -910,7 +915,6 @@ void bios_call_a0(uint32_t arg)
 {
   /* guest 0x80193d30: `li t2,0xa0; jr t2; li t1,0x49` — BIOS svc A0/0x49
    * with a0 = arg (caller's arg register). */
-  extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
   bios_svc6(0xa0,0x49,arg,0,0,0);
   return;
 }
@@ -1116,11 +1120,6 @@ void spr_desc_c(uint32_t slot_g,uint32_t on)
 
 /* ---- batch29: text-window/string-widget cluster ----
  * All struct fields addressed by guest offset via guest_at. */
-#define GB8(a)   (*(uint8_t  *)guest_at(a))
-#define GB16(a)  (*(uint16_t *)guest_at(a))
-#define GB32(a)  (*(uint32_t *)guest_at(a))
-#define GB16S(a) (*(int16_t  *)guest_at(a))
-#define GB32S(a) (*(int32_t   *)guest_at(a))
 
 extern uint32_t gpu_sprite_rect_emit(uint32_t,uint32_t,uint32_t);
 extern uint32_t gpu_sprite_rect_emit_mode(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
@@ -1133,18 +1132,18 @@ extern void    *PTR_FUN_801b831c;
 /* text_win_init — text window init: two draw-env installs + clear. */
 void text_win_init(uint32_t w,int32_t h)
 {
-  GB32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,w,(uint32_t)(h + 0x80));
-  GB32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,w,(uint32_t)h,0x80,0x20);
-  GB8(0x801b78c0) = 0;
+  GP32(0x801fad12) = gpu_sprite_rect_emit(0x801b78c8,w,(uint32_t)(h + 0x80));
+  GP32(0x801fad10) = gpu_sprite_rect_emit_mode(0x801b7ac8,0,0,w,(uint32_t)h,0x80,0x20);
+  GP8(0x801b78c0) = 0;
   guest_memset_b(0x801b7740,0,0x180);
 }
 
 /* text_line_select — select active text line (bounds vs DAT_801b78c0). */
 void text_line_select(int32_t line)
 {
-  if ((0 <= line) && (line <= (int32_t)GB8(0x801b78c0))) {
+  if ((0 <= line) && (line <= (int32_t)GP8(0x801b78c0))) {
     PTR_FUN_801b831c = (void *)text_win_printf;
-    GB8(0x801b78c4) = (uint8_t)line;
+    GP8(0x801b78c4) = (uint8_t)line;
   }
 }
 
@@ -1160,47 +1159,47 @@ int32_t text_widget_alloc(uint16_t x,uint16_t y,int32_t attr,
   uint16_t uv[4];
   uint32_t slot;
 
-  if ((int32_t)GB8(0x801b78c0) < 8) {
-    if (GB8(0x801b78c0) == 0) GB32(0x801b82c8) = 0;
-    slot = GB8(0x801b78c0) * 0x30;
-    GB32(0x801b7740 + slot + 0x2c) = (attr == 0);
-    tmp = (int32_t)GB32(0x801b82c8);
+  if ((int32_t)GP8(0x801b78c0) < 8) {
+    if (GP8(0x801b78c0) == 0) GP32(0x801b82c8) = 0;
+    slot = GP8(0x801b78c0) * 0x30;
+    GP32(0x801b7740 + slot + 0x2c) = (attr == 0);
+    tmp = (int32_t)GP32(0x801b82c8);
     if (0x400 < tmp + count) count = 0x400 - tmp;
     uv[2] = 0x100; uv[3] = 0x100;
     uv[0] = 0;     uv[1] = 0;
-    prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GB32(0x801fad10),
+    prim_packet_init_tex((int)(0x801b7750 + slot),0,0,(uint32_t)GP32(0x801fad10),
                  (int8_t *)uv);
     if (mode != 0) {
       gpu_pkt_tag_60(0x801b7740 + slot);
-      GB8(0x801b7744 + slot) = 0;
-      GB8(0x801b7745 + slot) = 0;
-      GB8(0x801b7746 + slot) = 0;
+      GP8(0x801b7744 + slot) = 0;
+      GP8(0x801b7745 + slot) = 0;
+      GP8(0x801b7746 + slot) = 0;
       spr_desc_b(0x801b7740 + slot,(mode == 2));
     }
-    tmp = (int32_t)GB32(0x801b82c8);
-    slot = GB8(0x801b78c0) * 0x30;
-    GB16(0x801b7748 + slot) = x;
-    GB16(0x801b774a + slot) = y;
-    GB16S(0x801b774c + slot) = (int16_t)attr;
-    GB16(0x801b774e + slot) = aux;
-    GB32S(0x801b775c + slot) = count;
-    GB32(0x801b7768 + slot) = 0;
-    GB32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
-    GB32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
-    *(uint8_t *)guest_at(GB32(0x801b7764 + slot)) = 0;
-    tmp = GB32S(0x801b7760 + GB8(0x801b78c0) * 0x30);
+    tmp = (int32_t)GP32(0x801b82c8);
+    slot = GP8(0x801b78c0) * 0x30;
+    GP16(0x801b7748 + slot) = x;
+    GP16(0x801b774a + slot) = y;
+    GP16S(0x801b774c + slot) = (int16_t)attr;
+    GP16(0x801b774e + slot) = aux;
+    GP32S(0x801b775c + slot) = count;
+    GP32(0x801b7768 + slot) = 0;
+    GP32S(0x801b7764 + slot) = tmp + (int32_t)0x801f6910;
+    GP32S(0x801b7760 + slot) = tmp * 0x10 + (int32_t)0x801f6d10;
+    *(uint8_t *)guest_at(GP32(0x801b7764 + slot)) = 0;
+    tmp = GP32S(0x801b7760 + GP8(0x801b78c0) * 0x30);
     i = 0;
     if (0 < count) {
       do {
         gpu_pkt_tag_74((uint32_t)tmp);
         i = i + 1;
-        GB16((uint32_t)tmp + 0xe) = GB16(0x801fad12);
+        GP16((uint32_t)tmp + 0xe) = GP16(0x801fad12);
         tmp += 0x10;
       } while (i < count);
     }
-    GB32(0x801b82c8) = GB32(0x801b82c8) + (uint32_t)count;
-    tmp = GB8(0x801b78c0);
-    GB8(0x801b78c0) = GB8(0x801b78c0) + 1;
+    GP32(0x801b82c8) = GP32(0x801b82c8) + (uint32_t)count;
+    tmp = GP8(0x801b78c0);
+    GP8(0x801b78c0) = GP8(0x801b78c0) + 1;
   } else {
     tmp = -1;
   }
@@ -1238,7 +1237,7 @@ uint32_t spr_attr_alloc_a(uint32_t head_g,int16_t x0,int16_t y0,
       pkt[1] = tag | 0x2a000000;
       tex_ofs = (variant + -1) * 0x20;
     }
-    prim_packet_init_tex((int)guest_of(pkt + 6),GB8(0x801e40b7),GB8(0x801e40b6),tex_ofs,0);
+    prim_packet_init_tex((int)guest_of(pkt + 6),GP8(0x801e40b7),GP8(0x801e40b6),tex_ofs,0);
     ret = 0;
     uint32_t *head = (uint32_t *)guest_at(head_g);
     /* OT link word goes into the packet's first word (node[0] =
@@ -2039,8 +2038,6 @@ uint32_t gpu_sprite_rect_emit(uint32_t src,uint32_t x,uint32_t y)
   /* guest rect = $sp+0x10 (frame 0x28, disasm 0x80193e30) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t gre_frm = br2_guest_frame(0x28);
     memcpy(guest_at(gre_frm + 0x10), rect, 8);
     gpu_load_image_cmd(gre_frm + 0x10,src);
@@ -2078,8 +2075,6 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src,uint32_t mode,uint32_t arg3,
   /* guest rect = $sp+0x10 (frame 0x30, disasm 0x80193d40) -> frm+0x10;
    * reserved frame staging, see spr_draw_off. */
   {
-    extern uint32_t br2_guest_frame(uint32_t);
-    extern void br2_guest_frame_free(void);
     uint32_t grem_frm = br2_guest_frame(0x30);
     memcpy(guest_at(grem_frm + 0x10), rect, 8);
     gpu_load_image_cmd(grem_frm + 0x10,src);
@@ -2142,13 +2137,13 @@ void guest_memset_b(uint32_t dst,uint32_t val,uint32_t len)
  * final cursor pos, -1 on overflow. */
 static int32_t win_putc(uint32_t slot,int32_t c)
 {
-  uint32_t pos = GB32(slot + 0x28);
-  uint8_t *buf = (uint8_t *)guest_at(GB32(slot + 0x24));
+  uint32_t pos = GP32(slot + 0x28);
+  uint8_t *buf = (uint8_t *)guest_at(GP32(slot + 0x24));
   
   buf[pos] = (uint8_t)c;
   pos = pos + 1;
-  GB32(slot + 0x28) = pos;             /* stored even on overflow */
-  if (GB32S(slot + 0x1c) < (int32_t)pos) return -1;
+  GP32(slot + 0x28) = pos;             /* stored even on overflow */
+  if (GP32S(slot + 0x1c) < (int32_t)pos) return -1;
   return 0;
 }
 
@@ -2173,10 +2168,10 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   iargs[1] = a2;
   iargs[2] = a3;
   va_start(ap,a3);
-  if ((sel < 0) || ((int32_t)GB32(0x801b78c0) <= sel)) {
+  if ((sel < 0) || ((int32_t)GP32(0x801b78c0) <= sel)) {
     /* out-of-range a0: it is the format string; window = DAT_801b78c4 */
-    win = GB32(0x801b78c4);
-    if (GB32(0x801b7740 + win * 0x30 + 0x24) == 0) {
+    win = GP32(0x801b78c4);
+    if (GP32(0x801b7740 + win * 0x30 + 0x24) == 0) {
       va_end(ap);
       return -1;
     }
@@ -2189,7 +2184,7 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
     ai = 1;                            /* varargs start at a2 */
   }
   slot = 0x801b7740 + win * 0x30;
-  if (GB32S(slot + 0x1c) < GB32S(slot + 0x28)) {
+  if (GP32S(slot + 0x1c) < GP32S(slot + 0x28)) {
     va_end(ap);
     return -1;
   }
@@ -2314,11 +2309,11 @@ int32_t text_win_printf(int32_t sel,uint32_t a1,uint32_t a2,
   }
   /* NUL-terminate at cursor (no pos update, no bounds check) */
   {
-    uint8_t *buf = (uint8_t *)guest_at(GB32(slot + 0x24));
-    buf[GB32(slot + 0x28)] = 0;
+    uint8_t *buf = (uint8_t *)guest_at(GP32(slot + 0x24));
+    buf[GP32(slot + 0x28)] = 0;
   }
   va_end(ap);
-  return GB32(slot + 0x28);
+  return GP32(slot + 0x28);
 #undef BR2_ARG
 }
 
@@ -2589,7 +2584,6 @@ uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
  * spr_pool_b_alloc; fail -> -1. sin/cos via lut_sin_q12/8d298; corner
  * offsets rounded /8192; writes 4 corner xy pairs + tag 0x2c808080,
  * links node into *a0. Disasm 0x8018c31c-0x8018c574. */
-extern void *spr_pool_b_alloc(void);
 extern int lut_cos_q12(int);
 extern int lut_sin_q12(uint32_t);
 int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
@@ -3367,9 +3361,6 @@ void gpu_state_patch_defer(void)
   CPUState *c = clean_cpu_state();
   uint32_t v0, base;
   int i, same = 1;
-  extern void FUN_8018e300(void);
-  extern void FUN_8018e310(uint32_t);
-  extern void br2_bios_tramp(uint32_t,uint32_t);
   if (!c) return;
   GP32(0x801FC670) = c->gpr[31];        /* sw ra scratch slot */
   FUN_8018e300();                       /* jal 0x8018E300: EnterCriticalSection */
@@ -4499,12 +4490,6 @@ void scene_node_walk(uint32_t a0)
 {
   CPUState *c = clean_cpu_state();
   uint32_t sp, lt12;
-  extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void br2_guest_frame_abandon(void);
-  extern int br2_bail_pending(void);
-  extern void br2_irq_poll(void);
   if (!c) return;
   c->gpr[4] = a0;   /* guest $a0: ctx guest addr (task/save callers pass it raw) */
 #define SCN_GPR(n)   (c->gpr[n])
@@ -4750,9 +4735,6 @@ void scene_emit_xform(void)
   CPUState *c = clean_cpu_state();
   uint32_t sp;
   int32_t dvd, dvs;
-  extern uint32_t br2_guest_frame(uint32_t);
-  extern void br2_guest_frame_free(void);
-  extern void gte_precision_store_word(uint32_t, uint8_t);
   if (!c) return;
 #define XF_G(n)     (c->gpr[n])
 #define XF_LD16S(a) ((uint32_t)(int32_t)(int16_t)br2_ld16((uint32_t)(a)))
@@ -5207,12 +5189,6 @@ uint32_t prim_attr_repack(uint32_t src_a, uint32_t dst_a)
 
 /* ======== op_* leaf helpers (0x801ad3xx-0x801ad9xx) ======== */
 
-extern uint8_t  br2_ld8 (uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint32_t guest_gp(void);
 
 /* op_tbl_elem_copy — copy one u32 between two indexed tables.
  * Guest: i = s16(a0+2)<<2, j = s16(a0+6)<<2;
@@ -5262,7 +5238,6 @@ uint32_t op_gp_cond_store(uint32_t a0, uint32_t a1)
   uint32_t base = br2_ld32((uint32_t)(guest_gp() + 0x4c));
   uint32_t v;
   if (br2_ld32(base + 0x14) != 0) {
-    extern uint32_t call_guest(uint32_t,uint32_t,uint32_t);
     return call_guest(0x801ad698u, a0, a1);
   }
   v = (uint32_t)(int32_t)(int16_t)br2_ld16(a0) +
@@ -5535,8 +5510,6 @@ uint32_t op_ctx_chain3(uint32_t a0, uint32_t a1)
 {
   CPUState *c = clean_cpu_state();
   uint32_t s0, ctx, e0, i2, e1, e2, e3, ret;
-  extern uint32_t call_guest(uint32_t, uint32_t, uint32_t);
-  extern int br2_bail_pending(void);
   if (!c) return 0;
   s0 = a0;
   ret = call_guest(0x801ad284u, br2_ld32(a1), a1);
@@ -7718,8 +7691,6 @@ extern uint16_t *gte_rtps_xform1(uint32_t *, uint32_t *, uint16_t *);
 extern uint32_t *gte_rtps_xform3(uint32_t *, uint16_t *, uint32_t *);
 extern void part_matrix_compute(uint32_t *, int8_t *, short *, uint32_t);
 extern int atan2_lut(int, int);
-extern int lut_cos_q12(int);
-extern int lut_sin_q12(uint32_t);
 
 static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
 {
@@ -8137,7 +8108,6 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte_data[] write for reg 6 and gte_write_data for regs 16-19 (the
  * helper masks to 0xFFFF — different semantics, both replicated).
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188510. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -8266,7 +8236,6 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * generated direct gte_data[] write (gte_write_data would mask to
  * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018866C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -8835,7 +8804,6 @@ uint32_t prim_poly_emit_64_vs(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3
  * t5/t9/t1 (out+8+t8 / +2t8 / +3t8); mfc2 data7 -> OTZ; OT slot =
  * a1 + (otz & 0x1ffc) linked with the swl pair; loop a0 += t7.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188C34. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9266,7 +9234,6 @@ uint32_t prim_nclip_emit_60(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[12]/[13]/[14] -> out+8/+20/+32; FIXED OT link at a1 (lw *a1, swl
  * pair); swc2 gte[20]/[21]/[22] -> out+4/+16/+28.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_801891A4. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9344,7 +9311,6 @@ uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * out+20/+32 and gte[20]->out+4; lwc2 gte[0]/[1] @a0+56/+60; gte cmd
  * 0x108041B; FIXED OT link at a1; swc2 gte[22]/[20]/[21] -> out+40/+16/+28.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018926C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9433,7 +9399,6 @@ uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * OT link at a1, swc2 gte[22]->out+12; vertex 3 gets gte[6] @a0+32, gte cmd
  * 0x108041B, swc2 gte[22]->out+20. a0 += 100 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189360. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9506,7 +9471,6 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * v3 = gte[6] @a0+32 + gte[0]/[1] @a0+52/+56 + cmd 0x1B, gte[22]->out+20.
  * a0 += 116 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189428. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9587,7 +9551,6 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[22]->out+20; v5 = gte[6] @a0+44 + cmd 0x1B, gte[22]->out+28.
  * a0 += 128 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189500. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9671,7 +9634,6 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[6] @a0+44 + gte[0]/[1] @a0+72/+76 + cmd 0x1B, gte[22]->out+28.
  * a0 += 152 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_801895F8. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10269,7 +10231,6 @@ uint32_t prim_poly_emit_5c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * split into lhu x @+0 / lhu y @+2 -> data9/10, lwc2 data11 = t2+4.
  * swc2 gte[22] -> out+4; FIXED OT link at a1 before the swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189C4C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_point_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10350,7 +10311,6 @@ uint32_t prim_point_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swc2). swc2 gte[22] -> out+4/+12/+20/+28; FIXED OT link at a1 before
  * the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189D08. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6cb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10459,7 +10419,6 @@ uint32_t prim_poly_emit_6cb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * written DIRECT to gte_data[6] once; swc2 gte[22] ->
  * out+4/+16/+28/+40; FIXED OT link at a1 before the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189EFC. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_88b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10573,7 +10532,6 @@ uint32_t prim_poly_emit_88b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swc2 gte[22] -> out+4/+12/+20/+28; FIXED OT link at a1 before the
  * last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018A030. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10680,7 +10638,6 @@ uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * a0+16/+20/+24/+28 before each RTPS. swc2 gte[22] ->
  * out+4/+12/+20/+28; FIXED OT link at a1 before the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018A14C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10796,7 +10753,6 @@ uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * (t6 param) is clobbered by `out << 8` inside the body — faithful,
  * the guest reuses t6 per iteration.
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018A27C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10869,7 +10825,6 @@ uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swl(a1+2, base<<8) / swl(base+2, old<<8), then t9=t5+t8, t3=t9+t8 and
  * swc2 gte[12]/[13]/[14] -> t5/t9/t3 (SXY0',SXY1,SXY2 at base+12/+16/+20).
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018A340. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_persp_ot_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -12069,7 +12024,6 @@ uint32_t prim_avsz3_cull_emit_58(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018B100. */
 uint32_t prim_xform3_task_run(void)
 {
-  extern void psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
   CPUState *c = clean_cpu_state();
   uint32_t pc;
   if (!c) return 0;
