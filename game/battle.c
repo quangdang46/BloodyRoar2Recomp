@@ -682,9 +682,11 @@ void fighter_pair_update(int f0,int f1,int battle)
   int t7;
   int t8;
   int t9;
-  int scale0;
+  /* scale0/scale1 feed hit_react_apply only on paths where the matching
+   * hit_elig_check block already assigned them — dead-path init. */
+  int scale0 = 0;
   undefined4 t11;
-  int scale1;
+  int scale1 = 0;
   /* Guest stack layout (br2eu_func_801809C8): the two hitbox-result buffers
    * are 8-byte slots at sp+0x18 and sp+0x20. hitbox_pair_test /
    * seg_sphere_hit / sphere_pt_hit write result shorts at indices 0..2
@@ -15005,11 +15007,17 @@ void tween_apply(short *seq,int v0,int v1)
   int va;
   int wt;
   int vo;
-  uint phase;
+  /* phase is guest $t4 (slti 3 @0x801A9CF8/0x801A9D10, =2 @0x801A9D14):
+   * the t==v0 path reads it before any write, i.e. the caller's $t4. */
+  uint phase = br2_gpr(12);
   int dir;
   short v1s;
   int unaff_gp = (int)guest_gp();
-  int acc [4];
+  /* acc is guest $sp+0x18..0x27 (frame 0x30): acc[phase] is indexed by
+   * the stale-$t4 phase on the t==v0 path and acc[0]/acc[2] are only
+   * conditionally written, so back it with the guest stack window
+   * (entry sp-0x18; no guest calls intervene before the apply loop). */
+  int32_t *acc = (int32_t *)guest_at((uint32_t)clean_cpu_state()->gpr[29] - 0x18);
   if (seq == (short *)0x0) {
     return;
   }
