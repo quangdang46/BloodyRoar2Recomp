@@ -525,12 +525,12 @@ static void guest_start(void)
     halt_baddata();
 }
 
-/* func_0x80126170 / func_0x80163840 — jr-ra thunks (empty).
+/* empty_thunk_80126170 / noop_80163840 — jr-ra thunks (empty).
  * empty_leaf_e is the renames.map-registered form of guest 0x80126170
  * (`jr ra; nop`, 8-uint8_t body — a bind_jal waypoint slot). */
 void empty_leaf_e(void) { }
-static void func_0x80126170(void) { empty_leaf_e(); }
-static void func_0x80163840(int p) { (void)p; }
+static void empty_thunk_80126170(void) { empty_leaf_e(); }
+static void noop_80163840(int p) { (void)p; }
 
 /* apply_saved_settings_or_defaults @0x80126720 */
 static void apply_saved_settings_or_defaults(uint32_t *sys_cfg)
@@ -596,7 +596,7 @@ void guest_main(void)
     uint32_t mn_frm = br2_guest_frame(0x40);
     uint16_t *pad_buf = (uint16_t *)guest_at(mn_frm + 0x10);
 
-    func_0x80126170();
+    empty_thunk_80126170();
     retry_count = 0;
     boot();
     pad_buf[1] = 0x1c7f;
@@ -625,8 +625,8 @@ void guest_main(void)
         brightness_commit(*(uint8_t *)(_g_system_config_ptr + 0xc) ^ 1);
     }
     frame_advance_helper();
-    func_0x80163840(0);
-switchD_80126370_caseD_80126344:
+    noop_80163840(0);
+main_state_dispatch:
     /* Bail-unwind in flight (g_psx_call_bail): main() is a clean-C
      * mega-loop — every state dispatch re-enters here. Return so the
      * unwind reaches the outermost psx_dispatch_impl (which flattens the
@@ -638,18 +638,19 @@ switchD_80126370_caseD_80126344:
       extern void br2_guest_frame_abandon(void);
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } }
     state = (uint32_t)g_game_state;
-code_r0x8012634c:
+state_bounds_wait:
     state_lt_14 = state < 0xe;
 frame_state_wait:
 L_80126350:
 LAB_80126350:
+state_bounds_spin:
     do {
     } while (!state_lt_14);
     switch(state) {
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
-        goto switchD_80126370_caseD_80126344;
+        goto main_state_dispatch;
     case 1: /* 0x8012638c */
         display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
@@ -657,9 +658,9 @@ LAB_80126350:
         state = (uint32_t)g_game_state;
         state_lt_14 = state < 0xe;
         if (state == 1) goto state_fallback;
-        goto frame_state_wait;
+        goto state_bounds_spin;
     case 2: /* 0x801263c8 */
-        goto switchD_80126370_caseD_801263c8;
+        goto state2_reset_handler;
     case 3: /* 0x801263e0 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -674,9 +675,9 @@ LAB_80126350:
         state_lt_14 = state < 0xe;
         if (state == 3) {
             g_game_state = 4;
-            goto switchD_80126370_caseD_80126344;
+            goto main_state_dispatch;
         }
-        goto frame_state_wait;
+        goto state_bounds_spin;
     case 4: /* 0x8012644c */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -692,10 +693,10 @@ LAB_80126350:
         }
         gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                      ((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
-        if (g_game_state != 4) goto switchD_80126370_caseD_80126344;
+        if (g_game_state != 4) goto main_state_dispatch;
         break;
     case 5: /* 0x80126534 */
-        goto switchD_80126370_caseD_80126534;
+        goto state5_match_frame;
     case 6: /* 0x801265c8 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -726,7 +727,7 @@ LAB_8012666c:
         if (g_game_state == ret_state) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_state_dispatch;
     case 9: /* 0x8012667c */
         match_mode_set(1);
         unlock_progress_scene_entry(0);
@@ -739,7 +740,7 @@ LAB_8012666c:
                 player_name_entry(0);
                 g_game_state = 5;
             }
-            goto switchD_80126370_caseD_80126344;
+            goto main_state_dispatch;
         }
         break;
     case 11: /* 0x801266c0 */
@@ -748,19 +749,19 @@ LAB_8012666c:
             call_ret = system_config_menu_a();
         }
         else {
-            if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
+            if (g_sub_state != '\x04') goto main_state_dispatch;
             call_ret = system_config_menu_b();
         }
         if (call_ret != 0) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_state_dispatch;
     default: /* 10,12,13 -> 0x80126344 re-dispatch (hang) */
-        goto switchD_80126370_caseD_80126344;
+        goto main_state_dispatch;
     }
     g_game_state = 5;
-    goto switchD_80126370_caseD_80126344;
-switchD_80126370_caseD_80126534:
+    goto main_state_dispatch;
+state5_match_frame:
     mmode = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
         mmode = 1;
@@ -790,19 +791,20 @@ L_801265b8:
 LAB_801265b8:
             g_game_state = 2;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_state_dispatch;
     }
-    goto frame_state_wait;
-switchD_80126370_caseD_801263c8:
+    goto state_bounds_spin;
+state2_reset_handler:
     state = (uint32_t)g_game_state;
     retry_count = 0;
     if (state == 2) goto state_to_3;
+    goto state_bounds_wait;
 state_to_3:
 L_801263c8_dispatch:
 L_8012661c:
 LAB_8012661c:
     g_game_state = 3;
-    goto switchD_80126370_caseD_80126344;
+    goto main_state_dispatch;
 }
 
 /* ==================================================================
