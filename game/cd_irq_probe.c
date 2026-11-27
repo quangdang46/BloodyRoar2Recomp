@@ -37611,3 +37611,1556 @@ block_801AEB40:
     psx_check_interrupts_at(cpu, _jt_801AEBC8);
     cpu->pc = _jt_801AEBC8; return;  /* CPS: jr $ra */
 }
+void cpst_801ae7f8(void);
+void cpst_801af628(void);
+void cpst_8019e45c(void);
+void cpst_80199cf0(void);
+void cpst_801a2f60(void);
+void cpst_801aece4(void);
+void cpst_80195c44(void);
+void cpst_801af098(void);
+void cpst_801a34dc(void);
+void cpst_801af11c(void);
+void cpst_801a3570(void);
+void cpst_801a347c(void);
+void cpst_801af1ac(void);
+void cpst_801aed3c(void);
+
+/* cpst_801ae7f8 — clean CPS transliteration of br2eu_func_801AE7F8 (guest 0x801ae7f8)
+ * from SLES_017.22_full_53.c. */
+void cpst_801ae7f8(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AE810u: goto block_801AE810;
+            case 0x801AE818u: goto block_801AE818;
+            case 0x801AE854u: goto block_801AE854;
+            default: break;
+        }
+    }
+    /* Address: 0x801AE7F8, Size: 100 bytes, Blocks: 4 */
+
+block_801AE7F8:
+    if (psx_slice_block(cpu, 0x801AE7F8u, 6u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AE7F8u);
+    psx_cyc_step(cpu, 0x91u);
+    a3 = a0;
+    psx_cyc_step(cpu, 0x221u);
+    t1 = a1;
+    psx_icache_fetch(cpu, 0x801AE800u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 6, 2, 0x80u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AE804: 0x00000000 */
+    psx_cyc_step(cpu, 0x4u);
+    int _bc_801AE808 = ((int32_t)v0 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x41u);
+    a2 = zero;
+    if (_bc_801AE808) {
+        psx_check_interrupts_at(cpu, 0x801AE854u);
+        goto block_801AE854;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AE810u);
+        goto block_801AE810;  /* not taken */
+    }
+
+block_801AE810:
+    if (psx_slice_block(cpu, 0x801AE810u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AE810u);
+    t0 = psx_cyc_load_word(cpu, gp + 76, 8, 0x10000000u);
+    psx_cyc_step(cpu, 0x60u);
+    a1 = a2 << 2;
+    /* fall through to block_801AE818 */
+
+block_801AE818:
+    if (psx_slice_block(cpu, 0x801AE818u, 15u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AE818u);
+    a0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 2, 4, 0x80u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 4, 2, 0x80u);
+    psx_icache_fetch(cpu, 0x801AE820u);
+    v1 = psx_cyc_load_word(cpu, t0 + 24, 3, 0x100u);
+    psx_cyc_step(cpu, 0x50u);
+    a0 = a0 + a2;
+    psx_cyc_step(cpu, 0x10u);
+    a0 = a0 << 2;
+    psx_cyc_step(cpu, 0x24u);
+    v0 = v0 + a1;
+    psx_icache_fetch(cpu, 0x801AE830u);
+    psx_cyc_step(cpu, 0xCu);
+    v1 = v1 + v0;
+    v0 = psx_cyc_load_word(cpu, v1, 2, 0x8u);
+    psx_cyc_step(cpu, 0x210u);
+    a0 = a0 + t1;
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_word(a0, v0);
+    psx_icache_fetch(cpu, 0x801AE840u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 6, 2, 0x80u);
+    psx_cyc_step(cpu, 0x40u);
+    a2 = a2 + 1;
+    psx_cyc_step(cpu, 0x44u);
+    v0 = ((int32_t)a2 < (int32_t)v0) ? 1 : 0;  /* 0x801AE848: 0x00C2102A */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AE84C = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AE850u);
+    psx_cyc_step(cpu, 0x60u);
+    a1 = a2 << 2;
+    if (_bc_801AE84C) {
+        psx_check_interrupts_at(cpu, 0x801AE818u);
+        goto block_801AE818;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AE854u);
+        goto block_801AE854;  /* not taken */
+    }
+
+block_801AE854:
+    if (psx_slice_block(cpu, 0x801AE854u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AE854u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AE854 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AE858: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801AE854);
+    cpu->pc = _jt_801AE854; return;  /* CPS: jr $ra */
+}
+
+/* cpst_801af628 — clean CPS transliteration of br2eu_func_801AF628 (guest 0x801af628)
+ * from SLES_017.22_full_53.c. */
+void cpst_801af628(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF658u: goto block_801AF658;
+            case 0x801AF668u: goto block_801AF668;
+            case 0x801AF650u: goto block_801AF650;
+            case 0x801AF660u: goto block_801AF660;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF628, Size: 80 bytes, Blocks: 5 */
+
+block_801AF628:
+    if (psx_slice_block(cpu, 0x801AF628u, 10u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF628u);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + -24;
+    psx_cyc_step(cpu, 0xA0000000u);
+    cpu->write_word(sp + 16, ra);
+    psx_icache_fetch(cpu, 0x801AF630u);
+    v1 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 2, 3, 0x10u);
+    v0 = psx_cyc_load_word(cpu, v0 + 8, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF638: 0x00000000 */
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    psx_icache_fetch(cpu, 0x801AF640u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, v0, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF644: 0x00000000 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF648 = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF64C: 0x00000000 */
+    if (_bc_801AF648) {
+        psx_check_interrupts_at(cpu, 0x801AF660u);
+        goto block_801AF660;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF650u);
+        goto block_801AF650;  /* not taken */
+    }
+
+block_801AF650:
+    if (psx_slice_block(cpu, 0x801AF650u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF650u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801AF658u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x31u);
+    a0 = a1;
+    psx_check_interrupts_at(cpu, 0x801A74F0u);
+    cpu->pc = 0x801A74F0u; return;  /* CPS jal -> 0x801A74F0 */
+
+block_801AF658:
+    if (psx_slice_block(cpu, 0x801AF658u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF658u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF65C: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801AF668u);
+    goto block_801AF668;  /* j */
+
+block_801AF660:
+    if (psx_slice_block(cpu, 0x801AF660u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF660u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801AF668u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x31u);
+    a0 = a1;
+    psx_check_interrupts_at(cpu, 0x801A7498u);
+    cpu->pc = 0x801A7498u; return;  /* CPS jal -> 0x801A7498 */
+
+block_801AF668:
+    if (psx_slice_block(cpu, 0x801AF668u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF668u);
+    ra = psx_cyc_load_word(cpu, sp + 16, 31, 0x20000000u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF66C: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801AF670u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AF670 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF670);
+    cpu->pc = _jt_801AF670; return;  /* CPS: jr $ra */
+}
+
+/* cpst_8019e45c — clean CPS transliteration of br2eu_func_8019E45C (guest 0x8019e45c)
+ * from SLES_017.22_full_48.c. */
+void cpst_8019e45c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x8019E470u: goto block_8019E470;
+            case 0x8019E484u: goto block_8019E484;
+            case 0x8019E498u: goto block_8019E498;
+            default: break;
+        }
+    }
+    /* Address: 0x8019E45C, Size: 68 bytes, Blocks: 4 */
+
+block_8019E45C:
+    if (psx_slice_block(cpu, 0x8019E45Cu, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x8019E45Cu);
+    v0 = psx_cyc_load_word(cpu, v1 + 4212, 2, 0x8u);
+    psx_icache_fetch(cpu, 0x8019E460u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E460: 0x00000000 */
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 & 0x0080;  /* 0x8019E464: 0x30420080 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_8019E468 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E46C: 0x00000000 */
+    if (_bc_8019E468) {
+        psx_check_interrupts_at(cpu, 0x8019E498u);
+        goto block_8019E498;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8019E470u);
+        goto block_8019E470;  /* not taken */
+    }
+
+block_8019E470:
+    if (psx_slice_block(cpu, 0x8019E470u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x8019E470u);
+    v0 = psx_cyc_load_word(cpu, v1 + 4164, 2, 0x8u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E474: 0x00000000 */
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 & 0x0080;  /* 0x8019E478: 0x30420080 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_8019E47C = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x8019E480u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E480: 0x00000000 */
+    if (_bc_8019E47C) {
+        psx_check_interrupts_at(cpu, 0x8019E470u);
+        goto block_8019E470;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x8019E484u);
+        goto block_8019E484;  /* not taken */
+    }
+
+block_8019E484:
+    if (psx_slice_block(cpu, 0x8019E484u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x8019E484u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x0001 << 16;  /* 0x00010000 */
+    v0 = psx_cyc_load_word(cpu, v0 + -8196, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E48C: 0x00000000 */
+    psx_icache_fetch(cpu, 0x8019E490u);
+    psx_cyc_step(cpu, 0x5u);
+    uint32_t _jt_8019E490 = v0;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E494: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_8019E490);
+    cpu->pc = _jt_8019E490; return;  /* CPS: jr v0 */
+
+block_8019E498:
+    if (psx_slice_block(cpu, 0x8019E498u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x8019E498u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_8019E498 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x8019E49C: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_8019E498);
+    cpu->pc = _jt_8019E498; return;  /* CPS: jr $ra */
+}
+
+/* cpst_80199cf0 — clean CPS transliteration of br2eu_func_80199CF0 (guest 0x80199cf0)
+ * from SLES_017.22_full_46.c. */
+void cpst_80199cf0(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80199D30u: goto block_80199D30;
+            case 0x80199D44u: goto block_80199D44;
+            default: break;
+        }
+    }
+    /* Address: 0x80199CF0, Size: 92 bytes, Blocks: 3 */
+
+block_80199CF0:
+    if (psx_slice_block(cpu, 0x80199CF0u, 16u, 0)) return;
+    psx_icache_fetch(cpu, 0x80199CF0u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = 0x801C << 16;  /* 0x801C0000 */
+    v1 = psx_cyc_load_word(cpu, v1 + -13228, 3, 0x8u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 4901;
+    psx_cyc_step(cpu, 0xCu);
+    cpu->write_word(v1, v0);
+    psx_icache_fetch(cpu, 0x80199D00u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = 0x8020 << 16;  /* 0x80200000 */
+    v1 = psx_cyc_load_word(cpu, v1 + -5352, 3, 0x8u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 3;
+    psx_cyc_step(cpu, 0xCu);
+    cpu->write_half(v1, (uint16_t)v0);
+    psx_icache_fetch(cpu, 0x80199D10u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x8020 << 16;  /* 0x80200000 */
+    v0 = psx_cyc_load_word(cpu, v0 + -14684, 2, 0x4u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = 0x8020 << 16;  /* 0x80200000 */
+    v1 = psx_cyc_load_word(cpu, v1 + -14672, 3, 0x8u);
+    psx_icache_fetch(cpu, 0x80199D20u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 + 1;
+    psx_cyc_step(cpu, 0x2u);
+    at = 0x8020 << 16;  /* 0x80200000 */
+    psx_cyc_step(cpu, 0x9u);
+    int _bc_80199D28 = (v1 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x6u);
+    cpu->write_word(at + -14684, v0);
+    if (_bc_80199D28) {
+        psx_check_interrupts_at(cpu, 0x80199D4Cu);
+        cpu->pc = 0x80199D4Cu; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80199D30u);
+        goto block_80199D30;  /* not taken */
+    }
+
+block_80199D30:
+    if (psx_slice_block(cpu, 0x80199D30u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x80199D30u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x8020 << 16;  /* 0x80200000 */
+    v0 = psx_cyc_load_word(cpu, v0 + -14692, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80199D38: 0x00000000 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_80199D3C = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x80199D40u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80199D40: 0x00000000 */
+    if (_bc_80199D3C) {
+        psx_check_interrupts_at(cpu, 0x80199D4Cu);
+        cpu->pc = 0x80199D4Cu; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80199D44u);
+        goto block_80199D44;  /* not taken */
+    }
+
+block_80199D44:
+    if (psx_slice_block(cpu, 0x80199D44u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x80199D44u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x80199D4Cu;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80199D48: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801990F0u);
+    cpu->pc = 0x801990F0u; return;  /* CPS jal -> 0x801990F0 */
+}
+
+/* cpst_801a2f60 — clean CPS transliteration of br2eu_func_801A2F60 (guest 0x801a2f60)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a2f60(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A2F70u: goto block_801A2F70;
+            case 0x801A2F78u: goto block_801A2F78;
+            case 0x801A2F80u: goto block_801A2F80;
+            case 0x801A2F98u: goto block_801A2F98;
+            case 0x801A2FACu: goto block_801A2FAC;
+            default: break;
+        }
+    }
+    /* Address: 0x801A2F60, Size: 84 bytes, Blocks: 6 */
+
+block_801A2F60:
+    if (psx_slice_block(cpu, 0x801A2F60u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2F60u);
+    v1 = psx_cyc_load_byte(cpu, a0 + 70, 3, 0x10u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 2;
+    psx_cyc_step(cpu, 0xCu);
+    int _bc_801A2F68 = (v1 == v0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 3;
+    if (_bc_801A2F68) {
+        psx_check_interrupts_at(cpu, 0x801A2F80u);
+        goto block_801A2F80;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A2F70u);
+        goto block_801A2F70;  /* not taken */
+    }
+
+block_801A2F70:
+    if (psx_slice_block(cpu, 0x801A2F70u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2F70u);
+    psx_cyc_step(cpu, 0xCu);
+    int _bc_801A2F70 = (v1 == v0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 77;
+    if (_bc_801A2F70) {
+        psx_check_interrupts_at(cpu, 0x801A2F98u);
+        goto block_801A2F98;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A2F78u);
+        goto block_801A2F78;  /* not taken */
+    }
+
+block_801A2F78:
+    if (psx_slice_block(cpu, 0x801A2F78u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2F78u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A2F7C: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801A2FACu);
+    goto block_801A2FAC;  /* j */
+
+block_801A2F80:
+    if (psx_slice_block(cpu, 0x801A2F80u, 6u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2F80u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 68;
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_byte(a0 + 55, (uint8_t)v0);
+    psx_cyc_step(cpu, 0x14u);
+    v0 = a0 + 81;
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_word(a0 + 44, v0);
+    psx_icache_fetch(cpu, 0x801A2F90u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x18u);
+    cpu->write_byte(a0 + 54, (uint8_t)v1);
+    psx_check_interrupts_at(cpu, 0x801A2FACu);
+    goto block_801A2FAC;  /* j */
+
+block_801A2F98:
+    if (psx_slice_block(cpu, 0x801A2F98u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2F98u);
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_byte(a0 + 55, (uint8_t)v0);
+    psx_cyc_step(cpu, 0x14u);
+    v0 = a0 + 93;
+    psx_icache_fetch(cpu, 0x801A2FA0u);
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_word(a0 + 44, v0);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 6;
+    psx_cyc_step(cpu, 0x14u);
+    cpu->write_byte(a0 + 54, (uint8_t)v0);
+    /* fall through to block_801A2FAC */
+
+block_801A2FAC:
+    if (psx_slice_block(cpu, 0x801A2FACu, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A2FACu);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801A2FAC = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801A2FB0u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A2FB0: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801A2FAC);
+    cpu->pc = _jt_801A2FAC; return;  /* CPS: jr $ra */
+}
+
+/* cpst_801aece4 — clean CPS transliteration of br2eu_func_801AECE4 (guest 0x801aece4)
+ * from SLES_017.22_full_53.c. */
+void cpst_801aece4(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AED14u: goto block_801AED14;
+            case 0x801AED2Cu: goto block_801AED2C;
+            case 0x801AECF8u: goto block_801AECF8;
+            case 0x801AED1Cu: goto block_801AED1C;
+            default: break;
+        }
+    }
+    /* Address: 0x801AECE4, Size: 88 bytes, Blocks: 5 */
+
+block_801AECE4:
+    if (psx_slice_block(cpu, 0x801AECE4u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AECE4u);
+    psx_cyc_step(cpu, 0x20010000u);
+    cpu->write_word(sp + 16, s0);
+    v1 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a2, 3, 0x40u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AECEC: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801AECF0u);
+    psx_cyc_step(cpu, 0x9u);
+    int _bc_801AECF0 = (v1 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AECF4: 0x00000000 */
+    if (_bc_801AECF0) {
+        psx_check_interrupts_at(cpu, 0x801AED1Cu);
+        goto block_801AED1C;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AECF8u);
+        goto block_801AECF8;  /* not taken */
+    }
+
+block_801AECF8:
+    if (psx_slice_block(cpu, 0x801AECF8u, 7u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AECF8u);
+    v0 = psx_cyc_load_word(cpu, gp + 76, 2, 0x10000000u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AECFC: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801AED00u);
+    s0 = psx_cyc_load_word(cpu, v0 + 8, 16, 0x4u);
+    v0 = psx_cyc_load_word(cpu, a1, 2, 0x20u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED08: 0x00000000 */
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801AED0C = v0;  /* latch indirect target before delay slot */
+    ra = 0x801AED14u;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AED10u);
+    psx_cyc_step(cpu, 0x10008u);
+    s0 = s0 + v1;
+    psx_check_interrupts_at(cpu, _jt_801AED0C);
+    cpu->pc = _jt_801AED0C; return;  /* CPS jalr */
+
+block_801AED14:
+    if (psx_slice_block(cpu, 0x801AED14u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED14u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10004u);
+    cpu->write_word(s0, v0);
+    psx_check_interrupts_at(cpu, 0x801AED2Cu);
+    goto block_801AED2C;  /* j */
+
+block_801AED1C:
+    if (psx_slice_block(cpu, 0x801AED1Cu, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED1Cu);
+    v0 = psx_cyc_load_word(cpu, a1, 2, 0x20u);
+    psx_icache_fetch(cpu, 0x801AED20u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED20: 0x00000000 */
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801AED24 = v0;  /* latch indirect target before delay slot */
+    ra = 0x801AED2Cu;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED28: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801AED24);
+    cpu->pc = _jt_801AED24; return;  /* CPS jalr */
+
+block_801AED2C:
+    if (psx_slice_block(cpu, 0x801AED2Cu, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED2Cu);
+    ra = psx_cyc_load_word(cpu, sp + 20, 31, 0x20000000u);
+    psx_icache_fetch(cpu, 0x801AED30u);
+    s0 = psx_cyc_load_word(cpu, sp + 16, 16, 0x20000000u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AED34 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AED34);
+    cpu->pc = _jt_801AED34; return;  /* CPS: jr $ra */
+}
+
+/* cpst_80195c44 — clean CPS transliteration of br2eu_func_80195C44 (guest 0x80195c44)
+ * from SLES_017.22_full_45.c. */
+void cpst_80195c44(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x80195C4Cu: goto block_80195C4C;
+            case 0x80195C68u: goto block_80195C68;
+            case 0x80195C54u: goto block_80195C54;
+            case 0x80195C60u: goto block_80195C60;
+            case 0x80195C74u: goto block_80195C74;
+            default: break;
+        }
+    }
+    /* Address: 0x80195C44, Size: 52 bytes, Blocks: 6 */
+
+block_80195C44:
+    if (psx_slice_block(cpu, 0x80195C44u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C44u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x80195C4Cu;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80195C48: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801974B8u);
+    cpu->pc = 0x801974B8u; return;  /* CPS jal -> 0x801974B8 */
+
+block_80195C4C:
+    if (psx_slice_block(cpu, 0x80195C4Cu, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C4Cu);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_80195C4C = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x80195C50u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = zero;
+    if (_bc_80195C4C) {
+        psx_check_interrupts_at(cpu, 0x80195C78u);
+        cpu->pc = 0x80195C78u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80195C54u);
+        goto block_80195C54;  /* not taken */
+    }
+
+block_80195C54:
+    if (psx_slice_block(cpu, 0x80195C54u, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C54u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    psx_cyc_step(cpu, 0x10004u);
+    int _bc_80195C58 = (s0 != v0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80195C5C: 0x00000000 */
+    if (_bc_80195C58) {
+        psx_check_interrupts_at(cpu, 0x80195C78u);
+        cpu->pc = 0x80195C78u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80195C60u);
+        goto block_80195C60;  /* not taken */
+    }
+
+block_80195C60:
+    if (psx_slice_block(cpu, 0x80195C60u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C60u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x80195C68u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x80195C64: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x8019737Cu);
+    cpu->pc = 0x8019737Cu; return;  /* CPS jal -> 0x8019737C */
+
+block_80195C68:
+    if (psx_slice_block(cpu, 0x80195C68u, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C68u);
+    psx_cyc_step(cpu, 0xDu);
+    v1 = v0;
+    psx_cyc_step(cpu, 0x9u);
+    int _bc_80195C6C = (v1 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x80195C70u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = zero;
+    if (_bc_80195C6C) {
+        psx_check_interrupts_at(cpu, 0x80195C78u);
+        cpu->pc = 0x80195C78u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x80195C74u);
+        goto block_80195C74;  /* not taken */
+    }
+
+block_80195C74:
+    if (psx_slice_block(cpu, 0x80195C74u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x80195C74u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    cpu->pc = 0x80195c78u; return;  /* fallthrough to split piece */
+}
+
+/* cpst_801af098 — clean CPS transliteration of br2eu_func_801AF098 (guest 0x801af098)
+ * from SLES_017.22_full_53.c. */
+void cpst_801af098(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF0F0u: goto block_801AF0F0;
+            case 0x801AF0BCu: goto block_801AF0BC;
+            case 0x801AF0F8u: goto block_801AF0F8;
+            case 0x801AF104u: goto block_801AF104;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF098, Size: 124 bytes, Blocks: 5 */
+
+block_801AF098:
+    if (psx_slice_block(cpu, 0x801AF098u, 9u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF098u);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + -24;
+    psx_cyc_step(cpu, 0x20010000u);
+    cpu->write_word(sp + 16, s0);
+    psx_icache_fetch(cpu, 0x801AF0A0u);
+    psx_cyc_step(cpu, 0x10021u);
+    s0 = a1;
+    psx_cyc_step(cpu, 0xA0000000u);
+    cpu->write_word(sp + 20, ra);
+    psx_cyc_step(cpu, 0x5u);
+    cpu->write_word(v0 + 20, zero);
+    v0 = psx_cyc_load_word(cpu, s0, 2, 0x10000u);
+    psx_icache_fetch(cpu, 0x801AF0B0u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF0B0: 0x00000000 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF0B4 = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x8020 << 16;  /* 0x80200000 */
+    if (_bc_801AF0B4) {
+        psx_check_interrupts_at(cpu, 0x801AF104u);
+        goto block_801AF104;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF0BCu);
+        goto block_801AF0BC;  /* not taken */
+    }
+
+block_801AF0BC:
+    if (psx_slice_block(cpu, 0x801AF0BCu, 13u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF0BCu);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 + -2504;
+    psx_icache_fetch(cpu, 0x801AF0C0u);
+    v1 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 2, 3, 0x10u);
+    a2 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 6, 6, 0x10u);
+    a3 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 8, 7, 0x10u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = v1 << 2;
+    psx_icache_fetch(cpu, 0x801AF0D0u);
+    psx_cyc_step(cpu, 0xCu);
+    v1 = v1 + v0;
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 4, 2, 0x10u);
+    v1 = psx_cyc_load_word(cpu, v1, 3, 0x8u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 2;
+    psx_icache_fetch(cpu, 0x801AF0E0u);
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    a1 = psx_cyc_load_word(cpu, v0, 5, 0x4u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801AF0F0u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10011u);
+    a0 = s0;
+    psx_check_interrupts_at(cpu, 0x801A6BD0u);
+    cpu->pc = 0x801A6BD0u; return;  /* CPS jal -> 0x801A6BD0 */
+
+block_801AF0F0:
+    if (psx_slice_block(cpu, 0x801AF0F0u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF0F0u);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF0F0 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10004u);
+    cpu->write_word(s0, v0);
+    if (_bc_801AF0F0) {
+        psx_check_interrupts_at(cpu, 0x801AF104u);
+        goto block_801AF104;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF0F8u);
+        goto block_801AF0F8;  /* not taken */
+    }
+
+block_801AF0F8:
+    if (psx_slice_block(cpu, 0x801AF0F8u, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF0F8u);
+    v1 = psx_cyc_load_word(cpu, gp + 76, 3, 0x10000000u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    psx_icache_fetch(cpu, 0x801AF100u);
+    psx_cyc_step(cpu, 0xCu);
+    cpu->write_word(v1 + 20, v0);
+    /* fall through to block_801AF104 */
+
+block_801AF104:
+    if (psx_slice_block(cpu, 0x801AF104u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF104u);
+    ra = psx_cyc_load_word(cpu, sp + 20, 31, 0x20000000u);
+    s0 = psx_cyc_load_word(cpu, sp + 16, 16, 0x20000000u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AF10C = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AF110u);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF10C);
+    cpu->pc = _jt_801AF10C; return;  /* CPS: jr $ra */
+}
+
+/* cpst_801a34dc — clean CPS transliteration of br2eu_func_801A34DC (guest 0x801a34dc)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a34dc(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A34E4u: goto block_801A34E4;
+            case 0x801A34ECu: goto block_801A34EC;
+            case 0x801A34F4u: goto block_801A34F4;
+            case 0x801A34FCu: goto block_801A34FC;
+            case 0x801A3508u: goto block_801A3508;
+            default: break;
+        }
+    }
+    /* Address: 0x801A34DC, Size: 52 bytes, Blocks: 6 */
+
+block_801A34DC:
+    if (psx_slice_block(cpu, 0x801A34DCu, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34DCu);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801A34DC = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801A34E0u);
+    psx_cyc_step(cpu, 0xCu);
+    v0 = ((int32_t)v1 < 2) ? 1 : 0;  /* 0x801A34E0: 0x28620002 */
+    if (_bc_801A34DC) {
+        psx_check_interrupts_at(cpu, 0x801A34FCu);
+        goto block_801A34FC;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A34E4u);
+        goto block_801A34E4;  /* not taken */
+    }
+
+block_801A34E4:
+    if (psx_slice_block(cpu, 0x801A34E4u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34E4u);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801A34E4 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20011u);
+    a0 = s1;
+    if (_bc_801A34E4) {
+        psx_check_interrupts_at(cpu, 0x801A3570u);
+        cpu->pc = 0x801A3570u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A34ECu);
+        goto block_801A34EC;  /* not taken */
+    }
+
+block_801A34EC:
+    if (psx_slice_block(cpu, 0x801A34ECu, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34ECu);
+    psx_cyc_step(cpu, 0x8u);
+    int _bc_801A34EC = ((int32_t)v1 < 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801A34F0u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A34F0: 0x00000000 */
+    if (_bc_801A34EC) {
+        psx_check_interrupts_at(cpu, 0x801A3570u);
+        cpu->pc = 0x801A3570u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A34F4u);
+        goto block_801A34F4;  /* not taken */
+    }
+
+block_801A34F4:
+    if (psx_slice_block(cpu, 0x801A34F4u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34F4u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A34F8: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801A352Cu);
+    cpu->pc = 0x801A352Cu; return;  /* CPS j: split */
+
+block_801A34FC:
+    if (psx_slice_block(cpu, 0x801A34FCu, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34FCu);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 4;
+    psx_icache_fetch(cpu, 0x801A3500u);
+    psx_cyc_step(cpu, 0xCu);
+    int _bc_801A3500 = (v1 != v0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20011u);
+    a0 = s1;
+    if (_bc_801A3500) {
+        psx_check_interrupts_at(cpu, 0x801A3570u);
+        cpu->pc = 0x801A3570u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A3508u);
+        goto block_801A3508;  /* not taken */
+    }
+
+block_801A3508:
+    if (psx_slice_block(cpu, 0x801A3508u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3508u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x240000u);
+    cpu->write_word(s2, s5);
+    psx_check_interrupts_at(cpu, 0x801A3570u);
+    cpu->pc = 0x801A3570u; return;  /* CPS j: split */
+}
+
+/* cpst_801af11c — clean CPS transliteration of br2eu_func_801AF11C (guest 0x801af11c)
+ * from SLES_017.22_full_53.c. */
+void cpst_801af11c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF180u: goto block_801AF180;
+            case 0x801AF150u: goto block_801AF150;
+            case 0x801AF188u: goto block_801AF188;
+            case 0x801AF194u: goto block_801AF194;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF11C, Size: 136 bytes, Blocks: 5 */
+
+block_801AF11C:
+    if (psx_slice_block(cpu, 0x801AF11Cu, 13u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF11Cu);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + -24;
+    psx_icache_fetch(cpu, 0x801AF120u);
+    psx_cyc_step(cpu, 0xA0000000u);
+    cpu->write_word(sp + 20, ra);
+    psx_cyc_step(cpu, 0x20010000u);
+    cpu->write_word(sp + 16, s0);
+    v1 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 4, 3, 0x80u);
+    v0 = psx_cyc_load_word(cpu, a0 + 8, 2, 0x10u);
+    psx_icache_fetch(cpu, 0x801AF130u);
+    psx_cyc_step(cpu, 0x10021u);
+    s0 = a1;
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    a1 = psx_cyc_load_word(cpu, v0, 5, 0x4u);
+    psx_cyc_step(cpu, 0x11u);
+    cpu->write_word(a0 + 20, zero);
+    psx_icache_fetch(cpu, 0x801AF140u);
+    v0 = psx_cyc_load_word(cpu, s0, 2, 0x10000u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF144: 0x00000000 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF148 = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x8u);
+    v1 = 0x8020 << 16;  /* 0x80200000 */
+    if (_bc_801AF148) {
+        psx_check_interrupts_at(cpu, 0x801AF194u);
+        goto block_801AF194;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF150u);
+        goto block_801AF150;  /* not taken */
+    }
+
+block_801AF150:
+    if (psx_slice_block(cpu, 0x801AF150u, 12u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF150u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = v1 + -2504;
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 2, 2, 0x80u);
+    a2 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 6, 6, 0x80u);
+    a3 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 8, 7, 0x80u);
+    psx_icache_fetch(cpu, 0x801AF160u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 2;
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    v1 = psx_cyc_load_word(cpu, v0, 3, 0x4u);
+    psx_cyc_step(cpu, 0x24u);
+    v0 = a1 << 2;
+    psx_icache_fetch(cpu, 0x801AF170u);
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    a1 = psx_cyc_load_word(cpu, v0, 5, 0x4u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801AF180u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10011u);
+    a0 = s0;
+    psx_check_interrupts_at(cpu, 0x801A6BD0u);
+    cpu->pc = 0x801A6BD0u; return;  /* CPS jal -> 0x801A6BD0 */
+
+block_801AF180:
+    if (psx_slice_block(cpu, 0x801AF180u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF180u);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF180 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10004u);
+    cpu->write_word(s0, v0);
+    if (_bc_801AF180) {
+        psx_check_interrupts_at(cpu, 0x801AF194u);
+        goto block_801AF194;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF188u);
+        goto block_801AF188;  /* not taken */
+    }
+
+block_801AF188:
+    if (psx_slice_block(cpu, 0x801AF188u, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF188u);
+    v1 = psx_cyc_load_word(cpu, gp + 76, 3, 0x10000000u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    psx_icache_fetch(cpu, 0x801AF190u);
+    psx_cyc_step(cpu, 0xCu);
+    cpu->write_word(v1 + 20, v0);
+    /* fall through to block_801AF194 */
+
+block_801AF194:
+    if (psx_slice_block(cpu, 0x801AF194u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF194u);
+    ra = psx_cyc_load_word(cpu, sp + 20, 31, 0x20000000u);
+    s0 = psx_cyc_load_word(cpu, sp + 16, 16, 0x20000000u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AF19C = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AF1A0u);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF19C);
+    cpu->pc = _jt_801AF19C; return;  /* CPS: jr $ra */
+}
+
+/* cpst_801a3570 — clean CPS transliteration of br2eu_func_801A3570 (guest 0x801a3570)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a3570(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A3584u: goto block_801A3584;
+            case 0x801A3590u: goto block_801A3590;
+            case 0x801A35A0u: goto block_801A35A0;
+            case 0x801A35A8u: goto block_801A35A8;
+            case 0x801A3598u: goto block_801A3598;
+            default: break;
+        }
+    }
+    /* Address: 0x801A3570, Size: 64 bytes, Blocks: 6 */
+
+block_801A3570:
+    if (psx_slice_block(cpu, 0x801A3570u, 5u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3570u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = psx_cyc_load_word(cpu, v0 + -6264, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A3578: 0x00000000 */
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801A357C = v0;  /* latch indirect target before delay slot */
+    ra = 0x801A3584u;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801A3580u);
+    psx_cyc_step(cpu, 0x100021u);
+    a1 = s4;
+    psx_check_interrupts_at(cpu, _jt_801A357C);
+    cpu->pc = _jt_801A357C; return;  /* CPS jalr */
+
+block_801A3584:
+    if (psx_slice_block(cpu, 0x801A3584u, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3584u);
+    psx_cyc_step(cpu, 0x20011u);
+    a0 = s1;
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801A3590u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x24u);
+    a1 = v0 & 0x00FF;  /* 0x801A358C: 0x304500FF */
+    psx_check_interrupts_at(cpu, 0x801A1F74u);
+    cpu->pc = 0x801A1F74u; return;  /* CPS jal -> 0x801A1F74 */
+
+block_801A3590:
+    if (psx_slice_block(cpu, 0x801A3590u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3590u);
+    psx_cyc_step(cpu, 0x4u);
+    int _bc_801A3590 = ((int32_t)v0 < 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A3594: 0x00000000 */
+    if (_bc_801A3590) {
+        psx_check_interrupts_at(cpu, 0x801A36C0u);
+        cpu->pc = 0x801A36C0u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A3598u);
+        goto block_801A3598;  /* not taken */
+    }
+
+block_801A3598:
+    if (psx_slice_block(cpu, 0x801A3598u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3598u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801A35A0u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x11u);
+    a0 = 60;
+    psx_check_interrupts_at(cpu, 0x801A4210u);
+    cpu->pc = 0x801A4210u; return;  /* CPS jal -> 0x801A4210 */
+
+block_801A35A0:
+    if (psx_slice_block(cpu, 0x801A35A0u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A35A0u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801A35A8u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A35A4: 0x00000000 */
+    psx_check_interrupts_at(cpu, 0x801A23FCu);
+    cpu->pc = 0x801A23FCu; return;  /* CPS jal -> 0x801A23FC */
+
+block_801A35A8:
+    if (psx_slice_block(cpu, 0x801A35A8u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A35A8u);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801A35A8 = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A35AC: 0x00000000 */
+    if (_bc_801A35A8) {
+        psx_check_interrupts_at(cpu, 0x801A35B8u);
+        cpu->pc = 0x801A35B8u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A35B0u);
+        cpu->pc = 0x801A35B0u; return;  /* CPS not taken: split */
+    }
+}
+
+/* cpst_801a347c — clean CPS transliteration of br2eu_func_801A347C (guest 0x801a347c)
+ * from SLES_017.22_full_49.c. */
+void cpst_801a347c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801A34C8u: goto block_801A34C8;
+            case 0x801A348Cu: goto block_801A348C;
+            case 0x801A3494u: goto block_801A3494;
+            case 0x801A34D8u: goto block_801A34D8;
+            default: break;
+        }
+    }
+    /* Address: 0x801A347C, Size: 96 bytes, Blocks: 5 */
+
+block_801A347C:
+    if (psx_slice_block(cpu, 0x801A347Cu, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A347Cu);
+    a0 = psx_cyc_load_word(cpu, s2, 4, 0x40000u);
+    psx_icache_fetch(cpu, 0x801A3480u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A3480: 0x00000000 */
+    psx_cyc_step(cpu, 0x10u);
+    int _bc_801A3484 = ((int32_t)a0 < 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A3488: 0x00000000 */
+    if (_bc_801A3484) {
+        psx_check_interrupts_at(cpu, 0x801A35DCu);
+        cpu->pc = 0x801A35DCu; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A348Cu);
+        goto block_801A348C;  /* not taken */
+    }
+
+block_801A348C:
+    if (psx_slice_block(cpu, 0x801A348Cu, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A348Cu);
+    psx_cyc_step(cpu, 0x10u);
+    int _bc_801A348C = ((int32_t)a0 <= 0);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801A3490u);
+    psx_cyc_step(cpu, 0x14u);
+    v0 = a0 << 4;
+    if (_bc_801A348C) {
+        psx_check_interrupts_at(cpu, 0x801A34C8u);
+        goto block_801A34C8;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A3494u);
+        goto block_801A3494;  /* not taken */
+    }
+
+block_801A3494:
+    if (psx_slice_block(cpu, 0x801A3494u, 13u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A3494u);
+    psx_cyc_step(cpu, 0x8u);
+    v1 = 0x801C << 16;  /* 0x801C0000 */
+    v1 = psx_cyc_load_word(cpu, v1 + -6220, 3, 0x8u);
+    psx_cyc_step(cpu, 0x14u);
+    v0 = v0 - a0;
+    psx_icache_fetch(cpu, 0x801A34A0u);
+    psx_cyc_step(cpu, 0x80008u);
+    v1 = s3 + v1;
+    v1 = psx_cyc_load_word(cpu, v1 + 12, 3, 0x8u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 4;
+    psx_cyc_step(cpu, 0xCu);
+    v1 = v1 + v0;
+    psx_icache_fetch(cpu, 0x801A34B0u);
+    psx_cyc_step(cpu, 0x10008u);
+    s0 = v1 + -240;
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x801C << 16;  /* 0x801C0000 */
+    v0 = psx_cyc_load_word(cpu, v0 + -6240, 2, 0x4u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A34BC: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801A34C0u);
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801A34C0 = v0;  /* latch indirect target before delay slot */
+    ra = 0x801A34C8u;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10011u);
+    a0 = s0;
+    psx_check_interrupts_at(cpu, _jt_801A34C0);
+    cpu->pc = _jt_801A34C0; return;  /* CPS jalr */
+
+block_801A34C8:
+    if (psx_slice_block(cpu, 0x801A34C8u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34C8u);
+    v1 = psx_cyc_load_word(cpu, s2, 3, 0x40000u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A34CC: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801A34D0u);
+    psx_cyc_step(cpu, 0x200008u);
+    int _bc_801A34D0 = (v1 == s5);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801A34D4: 0x00000000 */
+    if (_bc_801A34D0) {
+        psx_check_interrupts_at(cpu, 0x801A3510u);
+        cpu->pc = 0x801A3510u; return;  /* CPS taken: split */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801A34D8u);
+        goto block_801A34D8;  /* not taken */
+    }
+
+block_801A34D8:
+    if (psx_slice_block(cpu, 0x801A34D8u, 1u, 0)) return;
+    psx_icache_fetch(cpu, 0x801A34D8u);
+    psx_cyc_step(cpu, 0xCu);
+    v0 = ((int32_t)v1 < 4) ? 1 : 0;  /* 0x801A34D8: 0x28620004 */
+    cpu->pc = 0x801a34dcu; return;  /* fallthrough to split piece */
+}
+
+/* cpst_801af1ac — clean CPS transliteration of br2eu_func_801AF1AC (guest 0x801af1ac)
+ * from SLES_017.22_full_53.c. */
+void cpst_801af1ac(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AF214u: goto block_801AF214;
+            case 0x801AF1E4u: goto block_801AF1E4;
+            case 0x801AF21Cu: goto block_801AF21C;
+            case 0x801AF228u: goto block_801AF228;
+            default: break;
+        }
+    }
+    /* Address: 0x801AF1AC, Size: 140 bytes, Blocks: 5 */
+
+block_801AF1AC:
+    if (psx_slice_block(cpu, 0x801AF1ACu, 14u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF1ACu);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + -24;
+    psx_icache_fetch(cpu, 0x801AF1B0u);
+    psx_cyc_step(cpu, 0xA0000000u);
+    cpu->write_word(sp + 20, ra);
+    psx_cyc_step(cpu, 0x20010000u);
+    cpu->write_word(sp + 16, s0);
+    v1 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 2, 3, 0x80u);
+    v0 = psx_cyc_load_word(cpu, a0 + 8, 2, 0x10u);
+    psx_icache_fetch(cpu, 0x801AF1C0u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF1C0: 0x00000000 */
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    v1 = psx_cyc_load_word(cpu, v0, 3, 0x4u);
+    psx_cyc_step(cpu, 0x10021u);
+    s0 = a1;
+    psx_icache_fetch(cpu, 0x801AF1D0u);
+    psx_cyc_step(cpu, 0x11u);
+    cpu->write_word(a0 + 20, zero);
+    v0 = psx_cyc_load_word(cpu, s0, 2, 0x10000u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AF1D8: 0x00000000 */
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF1DC = (v0 != zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AF1E0u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = 0x8020 << 16;  /* 0x80200000 */
+    if (_bc_801AF1DC) {
+        psx_check_interrupts_at(cpu, 0x801AF228u);
+        goto block_801AF228;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF1E4u);
+        goto block_801AF1E4;  /* not taken */
+    }
+
+block_801AF1E4:
+    if (psx_slice_block(cpu, 0x801AF1E4u, 12u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF1E4u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 + -2504;
+    psx_cyc_step(cpu, 0x8u);
+    v1 = v1 << 2;
+    psx_cyc_step(cpu, 0xCu);
+    v1 = v1 + v0;
+    psx_icache_fetch(cpu, 0x801AF1F0u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 4, 2, 0x80u);
+    v1 = psx_cyc_load_word(cpu, v1, 3, 0x8u);
+    a2 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 6, 6, 0x80u);
+    a3 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a3 + 8, 7, 0x80u);
+    psx_icache_fetch(cpu, 0x801AF200u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 2;
+    psx_cyc_step(cpu, 0xCu);
+    v0 = v0 + v1;
+    a1 = psx_cyc_load_word(cpu, v0, 5, 0x4u);
+    psx_cyc_step(cpu, 0x80000000u);
+    ra = 0x801AF214u;  /* jal link before delay slot */
+    /* delay slot (always executes) */
+    psx_icache_fetch(cpu, 0x801AF210u);
+    psx_cyc_step(cpu, 0x10011u);
+    a0 = s0;
+    psx_check_interrupts_at(cpu, 0x801A6BD0u);
+    cpu->pc = 0x801A6BD0u; return;  /* CPS jal -> 0x801A6BD0 */
+
+block_801AF214:
+    if (psx_slice_block(cpu, 0x801AF214u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF214u);
+    psx_cyc_step(cpu, 0x5u);
+    int _bc_801AF214 = (v0 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10004u);
+    cpu->write_word(s0, v0);
+    if (_bc_801AF214) {
+        psx_check_interrupts_at(cpu, 0x801AF228u);
+        goto block_801AF228;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AF21Cu);
+        goto block_801AF21C;  /* not taken */
+    }
+
+block_801AF21C:
+    if (psx_slice_block(cpu, 0x801AF21Cu, 3u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF21Cu);
+    v1 = psx_cyc_load_word(cpu, gp + 76, 3, 0x10000000u);
+    psx_icache_fetch(cpu, 0x801AF220u);
+    psx_cyc_step(cpu, 0x5u);
+    v0 = 1;
+    psx_cyc_step(cpu, 0xCu);
+    cpu->write_word(v1 + 20, v0);
+    /* fall through to block_801AF228 */
+
+block_801AF228:
+    if (psx_slice_block(cpu, 0x801AF228u, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AF228u);
+    ra = psx_cyc_load_word(cpu, sp + 20, 31, 0x20000000u);
+    s0 = psx_cyc_load_word(cpu, sp + 16, 16, 0x20000000u);
+    psx_icache_fetch(cpu, 0x801AF230u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AF230 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AF230);
+    cpu->pc = _jt_801AF230; return;  /* CPS: jr $ra */
+}
+
+/* cpst_801aed3c — clean CPS transliteration of br2eu_func_801AED3C (guest 0x801aed3c)
+ * from SLES_017.22_full_53.c. */
+void cpst_801aed3c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+    if (cpu->pc != 0u) {
+        uint32_t _cont = cpu->pc; cpu->pc = 0;
+        switch (_cont) {
+            case 0x801AED80u: goto block_801AED80;
+            case 0x801AEDACu: goto block_801AEDAC;
+            case 0x801AED58u: goto block_801AED58;
+            case 0x801AED88u: goto block_801AED88;
+            default: break;
+        }
+    }
+    /* Address: 0x801AED3C, Size: 124 bytes, Blocks: 5 */
+
+block_801AED3C:
+    if (psx_slice_block(cpu, 0x801AED3Cu, 7u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED3Cu);
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + -24;
+    psx_icache_fetch(cpu, 0x801AED40u);
+    psx_cyc_step(cpu, 0xA0000000u);
+    cpu->write_word(sp + 20, ra);
+    psx_cyc_step(cpu, 0x20010000u);
+    cpu->write_word(sp + 16, s0);
+    a2 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a2, 6, 0x40u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED4C: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801AED50u);
+    psx_cyc_step(cpu, 0x41u);
+    int _bc_801AED50 = (a2 == zero);  /* save branch cond before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED54: 0x00000000 */
+    if (_bc_801AED50) {
+        psx_check_interrupts_at(cpu, 0x801AED88u);
+        goto block_801AED88;  /* taken */
+    } else {
+        psx_check_interrupts_at(cpu, 0x801AED58u);
+        goto block_801AED58;  /* not taken */
+    }
+
+block_801AED58:
+    if (psx_slice_block(cpu, 0x801AED58u, 10u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED58u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 4, 2, 0x10u);
+    v1 = psx_cyc_load_word(cpu, gp + 76, 3, 0x10000000u);
+    psx_icache_fetch(cpu, 0x801AED60u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 2;
+    psx_cyc_step(cpu, 0x84u);
+    v0 = v0 + a3;
+    a0 = psx_cyc_load_word(cpu, v0, 4, 0x4u);
+    s0 = psx_cyc_load_word(cpu, v1 + 8, 16, 0x8u);
+    psx_icache_fetch(cpu, 0x801AED70u);
+    v0 = psx_cyc_load_word(cpu, a1, 2, 0x20u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED74: 0x00000000 */
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801AED78 = v0;  /* latch indirect target before delay slot */
+    ra = 0x801AED80u;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10040u);
+    s0 = s0 + a2;
+    psx_check_interrupts_at(cpu, _jt_801AED78);
+    cpu->pc = _jt_801AED78; return;  /* CPS jalr */
+
+block_801AED80:
+    if (psx_slice_block(cpu, 0x801AED80u, 2u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED80u);
+    psx_cyc_step(cpu, 0x0u);
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x10004u);
+    cpu->write_word(s0, v0);
+    psx_check_interrupts_at(cpu, 0x801AEDACu);
+    goto block_801AEDAC;  /* j */
+
+block_801AED88:
+    if (psx_slice_block(cpu, 0x801AED88u, 9u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AED88u);
+    v0 = (int32_t)(int16_t)psx_cyc_load_half(cpu, a0 + 4, 2, 0x10u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AED8C: 0x00000000 */
+    psx_icache_fetch(cpu, 0x801AED90u);
+    psx_cyc_step(cpu, 0x4u);
+    v0 = v0 << 2;
+    psx_cyc_step(cpu, 0x84u);
+    v0 = v0 + a3;
+    a0 = psx_cyc_load_word(cpu, v0, 4, 0x4u);
+    v0 = psx_cyc_load_word(cpu, a1, 2, 0x20u);
+    psx_icache_fetch(cpu, 0x801AEDA0u);
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AEDA0: 0x00000000 */
+    psx_cyc_step(cpu, 0x80000004u);
+    uint32_t _jt_801AEDA4 = v0;  /* latch indirect target before delay slot */
+    ra = 0x801AEDACu;  /* jalr link before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x1u);
+    /* nop */  /* 0x801AEDA8: 0x00000000 */
+    psx_check_interrupts_at(cpu, _jt_801AEDA4);
+    cpu->pc = _jt_801AEDA4; return;  /* CPS jalr */
+
+block_801AEDAC:
+    if (psx_slice_block(cpu, 0x801AEDACu, 4u, 0)) return;
+    psx_icache_fetch(cpu, 0x801AEDACu);
+    ra = psx_cyc_load_word(cpu, sp + 20, 31, 0x20000000u);
+    psx_icache_fetch(cpu, 0x801AEDB0u);
+    s0 = psx_cyc_load_word(cpu, sp + 16, 16, 0x20000000u);
+    psx_cyc_step(cpu, 0x80000001u);
+    uint32_t _jt_801AEDB4 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    psx_cyc_step(cpu, 0x20000000u);
+    sp = sp + 24;
+    psx_check_interrupts_at(cpu, _jt_801AEDB4);
+    cpu->pc = _jt_801AEDB4; return;  /* CPS: jr $ra */
+}
