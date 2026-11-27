@@ -2254,7 +2254,6 @@ int32_t mc_dialog_bit4(int32_t a0)
  * *(u32*)0x801f4758) then cd_dir_entry_probe(h); returns handle or -1.
  * Disasm 0x80159a14-0x80159aac. */
 extern int32_t mc_date_serial_cmp(uint8_t *,void *);
-extern uint32_t br2_call_generated(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern uint32_t br2_call_clean(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void cd_bitstream_decode(int32_t,uint32_t,uint32_t);
 extern void cd_dir_entry_probe(int32_t);
@@ -5888,8 +5887,7 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
     uint32_t add6  = br2_ld8(a1 + 6);  /* s6 */
     uint32_t add7  = br2_ld8(a1 + 7);  /* s5 */
     uint32_t grp;
-    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-      decomp_trace_record(30,a0,a1,(uint8_t)cnt_a,N);
+    { decomp_trace_record(30,a0,a1,(uint8_t)cnt_a,N);
       decomp_trace_record(31,(uint32_t)cnt_b,a2,(uint8_t)add6,add7); }
 
     /* header at a3+0..16 (guest values stored are guest addresses) */
@@ -5996,8 +5994,7 @@ uint32_t ret_zero_d(uint32_t a0, uint32_t a1, uint32_t a2,
     br2_st32(a2 + 28, a3);
     br2_st16(a2 + 12, 0);
     br2_st16(a2 + 14, 0);
-    { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-      decomp_trace_record(16,a3,(uint32_t)(a3 + 20 + nrec * 0x70),0,
+    { decomp_trace_record(16,a3,(uint32_t)(a3 + 20 + nrec * 0x70),0,
                           nrec * 0x70); }
     return a3 + 20 + nrec * 0x70;
 }
@@ -6052,7 +6049,7 @@ static uint32_t heap_alloc54(uint32_t heap, int *tbl, int32_t tag)
 
 #define BR2_W32(a,v)   ((uint32_t)(a)==0x801c47b8u ? \
    ({uint32_t _bv=(uint32_t)(v);uint32_t *_bp=(uint32_t *)guest_at(0x801c47b8u);uint32_t _bo=*_bp;*_bp=_bv; \
-     {extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
+     {decomp_trace_record(21,_bo,_bv,0,__LINE__);} _bv;}) \
    : (*(uint32_t *)guest_at(a) = (uint32_t)(v)))
 #define BR2_W8(a,v)    (*(uint8_t *)guest_at(a) = (uint8_t)(v))
 
@@ -7428,8 +7425,7 @@ st_30:
   blk[0xb] = 0;
   *(uint32_t *)(blk + 0x30) = heapA;
   /* DIAG: FC_ANI bind — record which fighter block gets which heap ptr. */
-  { extern void decomp_trace_record(uint8_t,uint32_t,uint32_t,uint8_t,uint32_t);
-    decomp_trace_record(63,guest_of(blk),guest_of(blk)+0x30,0,heapA); }
+  { decomp_trace_record(63,guest_of(blk),guest_of(blk)+0x30,0,heapA); }
   sz = *(uint32_t *)guest_at(heapA);   /* lw (v0): size at heap head */
   BR2_W32(0x801c47b8, heapA + sz);
   phase = 0x40;
