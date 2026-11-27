@@ -8,7 +8,7 @@
  * Decoded architecture (live + static verified):
  *   guest_start  _start: BSS clear -> guest_main
  *   guest_main  main(): boot(boot) -> settings ->
- *                     g_game_state SM (0-13) via switchD_80126370
+ *                     g_game_state SM (0-13) via main_loop_top
  *   boot      boot: ~25 subsystem inits + CD file pump
  *                     cd_file_pump until state 0x120 -> -1
  *   cd_file_pump      CD streaming pump: loads ~27 files into
@@ -566,7 +566,7 @@ static void apply_saved_settings_or_defaults(uint32_t *sys_cfg)
 
 /* ==================================================================
  * guest_main — main(): boot + g_game_state machine.
- * State map (switchD_80126370 @0x8011e800, 14 entries):
+ * State map (guest switchD @0x8011e800 -> main_loop_top, 14 entries):
  *   0 -> init sync, ->1      1 -> mode set + load, ->2
  *   2 -> ->3                 3 -> stage select, ->4
  *   4 -> scene_entry demo fight load ->5 (retry on 0)
@@ -626,7 +626,7 @@ void guest_main(void)
     }
     frame_advance_helper();
     func_0x80163840(0);
-switchD_80126370_caseD_80126344:
+main_loop_top:
     /* Bail-unwind in flight (g_psx_call_bail): main() is a clean-C
      * mega-loop — every state dispatch re-enters here. Return so the
      * unwind reaches the outermost psx_dispatch_impl (which flattens the
@@ -638,11 +638,9 @@ switchD_80126370_caseD_80126344:
       extern void br2_guest_frame_abandon(void);
       if (br2_bail_pending()) { br2_guest_frame_abandon(); return; } }
     state = (uint32_t)g_game_state;
-code_r0x8012634c:
+state_bounds_recheck:
     state_lt_14 = state < 0xe;
 frame_state_wait:
-L_80126350:
-LAB_80126350:
 state_bounds_spin:
     do {
     } while (!state_lt_14);
@@ -650,7 +648,7 @@ state_bounds_spin:
     case 0: /* 0x80126378 */
         match_mode_set(1);
         g_game_state = 1;
-        goto switchD_80126370_caseD_80126344;
+        goto main_loop_top;
     case 1: /* 0x8012638c */
         display_mode_setup(*(uint8_t *)(_g_system_config_ptr + 0xb));
         frame_advance_helper();
@@ -660,7 +658,7 @@ state_bounds_spin:
         if (state == 1) goto state_fallback;
         goto frame_state_wait;
     case 2: /* 0x801263c8 */
-        goto switchD_80126370_caseD_801263c8;
+        goto state2_advance;
     case 3: /* 0x801263e0 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -675,7 +673,7 @@ state_bounds_spin:
         state_lt_14 = state < 0xe;
         if (state == 3) {
             g_game_state = 4;
-            goto switchD_80126370_caseD_80126344;
+            goto main_loop_top;
         }
         goto frame_state_wait;
     case 4: /* 0x8012644c */
@@ -693,10 +691,10 @@ state_bounds_spin:
         }
         gauge_scale_fixed(*(uint8_t *)(_g_system_config_ptr + 0xe),
                      ((uint32_t)*(uint8_t *)(_g_system_config_ptr + 0xf) << 3) / 10);
-        if (g_game_state != 4) goto switchD_80126370_caseD_80126344;
+        if (g_game_state != 4) goto main_loop_top;
         break;
     case 5: /* 0x80126534 */
-        goto switchD_80126370_caseD_80126534;
+        goto state5_match_frame;
     case 6: /* 0x801265c8 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -705,7 +703,7 @@ state_bounds_spin:
         match_mode_set(mmode);
         battle_intro_flow(0);
         if ((g_game_state != 6) || (results_scoreboard(0), g_game_state != 6))
-            goto switchD_80126370_caseD_80126344;
+            goto main_loop_top;
     case 7: /* 0x80126624 */
         mmode = 2;
         if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
@@ -722,12 +720,10 @@ state_bounds_spin:
         battle_flow_state_machine((intptr_t)pad_buf);
         ret_state = 8;
 post_flow_state_check:
-L_8012666c:
-LAB_8012666c:
         if (g_game_state == ret_state) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_loop_top;
     case 9: /* 0x8012667c */
         match_mode_set(1);
         unlock_progress_scene_entry(0);
@@ -740,7 +736,7 @@ LAB_8012666c:
                 player_name_entry(0);
                 g_game_state = 5;
             }
-            goto switchD_80126370_caseD_80126344;
+            goto main_loop_top;
         }
         break;
     case 11: /* 0x801266c0 */
@@ -749,19 +745,19 @@ LAB_8012666c:
             call_ret = system_config_menu_a();
         }
         else {
-            if (g_sub_state != '\x04') goto switchD_80126370_caseD_80126344;
+            if (g_sub_state != '\x04') goto main_loop_top;
             call_ret = system_config_menu_b();
         }
         if (call_ret != 0) {
             g_game_state = 5;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_loop_top;
     default: /* 10,12,13 -> 0x80126344 re-dispatch (hang) */
-        goto switchD_80126370_caseD_80126344;
+        goto main_loop_top;
     }
     g_game_state = 5;
-    goto switchD_80126370_caseD_80126344;
-switchD_80126370_caseD_80126534:
+    goto main_loop_top;
+state5_match_frame:
     mmode = 2;
     if (*(char *)(_g_system_config_ptr + 0x20) != '\0') {
         mmode = 1;
@@ -787,24 +783,19 @@ switchD_80126370_caseD_80126534:
         }
         else {
 state_fallback:
-L_801265b8:
-LAB_801265b8:
             g_game_state = 2;
         }
-        goto switchD_80126370_caseD_80126344;
+        goto main_loop_top;
     }
     goto frame_state_wait;
-switchD_80126370_caseD_801263c8:
+state2_advance:
     state = (uint32_t)g_game_state;
     retry_count = 0;
     if (state == 2) goto state_to_3;
-    goto code_r0x8012634c;
+    goto state_bounds_recheck;
 state_to_3:
-L_801263c8_dispatch:
-L_8012661c:
-LAB_8012661c:
     g_game_state = 3;
-    goto switchD_80126370_caseD_80126344;
+    goto main_loop_top;
 }
 
 /* ==================================================================
@@ -1055,8 +1046,6 @@ disp_off_f0:
         _DAT_1f800022 = 0xf0;
         DAT_1f800015 = '\0';
         goto disp_env_tail;
-L_80127134:
-LAB_80127134:
     case 7:
         _DAT_1f800020 = 0x280;
         break;
@@ -1066,8 +1055,6 @@ LAB_80127134:
     _DAT_1f800022 = 0x1e0;
     DAT_1f800015 = '\x01';
 disp_env_tail:
-L_80127160:
-LAB_80127160:
     _DAT_1f800024 = 0x168;
     gte_ofs_set(_DAT_1f800020 >> 1,(short)_DAT_1f800022 >> 1);
     gte_cw_d000_set((int)_DAT_1f800024);
@@ -1456,7 +1443,7 @@ void frame_tick(intptr_t ctx)
 /* ==================================================================
  * match_loop — match loop (infinite until DAT_1f800001 == 0xff).
  * Stage machine: 0 boot select -> 1 running -> 2 ending ->
- * 0xf0/0xf1 shutdown. 300-frame attract timeout via unaff_s2.
+ * 0xf0/0xf1 shutdown. 300-frame attract timeout via attract_timer.
  * ================================================================== */
 /* match_stepper_desc — contiguous menu-stepper descriptor. In the original
  * frame this is a single stack block at sp+0x20: menu_stepper_state_advance /
@@ -1524,8 +1511,6 @@ joined_r0x801470b0:
                 DAT_1f800001 = 1;
             }
 spr_pkt_submit_block:
-L_801472f8:
-LAB_801472f8:
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0,0xefff0088,0x7c000000);
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0x100,0xefff008a,0x7c400000);
             spr_slot_pkt_submit(_DAT_1f800008 + 4,0xf00000,0xefff0099,0x7c800000);
@@ -1577,8 +1562,6 @@ LAB_801472f8:
             }
             else if (DAT_1f800001 == 1) {
 match_end_poll:
-L_801472a4:
-LAB_801472a4:
                 ret = match_end_check(0x1f800000);
                 if ((ret < 0) && (attract_timer = attract_timer + -1, attract_timer == 0)) {
                     DAT_1f800001 = 0xf0;
@@ -1721,8 +1704,6 @@ uint32_t scene_entry(int vram_base,int stage_idx,int demo_flag)
     } while ((demo_flag == 0) || ((_DAT_1f80007c & 0x850) == 0));
     ret = 1;
 demo_exit:
-L_801593a8:
-LAB_801593a8:
     brightness_packet_send(0);
     cmd_byte[0] = 0x80;
     _DAT_1f80000c = (uint32_t)(_DAT_1f80000c == 0);
@@ -1928,8 +1909,6 @@ int32_t intro_movie_state(int32_t which)
       spr_draw_off((int)_DAT_801c47b8,0x3c0,0x100,1);
       _DAT_801c47b8 = _DAT_801c47b8 + (uint32_t)ret;
 stream_decode_done:
-L_8012c330:
-LAB_8012c330:
       cd_timer_read(0);
       scratch_013_set(saved_013);
       *(int16_t *)g_DAT_1f80008c = -1;
