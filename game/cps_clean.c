@@ -839,10 +839,10 @@ void cps_801a8ee0(void);
 
 /* cps_80126178 — clean CPS transliteration of br2eu_func_80126178 (guest 0x80126178)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126188 — scene-thunk fragment: continues at 0x80126188 */
+ * CPS fallthrough stub — continues at cps_80126188 — scene-thunk fragment: continues at cps_80126188 */
 void cps_80126178(void)
 {
-/* scene-thunk fragment: continues at 0x80126188 */
+/* scene-thunk fragment: continues at cps_80126188 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -857,10 +857,10 @@ block_80126178:
 
 /* cps_80126188 — clean CPS transliteration of br2eu_func_80126188 (guest 0x80126188)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126178 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_80126178 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126188(void)
 {
-/* scene-thunk fragment: continues at 0x80126194 */
+/* scene-thunk fragment: continues at cps_80126194 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -874,10 +874,10 @@ void cps_80126188(void)
 
 /* cps_80126194 — clean CPS transliteration of br2eu_func_80126194 (guest 0x80126194)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126188 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_80126188 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126194(void)
 {
-/* scene-thunk fragment: continues at 0x80126198 */
+/* scene-thunk fragment: continues at cps_80126198 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -895,10 +895,10 @@ void cps_80126194(void)
 
 /* cps_80126198 — clean CPS transliteration of br2eu_func_80126198 (guest 0x80126198)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012619C — scene-thunk fragment: continues at 0x8012619c */
+ * CPS fallthrough stub — continues at cps_8012619c — scene-thunk fragment: continues at cps_8012619c */
 void cps_80126198(void)
 {
-/* scene-thunk fragment: continues at 0x8012619c */
+/* scene-thunk fragment: continues at cps_8012619c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -910,10 +910,10 @@ void cps_80126198(void)
 
 /* cps_8012619c — clean CPS transliteration of br2eu_func_8012619C (guest 0x8012619c)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126194 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_80126194 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_8012619c(void)
 {
-/* scene-thunk fragment: continues at 0x801261c4 */
+/* scene-thunk fragment: continues at cps_801261c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -930,10 +930,10 @@ void cps_8012619c(void)
 
 /* cps_801261c4 — clean CPS transliteration of br2eu_func_801261C4 (guest 0x801261c4)
  * from SLES_017.22_full_00.c.
- * split piece of cps_8012619c — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_8012619c — CPS fallthrough stub — continues at cps_80126188 */
 void cps_801261c4(void)
 {
-/* scene-thunk fragment: continues at 0x801261d8 */
+/* scene-thunk fragment: continues at cps_801261d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -947,10 +947,10 @@ block_801261C4:
 
 /* cps_801261d8 — clean CPS transliteration of br2eu_func_801261D8 (guest 0x801261d8)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801261c4 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_801261c4 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_801261d8(void)
 {
-/* scene-thunk fragment: continues at 0x801261f8 */
+/* scene-thunk fragment: continues at cps_801261f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -967,7 +967,7 @@ void cps_801261d8(void)
 
 /* cps_801261f8 — clean CPS transliteration of br2eu_func_801261F8 (guest 0x801261f8)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801261d8 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_801261d8 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_801261f8(void)
 {
 /* scene/mode thunk -> guest_bzero -> self */
@@ -1001,10 +1001,10 @@ block_8012620C:
 
 /* cps_8012621c — clean CPS transliteration of br2eu_func_8012621C (guest 0x8012621c)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126220 — scene-thunk fragment: continues at 0x80126220 */
+ * CPS fallthrough stub — continues at cps_80126220 — scene-thunk fragment: continues at cps_80126220 */
 void cps_8012621c(void)
 {
-/* scene-thunk fragment: continues at 0x80126220 */
+/* scene-thunk fragment: continues at cps_80126220 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1016,10 +1016,10 @@ void cps_8012621c(void)
 
 /* cps_80126220 — clean CPS transliteration of br2eu_func_80126220 (guest 0x80126220)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801261f8 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_801261f8 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126220(void)
 {
-/* scene-thunk fragment: continues at 0x80126228 */
+/* scene-thunk fragment: continues at cps_80126228 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1031,10 +1031,10 @@ void cps_80126220(void)
 
 /* cps_80126228 — clean CPS transliteration of br2eu_func_80126228 (guest 0x80126228)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126220 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_80126220 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126228(void)
 {
-/* scene-thunk fragment: continues at 0x80126234 */
+/* scene-thunk fragment: continues at cps_80126234 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1046,7 +1046,7 @@ void cps_80126228(void)
 
 /* cps_80126234 — clean CPS transliteration of br2eu_func_80126234 (guest 0x80126234)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801261f8 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_801261f8 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126234(void)
 {
 /* scene/mode thunk -> empty_leaf -> boot */
@@ -1084,10 +1084,10 @@ block_80126258:
 
 /* cps_8012625c — clean CPS transliteration of br2eu_func_8012625C (guest 0x8012625c)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126260 — scene-thunk fragment: continues at 0x80126260 */
+ * CPS fallthrough stub — continues at cps_80126260 — scene-thunk fragment: continues at cps_80126260 */
 void cps_8012625c(void)
 {
-/* scene-thunk fragment: continues at 0x80126260 */
+/* scene-thunk fragment: continues at cps_80126260 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1100,10 +1100,10 @@ block_8012625C:
 
 /* cps_80126260 — clean CPS transliteration of br2eu_func_80126260 (guest 0x80126260)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126234 — CPS fallthrough stub — continues at 0x80126188 */
+ * split piece of cps_80126234 — CPS fallthrough stub — continues at cps_80126188 */
 void cps_80126260(void)
 {
-/* scene-thunk fragment: continues at 0x80126290 */
+/* scene-thunk fragment: continues at cps_80126290 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1146,7 +1146,7 @@ void cps_80126290(void)
     /* Address: 0x80126290, Size: 48 bytes, Blocks: 4 */
 
     /* record init + dispatch: word[s1+200]=v0, clears bytes s1+0/2/155/156,
-       jal 0x8015F590; on v0!=0 -> cps_801262C4, else jal
+       jal memcard_info_query (0x8015F590); on v0!=0 -> cps_801262C4, else jal
        0x80126720(word[s1+192]) -> cps_80126328. CPS-blocked. */
 
 block_80126290:
@@ -1189,10 +1189,10 @@ block_801262BC:
 
 /* cps_801262c0 — clean CPS transliteration of br2eu_func_801262C0 (guest 0x801262c0)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801262C4 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
+ * CPS fallthrough stub — continues at cps_801262c4 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_801262c0(void)
 {
-/* scene-thunk fragment: continues at 0x801262c4 */
+/* scene-thunk fragment: continues at cps_801262c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1226,7 +1226,7 @@ void cps_801262c4(void)
     /* Address: 0x801262C4, Size: 48 bytes, Blocks: 2 */
 
     /* attr read piece: half[sp+16]=byte[rec+29], a0=byte[rec+36],
-       jal 0x8018BABC; then a1=byte[rec+15], v1=0x66666667 (magic /10),
+       jal dbg_marker_mode_set (0x8018BABC); then a1=byte[rec+15], v1=0x66666667 (magic /10),
        falls into cps_801262F4. CPS-blocked. */
 
 block_801262C4:
@@ -1269,8 +1269,8 @@ void cps_801262f4(void)
     /* Address: 0x801262F4, Size: 48 bytes, Blocks: 2 */
 
     /* scale piece: a1=byte[rec+15]*8 * 0x66666667 >>2 -sign -> a1;
-       a0=byte[rec+14]; jal 0x80156048; then a0=byte[rec+12]^1,
-       jal 0x801561C8 -> cps_80126328. CPS-blocked. */
+       a0=byte[rec+14]; jal gauge_scale_fixed (0x80156048); then a0=byte[rec+12]^1,
+       jal brightness_commit (0x801561C8) -> cps_80126328. CPS-blocked. */
 
 block_801262F4:
     a1 = a1 << 3;
@@ -1300,10 +1300,10 @@ block_80126314:
 
 /* cps_80126324 — clean CPS transliteration of br2eu_func_80126324 (guest 0x80126324)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126328 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
+ * CPS fallthrough stub — continues at cps_80126328 — root: versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126324(void)
 {
-/* scene-thunk fragment: continues at 0x80126328 */
+/* scene-thunk fragment: continues at cps_80126328 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1333,7 +1333,7 @@ void cps_80126328(void)
     }
     /* Address: 0x80126328, Size: 32 bytes, Blocks: 3 */
 
-    /* setup piece: s5=0x66666667, jal 0x8012748C, jal 0x80163840(0);
+    /* setup piece: s5=0x66666667, jal frame_advance_helper (0x8012748C), jal FUN_80163840(0);
        s2=5, s4=4, v1=byte[s1], falls into cps_80126348. CPS-blocked. */
 
 block_80126328:
@@ -1363,7 +1363,7 @@ block_80126338:
  * split piece of cps_80126328 — versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126348(void)
 {
-/* scene-thunk fragment: continues at 0x80126350 */
+/* scene-thunk fragment: continues at cps_80126350 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1384,7 +1384,7 @@ block_80126348:
  * split piece of cps_80126348 — versus_init_memcard: versus_state_init + memcard_info_query — versus-mode init with memcard info poll. */
 void cps_80126350(void)
 {
-/* scene-thunk fragment: continues at 0x80126358 */
+/* scene-thunk fragment: continues at cps_80126358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1427,7 +1427,7 @@ void cps_80126358(void)
     /* Address: 0x80126358, Size: 48 bytes, Blocks: 3 */
 
     /* jump-table dispatch: v0 = word[0x8012E7F0 + v1*4]; jr v0.
-       Fallback arm: jal 0x801560F8(1), byte[s1]=1 -> main_state_byte_gate (0x80126344).
+       Fallback arm: jal match_mode_set (0x801560F8)(1), byte[s1]=1 -> main_state_byte_gate (0x80126344).
        CPS-blocked. */
 
 block_80126358:
@@ -1477,7 +1477,7 @@ void cps_80126388(void)
     }
     /* Address: 0x80126388, Size: 52 bytes, Blocks: 4 */
 
-    /* state-1 step: byte[s1]=v0, a0=byte[rec+11], jal 0x8012708C +
+    /* state-1 step: byte[s1]=v0, a0=byte[rec+11], jal display_mode_setup (0x8012708C) +
        0x8012748C + 0x80165CB4(15); loop gate on byte[s1]!=1 / <14.
        CPS-blocked. */
 
@@ -1523,10 +1523,10 @@ block_801263B0:
 
 /* cps_801263bc — clean CPS transliteration of br2eu_func_801263BC (guest 0x801263bc)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801263C0 — root: byte_table_leaf: byte-read leaf dispatch piece. */
+ * CPS fallthrough stub — continues at cps_801263c0 — root: byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801263bc(void)
 {
-/* scene-thunk fragment: continues at 0x801263c0 */
+/* scene-thunk fragment: continues at cps_801263c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1542,7 +1542,7 @@ block_801263BC:
  * byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801263c0(void)
 {
-/* scene-thunk fragment: continues at 0x801263ec */
+/* scene-thunk fragment: continues at cps_801263ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1616,8 +1616,8 @@ void cps_801263ec(void)
     }
     /* Address: 0x801263EC, Size: 52 bytes, Blocks: 5 */
 
-    /* attr apply: a0 = (byte[rec+32]==0) ? 2 : 1, jal 0x801560F8,
-       then jal 0x8012708C(byte[rec+11]) + 0x8012748C -> cps_80126420.
+    /* attr apply: a0 = (byte[rec+32]==0) ? 2 : 1, jal match_mode_set (0x801560F8),
+       then jal display_mode_setup (0x8012708C)(byte[rec+11]) + 0x8012748C -> cps_80126420.
        CPS-blocked. */
 
 block_801263EC:
@@ -1683,7 +1683,7 @@ void cps_80126420(void)
     }
     /* Address: 0x80126420, Size: 48 bytes, Blocks: 5 */
 
-    /* state-3 step: jal 0x80165CB4(3) + 0x80165CB4(1); byte[s1]==3 gate
+    /* state-3 step: jal transition_screen_flow (0x80165CB4)(3) + 0x80165CB4(1); byte[s1]==3 gate
        -> byte[s1]=4 via main_state_byte_gate (0x80126344); tail rec lookup -> cps_80126450.
        CPS-blocked. */
 
@@ -1798,7 +1798,7 @@ block_80126478:
  * split piece of cps_80126450 — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126484(void)
 {
-/* scene-thunk fragment: continues at 0x801264b4 */
+/* scene-thunk fragment: continues at cps_801264b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1844,8 +1844,8 @@ void cps_801264b4(void)
     }
     /* Address: 0x801264B4, Size: 52 bytes, Blocks: 3 */
 
-    /* scale + spawn: a1*s5 * 0x66666667 >>2 -sign -> jal 0x80156048;
-       then jal 0x80159028(0x80010000, 0, 1); v0==0 -> cps_801264EC.
+    /* scale + spawn: a1*s5 * 0x66666667 >>2 -sign -> jal gauge_scale_fixed (0x80156048);
+       then jal scene_entry (0x80159028)(0x80010000, 0, 1); v0==0 -> cps_801264EC.
        CPS-blocked. */
 
 block_801264B4:
@@ -1889,7 +1889,7 @@ block_801264E0:
  * split piece of cps_801264b4 — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_801264e8(void)
 {
-/* scene-thunk fragment: continues at 0x801264ec */
+/* scene-thunk fragment: continues at cps_801264ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1912,7 +1912,7 @@ void cps_801264ec(void)
     /* Address: 0x801264EC, Size: 44 bytes, Blocks: 1 */
 
     /* scale piece (state-3 tail): a1=byte[rec+15]*8 * s5(0x66666667)
-       >>2 -sign -> a1; a0=byte[rec+14]; jal 0x80156048 -> cps_8012651C.
+       >>2 -sign -> a1; a0=byte[rec+14]; jal gauge_scale_fixed (0x80156048) -> cps_8012651C.
        CPS-blocked. */
 
 block_801264EC:
@@ -1937,10 +1937,10 @@ block_801264EC:
 
 /* cps_80126518 — clean CPS transliteration of br2eu_func_80126518 (guest 0x80126518)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012651C — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
+ * CPS fallthrough stub — continues at cps_8012651c — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126518(void)
 {
-/* scene-thunk fragment: continues at 0x8012651c */
+/* scene-thunk fragment: continues at cps_8012651c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1956,7 +1956,7 @@ block_80126518:
  * split piece of cps_801264ec — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_8012651c(void)
 {
-/* scene-thunk fragment: continues at 0x8012652c */
+/* scene-thunk fragment: continues at cps_8012652c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -1986,7 +1986,7 @@ block_8012651C:
  * split piece of cps_8012651c — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_8012652c(void)
 {
-/* scene-thunk fragment: continues at 0x80126550 */
+/* scene-thunk fragment: continues at cps_80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2028,10 +2028,10 @@ block_80126534:
 
 /* cps_80126548 — clean CPS transliteration of br2eu_func_80126548 (guest 0x80126548)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x8012654C — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
+ * CPS fallthrough stub — continues at cps_8012654c — root: frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_80126548(void)
 {
-/* scene-thunk fragment: continues at 0x8012654c */
+/* scene-thunk fragment: continues at cps_8012654c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2047,7 +2047,7 @@ block_80126548:
  * split piece of cps_8012652c — frame_advance_wrap: frame_advance_helper + match_mode_set. */
 void cps_8012654c(void)
 {
-/* scene-thunk fragment: continues at 0x80126550 */
+/* scene-thunk fragment: continues at cps_80126550 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2078,8 +2078,8 @@ void cps_80126550(void)
     }
     /* Address: 0x80126550, Size: 44 bytes, Blocks: 4 */
 
-    /* attr apply (state-4): s3++, jal 0x801560F8, jal 0x8012708C
-       (byte[rec+11]), jal 0x8012AEEC(s1), jal 0x8012748C -> cps_8012657C.
+    /* attr apply (state-4): s3++, jal match_mode_set (0x801560F8), jal display_mode_setup (0x8012708C)
+       (byte[rec+11]), jal frame_tick (0x8012AEEC)(s1), jal frame_advance_helper (0x8012748C) -> cps_8012657C.
        CPS-blocked. */
 
 block_80126550:
@@ -2136,7 +2136,7 @@ void cps_8012657c(void)
     }
     /* Address: 0x8012657C, Size: 48 bytes, Blocks: 5 */
 
-    /* state-5 step: jal 0x8012AEEC(s1), 0x8015F644, 0x80147034(0);
+    /* state-5 step: jal frame_tick (0x8012AEEC)(s1), 0x8015F644, 0x80147034(0);
        byte[s1]==5 gate -> (s3&0xFFFF)<4 ? v0=6 : v0=2 -> cps_801265AC.
        CPS-blocked. */
 
@@ -2186,7 +2186,7 @@ block_801265A4:
  * split piece of cps_8012657c — match_frame_tick: frame_tick + match_loop + memcard_poll_frame — */
 void cps_801265ac(void)
 {
-/* scene-thunk fragment: continues at 0x801265b8 */
+/* scene-thunk fragment: continues at cps_801265b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2224,7 +2224,7 @@ block_801265B4:
  * split piece of cps_801263c0 — byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_801265b8(void)
 {
-/* scene-thunk fragment: continues at 0x801265c0 */
+/* scene-thunk fragment: continues at cps_801265c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2245,7 +2245,7 @@ block_801265B8:
  * split piece of cps_801265ac — match_frame_tick: frame_tick + match_loop + memcard_poll_frame — per-frame match loop with memcard poll. */
 void cps_801265c0(void)
 {
-/* scene-thunk fragment: continues at 0x80126344 */
+/* scene-thunk fragment: continues at main_state_byte_gate (0x80126344) */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2287,10 +2287,10 @@ block_801265C8:
 
 /* cps_801265dc — clean CPS transliteration of br2eu_func_801265DC (guest 0x801265dc)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801265E0 — root: match_frame_tick: frame_tick + match_loop + memcard_poll_frame — per-frame match loop with memcard poll. */
+ * CPS fallthrough stub — continues at cps_801265e0 — root: match_frame_tick: frame_tick + match_loop + memcard_poll_frame — per-frame match loop with memcard poll. */
 void cps_801265dc(void)
 {
-/* scene-thunk fragment: continues at 0x801265e0 */
+/* scene-thunk fragment: continues at cps_801265e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2306,7 +2306,7 @@ block_801265DC:
  * split piece of cps_801265c0 — match_frame_tick: frame_tick + match_loop + memcard_poll_frame — per-frame match loop with memcard poll. */
 void cps_801265e0(void)
 {
-/* scene-thunk fragment: continues at 0x801265e4 */
+/* scene-thunk fragment: continues at cps_801265e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2339,8 +2339,8 @@ void cps_801265e4(void)
     }
     /* Address: 0x801265E4, Size: 44 bytes, Blocks: 5 */
 
-    /* attr apply (state-6): jal 0x801560F8 + 0x80167330(0); s0=byte[s1],
-       gate s0!=6 -> loop; else jal 0x80164668(0) -> cps_80126610.
+    /* attr apply (state-6): jal match_mode_set (0x801560F8) + 0x80167330(0); s0=byte[s1],
+       gate s0!=6 -> loop; else jal results_scoreboard (0x80164668)(0) -> cps_80126610.
        CPS-blocked. */
 
 block_801265E4:
@@ -2388,7 +2388,7 @@ block_8012660C:
  * split piece of cps_801265e4 — results_flow_enter: match_mode_set + results_scoreboard + */
 void cps_80126610(void)
 {
-/* scene-thunk fragment: continues at 0x8012661c */
+/* scene-thunk fragment: continues at cps_8012661c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2417,7 +2417,7 @@ block_80126610:
  * split piece of cps_801263c0 — byte_table_leaf: byte-read leaf dispatch piece. */
 void cps_8012661c(void)
 {
-/* scene-thunk fragment: continues at 0x80126640 */
+/* scene-thunk fragment: continues at cps_80126640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2484,7 +2484,7 @@ void cps_80126640(void)
     }
     /* Address: 0x80126640, Size: 48 bytes, Blocks: 6 */
 
-    /* attr apply (state-7/8): jal 0x801560F8; byte[s1]==7 -> jal
+    /* attr apply (state-7/8): jal match_mode_set (0x801560F8); byte[s1]==7 -> jal
        0x801560F8(1) + 0x8016FCC4(sp+16), v0=8; gate byte[s1]!=v0 ->
        loop, else cps_80126674. CPS-blocked. */
 
@@ -2536,10 +2536,10 @@ block_8012666C:
 
 /* cps_80126670 — clean CPS transliteration of br2eu_func_80126670 (guest 0x80126670)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126674 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
+ * CPS fallthrough stub — continues at cps_80126674 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_80126670(void)
 {
-/* scene-thunk fragment: continues at 0x80126674 */
+/* scene-thunk fragment: continues at cps_80126674 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2574,7 +2574,7 @@ void cps_80126674(void)
     }
     /* Address: 0x80126674, Size: 44 bytes, Blocks: 5 */
 
-    /* attr apply (state-8): byte[s1]=s2(5) -> loop; jal 0x801560F8(1) +
+    /* attr apply (state-8): byte[s1]=s2(5) -> loop; jal match_mode_set (0x801560F8)(1) +
        0x80167840(0); byte[s1+156]==s4(4) -> cps_8012652C, ==s0(5) ->
        cps_801266B4, else -> cps_801266A4. CPS-blocked. */
 
@@ -2627,10 +2627,10 @@ block_8012669C:
 
 /* cps_801266a0 — clean CPS transliteration of br2eu_func_801266A0 (guest 0x801266a0)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801266A4 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
+ * CPS fallthrough stub — continues at cps_801266a4 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_801266a0(void)
 {
-/* scene-thunk fragment: continues at 0x801266a4 */
+/* scene-thunk fragment: continues at cps_801266a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2659,7 +2659,7 @@ void cps_801266a4(void)
     }
     /* Address: 0x801266A4, Size: 16 bytes, Blocks: 2 */
 
-    /* state commit: jal 0x80164EA4(0), byte[s1]=s0(5) -> main_state_byte_gate (0x80126344).
+    /* state commit: jal player_name_entry (0x80164EA4)(0), byte[s1]=s0(5) -> main_state_byte_gate (0x80126344).
        CPS-blocked. */
 
 block_801266A4:
@@ -2696,7 +2696,7 @@ void cps_801266b4(void)
     /* Address: 0x801266B4, Size: 32 bytes, Blocks: 3 */
 
     /* state commit: byte[s1]=11, byte[s1+2]=s4(4) -> main_state_byte_gate (0x80126344);
-       then jal 0x801560F8(1), byte[s1+2]==3 ? -> cps_801266F0 :
+       then jal match_mode_set (0x801560F8)(1), byte[s1+2]==3 ? -> cps_801266F0 :
        cps_801266D8. CPS-blocked. */
 
 block_801266B4:
@@ -2730,10 +2730,10 @@ block_801266C8:
 
 /* cps_801266d4 — clean CPS transliteration of br2eu_func_801266D4 (guest 0x801266d4)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801266D8 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
+ * CPS fallthrough stub — continues at cps_801266d8 — root: scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_801266d4(void)
 {
-/* scene-thunk fragment: continues at 0x801266d8 */
+/* scene-thunk fragment: continues at cps_801266d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2805,7 +2805,7 @@ void cps_801266f0(void)
 
     /* Address: 0x801266F0, Size: 8 bytes, Blocks: 1 */
 
-    /* tail call: jal 0x8015C754 -> cps_801266F8. CPS-blocked. */
+    /* tail call: jal system_config_menu_a (0x8015C754) -> cps_801266F8. CPS-blocked. */
 
 block_801266F0:
     ra = 0x801266F8u;  /* jal link before delay slot */
@@ -2820,7 +2820,7 @@ block_801266F0:
  * split piece of cps_801266d8 — scene_unlock_entry: match_mode_set + unlock_progress_scene_entry — unlocks a progress scene then sets match mode. */
 void cps_801266f8(void)
 {
-/* scene-thunk fragment: continues at 0x80126344 */
+/* scene-thunk fragment: continues at main_state_byte_gate (0x80126344) */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2885,10 +2885,10 @@ block_80126704:
 
 /* cps_80126734 — clean CPS transliteration of br2eu_func_80126734 (guest 0x80126734)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126740 — scene-thunk fragment: continues at 0x80126740 */
+ * CPS fallthrough stub — continues at cps_80126740 — scene-thunk fragment: continues at cps_80126740 */
 void cps_80126734(void)
 {
-/* scene-thunk fragment: continues at 0x80126740 */
+/* scene-thunk fragment: continues at cps_80126740 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2905,10 +2905,10 @@ block_80126734:
 
 /* cps_80126740 — clean CPS transliteration of br2eu_func_80126740 (guest 0x80126740)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126734 — CPS fallthrough stub — continues at 0x80126740 */
+ * split piece of cps_80126734 — CPS fallthrough stub — continues at cps_80126740 */
 void cps_80126740(void)
 {
-/* scene-thunk fragment: continues at 0x80126764 */
+/* scene-thunk fragment: continues at cps_80126764 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -2953,7 +2953,7 @@ void cps_80126764(void)
     /* Address: 0x80126764, Size: 48 bytes, Blocks: 5 */
 
     /* list walk + apply: v0!=a0 -> cps_80126740; else word[v1]=word[v0],
-       jal 0x8015AB4C + 0x80167A64 + 0x80163AB4, then jal 0x8018BABC
+       jal save_defaults_fill (0x8015AB4C) + 0x80167A64 + 0x80163AB4, then jal dbg_marker_mode_set (0x8018BABC)
        (byte[s0+36]). CPS-blocked. */
 
 block_80126764:
@@ -3018,8 +3018,8 @@ void cps_80126794(void)
     /* Address: 0x80126794, Size: 52 bytes, Blocks: 2 */
 
     /* scale piece (s0 variant of 0x801264EC): byte[s0+15]*8 * 0x66666667
-       >>2 -sign -> a1; byte[s0+14]=a0; jal 0x80156048; then
-       a0=byte[s0+12]^1, jal 0x801561C8. CPS-blocked. */
+       >>2 -sign -> a1; byte[s0+14]=a0; jal gauge_scale_fixed (0x80156048); then
+       a0=byte[s0+12]^1, jal brightness_commit (0x801561C8). CPS-blocked. */
 
 block_80126794:
     v0 = 0x66660000u;  /* 0x66660000 */
@@ -3050,10 +3050,10 @@ block_801267C0:
 
 /* cps_801267c8 — clean CPS transliteration of br2eu_func_801267C8 (guest 0x801267c8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801267CC — root: save_init_seq: save_defaults_fill + save_tables_commit + save_block_init + dbg_marker_mode_set — save-system init sequence. */
+ * CPS fallthrough stub — continues at cps_801267cc — root: save_init_seq: save_defaults_fill + save_tables_commit + save_block_init + dbg_marker_mode_set — save-system init sequence. */
 void cps_801267c8(void)
 {
-/* scene-thunk fragment: continues at 0x801267cc */
+/* scene-thunk fragment: continues at cps_801267cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3089,10 +3089,10 @@ block_801267CC:
 
 /* cps_801267f8 — clean CPS transliteration of br2eu_func_801267F8 (guest 0x801267f8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801267FC — scene-thunk fragment: continues at 0x801267fc */
+ * CPS fallthrough stub — continues at cps_801267fc — scene-thunk fragment: continues at cps_801267fc */
 void cps_801267f8(void)
 {
-/* scene-thunk fragment: continues at 0x801267fc */
+/* scene-thunk fragment: continues at cps_801267fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3107,7 +3107,7 @@ block_801267F8:
 
 /* cps_801267fc — clean CPS transliteration of br2eu_func_801267FC (guest 0x801267fc)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801267f8 — CPS fallthrough stub — continues at 0x801267FC */
+ * split piece of cps_801267f8 — CPS fallthrough stub — continues at cps_801267fc */
 void cps_801267fc(void)
 {
 /* scene/mode thunk -> dbg_marker_mode_set */
@@ -3123,7 +3123,7 @@ void cps_801267fc(void)
     }
     /* Address: 0x801267FC, Size: 24 bytes, Blocks: 2 */
 
-    /* tail call + epilogue: jal 0x8018BABC(0), pop ra (sp += 24), jr ra.
+    /* tail call + epilogue: jal dbg_marker_mode_set (0x8018BABC)(0), pop ra (sp += 24), jr ra.
        CPS-blocked. */
 
 block_801267FC:
@@ -3145,10 +3145,10 @@ block_80126804:
 
 /* cps_80126814 — clean CPS transliteration of br2eu_func_80126814 (guest 0x80126814)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x80126828 — scene-thunk fragment: continues at 0x80126828 */
+ * CPS fallthrough stub — continues at cps_80126828 — scene-thunk fragment: continues at cps_80126828 */
 void cps_80126814(void)
 {
-/* scene-thunk fragment: continues at 0x80126828 */
+/* scene-thunk fragment: continues at cps_80126828 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3165,7 +3165,7 @@ block_80126814:
 
 /* cps_80126828 — clean CPS transliteration of br2eu_func_80126828 (guest 0x80126828)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126814 — CPS fallthrough stub — continues at 0x80126828 */
+ * split piece of cps_80126814 — CPS fallthrough stub — continues at cps_80126828 */
 void cps_80126828(void)
 {
 /* counter-increment leaf: *(a0) += 1 and *a1 += 1. */
@@ -3211,10 +3211,10 @@ block_80126840:
 
 /* cps_80126854 — clean CPS transliteration of br2eu_func_80126854 (guest 0x80126854)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126858 — scene-thunk fragment: continues at 0x80126858 */
+ * split piece of cps_80126858 — scene-thunk fragment: continues at cps_80126858 */
 void cps_80126854(void)
 {
-/* scene-thunk fragment: continues at 0x80126858 */
+/* scene-thunk fragment: continues at cps_80126858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3227,10 +3227,10 @@ block_80126854:
 
 /* cps_80126858 — clean CPS transliteration of br2eu_func_80126858 (guest 0x80126858)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80126854 — scene-thunk fragment: continues at 0x80126854 */
+ * split piece of cps_80126854 — scene-thunk fragment: continues at cps_80126854 */
 void cps_80126858(void)
 {
-/* scene-thunk fragment: continues at 0x80126854 */
+/* scene-thunk fragment: continues at cps_80126854 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3363,10 +3363,10 @@ block_801268B4:
 
 /* cps_801268b8 — clean CPS transliteration of br2eu_func_801268B8 (guest 0x801268b8)
  * from SLES_017.22_full_00.c.
- * CPS fallthrough stub — continues at 0x801268BC — root: ui_leaf_step_f: leaf state step, no calls. */
+ * CPS fallthrough stub — continues at cps_801268bc — root: ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268b8(void)
 {
-/* scene-thunk fragment: continues at 0x801268bc */
+/* scene-thunk fragment: continues at cps_801268bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3382,7 +3382,7 @@ block_801268B8:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268bc(void)
 {
-/* scene-thunk fragment: continues at 0x801268c4 */
+/* scene-thunk fragment: continues at cps_801268c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3416,7 +3416,7 @@ void cps_801268c4(void)
     }
     /* Address: 0x801268C4, Size: 36 bytes, Blocks: 2 */
 
-    /* state reset: jal 0x8018CFDC(-1,0); s0=256;
+    /* state reset: jal cpst_8018cfdc(-1,0); s0=256;
        word[0x801C0000+17312]=0; byte[0x801C0000-4116]=0xFF;
        -> cps_801268e8 init tail. CPS-blocked. */
 block_801268C4:
@@ -3442,7 +3442,7 @@ block_801268D0:
  * split piece of cps_801268c4 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_801268e8(void)
 {
-/* scene-thunk fragment: continues at 0x80126918 */
+/* scene-thunk fragment: continues at cps_80126918 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3469,7 +3469,7 @@ block_801268E8:
  * split piece of cps_801268e8 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126918(void)
 {
-/* scene-thunk fragment: continues at 0x8012691c */
+/* scene-thunk fragment: continues at cps_8012691c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -3500,9 +3500,9 @@ void cps_8012691c(void)
     }
     /* Address: 0x8012691C, Size: 44 bytes, Blocks: 4 */
 
-    /* init/verify: jal 0x80127680; jal 0x8018CFDC(128,v0);
+    /* init/verify: jal tag_table_get (0x80127680); jal cpst_8018cfdc(128,v0);
        if v0==0 -> cps_80126eec; else s1=byte[0x1F800013],
-       jal 0x801274D8(0). CPS-blocked. */
+       jal scratch_013_set (0x801274D8)(0). CPS-blocked. */
 block_8012691C:
     ra = 0x80126924u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3559,9 +3559,9 @@ void cps_80126948(void)
     }
     /* Address: 0x80126948, Size: 48 bytes, Blocks: 3 */
 
-    /* display-list stream steps: jal 0x80127680;
-       jal 0x80163154(word[0x801E3CF4],v0,0) -> s2;
-       jal 0x8018BF40(word[0x801E3CF4],960,0,1). CPS-blocked. */
+    /* display-list stream steps: jal tag_table_get (0x80127680);
+       jal stream_block_decode (0x80163154)(word[0x801E3CF4],v0,0) -> s2;
+       jal spr_draw_off (0x8018BF40)(word[0x801E3CF4],960,0,1). CPS-blocked. */
 block_80126948:
     ra = 0x80126950u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -3609,7 +3609,7 @@ void cps_80126978(void)
     }
     /* Address: 0x80126978, Size: 48 bytes, Blocks: 3 */
 
-    /* stream step 1: word[s0+15612] += s2; jal 0x80127680; then
+    /* stream step 1: word[s0+15612] += s2; jal tag_table_get (0x80127680); then
        0x80163154(word[s0+15612], v0, 1) -> s2=v0; -> cps_801269a8.
        CPS-blocked. */
 
@@ -3658,8 +3658,8 @@ void cps_801269a8(void)
     }
     /* Address: 0x801269A8, Size: 48 bytes, Blocks: 3 */
 
-    /* stream step 2: jal 0x8018BF40(word[s0+15612],896,0,1); word
-       [s0+15612]+=s2; jal 0x80127680; then 0x80163154(...,2)->s2=v0;
+    /* stream step 2: jal spr_draw_off (0x8018BF40)(word[s0+15612],896,0,1); word
+       [s0+15612]+=s2; jal tag_table_get (0x80127680); then 0x80163154(...,2)->s2=v0;
        -> cps_801269d8. CPS-blocked. */
 
 block_801269A8:
@@ -3709,8 +3709,8 @@ void cps_801269d8(void)
     }
     /* Address: 0x801269D8, Size: 48 bytes, Blocks: 3 */
 
-    /* stream step 3: jal 0x8018BF40(word[s0+15612],496,480,1); word
-       [s0+15612]+=s2; jal 0x80127680; a1=v0; -> cps_80126a08.
+    /* stream step 3: jal spr_draw_off (0x8018BF40)(word[s0+15612],496,480,1); word
+       [s0+15612]+=s2; jal tag_table_get (0x80127680); a1=v0; -> cps_80126a08.
        CPS-blocked. */
 
 block_801269D8:
@@ -3758,7 +3758,7 @@ void cps_80126a08(void)
     }
     /* Address: 0x80126A08, Size: 48 bytes, Blocks: 3 */
 
-    /* stream step 4: jal 0x80163154(...,3)->s2=v0; jal 0x8018BF40
+    /* stream step 4: jal stream_block_decode (0x80163154)(...,3)->s2=v0; jal spr_draw_off (0x8018BF40)
        (word[s0+15612],480,480,1); word[s0+15612]+=s2; -> cps_80126a38.
        CPS-blocked. */
 
@@ -3865,8 +3865,8 @@ void cps_80126a38(void)
     /* Address: 0x80126A38, Size: 1136 bytes, Blocks: 58 */
 
     /* channel/display-list init: word[s0+15612]=v0;
-       jal 0x80127680, 0x80163154(handle,v0,4) -> s2;
-       jal 0x8018BF40 params 464/480... 58-block init chain.
+       jal tag_table_get (0x80127680), 0x80163154(handle,v0,4) -> s2;
+       jal spr_draw_off (0x8018BF40) params 464/480... 58-block init chain.
        CPS-blocked. */
 block_80126A38:
     ra = 0x80126A40u;  /* jal link before delay slot */
@@ -4464,8 +4464,8 @@ void cps_80126ea8(void)
     }
     /* Address: 0x80126EA8, Size: 56 bytes, Blocks: 5 */
 
-    /* mode-272 step: jal 0x8018CFDC(137, word[0x801E3CF4]);
-       jal 0x801566A0(word[0x801E3CF4],0); jal
+    /* mode-272 step: jal cpst_8018cfdc(137, word[0x801E3CF4]);
+       jal fighter_record_apply (0x801566A0)(word[0x801E3CF4],0); jal
        0x801566D4(0,0); s0=288 (next mode). CPS-blocked. */
 block_80126EA8:
     s1 = 0x801E0000u;  /* 0x801E0000 */
@@ -4516,7 +4516,7 @@ block_80126ED8:
  * split piece of cps_80126888 — ui_leaf_step_f: leaf state step, no calls. */
 void cps_80126ee0(void)
 {
-/* scene-thunk fragment: continues at 0x80126ee8 */
+/* scene-thunk fragment: continues at cps_80126ee8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4536,7 +4536,7 @@ block_80126EE0:
  * split piece of cps_80126a38 — stream_frame_decode_draw: scratch_013_set + tag_table_get + */
 void cps_80126ee8(void)
 {
-/* scene-thunk fragment: continues at 0x80126eec */
+/* scene-thunk fragment: continues at cps_80126eec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4617,10 +4617,10 @@ block_80127B4C:
 
 /* cps_80128428 — clean CPS transliteration of br2eu_func_80128428 (guest 0x80128428)
  * from SLES_017.22_full_00.c.
- * split piece of cps_8012844c — results fragment: continues at 0x8012844c */
+ * split piece of cps_8012844c — results fragment: continues at cps_8012844c */
 void cps_80128428(void)
 {
-/* results fragment: continues at 0x8012844c */
+/* results fragment: continues at cps_8012844c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -4644,10 +4644,10 @@ void cps_80128428(void)
 
 /* cps_8012844c — clean CPS transliteration of br2eu_func_8012844C (guest 0x8012844c)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128428 — results fragment: continues at 0x80128458 */
+ * split piece of cps_80128428 — results fragment: continues at cps_80128458 */
 void cps_8012844c(void)
 {
-/* results fragment: continues at 0x80128458 */
+/* results fragment: continues at cps_80128458 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   int more;
@@ -4676,10 +4676,10 @@ done:
 
 /* cps_80128458 — clean CPS transliteration of br2eu_func_80128458 (guest 0x80128458)
  * from SLES_017.22_full_00.c.
- * split piece of cps_8012844c — results fragment: continues at 0x801284ac */
+ * split piece of cps_8012844c — results fragment: continues at cps_801284ac */
 void cps_80128458(void)
 {
-/* results fragment: continues at 0x801284ac */
+/* results fragment: continues at cps_801284ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -4739,10 +4739,10 @@ block_80128490:
 
 /* cps_801284ac — clean CPS transliteration of br2eu_func_801284AC (guest 0x801284ac)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128458 — results fragment: continues at 0x801284b4 */
+ * split piece of cps_80128458 — results fragment: continues at cps_801284b4 */
 void cps_801284ac(void)
 {
-/* results fragment: continues at 0x801284b4 */
+/* results fragment: continues at cps_801284b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4756,10 +4756,10 @@ block_801284AC:
 
 /* cps_801284b4 — clean CPS transliteration of br2eu_func_801284B4 (guest 0x801284b4)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801284ac — results fragment: continues at 0x80128504 */
+ * split piece of cps_801284ac — results fragment: continues at cps_80128504 */
 void cps_801284b4(void)
 {
-/* results fragment: continues at 0x80128504 */
+/* results fragment: continues at cps_80128504 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4819,10 +4819,10 @@ block_801284D8:
 
 /* cps_80128504 — clean CPS transliteration of br2eu_func_80128504 (guest 0x80128504)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801284b4 — results fragment: continues at 0x80128520 */
+ * split piece of cps_801284b4 — results fragment: continues at cps_80128520 */
 void cps_80128504(void)
 {
-/* results fragment: continues at 0x80128520 */
+/* results fragment: continues at cps_80128520 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4844,10 +4844,10 @@ block_80128504:
 
 /* cps_80128520 — clean CPS transliteration of br2eu_func_80128520 (guest 0x80128520)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128504 — results fragment: continues at 0x80128588 */
+ * split piece of cps_80128504 — results fragment: continues at cps_80128588 */
 void cps_80128520(void)
 {
-/* results fragment: continues at 0x80128588 */
+/* results fragment: continues at cps_80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -4886,10 +4886,10 @@ block_80128550:
 
 /* cps_80128558 — clean CPS transliteration of br2eu_func_80128558 (guest 0x80128558)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801284b4 — results fragment: continues at 0x80128588 */
+ * split piece of cps_801284b4 — results fragment: continues at cps_80128588 */
 void cps_80128558(void)
 {
-/* results fragment: continues at 0x80128588 */
+/* results fragment: continues at cps_80128588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -4935,10 +4935,10 @@ done:
 
 /* cps_80128588 — clean CPS transliteration of br2eu_func_80128588 (guest 0x80128588)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128520 — results fragment: continues at 0x80128624 */
+ * split piece of cps_80128520 — results fragment: continues at cps_80128624 */
 void cps_80128588(void)
 {
-/* results fragment: continues at 0x80128624 */
+/* results fragment: continues at cps_80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5002,10 +5002,10 @@ block_801285EC:
 
 /* cps_801285f4 — clean CPS transliteration of br2eu_func_801285F4 (guest 0x801285f4)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128588 — results fragment: continues at 0x80128624 */
+ * split piece of cps_80128588 — results fragment: continues at cps_80128624 */
 void cps_801285f4(void)
 {
-/* results fragment: continues at 0x80128624 */
+/* results fragment: continues at cps_80128624 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5051,10 +5051,10 @@ done:
 
 /* cps_80128624 — clean CPS transliteration of br2eu_func_80128624 (guest 0x80128624)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128588 — results fragment: continues at 0x80128660 */
+ * split piece of cps_80128588 — results fragment: continues at cps_80128660 */
 void cps_80128624(void)
 {
-/* results fragment: continues at 0x80128660 */
+/* results fragment: continues at cps_80128660 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1;
@@ -5081,10 +5081,10 @@ void cps_80128624(void)
 
 /* cps_80128660 — clean CPS transliteration of br2eu_func_80128660 (guest 0x80128660)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128624 — results fragment: continues at 0x801286cc */
+ * split piece of cps_80128624 — results fragment: continues at cps_801286cc */
 void cps_80128660(void)
 {
-/* results fragment: continues at 0x801286cc */
+/* results fragment: continues at cps_801286cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5144,10 +5144,10 @@ tail:
 
 /* cps_801286cc — clean CPS transliteration of br2eu_func_801286CC (guest 0x801286cc)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128660 — results fragment: continues at 0x80128738 */
+ * split piece of cps_80128660 — results fragment: continues at cps_80128738 */
 void cps_801286cc(void)
 {
-/* results fragment: continues at 0x80128738 */
+/* results fragment: continues at cps_80128738 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5209,10 +5209,10 @@ tail:
 
 /* cps_80128738 — clean CPS transliteration of br2eu_func_80128738 (guest 0x80128738)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801286cc — results fragment: continues at 0x801287a4 */
+ * split piece of cps_801286cc — results fragment: continues at cps_801287a4 */
 void cps_80128738(void)
 {
-/* results fragment: continues at 0x801287a4 */
+/* results fragment: continues at cps_801287a4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3;
@@ -5278,10 +5278,10 @@ tail:
 
 /* cps_801287a4 — clean CPS transliteration of br2eu_func_801287A4 (guest 0x801287a4)
  * from SLES_017.22_full_00.c.
- * split piece of cps_80128738 — results fragment: continues at 0x80128814 */
+ * split piece of cps_80128738 — results fragment: continues at cps_80128814 */
 void cps_801287a4(void)
 {
-/* results fragment: continues at 0x80128814 */
+/* results fragment: continues at cps_80128814 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t w0, w1, w2, w3, flags;
@@ -5346,10 +5346,10 @@ tail:
 
 /* cps_80128814 — clean CPS transliteration of br2eu_func_80128814 (guest 0x80128814)
  * from SLES_017.22_full_00.c.
- * split piece of cps_801287a4 — results fragment: continues at 0x80128880 */
+ * split piece of cps_801287a4 — results fragment: continues at cps_80128880 */
 void cps_80128814(void)
 {
-/* results fragment: continues at 0x80128880 */
+/* results fragment: continues at cps_80128880 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
   uint32_t flags;
@@ -5618,7 +5618,7 @@ block_801289F0:
  * split piece of cps_80128ac0 — record_half_step_b: s16 read/write leaf step. */
 void cps_801289f8(void)
 {
-/* results fragment: continues at 0x80128a44 */
+/* results fragment: continues at cps_80128a44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5697,7 +5697,7 @@ block_80128A44:
  * record_half_step_a: s16 read/write leaf step. */
 void cps_80128a54(void)
 {
-/* results fragment: continues at 0x80128AB4 */
+/* results fragment: continues at cps_80128ab4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5794,7 +5794,7 @@ block_80128AB4:
  * record_half_step_b: s16 read/write leaf step. */
 void cps_80128ac0(void)
 {
-/* results fragment: continues at 0x801289F8 */
+/* results fragment: continues at cps_801289f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5941,10 +5941,10 @@ block_80128BDC:
 
 /* cps_80128c0c — clean CPS transliteration of br2eu_func_80128C0C (guest 0x80128c0c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128C10 — results fragment: continues at 0x80128c10 */
+ * CPS fallthrough stub — continues at cps_80128c10 — results fragment: continues at cps_80128c10 */
 void cps_80128c0c(void)
 {
-/* results fragment: continues at 0x80128c10 */
+/* results fragment: continues at cps_80128c10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -5957,7 +5957,7 @@ block_80128C0C:
 
 /* cps_80128c10 — clean CPS transliteration of br2eu_func_80128C10 (guest 0x80128c10)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128c0c — CPS fallthrough stub — continues at 0x80128C10 */
+ * split piece of cps_80128c0c — CPS fallthrough stub — continues at cps_80128c10 */
 void cps_80128c10(void)
 {
 /* results leaf/terminal piece. */
@@ -5980,7 +5980,7 @@ block_80128C10:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128c68(void)
 {
-/* results fragment: continues at 0x80128c88 */
+/* results fragment: continues at cps_80128c88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6005,7 +6005,7 @@ block_80128C68:
  * record_half_read_leaf: s16 field read step. */
 void cps_80128c88(void)
 {
-/* results fragment: continues at 0x80128cf8 */
+/* results fragment: continues at cps_80128cf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6108,7 +6108,7 @@ block_80128CF0:
  * split piece of cps_80128c88 — record_half_read_leaf: s16 field read step. */
 void cps_80128cf8(void)
 {
-/* results fragment: continues at 0x80128cfc */
+/* results fragment: continues at cps_80128cfc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6134,7 +6134,7 @@ block_80128CF8:
  * split piece of cps_80128cf8 — record_half_read_leaf: s16 field read step. */
 void cps_80128cfc(void)
 {
-/* results fragment: continues at 0x80128d00 */
+/* results fragment: continues at cps_80128d00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6151,7 +6151,7 @@ block_80128CFC:
  * split piece of cps_80128cf8 — record_half_read_leaf: s16 field read step. */
 void cps_80128d00(void)
 {
-/* results fragment: continues at 0x80128d04 */
+/* results fragment: continues at cps_80128d04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6168,7 +6168,7 @@ block_80128D00:
  * split piece of cps_80128cf8 — record_half_read_leaf: s16 field read step. */
 void cps_80128d04(void)
 {
-/* results fragment: continues at 0x80128d18 */
+/* results fragment: continues at cps_80128d18 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6207,7 +6207,7 @@ block_80128D14:
  * record_half_step_c: s16 read/write leaf step. */
 void cps_80128d18(void)
 {
-/* results fragment: continues at 0x80128d5c */
+/* results fragment: continues at cps_80128d5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6325,10 +6325,10 @@ block_80128D64:
 
 /* cps_80128d74 — clean CPS transliteration of br2eu_func_80128D74 (guest 0x80128d74)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128D78 — root: record_half_read_leaf: s16 field read step. */
+ * CPS fallthrough stub — continues at cps_80128d78 — root: record_half_read_leaf: s16 field read step. */
 void cps_80128d74(void)
 {
-/* results fragment: continues at 0x80128d78 */
+/* results fragment: continues at cps_80128d78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6344,7 +6344,7 @@ block_80128D74:
  * split piece of cps_80128d5c — record_half_read_leaf: s16 field read step. */
 void cps_80128d78(void)
 {
-/* results fragment: continues at 0x80128d7c */
+/* results fragment: continues at cps_80128d7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6386,7 +6386,7 @@ block_80128D7C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128dcc(void)
 {
-/* results fragment: continues at 0x80128dec */
+/* results fragment: continues at cps_80128dec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6411,7 +6411,7 @@ block_80128DCC:
  * record_half_step_d: s16 read/write leaf step. */
 void cps_80128dec(void)
 {
-/* results fragment: continues at 0x80128e54 */
+/* results fragment: continues at cps_80128e54 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6508,7 +6508,7 @@ block_80128E4C:
  * split piece of cps_80128dec — record_half_step_d: s16 read/write leaf step. */
 void cps_80128e54(void)
 {
-/* results fragment: continues at 0x80128e64 */
+/* results fragment: continues at cps_80128e64 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6549,7 +6549,7 @@ block_80128E60:
  * split piece of cps_80128e54 — record_half_step_d: s16 read/write leaf step. */
 void cps_80128e64(void)
 {
-/* results fragment: continues at 0x80128e74 */
+/* results fragment: continues at cps_80128e74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6587,7 +6587,7 @@ block_80128E70:
  * record_half_step_e: s16 read/write leaf step. */
 void cps_80128e74(void)
 {
-/* results fragment: continues at 0x80128EB4 */
+/* results fragment: continues at cps_80128eb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6752,10 +6752,10 @@ block_80128EE4:
 
 /* cps_80128f50 — clean CPS transliteration of br2eu_func_80128F50 (guest 0x80128f50)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128f58 — results fragment: continues at 0x80128f58 */
+ * split piece of cps_80128f58 — results fragment: continues at cps_80128f58 */
 void cps_80128f50(void)
 {
-/* results fragment: continues at 0x80128f58 */
+/* results fragment: continues at cps_80128f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6787,7 +6787,7 @@ void cps_80128f58(void)
     /* Address: 0x80128F58, Size: 64 bytes, Blocks: 3 */
 
     /* copy loop tail + call: 16B/iter v1->v0 until a1; then
-       jal 0x80128268(a1=4); half[s0+6]=v0; epilogue. CPS-blocked. */
+       jal victory_record_restore (0x80128268)(a1=4); half[s0+6]=v0; epilogue. CPS-blocked. */
 
 block_80128F58:
     t0 = cpu->read_word(v1 + 8);
@@ -6828,10 +6828,10 @@ block_80128F84:
 
 /* cps_80128f9c — clean CPS transliteration of br2eu_func_80128F9C (guest 0x80128f9c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FA0 — results fragment: continues at 0x80128fa0 */
+ * CPS fallthrough stub — continues at cps_80128fa0 — results fragment: continues at cps_80128fa0 */
 void cps_80128f9c(void)
 {
-/* results fragment: continues at 0x80128fa0 */
+/* results fragment: continues at cps_80128fa0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6854,10 +6854,10 @@ block_80128F9C:
 
 /* cps_80128fa0 — clean CPS transliteration of br2eu_func_80128FA0 (guest 0x80128fa0)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128f9c — CPS fallthrough stub — continues at 0x80128FA0 */
+ * split piece of cps_80128f9c — CPS fallthrough stub — continues at cps_80128fa0 */
 void cps_80128fa0(void)
 {
-/* results fragment: continues at 0x80128fa4 */
+/* results fragment: continues at cps_80128fa4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6871,10 +6871,10 @@ block_80128FA0:
 
 /* cps_80128fa4 — clean CPS transliteration of br2eu_func_80128FA4 (guest 0x80128fa4)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128f9c — CPS fallthrough stub — continues at 0x80128FA0 */
+ * split piece of cps_80128f9c — CPS fallthrough stub — continues at cps_80128fa0 */
 void cps_80128fa4(void)
 {
-/* results fragment: continues at 0x80128fa8 */
+/* results fragment: continues at cps_80128fa8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6887,7 +6887,7 @@ block_80128FA4:
 
 /* cps_80128fa8 — clean CPS transliteration of br2eu_func_80128FA8 (guest 0x80128fa8)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128fa4 — CPS fallthrough stub — continues at 0x80128FA0 */
+ * split piece of cps_80128fa4 — CPS fallthrough stub — continues at cps_80128fa0 */
 void cps_80128fa8(void)
 {
 /* results leaf/terminal piece. */
@@ -6907,10 +6907,10 @@ block_80128FA8:
 
 /* cps_80128fac — clean CPS transliteration of br2eu_func_80128FAC (guest 0x80128fac)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FB0 — results fragment: continues at 0x80128fb0 */
+ * CPS fallthrough stub — continues at cps_80128fb0 — results fragment: continues at cps_80128fb0 */
 void cps_80128fac(void)
 {
-/* results fragment: continues at 0x80128fb0 */
+/* results fragment: continues at cps_80128fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6924,7 +6924,7 @@ block_80128FAC:
 
 /* cps_80128fb0 — clean CPS transliteration of br2eu_func_80128FB0 (guest 0x80128fb0)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80128f9c — CPS fallthrough stub — continues at 0x80128FA0 */
+ * split piece of cps_80128f9c — CPS fallthrough stub — continues at cps_80128fa0 */
 void cps_80128fb0(void)
 {
 /* results leaf/terminal piece. */
@@ -6944,10 +6944,10 @@ block_80128FB0:
 
 /* cps_80128fb8 — clean CPS transliteration of br2eu_func_80128FB8 (guest 0x80128fb8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80128FD4 — root: ui_leaf_step_g: leaf state step, no calls. */
+ * CPS fallthrough stub — continues at cps_80128fd4 — root: ui_leaf_step_g: leaf state step, no calls. */
 void cps_80128fb8(void)
 {
-/* results fragment: continues at 0x80128fd4 */
+/* results fragment: continues at cps_80128fd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -6981,7 +6981,7 @@ block_80128FB8:
  * ui_leaf_step_g: leaf state step, no calls. */
 void cps_80128fd4(void)
 {
-/* results fragment: continues at 0x80128ff8 */
+/* results fragment: continues at cps_80128ff8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7043,7 +7043,7 @@ block_80128FF4:
  * record_half_step_f: s16 read/write leaf step. */
 void cps_80128ff8(void)
 {
-/* results fragment: continues at 0x80129050 (menu band). */
+/* results fragment: continues at cps_80129050 (menu band). */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7130,7 +7130,7 @@ block_8012903C:
  * split piece of cps_80128ff8 — record_half_step_f: s16 read/write leaf step. */
 void cps_80129050(void)
 {
-/* menu-piece fragment: continues at 0x801290cc */
+/* menu-piece fragment: continues at cps_801290cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7200,7 +7200,7 @@ block_8012909C:
  * split piece of cps_80129050 — record_half_step_f: s16 read/write leaf step. */
 void cps_801290cc(void)
 {
-/* menu-piece fragment: continues at 0x80129148 */
+/* menu-piece fragment: continues at cps_80129148 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7270,7 +7270,7 @@ block_80129134:
  * split piece of cps_801290cc — record_half_step_f: s16 read/write leaf step. */
 void cps_80129148(void)
 {
-/* menu-piece fragment: continues at 0x80129190 */
+/* menu-piece fragment: continues at cps_80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7313,7 +7313,7 @@ block_80129148:
  * split piece of cps_80129148 — record_half_step_f: s16 read/write leaf step. */
 void cps_80129190(void)
 {
-/* menu-piece fragment: continues at 0x801291c8 */
+/* menu-piece fragment: continues at cps_801291c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7339,7 +7339,7 @@ block_80129190:
  * split piece of cps_80129190 — record_half_step_f: s16 read/write leaf step. */
 void cps_801291c8(void)
 {
-/* menu-piece fragment: continues at 0x80129190 */
+/* menu-piece fragment: continues at cps_80129190 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7429,7 +7429,7 @@ done:
  * param-record field copier — reads rec fields (v1+4/8/12, s1+204), writes a0+4/8/12 and stack frame */
 void cps_80129248(void)
 {
-/* menu-piece fragment: continues at 0x801292c8 */
+/* menu-piece fragment: continues at cps_801292c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7501,7 +7501,7 @@ block_80129298:
  * split piece of cps_80129248 — param-record field copier — reads rec fields (v1+4/8/12, s1+204), writes a0+4/8/12 and stack frame */
 void cps_801292c8(void)
 {
-/* menu-piece fragment: continues at 0x80129348 */
+/* menu-piece fragment: continues at cps_80129348 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7573,7 +7573,7 @@ block_80129310:
  * ui_leaf_step_h: leaf state step, no calls. */
 void cps_80129348(void)
 {
-/* menu-piece fragment: continues at 0x801293c4 */
+/* menu-piece fragment: continues at cps_801293c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7651,7 +7651,7 @@ block_801293C0:
  * split piece of cps_80129348 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_801293c4(void)
 {
-/* menu-piece fragment: continues at 0x801293cc */
+/* menu-piece fragment: continues at cps_801293cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7668,7 +7668,7 @@ block_801293C4:
  * split piece of cps_801293c4 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_801293cc(void)
 {
-/* menu-piece fragment: continues at 0x801293f4 */
+/* menu-piece fragment: continues at cps_801293f4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7712,7 +7712,7 @@ block_801293F0:
  * split piece of cps_80129348 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_801293f4(void)
 {
-/* menu-piece fragment: continues at 0x80129444 */
+/* menu-piece fragment: continues at cps_80129444 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7769,7 +7769,7 @@ block_80129434:
  * split piece of cps_801293f4 — ui_leaf_step_h: leaf state step, no calls. */
 void cps_80129444(void)
 {
-/* menu-piece fragment: continues at 0x80129450 */
+/* menu-piece fragment: continues at cps_80129450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -7904,8 +7904,8 @@ void cps_801294d4(void)
 
     /* object state dispatch: s0=a0; byte[s0+2] switch
        (==1, <2, !=0 paths) may set byte[s0+2]=1; if byte[s0+3]==0:
-       jal 0x801297DC(s0) then jalr word[s0+12](s0,half[s0+8]);
-       jal 0x80129660(s0); epilogue. CPS-blocked. */
+       jal menu_stepper_input (0x801297DC)(s0) then jalr word[s0+12](s0,half[s0+8]);
+       jal menu_stepper_redraw (0x80129660)(s0); epilogue. CPS-blocked. */
 
 block_801294D4:
     s0 = a0;
@@ -8129,7 +8129,7 @@ block_801295B8:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_801295bc(void)
 {
-/* menu-piece fragment: continues at 0x801295e0 */
+/* menu-piece fragment: continues at cps_801295e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8172,7 +8172,7 @@ block_801295D0:
  * split piece of cps_801295bc — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_801295e0(void)
 {
-/* menu-piece fragment: continues at 0x80129610 */
+/* menu-piece fragment: continues at cps_80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8211,7 +8211,7 @@ block_801295E8:
  * split piece of cps_801295bc — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_801295f0(void)
 {
-/* menu-piece fragment: continues at 0x80129610 */
+/* menu-piece fragment: continues at cps_80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8253,7 +8253,7 @@ block_80129600:
  * split piece of cps_801295e0 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_8012960c(void)
 {
-/* menu-piece fragment: continues at 0x80129610 */
+/* menu-piece fragment: continues at cps_80129610 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8269,7 +8269,7 @@ block_8012960C:
  * split piece of cps_801295e0 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129610(void)
 {
-/* menu-piece fragment: continues at 0x80129628 */
+/* menu-piece fragment: continues at cps_80129628 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8299,7 +8299,7 @@ block_80129610:
  * split piece of cps_80129558 — menu_stepper_input_wrap: menu_stepper_input caller. */
 void cps_80129628(void)
 {
-/* menu-piece fragment: continues at 0x80129640 */
+/* menu-piece fragment: continues at cps_80129640 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8610,10 +8610,10 @@ block_80129774:
 
 /* cps_80129778 — clean CPS transliteration of br2eu_func_80129778 (guest 0x80129778)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012977C — root: menu_row_paint_wrap: menu_row_paint caller. */
+ * CPS fallthrough stub — continues at cps_8012977c — root: menu_row_paint_wrap: menu_row_paint caller. */
 void cps_80129778(void)
 {
-/* menu-piece fragment: continues at 0x8012977c */
+/* menu-piece fragment: continues at cps_8012977c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8685,7 +8685,7 @@ block_80129788:
  * split piece of cps_80129750 — menu_row_paint_wrap: menu_row_paint caller. */
 void cps_8012979c(void)
 {
-/* menu-piece fragment: continues at 0x801297b0 */
+/* menu-piece fragment: continues at cps_801297b0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8779,7 +8779,7 @@ void cps_80129800(void)
     /* Address: 0x80129800, Size: 124 bytes, Blocks: 9 */
 
     /* menu nav (up): if half[s1+126]&0x4000 ->
-       jal 0x80156EF4(1024,10,0); cursor half[s0+8]++ clamp
+       jal deferred_cmd_post (0x80156EF4)(1024,10,0); cursor half[s0+8]++ clamp
        vs half[s0+6]. CPS-blocked. */
 block_80129800:
     v0 = cpu->read_half(s1 + 126);
@@ -8875,17 +8875,17 @@ block_80129870:
 
 /* cps_8012987c — clean CPS transliteration of br2eu_func_8012987C (guest 0x8012987c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012988C — menu-piece fragment: continues at 0x8012988c */
+ * CPS fallthrough stub — continues at cps_8012988c — menu-piece fragment: continues at cps_8012988c */
 void cps_8012987c(void)
 {
-/* menu-piece fragment: continues at 0x8012988c */
+/* menu-piece fragment: continues at cps_8012988c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
     /* Address: 0x8012987C, Size: 16 bytes, Blocks: 1 */
 
     /* menu nav (down): gate half[s1+126]&0x2000 ->
-       jal 0x80156EF4. CPS-blocked. */
+       jal deferred_cmd_post (0x80156EF4). CPS-blocked. */
 block_8012987C:
     v0 = cpu->read_half(s1 + 126);
     /* nop */  /* 0x80129880: 0x00000000 */
@@ -8905,10 +8905,10 @@ block_8012987C:
 
 /* cps_8012988c — clean CPS transliteration of br2eu_func_8012988C (guest 0x8012988c)
  * from SLES_017.22_full_01.c.
- * split piece of cps_8012987c — CPS fallthrough stub — continues at 0x8012988C */
+ * split piece of cps_8012987c — CPS fallthrough stub — continues at cps_8012988c */
 void cps_8012988c(void)
 {
-/* menu-piece fragment: continues at 0x80129890 */
+/* menu-piece fragment: continues at cps_80129890 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -8939,7 +8939,7 @@ void cps_80129890(void)
     }
     /* Address: 0x80129890, Size: 44 bytes, Blocks: 4 */
 
-    /* menu nav variant: jal 0x80156EF4(1024,11,0);
+    /* menu nav variant: jal deferred_cmd_post (0x80156EF4)(1024,11,0);
        cursor half[s0+8]++ clamp. CPS-blocked. */
 block_80129890:
     a1 = 11;
@@ -8995,7 +8995,7 @@ void cps_801298bc(void)
     /* Address: 0x801298BC, Size: 60 bytes, Blocks: 4 */
 
     /* menu nav variant: gate half[s1+126]&0x8000 ->
-       jal 0x80156EF4(1024,11,0); cursor half[s0+8]-- clamp.
+       jal deferred_cmd_post (0x80156EF4)(1024,11,0); cursor half[s0+8]-- clamp.
        CPS-blocked. */
 block_801298BC:
     v0 = cpu->read_half(s1 + 126);
@@ -9047,7 +9047,7 @@ block_801298EC:
  * split piece of cps_80129800 — menu_deferred_wrap_b: deferred_cmd_post caller. */
 void cps_801298f8(void)
 {
-/* menu-piece fragment: continues at 0x801298fc */
+/* menu-piece fragment: continues at cps_801298fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9278,7 +9278,7 @@ block_80129A1C:
  * split piece of cps_801299a8 — menu_deferred_wrap: deferred_cmd_post caller in menu region. */
 void cps_80129a38(void)
 {
-/* menu-piece fragment: continues at 0x80129a3c */
+/* menu-piece fragment: continues at cps_80129a3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9323,10 +9323,10 @@ block_80129A3C:
 
 /* cps_80129ac8 — clean CPS transliteration of br2eu_func_80129AC8 (guest 0x80129ac8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129AE0 — root: deferred_cmd_wrap_g: deferred_cmd_post caller. */
+ * CPS fallthrough stub — continues at cps_80129ae0 — root: deferred_cmd_wrap_g: deferred_cmd_post caller. */
 void cps_80129ac8(void)
 {
-/* menu-piece fragment: continues at 0x80129ae0 */
+/* menu-piece fragment: continues at cps_80129ae0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9383,7 +9383,7 @@ void cps_80129ae0(void)
     /* Address: 0x80129AE0, Size: 104 bytes, Blocks: 5 */
 
     /* menu confirm/timeout: gate half[s2+126] bit;
-       jal 0x80156EF4(1024,11,0); half[s0]--, reload s4 on
+       jal deferred_cmd_post (0x80156EF4)(1024,11,0); half[s0]--, reload s4 on
        underflow. CPS-blocked. */
 block_80129AE0:
     v1 = cpu->read_half(s2 + 126);
@@ -9571,10 +9571,10 @@ block_80129BE0:
 
 /* cps_80129be8 — clean CPS transliteration of br2eu_func_80129BE8 (guest 0x80129be8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129BEC — root: menu_deferred_wrap_c: deferred_cmd_post caller. */
+ * CPS fallthrough stub — continues at cps_80129bec — root: menu_deferred_wrap_c: deferred_cmd_post caller. */
 void cps_80129be8(void)
 {
-/* menu-piece fragment: continues at 0x80129bec */
+/* menu-piece fragment: continues at cps_80129bec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9616,10 +9616,10 @@ block_80129BEC:
 
 /* cps_80129c7c — clean CPS transliteration of br2eu_func_80129C7C (guest 0x80129c7c)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129C80 — menu-piece fragment: continues at 0x80129c80 */
+ * CPS fallthrough stub — continues at cps_80129c80 — menu-piece fragment: continues at cps_80129c80 */
 void cps_80129c7c(void)
 {
-/* menu-piece fragment: continues at 0x80129c80 */
+/* menu-piece fragment: continues at cps_80129c80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9632,10 +9632,10 @@ block_80129C7C:
 
 /* cps_80129c80 — clean CPS transliteration of br2eu_func_80129C80 (guest 0x80129c80)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129c7c — CPS fallthrough stub — continues at 0x80129C80 */
+ * split piece of cps_80129c7c — CPS fallthrough stub — continues at cps_80129c80 */
 void cps_80129c80(void)
 {
-/* menu-piece fragment: continues at 0x80129c9c */
+/* menu-piece fragment: continues at cps_80129c9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9675,7 +9675,7 @@ block_80129C98:
 
 /* cps_80129c9c — clean CPS transliteration of br2eu_func_80129C9C (guest 0x80129c9c)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129c80 — CPS fallthrough stub — continues at 0x80129C80 */
+ * split piece of cps_80129c80 — CPS fallthrough stub — continues at cps_80129c80 */
 void cps_80129c9c(void)
 {
 /* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
@@ -9739,7 +9739,7 @@ void cps_80129cbc(void)
     /* Address: 0x80129CBC, Size: 84 bytes, Blocks: 5 */
 
     /* 3-slot scan: for s0<s1: half[(s2*2+s3)+116] vs 8192/32768
-       sentinels; ==8192 -> jal 0x80156EF4(1024,11,0) then s0++/wrap;
+       sentinels; ==8192 -> jal deferred_cmd_post (0x80156EF4)(1024,11,0) then s0++/wrap;
        mismatches -> cps_80129d3c/0x80129D14. CPS-blocked. */
 
 block_80129CBC:
@@ -9805,10 +9805,10 @@ block_80129D00:
 
 /* cps_80129d10 — clean CPS transliteration of br2eu_func_80129D10 (guest 0x80129d10)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129D14 — root: deferred_cmd_wrap_h: deferred_cmd_post caller. */
+ * CPS fallthrough stub — continues at cps_80129d14 — root: deferred_cmd_wrap_h: deferred_cmd_post caller. */
 void cps_80129d10(void)
 {
-/* menu-piece fragment: continues at 0x80129d14 */
+/* menu-piece fragment: continues at cps_80129d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9824,7 +9824,7 @@ block_80129D10:
  * split piece of cps_80129cbc — deferred_cmd_wrap_h: deferred_cmd_post caller. */
 void cps_80129d14(void)
 {
-/* menu-piece fragment: continues at 0x80129d1c */
+/* menu-piece fragment: continues at cps_80129d1c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9838,7 +9838,7 @@ block_80129D14:
 
 /* cps_80129d1c — clean CPS transliteration of br2eu_func_80129D1C (guest 0x80129d1c)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129c9c — CPS fallthrough stub — continues at 0x80129C80 */
+ * split piece of cps_80129c9c — CPS fallthrough stub — continues at cps_80129c80 */
 void cps_80129d1c(void)
 {
 /* menu thunk -> deferred_cmd_post */
@@ -9855,7 +9855,7 @@ void cps_80129d1c(void)
     }
     /* Address: 0x80129D1C, Size: 32 bytes, Blocks: 3 */
 
-    /* countdown step: jal 0x80156EF4; s0--; reload
+    /* countdown step: jal deferred_cmd_post (0x80156EF4); s0--; reload
        sign-extended s4<<16. CPS-blocked. */
 block_80129D1C:
     ra = 0x80129D24u;  /* jal link before delay slot */
@@ -9886,7 +9886,7 @@ block_80129D30:
 
 /* cps_80129d3c — clean CPS transliteration of br2eu_func_80129D3C (guest 0x80129d3c)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129c9c — CPS fallthrough stub — continues at 0x80129C80 */
+ * split piece of cps_80129c9c — CPS fallthrough stub — continues at cps_80129c80 */
 void cps_80129d3c(void)
 {
 /* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
@@ -9913,10 +9913,10 @@ block_80129D3C:
 
 /* cps_80129da8 — clean CPS transliteration of br2eu_func_80129DA8 (guest 0x80129da8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129DAC — menu-piece fragment: continues at 0x80129dac */
+ * CPS fallthrough stub — continues at cps_80129dac — menu-piece fragment: continues at cps_80129dac */
 void cps_80129da8(void)
 {
-/* menu-piece fragment: continues at 0x80129dac */
+/* menu-piece fragment: continues at cps_80129dac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9929,10 +9929,10 @@ block_80129DA8:
 
 /* cps_80129dac — clean CPS transliteration of br2eu_func_80129DAC (guest 0x80129dac)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129da8 — CPS fallthrough stub — continues at 0x80129DAC */
+ * split piece of cps_80129da8 — CPS fallthrough stub — continues at cps_80129dac */
 void cps_80129dac(void)
 {
-/* menu-piece fragment: continues at 0x80129dd8 */
+/* menu-piece fragment: continues at cps_80129dd8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -9995,7 +9995,7 @@ void cps_80129dd8(void)
     /* Address: 0x80129DD8, Size: 104 bytes, Blocks: 5 */
 
     /* menu confirm: gate half[s2+126]&0x8000 ->
-       jal 0x80156EF4(1024,11,0); byte[s0]-- reload s4;
+       jal deferred_cmd_post (0x80156EF4)(1024,11,0); byte[s0]-- reload s4;
        epilogue returns (s3 ^ byte[s0])>0 flag. CPS-blocked. */
 block_80129DD8:
     v1 = cpu->read_half(s2 + 126);
@@ -10059,10 +10059,10 @@ block_80129E14:
 
 /* cps_80129ed8 — clean CPS transliteration of br2eu_func_80129ED8 (guest 0x80129ed8)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x80129EF0 — menu-piece fragment: continues at 0x80129ef0 */
+ * CPS fallthrough stub — continues at cps_80129ef0 — menu-piece fragment: continues at cps_80129ef0 */
 void cps_80129ed8(void)
 {
-/* menu-piece fragment: continues at 0x80129ef0 */
+/* menu-piece fragment: continues at cps_80129ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10100,7 +10100,7 @@ block_80129EEC:
 
 /* cps_80129ef0 — clean CPS transliteration of br2eu_func_80129EF0 (guest 0x80129ef0)
  * from SLES_017.22_full_01.c.
- * split piece of cps_80129ed8 — CPS fallthrough stub — continues at 0x80129EF0 */
+ * split piece of cps_80129ed8 — CPS fallthrough stub — continues at cps_80129ef0 */
 void cps_80129ef0(void)
 {
 /* menu leaf/terminal piece (jr/jr $ra exit of the menu cluster). */
@@ -10295,7 +10295,7 @@ block_8012A0E0:
  * param block init — writes halfwords a0+10..20 */
 void cps_8012a144(void)
 {
-/* UI/print fragment: continues at 0x8012a1e4 */
+/* UI/print fragment: continues at cps_8012a1e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10370,7 +10370,7 @@ void cps_8012a1e4(void)
     /* Address: 0x8012A1E4, Size: 160 bytes, Blocks: 4 */
 
     /* sprite-attr finish + loop: byte[a1+6]=0, byte[a0+4..6];
-       loop s1<6: jal 0x80194160(s0), s0+=16; then writes 6 halfword
+       loop s1<6: jal spr_prim_tag_b (0x80194160)(s0), s0+=16; then writes 6 halfword
        pairs at 0x801E8348.. (s3+250/200/150/100/50 ladder); -> cps_8012a284. CPS-blocked. */
 
 block_8012A1E4:
@@ -10494,7 +10494,7 @@ block_8012A284:
  * coord/vec helper — reads a0, a1+8, a2+8/28/30; writes a1+12/20 and v1-16/-32 */
 void cps_8012a328(void)
 {
-/* UI/print fragment: continues at 0x8012a3c8 */
+/* UI/print fragment: continues at cps_8012a3c8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10553,7 +10553,7 @@ block_8012A328:
  * split piece of cps_8012a328 — coord/vec helper — reads a0, a1+8, a2+8/28/30; writes a1+12/20 and v1-16/-32 */
 void cps_8012a3c8(void)
 {
-/* UI/print fragment: continues at 0x8012a470 */
+/* UI/print fragment: continues at cps_8012a470 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10668,7 +10668,7 @@ void cps_8012a514(void)
     /* Address: 0x8012A514, Size: 164 bytes, Blocks: 6 */
 
     /* object spawn wrapper: save regs; s2=word[0x1F800004];
-       jal 0x8012A4B4 -> s0=v0; if nonzero: a0=s0*24+8408+s2,
+       jal queue_slot_peek (0x8012A4B4) -> s0=v0; if nonzero: a0=s0*24+8408+s2,
        half[0x1F8000D2]=s0, pack s3-s6 halfwords at sp+16, jal
        0x80194180; v0=s0; epilogue. CPS-blocked. */
 
@@ -10767,7 +10767,7 @@ void cps_8012a5bc(void)
     }
     /* Address: 0x8012A5BC, Size: 148 bytes, Blocks: 5 */
 
-    /* slot alloc + register: jal 0x8012A4DC -> v0; if nonzero:
+    /* slot alloc + register: jal cmd_queue_slot_next (0x8012A4DC) -> v0; if nonzero:
        half[0x801C4530+v0*8]=s0..s3, half[0x1F8000D0]=v0,
        word[0x801BEF38+(v0-1)*4]=ret addr arg; epilogue.
        CPS-blocked. */
@@ -10837,10 +10837,10 @@ block_8012A634:
 
 /* cps_8012a664 — clean CPS transliteration of br2eu_func_8012A664 (guest 0x8012a664)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012A668 — root: ui_leaf_step_i: leaf state step, no calls. */
+ * CPS fallthrough stub — continues at cps_8012a668 — root: ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a664(void)
 {
-/* UI/print fragment: continues at 0x8012a668 */
+/* UI/print fragment: continues at cps_8012a668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10856,7 +10856,7 @@ block_8012A664:
  * ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a668(void)
 {
-/* UI/print fragment: continues at 0x8012A724 */
+/* UI/print fragment: continues at cps_8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10952,10 +10952,10 @@ block_8012A69C:
 
 /* cps_8012a6a4 — clean CPS transliteration of br2eu_func_8012A6A4 (guest 0x8012a6a4)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012A6BC — root: byte_leaf_step: byte-read leaf step. */
+ * CPS fallthrough stub — continues at cps_8012a6bc — root: byte_leaf_step: byte-read leaf step. */
 void cps_8012a6a4(void)
 {
-/* UI/print fragment: continues at 0x8012a6bc */
+/* UI/print fragment: continues at cps_8012a6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -10981,7 +10981,7 @@ block_8012A6A4:
  * byte_leaf_step: byte-read leaf step. */
 void cps_8012a6bc(void)
 {
-/* UI/print fragment: continues at 0x8012A724 */
+/* UI/print fragment: continues at cps_8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11070,7 +11070,7 @@ block_8012A708:
  * split piece of cps_8012a6bc — byte_leaf_step: byte-read leaf step. */
 void cps_8012a710(void)
 {
-/* UI/print fragment: continues at 0x8012A724 */
+/* UI/print fragment: continues at cps_8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11109,7 +11109,7 @@ block_8012A718:
  * split piece of cps_8012a668 — ui_leaf_step_i: leaf state step, no calls. */
 void cps_8012a720(void)
 {
-/* UI/print fragment: continues at 0x8012a724 */
+/* UI/print fragment: continues at cps_8012a724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11295,10 +11295,10 @@ block_8012A868:
 
 /* cps_8012a918 — clean CPS transliteration of br2eu_func_8012A918 (guest 0x8012a918)
  * from SLES_017.22_full_01.c.
- * CPS leaf — 2 stores, 2 loads — UI/print fragment: continues at 0x8012a92c */
+ * CPS leaf — 2 stores, 2 loads — UI/print fragment: continues at cps_8012a92c */
 void cps_8012a918(void)
 {
-/* UI/print fragment: continues at 0x8012a92c */
+/* UI/print fragment: continues at cps_8012a92c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11334,7 +11334,7 @@ void cps_8012a92c(void)
     }
     /* Address: 0x8012A92C, Size: 24 bytes, Blocks: 2 */
 
-    /* call wrapper: word[sp+16]=v1; jal 0x8018CC6C(
+    /* call wrapper: word[sp+16]=v1; jal spr_attr_alloc_a (0x8018CC6C)(
        word[s1+8], a1, a2=a1). CPS-blocked. */
 block_8012A92C:
     cpu->write_word(sp + 16, v1);
@@ -11655,7 +11655,7 @@ block_8012AA3C:
  * split piece of cps_8012a94c — dialog_mode_wrap: dialog_mode_mirror caller. */
 void cps_8012aa44(void)
 {
-/* UI/print fragment: continues at 0x8012aa4c */
+/* UI/print fragment: continues at cps_8012aa4c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11727,10 +11727,10 @@ block_8012AA58:
 
 /* cps_8012aa7c — clean CPS transliteration of br2eu_func_8012AA7C (guest 0x8012aa7c)
  * from SLES_017.22_full_01.c.
- * CPS leaf — 2 stores, 0 loads — UI/print fragment: continues at 0x8012AA8C */
+ * CPS leaf — 2 stores, 0 loads — UI/print fragment: continues at cps_8012aa8c */
 void cps_8012aa7c(void)
 {
-/* UI/print fragment: continues at 0x8012AA8C */
+/* UI/print fragment: continues at cps_8012aa8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11795,10 +11795,10 @@ block_8012AA8C:
 
 /* cps_8012aac0 — clean CPS transliteration of br2eu_func_8012AAC0 (guest 0x8012aac0)
  * from SLES_017.22_full_01.c.
- * single byte store to v1+16 — UI/print fragment: continues at 0x8012AAD4 */
+ * single byte store to v1+16 — UI/print fragment: continues at cps_8012aad4 */
 void cps_8012aac0(void)
 {
-/* UI/print fragment: continues at 0x8012AAD4 */
+/* UI/print fragment: continues at cps_8012aad4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -11905,7 +11905,7 @@ void cps_8012ab30(void)
     /* Address: 0x8012AB30, Size: 140 bytes, Blocks: 13 */
 
     /* voice teardown A: gate byte[s2+21]; jal
-       0x8018BD50(s1+8316,2079); jal 0x80191ED8; drains
+       0x8018BD50(s1+8316,2079); jal gpu_stat_sign (0x80191ED8); drains
        word[0x801F0000-31488] list. CPS-blocked. */
 block_8012AB30:
     v0 = cpu->read_byte(s2 + 21);
@@ -12034,7 +12034,7 @@ block_8012ABB4:
  * split piece of cps_8012ab30 — gpu_env_reset_seq: gpu_pkt_unlink_n + gpu_graph_reset + */
 void cps_8012abbc(void)
 {
-/* UI/print fragment: continues at 0x8012abc0 */
+/* UI/print fragment: continues at cps_8012abc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12064,7 +12064,7 @@ void cps_8012abc0(void)
     /* Address: 0x8012ABC0, Size: 40 bytes, Blocks: 2 */
 
     /* DMA/irq teardown + call: v0|=0xE4; v1=word[v0];
-       word[v0]=0; word[0x1F8000E0]=v1; jal 0x8019A460(1);
+       word[v0]=0; word[0x1F8000E0]=v1; jal cpst_8019a460(1);
        half[0x801F0000-31826]=v0; half[s2+208]=v1; -> cps_8012abe8.
        CPS-blocked. */
 
@@ -12265,7 +12265,7 @@ void cps_8012aca0(void)
 
     /* sample/param fetch: v1 = 0x801E0000+16544 +
        a0*132-stride; reads byte[t0+4..6], half[v1+2] ->
-       half[t0+10]; jal 0x80191300(t0+8). CPS-blocked. */
+       half[t0+10]; jal gpu_clear_image_cmd (0x80191300)(t0+8). CPS-blocked. */
 block_8012ACA0:
     /* nop */  /* 0x8012ACA0: 0x00000000 */
     int cond_8012ACA4 = (v0 != zero);  /* save branch cond before delay slot */
@@ -12319,7 +12319,7 @@ void cps_8012acec(void)
     }
     /* Address: 0x8012ACEC, Size: 24 bytes, Blocks: 2 */
 
-    /* jal 0x80191770(s4+8428); word[0x801F0000-31820]=0.
+    /* jal gpu_draw_otag (0x80191770)(s4+8428); word[0x801F0000-31820]=0.
        CPS-blocked. */
 block_8012ACEC:
     ra = 0x8012ACF4u;  /* jal link before delay slot */
@@ -12342,7 +12342,7 @@ block_8012ACF4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012ad04(void)
 {
-/* UI/print fragment: continues at 0x8012ad58 */
+/* UI/print fragment: continues at cps_8012ad58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12468,7 +12468,7 @@ void cps_8012ad8c(void)
     }
     /* Address: 0x8012AD8C, Size: 52 bytes, Blocks: 4 */
 
-    /* jal 0x80191770(0x801E0000+16544+{8428|16956});
+    /* jal gpu_draw_otag (0x80191770)(0x801E0000+16544+{8428|16956});
        half[0x801F0000-31832]++. CPS-blocked. */
 block_8012AD8C:
     v0 = v0 + 16544;
@@ -12511,7 +12511,7 @@ block_8012ADA4:
  * split piece of cps_8012abe8 — gpu_disp_load_img: gpu_disp_mask_set + gpu_load_image_cmd — display */
 void cps_8012adc0(void)
 {
-/* UI/print fragment: continues at 0x8012add8 */
+/* UI/print fragment: continues at cps_8012add8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12649,10 +12649,10 @@ block_8012AED4:
 
 /* cps_8012af90 — clean CPS transliteration of br2eu_func_8012AF90 (guest 0x8012af90)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012AF94 — UI/print fragment: continues at 0x8012af94 */
+ * CPS fallthrough stub — continues at cps_8012af94 — UI/print fragment: continues at cps_8012af94 */
 void cps_8012af90(void)
 {
-/* UI/print fragment: continues at 0x8012af94 */
+/* UI/print fragment: continues at cps_8012af94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12665,7 +12665,7 @@ block_8012AF90:
 
 /* cps_8012af94 — clean CPS transliteration of br2eu_func_8012AF94 (guest 0x8012af94)
  * from SLES_017.22_full_01.c.
- * split piece of cps_8012af90 — CPS fallthrough stub — continues at 0x8012AF94 */
+ * split piece of cps_8012af90 — CPS fallthrough stub — continues at cps_8012af94 */
 void cps_8012af94(void)
 {
 /* UI/print thunk -> cd_timer_read -> cd_timer_read */
@@ -12682,7 +12682,7 @@ void cps_8012af94(void)
     }
     /* Address: 0x8012AF94, Size: 28 bytes, Blocks: 3 */
 
-    /* sound cmd pair: jal 0x8019A460(1); jal
+    /* sound cmd pair: jal cpst_8019a460(1); jal
        0x8019A460(byte[s1+16]) -> half[s1+28]=v0.
        CPS-blocked. */
 block_8012AF94:
@@ -12727,9 +12727,9 @@ void cps_8012afb0(void)
     }
     /* Address: 0x8012AFB0, Size: 36 bytes, Blocks: 4 */
 
-    /* sound cmd triple: jal 0x8019A460(1); half[s1+28]
-       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
-       jal 0x80190E00(1). CPS-blocked. */
+    /* sound cmd triple: jal cpst_8019a460(1); half[s1+28]
+       and half[s1+26]=v0; jal cpst_8019a460(byte[s1+16]);
+       jal gpu_graph_reset (0x80190E00)(1). CPS-blocked. */
 block_8012AFB0:
     ra = 0x8012AFB8u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -12784,8 +12784,8 @@ void cps_8012afd4(void)
     /* Address: 0x8012AFD4, Size: 116 bytes, Blocks: 8 */
 
     /* object teardown sequence: same 0xE4 word drain to
-       scratchpad; jal 0x80191ED8, 0x801919AC(s2+92), 0x801917E0(s2);
-       byte[s1+18] countdown -> jal 0x801910E4(byte-1) else clear;
+       scratchpad; jal gpu_stat_sign (0x80191ED8), 0x801919AC(s2+92), 0x801917E0(s2);
+       byte[s1+18] countdown -> jal gpu_disp_mask_set (0x801910E4)(byte-1) else clear;
        half[s1+208]<=0 -> cps_8012b06c else s5=0x801C4530,
        s4=0x801BEF38, s0=a0-1 -> cps_8012b048. CPS-blocked. */
 
@@ -12870,7 +12870,7 @@ block_8012B038:
  * split piece of cps_8012afd4 — gpu_env_commit_a: gpu_disp_mask_set + gpu_draw_env_put + */
 void cps_8012b048(void)
 {
-/* GPU/pad fragment: continues at 0x8012b054 */
+/* GPU/pad fragment: continues at cps_8012b054 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -12904,7 +12904,7 @@ void cps_8012b054(void)
     }
     /* Address: 0x8012B054, Size: 24 bytes, Blocks: 2 */
 
-    /* loop: jal 0x80191428(a0=a0*8+s5); s0-- while
+    /* loop: jal gpu_load_image_cmd (0x80191428)(a0=a0*8+s5); s0-- while
        a0!=0. CPS-blocked. */
 block_8012B054:
     a0 = a0 << 3;
@@ -12933,7 +12933,7 @@ block_8012B060:
  * rec_byte_step: half+byte read/write leaf step. */
 void cps_8012b06c(void)
 {
-/* GPU/pad fragment: continues at 0x8012b118 */
+/* GPU/pad fragment: continues at cps_8012b118 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13102,7 +13102,7 @@ void cps_8012b154(void)
 
     /* Address: 0x8012B154, Size: 8 bytes, Blocks: 1 */
 
-    /* jal 0x80191770(s3+8316). CPS-blocked. */
+    /* jal gpu_draw_otag (0x80191770)(s3+8316). CPS-blocked. */
 block_8012B154:
     ra = 0x8012B15Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13132,8 +13132,8 @@ void cps_8012b15c(void)
 
     /* channel alloc: idx=(word[s1+12]^1)*208-stride ->
        0x801E0000+16544; word[0x1F8000DC]++ seq; stores s2/s3
-       ptrs to s1+4/8/12; jal 0x80191668(s3,2080); then
-       word[s2+112]|=0x00FFFFFF; jal 0x8016362C(s1).
+       ptrs to s1+4/8/12; jal gpu_clear_otag_r (0x80191668)(s3,2080); then
+       word[s2+112]|=0x00FFFFFF; jal menu_noop (0x8016362C)(s1).
        CPS-blocked. */
 block_8012B15C:
     ra = 0x8012B164u;  /* jal link before delay slot */
@@ -13186,10 +13186,10 @@ block_8012B1C4:
 
 /* cps_8012b1dc — clean CPS transliteration of br2eu_func_8012B1DC (guest 0x8012b1dc)
  * from SLES_017.22_full_01.c.
- * CPS fallthrough stub — continues at 0x8012B1E0 — root: debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup + scroll_offset_set — debug stat print + OT fixup + scroll. */
+ * CPS fallthrough stub — continues at cps_8012b1e0 — root: debug_stat_scroll: debug_stat_print + ot_packet_chain_fixup + scroll_offset_set — debug stat print + OT fixup + scroll. */
 void cps_8012b1dc(void)
 {
-/* GPU/pad fragment: continues at 0x8012b1e0 */
+/* GPU/pad fragment: continues at cps_8012b1e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -13322,8 +13322,8 @@ void cps_8012b2a4(void)
     }
     /* Address: 0x8012B2A4, Size: 56 bytes, Blocks: 6 */
 
-    /* sound cmd seq: jal 0x8019A460(1); jal
-       0x8019117C(0)->half[s1+26]; jal 0x8019A460(1); jal
+    /* sound cmd seq: jal cpst_8019a460(1); jal
+       0x8019117C(0)->half[s1+26]; jal cpst_8019a460(1); jal
        0x8019A460(byte[s1+16])->half[s1+28]. CPS-blocked. */
 block_8012B2A4:
     int cond_8012B2A4 = (v0 == zero);  /* save branch cond before delay slot */
@@ -13394,9 +13394,9 @@ void cps_8012b2dc(void)
     }
     /* Address: 0x8012B2DC, Size: 36 bytes, Blocks: 4 */
 
-    /* sound cmd seq B: jal 0x8019A460(1); half[s1+28]
-       and half[s1+26]=v0; jal 0x8019A460(byte[s1+16]);
-       jal 0x80190E00(1). CPS-blocked. */
+    /* sound cmd seq B: jal cpst_8019a460(1); half[s1+28]
+       and half[s1+26]=v0; jal cpst_8019a460(byte[s1+16]);
+       jal gpu_graph_reset (0x80190E00)(1). CPS-blocked. */
 block_8012B2DC:
     ra = 0x8012B2E4u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -13450,7 +13450,7 @@ void cps_8012b300(void)
     /* Address: 0x8012B300, Size: 108 bytes, Blocks: 8 */
 
     /* object teardown variant (s4/s1 regs): same 0xE4 drain;
-       jal 0x80191ED8, 0x801919AC(s4+92), 0x801917E0(s4); byte[s1+18]
+       jal gpu_stat_sign (0x80191ED8), 0x801919AC(s4+92), 0x801917E0(s4); byte[s1+18]
        countdown -> gpu_disp_mask_set (0x801910E4)/clear; half[s1+208]<=0 -> cps_8012b398
        else s3=0x801C4530 -> cps_8012b36c. CPS-blocked. */
 
@@ -13548,7 +13548,7 @@ void cps_8012b36c(void)
     /* Address: 0x8012B36C, Size: 44 bytes, Blocks: 3 */
 
     /* channel walk setup: s2=v0-4296 (0x801C table),
-       s3=0x801C4530 -> loop jal 0x80191428 per slot.
+       s3=0x801C4530 -> loop jal gpu_load_image_cmd (0x80191428) per slot.
        CPS-blocked. */
 block_8012B36C:
     s2 = v0 + -4296;
@@ -13604,7 +13604,7 @@ void cps_8012b398(void)
 
     /* sample param fetch + upload: idx=(word[s1+12]^1)*208;
        half[0x801F0000+1632 + idx*45 +14] -> half[t0+10]; bytes
-       t0+4..6 -> a1/a2/a3; jal 0x80191300(t0+8). CPS-blocked. */
+       t0+4..6 -> a1/a2/a3; jal gpu_clear_image_cmd (0x80191300)(t0+8). CPS-blocked. */
 block_8012B398:
     v0 = cpu->read_byte(s1 + 19);
     /* nop */  /* 0x8012B39C: 0x00000000 */
@@ -13706,7 +13706,7 @@ void cps_8012b438(void)
     }
     /* Address: 0x8012B438, Size: 20 bytes, Blocks: 3 */
 
-    /* jal 0x80191770(v0+{8428|16956}) variant tail.
+    /* jal gpu_draw_otag (0x80191770)(v0+{8428|16956}) variant tail.
        CPS-blocked. */
 block_8012B438:
     int cond_8012B438 = (s4 != v0);  /* save branch cond before delay slot */
@@ -13861,7 +13861,7 @@ void cps_8012b5d4(void)
     /* Address: 0x8012B5D4, Size: 48 bytes, Blocks: 2 */
 
     /* channel reset + wait: word[s0+132] rec -> byte[+1]=
-       byte[+2]=0, half[+6]=0; jal 0x80156EF4(513,0,0); -> cps_8012b7a4. CPS-blocked. */
+       byte[+2]=0, half[+6]=0; jal deferred_cmd_post (0x80156EF4)(513,0,0); -> cps_8012b7a4. CPS-blocked. */
 
 block_8012B5D4:
     v0 = cpu->read_word(s0 + 132);
@@ -13912,7 +13912,7 @@ void cps_8012b604(void)
     /* Address: 0x8012B604, Size: 160 bytes, Blocks: 10 */
 
     /* menu/channel step: gates a1&0x0100 / &0x4100 ->
-       jal 0x80156EF4(1024,10,0); byte[rec+2]++ wrap vs
+       jal deferred_cmd_post (0x80156EF4)(1024,10,0); byte[rec+2]++ wrap vs
        byte[rec+3]-1 (rec=word[s0+132]). CPS-blocked. */
 block_8012B604:
     v0 = (int32_t)(int16_t)cpu->read_half(a0 + 20);
@@ -14031,7 +14031,7 @@ block_8012B68C:
  * split piece of cps_8012b604 — deferred_cmd_wrap: deferred_cmd_post caller. */
 void cps_8012b6a4(void)
 {
-/* GPU/pad fragment: continues at 0x8012b6bc */
+/* GPU/pad fragment: continues at cps_8012b6bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14178,7 +14178,7 @@ void cps_8012b700(void)
 
     /* channel action dispatch: byte[s0+155] gate;
        jals 0x80162838/0x80161C54/0x80162280(s0,s1&0xFFFF);
-       jal 0x80156EF4(1024,17,0); byte[rec]=-10. CPS-blocked. */
+       jal deferred_cmd_post (0x80156EF4)(1024,17,0); byte[rec]=-10. CPS-blocked. */
 block_8012B700:
     v1 = cpu->read_byte(s0 + 155);
     v0 = 4;
@@ -14290,7 +14290,7 @@ void cps_8012b778(void)
     /* Address: 0x8012B778, Size: 44 bytes, Blocks: 2 */
 
     /* channel reset variant: byte[rec+1]=byte[rec+2]=0,
-       half[s0+130]=1; jal 0x80156EF4(1,0,0); v0=0 -> cps_8012b7f0.
+       half[s0+130]=1; jal deferred_cmd_post (0x80156EF4)(1,0,0); v0=0 -> cps_8012b7f0.
        CPS-blocked. */
 
 block_8012B778:
@@ -14316,10 +14316,10 @@ block_8012B79C:
 
 /* cps_8012b7a4 — clean CPS transliteration of br2eu_func_8012B7A4 (guest 0x8012b7a4)
  * from SLES_017.22_full_01.c.
- * split piece of cps_8012b5d4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at 0x8012b7cc */
+ * split piece of cps_8012b5d4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at cps_8012b7cc */
 void cps_8012b7a4(void)
 {
-/* GPU/pad fragment: continues at 0x8012b7cc */
+/* GPU/pad fragment: continues at cps_8012b7cc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14345,10 +14345,10 @@ block_8012B7A4:
 
 /* cps_8012b7cc — clean CPS transliteration of br2eu_func_8012B7CC (guest 0x8012b7cc)
  * from SLES_017.22_full_01.c.
- * split piece of cps_8012b7a4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at 0x8012b7ec */
+ * split piece of cps_8012b7a4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at cps_8012b7ec */
 void cps_8012b7cc(void)
 {
-/* GPU/pad fragment: continues at 0x8012b7ec */
+/* GPU/pad fragment: continues at cps_8012b7ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14391,10 +14391,10 @@ block_8012B7E8:
 
 /* cps_8012b7ec — clean CPS transliteration of br2eu_func_8012B7EC (guest 0x8012b7ec)
  * from SLES_017.22_full_01.c.
- * split piece of cps_8012b7a4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at 0x8012b7f0 */
+ * split piece of cps_8012b7a4 — CPS leaf — 1 jal(s), 3 stores, 3 loads — GPU/pad fragment: continues at cps_8012b7f0 */
 void cps_8012b7ec(void)
 {
-/* GPU/pad fragment: continues at 0x8012b7f0 */
+/* GPU/pad fragment: continues at cps_8012b7f0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14464,10 +14464,10 @@ block_8012B804:
 
 /* cps_8012b834 — clean CPS transliteration of br2eu_func_8012B834 (guest 0x8012b834)
  * from SLES_017.22_full_01.c.
- * CPS leaf — 5 stores, 1 loads — GPU/pad fragment: continues at 0x8012b850 */
+ * CPS leaf — 5 stores, 1 loads — GPU/pad fragment: continues at cps_8012b850 */
 void cps_8012b834(void)
 {
-/* GPU/pad fragment: continues at 0x8012b850 */
+/* GPU/pad fragment: continues at cps_8012b850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14517,7 +14517,7 @@ block_8012B850:
  * rec_byte_step_c: half+byte read/write leaf step. */
 void cps_8012b864(void)
 {
-/* GPU/pad fragment: continues at 0x8012b928 */
+/* GPU/pad fragment: continues at cps_8012b928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14751,10 +14751,10 @@ block_8012B9FC:
 
 /* cps_8012bae0 — clean CPS transliteration of br2eu_func_8012BAE0 (guest 0x8012bae0)
  * from SLES_017.22_full_02.c.
- * CPS fallthrough stub — continues at 0x8012BAE4 — root: ui_leaf_step_j: leaf state step, no calls. */
+ * CPS fallthrough stub — continues at cps_8012bae4 — root: ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bae0(void)
 {
-/* GPU/pad fragment: continues at 0x8012bae4 */
+/* GPU/pad fragment: continues at cps_8012bae4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14770,7 +14770,7 @@ block_8012BAE0:
  * ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bae4(void)
 {
-/* GPU/pad fragment: continues at 0x8012BB50. */
+/* GPU/pad fragment: continues at cps_8012bb50. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14843,7 +14843,7 @@ block_8012BB08:
  * ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb10(void)
 {
-/* GPU/pad fragment: continues at 0x8012BB60. */
+/* GPU/pad fragment: continues at cps_8012bb60. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14943,7 +14943,7 @@ block_8012BB48:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb50(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb58 */
+/* GPU/pad fragment: continues at cps_8012bb58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14963,7 +14963,7 @@ block_8012BB50:
  * split piece of cps_8012bb50 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb58(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb60 */
+/* GPU/pad fragment: continues at cps_8012bb60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -14983,7 +14983,7 @@ block_8012BB58:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb60(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb68 */
+/* GPU/pad fragment: continues at cps_8012bb68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15003,7 +15003,7 @@ block_8012BB60:
  * split piece of cps_8012bb60 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb68(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb70 */
+/* GPU/pad fragment: continues at cps_8012bb70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15023,7 +15023,7 @@ block_8012BB68:
  * split piece of cps_8012bae4 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb70(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb78 */
+/* GPU/pad fragment: continues at cps_8012bb78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15043,7 +15043,7 @@ block_8012BB70:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb78(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb80 */
+/* GPU/pad fragment: continues at cps_8012bb80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15063,7 +15063,7 @@ block_8012BB78:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb80(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb88 */
+/* GPU/pad fragment: continues at cps_8012bb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15083,7 +15083,7 @@ block_8012BB80:
  * split piece of cps_8012bb10 — ui_leaf_step_k: leaf state step, no calls. */
 void cps_8012bb88(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb8c */
+/* GPU/pad fragment: continues at cps_8012bb8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15099,7 +15099,7 @@ block_8012BB88:
  * split piece of cps_8012bb50 — ui_leaf_step_j: leaf state step, no calls. */
 void cps_8012bb8c(void)
 {
-/* GPU/pad fragment: continues at 0x8012bb90 */
+/* GPU/pad fragment: continues at cps_8012bb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15115,7 +15115,7 @@ block_8012BB8C:
  * record_half_step_g: s16 read/write leaf step. */
 void cps_8012bb90(void)
 {
-/* GPU/pad fragment: continues at 0x8012bbc0 */
+/* GPU/pad fragment: continues at cps_8012bbc0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15195,7 +15195,7 @@ block_8012BBB0:
  * rec_byte_write_leaf: byte read/write leaf step. */
 void cps_8012bbc0(void)
 {
-/* GPU/pad fragment: continues at 0x8012bca4 */
+/* GPU/pad fragment: continues at cps_8012bca4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15361,7 +15361,7 @@ block_8012BCCC:
  * split piece of cps_8012bb90 — record_half_step_g: s16 read/write leaf step. */
 void cps_8012bcd4(void)
 {
-/* GPU/pad fragment: continues at 0x8012bce4 */
+/* GPU/pad fragment: continues at cps_8012bce4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15384,7 +15384,7 @@ block_8012BCD4:
  * reads t7 flag bits for sub-cases. */
 void cps_8012bce4(void)
 {
-/* GPU/pad fragment: continues at 0x8012BDA0. */
+/* GPU/pad fragment: continues at cps_8012bda0. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15594,7 +15594,7 @@ block_8012BD80:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd88(void)
 {
-/* GPU/pad fragment: continues at 0x8012bd90 */
+/* GPU/pad fragment: continues at cps_8012bd90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15614,7 +15614,7 @@ block_8012BD88:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd90(void)
 {
-/* GPU/pad fragment: continues at 0x8012bd98 */
+/* GPU/pad fragment: continues at cps_8012bd98 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15634,7 +15634,7 @@ block_8012BD90:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd98(void)
 {
-/* GPU/pad fragment: continues at 0x8012bd9c */
+/* GPU/pad fragment: continues at cps_8012bd9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15650,7 +15650,7 @@ block_8012BD98:
  * split piece of cps_8012bce4 — ui_state_step: 18-block leaf state step in the menu/GPU band. */
 void cps_8012bd9c(void)
 {
-/* GPU/pad fragment: continues at 0x8012bda0 */
+/* GPU/pad fragment: continues at cps_8012bda0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15666,10 +15666,10 @@ block_8012BD9C:
  * record_param_pack_b: packs half[t0+14/+22] and half[t1]/[t1+2]
  * into a3/t2, then table-driven byte writes t0+12/13/20/21/28/29
  * via lookup 0x801B1314/0x801B1458 indexed by (a3+t5)<<1; CPS tail
- * continues at 0x8012BE70. */
+ * continues at cps_8012be70. */
 void cps_8012bda0(void)
 {
-/* GPU/pad fragment: continues at 0x8012be70 */
+/* GPU/pad fragment: continues at cps_8012be70 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15837,7 +15837,7 @@ block_8012BE18:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be70(void)
 {
-/* GPU/pad fragment: continues at 0x8012be94 */
+/* GPU/pad fragment: continues at cps_8012be94 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15863,7 +15863,7 @@ block_8012BE70:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012be94(void)
 {
-/* GPU/pad fragment: continues at 0x8012bee4 */
+/* GPU/pad fragment: continues at cps_8012bee4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15902,7 +15902,7 @@ block_8012BE94:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bee4(void)
 {
-/* GPU/pad fragment: continues at 0x8012bef4 */
+/* GPU/pad fragment: continues at cps_8012bef4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15923,7 +15923,7 @@ block_8012BEE4:
  * split piece of cps_8012bda0 — ui_leaf_step_b: 12-block leaf state step. */
 void cps_8012bef4(void)
 {
-/* GPU/pad fragment: continues at 0x8012bf04 */
+/* GPU/pad fragment: continues at cps_8012bf04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -15941,7 +15941,7 @@ block_8012BEF4:
 
 /* cps_8012bf04 — clean CPS transliteration of br2eu_func_8012BF04 (guest 0x8012bf04)
  * from SLES_017.22_full_02.c.
- * split piece of cps_8012bef4 — record_param_pack_b: packs half[t0+14/+22] and half[t1]/[t1+2] into a3/t2, then table-driven byte writes t0+12/13/20/21/28/29 via lookup 0x801B1314/0x801B1458 indexed by (a3+t5)<<1; CPS tail continues at 0x8012BE70. */
+ * split piece of cps_8012bef4 — record_param_pack_b: packs half[t0+14/+22] and half[t1]/[t1+2] into a3/t2, then table-driven byte writes t0+12/13/20/21/28/29 via lookup 0x801B1314/0x801B1458 indexed by (a3+t5)<<1; CPS tail continues at cps_8012be70. */
 void cps_8012bf04(void)
 {
 /* GPU/pad leaf or terminal piece. */
@@ -15967,7 +15967,7 @@ block_8012BF04:
  * cps_8012c008. */
 void cps_8012bf58(void)
 {
-/* GPU/pad fragment: continues at 0x8012C06C. */
+/* GPU/pad fragment: continues at cps_8012c06c. */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16133,7 +16133,7 @@ block_8012C040:
  * split piece of cps_8012c008 — announce_param_init_wrap: announce_param_block_init caller. */
 void cps_8012c048(void)
 {
-/* hud/sprite fragment: continues at 0x8012c06c */
+/* hud/sprite fragment: continues at cps_8012c06c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16200,10 +16200,10 @@ block_8012C06C:
 
 /* cps_8012c138 — clean CPS transliteration of br2eu_func_8012C138 (guest 0x8012c138)
  * from SLES_017.22_full_02.c.
- * CPS leaf — 4 stores, 0 loads — hud/sprite fragment: continues at 0x8012c168 */
+ * CPS leaf — 4 stores, 0 loads — hud/sprite fragment: continues at cps_8012c168 */
 void cps_8012c138(void)
 {
-/* hud/sprite fragment: continues at 0x8012c168 */
+/* hud/sprite fragment: continues at cps_8012c168 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16257,7 +16257,7 @@ void cps_8012c168(void)
     }
     /* Address: 0x8012C168, Size: 192 bytes, Blocks: 15 */
 
-    /* channel op: half[s3+140]=s0; jal 0x8018CFDC;
+    /* channel op: half[s3+140]=s0; jal cpst_8018cfdc;
        jal via word[s1+15612] (channel handle). CPS-blocked. */
 block_8012C168:
     v0 = 1;
@@ -16428,7 +16428,7 @@ void cps_8012c228(void)
     }
     /* Address: 0x8012C228, Size: 72 bytes, Blocks: 6 */
 
-    /* channel op B: jal 0x8018CFDC/0x80163154 on
+    /* channel op B: jal cpst_8018cfdc/0x80163154 on
        word[s1/s2+15612] handles; word[s1+18360]++ cursor.
        CPS-blocked. */
 block_8012C228:
@@ -16592,7 +16592,7 @@ void cps_8012c2b8(void)
     }
     /* Address: 0x8012C2B8, Size: 60 bytes, Blocks: 6 */
 
-    /* channel teardown: jal 0x8018CFDC, 0x801566A0,
+    /* channel teardown: jal cpst_8018cfdc, 0x801566A0,
        0x801566D4, 0x8019A460 on word[s1+15612]. CPS-blocked. */
 block_8012C2B8:
     s1 = 0x801E0000u;  /* 0x801E0000 */
@@ -16663,8 +16663,8 @@ void cps_8012c2f4(void)
     }
     /* Address: 0x8012C2F4, Size: 44 bytes, Blocks: 4 */
 
-    /* channel step: jal 0x8018CFDC; byte[s2+19];
-       jal 0x801274D8. CPS-blocked. */
+    /* channel step: jal cpst_8018cfdc; byte[s2+19];
+       jal scratch_013_set (0x801274D8). CPS-blocked. */
 block_8012C2F4:
     a1 = cpu->read_word(s1 + 15612);
     ra = 0x8012C300u;  /* jal link before delay slot */
@@ -16718,7 +16718,7 @@ void cps_8012c320(void)
     }
     /* Address: 0x8012C320, Size: 16 bytes, Blocks: 2 */
 
-    /* jal 0x8018BF40(word[s1+15612],...) -> cps_8012c330.
+    /* jal spr_draw_off (0x8018BF40)(word[s1+15612],...) -> cps_8012c330.
        CPS-blocked. */
 block_8012C320:
     a0 = cpu->read_word(s1 + 15612);
@@ -16752,7 +16752,7 @@ void cps_8012c330(void)
     }
     /* Address: 0x8012C330, Size: 32 bytes, Blocks: 3 */
 
-    /* channel tail: jal 0x8019A460 + 0x801274D8;
+    /* channel tail: jal cpst_8019a460 + 0x801274D8;
        half[s3+140]=v1 -> cps_8012c358. CPS-blocked. */
 block_8012C330:
     ra = 0x8012C338u;  /* jal link before delay slot */
@@ -16782,7 +16782,7 @@ block_8012C340:
  * split piece of cps_8012c168 — stream_block_load_draw: scratch_013_set + stream_block_decode + */
 void cps_8012c350(void)
 {
-/* hud/sprite fragment: continues at 0x8012c354 */
+/* hud/sprite fragment: continues at cps_8012c354 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16798,7 +16798,7 @@ block_8012C350:
  * split piece of cps_8012c168 — stream_block_load_draw: scratch_013_set + stream_block_decode + */
 void cps_8012c354(void)
 {
-/* hud/sprite fragment: continues at 0x8012c358 */
+/* hud/sprite fragment: continues at cps_8012c358 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16840,7 +16840,7 @@ block_8012C358:
  * ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c418(void)
 {
-/* hud/sprite fragment: continues at 0x8012c4f8 */
+/* hud/sprite fragment: continues at cps_8012c4f8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16949,7 +16949,7 @@ block_8012C4E8:
  * split piece of cps_8012c418 — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c4f8(void)
 {
-/* hud/sprite fragment: continues at 0x8012c4fc */
+/* hud/sprite fragment: continues at cps_8012c4fc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -16965,7 +16965,7 @@ block_8012C4F8:
  * split piece of cps_8012c418 — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c4fc(void)
 {
-/* hud/sprite fragment: continues at 0x8012C514 */
+/* hud/sprite fragment: continues at cps_8012c514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17009,10 +17009,10 @@ block_8012C50C:
 
 /* cps_8012c510 — clean CPS transliteration of br2eu_func_8012C510 (guest 0x8012c510)
  * from SLES_017.22_full_02.c.
- * CPS fallthrough stub — continues at 0x8012C514 — root: ui_leaf_step_l: leaf state step, no calls. */
+ * CPS fallthrough stub — continues at cps_8012c514 — root: ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c510(void)
 {
-/* hud/sprite fragment: continues at 0x8012c514 */
+/* hud/sprite fragment: continues at cps_8012c514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17028,7 +17028,7 @@ block_8012C510:
  * split piece of cps_8012c4fc — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c514(void)
 {
-/* hud/sprite fragment: continues at 0x8012CB90 */
+/* hud/sprite fragment: continues at cps_8012cb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17080,7 +17080,7 @@ block_8012C524:
  * split piece of cps_8012c4fc — ui_leaf_step_l: leaf state step, no calls. */
 void cps_8012c52c(void)
 {
-/* hud/sprite fragment: continues at 0x8012CB90 */
+/* hud/sprite fragment: continues at cps_8012cb90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17150,7 +17150,7 @@ void cps_8012c544(void)
     /* Address: 0x8012C544, Size: 264 bytes, Blocks: 6 */
 
     /* emit args: sp+16=half[s4+34], sp+20=0 ->
-       jal 0x8012E7CC + 4x jal 0x8018C824. CPS-blocked. */
+       jal hud_text_d (0x8012E7CC) + 4x jal spr_slot_pkt_submit (0x8018C824). CPS-blocked. */
 block_8012C544:
     a1 = s2;
     a2 = 0x8011F10Cu;  /* 0x80120000 -3828 */
@@ -17270,7 +17270,7 @@ void cps_8012c64c(void)
     /* Address: 0x8012C64C, Size: 376 bytes, Blocks: 8 */
 
     /* emit args: sp+16/20=s2/s0 -> 3x jal
-       0x8018C71C + jal 0x8018C824. CPS-blocked. */
+       0x8018C71C + jal spr_slot_pkt_submit (0x8018C824). CPS-blocked. */
 block_8012C64C:
     a1 = 0x00280000u;  /* 0x00280000 */
     a2 = 0x177E0000u;  /* 0x177E0000 */
@@ -17425,7 +17425,7 @@ void cps_8012c7c4(void)
     /* Address: 0x8012C7C4, Size: 96 bytes, Blocks: 3 */
 
     /* emit args (sibling of 0x8012C544): sp+16=
-       half[s4+34] -> jal 0x8012E7CC + jal 0x8018C824.
+       half[s4+34] -> jal hud_text_d (0x8012E7CC) + jal spr_slot_pkt_submit (0x8018C824).
        CPS-blocked. */
 block_8012C7C4:
     a2 = 0x8011F110u;  /* 0x80120000 -3824 */
@@ -17750,7 +17750,7 @@ void cps_8012ca84(void)
     /* Address: 0x8012CA84, Size: 108 bytes, Blocks: 4 */
 
     /* emit args loop: sp+16=v0, sp+20=s1 ->
-       3x jal 0x8018C71C. CPS-blocked. */
+       3x jal spr_attr_alloc_b (0x8018C71C). CPS-blocked. */
 block_8012CA84:
     v0 = 256;
     cpu->write_word(sp + 16, v0);
@@ -17817,7 +17817,7 @@ void cps_8012caf0(void)
     /* Address: 0x8012CAF0, Size: 116 bytes, Blocks: 3 */
 
     /* emit args: half[s4+34]/[s4+32] -> a1/a2/a3,
-       sp+16/20 pack -> jal 0x8018C824 + 0x8018CE70.
+       sp+16/20 pack -> jal spr_slot_pkt_submit (0x8018C824) + 0x8018CE70.
        CPS-blocked. */
 block_8012CAF0:
     a2 = 0x277E0000u;  /* 0x277E0000 */
@@ -17867,7 +17867,7 @@ block_8012CB60:
  * split piece of cps_8012c64c — sprite_node_emit_pair: spr_attr_alloc_b + spr_slot_pkt_submit + */
 void cps_8012cb64(void)
 {
-/* hud/sprite fragment: continues at 0x8012cb88 */
+/* hud/sprite fragment: continues at cps_8012cb88 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -17900,7 +17900,7 @@ void cps_8012cb88(void)
 
     /* Address: 0x8012CB88, Size: 8 bytes, Blocks: 1 */
 
-    /* emit: word[sp+16]=v0 -> jal 0x8018CE70.
+    /* emit: word[sp+16]=v0 -> jal sprite_node_emit_a (0x8018CE70).
        CPS-blocked. */
 block_8012CB88:
     ra = 0x8012CB90u;  /* jal link before delay slot */
@@ -18041,7 +18041,7 @@ block_8012F160:
 
 /* cps_8012f188 — clean CPS transliteration of br2eu_func_8012F188 (guest 0x8012f188)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012F1B0 — root: print_dispatch_wrap: print_dispatch_guest caller — routed debug print. */
+ * CPS fallthrough stub — continues at cps_8012f1b0 — root: print_dispatch_wrap: print_dispatch_guest caller — routed debug print. */
 void cps_8012f188(void)
 {
 /* status_text_dump piece -> print_dispatch_guest */
@@ -18057,7 +18057,7 @@ void cps_8012f188(void)
     }
     /* Address: 0x8012F188, Size: 40 bytes, Blocks: 2 */
 
-    /* dispatch entry: a1=word[v0*4+v1]; jal 0x8012CC6C(a0-
+    /* dispatch entry: a1=word[v0*4+v1]; jal print_dispatch_guest (0x8012CC6C)(a0-
        1188, a1); then a0=0x80120000, v1=0x801B148C, a1=half
        [0x1F800024]; -> cps_8012f1b0. CPS-blocked. */
 
@@ -18105,7 +18105,7 @@ void cps_8012f1b0(void)
     }
     /* Address: 0x8012F1B0, Size: 248 bytes, Blocks: 10 */
 
-    /* HUD/param dump: 8x jal 0x8012CC6C(0x8012xxxx-const,
+    /* HUD/param dump: 8x jal print_dispatch_guest (0x8012CC6C)(0x8012xxxx-const,
        fields from s0 record: half[124]*4 table ptr, byte[128/129],
        half[74..138 pairs], each with sp+16 spill); epilogue.
        CPS-blocked. */
@@ -18225,7 +18225,7 @@ block_8012F298:
 
 /* cps_8012fb54 — clean CPS transliteration of br2eu_func_8012FB54 (guest 0x8012fb54)
  * from SLES_017.22_full_03.c.
- * CPS fallthrough stub — continues at 0x8012FB58 — root: vec3_step_dispatch: fans out to vec3_step_toward / _spd / _q _q_spd — velocity-step variant selector. */
+ * CPS fallthrough stub — continues at cps_8012fb58 — root: vec3_step_dispatch: fans out to vec3_step_toward / _spd / _q _q_spd — velocity-step variant selector. */
 void cps_8012fb54(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -18467,7 +18467,7 @@ block_8012FC8C:
  * split piece of cps_8012fb58 — vec3_step_dispatch: fans out to vec3_step_toward / _spd / _q / */
 void cps_8012fcd0(void)
 {
-/* battle_camera_step piece: continues at 0x8012fce0 */
+/* battle_camera_step piece: continues at cps_8012fce0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -18480,7 +18480,7 @@ void cps_8012fcd0(void)
     }
     /* Address: 0x8012FCD0, Size: 16 bytes, Blocks: 2 */
 
-    /* halfword[s1+36]=t2; jal 0x80131F48;
+    /* halfword[s1+36]=t2; jal cps_80131f48;
        byte[s1+128] -> cps_8012fce0 mega-dispatch.
        CPS-blocked. */
 block_8012FCD0:
@@ -23437,7 +23437,7 @@ block_8013205C:
 
 /* cps_80132864 — clean CPS transliteration of br2eu_func_80132864 (guest 0x80132864)
  * from SLES_017.22_full_05.c.
- * CPS fallthrough stub — continues at 0x80132868 — root: gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single instruction GTE transform entry. */
+ * CPS fallthrough stub — continues at cps_80132868 — root: gte_xform1_wrapper: thin wrapper calling gte_xform1_ir — single instruction GTE transform entry. */
 void cps_80132864(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -23843,7 +23843,7 @@ void cps_80132ba0(void)
     /* Address: 0x80132BA0, Size: 464 bytes, Blocks: 39 */
 
     /* aim-angle solve (sibling of 0x8013358C): dist² =
-       s1²+(s3-s6)² -> jal 0x80194500 (isqrt); if <129 ->
+       s1²+(s3-s6)² -> jal fixed_rsqrt_q12 (0x80194500) (isqrt); if <129 ->
        atan2_lut(s0,s1); angle negated, wrapped mod 2048 (&0xFFF),
        stored half[s2+50]; half[s2+42] adjusted; tilt deltas
        -> param block emit. CPS-blocked. */
@@ -24237,10 +24237,10 @@ void cps_8013309c(void)
     }
     /* Address: 0x8013309C, Size: 200 bytes, Blocks: 6 */
 
-    /* heading/aim init: s1=v0; s0=sign of (s1-v1)<<20; jal 0x80129F78;
+    /* heading/aim init: s1=v0; s0=sign of (s1-v1)<<20; jal table_byte_next_a (0x80129F78);
        a0=v0&7 indexes angle_table -> half[s2+42]=s1±table[a0],
        half[s2+40]=table[a0+1]; half[s2+44]=0, half[s2+92..96]=-1024;
-       jal 0x8013237C(word[s3+32]+372, word[s4+32]+372); then copy
+       jal pair_depth_set (0x8013237C)(word[s3+32]+372, word[s4+32]+372); then copy
        half[s2+100/102/104]->[92/94/96], half[s2+120]++. CPS-blocked. */
 
 block_8013309C:
@@ -24608,7 +24608,7 @@ block_801332F0:
  * fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_80133428(void)
 {
-/* math fragment: continues at 0x80133450 */
+/* math fragment: continues at cps_80133450 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24644,7 +24644,7 @@ block_80133428:
  * split piece of cps_80133428 — fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_80133450(void)
 {
-/* math fragment: continues at 0x8013345c */
+/* math fragment: continues at cps_8013345c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24666,7 +24666,7 @@ block_80133450:
  * split piece of cps_80133450 — fixed-point muldiv step — 1 RMW pairs on s2+74 */
 void cps_8013345c(void)
 {
-/* math fragment: continues at 0x80133488 */
+/* math fragment: continues at cps_80133488 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24722,7 +24722,7 @@ void cps_80133488(void)
     }
     /* Address: 0x80133488, Size: 200 bytes, Blocks: 10 */
 
-    /* aim-error / angle-delta piece: s1²+s0² -> jal 0x80194500 (sqrt?);
+    /* aim-error / angle-delta piece: s1²+s0² -> jal fixed_rsqrt_q12 (0x80194500) (sqrt?);
        if s3>=129: atan2_lut(s0,s1) -> s0=-v0; s1=|half[s2+42]-s0|<<20>>20;
        if s1>=1025 s0+=2048; a0=s0&0xFFF; delta=(half[s2+42]>>9)&6
        indexes table_base -> half[s2+50]=a0+entry; residual
@@ -24833,7 +24833,7 @@ block_80133548:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133550(void)
 {
-/* math fragment: continues at 0x80133554 */
+/* math fragment: continues at cps_80133554 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24902,7 +24902,7 @@ block_80133574:
  * split piece of cps_80133488 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near */
 void cps_80133578(void)
 {
-/* math fragment: continues at 0x80133588 */
+/* math fragment: continues at cps_80133588 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -24940,7 +24940,7 @@ block_80133580:
  * split piece of cps_80133578 — rsqrt_step_leaf: fixed_rsqrt_q12-driven reciprocal-sqrt step near fixed_approach_s16. */
 void cps_80133588(void)
 {
-/* math fragment: continues at 0x8013358c */
+/* math fragment: continues at cps_8013358c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25290,7 +25290,7 @@ block_801336D8:
  * vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_80133768(void)
 {
-/* math fragment: continues at 0x80133794 */
+/* math fragment: continues at cps_80133794 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25388,7 +25388,7 @@ block_80133794:
  * split piece of cps_80133768 — vec_leaf_step: leaf vector step near vec3_step_toward family. */
 void cps_8013379c(void)
 {
-/* math fragment: continues at 0x801337ac */
+/* math fragment: continues at cps_801337ac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25583,10 +25583,10 @@ block_80133820:
 
 /* cps_801338ac — clean CPS transliteration of br2eu_func_801338AC (guest 0x801338ac)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x801338B4 — math fragment: continues at 0x801338b4 */
+ * CPS fallthrough stub — continues at cps_801338b4 — math fragment: continues at cps_801338b4 */
 void cps_801338ac(void)
 {
-/* math fragment: continues at 0x801338b4 */
+/* math fragment: continues at cps_801338b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25604,10 +25604,10 @@ block_801338AC:
 
 /* cps_801338b4 — clean CPS transliteration of br2eu_func_801338B4 (guest 0x801338b4)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338ac — CPS fallthrough stub — continues at 0x801338B4 */
+ * split piece of cps_801338ac — CPS fallthrough stub — continues at cps_801338b4 */
 void cps_801338b4(void)
 {
-/* math fragment: continues at 0x801338b8 */
+/* math fragment: continues at cps_801338b8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25620,10 +25620,10 @@ block_801338B4:
 
 /* cps_801338b8 — clean CPS transliteration of br2eu_func_801338B8 (guest 0x801338b8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338ac — CPS fallthrough stub — continues at 0x801338B4 */
+ * split piece of cps_801338ac — CPS fallthrough stub — continues at cps_801338b4 */
 void cps_801338b8(void)
 {
-/* math fragment: continues at 0x801338bc */
+/* math fragment: continues at cps_801338bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25636,7 +25636,7 @@ block_801338B8:
 
 /* cps_801338bc — clean CPS transliteration of br2eu_func_801338BC (guest 0x801338bc)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338b8 — CPS fallthrough stub — continues at 0x801338B4 */
+ * split piece of cps_801338b8 — CPS fallthrough stub — continues at cps_801338b4 */
 void cps_801338bc(void)
 {
 /* math leaf/terminal piece. */
@@ -25656,10 +25656,10 @@ block_801338BC:
 
 /* cps_801338fc — clean CPS transliteration of br2eu_func_801338FC (guest 0x801338fc)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x80133900 — math fragment: continues at 0x80133900 */
+ * CPS fallthrough stub — continues at cps_80133900 — math fragment: continues at cps_80133900 */
 void cps_801338fc(void)
 {
-/* math fragment: continues at 0x80133900 */
+/* math fragment: continues at cps_80133900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25673,10 +25673,10 @@ block_801338FC:
 
 /* cps_80133900 — clean CPS transliteration of br2eu_func_80133900 (guest 0x80133900)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801338fc — CPS fallthrough stub — continues at 0x80133900 */
+ * split piece of cps_801338fc — CPS fallthrough stub — continues at cps_80133900 */
 void cps_80133900(void)
 {
-/* math fragment: continues at 0x8013390c */
+/* math fragment: continues at cps_8013390c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25695,10 +25695,10 @@ block_80133900:
 
 /* cps_8013390c — clean CPS transliteration of br2eu_func_8013390C (guest 0x8013390c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133900 — CPS fallthrough stub — continues at 0x80133900 */
+ * split piece of cps_80133900 — CPS fallthrough stub — continues at cps_80133900 */
 void cps_8013390c(void)
 {
-/* math fragment: continues at 0x8013392C */
+/* math fragment: continues at cps_8013392c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25737,10 +25737,10 @@ block_8013391C:
 
 /* cps_80133928 — clean CPS transliteration of br2eu_func_80133928 (guest 0x80133928)
  * from SLES_017.22_full_06.c.
- * split piece of cps_8013390c — CPS fallthrough stub — continues at 0x80133900 */
+ * split piece of cps_8013390c — CPS fallthrough stub — continues at cps_80133900 */
 void cps_80133928(void)
 {
-/* math fragment: continues at 0x8013392c */
+/* math fragment: continues at cps_8013392c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25753,7 +25753,7 @@ block_80133928:
 
 /* cps_8013392c — clean CPS transliteration of br2eu_func_8013392C (guest 0x8013392c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80133900 — CPS fallthrough stub — continues at 0x80133900 */
+ * split piece of cps_80133900 — CPS fallthrough stub — continues at cps_80133900 */
 void cps_8013392c(void)
 {
 /* math leaf/terminal piece. */
@@ -25798,7 +25798,7 @@ block_8013393C:
  * muldiv_half_step: muldiv + s16 read/write — fixed-point leaf step. */
 void cps_80133c9c(void)
 {
-/* math fragment: continues at 0x80133ce8 */
+/* math fragment: continues at cps_80133ce8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25867,7 +25867,7 @@ block_80133CE0:
  * record_half_step_h: s16 read/write leaf step. */
 void cps_80133ce8(void)
 {
-/* math fragment: continues at 0x80133D74 */
+/* math fragment: continues at cps_80133d74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -25972,10 +25972,10 @@ block_80133D28:
 
 /* cps_80133d68 — clean CPS transliteration of br2eu_func_80133D68 (guest 0x80133d68)
  * from SLES_017.22_full_06.c.
- * CPS leaf — 3 stores, 0 loads — math fragment: continues at 0x80133d74 */
+ * CPS leaf — 3 stores, 0 loads — math fragment: continues at cps_80133d74 */
 void cps_80133d68(void)
 {
-/* math fragment: continues at 0x80133d74 */
+/* math fragment: continues at cps_80133d74 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26028,7 +26028,7 @@ block_80133D74:
  * fixed-point muldiv step — 1 RMW pairs on s1+4 */
 void cps_80133ebc(void)
 {
-/* math fragment: continues at 0x80133ef0 */
+/* math fragment: continues at cps_80133ef0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26061,7 +26061,7 @@ block_80133EBC:
  * split piece of cps_80133ebc — fixed-point muldiv step — 1 RMW pairs on s1+4 */
 void cps_80133ef0(void)
 {
-/* math fragment: continues at 0x801340c4 */
+/* math fragment: continues at cps_801340c4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26119,10 +26119,10 @@ block_80134080:
 
 /* cps_801340a8 — clean CPS transliteration of br2eu_func_801340A8 (guest 0x801340a8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80134080 — CPS leaf — 2 stores, 3 loads — vec3_step_toward_q_spd piece: continues at 0x801340b4 */
+ * split piece of cps_80134080 — CPS leaf — 2 stores, 3 loads — vec3_step_toward_q_spd piece: continues at cps_801340b4 */
 void cps_801340a8(void)
 {
-/* vec3_step_toward_q_spd piece: continues at 0x801340b4 */
+/* vec3_step_toward_q_spd piece: continues at cps_801340b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -26215,8 +26215,8 @@ void cps_801342d0(void)
 
     /* 3-point bone/joint transform emit: for each of 3 joints
        (s0+276, +356 offsets; half[s0+38/40/42] counters +5/+2/+1):
-       half++ -> sign-extend a0 -> jal 0x8018DE6C, jal
-       gte_xform3_t_ip(s4,s1), jal 0x8018A4F8(word[s0+8]+240/320/640,
+       half++ -> sign-extend a0 -> jal rotmat_rtps_build (0x8018DE6C), jal
+       gte_xform3_t_ip(s4,s1), jal prim_task_run (0x8018A4F8)(word[s0+8]+240/320/640,
        s3/s5, s2, mode 2/8/6). CPS-blocked. */
 
 block_801342D0:
@@ -27499,7 +27499,7 @@ void cps_80134c30(void)
     }
     /* Address: 0x80134C30, Size: 452 bytes, Blocks: 26 */
 
-    /* limb/part setup: 4x jal 0x8018A4F8 with ptrs a0+8264/+8308
+    /* limb/part setup: 4x jal prim_task_run (0x8018A4F8) with ptrs a0+8264/+8308
        and word[s1]/word[s1+8]+200/240/160 offsets, a3=1; then
        half[s1+40]+=20 and &0x0700 field selects param pairs
        (768/484, 512/272, 1024/485) for further emit. CPS-blocked. */
@@ -27888,7 +27888,7 @@ block_80134E28:
  * split piece of cps_80135630 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135238(void)
 {
-/* particle fragment: continues at 0x80135298 */
+/* particle fragment: continues at cps_80135298 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -27963,7 +27963,7 @@ block_80135264:
  * split piece of cps_80135238 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135298(void)
 {
-/* particle fragment: continues at 0x801352a0 */
+/* particle fragment: continues at cps_801352a0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28088,7 +28088,7 @@ block_801352FC:
  * split piece of cps_80135298 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_80135314(void)
 {
-/* particle fragment: continues at 0x8013531c */
+/* particle fragment: continues at cps_8013531c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -28105,7 +28105,7 @@ block_80135314:
  * split piece of cps_80135238 — prim_task_emit_wrap: prim_task_run caller. */
 void cps_8013531c(void)
 {
-/* particle fragment: continues at 0x80135320 */
+/* particle fragment: continues at cps_80135320 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29363,10 +29363,10 @@ block_80135898:
 
 /* cps_80135bd0 — clean CPS transliteration of br2eu_func_80135BD0 (guest 0x80135bd0)
  * from SLES_017.22_full_06.c.
- * split piece of cps_8013602c — particle fragment: continues at 0x80135bf8 */
+ * split piece of cps_8013602c — particle fragment: continues at cps_80135bf8 */
 void cps_80135bd0(void)
 {
-/* particle fragment: continues at 0x80135bf8 */
+/* particle fragment: continues at cps_80135bf8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29409,10 +29409,10 @@ block_80135BF0:
 
 /* cps_80135bf8 — clean CPS transliteration of br2eu_func_80135BF8 (guest 0x80135bf8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135bd0 — particle fragment: continues at 0x80135c3c */
+ * split piece of cps_80135bd0 — particle fragment: continues at cps_80135c3c */
 void cps_80135bf8(void)
 {
-/* particle fragment: continues at 0x80135c3c */
+/* particle fragment: continues at cps_80135c3c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29461,10 +29461,10 @@ block_80135C04:
 
 /* cps_80135c3c — clean CPS transliteration of br2eu_func_80135C3C (guest 0x80135c3c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135bf8 — particle fragment: continues at 0x80135d14 */
+ * split piece of cps_80135bf8 — particle fragment: continues at cps_80135d14 */
 void cps_80135c3c(void)
 {
-/* particle fragment: continues at 0x80135d14 */
+/* particle fragment: continues at cps_80135d14 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29534,10 +29534,10 @@ block_80135C3C:
 
 /* cps_80135d14 — clean CPS transliteration of br2eu_func_80135D14 (guest 0x80135d14)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135bf8 — particle fragment: continues at 0x80135de4 */
+ * split piece of cps_80135bf8 — particle fragment: continues at cps_80135de4 */
 void cps_80135d14(void)
 {
-/* particle fragment: continues at 0x80135de4 */
+/* particle fragment: continues at cps_80135de4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29632,10 +29632,10 @@ block_80135D28:
 
 /* cps_80135de4 — clean CPS transliteration of br2eu_func_80135DE4 (guest 0x80135de4)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135c3c — particle fragment: continues at 0x80135de8 */
+ * split piece of cps_80135c3c — particle fragment: continues at cps_80135de8 */
 void cps_80135de4(void)
 {
-/* particle fragment: continues at 0x80135de8 */
+/* particle fragment: continues at cps_80135de8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29651,7 +29651,7 @@ block_80135DE4:
  * rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135de8(void)
 {
-/* particle fragment: continues at 0x80135fb8 */
+/* particle fragment: continues at cps_80135fb8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29828,7 +29828,7 @@ block_80135F10:
  * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135fb8(void)
 {
-/* particle fragment: continues at 0x80135ff0 */
+/* particle fragment: continues at cps_80135ff0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29859,7 +29859,7 @@ block_80135FB8:
  * split piece of cps_80135de8 — rec_byte_step_d: half+byte read/write leaf step. */
 void cps_80135ff0(void)
 {
-/* particle fragment: continues at 0x80136074 */
+/* particle fragment: continues at cps_80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29899,10 +29899,10 @@ block_80135FF0:
 
 /* cps_8013602c — clean CPS transliteration of br2eu_func_8013602C (guest 0x8013602c)
  * from SLES_017.22_full_06.c.
- * split piece of cps_80135bd0 — vec/GTE fragment: continues at 0x80136074 */
+ * split piece of cps_80135bd0 — vec/GTE fragment: continues at cps_80136074 */
 void cps_8013602c(void)
 {
-/* vec/GTE fragment: continues at 0x80136074 */
+/* vec/GTE fragment: continues at cps_80136074 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -29991,10 +29991,10 @@ block_8013610C:
 
 /* cps_801361a4 — clean CPS transliteration of br2eu_func_801361A4 (guest 0x801361a4)
  * from SLES_017.22_full_06.c.
- * CPS fallthrough stub — continues at 0x801361A8 — vec/GTE fragment: continues at 0x801361a8 */
+ * CPS fallthrough stub — continues at cps_801361a8 — vec/GTE fragment: continues at cps_801361a8 */
 void cps_801361a4(void)
 {
-/* vec/GTE fragment: continues at 0x801361a8 */
+/* vec/GTE fragment: continues at cps_801361a8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30008,10 +30008,10 @@ block_801361A4:
 
 /* cps_801361a8 — clean CPS transliteration of br2eu_func_801361A8 (guest 0x801361a8)
  * from SLES_017.22_full_06.c.
- * split piece of cps_801361a4 — CPS fallthrough stub — continues at 0x801361A8 */
+ * split piece of cps_801361a4 — CPS fallthrough stub — continues at cps_801361a8 */
 void cps_801361a8(void)
 {
-/* vec/GTE fragment: continues at 0x801361bc */
+/* vec/GTE fragment: continues at cps_801361bc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -30063,7 +30063,7 @@ void cps_801361bc(void)
     /* Address: 0x801361BC, Size: 216 bytes, Blocks: 14 */
 
     /* ring-buffer fill variant (sibling of
-       0x80136294): half writes via jal 0x80129F78/0x8018DE6C,
+       0x80136294): half writes via jal table_byte_next_a (0x80129F78)/0x8018DE6C,
        word[s0-16/-12/-8] fixed-point -> -> cps_80136578.
        CPS-blocked. */
 block_801361BC:
@@ -30243,7 +30243,7 @@ void cps_80136294(void)
        records at 52B stride (s3 cursor): s1=half[s5+6]*2/(half
        [s7+20]+1) step; writes half pairs at s0=s3+40 (+4=1024,
        +6=-1024, +8 scaled), negated fixed-point triples at
-       s0-16/-12/-8 via jal 0x80129F78 rounding, half[s0-4/-2/0]
+       s0-16/-12/-8 via jal table_byte_next_a (0x80129F78) rounding, half[s0-4/-2/0]
        scaled deltas; half[s3]=16. CPS-blocked. */
 
 block_80136294:
@@ -31256,7 +31256,7 @@ block_80136940:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136944(void)
 {
-/* vec/GTE fragment: continues at 0x80136950 */
+/* vec/GTE fragment: continues at cps_80136950 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31284,7 +31284,7 @@ block_80136944:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136950(void)
 {
-/* vec/GTE fragment: continues at 0x80136974 */
+/* vec/GTE fragment: continues at cps_80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31330,10 +31330,10 @@ block_80136964:
 
 /* cps_80136970 — clean CPS transliteration of br2eu_func_80136970 (guest 0x80136970)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80136974 — root: vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
+ * CPS fallthrough stub — continues at cps_80136974 — root: vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136970(void)
 {
-/* vec/GTE fragment: continues at 0x80136974 */
+/* vec/GTE fragment: continues at cps_80136974 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31350,7 +31350,7 @@ block_80136970:
  * split piece of cps_80136950 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136974(void)
 {
-/* vec/GTE fragment: continues at 0x80136978 */
+/* vec/GTE fragment: continues at cps_80136978 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31379,7 +31379,7 @@ void cps_80136978(void)
     }
     /* Address: 0x80136978, Size: 92 bytes, Blocks: 2 */
 
-    /* anim state commit: jal 0x80156EF4; word[s1+28]=s0;
+    /* anim state commit: jal deferred_cmd_post (0x80156EF4); word[s1+28]=s0;
        half[s1+32/36/44] rotate-update. CPS-blocked. */
 block_80136978:
     a1 = 131;
@@ -31487,7 +31487,7 @@ block_80136A10:
  * split piece of cps_801369d4 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136a34(void)
 {
-/* vec/GTE fragment: continues at 0x80136a7c */
+/* vec/GTE fragment: continues at cps_80136a7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31538,7 +31538,7 @@ void cps_80136a7c(void)
     }
     /* Address: 0x80136A7C, Size: 20 bytes, Blocks: 2 */
 
-    /* vector emit: half[s1+40/42] -> jal 0x8018DAC0 -> cps_80136a90. CPS-blocked. */
+    /* vector emit: half[s1+40/42] -> jal angle_pair_rotmat (0x8018DAC0) -> cps_80136a90. CPS-blocked. */
 block_80136A7C:
     a0 = (int32_t)(int16_t)cpu->read_half(s1 + 40);
     a1 = (int32_t)(int16_t)cpu->read_half(s1 + 42);
@@ -31574,7 +31574,7 @@ void cps_80136a90(void)
     }
     /* Address: 0x80136A90, Size: 136 bytes, Blocks: 4 */
 
-    /* record copy: jal 0x80194C50 -> v0; copies 6+
+    /* record copy: jal gte_rtps_xform3_t (0x80194C50) -> v0; copies 6+
        words v0..+20 -> t4-t6 stack out-params.
        CPS-blocked. */
 block_80136A90:
@@ -31656,7 +31656,7 @@ block_80136B14:
  * split piece of cps_80136680 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a */
 void cps_80136b18(void)
 {
-/* vec/GTE fragment: continues at 0x80136b2c */
+/* vec/GTE fragment: continues at cps_80136b2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31679,7 +31679,7 @@ block_80136B18:
  * split piece of cps_80136b18 — vec_emit_spawn_wrap: vec_emit_spawn + deferred_cmd_post — spawn a vector-emit effect then post deferred cmd. */
 void cps_80136b2c(void)
 {
-/* vec/GTE fragment: continues at 0x80136b34 */
+/* vec/GTE fragment: continues at cps_80136b34 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31734,10 +31734,10 @@ block_80136B34:
 
 /* cps_80136b70 — clean CPS transliteration of br2eu_func_80136B70 (guest 0x80136b70)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x80136B78 — vec/GTE fragment: continues at 0x80136b78 */
+ * CPS fallthrough stub — continues at cps_80136b78 — vec/GTE fragment: continues at cps_80136b78 */
 void cps_80136b70(void)
 {
-/* vec/GTE fragment: continues at 0x80136b78 */
+/* vec/GTE fragment: continues at cps_80136b78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -31751,10 +31751,10 @@ block_80136B70:
 
 /* cps_80136b78 — clean CPS transliteration of br2eu_func_80136B78 (guest 0x80136b78)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80136b70 — CPS fallthrough stub — continues at 0x80136B78 */
+ * split piece of cps_80136b70 — CPS fallthrough stub — continues at cps_80136b78 */
 void cps_80136b78(void)
 {
-/* vec/GTE fragment: continues at 0x80136b80 */
+/* vec/GTE fragment: continues at cps_80136b80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32065,7 +32065,7 @@ void cps_80136e98(void)
     }
     /* Address: 0x80136E98, Size: 216 bytes, Blocks: 10 */
 
-    /* alloc loop: jal 0x8018BD40 x3 on
+    /* alloc loop: jal bitfield_or_write (0x8018BD40) x3 on
        word[s2+1600]/word[s1+4]/[s1+8]; half[s4+32].
        CPS-blocked. */
 block_80136E98:
@@ -32288,7 +32288,7 @@ void cps_80137074(void)
     /* Address: 0x80137074, Size: 20 bytes, Blocks: 1 */
 
     /* vec3 forwarder: a1=word[s0], a2=word[s0+4], a3=word[s0+8],
-       a0=v0; jal 0x801AD240. CPS-blocked. */
+       a0=v0; jal noop_a (0x801AD240). CPS-blocked. */
 
 block_80137074:
     a1 = cpu->read_word(s0);
@@ -32303,10 +32303,10 @@ block_80137074:
 
 /* cps_80137088 — clean CPS transliteration of br2eu_func_80137088 (guest 0x80137088)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137074 — CPS leaf — 1 jal(s), 0 stores, 3 loads — vec_emit_spawn piece: continues at 0x8013784c */
+ * split piece of cps_80137074 — CPS leaf — 1 jal(s), 0 stores, 3 loads — vec_emit_spawn piece: continues at cps_8013784c */
 void cps_80137088(void)
 {
-/* vec_emit_spawn piece: continues at 0x8013784c */
+/* vec_emit_spawn piece: continues at cps_8013784c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32325,10 +32325,10 @@ block_80137088:
 
 /* cps_80137528 — clean CPS transliteration of br2eu_func_80137528 (guest 0x80137528)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x8013752C — battle_intro_fsm_alias piece: continues at 0x80137868 */
+ * CPS fallthrough stub — continues at cps_8013752c — battle_intro_fsm_alias piece: continues at cps_80137868 */
 void cps_80137528(void)
 {
-/* battle_intro_fsm_alias piece: continues at 0x80137868 */
+/* battle_intro_fsm_alias piece: continues at cps_80137868 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32341,10 +32341,10 @@ block_80137528:
 
 /* cps_8013752c — clean CPS transliteration of br2eu_func_8013752C (guest 0x8013752c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_80137528 — CPS fallthrough stub — continues at 0x8013752C */
+ * split piece of cps_80137528 — CPS fallthrough stub — continues at cps_8013752c */
 void cps_8013752c(void)
 {
-/* battle_intro_fsm_alias piece: continues at 0x80137878 */
+/* battle_intro_fsm_alias piece: continues at cps_80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32363,10 +32363,10 @@ block_8013752C:
 
 /* cps_80137548 — clean CPS transliteration of br2eu_func_80137548 (guest 0x80137548)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013752c — CPS fallthrough stub — continues at 0x8013752C */
+ * split piece of cps_8013752c — CPS fallthrough stub — continues at cps_8013752c */
 void cps_80137548(void)
 {
-/* battle_intro_fsm_alias piece: continues at 0x80137878 */
+/* battle_intro_fsm_alias piece: continues at cps_80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32392,10 +32392,10 @@ block_80137548:
 
 /* cps_8013783c — clean CPS transliteration of br2eu_func_8013783C (guest 0x8013783c)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x8013784C — script_stream_tick piece: continues at 0x80137878 */
+ * CPS fallthrough stub — continues at cps_8013784c — script_stream_tick piece: continues at cps_80137878 */
 void cps_8013783c(void)
 {
-/* script_stream_tick piece: continues at 0x80137878 */
+/* script_stream_tick piece: continues at cps_80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32413,10 +32413,10 @@ block_8013783C:
 
 /* cps_8013784c — clean CPS transliteration of br2eu_func_8013784C (guest 0x8013784c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013783c — CPS fallthrough stub — continues at 0x8013784C */
+ * split piece of cps_8013783c — CPS fallthrough stub — continues at cps_8013784c */
 void cps_8013784c(void)
 {
-/* script_stream_tick piece: continues at 0x80137878 */
+/* script_stream_tick piece: continues at cps_80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32454,10 +32454,10 @@ block_8013785C:
 
 /* cps_80137868 — clean CPS transliteration of br2eu_func_80137868 (guest 0x80137868)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013784c — CPS fallthrough stub — continues at 0x8013784C */
+ * split piece of cps_8013784c — CPS fallthrough stub — continues at cps_8013784c */
 void cps_80137868(void)
 {
-/* script_stream_tick piece: continues at 0x80137878 */
+/* script_stream_tick piece: continues at cps_80137878 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32781,10 +32781,10 @@ block_80137974:
 
 /* cps_80137abc — clean CPS transliteration of br2eu_func_80137ABC (guest 0x80137abc)
  * from SLES_017.22_full_07.c.
- * split piece of cps_8013784c — CPS fallthrough stub — continues at 0x8013784C */
+ * split piece of cps_8013784c — CPS fallthrough stub — continues at cps_8013784c */
 void cps_80137abc(void)
 {
-/* script_stream_tick piece: continues at 0x80137C04 */
+/* script_stream_tick piece: continues at cps_80137c04 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32806,7 +32806,7 @@ block_80137ABC:
  * record_half_step_i: s16 read step. */
 void cps_80137afc(void)
 {
-/* script_stream_tick piece: continues at 0x80137b58 */
+/* script_stream_tick piece: continues at cps_80137b58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32918,7 +32918,7 @@ block_80137B48:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b58(void)
 {
-/* script_stream_tick piece: continues at 0x80137bc8 */
+/* script_stream_tick piece: continues at cps_80137bc8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -32960,7 +32960,7 @@ block_80137B60:
  * split piece of cps_80137afc — record_half_step_i: s16 read step. */
 void cps_80137b74(void)
 {
-/* script_stream_tick piece: continues at 0x80137bd4 */
+/* script_stream_tick piece: continues at cps_80137bd4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -33114,7 +33114,7 @@ void cps_80137c04(void)
     }
     /* Address: 0x80137C04, Size: 16 bytes, Blocks: 2 */
 
-    /* jal 0x801A482C -> cps_80137cb4. CPS-blocked. */
+    /* jal task_slot_step (0x801A482C) -> cps_80137cb4. CPS-blocked. */
 block_80137C04:
     ra = 0x80137C0Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -33134,7 +33134,7 @@ block_80137C0C:
  * record_ptr_step: s16 read/write + ptr step. */
 void cps_80137c14(void)
 {
-/* script_stream_tick piece: continues at 0x80137cb4 */
+/* script_stream_tick piece: continues at cps_80137cb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -33252,7 +33252,7 @@ block_80137CA4:
  * split piece of cps_80137c04 — record_half_step_i: s16 read step. */
 void cps_80137cb4(void)
 {
-/* script_stream_tick piece: continues at 0x80137cb4 */
+/* script_stream_tick piece: continues at cps_80137cb4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -33562,7 +33562,7 @@ void cps_80138074(void)
     }
     /* Address: 0x80138074, Size: 112 bytes, Blocks: 4 */
 
-    /* event/record alloc: a2=6, a3+=31952; jal 0x801A4308 ->
+    /* event/record alloc: a2=6, a3+=31952; jal task_node_alloc (0x801A4308) ->
        a0; if nonzero: word[a0+16] record gets s0-s3/s0 copy,
        half[v0+20]=half[s0+2]+1, half[v0+22]=0; epilogue (v0=a0).
        CPS-blocked. */
@@ -33715,10 +33715,10 @@ void cps_80138174(void)
     }
     /* Address: 0x80138174, Size: 212 bytes, Blocks: 14 */
 
-    /* aim/angle solve: (v0² + v1<<12) -> jal 0x801943D4 (atan2-ish);
+    /* aim/angle solve: (v0² + v1<<12) -> jal isqrt (0x801943D4) (atan2-ish);
        s2=v0>>12; if (half[sp+40]+50)&0xFFFF >=613 or half[sp+42]
        outside [-50,563): fallback s1=0; else s1 = index from
-       half[sp+42] range -> jal 0x80142B3C(s0-a0, s0-v1); then
+       half[sp+42] range -> jal angle_from_xy (0x80142B3C)(s0-a0, s0-v1); then
        lut_cos/lut_sin_q12(s0-1024) * s1>>3 -> half[sp+64];
        -> cps_80138248. CPS-blocked. */
 
@@ -33930,8 +33930,8 @@ void cps_80138248(void)
 
     /* aim-reticle/HUD emit (cont. of 0x80138174): screen coords
        (v1>>1+240, (v0-256 sign-adj)>>1+240) -> half[sp+56/58],
-       scaled offset -> half[sp+66]; jal 0x8018E4D0 sprite emit;
-       then repeated jal 0x801ACE48 with param blocks
+       scaled offset -> half[sp+66]; jal rand_lcg (0x8018E4D0) sprite emit;
+       then repeated jal rect_prim_spawn (0x801ACE48) with param blocks
        {192/224,64,57,30937,1} at reticle positions
        (sp+56/58 +/- half[sp+64/66]-16), gated s2<150. CPS-blocked. */
 
@@ -34452,7 +34452,7 @@ void cps_801385b0(void)
 
 /* cps_801388dc — clean CPS transliteration of br2eu_func_801388DC (guest 0x801388dc)
  * from SLES_017.22_full_07.c.
- * CPS fallthrough stub — continues at 0x801388EC — s0+14 halfword countdown */
+ * CPS fallthrough stub — continues at cps_801388ec — s0+14 halfword countdown */
 void cps_801388dc(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -34469,7 +34469,7 @@ void cps_801388dc(void)
 
 /* cps_801388ec — clean CPS transliteration of br2eu_func_801388EC (guest 0x801388ec)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388dc — CPS fallthrough stub — continues at 0x801388EC */
+ * split piece of cps_801388dc — CPS fallthrough stub — continues at cps_801388ec */
 void cps_801388ec(void)
 {
 /* slot_triple_tick piece -> slot_triple_set */
@@ -34524,7 +34524,7 @@ void cps_8013890c(void)
 
 /* cps_80138910 — clean CPS transliteration of br2eu_func_80138910 (guest 0x80138910)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388ec — CPS fallthrough stub — continues at 0x801388EC */
+ * split piece of cps_801388ec — CPS fallthrough stub — continues at cps_801388ec */
 void cps_80138910(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -34547,7 +34547,7 @@ void cps_80138910(void)
 
 /* cps_8013892c — clean CPS transliteration of br2eu_func_8013892C (guest 0x8013892c)
  * from SLES_017.22_full_07.c.
- * split piece of cps_801388ec — CPS fallthrough stub — continues at 0x801388EC */
+ * split piece of cps_801388ec — CPS fallthrough stub — continues at cps_801388ec */
 void cps_8013892c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -35980,7 +35980,7 @@ block_80139830:
  * split piece of cps_80138cec — impact_fx_update renames.map: GTE transform loop + task_slot_step — */
 void cps_80139834(void)
 {
-/* impact_fx_type_alias piece: continues at 0x80139954 */
+/* impact_fx_type_alias piece: continues at cps_80139954 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36097,7 +36097,7 @@ block_80139874:
  * rec_byte_step_e: half+byte read/write leaf step. */
 void cps_80139954(void)
 {
-/* impact_fx_type_alias piece: continues at 0x80139a0c */
+/* impact_fx_type_alias piece: continues at cps_80139a0c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36641,10 +36641,10 @@ void cps_80139d98(void)
 
 /* cps_80139f1c — clean CPS transliteration of br2eu_func_80139F1C (guest 0x80139f1c)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x80139F20 — impact_fx_emit_tick piece: continues at 0x80139f20 */
+ * CPS fallthrough stub — continues at cps_80139f20 — impact_fx_emit_tick piece: continues at cps_80139f20 */
 void cps_80139f1c(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f20 */
+/* impact_fx_emit_tick piece: continues at cps_80139f20 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36657,10 +36657,10 @@ block_80139F1C:
 
 /* cps_80139f20 — clean CPS transliteration of br2eu_func_80139F20 (guest 0x80139f20)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f1c — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f1c — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139f20(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f28 */
+/* impact_fx_emit_tick piece: continues at cps_80139f28 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36677,10 +36677,10 @@ block_80139F20:
 
 /* cps_80139f28 — clean CPS transliteration of br2eu_func_80139F28 (guest 0x80139f28)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f20 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f20 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139f28(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139F90 */
+/* impact_fx_emit_tick piece: continues at cps_80139f90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36726,10 +36726,10 @@ block_80139F38:
 
 /* cps_80139f40 — clean CPS transliteration of br2eu_func_80139F40 (guest 0x80139f40)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x80139F58 — impact_fx_emit_tick piece: continues at 0x80139f58 */
+ * CPS fallthrough stub — continues at cps_80139f58 — impact_fx_emit_tick piece: continues at cps_80139f58 */
 void cps_80139f40(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f58 */
+/* impact_fx_emit_tick piece: continues at cps_80139f58 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36751,10 +36751,10 @@ block_80139F40:
 
 /* cps_80139f58 — clean CPS transliteration of br2eu_func_80139F58 (guest 0x80139f58)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f40 — CPS fallthrough stub — continues at 0x80139F58 */
+ * split piece of cps_80139f40 — CPS fallthrough stub — continues at cps_80139f58 */
 void cps_80139f58(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f68 */
+/* impact_fx_emit_tick piece: continues at cps_80139f68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36774,10 +36774,10 @@ block_80139F58:
 
 /* cps_80139f68 — clean CPS transliteration of br2eu_func_80139F68 (guest 0x80139f68)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f28 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f28 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139f68(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f78 */
+/* impact_fx_emit_tick piece: continues at cps_80139f78 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36797,10 +36797,10 @@ block_80139F68:
 
 /* cps_80139f78 — clean CPS transliteration of br2eu_func_80139F78 (guest 0x80139f78)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f28 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f28 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139f78(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f8c */
+/* impact_fx_emit_tick piece: continues at cps_80139f8c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36819,10 +36819,10 @@ block_80139F78:
 
 /* cps_80139f8c — clean CPS transliteration of br2eu_func_80139F8C (guest 0x80139f8c)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f40 — CPS fallthrough stub — continues at 0x80139F58 */
+ * split piece of cps_80139f40 — CPS fallthrough stub — continues at cps_80139f58 */
 void cps_80139f8c(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139f90 */
+/* impact_fx_emit_tick piece: continues at cps_80139f90 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36835,10 +36835,10 @@ block_80139F8C:
 
 /* cps_80139f90 — clean CPS transliteration of br2eu_func_80139F90 (guest 0x80139f90)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f20 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f20 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139f90(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x80139fb0 */
+/* impact_fx_emit_tick piece: continues at cps_80139fb0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36878,7 +36878,7 @@ block_80139F9C:
 
 /* cps_80139fb0 — clean CPS transliteration of br2eu_func_80139FB0 (guest 0x80139fb0)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139f90 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139f90 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139fb0(void)
 {
 /* impact_fx_emit_tick thunk -> impact_fx_spawn */
@@ -36898,10 +36898,10 @@ block_80139FB0:
 
 /* cps_80139fb8 — clean CPS transliteration of br2eu_func_80139FB8 (guest 0x80139fb8)
  * from SLES_017.22_full_08.c.
- * split piece of cps_80139fb0 — CPS fallthrough stub — continues at 0x80139F20 */
+ * split piece of cps_80139fb0 — CPS fallthrough stub — continues at cps_80139f20 */
 void cps_80139fb8(void)
 {
-/* impact_fx_emit_tick piece: continues at 0x8013a4e4 */
+/* impact_fx_emit_tick piece: continues at cps_8013a4e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -36943,7 +36943,7 @@ block_8013A468:
  * rec_byte_step_f: byte read/write leaf step. */
 void cps_8013a470(void)
 {
-/* impact_fx_spawn piece: continues at 0x8013a4e4 */
+/* impact_fx_spawn piece: continues at cps_8013a4e4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -37037,7 +37037,7 @@ block_8013A4B4:
  * split piece of cps_8013a470 — rec_byte_step_f: byte read/write leaf step. */
 void cps_8013a4e4(void)
 {
-/* impact_fx_spawn piece: continues at 0x8013a514 */
+/* impact_fx_spawn piece: continues at cps_8013a514 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -37918,7 +37918,7 @@ void cps_8013a9a8(void)
     }
     /* Address: 0x8013A9A8, Size: 48 bytes, Blocks: 2 */
 
-    /* epilogue: jal 0x801A48FC; pop s2-s6,ra. */
+    /* epilogue: jal task_node_free (0x801A48FC); pop s2-s6,ra. */
 block_8013A9A8:
     ra = 0x8013A9B0u;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -37947,7 +37947,7 @@ block_8013A9B0:
  * record_half_step_j: s16 read/write leaf step. */
 void cps_8013ab40(void)
 {
-/* spark_trail_task_update piece: continues at 0x8013ab68 */
+/* spark_trail_task_update piece: continues at cps_8013ab68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -38005,7 +38005,7 @@ block_8013AB64:
  * split piece of cps_8013ab40 — record_half_step_j: s16 read/write leaf step. */
 void cps_8013ab68(void)
 {
-/* spark_trail_task_update piece: continues at 0x8013ab7c */
+/* spark_trail_task_update piece: continues at cps_8013ab7c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -38044,7 +38044,7 @@ block_8013AB7C:
 
 /* cps_8013ac6c — clean CPS transliteration of br2eu_func_8013AC6C (guest 0x8013ac6c)
  * from SLES_017.22_full_08.c.
- * CPS fallthrough stub — continues at 0x8013AC70 — root: fx_spawn_init: projectile/FX spawn — word[a1]=s1, unaligned 24B record build, range gates (v0<46, v0<401), s2&0x80 flag select, tables @0x801B0000+off; continues 0x8013AD9C. */
+ * CPS fallthrough stub — continues at cps_8013ac70 — root: fx_spawn_init: projectile/FX spawn — word[a1]=s1, unaligned 24B record build, range gates (v0<46, v0<401), s2&0x80 flag select, tables @0x801B0000+off; continues 0x8013AD9C. */
 void cps_8013ac6c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -38065,7 +38065,7 @@ block_8013AC6C:
  * tables @0x801B0000+off; continues 0x8013AD9C. */
 void cps_8013ac70(void)
 {
-/* popup_spawn piece: continues at 0x8013ad9c */
+/* popup_spawn piece: continues at cps_8013ad9c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -38324,7 +38324,7 @@ void cps_8013ae1c(void)
     /* sprite/command dispatcher: gate word[s1+20]&0x80; index
        (word&0x7F)<32 -> jr table 0x80120000+344; cases build GPU
        packets (tag 0x40000000 | half[t0+4], half[t0+2], word[s1+16]
-       +0x40000000) -> jal 0x8018E4D0; coord fixups half[s1]-128.
+       +0x40000000) -> jal rand_lcg (0x8018E4D0); coord fixups half[s1]-128.
        CPS-blocked. */
 
 block_8013AE1C:
@@ -38634,7 +38634,7 @@ block_8013B074:
  * rec_byte_step_g: half+byte read/write leaf step. */
 void cps_8013b1a4(void)
 {
-/* iris_wipe_update piece: continues at 0x8013b1d8 */
+/* iris_wipe_update piece: continues at cps_8013b1d8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -38696,7 +38696,7 @@ block_8013B1CC:
  * gte_ptr_emit: GTE + s16 + ptr ops — transform/emit leaf. */
 void cps_8013b1d8(void)
 {
-/* iris_wipe_update piece: continues at 0x8013B334 */
+/* iris_wipe_update piece: continues at cps_8013b334 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -38883,7 +38883,7 @@ void cps_8013b334(void)
     }
     /* Address: 0x8013B334, Size: 104 bytes, Blocks: 4 */
 
-    /* setup: jal 0x80195210/0x80195270 on
+    /* setup: jal gte_rot_load (0x80195210)/0x80195270 on
        word[0x801C0000-6088]; sp+16/20 pack -> jal
        0x80195500. CPS-blocked. */
 block_8013B334:
@@ -38979,7 +38979,7 @@ void cps_8013b3a8(void)
     /* Address: 0x8013B3A8, Size: 352 bytes, Blocks: 11 */
 
     /* aim solve: half[s5+840]/half[s2-2/-4/0],
-       half[s7] -> jal 0x80142B3C. CPS-blocked. */
+       half[s7] -> jal angle_from_xy (0x80142B3C). CPS-blocked. */
 block_8013B3A8:
     v0 = (int32_t)(int16_t)cpu->read_half(s5 + 840);
     /* nop */  /* 0x8013B3AC: 0x00000000 */
@@ -39150,7 +39150,7 @@ block_8013B4E4:
  * split piece of cps_8013b3a8 — angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b508(void)
 {
-/* iris_wipe_update piece: continues at 0x8013b544 */
+/* iris_wipe_update piece: continues at cps_8013b544 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -39205,7 +39205,7 @@ block_8013B544:
  * split piece of cps_8013b544 — angle_step_fx: angle_from_xy-driven angular step for FX placement. */
 void cps_8013b548(void)
 {
-/* iris_wipe_update piece: continues at 0x8013b578 */
+/* iris_wipe_update piece: continues at cps_8013b578 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -41403,7 +41403,7 @@ block_8013C508:
 
 /* cps_8013c50c — clean CPS transliteration of br2eu_func_8013C50C (guest 0x8013c50c)
  * from SLES_017.22_full_09.c.
- * CPS fallthrough stub — continues at 0x8013C510 — root: gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE ops — loads rotation+translation into GTE for a transform. */
+ * CPS fallthrough stub — continues at cps_8013c510 — root: gte_rot_tr_setup: angle_from_xy + gte_rot_load + gte_tr_load + GTE ops — loads rotation+translation into GTE for a transform. */
 void cps_8013c50c(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -41488,7 +41488,7 @@ void cps_8013c540(void)
 
     /* record field fetch + call: v0=half[s4+7196]*8 -> s4+v0;
        v1=word[word[s4+5768]+32]; a1=word[v1+216]-half[v0+7058];
-       jal 0x80142B3C(s2, a1); then a1=2048-v0, a2=word[word[s4+5772]];
+       jal angle_from_xy (0x80142B3C)(s2, a1); then a1=2048-v0, a2=word[word[s4+5772]];
        -> cps_8013c578. CPS-blocked. */
 
 block_8013C540:
@@ -42131,7 +42131,7 @@ block_8013C97C:
  * split piece of cps_8013c750 — gte_pure_kernel: 8 gte_execute ops, no calls — standalone GTE */
 void cps_8013c984(void)
 {
-/* iris_wipe_spawn piece: continues at 0x8013C99C */
+/* iris_wipe_spawn piece: continues at cps_8013c99c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44074,9 +44074,9 @@ void cps_8013dbd8(void)
     /* sprite anim/palette effect: frame save; unaligned LUT load
        0x80120000+472 via lwl/lwr; per-frame half[s3+194]--, lerp
        halves s3+176/180 += t0/t1 steps, ratio half[194]<<12 /
-       half[192] -> a3; jal 0x801A482C + 0x80194840; writes RGB
+       half[192] -> a3; jal task_slot_step (0x801A482C) + 0x80194840; writes RGB
        triples from sp+80 into record word[s3+12]*80+s3 (+4..6 and
-       +44..46 — dual palette slots); then loop jal 0x801954D0 over
+       +44..46 — dual palette slots); then loop jal gte_rtps_vec3 (0x801954D0) over
        s3+160 records. CPS-blocked. */
 
 block_8013DBD8:
@@ -44569,7 +44569,7 @@ block_8013E0C0:
  * record field update — reads/writes v0+6 and v0+12 */
 void cps_8013e654(void)
 {
-/* task/trig fragment: continues at 0x8013e71c */
+/* task/trig fragment: continues at cps_8013e71c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44688,7 +44688,7 @@ block_8013E71C:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e72c(void)
 {
-/* task/trig fragment: continues at 0x8013e778 */
+/* task/trig fragment: continues at cps_8013e778 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44725,7 +44725,7 @@ block_8013E72C:
  * split piece of cps_8013e72c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e778(void)
 {
-/* task/trig fragment: continues at 0x8013e784 */
+/* task/trig fragment: continues at cps_8013e784 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44754,7 +44754,7 @@ block_8013E778:
  * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e784(void)
 {
-/* task/trig fragment: continues at 0x8013e788 */
+/* task/trig fragment: continues at cps_8013e788 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44770,7 +44770,7 @@ block_8013E784:
  * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e788(void)
 {
-/* task/trig fragment: continues at 0x8013e790 */
+/* task/trig fragment: continues at cps_8013e790 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44807,7 +44807,7 @@ void cps_8013e790(void)
     /* Address: 0x8013E790, Size: 64 bytes, Blocks: 6 */
 
     /* countdown/timer piece: half[s1+480]--; if result<0 and
-       word[s1+508]!=0: jal 0x801A48FC then 0x801A482C -> cps_8013ead4;
+       word[s1+508]!=0: jal task_node_free (0x801A48FC) then 0x801A482C -> cps_8013ead4;
        else v0=half[s1+482] -> cps_8013e7d0. CPS-blocked. */
 
 block_8013E790:
@@ -44869,7 +44869,7 @@ block_8013E7CC:
  * split piece of cps_8013e790 — task_slot_free_wrap: task_slot_step + task_node_free — advance then */
 void cps_8013e7d0(void)
 {
-/* task/trig fragment: continues at 0x8013e7dc */
+/* task/trig fragment: continues at cps_8013e7dc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44890,7 +44890,7 @@ block_8013E7D0:
  * split piece of cps_8013e7d0 — task_slot_free_wrap: task_slot_step + task_node_free — advance then free task node. */
 void cps_8013e7dc(void)
 {
-/* task/trig fragment: continues at 0x8013e800 */
+/* task/trig fragment: continues at cps_8013e800 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44917,7 +44917,7 @@ block_8013E7DC:
  * split piece of cps_8013e7dc — task_slot_free_wrap: task_slot_step + task_node_free — advance then free task node. */
 void cps_8013e800(void)
 {
-/* task/trig fragment: continues at 0x8013e80c */
+/* task/trig fragment: continues at cps_8013e80c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44938,7 +44938,7 @@ block_8013E800:
  * split piece of cps_8013e778 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e80c(void)
 {
-/* task/trig fragment: continues at 0x8013e818 */
+/* task/trig fragment: continues at cps_8013e818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44956,7 +44956,7 @@ block_8013E80C:
  * split piece of cps_8013e80c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e818(void)
 {
-/* task/trig fragment: continues at 0x8013e820 */
+/* task/trig fragment: continues at cps_8013e820 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44972,7 +44972,7 @@ block_8013E818:
  * split piece of cps_8013e818 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e820(void)
 {
-/* task/trig fragment: continues at 0x8013e82c */
+/* task/trig fragment: continues at cps_8013e82c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -44995,7 +44995,7 @@ block_8013E820:
  * split piece of cps_8013e820 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e82c(void)
 {
-/* task/trig fragment: continues at 0x8013e850 */
+/* task/trig fragment: continues at cps_8013e850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45023,7 +45023,7 @@ block_8013E82C:
  * split piece of cps_8013e82c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e850(void)
 {
-/* task/trig fragment: continues at 0x8013e858 */
+/* task/trig fragment: continues at cps_8013e858 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45043,7 +45043,7 @@ block_8013E850:
  * split piece of cps_8013e850 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e858(void)
 {
-/* task/trig fragment: continues at 0x8013e86c */
+/* task/trig fragment: continues at cps_8013e86c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45077,7 +45077,7 @@ block_8013E858:
  * split piece of cps_8013e858 — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013e86c(void)
 {
-/* task/trig fragment: continues at 0x8013e874 */
+/* task/trig fragment: continues at cps_8013e874 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45383,7 +45383,7 @@ block_8013EAD4:
  * record_half_step_k: s16 read step. */
 void cps_8013eb0c(void)
 {
-/* task/trig fragment: continues at 0x8013eb5c */
+/* task/trig fragment: continues at cps_8013eb5c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45482,7 +45482,7 @@ void cps_8013eb5c(void)
     /* Address: 0x8013EB5C, Size: 384 bytes, Blocks: 9 */
 
     /* emit call: a2=14, sp+16=0, sp+20=v0 ->
-       jal 0x801A4308 -> cps_8013ecf0; half[v0+2] read.
+       jal task_node_alloc (0x801A4308) -> cps_8013ecf0; half[v0+2] read.
        CPS-blocked. */
 block_8013EB5C:
     a3 = 0x8013E72Cu;  /* 0x80140000 -6356 */
@@ -45633,7 +45633,7 @@ block_8013ECCC:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecdc(void)
 {
-/* task/trig fragment: continues at 0x8013ecf0 */
+/* task/trig fragment: continues at cps_8013ecf0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45672,7 +45672,7 @@ block_8013ECEC:
  * split piece of cps_8013eb5c — task_node_spawn: task_node_alloc wrapper in the emit_task region. */
 void cps_8013ecf0(void)
 {
-/* task/trig fragment: continues at 0x8013ed10 */
+/* task/trig fragment: continues at cps_8013ed10 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45707,7 +45707,7 @@ block_8013ECF0:
  * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed10(void)
 {
-/* task/trig fragment: continues at 0x8013ed24 */
+/* task/trig fragment: continues at cps_8013ed24 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45783,7 +45783,7 @@ block_8013ED48:
  * split piece of cps_8013eb0c — record_half_step_k: s16 read step. */
 void cps_8013ed50(void)
 {
-/* task/trig fragment: continues at 0x8013ed80 */
+/* task/trig fragment: continues at cps_8013ed80 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45823,7 +45823,7 @@ block_8013ED50:
  * split piece of cps_8013ed24 — record_half_step_k: s16 read step. */
 void cps_8013ed80(void)
 {
-/* task/trig fragment: continues at 0x8013f888 */
+/* task/trig fragment: continues at cps_8013f888 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45848,7 +45848,7 @@ block_8013ED80:
  * ctx field reader — reads s6+2410/2414; builds 6-word stack frame */
 void cps_8013f828(void)
 {
-/* node_list_walk_e piece: continues at 0x8013f888 */
+/* node_list_walk_e piece: continues at cps_8013f888 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -45917,7 +45917,7 @@ block_8013F884:
  * record_half_step_l: s16 read/write leaf step. */
 void cps_8013f888(void)
 {
-/* node_list_walk_e piece: continues at 0x8013F904 */
+/* node_list_walk_e piece: continues at cps_8013f904 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -46023,7 +46023,7 @@ void cps_8013f904(void)
     }
     /* Address: 0x8013F904, Size: 16 bytes, Blocks: 2 */
 
-    /* jal 0x801A482C -> cps_80140198. CPS-blocked. */
+    /* jal task_slot_step (0x801A482C) -> cps_80140198. CPS-blocked. */
 block_8013F904:
     ra = 0x8013F90Cu;  /* jal link before delay slot */
     /* delay slot (always executes) */
@@ -46470,7 +46470,7 @@ block_8013FC28:
  * split piece of cps_8013f914 — gte_sxy_pack_ctrl: gte_rtps3_sxy_pack_ctrl + GTE ops — packs */
 void cps_8013fc38(void)
 {
-/* node_list_walk_e piece: continues at 0x8013fd2c */
+/* node_list_walk_e piece: continues at cps_8013fd2c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -46543,7 +46543,7 @@ block_8013FC38:
  * split piece of cps_8013fc38 — gte_sxy_pack_ctrl: gte_rtps3_sxy_pack_ctrl + GTE ops — packs screen-space xy coords via GTE RTPS. */
 void cps_8013fd2c(void)
 {
-/* node_list_walk_e piece: continues at 0x8013fd48 */
+/* node_list_walk_e piece: continues at cps_8013fd48 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -47264,7 +47264,7 @@ block_80142A54:
     }
 
 block_80142A5C:
-    /* jal 0x801AD38C — lookup/resolve; args (a0=1, a1=1, a2=[s2+2]+1,
+    /* jal fx_group_alloc (0x801AD38C) — lookup/resolve; args (a0=1, a1=1, a2=[s2+2]+1,
      * a3=(int16)s0). ra = return block 0x80142A74. */
     a1 = a0;
     a2 = cpu->read_byte(s2 + 2);
@@ -47291,7 +47291,7 @@ block_80142A74:
     }
 
 block_80142A80:
-    /* jal 0x801AD240 — second resolve; args (a0=s0, a1=s2,
+    /* jal noop_a (0x801AD240) — second resolve; args (a0=s0, a1=s2,
      * a2=[s2+2]+1, a3=[s2+32]+(s3&0xFF)*80+52). ra = 0x80142AAC. */
     a1 = s2;
     v1 = s3 & 0x00FF;  /* 0x80142A84: 0x326300FF */
@@ -47322,7 +47322,7 @@ block_80142AAC:
     }
 
 block_80142AB4:
-    /* jal 0x801A46C8 — args (a0=s0, a1=2). ra = 0x80142ABC -> out. */
+    /* jal op_node_rebucket (0x801A46C8) — args (a0=s0, a1=2). ra = 0x80142ABC -> out. */
     ra = 0x80142ABCu;  /* jal link before delay slot */
     /* delay slot (always executes) */
     a1 = 2;
@@ -47351,7 +47351,7 @@ block_80142AC4:
     }
 
 block_80142AD0:
-    /* jal 0x8013F7A0 — regs write/emit. idx=[s2+2];
+    /* jal empty_leaf_d (0x8013F7A0) — regs write/emit. idx=[s2+2];
      * a0 = idx*264 + 0x1F8000E8, a1 = (idx^1)*264 + 0x1F8000E8
      * (idx*33<<3 == idx*264; net two channel slots 264B apart). */
     v0 = cpu->read_byte(s2 + 2);
@@ -60831,7 +60831,7 @@ block_80161C20:
  * patch t1[0..2] = t2/t3/t4, return 1. hud_name_fixup piece. */
 void cps_80163ddc(void)
 {
-/* hud_name_fixup piece: continues at 0x80163E28 */
+/* hud_name_fixup piece: continues at cps_80163e28 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -60902,7 +60902,7 @@ block_80163E14:
  * ui_leaf_step_e: 2-block leaf state step, no calls. */
 void cps_80163e28(void)
 {
-/* hud_name_fixup piece: continues at 0x80163DDC */
+/* hud_name_fixup piece: continues at cps_80163ddc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -61874,7 +61874,7 @@ void cps_80179a5c(void)
 
 /* cps_80179a60 — clean CPS transliteration of br2eu_func_80179A60 (guest 0x80179a60)
  * from SLES_017.22_full_34.c.
- * split piece of cps_80179a5c — CPS fallthrough stub — continues at 0x80179A60 */
+ * split piece of cps_80179a5c — CPS fallthrough stub — continues at cps_80179a60 */
 void cps_80179a60(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62147,7 +62147,7 @@ void cps_8017ab5c(void)
 
 /* cps_8017ac44 — clean CPS transliteration of br2eu_func_8017AC44 (guest 0x8017ac44)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017ac4c — single word read from a1+148 — ev4_branch_dispatch piece: continues at 0x8017AE00 */
+ * split piece of cps_8017ac4c — single word read from a1+148 — ev4_branch_dispatch piece: continues at cps_8017ae00 */
 void cps_8017ac44(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62164,10 +62164,10 @@ void cps_8017ac44(void)
 
 /* cps_8017ac4c — clean CPS transliteration of br2eu_func_8017AC4C (guest 0x8017ac4c)
  * from SLES_017.22_full_34.c.
- * single word read from a1+148 — ev4_branch_dispatch piece: continues at 0x8017AE00 */
+ * single word read from a1+148 — ev4_branch_dispatch piece: continues at cps_8017ae00 */
 void cps_8017ac4c(void)
 {
-/* ev4_branch_dispatch piece: continues at 0x8017AE00 */
+/* ev4_branch_dispatch piece: continues at cps_8017ae00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62205,7 +62205,7 @@ tail:
  * split piece of cps_8017adb8 — single byte read from a3+3 */
 void cps_8017ad78(void)
 {
-/* ev4_branch_dispatch piece: continues at 0x8017AE00 */
+/* ev4_branch_dispatch piece: continues at cps_8017ae00 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62295,7 +62295,7 @@ void cps_8017adb8(void)
 
 /* cps_8017ae00 — clean CPS transliteration of br2eu_func_8017AE00 (guest 0x8017ae00)
  * from SLES_017.22_full_34.c.
- * split piece of cps_8017ac4c — single word read from a1+148 — desc_transform_dispatch piece: continues at 0x8017B648 */
+ * split piece of cps_8017ac4c — single word read from a1+148 — desc_transform_dispatch piece: continues at cps_8017b648 */
 void cps_8017ae00(void)
 {
   CPUState *cpu = clean_cpu_state();
@@ -62336,7 +62336,7 @@ void cps_8017ae10(void)
  * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b5f4(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017B648 */
+/* desc_transform_dispatch piece: continues at cps_8017b648 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62440,7 +62440,7 @@ void cps_8017b648(void)
  * split piece of cps_8017b5f4 — fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b650(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017b664 */
+/* desc_transform_dispatch piece: continues at cps_8017b664 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62466,7 +62466,7 @@ void cps_8017b650(void)
  * split piece of cps_8017b5f4 — fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b664(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017b668 */
+/* desc_transform_dispatch piece: continues at cps_8017b668 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62876,7 +62876,7 @@ block_8017B858:
  * fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b860(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017B8B4 */
+/* desc_transform_dispatch piece: continues at cps_8017b8b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -62980,7 +62980,7 @@ void cps_8017b8b4(void)
  * split piece of cps_8017b860 — fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b8bc(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017b8d0 */
+/* desc_transform_dispatch piece: continues at cps_8017b8d0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63006,7 +63006,7 @@ void cps_8017b8bc(void)
  * split piece of cps_8017b860 — fighter-param decoder — reads half(a2) + byte(a0+5); range-checks bitfield, 4 continuations */
 void cps_8017b8d0(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017b8d4 */
+/* desc_transform_dispatch piece: continues at cps_8017b8d4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63251,7 +63251,7 @@ block_8017BA34:
  * param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017ba3c(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017BAAC */
+/* desc_transform_dispatch piece: continues at cps_8017baac */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63389,7 +63389,7 @@ void cps_8017baac(void)
  * split piece of cps_8017ba3c — param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017bab4(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017bac8 */
+/* desc_transform_dispatch piece: continues at cps_8017bac8 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63415,7 +63415,7 @@ void cps_8017bab4(void)
  * split piece of cps_8017ba3c — param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017bac8(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017bad0 */
+/* desc_transform_dispatch piece: continues at cps_8017bad0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63432,7 +63432,7 @@ void cps_8017bac8(void)
  * split piece of cps_8017ba3c — param decoder — reads half(a2)+0/2/4 and byte(t0+5); 5-way dispatch */
 void cps_8017bad0(void)
 {
-/* desc_transform_dispatch piece: continues at 0x8017bad4 */
+/* desc_transform_dispatch piece: continues at desc_flagbit_dispatch (0x8017BAD4) */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63870,10 +63870,10 @@ block_8017BD84:
 
 /* cps_8017bd8c — clean CPS transliteration of br2eu_func_8017BD8C (guest 0x8017bd8c)
  * from SLES_017.22_full_35.c.
- * leaf reg-op / return-value helper — desc_flagbit_dispatch piece: continues at 0x8017C3B4 */
+ * leaf reg-op / return-value helper — desc_flagbit_dispatch piece: continues at cps_8017c3b4 */
 void cps_8017bd8c(void)
 {
-/* desc_flagbit_dispatch piece: continues at 0x8017C3B4 */
+/* desc_flagbit_dispatch piece: continues at cps_8017c3b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63891,7 +63891,7 @@ void cps_8017bd8c(void)
  * param decoder — reads half(a2)+0/2, byte(a3+5); range + flag checks */
 void cps_8017c35c(void)
 {
-/* desc_slot_alloc piece: continues at 0x8017C3B4 */
+/* desc_slot_alloc piece: continues at cps_8017c3b4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -63996,7 +63996,7 @@ void cps_8017c3b4(void)
  * split piece of cps_8017c35c — param decoder — reads half(a2)+0/2, byte(a3+5); range + flag checks */
 void cps_8017c3bc(void)
 {
-/* desc_slot_alloc piece: continues at 0x8017c3d0 */
+/* desc_slot_alloc piece: continues at cps_8017c3d0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64410,7 +64410,7 @@ block_8017C5B0:
  * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017c5b8(void)
 {
-/* desc_slot_alloc piece: continues at 0x8017C600 */
+/* desc_slot_alloc piece: continues at cps_8017c600 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64511,7 +64511,7 @@ void cps_8017c600(void)
  * split piece of cps_8017c5b8 — fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017c608(void)
 {
-/* desc_slot_alloc piece: continues at 0x8017c61c */
+/* desc_slot_alloc piece: continues at cps_8017c61c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64599,7 +64599,7 @@ store:
  * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c7b0(void)
 {
-/* desc_state_commit piece: continues at 0x8017C818 */
+/* desc_state_commit piece: continues at cps_8017c818 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64699,7 +64699,7 @@ ret:
  * split piece of cps_8017c7b0 — fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c818(void)
 {
-/* desc_state_commit piece: continues at 0x8017c840 */
+/* desc_state_commit piece: continues at cps_8017c840 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64730,7 +64730,7 @@ void cps_8017c818(void)
  * split piece of cps_8017c7b0 — fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c840(void)
 {
-/* desc_state_commit piece: continues at 0x8017c850 */
+/* desc_state_commit piece: continues at cps_8017c850 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64808,7 +64808,7 @@ store:
  * fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c898(void)
 {
-/* desc_state_commit piece: continues at 0x8017C900 */
+/* desc_state_commit piece: continues at cps_8017c900 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64908,7 +64908,7 @@ ret:
  * split piece of cps_8017c898 — fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c900(void)
 {
-/* desc_state_commit piece: continues at 0x8017c928 */
+/* desc_state_commit piece: continues at cps_8017c928 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -64939,7 +64939,7 @@ void cps_8017c900(void)
  * split piece of cps_8017c898 — fighter state reader — reads a0+92/116, a1+210, a2+0/2 */
 void cps_8017c928(void)
 {
-/* desc_state_commit piece: continues at 0x8017c938 */
+/* desc_state_commit piece: continues at cps_8017c938 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65038,7 +65038,7 @@ void cps_8017c9bc(void)
  * fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017ca84(void)
 {
-/* ev20_timer_dispatch piece: continues at 0x8017CAD0 */
+/* ev20_timer_dispatch piece: continues at cps_8017cad0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65140,7 +65140,7 @@ void cps_8017cad0(void)
  * split piece of cps_8017ca84 — fighter-param decoder — reads half(a2) + byte(a0+5) */
 void cps_8017cad8(void)
 {
-/* ev20_timer_dispatch piece: continues at 0x8017caec */
+/* ev20_timer_dispatch piece: continues at cps_8017caec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -65903,7 +65903,7 @@ block_8017CF00:
  * fighter state reader — reads a1+44, a2+0/2, byte(a3+5) */
 void cps_8017d1d0(void)
 {
-/* descriptor_quad_dispatch piece: continues at 0x8017D23C */
+/* descriptor_quad_dispatch piece: continues at cps_8017d23c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66028,7 +66028,7 @@ void cps_8017d23c(void)
  * split piece of cps_8017d1d0 — fighter state reader — reads a1+44, a2+0/2, byte(a3+5) */
 void cps_8017d244(void)
 {
-/* descriptor_quad_dispatch piece: continues at 0x8017d258 */
+/* descriptor_quad_dispatch piece: continues at cps_8017d258 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66054,7 +66054,7 @@ void cps_8017d244(void)
  * split piece of cps_8017d1d0 — fighter state reader — reads a1+44, a2+0/2, byte(a3+5) */
 void cps_8017d258(void)
 {
-/* descriptor_quad_dispatch piece: continues at 0x8017d25c */
+/* descriptor_quad_dispatch piece: continues at cps_8017d25c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66263,7 +66263,7 @@ void cps_8017d354(void)
  * fighter state reader — reads a0+44/5, a2+0/2 */
 void cps_8017d55c(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017D5C0 */
+/* condition_word_dispatch piece: continues at cps_8017d5c0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66386,7 +66386,7 @@ void cps_8017d5c0(void)
  * split piece of cps_8017d55c — fighter state reader — reads a0+44/5, a2+0/2 */
 void cps_8017d5c8(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017d5dc */
+/* condition_word_dispatch piece: continues at cps_8017d5dc */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66412,7 +66412,7 @@ void cps_8017d5c8(void)
  * split piece of cps_8017d55c — fighter state reader — reads a0+44/5, a2+0/2 */
 void cps_8017d5dc(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017d5e0 */
+/* condition_word_dispatch piece: continues at cps_8017d5e0 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66570,7 +66570,7 @@ block_8017D6A4:
  * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017d6ac(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017D71C */
+/* condition_word_dispatch piece: continues at cps_8017d71c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66725,7 +66725,7 @@ void cps_8017d724(void)
  * split piece of cps_8017d6ac — fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017d72c(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017D724 */
+/* condition_word_dispatch piece: continues at cps_8017d724 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66778,7 +66778,7 @@ tail:
  * split piece of cps_8017d6ac — fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017d754(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017d758 */
+/* condition_word_dispatch piece: continues at cps_8017d758 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66793,7 +66793,7 @@ void cps_8017d754(void)
  * jt_dispatch_5: v1<5 table @0x80122A6C indexed dispatch. */
 void cps_8017d758(void)
 {
-/* condition_word_dispatch piece: continues at 0x8017D7EC */
+/* condition_word_dispatch piece: continues at cps_8017d7ec */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -66908,7 +66908,7 @@ void cps_8017d7ec(void)
  * fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017d9dc(void)
 {
-/* button_cond_eval piece: continues at 0x8017DA44 */
+/* button_cond_eval piece: continues at cps_8017da44 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67032,7 +67032,7 @@ void cps_8017da44(void)
  * split piece of cps_8017d9dc — fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017da4c(void)
 {
-/* button_cond_eval piece: continues at 0x8017da60 */
+/* button_cond_eval piece: continues at cps_8017da60 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67058,7 +67058,7 @@ void cps_8017da4c(void)
  * split piece of cps_8017d9dc — fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017da60(void)
 {
-/* button_cond_eval piece: continues at 0x8017da64 */
+/* button_cond_eval piece: continues at cps_8017da64 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67073,7 +67073,7 @@ void cps_8017da60(void)
  * split piece of cps_8017d9dc — fighter state reader — reads a0+5, a2+0/2/4, t0+44 */
 void cps_8017da64(void)
 {
-/* button_cond_eval piece: continues at 0x8017da68 */
+/* button_cond_eval piece: continues at cps_8017da68 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67506,7 +67506,7 @@ ret:
  * fighter state reader — reads a0+44/5, a2+0/2; 5-way dispatch */
 void cps_8017e628(void)
 {
-/* desc_cursor_advance piece: continues at 0x8017E68C */
+/* desc_cursor_advance piece: continues at cps_8017e68c */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -67897,7 +67897,7 @@ ret:
  * fighter state machine (19 blocks) — reads a0+116/118, a1+88..210 field set */
 void cps_8017f97c(void)
 {
-/* fighter_atk_dir piece: continues at 0x8017FAE4 */
+/* fighter_atk_dir piece: continues at cps_8017fae4 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
@@ -68318,7 +68318,7 @@ ret_ok:
  * scriptop_ret_cond_0x801835d0 (renames.map canonical name). */
 void cps_801835d0(void)
 {
-/* scriptop_ret_cond_0x801835d0 piece: continues at 0x80183594 */
+/* scriptop_ret_cond_0x801835d0 piece: continues at scriptop_ret_pop_0x80183594 */
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
