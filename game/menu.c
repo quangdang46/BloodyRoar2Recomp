@@ -703,7 +703,7 @@ L_dat1_2:
         hud_sprite_desc_init();
         rgb_triple_store(0,0,0);
         print_mode_dispatch_b(2,0,0);
-        match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
+        match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,guest_of(_g_system_config_ptr));
         battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
         scratchpad_pair_init();
         DAT_1f80009e = '\0';
@@ -767,7 +767,7 @@ L_dat1_5:
     battle_session_arm(0x1f800000,0xffffffff);
     DAT_1f800001 = '\x06';
   case '\x06':
-    match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,(uint32_t)guest_of(_g_system_config_ptr));
+    match_setup_apply(0x1f8000e8u,0x1f8001f0u,0x1f800000u,guest_of(_g_system_config_ptr));
     battle_state_init(&DAT_1f8000e8,&DAT_1f8001f0,0x1f800000);
     pidx = table_byte_next_a();
     perm_table_apply(pidx);
@@ -10173,7 +10173,7 @@ uint32_t desc_cursor_advance(uint32_t ctx,uint32_t unused,uint32_t cur)
 {
   (void)unused;
   uint32_t lim = MB16(cur) >> 8;
-  if ((int32_t)table_byte_next_a() < (int32_t)lim) return cur + 4u;
+  if (table_byte_next_a() < (int32_t)lim) return cur + 4u;
   return MB16(cur + 2) + MB32(ctx + 0x30);
 }
 
@@ -13127,7 +13127,7 @@ uint32_t desc_cmd_interp(uint32_t unused1, uint32_t unused2,
 block_8017DB88:
 { cpu->gpr[19] = cpu->gpr[6];
 }
-{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19]);
+{ cpu->gpr[2] = br2_ld16(cpu->gpr[19]);
 }
 { cpu->gpr[2] = cpu->gpr[2] << 16;
 }
@@ -13172,7 +13172,7 @@ goto block_8017DBE8;
 block_8017DBE8:
 goto block_8017DC24;
 block_8017DBF0:
-{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DBFC = (cpu->gpr[2] == cpu->gpr[0]);
@@ -13186,7 +13186,7 @@ goto block_8017DC04;
 block_8017DC04:
 goto block_8017E11C;
 block_8017DC0C:
-{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DC18 = (cpu->gpr[2] == cpu->gpr[0]);
@@ -13207,18 +13207,18 @@ goto block_8017DC3C;
 goto block_8017DC2C;
 }
 block_8017DC2C:
-{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[4] + 2);
+{ cpu->gpr[18] = br2_ld8(cpu->gpr[4] + 2);
 }
-{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[4] + 3);
+{ cpu->gpr[6] = br2_ld8(cpu->gpr[4] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 goto block_8017DC50;
 block_8017DC3C:
 { cpu->gpr[2] = br2_ld32(cpu->gpr[4] + 44);
 }
-{ cpu->gpr[18] = (uint32_t)br2_ld8(cpu->gpr[2] + 2);
+{ cpu->gpr[18] = br2_ld8(cpu->gpr[2] + 2);
 }
-{ cpu->gpr[6] = (uint32_t)br2_ld8(cpu->gpr[2] + 3);
+{ cpu->gpr[6] = br2_ld8(cpu->gpr[2] + 3);
 }
 cpu->gpr[3] = cpu->gpr[3] & 0x000F;
 block_8017DC50:
@@ -13242,7 +13242,7 @@ block_8017DC5C:
 jt = cpu->gpr[2];
 goto jt_dispatch;
 block_8017DC78:
-{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DC84 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13263,13 +13263,13 @@ goto block_8017E10C;
 goto block_8017DC94;
 }
 block_8017DC94:
-{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
 }
 { cpu->gpr[6] = cpu->gpr[0];
 }
 goto block_8017E110;
 block_8017DCA0:
-{ cpu->gpr[3] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[3] = (int32_t)(int16_t)br2_ld16(cpu->gpr[7] + 274);
 }
 { cpu->gpr[6] = 64;
 }
@@ -13432,7 +13432,7 @@ block_8017DD8C:
 }
 goto block_8017E10C;
 block_8017DD98:
-{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[7] + 274);
 }
 cpu->gpr[2] = ((int32_t)cpu->gpr[5] < 192) ? 1 : 0;
 int _bc_8017DDA4 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13453,7 +13453,7 @@ goto block_8017E10C;
 goto block_8017DDB4;
 }
 block_8017DDB4:
-{ cpu->gpr[5] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[7] + 274);
+{ cpu->gpr[5] = (int32_t)(int16_t)br2_ld16(cpu->gpr[7] + 274);
 }
 { cpu->gpr[6] = cpu->gpr[0];
 }
@@ -13463,7 +13463,7 @@ block_8017DDC0:
 }
 { cpu->gpr[3] = br2_ld32(cpu->gpr[2] + 56);
 }
-{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = br2_ld16(cpu->gpr[19] + 2);
 }
 { br2_st16(cpu->gpr[3] + 274, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
@@ -13471,13 +13471,13 @@ goto block_8017E118;
 block_8017DDD8:
 { cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
-{ cpu->gpr[2] = (uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = br2_ld16(cpu->gpr[19] + 2);
 }
 { br2_st16(cpu->gpr[3] + 276, (uint16_t)((uint16_t)cpu->gpr[2]));
 }
 goto block_8017E118;
 block_8017DDE8:
-{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
 }
 { cpu->gpr[3] = br2_ld32(cpu->gpr[4] + 56);
 }
@@ -13487,7 +13487,7 @@ block_8017DDE8:
 }
 goto block_8017E118;
 block_8017DDFC:
-{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DE08 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13627,7 +13627,7 @@ cpu->gpr[8] = cpu->hi;
 }
 goto block_8017E110;
 block_8017DF0C:
-{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017DF14 = (cpu->gpr[2] != cpu->gpr[0]);
 { cpu->gpr[4] = 1024;
@@ -13646,7 +13646,7 @@ block_8017DF24:
 }
 goto block_8017E10C;
 block_8017DF2C:
-{ cpu->gpr[2] = (uint32_t)br2_ld8(cpu->gpr[4] + 5);
+{ cpu->gpr[2] = br2_ld8(cpu->gpr[4] + 5);
 }
 cpu->gpr[2] = cpu->gpr[2] & 0x0001;
 int _bc_8017DF38 = (cpu->gpr[2] != cpu->gpr[0]);
@@ -13874,7 +13874,7 @@ cpu->gpr[8] = cpu->hi;
 }
 goto block_8017E110;
 block_8017E0F0:
-{ cpu->gpr[2] = (int32_t)(int16_t)(uint32_t)br2_ld16(cpu->gpr[19] + 2);
+{ cpu->gpr[2] = (int32_t)(int16_t)br2_ld16(cpu->gpr[19] + 2);
 }
 int _bc_8017E0F8 = (cpu->gpr[2] != cpu->gpr[0]);
 { cpu->gpr[4] = 1024;
