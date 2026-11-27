@@ -1278,3 +1278,28 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   are the verified guest-address-valued pointer convention
   (br2_gaddr round-trips guest addrs; (u32)(intptr_t) containers).
   -Wpointer-sign (~28) are pointee-signedness mismatches, benign.
+
+### Session update 26 (unprototyped-extern ABI audit — 6 real bugs fixed)
+
+- Background audit of zero-arg/unprototyped `extern` call sites across
+  menu.c/game.c found 6 REAL-BUGS; all fixed in `e07d53ea`, build clean,
+  headless verified (frames 17k->26k advancing).
+- `cd_stream_mode_init` (menu.c): param byte was a HOST stack buffer
+  passed as guest addr through cd_mode_flag_set->cd_cmd_issue (LP64
+  truncation + wild guest pointer). Now br2_guest_frame(0x28) backing,
+  byte written at fr+16 = guest sp+16 (disasm 0x80159CF0-0x80159CFC).
+- `deferred_cmd_drain()` called with 0 args at frame_tick (game.c:1536),
+  frame_present (game.c:1958), display_frame_present (menu.c:2243):
+  callee reads a1 uninitialized on undispatched cmd classes -> spurious
+  record clear + counter decrement. Now passes live
+  clean_cpu_state()->gpr[4]/gpr[5] (stale-arg convention).
+- `confirm_code_select(0x1f800000)` missing a1 at menu.c:755/2160:
+  a1 feeds mc_confirm_dispatch when sel_mode not in {0,1}. Guest sets
+  a1=$s2/$s3=0x1f8000e8 before jal (full_27@12722, full_31@3692/14444)
+  -> pass 0x1f8000e8 literal; extern tightened to (uint32_t,uint32_t).
+- Earlier same-session fixes already committed: cd_chan_attr_push
+  (0x801f2650), sprite_desc_table_init(1), hit_chain/pending_hit
+  guest_at(obj) wraps.
+- Verification method that worked: map clean call site -> fnmap guest
+  addr -> find `CPS jal -> 0xADDR` in generated/SLES_017.22_full_*.c ->
+  read last cpu->gpr[5] write before jal for true a1.
