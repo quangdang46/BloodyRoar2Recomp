@@ -1386,7 +1386,6 @@ void halt_baddata(void) { for(;;) { } }
 
 /* ---- UNPORTED weak stubs (game.c callees) ----
  * Guest functions not yet ported. Weak defs keep the tree
- * linkable; strong ports override. Return values are fake. */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -1400,10 +1399,6 @@ __attribute__((weak))
 #endif
 /* guest 0x80195290 = gte_ofs_set (renames.map). */
 void FUN_80195290(int32_t ofs_x,int32_t ofs_y) { gte_ofs_set(ofs_x,ofs_y); }
-
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 
 uint8_t *g_DAT_801e40b7, *g_DAT_801e40b8;
 uint8_t *g_DAT_801e6206, *g_DAT_801e6207, *g_DAT_801e6208;
@@ -2484,12 +2479,6 @@ int32_t cd_seek_state_machine(uint32_t arg)
 }
 
 /* ---- round-3 unported callees ---- */
-
-/* ---- cd-batch32 callees ---- */
-
-/* ---- cd 99440 callees ---- */
-
-/* ---- menu batch32 callees ---- */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
@@ -2782,9 +2771,6 @@ int ret_zero_e(int32_t arg)
     br2_guest_frame_free();
     return ret;
 }
-#if defined(__GNUC__) || defined(__clang__)
-__attribute__((weak))
-#endif
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))
 #endif
