@@ -68,7 +68,7 @@ def bucket(dump):
 
 
 def _delta_map(a, b):
-    """Per-key absolute deltas between two state dicts.."""
+    """Per-key absolute deltas between two state dicts."""
     out = {}
     for k in set(a) | set(b):
         av, bv = a.get(k, 0), b.get(k, 0)
@@ -78,7 +78,7 @@ def _delta_map(a, b):
 
 
 def diff(dump_a, dump_b):
-    """Bucket two GPU frame dumps and diff funcs/state.."""
+    """Bucket two GPU frame dumps and diff funcs/state."""
     A, B = bucket(dump_a), bucket(dump_b)
     funcs = []
     for fn in sorted(set(A["funcs"]) | set(B["funcs"])):
@@ -136,7 +136,7 @@ def diff(dump_a, dump_b):
 
 
 def report(d, out=sys.stdout, max_keys=40):
-    """Print a human-readable diff report.."""
+    """Print a human-readable diff report."""
     print(f"A {d['a']['label'] or 'a'}: frame {d['a']['frame']}, "
           f"{d['a']['packets']} packets", file=out)
     print(f"B {d['b']['label'] or 'b'}: frame {d['b']['frame']}, "
@@ -193,7 +193,7 @@ def report(d, out=sys.stdout, max_keys=40):
 
 
 def main(argv=None):
-    """GPU frame diff CLI entry point.."""
+    """GPU frame diff CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("a", help="reference (good) psx-gpu-frame dump")

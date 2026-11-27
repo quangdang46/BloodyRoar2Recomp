@@ -55,7 +55,7 @@ def load_wav(path):
 
 
 def to_rate(x, src, dst):
-    """Resample a signal from src to dst rate (linear).."""
+    """Resample a signal from src to dst rate (linear)."""
     if src == dst:
         return x
     from math import gcd
@@ -64,13 +64,13 @@ def to_rate(x, src, dst):
 
 
 def active(x, thr=1e-4):
-    """Active sample range above threshold.."""
+    """Active sample range above threshold."""
     nz = np.where(np.abs(x) > thr)[0]
     return (0, x.size) if nz.size == 0 else (int(nz[0]), int(nz[-1]) + 1)
 
 
 def coarse_lag(a, b, rate, max_s=8):
-    """Coarse cross-correlation lag in samples (FFT-based).."""
+    """Coarse cross-correlation lag in samples (FFT-based)."""
     ml = int(max_s * rate)
     n = 1 << int(np.ceil(np.log2(a.size + b.size)))
     cc = np.fft.irfft(np.fft.rfft(a - a.mean(), n) * np.conj(np.fft.rfft(b - b.mean(), n)), n)
@@ -79,13 +79,13 @@ def coarse_lag(a, b, rate, max_s=8):
 
 
 def welch_psd(x, rate):
-    """Welch PSD estimate.."""
+    """Welch PSD estimate."""
     f, p = signal.welch(x, rate, nperseg=8192, noverlap=4096, scaling="spectrum")
     return f, p
 
 
 def third_octave(f, p, lo=25.0, hi=16000.0):
-    """Third-octave band edges/centers.."""
+    """Third-octave band edges/centers."""
     bands, centers = [], []
     fc = lo
     while fc <= hi:
@@ -97,7 +97,7 @@ def third_octave(f, p, lo=25.0, hi=16000.0):
 
 
 def descriptors(f, p):
-    """Spectral descriptors: centroid, spread, rolloff etc.."""
+    """Spectral descriptors: centroid, spread, rolloff etc."""
     p = np.maximum(p, 1e-20); tot = p.sum()
     centroid = float((f * p).sum() / tot)
     cs = np.cumsum(p); rolloff = float(f[np.searchsorted(cs, 0.85 * tot)])
@@ -106,7 +106,7 @@ def descriptors(f, p):
 
 
 def main():
-    """Spectral A/B CLI entry point.."""
+    """Spectral A/B CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--ref", required=True); ap.add_argument("--test", required=True)
     ap.add_argument("--rate", type=int, default=32040)

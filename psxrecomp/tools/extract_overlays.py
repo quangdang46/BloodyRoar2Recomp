@@ -42,7 +42,7 @@ class DiscReader:
     """Reads user-data sectors from a PSX BIN/CUE or ISO image."""
 
     def __init__(self, bin_path, raw=True):
-        """DiscImage ctor: open the track bin (raw MODE2 or MODE1).."""
+        """DiscImage ctor: open the track bin (raw MODE2 or MODE1)."""
         self.f       = open(bin_path, 'rb')
         self.raw     = raw   # True = MODE2/2352, False = 2048-byte ISO
         self.sec_sz  = SECTOR_RAW if raw else SECTOR_DATA
@@ -50,7 +50,7 @@ class DiscReader:
         self.total   = fsize // self.sec_sz
 
     def close(self):
-        """Close the disc image file.."""
+        """Close the disc image file."""
         self.f.close()
 
     def read_sector_data(self, lba):
@@ -149,7 +149,7 @@ def enumerate_files(disc, dir_lba=None, dir_size=None, prefix=''):
 # ---------------------------------------------------------------------------
 
 def load_manifest(jsonl_path):
-    """Load a JSONL overlay manifest into entries.."""
+    """Load a JSONL overlay manifest into entries."""
     import json
     entries = []
     with open(jsonl_path, encoding='utf-8') as f:
@@ -168,7 +168,7 @@ def load_manifest(jsonl_path):
     return entries
 
 def crc32_of(data):
-    """CRC32 of a byte blob.."""
+    """CRC32 of a byte blob."""
     return binascii.crc32(data) & 0xFFFFFFFF
 
 # ---------------------------------------------------------------------------
@@ -176,7 +176,7 @@ def crc32_of(data):
 # ---------------------------------------------------------------------------
 
 def main():
-    """Overlay extraction CLI entry point.."""
+    """Overlay extraction CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--disc',     required=True,

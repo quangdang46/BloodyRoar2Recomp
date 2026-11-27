@@ -10,7 +10,7 @@ port  = int(sys.argv[1]) if len(sys.argv) > 1 else 4470
 count = int(sys.argv[2]) if len(sys.argv) > 2 else 16000
 
 def fetch(port, count):
-    """Pull sio_trace entries from the debug server.."""
+    """Pull sio_trace entries from the debug server."""
     s = socket.create_connection(("127.0.0.1", port), 5)
     s.sendall((json.dumps({"cmd": "sio_trace", "count": count}) + "\n").encode())
     buf = b""
@@ -31,7 +31,7 @@ ents = resp.get("entries", [])
 print(f"port={port} total_seq={resp.get('total')} fetched={len(ents)}")
 
 def b(x):
-    """Parse hex/dec string to int.."""
+    """Parse hex/dec string to int."""
     return int(x, 16) if isinstance(x, str) else int(x)
 
 CFG = {0x43, 0x44, 0x45, 0x46, 0x47, 0x4C, 0x4D, 0x4F}
@@ -85,7 +85,7 @@ for i, t in enumerate(txns):
 print(f"detected {len(flip_idx)} poll-ID flips")
 
 def fmt(t):
-    """Format one trace entry for display.."""
+    """Format one trace entry for display."""
     cmd = cmd_of(t)
     tlist = " ".join(f"{x:02X}" for x in t["tx"])
     rlist = " ".join(f"{x:02X}" for x in t["rx"])

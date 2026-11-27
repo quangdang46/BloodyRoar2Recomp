@@ -88,7 +88,7 @@ def ensure_oracle(args) -> int:
 
 
 def compare_images(pa, pb, out_path):
-    """Pixel-diff two GPU frame images; returns diff stats.."""
+    """Pixel-diff two GPU frame images; returns diff stats."""
     a = Image.open(pa).convert("RGB")
     b = Image.open(pb).convert("RGB")
     note = None
@@ -127,7 +127,7 @@ def compare_images(pa, pb, out_path):
 
 
 def gpu_state_delta(a, b):
-    """Diff GPU state dicts field-by-field.."""
+    """Diff GPU state dicts field-by-field."""
     out = {}
     for k in GPU_STATE_FIELDS:
         if k in a or k in b:
@@ -138,7 +138,7 @@ def gpu_state_delta(a, b):
 
 
 def main(argv=None):
-    """GPU parity CLI entry point.."""
+    """GPU parity CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")

@@ -71,7 +71,7 @@ def load_wav(path):
 
 
 def resample_linear(x, src, dst):
-    """Linear-interpolation resample.."""
+    """Linear-interpolation resample."""
     if src == dst or x.size == 0:
         return x
     n_out = int(round(x.size * dst / src))
@@ -83,7 +83,7 @@ def resample_linear(x, src, dst):
 
 
 def active_region(x, thr=1e-4):
-    """Active sample range above threshold.."""
+    """Active sample range above threshold."""
     nz = np.where(np.abs(x) > thr)[0]
     if nz.size == 0:
         return 0, x.size
@@ -140,7 +140,7 @@ def drift_track(a, b, rate, win_s=0.75, hop_s=0.375, search_ms=120):
 
 # ------------------------------------------------------------------------ onsets
 def onsets(x, rate, fft=1024, hop=256, k=1.5):
-    """Onset detection via spectral flux.."""
+    """Onset detection via spectral flux."""
     if x.size < fft:
         return np.array([])
     win = np.hanning(fft)
@@ -190,7 +190,7 @@ def onset_match(ref_t, test_t, lag_s, tol_ms=50):
 
 # ---------------------------------------------------------------- pitch & timbre
 def avg_spectrum(x, rate, fft=4096, hop=2048):
-    """Average magnitude spectrum over frames.."""
+    """Average magnitude spectrum over frames."""
     if x.size < fft:
         return None, None
     win = np.hanning(fft); frames = 1 + (x.size - fft) // hop
@@ -203,7 +203,7 @@ def avg_spectrum(x, rate, fft=4096, hop=2048):
 
 
 def dominant_pitch_track(x, rate, fft=4096, hop=2048, fmin=80, fmax=2000):
-    """Per-frame dominant pitch track.."""
+    """Per-frame dominant pitch track."""
     if x.size < fft:
         return np.array([])
     win = np.hanning(fft); frames = 1 + (x.size - fft) // hop
@@ -219,13 +219,13 @@ def dominant_pitch_track(x, rate, fft=4096, hop=2048, fmin=80, fmax=2000):
 
 
 def cents(ratio):
-    """Frequency ratio -> cents.."""
+    """Frequency ratio -> cents."""
     return 1200.0 * np.log2(ratio) if ratio > 0 else float("nan")
 
 
 # ----------------------------------------------------------- per-stream quality
 def click_rate(x, rate, k=6.0, rms_ms=10.0):
-    """Click/pop detection rate.."""
+    """Click/pop detection rate."""
     if x.size < 4:
         return 0.0
     d1 = np.abs(np.diff(x, prepend=x[0])); d2 = np.abs(np.diff(x, n=2, prepend=[x[0], x[0]]))
@@ -245,7 +245,7 @@ def click_rate(x, rate, k=6.0, rms_ms=10.0):
 
 
 def noise_floor_db(x):
-    """Noise floor estimate in dB.."""
+    """Noise floor estimate in dB."""
     if x.size == 0:
         return float("nan")
     q = np.sqrt(np.mean(np.sort(x * x)[: max(1, x.size // 10)]))  # quietest 10% RMS
@@ -254,7 +254,7 @@ def noise_floor_db(x):
 
 # ------------------------------------------------------------------------- main
 def main():
-    """Audio A/B diff CLI entry point.."""
+    """Audio A/B diff CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--ref", required=True, help="oracle WAV (bsnes)")
     ap.add_argument("--test", required=True, help="recomp WAV (audio_wav dump)")

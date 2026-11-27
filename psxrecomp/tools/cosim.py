@@ -35,7 +35,7 @@ GAME = os.environ.get("COSIM_GAME", r"../MegaManX6Recomp\game.toml")
 LOGDIR = os.path.join(CWD, "cosim-logs")
 
 def tail_file(path, max_bytes=8192):
-    """Read the last max_bytes of a log file.."""
+    """Read the last max_bytes of a log file."""
     try:
         with open(path, "rb") as f:
             f.seek(0, os.SEEK_END)
@@ -46,7 +46,7 @@ def tail_file(path, max_bytes=8192):
         return f"<could not read {path}: {e}>"
 
 def launch(mode, port, stride, start_cycle):
-    """Spawn a cosim runtime instance with logs.."""
+    """Spawn a cosim runtime instance with logs."""
     os.makedirs(LOGDIR, exist_ok=True)
     # Two instances sharing one runtime dir race on mods/state.toml publish
     # (temp-file rename collision, ENOENT). The mods root is EXE-DIR-relative
@@ -99,7 +99,7 @@ def launch(mode, port, stride, start_cycle):
     return p
 
 def connect(port, timeout=40):
-    """Wait for and connect to a cosim debug port.."""
+    """Wait for and connect to a cosim debug port."""
     t0 = time.time()
     while time.time() - t0 < timeout:
         try:
@@ -110,7 +110,7 @@ def connect(port, timeout=40):
     raise RuntimeError(f"cosim port {port} never came up")
 
 def cmd(s, line, timeout=600):
-    """Send a command line and read until reply/timeout.."""
+    """Send a command line and read until reply/timeout."""
     s.settimeout(timeout)
     s.sendall((line + "\n").encode())
     buf = b""
@@ -121,14 +121,14 @@ def cmd(s, line, timeout=600):
     return buf.decode(errors="replace").strip()
 
 def close_proc_log(p):
-    """Close a child process's log file.."""
+    """Close a child process's log file."""
     try:
         p._cosim_log_file.close()
     except Exception:
         pass
 
 def report_child_failure(label, proc, cp, exc):
-    """Print diagnostics for a failed cosim child.."""
+    """Print diagnostics for a failed cosim child."""
     code = proc.poll()
     print(f"[{label} reset] at local cp {cp}: poll={code} error={exc}", flush=True)
     path = getattr(proc, "_cosim_log_path", "")
@@ -137,7 +137,7 @@ def report_child_failure(label, proc, cp, exc):
         print(tail_file(path), flush=True)
 
 def wait_parked(sa, sb, timeout=600):
-    """Wait until both cosim instances are parked.."""
+    """Wait until both cosim instances are parked."""
     t0 = time.time()
     last = ("", "")
     while time.time() - t0 < timeout:
@@ -169,7 +169,7 @@ def kv(resp):
     return d
 
 def dump_window(s, n=24):
-    """Dump a window of trace events.."""
+    """Dump a window of trace events."""
     s.settimeout(30); s.sendall(f"window {n}\n".encode()); buf = b""
     while b"\nend\n" not in buf and b"\nend" not in (buf[-6:] if len(buf)>=6 else buf):
         d = s.recv(65536)
@@ -179,7 +179,7 @@ def dump_window(s, n=24):
     return buf.decode(errors="replace")
 
 def main():
-    """Cosim A/B CLI entry point.."""
+    """Cosim A/B CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--a", default="compiled", choices=["compiled", "interp"])
     ap.add_argument("--b", default="interp",   choices=["compiled", "interp"])

@@ -7,7 +7,7 @@ addr_hi = int(sys.argv[2], 16) if len(sys.argv) > 2 else 0xFFFFFFFF
 max_count = int(sys.argv[3]) if len(sys.argv) > 3 else 100000
 
 def call(d):
-    """Send a JSON command to the debug server (long timeout for dispatch checks).."""
+    """Send a JSON command to the debug server (long timeout for dispatch checks)."""
     s = socket.create_connection(("127.0.0.1", 4370), timeout=120)
     s.sendall((json.dumps(d) + "\n").encode())
     buf = b""

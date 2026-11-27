@@ -31,12 +31,12 @@ class Client:
     on the same socket — matches debug_client.py's connect/send/close)."""
 
     def __init__(self, host, port, timeout=8.0):
-        """Probe ctor: host/port/timeout, request-id counter.."""
+        """Probe ctor: host/port/timeout, request-id counter."""
         self.host, self.port, self.timeout = host, port, timeout
         self.next_id = 1
 
     def cmd(self, name, **params):
-        """Send a named command with params; return reply.."""
+        """Send a named command with params; return reply."""
         req = {"cmd": name, "id": self.next_id}
         req.update(params)
         self.next_id += 1
@@ -63,17 +63,17 @@ class Client:
 
 
 def phot_map(resp):
-    """Map addr -> sample count from a phot report.."""
+    """Map addr -> sample count from a phot report."""
     return {e["addr"]: e["samples"] for e in resp.get("top", [])}
 
 
 def perpc_map(resp):
-    """Map pc -> insn count from a per_pc report.."""
+    """Map pc -> insn count from a per_pc report."""
     return {e["pc"]: e["insns"] for e in resp.get("per_pc", [])}
 
 
 def delta_top(before, after, k=10):
-    """Top-k deltas between two phot snapshots.."""
+    """Top-k deltas between two phot snapshots."""
     d = {a: after[a] - before.get(a, 0) for a in after}
     items = [(a, v) for a, v in d.items() if v > 0]
     items.sort(key=lambda kv: -kv[1])
@@ -100,7 +100,7 @@ def snap(c, retries=3):
 
 
 def run(c, secs, tick, out):
-    """Monitor load counters for `secs`, printing progress.."""
+    """Monitor load counters for `secs`, printing progress."""
     print(f"[load_probe] monitoring {secs}s (tick {tick}s) — trigger loads now",
           flush=True)
     t0 = time.monotonic()
@@ -127,7 +127,7 @@ def run(c, secs, tick, out):
 
     # Frame -> monotonic time mapping from the series (piecewise linear).
     def frame_to_t(fr):
-        """Interpolate timestamp for a frame number in a series.."""
+        """Interpolate timestamp for a frame number in a series."""
         for a, b in zip(series, series[1:]):
             if a["frame"] <= fr <= b["frame"]:
                 if b["frame"] == a["frame"]:
@@ -201,7 +201,7 @@ def run(c, secs, tick, out):
 
 
 def main():
-    """Load probe CLI entry point.."""
+    """Load probe CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=4470)

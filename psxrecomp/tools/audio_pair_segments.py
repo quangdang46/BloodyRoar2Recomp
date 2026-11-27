@@ -27,7 +27,7 @@ HOP_S = 0.5
 BANDS = 24
 
 def load_side(archive_dir, side):
-    """Load one side's archived WAV segments.."""
+    """Load one side's archived WAV segments."""
     files = []
     for p in glob.glob(os.path.join(archive_dir, f"{side}_arch*_*.wav")):
         m = re.search(rf"{side}_arch(\d+)_(\d+)\.wav$", p)
@@ -69,7 +69,7 @@ def fingerprint(x, rate):
     return fp
 
 def main():
-    """Pair audio segments A/B CLI entry point.."""
+    """Pair audio segments A/B CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("archive_dir")
     ap.add_argument("--min-secs", type=float, default=20.0)
@@ -108,7 +108,7 @@ def main():
     cut_bt = bt[s_bt:s_bt + length]
 
     def write(path, data):
-        """Write a stereo 16-bit WAV.."""
+        """Write a stereo 16-bit WAV."""
         w = wave.open(path, "wb")
         w.setnchannels(2)
         w.setsampwidth(2)
@@ -121,7 +121,7 @@ def main():
     write(os.path.join(args.archive_dir, "pair_beetle.wav"), cut_bt)
     # rough level comparison on the matched content
     def rms_db(x):
-        """RMS level of a channel in dB.."""
+        """RMS level of a channel in dB."""
         f = x.astype(np.float64) / 32768.0
         act = f[np.abs(f[:, 0]) > 0.001]
         if len(act) == 0:

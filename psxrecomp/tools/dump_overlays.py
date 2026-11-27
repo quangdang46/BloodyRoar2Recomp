@@ -25,7 +25,7 @@ Defaults:
 import socket, json, sys, os, argparse
 
 def send_cmd(port, cmd, **kwargs):
-    """Send a debug command to the runtime; returns parsed reply.."""
+    """Send a debug command to the runtime; returns parsed reply."""
     payload = {'id': 1, 'cmd': cmd}
     payload.update(kwargs)
     s = socket.create_connection(('127.0.0.1', port), timeout=10)
@@ -87,7 +87,7 @@ def find_lba_for_region(cd_log, phys_addr, size):
     return -1
 
 def main():
-    """Dump overlay regions CLI entry point.."""
+    """Dump overlay regions CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--port', type=int, default=4470)

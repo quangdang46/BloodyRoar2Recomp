@@ -67,10 +67,12 @@ class Client:
     """
 
     def __init__(self, host, port, timeout=8.0):
+        """Probe ctor: host/port/timeout, request-id counter."""
         self.host, self.port, self.timeout = host, port, timeout
         self.next_id = 1
 
     def cmd(self, name, **params):
+        """Send a named command with params; return reply."""
         request_id = self.next_id
         req = {"cmd": name, "id": request_id}
         req.update(params)
@@ -78,6 +80,7 @@ class Client:
         blob = (json.dumps(req) + "\n").encode()
 
         def validate_reply(reply):
+            """Check a reply is a dict with ok flag; normalize errors."""
             if not isinstance(reply, dict):
                 return {"ok": False, "error": "reply is not an object"}
             reply_id = reply.get("id")
@@ -193,6 +196,7 @@ def require_real(d, key, context):
 
 
 def require_object(d, key, context):
+    """Return d[key] as dict or raise ReportError."""
     if not isinstance(d, dict) or not isinstance(d.get(key), dict):
         raise ReportError(f"missing object: {context}.{key}")
     return d[key]
@@ -216,6 +220,7 @@ def delta(a, b, cmd, key):
 
 
 def object_delta(a, b, key, context):
+    """Numeric delta of b[key]-a[key] with context."""
     if a is None:
         return require_num(b, key, context)
     result = require_num(b, key, context) - require_num(a, key, context)
@@ -237,6 +242,7 @@ def phot_map(reply):
 
 
 def phot_delta_lines(a, b, limit=12):
+    """Top phot-map deltas between two snapshots."""
     m0, m1 = ({} if a is None else phot_map(a)), phot_map(b)
     if a is None:
         addresses = set(m1)
@@ -441,6 +447,7 @@ def verdict_lines(a, b):
 def hot_pc_lines(a, b, limit=12):
     """Interpreted PCs among returned rows, with aggregate accounting."""
     def per_pc(snap):
+        """Per-PC instruction counts from dirty_ram_stats."""
         out = {}
         for index, e in enumerate(
                 (snap.get("dirty_ram_stats", {}) or {}).get("per_pc", []) or []):
@@ -487,6 +494,7 @@ def hot_pc_lines(a, b, limit=12):
 
 
 def phase_hot_total_delta(a, b, set_name):
+    """Delta of a phase_hot counter set."""
     key = f"phase_hot:{set_name}"
     before = None if a is None else a.get(key, {})
     after = b.get(key, {})
@@ -494,6 +502,7 @@ def phase_hot_total_delta(a, b, set_name):
 
 
 def report(a, b, span_ms, ring_err, gaps, ring_meta=None):
+    """Format the full stall report."""
     L = []
     windowed = a is not None
     L.append("=" * 78)
@@ -594,6 +603,7 @@ def report(a, b, span_ms, ring_err, gaps, ring_meta=None):
 
 
 def main():
+    """Stall report CLI entry point."""
     ap = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)

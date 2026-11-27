@@ -21,7 +21,7 @@ Usage:
 import argparse, json, socket, sys, difflib
 
 def query(port, cmd, **kw):
-    """Send a parity command to the debug server; return parsed reply.."""
+    """Send a parity command to the debug server; return parsed reply."""
     obj = {"cmd": cmd}; obj.update(kw)
     s = socket.create_connection(("127.0.0.1", port), timeout=10)
     try:
@@ -36,7 +36,7 @@ def query(port, cmd, **kw):
         s.close()
 
 def rows(port, count):
-    """Fetch `count` parity_dump rows from a runtime port.."""
+    """Fetch `count` parity_dump rows from a runtime port."""
     r = query(port, "parity_dump", count=count)
     if not r.get("ok"):
         print(f"[port {port}] parity_dump failed: {r}", file=sys.stderr); sys.exit(2)
@@ -52,12 +52,12 @@ def norm(v):
         return v
 
 def keytuple(e, fields):
-    """Normalize a parity event into a comparable key tuple.."""
+    """Normalize a parity event into a comparable key tuple."""
     return tuple(norm(e.get(f, "")) if f in ("pc", "target", "ra") else e.get(f, "")
                  for f in fields)
 
 def fmt(e):
-    """Format one parity event for display.."""
+    """Format one parity event for display."""
     w = e.get("w", [])
     return (f"seq={e['seq']:>5} f={e['frame']:>5} {e['kind']:<12} "
             f"cur={e['cur_tcb']} pc={e['pc']} tgt={e['target']} "
@@ -101,7 +101,7 @@ def compare_prov(n, b):
     return "\n".join(out) if out else "  (no configured watch slots)"
 
 def main():
-    """Parity diff CLI entry point.."""
+    """Parity diff CLI entry point."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--native", type=int, default=4490)
     ap.add_argument("--beetle", type=int, default=4382)
