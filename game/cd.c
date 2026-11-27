@@ -178,6 +178,12 @@ extern uint32_t clean_caller_ra(void);
 #define CDMMIO16_ST(base, idx, v)  \
     br2_st16((base) + ((uint32_t)(idx) << 1), (uint16_t)(v))
 
+#define DB8P(a)  br2_ld8p(a)
+#define DB8(a)   (*(uint8_t  *)guest_at(a))
+#define DB16(a)  (*(uint16_t *)guest_at(a))
+#define DB32(a)  (*(uint32_t *)guest_at(a))
+#define I32AT(a,i) (((int32_t *)guest_at(a))[(i)])
+
 /* ---- CD context cells ----
  * The CD_* macros below are the readable aliases over guest_at();
  * guest address kept in each comment. */
@@ -192,7 +198,7 @@ extern uint32_t clean_caller_ra(void);
 #define CD_RD_SESS_B       (*(int32_t  *)guest_at(0x801bcbac))  /* i32 @0x801bcbac: mc_session_b handle */
 #define CD_RD_DISP         (*(int32_t  *)guest_at(0x801bcbb0))  /* i32 @0x801bcbb0: cd_cmd_dispatch3 result */
 #define CD_STATUS          (*(uint8_t  *)guest_at(0x801bc854))   /* u8 @0x801bc854: raw CD status (cd_status_raw) */
-#define CD_BIOS_CB_20      (*(uint32_t *)guest_at(0x801bc848))  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
+#define CD_BIOS_CB_20      (DB32(0x801bc848))  /* u32 @0x801bc848: fn ptr -> cd_bios_cmd20 */
 #define CD_CMD_TBL         ((int32_t  *)guest_at(0x801bc7c0))   /* i32* @0x801bc7c0: per-opcode table */
 
 /* ======== 0x8018d150 ======== */
@@ -325,12 +331,12 @@ void cd_chan_boot_fwd(void)
   return;
 }
 
-#define CD_RD_POS    (*(uint32_t *)guest_at(0x801bcb84))  /* u32 @0x801bcb84: read setup param2 (pos/aux) */
+#define CD_RD_POS    (DB32(0x801bcb84))  /* u32 @0x801bcb84: read setup param2 (pos/aux) */
 #define CD_RD_CUR    (*(int32_t  *)guest_at(0x801bcb88))  /* i32 @0x801bcb88: active read position (copy of POS) */
-#define CD_RD_MODE   (*(uint32_t *)guest_at(0x801bcb8c))  /* u32 @0x801bcb8c: Setmode param int8_t (|0x20) */
-#define CD_RD_SECTSZ (*(uint32_t *)guest_at(0x801bcb90))  /* u32 @0x801bcb90: sector size 0x200/0x246/0x249 */
-#define CD_BIOS_CB_40 (*(uint32_t *)guest_at(0x801bc84c)) /* u32 @0x801bc84c: fn ptr -> cd_bios_cmd40 */
-#define CD_RD_SECTOR (*(uint32_t *)guest_at(0x801bcba0))  /* u32 @0x801bcba0: read start sector */
+#define CD_RD_MODE   (DB32(0x801bcb8c))  /* u32 @0x801bcb8c: Setmode param int8_t (|0x20) */
+#define CD_RD_SECTSZ (DB32(0x801bcb90))  /* u32 @0x801bcb90: sector size 0x200/0x246/0x249 */
+#define CD_BIOS_CB_40 (DB32(0x801bc84c)) /* u32 @0x801bc84c: fn ptr -> cd_bios_cmd40 */
+#define CD_RD_SECTOR (DB32(0x801bcba0))  /* u32 @0x801bcba0: read start sector */
 
 /* ======== batch26: CD driver cluster ======== */
 
@@ -352,11 +358,6 @@ uint32_t call_guest(uint32_t,uint32_t,uint32_t);
 
 
 /* pointer-valued globals: guest stores a guest addr; deref via guest_at */
-#define DB8P(a)  br2_ld8p(a)
-#define DB8(a)   (*(uint8_t  *)guest_at(a))
-#define DB16(a)  (*(uint16_t *)guest_at(a))
-#define DB32(a)  (*(uint32_t *)guest_at(a))
-#define I32AT(a,i) (((int32_t *)guest_at(a))[(i)])
 
 /* cd_cmd_issue — CD command issue. arg_addr/arg_addr2 are guest addrs
  * (or 0); async_flag = async flag. */
@@ -1642,8 +1643,8 @@ void cd_cmd_bytes(uintptr_t cmd)
  * addresses, dispatched through call_guest. */
 void cd_dispatch_tblc(void)
 {
-  uint32_t tbl = *(uint32_t *)guest_at(0x801bddA0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 0xc);
+  uint32_t tbl = DB32(0x801bddA0);
+  uint32_t fn = DB32(tbl + 0xc);
   (void)call_guest(fn,0,0);
 }
 
@@ -1672,9 +1673,9 @@ extern void cd_file_open(int32_t,uint8_t *);
 int32_t cd_file_open_b(uint32_t name)
 {
   int32_t idx;
-  if (*(uint32_t *)guest_at(0x801fc6f8) != 0) return -1;
+  if (DB32(0x801fc6f8) != 0) return -1;
   idx = cd_stamp_to_sector(guest_at(0x801feb00));
-  cd_seek_note(3, *(uint32_t *)guest_at(0x801feb00), (uint32_t)idx);
+  cd_seek_note(3, DB32(0x801feb00), (uint32_t)idx);
   cd_file_open(idx + 1,(uint8_t *)guest_at(name));
   return *(int32_t *)guest_at(0x801feb04);
 }
@@ -1741,7 +1742,7 @@ void cd_subsystem_reset(void)
   FUN_8018e300();
   /* generated reads mode @0x801BC868 (lui 0x801C + lw -0x3798), cells
    * @0x801BCBD0/0x801BCBDC — br2eu_func_80199070. */
-  if (*(uint32_t *)guest_at(0x801bc868) == 1) {
+  if (DB32(0x801bc868) == 1) {
     cd_tbl4_dispatch3(0);
     cd_xchg_fefb4(0);
   } else {
@@ -1752,9 +1753,9 @@ void cd_subsystem_reset(void)
   mc_session_b(0);
   /* generated sh zero,(ptr) — u16 clears, not bytes; cells are
    * 0x801BCBD0/0x801BCBDC (lui 0x801C + lw -0x3430/-0x343C). */
-  p = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bcbd0));
+  p = (uint16_t *)guest_at(DB32(0x801bcbd0));
   *p = 0;
-  p = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801bcbdc));
+  p = (uint16_t *)guest_at(DB32(0x801bcbdc));
   *p = 0;
   FUN_8018e310(0);
 }
@@ -1770,10 +1771,10 @@ int32_t cd_probe_retry(void)
     if (cd_ready_probe() == 1) {
       /* generated sw targets are 0x801BC848/0x801BC84C/0x801BC7B0/0x801BC7B4
        * (br2eu_func_80195AA4: lui 0x801C + sw off -0x37B8/-0x37B4/-0x3850/-0x384C) */
-      *(uint32_t *)guest_at(0x801bc848) = 0x80195b4c;
-      *(uint32_t *)guest_at(0x801bc84c) = 0x80195b74;
-      *(uint32_t *)guest_at(0x801bc7b0) = 0x80195b9c;
-      *(uint32_t *)guest_at(0x801bc7b4) = 0;
+      DB32(0x801bc848) = 0x80195b4c;
+      DB32(0x801bc84c) = 0x80195b74;
+      DB32(0x801bc7b0) = 0x80195b9c;
+      DB32(0x801bc7b4) = 0;
       return 1;
     }
   }
@@ -1869,9 +1870,9 @@ uint32_t cd_dir_entry_probe(int32_t entry)
    * must run in guest-address space: subtracting the host pointer guest_at()
    * returns produces a wild idx and the cursor never advances. Keep the host
    * pointer only for the final record dereference. */
-  table_guest = *(uint32_t *)guest_at(0x801fc6c0);
+  table_guest = DB32(0x801fc6c0);
   base = (uint32_t *)guest_at(table_guest);
-  a0 -= (int32_t)(*(uint32_t *)guest_at(0x801fc6c4) << 5) + (int32_t)table_guest;
+  a0 -= (int32_t)(DB32(0x801fc6c4) << 5) + (int32_t)table_guest;
   /* MIPS magic-div (0x80199290-0x801992AC): pre-shift dividend >>2, signed
    * mult by 0x82082083, then mfhi + add-back of the multiplicand, >>8, minus
    * sign of the PRE-shift dividend. The add-back term is the multiplicand
@@ -1897,7 +1898,7 @@ uint32_t cd_dir_entry_probe(int32_t entry)
     }
     a0 = count;   /* free-loop leaves a0 == count (0x801992E4 addiu) */
   }
-  *(uint32_t *)guest_at(0x801fc6ac) = (uint32_t)(a0 + idx);
+  DB32(0x801fc6ac) = (uint32_t)(a0 + idx);
   return 0;
 }
 
@@ -2000,10 +2001,10 @@ void cd_subchan_table_install(void)
 {
   uint32_t s0 = 0x801feb40;
   FUN_8018e300();
-  *(uint32_t *)guest_at(0x801feb44) = 0x801aa244;
-  *(uint32_t *)guest_at(0x801feb48) = 0x801aa2ac;
-  *(uint32_t *)guest_at(0x801feb40) = 0;
-  *(uint32_t *)guest_at(0x801feb4c) = 0;
+  DB32(0x801feb44) = 0x801aa244;
+  DB32(0x801feb48) = 0x801aa2ac;
+  DB32(0x801feb40) = 0;
+  DB32(0x801feb4c) = 0;
   bios_tramp_c003(1,s0);
   bios_tramp_c002(1,s0);
   FUN_8018e310(0);
@@ -2013,7 +2014,7 @@ void cd_subchan_table_install(void)
 int cd_dispatch_tbl8(int a0,uint32_t a1)
 {
   uint32_t tbl = DB32(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 8);
+  uint32_t fn = DB32(tbl + 8);
   return (int)call_guest(fn,(uint32_t)a0,a1);
 }
 
@@ -2070,12 +2071,12 @@ int32_t cd_subsystem_init(void)
   cd_str_print(0x80125898);
   printf_forward((const char *)guest_at(0x801258a4),
                (void *)guest_at(0x801bcb28));
-  *(uint8_t *)guest_at(0x801bc865) = 0;
-  *(uint8_t *)guest_at(0x801bc864) = 0;
-  *(uint32_t *)guest_at(0x801bc84c) = 0;
-  *(uint32_t *)guest_at(0x801bc848) = 0;
-  *(uint32_t *)guest_at(0x801bc858) = 0;
-  *(uint32_t *)guest_at(0x801bc854) = 0;
+  DB8(0x801bc865) = 0;
+  DB8(0x801bc864) = 0;
+  DB32(0x801bc84c) = 0;
+  DB32(0x801bc848) = 0;
+  DB32(0x801bc858) = 0;
+  DB32(0x801bc854) = 0;
   cd_dispatch_tblc();
   cd_dispatch_tbl8(2,0x801979f8);
   br2_st8p(0x801bcb0c, 1);
@@ -2097,7 +2098,7 @@ int32_t cd_subsystem_init(void)
      * reload @0x80197604 (br2eu_func_801974B8). */
     cd_cmd_issue(1,0,0,0);
   }
-  if (*(uint32_t *)guest_at(0x801bc854) & 0x10) {
+  if (DB32(0x801bc854) & 0x10) {
     cd_cmd_issue(1,0,0,0);   /* return also ignored @0x8019761C-0x8019762C */
   }
   if (cd_cmd_issue(0xa,0,0,0) != 0) return -1;
@@ -2146,8 +2147,8 @@ extern void cd_dir_reset(void);
 void cd_dir_table_set(uint32_t a0,uint32_t a1)
 {
   CDFN(CDFN_DIR_TABLE_SET,a0);
-  *(uint32_t *)guest_at(0x801fc6c0) = a0;
-  *(uint32_t *)guest_at(0x801fc6c4) = a1;
+  DB32(0x801fc6c0) = a0;
+  DB32(0x801fc6c4) = a1;
   cd_dir_reset();
 }
 
@@ -2159,15 +2160,15 @@ void cd_dir_read_wrap(uint32_t a0) { cd_dir_read(1,a0); }
  * a0*2) = a1; else -> same + (a1 >> *0x801c-0x2128). Disasm verified. */
 void cd_u16_table_store(uint32_t a0,uint32_t a1,int32_t a2)
 {
-  uint16_t *t = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801cdeac - 0x0));
-  uint16_t *base = (uint16_t *)guest_at(*(uint32_t *)guest_at(0x801c0000 - 0x2150));
+  uint16_t *t = (uint16_t *)guest_at(DB32(0x801cdeac - 0x0));
+  uint16_t *base = (uint16_t *)guest_at(DB32(0x801c0000 - 0x2150));
   (void)t;
   if (a2 == 0) {
     base[a0] = (uint16_t)a1;
   } else {
     /* srlv: shift amount is the cell value & 31 (br2eu_func_8019BCAC
      * @0x8019BCE0 PGXP_ALU 0x00651806). */
-    uint32_t sh = *(uint32_t *)guest_at(0x801c0000 - 0x2128) & 31;
+    uint32_t sh = DB32(0x801c0000 - 0x2128) & 31;
     base[a0] = (uint16_t)(a1 >> sh);
   }
 }
@@ -2210,10 +2211,10 @@ uint32_t cd_bzero(uint32_t a0,uint32_t a1)
  * Disasm verified. */
 void cd_handler_pair_install(void)
 {
-  *(uint32_t *)guest_at(0x801fefc0) = 0;
-  *(uint32_t *)guest_at(0x801fefc4) = 0x801a189c;
-  *(uint32_t *)guest_at(0x801fefc8) = 0x801a1834;
-  *(uint32_t *)guest_at(0x801fefcc) = 0;
+  DB32(0x801fefc0) = 0;
+  DB32(0x801fefc4) = 0x801a189c;
+  DB32(0x801fefc8) = 0x801a1834;
+  DB32(0x801fefcc) = 0;
 }
 
 /* cd_handler_triple_install — install three handler addrs:
@@ -2221,9 +2222,9 @@ void cd_handler_pair_install(void)
  * Disasm 0x801a3d50-0x801a3d84. */
 void cd_handler_triple_install(void)
 {
-  *(uint32_t *)guest_at(0x801be798) = 0x801a3d84;
-  *(uint32_t *)guest_at(0x801be79c) = 0x801a41d8;
-  *(uint32_t *)guest_at(0x801be7a0) = 0x801a3e94;
+  DB32(0x801be798) = 0x801a3d84;
+  DB32(0x801be79c) = 0x801a41d8;
+  DB32(0x801be7a0) = 0x801a3e94;
 }
 
 /* cd_ext_init_once — one-shot CD ext-table init: guard @0x801bdea0,
@@ -2307,14 +2308,14 @@ extern void cd_read_param_block(uint32_t,uint32_t,uint32_t);
 void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32_t s2)
 {
   cd_read_param_block(1,a1,a2);
-  *(uint32_t *)guest_at(0x801fc6b0) = 0;
-  *(uint32_t *)guest_at(0x801feb10) = a3;
-  *(uint32_t *)guest_at(0x801fc688) = a0 & 1;
-  *(uint32_t *)guest_at(0x801fc698) = 0;
-  *(uint32_t *)guest_at(0x801fc690) = 0;
-  *(uint16_t *)guest_at(0x801fc684) = 0;
-  *(uint32_t *)guest_at(0x801fc680) = 0;
-  *(uint32_t *)guest_at(0x801feb14) = s2;
+  DB32(0x801fc6b0) = 0;
+  DB32(0x801feb10) = a3;
+  DB32(0x801fc688) = a0 & 1;
+  DB32(0x801fc698) = 0;
+  DB32(0x801fc690) = 0;
+  DB16(0x801fc684) = 0;
+  DB32(0x801fc680) = 0;
+  DB32(0x801feb14) = s2;
   (void)a1; (void)a2;
 }
 
@@ -2324,9 +2325,9 @@ void cd_read_params_store(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3,uint32
  * a2 lands on -0x394c($at)=0x801fc6b4. */
 void cd_read_param_block(uint32_t a0,uint32_t a1,uint32_t a2)
 {
-  *(uint32_t *)guest_at(0x801fc6b8) = a0;
-  *(uint32_t *)guest_at(0x801fc694) = a1;
-  *(uint32_t *)guest_at(0x801fc6b4) = a2;
+  DB32(0x801fc6b8) = a0;
+  DB32(0x801fc694) = a1;
+  DB32(0x801fc6b4) = a2;
 }
 
 /* cd_ext_table_init — faithful port of generated 0x8019bee0 (CPS chain
@@ -2341,7 +2342,7 @@ int32_t cd_ext_table_init(uint32_t a0)
 void cd_chan_block_init(int32_t a0,uint32_t a1)
 {
   uint32_t tbl = DB32(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 0x14);
+  uint32_t fn = DB32(tbl + 0x14);
   (void)call_guest(fn,(uint32_t)a0,a1);
 }
 
@@ -2362,16 +2363,16 @@ void cd_mode_reset_seq(void)
 extern void cd_dir_clear(uint32_t,uint32_t);
 void cd_dir_reset(void)
 {
-  uint32_t a1 = *(uint32_t *)guest_at(0x801fc6c4);
+  uint32_t a1 = DB32(0x801fc6c4);
   CDFN(CDFN_DIR_RESET,0);
-  *(uint32_t *)guest_at(0x801fc6ac) = 0;
-  *(uint32_t *)guest_at(0x801fc6a8) = 0;
-  *(uint32_t *)guest_at(0x801fc6a4) = 0;
-  *(uint32_t *)guest_at(0x801fc69c) = 0;
+  DB32(0x801fc6ac) = 0;
+  DB32(0x801fc6a8) = 0;
+  DB32(0x801fc6a4) = 0;
+  DB32(0x801fc69c) = 0;
   cd_dir_clear(0,a1);
-  *(uint32_t *)guest_at(0x801fc68c) = 0;
-  *(uint16_t *)guest_at(0x801fc684) = 0;
-  *(uint32_t *)guest_at(0x801fc680) = 0;
+  DB32(0x801fc68c) = 0;
+  DB16(0x801fc684) = 0;
+  DB32(0x801fc680) = 0;
 }
 
 /* cd_mode_apply_seq — CD mode apply: 99fe0(0), 8e300, v0=99ffc();
@@ -2392,7 +2393,7 @@ void bios_tramp_a070(uint32_t a0,uint32_t a1) { bios_svc(0xa0,0x70,a0,a1); }
 /* cd_job_slots_reset — store -1 @0x801be768. Disasm 0x801a0a00-0x801a0a0c. */
 void cd_job_slots_reset(void)
 {
-  *(uint32_t *)guest_at(0x801be768) = 0xffffffff;
+  DB32(0x801be768) = 0xffffffff;
 }
 
 /* cd_chan_flags_to_dir — channel flags -> dir entry u16 stores:
@@ -2413,14 +2414,14 @@ void cd_chan_flags_to_dir(uint32_t a0)
    * 8019CAA0). The clean port had it inverted (!lo&&(a1&4)). */
   lo = (a1 < 1u);
   if (lo || (a1 & 2)) {
-    base = *(uint32_t *)guest_at(0x801bdeb0);
+    base = DB32(0x801bdeb0);
     CDMMIO16_ST(base,0xc2,*(uint16_t *)(b + 8));      /* +0x184 */
-    *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(b + 8);
+    DB16(0x801bde58) = *(uint16_t *)(b + 8);
   }
   if (lo || (a1 & 4)) {
-    base = *(uint32_t *)guest_at(0x801bdeb0);
+    base = DB32(0x801bdeb0);
     CDMMIO16_ST(base,0xc3,*(uint16_t *)(b + 0xa));    /* +0x186 */
-    *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(b + 0xa);
+    DB16(0x801bde5a) = *(uint16_t *)(b + 0xa);
   }
 }
 
@@ -2462,22 +2463,22 @@ void cd_file_open(int32_t a0, uint8_t *v0)
  * 2 on other states. Disasm 0x80199360-0x80199414. */
 int32_t cd_channel_poll(uint32_t *out_rec, uint32_t *out_ent)
 {
-  uint32_t base = *(uint32_t *)guest_at(0x801fc6c0);
-  uint32_t idx = *(uint32_t *)guest_at(0x801fc6ac);
+  uint32_t base = DB32(0x801fc6c0);
+  uint32_t idx = DB32(0x801fc6ac);
   uint8_t *e = (uint8_t *)guest_at(base + idx * 0x20);
   if (*(uint16_t *)e == 1) {
     /* Generated 0x8019938C-0x801993A4: the idx reset (0x801FC6AC=0) sits in
      * the delay slot of the 0x801FC6B4 test, so it runs UNCONDITIONALLY on
      * state==1; only the entry-state clear is gated on 0x801FC6B4!=0. */
-    uint32_t clr = *(uint32_t *)guest_at(0x801fc6b4);
-    *(uint32_t *)guest_at(0x801fc6ac) = 0;
+    uint32_t clr = DB32(0x801fc6b4);
+    DB32(0x801fc6ac) = 0;
     if (clr != 0) *(uint16_t *)e = 0;
-    idx = *(uint32_t *)guest_at(0x801fc6ac);
+    idx = DB32(0x801fc6ac);
     e = (uint8_t *)guest_at(base + idx * 0x20);
   }
   if (*(uint16_t *)e != 2) { return 1; }
   *(uint16_t *)e = 4;
-  *out_rec = base + *(uint32_t *)guest_at(0x801fc6c4) * 0x20 + idx * 0x7e0;
+  *out_rec = base + DB32(0x801fc6c4) * 0x20 + idx * 0x7e0;
   *out_ent = base + idx * 0x20;
   return 0;
 }
@@ -2496,20 +2497,20 @@ int32_t cd_chan_mode_set(uint32_t mode)
     if (mode == 0) {
       do_set = 0;
     } else {
-      if (*(uint32_t *)guest_at(0x801bde48) == 1) do_set = 1;
-      else if (cd_range_table_member(*(uint32_t *)guest_at(0x801bde4c)) == 0) do_set = 1;
+      if (DB32(0x801bde48) == 1) do_set = 1;
+      else if (cd_range_table_member(DB32(0x801bde4c)) == 0) do_set = 1;
     }
-    blk = *(uint32_t *)guest_at(0x801bdeb0);
+    blk = DB32(0x801bdeb0);
     v0 = CDMMIO16(blk,0xd5);                    /* +0x1aa */
     if (do_set) {
-      *(uint32_t *)guest_at(0x801bde44) = 1;
+      DB32(0x801bde44) = 1;
       CDMMIO16_ST(blk,0xd5,(uint16_t)(v0 | 0x80));
     } else {
-      *(uint32_t *)guest_at(0x801bde44) = 0;
+      DB32(0x801bde44) = 0;
       CDMMIO16_ST(blk,0xd5,(uint16_t)(v0 & 0xff7f));
     }
   }
-  return (int32_t)*(uint32_t *)guest_at(0x801bde44);
+  return (int32_t)DB32(0x801bde44);
 }
 
 /* cd_dir_clear — clear a1 consecutive 0x20-stride entries of the dir
@@ -2517,10 +2518,10 @@ int32_t cd_chan_mode_set(uint32_t mode)
  * Disasm 0x80199320-0x80199350. */
 void cd_dir_clear(uint32_t a0, uint32_t a1)
 {
-  uint32_t base = *(uint32_t *)guest_at(0x801fc6c0);
+  uint32_t base = DB32(0x801fc6c0);
   uint32_t i;
   for (i = 0; i < a1; i++)
-    *(uint32_t *)guest_at(base + (a0 + i) * 0x20) = 0;
+    DB32(base + (a0 + i) * 0x20) = 0;
 }
 
 /* cd_reg_win_rmw_cc_cd — trampoline: cd_reg_window_rmw(a0,a1,0xcc,0xcd).
@@ -2601,8 +2602,8 @@ int32_t cd_range_table_member(uint32_t a0)
    * if table==0 return 0 — the NULL test is on the CELL VALUE, not the
    * host pointer (br2eu_func_8019C060 @0x8019C064-0x8019C07C). The cell is
    * loaded once; the loop walks +8 without reloading it. */
-  uint32_t sh = *(uint32_t *)guest_at(0x801bded8);
-  uint32_t cell = *(uint32_t *)guest_at(0x801bdf18);
+  uint32_t sh = DB32(0x801bded8);
+  uint32_t cell = DB32(0x801bdf18);
   uint8_t *p;
   uint32_t v1;
   if (cell == 0) return 0;
@@ -2623,7 +2624,7 @@ int32_t cd_range_table_member(uint32_t a0)
  * Disasm 0x80199ffc-0x8019a008. */
 int32_t cd_status_bcc90(void)
 {
-  return (int32_t)*(uint32_t *)guest_at(0x801bcc90);
+  return (int32_t)DB32(0x801bcc90);
 }
 
 /* cd_seek_param_issue_clamped — seek-param clamp+issue: a1 clamped to <=0x7eff0,
@@ -2635,8 +2636,8 @@ uint32_t cd_seek_param_issue_clamped(uint32_t a0,uint32_t a1)
   uint32_t s0 = a1;
   if (0x7eff0 < s0) s0 = 0x7eff0;
   cd_seek_param_issue(a0,s0);
-  if (*(uint32_t *)guest_at(0x801bdee8) == 0)
-    *(uint32_t *)guest_at(0x801bdee4) = 0;
+  if (DB32(0x801bdee8) == 0)
+    DB32(0x801bdee4) = 0;
   return s0;
 }
 
@@ -2655,7 +2656,7 @@ uint32_t cd_status_shifted_read(uint32_t a0)
     uint32_t sh = (uint16_t)r;
     DB16(0x801bdec8) = (uint16_t)sh;
     sh = DB16(0x801bdec8);
-    return sh << (*(uint32_t *)guest_at(0x801bded8) & 31);
+    return sh << (DB32(0x801bded8) & 31);
   }
   return 0;
 }
@@ -2664,8 +2665,8 @@ uint32_t cd_status_shifted_read(uint32_t a0)
  * Disasm 0x8019d4d0-0x8019d500. */
 void cd_mode_store(uint32_t a0)
 {
-  *(uint32_t *)guest_at(0x801bde40) = a0;
-  *(uint32_t *)guest_at(0x801bdecc) = (a0 == 1) ? 1 : 0;
+  DB32(0x801bde40) = a0;
+  DB32(0x801bdecc) = (a0 == 1) ? 1 : 0;
 }
 
 /* cd_seek_complete_poll — seek-complete state machine on @0x801bde40/@0x801bdee4:
@@ -2743,7 +2744,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
   if (!cd_cmd_issue_sync(0x13,0,(uint32_t)(fr + 8))) goto fail;
   s0 = ((uint32_t)(resp[1] >> 4)) * 10 + (resp[1] & 0xf);
   s3 = ((uint32_t)(resp[2] >> 4)) * 10 + (resp[2] & 0xf);
-  dbg = *(uint32_t *)guest_at(0x801bc850);
+  dbg = DB32(0x801bc850);
   if (dbg >= 2)
     printf_forward((const char *)guest_at(0x801255f8),s0,s3);
   cmd[0] = 0;
@@ -2768,7 +2769,7 @@ uint32_t cd_dir_read(uint32_t a0,uint32_t a1)
     if (s3 < s0) break;
   }
 done:
-  dbg = *(uint32_t *)guest_at(0x801bc850);
+  dbg = DB32(0x801bc850);
   if (dbg >= 2) {
     int32_t n = (int32_t)s2 - 1;
     if (n >= 0) {
@@ -2789,7 +2790,7 @@ done:
   br2_guest_frame_free();
   return guest_of(s1p);
 fail:
-  if (*(uint32_t *)guest_at(0x801bc850) != 0)
+  if (DB32(0x801bc850) != 0)
     printf_forward((const char *)guest_at(0x80125624));
   mc_session(s6);
   br2_guest_frame_free();
@@ -3593,16 +3594,16 @@ int32_t cd_chan_mode_apply(uint32_t a0)
       s7 = (CDMMIO16(gmb,0xd5) >> 7) & 1;
       if (s7) CDMMIO16_ST(gmb,0xd5,(uint16_t)(CDMMIO16(gmb,0xd5) & 0xff7f));
       CDMMIO16_ST(gmb,0xc2,0); CDMMIO16_ST(gmb,0xc3,0);
-      *(uint16_t *)guest_at(0x801bde58) = 0;
-      *(uint16_t *)guest_at(0x801bde5a) = 0;
+      DB16(0x801bde58) = 0;
+      DB16(0x801bde5a) = 0;
     } else {
       if (s5 || (s3 & 2)) {
         CDMMIO16_ST(gmb,0xc2,*(uint16_t *)(blk + 8));
-        *(uint16_t *)guest_at(0x801bde58) = *(uint16_t *)(blk + 8);
+        DB16(0x801bde58) = *(uint16_t *)(blk + 8);
       }
       if (s5 || (s3 & 4)) {
         CDMMIO16_ST(gmb,0xc3,*(uint16_t *)(blk + 0xa));
-        *(uint16_t *)guest_at(0x801bde5a) = *(uint16_t *)(blk + 0xa);
+        DB16(0x801bde5a) = *(uint16_t *)(blk + 0xa);
       }
     }
   }
@@ -3629,8 +3630,8 @@ void cd_bitstream_decode(int32_t a0,uint32_t a1,uint32_t a2)
   uint32_t v0,v1,at,at2;
   uint32_t a0g,a1g,a2b,a3b;
   int v0neg;
-#define FF_ST16(a,v) (*(uint16_t *)guest_at(a) = (uint16_t)(v))
-#define FF_ST32(a,v) (*(uint32_t *)guest_at(a) = (uint32_t)(v))
+#define FF_ST16(a,v) (DB16(a) = (uint16_t)(v))
+#define FF_ST32(a,v) (DB32(a) = (uint32_t)(v))
 
   t1 = DB32(0x801b6900);
   a2b = a2 + 0x800;
@@ -4448,8 +4449,8 @@ uint32_t cd_chan_cmd_burst(uint32_t a0)
     if (cd_chan_cmd_pump(s4,(uint32_t)(s2 + 0x10),0x801feea0) != 1) return 0;
   }
   cd_bzero(0x801feea0,0x80);
-  *(uint8_t *)guest_at(0x801feea0)     = 0x4d;   /* 'M' */
-  *(uint8_t *)guest_at(0x801feea0 + 1) = 0x43;   /* 'C' */
+  DB8(0x801feea0)     = 0x4d;   /* 'M' */
+  DB8(0x801feea0 + 1) = 0x43;   /* 'C' */
   return cd_chan_cmd_pump(s4,0,0x801feea0) == 1 ? 1u : 0u;
 }
 
@@ -4594,7 +4595,7 @@ void cd_mc_state_machine(void)
  * Disasm 0x801a12dc-0x801a13a4. */
 static uint8_t *ctx_194_get(void)
 {
-  uint32_t fn = *(uint32_t *)guest_at(0x801be194);
+  uint32_t fn = DB32(0x801be194);
   return (uint8_t *)guest_at(call_guest(fn, 0, 0));
 }
 /* cd_ctx_status_map — map selector sel through the ctx record (ctx_194_get) to a status code; guest 0x801a12dc. */
@@ -4610,7 +4611,7 @@ int32_t cd_ctx_status_map(int32_t sel)
   /* ctx+0x30 is a 4-int8_t guest pointer cell — read the u32 guest address
    * and resolve it; dereferencing the cell value as a host pointer reads
    * guest address bits as a native address. */
-  if (*(uint8_t *)guest_at(*(uint32_t *)(v1 + 0x30)) != 0)
+  if (DB8(*(uint32_t *)(v1 + 0x30)) != 0)
     goto map;
   return v1[0x49];
 map:
@@ -4646,7 +4647,7 @@ int32_t cd_ctx_field_get(int32_t unused, int32_t sel, int32_t idx)
       /* ctx+0 is a 4-int8_t guest pointer cell holding the u16 table base —
        * read it as u32 and resolve; *(uint8_t**)v1 would read 8 bytes
        * (two guest cells) as a host pointer. */
-      return *(uint16_t *)guest_at(*(uint32_t *)v1 + (uint32_t)idx * 2);
+      return DB16(*(uint32_t *)v1 + (uint32_t)idx * 2);
     }
     return 0;
   case 0x64:
@@ -4709,8 +4710,8 @@ void cd_dir_entry_finalize(void)
   uint32_t t, fn;
   *(uint16_t *)e = 2;
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
-  *(uint32_t *)guest_at(0x801feb00) = t;
-  *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
+  DB32(0x801feb00) = t;
+  DB32(0x801feb04) = *(uint32_t *)(e + 8);
   feb00_note(1, t);
   DB32(0x801fc6a8) = DB32(0x801fc6a4);        /* delay slot of beqz */
   fn = DB32(0x801feb10);
@@ -5161,7 +5162,7 @@ void ret_zero_f(void)
 uint32_t cd_ind_dispatch_14(uint32_t a0)
 {
   uint32_t tbl = DB32(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 0x14);
+  uint32_t fn = DB32(tbl + 0x14);
   return call_guest(fn,4,a0);
 }
 
@@ -5176,7 +5177,7 @@ extern void FUN_8019a0ddc(void);
 uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t tbl = DB32(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 0x10);
+  uint32_t fn = DB32(tbl + 0x10);
   (void)a2; (void)a3;
   return call_guest(fn,a0,a1);
 }
@@ -5185,7 +5186,7 @@ uint32_t cd_ind_dispatch_10(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 uint32_t cd_ind_dispatch_18(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
 {
   uint32_t tbl = DB32(0x801bdda0);
-  uint32_t fn = *(uint32_t *)guest_at(tbl + 0x18);
+  uint32_t fn = DB32(tbl + 0x18);
   (void)a2; (void)a3;
   return call_guest(fn,a0,a1);
 }
@@ -5209,11 +5210,11 @@ uint32_t cd_state9_store(uint32_t a0)
 int cd_coord_pack_entry(uint32_t a0,uint32_t a1)
 {
   int packed;
-  *(uint8_t *)guest_at(a0 + 3) = 2;
+  DB8(a0 + 3) = 2;
   packed = gpu_coord_pack((int)*(int16_t *)guest_at(a1),
                        (int)*(int16_t *)guest_at(a1 + 2));
-  *(uint32_t *)guest_at(a0 + 4) = (uint32_t)packed;
-  *(uint32_t *)guest_at(a0 + 8) = 0;
+  DB32(a0 + 4) = (uint32_t)packed;
+  DB32(a0 + 8) = 0;
   return packed;
 }
 
@@ -5340,7 +5341,7 @@ extern uint32_t gpu_invoke(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 static uint32_t cd_gpu_call(uint32_t off,uint32_t a0,uint32_t a1,
                                 uint32_t a2,uint32_t a3)
 {
-  uint32_t *t = (uint32_t *)guest_at(*(uint32_t *)guest_at(0x801b8318));
+  uint32_t *t = (uint32_t *)guest_at(DB32(0x801b8318));
   return gpu_invoke(t[off >> 2],a0,a1,a2,a3);
 }
 extern void gpu_rect_bounds_dbg(uint32_t,short *);
@@ -5379,7 +5380,7 @@ void cd_gpu_call_8(uint32_t a0,uint32_t a1)
   uint32_t obj;
   gpu_rect_bounds_dbg(0x80125510,(short *)(uintptr_t)a0);
   obj = DB32(0x801b8318);
-  cd_gpu_call(8,*(uint32_t *)guest_at(obj + 0x1c),a0,8,a1);
+  cd_gpu_call(8,DB32(obj + 0x1c),a0,8,a1);
 }
 
 /* ======== 0x8019a244 ======== */
@@ -5389,7 +5390,7 @@ void cd_hdr_clear_fixed(void)
 {
   uint32_t p = DB32(0x801bcc94);
   int i;
-  *(uint16_t *)guest_at(p + 0xa) = 0;
+  DB16(p + 0xa) = 0;
   for (i = 9; i >= 0; i--) { }
 }
 
@@ -5513,7 +5514,7 @@ uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
     do {
       s1 = s1 - 1;
       nxt = s0 + 4;
-      *(uint8_t *)guest_at(s0 + 3) = 0;
+      DB8(s0 + 3) = 0;
       v0 = DB32(s0);
       v1 = nxt & 0xffffff;
       v0 = (v0 & 0xff000000) | v1;
@@ -5524,7 +5525,7 @@ uint32_t cd_prim_list_a(uint32_t a0,uint32_t a1)
   }
   v0 = s0;
   DB32(0x801b83e0) = (0x801b83cc & 0xffffff) | 0x4000000;
-  *(uint32_t *)guest_at(v0) = 0x801b83e0 & 0xffffff;
+  DB32(v0) = 0x801b83e0 & 0xffffff;
   return v0;
 }
 
@@ -5574,11 +5575,11 @@ int cd_dma_xfer_mode(uint32_t a0,uint32_t a1)
 uint32_t cd_state_blk_save(void)
 {
   uint32_t s0 = 0x801bcd18;
-  if (*(uint16_t *)guest_at(s0) != 0) return 0;
+  if (DB16(s0) != 0) return 0;
   bios_tramp_b019(s0 + 0x38,0,0,0);
-  *(uint16_t *)guest_at(s0) = 1;
-  br2_st16p(0x801bdda8, *(uint16_t *)guest_at(s0 + 0x32));
-  br2_st32p(0x801bddac, *(uint32_t *)guest_at(s0 + 0x34));
+  DB16(s0) = 1;
+  br2_st16p(0x801bdda8, DB16(s0 + 0x32));
+  br2_st32p(0x801bddac, DB32(s0 + 0x34));
   FUN_8018e310(DB32(0x801bdda8));
   return s0;
 }
@@ -5603,15 +5604,15 @@ uint32_t cd_state_blk_restore(void)
 {
   uint32_t s0 = 0x801bcd18;
   uint32_t v0, v1, a0;
-  if (*(uint16_t *)guest_at(s0) == 0) return 0;
+  if (DB16(s0) == 0) return 0;
   FUN_8018e300();
   v0 = DB32(0x801bdda8);
   a0 = DB32(0x801bddac);
   v1 = br2_ld16(v0);
-  *(uint16_t *)guest_at(s0 + 0x32) = (uint16_t)v1;
+  DB16(s0 + 0x32) = (uint16_t)v1;
   v1 = br2_ld32(a0);
   a0 = DB32(0x801bdda4);
-  *(uint32_t *)guest_at(s0 + 0x34) = v1;
+  DB32(s0 + 0x34) = v1;
   br2_st16(v0, 0);
   v0 = br2_ld16(v0);
   br2_st16(a0, (uint16_t)v0);
@@ -5619,7 +5620,7 @@ uint32_t cd_state_blk_restore(void)
   v0 = br2_ld32(a0) & 0x77777777;
   br2_st32(a0, v0);
   bios_tramp_b018(a0,0,0,0);
-  *(uint16_t *)guest_at(s0) = 0;
+  DB16(s0) = 0;
   return s0;
 }
 
@@ -5668,7 +5669,7 @@ uint32_t cd_gpu_call_34(uint32_t a0,uint32_t a1,uint32_t a2,
   }
   if (a0 != DB8(0x801b8321)) {
     uint32_t tbl = DB32(0x801b8318);
-    gpu_invoke(*(uint32_t *)guest_at(tbl + 0x34),1,a1,a2,a3);
+    gpu_invoke(DB32(tbl + 0x34),1,a1,a2,a3);
     DB8(0x801b8321) = (uint8_t)a0;
     cd_dispatch_tbl4(2,0);
   }
@@ -5699,23 +5700,23 @@ uint32_t cd_dir_scan(uint32_t a0,uint32_t a1)
    * incoming a0/a1 are overwritten before any use. */
   s1 = (uint32_t)cd_file_load_sync(1,0x10,0x801fe300);
   if (s1 != 1) {
-    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    if ((int32_t)DB32(0x801bc850) <= 0) return 0;
     printf_forward((const char *)guest_at(0x80125964));
     return 0;
   }
   if (cd_strncmp(0x801fe301,0x80125990,5) != 0) {
-    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    if ((int32_t)DB32(0x801bc850) <= 0) return 0;
     printf_forward((const char *)guest_at(0x80125998));
     return 0;
   }
   /* root-dir extent LBA @buf+0x8c — lwl/lwr pair (addr is 4-aligned) */
   memcpy(&lba,(const void *)guest_at(0x801fe38c),4);
   if ((uint32_t)cd_file_load_sync(1,lba,0x801fe300) != s1) {
-    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) <= 0) return 0;
+    if ((int32_t)DB32(0x801bc850) <= 0) return 0;
     printf_forward((const char *)guest_at(0x801259c8),lba);
     return 0;
   }
-  if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+  if ((int32_t)DB32(0x801bc850) >= 2)
     printf_forward((const char *)guest_at(0x801259ec));
 
   cur = 0x801fe300;              /* s1 = s0 = dir buffer */
@@ -5728,26 +5729,26 @@ uint32_t cd_dir_scan(uint32_t a0,uint32_t a1)
     idx = i * 0x2c;
     /* record extent u32 @cur+2 (lwl/lwr) -> table entry +8 */
     memcpy(&xv,(const void *)guest_at(cur + 2),4);
-    *(uint32_t *)guest_at(0x801fcd08 + idx) = xv;
+    DB32(0x801fcd08 + idx) = xv;
     nm = 0x801fcd0c + idx;        /* s2 = name dst (guest addr) */
     fl = DB8(cur + 6);
     nid = i + 1;                  /* s3 = entry no. */
-    *(uint32_t *)guest_at(0x801fcd00 + idx) = nid;
-    *(uint32_t *)guest_at(0x801fcd04 + idx) = fl;
+    DB32(0x801fcd00 + idx) = nid;
+    DB32(0x801fcd04 + idx) = fl;
     guest_memcpy((uint32_t *)(uintptr_t)nm,(uint32_t *)(uintptr_t)(cur + 8),(int)len);
     DB8(nm + len) = 0;            /* NUL-terminate copied name */
     adv = len + ((len & 1) + 8);  /* record stride: 8+len rounded even */
     cur += adv;
     i = nid;
-    if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+    if ((int32_t)DB32(0x801bc850) >= 2)
       printf_forward((const char *)guest_at(0x80125a0c),xv,nid,fl,nm);
     if (i >= 0x80) goto dir_done; /* table full: skip terminator store */
   }
   if (i < 0x80)
-    *(uint32_t *)guest_at(0x801fcd04 + i * 0x2c) = 0;  /* end marker */
+    DB32(0x801fcd04 + i * 0x2c) = 0;  /* end marker */
 dir_done:
-  *(uint32_t *)guest_at(0x801ccb70) = 0;
-  if ((int32_t)*(uint32_t *)guest_at(0x801bc850) >= 2)
+  DB32(0x801ccb70) = 0;
+  if ((int32_t)DB32(0x801bc850) >= 2)
     printf_forward((const char *)guest_at(0x80125a20),i);
   return 1;
 }
@@ -5760,7 +5761,7 @@ int cd_file_rec_find(uint32_t a0,uint32_t a1)
   uint32_t i, off = 0;
   uint32_t s2 = 0x801fcd0c;
   for (i = 0; i < 0x80; i++) {
-    uint32_t v0 = *(uint32_t *)guest_at(0x801fcd04 + off);
+    uint32_t v0 = DB32(0x801fcd04 + off);
     if (v0 == 0) return -1;
     if (v0 == a0) {
       /* a1 arrives as a raw guest address (clean_table) — cd_strcmp
@@ -5788,12 +5789,12 @@ int32_t cd_gpu_rect_draw(uint32_t a0,uint32_t a1,uint32_t a2)
   if (v0 == 0) return -1;
   v0 = *(int16_t *)guest_at(a0 + 6);
   if (v0 == 0) return -1;
-  *(uint32_t *)guest_at(0x801b83c0) = DB32(a0);
-  *(uint32_t *)guest_at(0x801b83c4) = (a2 << 16) | (a1 & 0xffff);
-  *(uint32_t *)guest_at(0x801b83c8) = DB32(a0 + 4);
+  DB32(0x801b83c0) = DB32(a0);
+  DB32(0x801b83c4) = (a2 << 16) | (a1 & 0xffff);
+  DB32(0x801b83c8) = DB32(a0 + 4);
   tbl = DB32(0x801b8318);
-  gpu_invoke(*(uint32_t *)guest_at(tbl + 8),
-                 *(uint32_t *)guest_at(tbl + 0x18),0x801b83b8,0x14,0);
+  gpu_invoke(DB32(tbl + 8),
+                 DB32(tbl + 0x18),0x801b83b8,0x14,0);
   return (int32_t)DB32(a0 + 4);
 }
 
@@ -5951,7 +5952,7 @@ int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
   cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32(0x801b8318);
-    gpu_invoke(*(uint32_t *)guest_at(tbl + 0x20),a0,a1,0,0);
+    gpu_invoke(DB32(tbl + 0x20),a0,a1,0,0);
   }
   return 0;
 }
@@ -5969,7 +5970,7 @@ int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
   cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32(0x801b8318);
-    gpu_invoke(*(uint32_t *)guest_at(tbl + 0x1c),a0,a1,0,0);
+    gpu_invoke(DB32(tbl + 0x1c),a0,a1,0,0);
   }
   return 0;
 }
@@ -6000,11 +6001,11 @@ void cd_prim_emit_a(uint32_t a0,uint32_t a1)
   }
   s0 = a1 + 0x1c;
   gpu_prim_pkt_build((int)s0,(uint16_t *)(uintptr_t)a1);
-  *(uint32_t *)guest_at(a1 + 0x1c) =
+  DB32(a1 + 0x1c) =
       (DB32(a1 + 0x1c) & 0xff000000) | (a0 & 0xffffff);
   tbl = DB32(0x801b8318);
-  gpu_invoke(*(uint32_t *)guest_at(tbl + 8),
-                 *(uint32_t *)guest_at(tbl + 0x18),s0,0x40,0);
+  gpu_invoke(DB32(tbl + 8),
+                 DB32(tbl + 0x18),s0,0x40,0);
   guest_memcpy((uint32_t *)(uintptr_t)0x801b8330,(uint32_t *)(uintptr_t)a1,0x5c);
 }
 
@@ -6345,7 +6346,7 @@ int cd_job_submit6(uint32_t a0)
 /* cd_vcall_38 — indirect vtable call: fn=*(a0+0x38); call_guest(fn,a0,a1); return sign bit (>>31). */
 uint32_t cd_vcall_38(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 0x38);
+  uint32_t fn = DB32(a0 + 0x38);
   return call_guest(fn,a0,a1) >> 31;
 }
 
@@ -6354,7 +6355,7 @@ uint32_t cd_vcall_38(uint32_t a0,uint32_t a1)
 /* cd_vcall_c — vtable slot 0xC: call_guest(*(a0+0xC),a0,a1). */
 uint32_t cd_vcall_c(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 0xc);
+  uint32_t fn = DB32(a0 + 0xc);
   return call_guest(fn,a0,a1);
 }
 
@@ -6363,7 +6364,7 @@ uint32_t cd_vcall_c(uint32_t a0,uint32_t a1)
 /* cd_vcall_8 — vtable slot 8. */
 uint32_t cd_vcall_8(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 8);
+  uint32_t fn = DB32(a0 + 8);
   return call_guest(fn,a0,a1);
 }
 
@@ -6372,7 +6373,7 @@ uint32_t cd_vcall_8(uint32_t a0,uint32_t a1)
 /* cd_vcall_4 — vtable slot 4. */
 uint32_t cd_vcall_4(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 4);
+  uint32_t fn = DB32(a0 + 4);
   return call_guest(fn,a0,a1);
 }
 
@@ -6381,7 +6382,7 @@ uint32_t cd_vcall_4(uint32_t a0,uint32_t a1)
 /* cd_vcall_14 — vtable slot 0x14. */
 uint32_t cd_vcall_14(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 0x14);
+  uint32_t fn = DB32(a0 + 0x14);
   return call_guest(fn,a0,a1);
 }
 
@@ -6390,7 +6391,7 @@ uint32_t cd_vcall_14(uint32_t a0,uint32_t a1)
 /* cd_vcall_10 — vtable slot 0x10. */
 uint32_t cd_vcall_10(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 0x10);
+  uint32_t fn = DB32(a0 + 0x10);
   return call_guest(fn,a0,a1);
 }
 
@@ -6399,7 +6400,7 @@ uint32_t cd_vcall_10(uint32_t a0,uint32_t a1)
 /* cd_vcall_18 — vtable slot 0x18. */
 uint32_t cd_vcall_18(uint32_t a0,uint32_t a1)
 {
-  uint32_t fn = *(uint32_t *)guest_at(a0 + 0x18);
+  uint32_t fn = DB32(a0 + 0x18);
   return call_guest(fn,a0,a1);
 }
 
@@ -6433,7 +6434,7 @@ int cd_file_open_seq(uint32_t a0,uint32_t a1)
   int32_t v0;
   if (a0 != 0) return -1;
   v0 = cd_stamp_to_sector(guest_at(0x801FEB00));
-  cd_seek_note(3, *(uint32_t *)guest_at(0x801FEB00), (uint32_t)v0);
+  cd_seek_note(3, DB32(0x801FEB00), (uint32_t)v0);
   cd_file_open(v0 + 1,(uint8_t *)guest_at(a1));
   return (int)*(int32_t *)guest_at(0x801feb04);
 }
@@ -6449,7 +6450,7 @@ int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
   }
   {
     uint32_t tbl = DB32(0x801b8318);
-    uint32_t fn = *(uint32_t *)guest_at(tbl + 0x3c);
+    uint32_t fn = DB32(tbl + 0x3c);
     return (int)call_guest(fn,a0,0);
   }
 }
@@ -6460,7 +6461,7 @@ int cd_gpu_call_3c(uint32_t a0,uint32_t a1)
 void cd_hdr_clear(uint32_t a0)
 {
   volatile int i;
-  *(uint16_t *)guest_at(a0 + 0xa) = 0;
+  DB16(a0 + 0xa) = 0;
   for (i = 9; i != -1; i--) {}
 }
 
@@ -6477,8 +6478,8 @@ void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
   }
   {
     uint32_t tbl = DB32(0x801b8318);
-    uint32_t f2 = *(uint32_t *)guest_at(tbl + 8);
-    uint32_t a0v = *(uint32_t *)guest_at(tbl + 0x18);
+    uint32_t f2 = DB32(tbl + 8);
+    uint32_t a0v = DB32(tbl + 0x18);
     call_guest(f2,a0v,a0);   /* a2/a3 zero in guest */
   }
 }
@@ -6504,8 +6505,8 @@ void cd_dir_entry_store(uint32_t a0,uint32_t a1)
   uint32_t fn;
   *(uint16_t *)e = 2;
   memcpy(&t,e + 0x1c,4);                     /* lwl/lwr unaligned u32 */
-  *(uint32_t *)guest_at(0x801feb00) = t;
-  *(uint32_t *)guest_at(0x801feb04) = *(uint32_t *)(e + 8);
+  DB32(0x801feb00) = t;
+  DB32(0x801feb04) = *(uint32_t *)(e + 8);
   feb00_note(2, t);
   DB32(0x801fc6a8) = DB32(0x801fc6a4);
   fn = DB32(0x801feb10);
@@ -6559,11 +6560,11 @@ void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
   }
   {
     uint32_t tbl = DB32(0x801b8318);
-    uint32_t f2 = *(uint32_t *)guest_at(tbl + 0x2c);
+    uint32_t f2 = DB32(tbl + 0x2c);
     call_guest(f2,a0,a1);
   }
   DB32(0x801b83e0) = (0x801b83cc & 0x00ffffff) | 0x400000;
-  *(uint32_t *)guest_at(a0) = 0x801b83e0 & 0x00ffffff;
+  DB32(a0) = 0x801b83e0 & 0x00ffffff;
 }
 
 /* ======== 0x8019b7e8 ======== */
@@ -6621,14 +6622,14 @@ void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
   while (s1 != 0) {
     uint32_t a0 = s0 + 4;
     s1--;
-    *(uint8_t *)guest_at(s0 + 3) = 0;
-    *(uint32_t *)guest_at(s0) =
-        (*(uint32_t *)guest_at(s0) & 0xff000000) | a0;
+    DB8(s0 + 3) = 0;
+    DB32(s0) =
+        (DB32(s0) & 0xff000000) | a0;
     s0 = a0;
     if (s1 == 0) break;
   }
   DB32(0x801b83e0) = (0x801b83cc & 0x00ffffff) | 0x400000;
-  *(uint32_t *)guest_at(s0) = 0x801b83e0 & 0x00ffffff;
+  DB32(s0) = 0x801b83e0 & 0x00ffffff;
 }
 
 /* ======== batch_mass12 ======== */
@@ -6741,7 +6742,7 @@ int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
   }
   cd_file_header_copy(a0,s0);
   cd_strcat_guard(s0,a1);
-  *(uint32_t *)guest_at(0x801febf0) = a0;
+  DB32(0x801febf0) = a0;
   for (;;) {
     if (br2_bail_pending()) return -1;
     v0 = bios_tramp_b032(guest_of(s0),1,0,0);
@@ -6760,7 +6761,7 @@ int cd_file_open_wait(uint32_t a0,uint32_t a1,uint32_t a2)
       s4[0] = 2;
       s4[1] = 0;
       s4[2] = 0;
-      *(uint32_t *)guest_at(0x801febf0) = a0;
+      DB32(0x801febf0) = a0;
     }
     cd_job_result(0,0,&st);
     cd_xchg_fec24(DB32(0x801fec38));
