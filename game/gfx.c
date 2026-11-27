@@ -74,12 +74,9 @@ extern uint8_t *g_DAT_801b55e4;
 extern uint8_t *g_DAT_801f642c;
 extern uint8_t *g_DAT_801f68b4;
 extern uint8_t *g__DAT_1f8000dc;
-extern uint8_t *g_DAT_801e40b6;
-extern uint8_t *g_DAT_801e40b7;
 extern uint8_t *g_DAT_801b8320;
 extern uint8_t *g_DAT_801b8321;
 extern uint8_t *g_DAT_801b8322;
-extern uint8_t *g_DAT_801b8323;
 extern uint8_t *g_DAT_801b8324;
 extern uint8_t *g_DAT_801b8326;
 extern uint8_t *g_DAT_801b8330;
@@ -105,12 +102,9 @@ extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 #define spr_desc_tbl_a   (*(uint32_t *)g_DAT_801f642c)
 #define spr_desc_tbl_b   (*(uint32_t *)g_DAT_801f68b4)
 #define frame_tag  (*(uint32_t *)g__DAT_1f8000dc)
-#define DAT_801e40b6   (*(uint8_t *)g_DAT_801e40b6)
-#define DAT_801e40b7   (*(uint8_t *)g_DAT_801e40b7)
 #define gpu_mode   (*(uint8_t  *)g_DAT_801b8320)
 #define gpu_mode_state   (*(uint8_t  *)g_DAT_801b8321)
 #define gpu_dbg_level   (*(uint8_t  *)g_DAT_801b8322)
-#define DAT_801b8323   (*(uint8_t  *)g_DAT_801b8323)
 #define disp_width   (*(uint16_t *)g_DAT_801b8324)
 #define disp_height   (*(uint16_t *)g_DAT_801b8326)
 #define draw_env   ((uint32_t *)guest_at(0x801b8330))
@@ -392,7 +386,9 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell,uint32_t pos,uint32_t col,uint32_
     *(short *)((char *)pkt + 10) = (short)((uint32_t)pos >> 0x10);
     *(int8_t *)((char *)pkt + 7) = *(int8_t *)((char *)pkt + 7) & 0xfd | 1;
     pkt[1] = 0x64808080;
-    prim_packet_init_tex((int)guest_of(pkt + 5),DAT_801e40b7,DAT_801e40b6,(int)(short)col,0);
+    /* tex args = bytes @0x801e40b7/@0x801e40b6 — head of the per-fighter
+     * attribute record (battle.c indexes it as base + slot*0x2150). */
+    prim_packet_init_tex((int)guest_of(pkt + 5),GP8(0x801e40b7),GP8(0x801e40b6),(int)(short)col,0);
     ret = 0;
     *pkt = *cell | 0x4000000;
     *cell = pkt_g & 0xffffff;
@@ -610,7 +606,8 @@ uint32_t draw_env_timing(uint32_t env_g)
     if ((char)env[8] != '\0') {
       tc = tc | 0x20;
     }
-    if (DAT_801b8323 != '\0') {
+    /* flag byte @0x801b8323: nonzero -> set bit7 of the timing ctrl byte */
+    if (GP8(0x801b8323) != '\0') {
       tc = tc | 0x80;
     }
     hgt = env[2];
