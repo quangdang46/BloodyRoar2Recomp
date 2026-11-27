@@ -18,15 +18,18 @@ static void br2_widescreen_16_9_activate(void) {
     (void)psx_mod_set_fixed_display_aspect(16u, 9u);
 }
 
+/* Activation: fixed 21:9 display aspect. */
 static void br2_widescreen_21_9_activate(void) {
     (void)psx_mod_set_fixed_display_aspect(21u, 9u);
 }
 
+/* Activation: 16:9 base with adaptive widening toward 21:9. */
 static void br2_widescreen_adaptive_activate(void) {
     (void)psx_mod_set_fixed_display_aspect(16u, 9u);
     (void)psx_mod_set_adaptive_display_aspect(21u, 9u);
 }
 
+/* Register the widescreen aspect variants. */
 PSX_MOD_CONSTRUCTOR(br2_register_widescreen_plugins) {
     (void)psx_mod_register_activation_plugin(
         "br2.widescreen.16-9", br2_widescreen_16_9_activate);

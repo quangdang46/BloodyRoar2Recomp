@@ -107,6 +107,10 @@ void *guest_at(uint32_t addr)
     return g_openbus + (addr & 0xFFFFu);
 }
 
+/* guest_of — inverse of guest_at(): map a host pointer back into emulated
+ * RAM/scratchpad and return the canonical guest address (0x80000000|phys
+ * for main RAM, 0x1F800000|off for scratchpad). Returns 0 for pointers
+ * outside emulated memory (g_openbus, host stack, etc.). */
 uint32_t guest_of(const void *p)
 {
     const uint8_t *b = (const uint8_t *)p;
@@ -233,6 +237,10 @@ typedef struct { uint32_t table, svc, a0, a1, a2, a3, ra, v0; } Br2SvcEnt;
 static Br2SvcEnt g_svc_ring[BR2_SVC_RING];
 static uint32_t g_svc_ring_n;
 uint32_t br2_dbg_svc_count(void) { return g_svc_ring_n; }
+
+/* br2_dbg_svc_ent — read ring entry i (oldest-first order) into out[8]:
+ * table, svc, a0-a3, ra, v0. Returns 0 when i is beyond the retained
+ * window. Backs the debug server "bios_svc_trace" command. */
 int br2_dbg_svc_ent(uint32_t i, uint32_t out[8])
 {
     uint32_t n = g_svc_ring_n;
@@ -244,6 +252,8 @@ int br2_dbg_svc_ent(uint32_t i, uint32_t out[8])
     return 1;
 }
 
+/* svc_record — append one kernel-service request to the bios_svc ring
+ * (table/svc/a0-a3/ra; v0 filled in by the caller after dispatch). */
 static void svc_record(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1,
                        uint32_t a2, uint32_t a3, uint32_t ra)
 {
@@ -356,6 +366,9 @@ uint32_t br2_guest_frame(uint32_t size)
     return ns;
 }
 
+/* br2_guest_frame_free — pop the innermost guest frame: restore $sp (both
+ * the CPUState gpr[29] and the clean-side guest_sp mirror) to the value
+ * saved by br2_guest_frame. No-op when the frame stack is empty. */
 void br2_guest_frame_free(void)
 {
     uint32_t sp;
@@ -630,6 +643,10 @@ void FUN_8018e300(void)
     psx_syscall(cpu, 0);
 }
 
+/* FUN_8018e310 — clean port of guest ExitCriticalSection: `li a0,2;
+ * syscall 0`. Routes through the real psx_syscall so COP0 SR changes
+ * exactly as generated code would. See the group comment above
+ * FUN_8018e300 for the syscall-0 contract. */
 void FUN_8018e310(uint32_t unused)
 {
     CPUState *cpu = g_clean_cpu;
@@ -658,6 +675,11 @@ static void br2_svc_dedup_log(uint32_t svc, uint32_t a0, uint32_t a1,
             svc, a0, a1, v, (unsigned long long)psx_cycle_count);
 }
 
+/* bios_svc — 4-arg BIOS kernel-service entry used by clean ports.
+ * Records the request in the svc ring, forwards a2/a3 from the live
+ * registers, runs the real BIOS via svc_call's nested dispatch, stamps
+ * v0 into the ring entry, and returns it. See the group comment above
+ * for the table/svc/$t1/$t2 calling convention. */
 uint32_t bios_svc(uint32_t table, uint32_t svc, uint32_t a0, uint32_t a1)
 {
     uint32_t ra;

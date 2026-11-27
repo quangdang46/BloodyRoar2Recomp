@@ -536,6 +536,8 @@ extern void corner_emit_cond_offset(void);
 extern void corner_emit_variant(void);
 extern void countdown_display_sm(void);
 extern void counter_step_pad_c(void);
+extern void cps_80195cf0(void);
+extern void cps_801a8ee0(void);
 extern void cpu_critical_enter(void);
 extern void cpu_critical_exit(void);
 extern void cpu_regs_snapshot(void);
@@ -874,6 +876,7 @@ extern void guard_dispatch_b(void);
 extern void guard_dispatch_c(void);
 extern void guard_dispatch_d(void);
 extern void guest_bzero(void);
+extern void guest_main(void);
 extern void guest_memcpy(void);
 extern void guest_memset(void);
 extern void guest_memset_b(void);
@@ -1762,7 +1765,10 @@ extern void xform_accum_tick(void);
 typedef struct { uint32_t addr; void *fn; } Br2FnEnt;
 
 const Br2FnEnt fn_table[] = {
+  { 0x8011e800, (void *)guest_main },
+  { 0x80120000, (void *)cps_801a8ee0 },
   { 0x80120948, (void *)battle_state_gate_tail },
+  { 0x80125698, (void *)cps_80195cf0 },
   { 0x80126170, (void *)empty_leaf_e },
   { 0x80126720, (void *)versus_state_init },
   { 0x801267dc, (void *)cd_channel_init_seq },

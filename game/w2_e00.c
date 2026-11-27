@@ -16,61 +16,10 @@
  * debug instrumentation.
  */
 #include <stdint.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
-
-extern void *guest_at(uint32_t addr);
-extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint8_t  br2_ld8(uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern void     br2_st8(uint32_t a, uint8_t v);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
-extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
-
-#define DB16(a) (*(uint16_t *)guest_at(a))
-#define DB32(a) (*(uint32_t *)guest_at(a))
-
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-}
-
-static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
-{
-  uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
-}
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
@@ -352,10 +301,10 @@ block_801802CC:
     v1 = cpu->read_word(s7 + 108);
     /* nop */  /* 0x801802D0: 0x00000000 */
     v0 = v1 & a0;  /* 0x801802D4: 0x00641024 */
-    int _bc_801802D8 = (v0 == zero);  /* save branch cond before delay slot */
+    int cond_v0_eq_zero = (v0 == zero);  /* save branch cond before delay slot */
     /* delay slot (always executes) */
     v0 = 0xFFFD << 16;  /* 0xFFFD0000 */
-    if (_bc_801802D8) {
+    if (cond_v0_eq_zero) {
         psx_check_interrupts_at(cpu, 0x80180564u);
         goto block_80180564;  /* taken */
     } else {
@@ -934,11 +883,11 @@ block_80180998:
     s2 = cpu->read_word(sp + 32);
     s1 = cpu->read_word(sp + 28);
     s0 = cpu->read_word(sp + 24);
-    uint32_t _jt_801809C0 = ra;  /* latch indirect target before delay slot */
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     sp = sp + 64;
-    psx_check_interrupts_at(cpu, _jt_801809C0);
-    cpu->pc = _jt_801809C0; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
 /* ======== 0x80181000 — pair_update_attach_tail ========
@@ -1012,11 +961,11 @@ block_8018103C:
     s2 = cpu->read_word(sp + 48);
     s1 = cpu->read_word(sp + 44);
     s0 = cpu->read_word(sp + 40);
-    uint32_t _jt_80181064 = ra;  /* latch indirect target before delay slot */
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     sp = sp + 80;
-    psx_check_interrupts_at(cpu, _jt_80181064);
-    cpu->pc = _jt_80181064; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
 /* ======== 0x80181ee8 — ani_cat_tail_zero ========
@@ -1029,12 +978,12 @@ void ani_cat_tail_zero(void)
 
     /* Address: 0x80181EE8, Size: 8 bytes, Blocks: 1 */
 
-block_80181EE8:
-    uint32_t _jt_80181EE8 = ra;  /* latch indirect target before delay slot */
+block_80181EE8:;
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     cpu->write_half(a2 + 40, (uint16_t)zero);
-    psx_check_interrupts_at(cpu, _jt_80181EE8);
-    cpu->pc = _jt_80181EE8; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
 /* ======== 0x80181ef0 — ani_cat_tail_v2 ========
@@ -1055,11 +1004,11 @@ block_80181EF0:
     v0 = 8;
     cpu->write_half(a2 + 40, (uint16_t)v0);
     v1 = v1 + a0;
-    uint32_t _jt_80181F08 = ra;  /* latch indirect target before delay slot */
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     cpu->write_word(a2 + 36, v1);
-    psx_check_interrupts_at(cpu, _jt_80181F08);
-    cpu->pc = _jt_80181F08; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 
 /* ======== 0x80181f10 — ani_cat_tail_nine ========
@@ -1089,11 +1038,11 @@ void ani_cat_tail_ret(void)
 
     /* Address: 0x80181F18, Size: 8 bytes, Blocks: 1 */
 
-block_80181F18:
-    uint32_t _jt_80181F18 = ra;  /* latch indirect target before delay slot */
+block_80181F18:;
+    uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x80181F1C: 0x00000000 */
-    psx_check_interrupts_at(cpu, _jt_80181F18);
-    cpu->pc = _jt_80181F18; return;  /* CPS: jr $ra */
+    psx_check_interrupts_at(cpu, jr_target);
+    cpu->pc = jr_target; return;  /* CPS: jr $ra */
 }
 

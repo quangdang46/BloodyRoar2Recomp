@@ -1,0 +1,86 @@
+Read AGENTS.md at the repo root first — it defines the clean-room RE mission and the non-negotiable rules (faithful ports, no stubs, delegation rule §4, runtime verification §6).
+
+TASK: clean-port the following guest functions from generated recompiler output into readable C, in THIS worktree (branch orch/emit/01).
+
+Guest functions to port:
+  - 0x8018baf0  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018baf0`)
+  - 0x8018bb48  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bb48`)
+  - 0x8018bb4c  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bb4c`)
+  - 0x8018bc2c  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bc2c`)
+  - 0x8018bc78  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bc78`)
+  - 0x8018bcb4  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bcb4`)
+  - 0x8018bcd0  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bcd0`)
+  - 0x8018bce4  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018bce4`)
+  - 0x8018c0f8  (generated/SLES_017.22_full_41.c, search `br2eu_func_8018c0f8`)
+
+For EACH function:
+1. Read its generated body in the named generated/SLES_017.22_full_NN.c (search `br2eu_func_<addr>`). Transcribe it FAITHFULLY, op-by-op, into clean C — preserve every cpu->gpr[]/cpu->gte_data[] access, every br2_ld*/br2_st*, every gte_execute/gte_write_data/gte_read_ctrl/psx_cyc_lwc2_read/swl_guest/gte_precision_store_word call, every branch and delay-slot. Follow the established idiom in game/gfx.c — look at prim_poly_emit_64, prim_nclip_emit_64, prim_depth_shade_emit_70 (search game/gfx.c): `CPUState *cpu = clean_cpu_state()`, `cpu->gpr[N]`, `cpu->gte_data[N]`, `block_XXXX:` labels + goto, return cpu->gpr[2]. CRITICAL: do not drop any <<16/>>16 splits, sign-extends, or masked-vs-direct GTE writes — diff your port against the generated ops instruction-by-instruction.
+2. Write ALL your functions into ONE new file `game/gfx_emit_p01.c`. Put this exact preamble at the top (add more externs ONLY if the compiler demands):
+
+```c
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include "cpu_state.h"
+
+typedef uint8_t  undefined;
+typedef uint8_t  undefined1;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef int8_t   byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef int      int32_t_ghidra;
+#ifndef bool
+#define bool int
+#define true 1
+#define false 0
+#endif
+
+extern void *guest_at(uint32_t addr);
+extern uint32_t guest_of(const void *p);
+extern CPUState *clean_cpu_state(void);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st32(uint32_t a, uint32_t v);
+extern uint8_t  br2_ld8(uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern void     br2_st8(uint32_t a, uint8_t v);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
+extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
+
+#define DB16(a) (*(uint16_t *)guest_at(a))
+#define DB32(a) (*(uint32_t *)guest_at(a))
+
+static void swl_guest(uint32_t addr, uint32_t v)
+{
+  uint32_t al = addr & ~3u;
+  uint32_t w = DB32(al);
+  switch (addr & 3u) {
+  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
+  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
+  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
+  default: w = v; break;
+  }
+  DB32(al) = w;
+}
+
+static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
+{
+  uint32_t slot = ot + (otz & 0x1ffcu);
+  uint32_t old  = DB32(slot);
+  swl_guest(slot + 2, out << 8);
+  swl_guest(out + 2, old << 8);
+}
+```
+
+3. Some listed addrs may be tiny jump-table stubs or internal CPS piece-entries rather than standalone functions. Handle each faithfully: a stub that tail-jumps should tail-dispatch to the right target; if it is reached only by fallthrough inside another function it still needs faithful treatment — port the body as written. When unsure, transcribe exactly what the generated body does.
+4. If a body requires IRQ-timing / deferred-coroutine / BIOS-kernel semantics that clean C cannot express, do NOT guess — delegate the whole body: `return br2_call_generated(0x<addr>, a0,a1,a2,a3);` per AGENTS.md §4. Leaf GTE/OT/primitive emitters MUST be real clean C, not stubs.
+5. Pick a descriptive name per function (e.g. prim_*_emit_*), add `<addr> <name>` lines to game/renames.map keeping it sorted by addr.
+6. Regenerate from repo root: `python3 game/gen_fnmap.py && python3 game/gen_clean_table.py`.
+7. Build: `cmake --build build -j8` — must compile clean.
+8. Verify at runtime: `./build/BloodyRoar2_Recompiled --disc /Users/tranquangdang21/Projects/bloody-roar-2/Game.cue --debug-port 4401 --headless`, confirm frames advance / no crash, then kill it. NOTE: many emit variants only fire for specific draw calls — it is OK if your functions show 0 dispatch hits; what matters is faithful transcription + the game still runs. Use debug-port 4401.
+9. Commit on the current branch: `git add game/gfx_emit_p01.c game/renames.map game/fnmap.c src/clean_table.c && git commit -m "port: N render fns ..."`.
+
+Do NOT edit generated/, do NOT edit other game/*.c files, no stubs/TODOs/return-0 guesses. When done report which functions you ported vs delegated and the commit hash.

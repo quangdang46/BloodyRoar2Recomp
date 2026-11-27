@@ -65,6 +65,7 @@ uint32_t act_count(const uint8_t *sec)
     return sec ? rd32(sec) : 0;
 }
 
+/* act_index — index-entry array base (sec+4); NULL if !sec. */
 const ActIndexEnt *act_index(const uint8_t *sec)
 {
     return sec ? (const ActIndexEnt *)(sec + 4) : NULL;
@@ -87,6 +88,7 @@ const uint8_t *act_record(const uint8_t *sec, uint32_t i)
     return act_records(sec) + ix->rec_off;
 }
 
+/* act_tag — u16 tag of index entry i (bounds-checked, 0 on miss). */
 uint16_t act_tag(const uint8_t *sec, uint32_t i)
 {
     if (!sec) return 0;

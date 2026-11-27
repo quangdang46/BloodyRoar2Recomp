@@ -1,0 +1,71 @@
+{"ts":"2026-11-26T12:21:29Z","actor":"root","action":"plan_created","plan":"emit-sweep","peers":10,"scope":"0x80186000-0x8018FFFF","files":"game/gfx_emit_pNN.c per peer"}
+{"ts":"2026-11-26T12:25:14Z","actor":"root","action":"spawned_peers","peers":10,"branches":"orch/emit/p00-p09","panes":"w2W:p1,w2X:p1,w2Y:p1,w2Z:p1,w20:p1,w31:p1,w32:p1,w33:p1,w34:p1,w35:p1","files":"game/gfx_emit_pNN.c"}
+{"ts":"2026-11-26T12:47:36Z","actor":"root","action":"spawned_droid_peers","peers":10,"kind":"droid","branches":"orch/gpu/d00-d09","panes":"w36:p1..w3F:p1","scope":"0x80190000-0x80195000 gpu/render","files":"game/gfx_gpu_dNN.c"}
+{"ts":"2026-11-26T12:58:16Z","actor":"root","action":"unblocked_droids","reason":"generated/ was gitignored-missing + brief branch typo + CD-misassign; sent corrective prompts to 8 droid panes; symlinked generated/ into all 20 worktrees"}
+{"ts":"2026-11-26T14:10:41Z","actor":"root","action":"spawned_wave2","peers":19,"devin":10,"droid":9,"scope":"0x80180000-0x80186000 below-emit anim/script/render","branches":"orch/w2/e00-e09 + orch/w2/d00-d08"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e00", "kind": "devin", "pane": "w3G:p1", "branch": "orch/w2/e00", "brief": "data/briefs/w2prompt_e00.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e01", "kind": "devin", "pane": "w3H:p1", "branch": "orch/w2/e01", "brief": "data/briefs/w2prompt_e01.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e02", "kind": "devin", "pane": "w3J:p1", "branch": "orch/w2/e02", "brief": "data/briefs/w2prompt_e02.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e03", "kind": "devin", "pane": "w3K:p1", "branch": "orch/w2/e03", "brief": "data/briefs/w2prompt_e03.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e04", "kind": "devin", "pane": "w3M:p1", "branch": "orch/w2/e04", "brief": "data/briefs/w2prompt_e04.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e05", "kind": "devin", "pane": "w3N:p1", "branch": "orch/w2/e05", "brief": "data/briefs/w2prompt_e05.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e06", "kind": "devin", "pane": "w3P:p1", "branch": "orch/w2/e06", "brief": "data/briefs/w2prompt_e06.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e07", "kind": "devin", "pane": "w3Q:p1", "branch": "orch/w2/e07", "brief": "data/briefs/w2prompt_e07.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e08", "kind": "devin", "pane": "w3R:p1", "branch": "orch/w2/e08", "brief": "data/briefs/w2prompt_e08.txt"}
+{"ts": "2026-11-26T14:28:34Z", "actor": "root", "action": "spawned_peer", "peer": "e09", "kind": "devin", "pane": "w3S:p1", "branch": "orch/w2/e09", "brief": "data/briefs/w2prompt_e09.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_wave3", "peers": 10, "kind": "devin", "scope": "uncovered generated addrs outside 0x80180000-0x80186FFF (109 addrs, ~11/peer)", "branches": "orch/w3/e00-e09", "panes": "w48:p1,w49:p1,w4A:p1,w4B:p1,w4C:p1,w4D:p1,w4E:p1,w4F:p1,w4G:p1,w4H:p1", "files": "game/w3_eNN.c", "note": "bloody-roar-2.exe = pSX SFX bundle; Game.cdz decompressed == existing Game.bin (md5 e7117935)"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e00", "kind": "devin", "pane": "w48:p1", "branch": "orch/w3/e00", "brief": "data/briefs/w3prompt_e00.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e01", "kind": "devin", "pane": "w49:p1", "branch": "orch/w3/e01", "brief": "data/briefs/w3prompt_e01.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e02", "kind": "devin", "pane": "w4A:p1", "branch": "orch/w3/e02", "brief": "data/briefs/w3prompt_e02.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e03", "kind": "devin", "pane": "w4B:p1", "branch": "orch/w3/e03", "brief": "data/briefs/w3prompt_e03.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e04", "kind": "devin", "pane": "w4C:p1", "branch": "orch/w3/e04", "brief": "data/briefs/w3prompt_e04.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e05", "kind": "devin", "pane": "w4D:p1", "branch": "orch/w3/e05", "brief": "data/briefs/w3prompt_e05.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e06", "kind": "devin", "pane": "w4E:p1", "branch": "orch/w3/e06", "brief": "data/briefs/w3prompt_e06.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e07", "kind": "devin", "pane": "w4F:p1", "branch": "orch/w3/e07", "brief": "data/briefs/w3prompt_e07.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e08", "kind": "devin", "pane": "w4G:p1", "branch": "orch/w3/e08", "brief": "data/briefs/w3prompt_e08.txt"}
+{"ts": "2026-11-26T14:40:49Z", "actor": "root", "action": "spawned_peer", "peer": "w3e09", "kind": "devin", "pane": "w4H:p1", "branch": "orch/w3/e09", "brief": "data/briefs/w3prompt_e09.txt"}
+{"ts": "2026-11-26T15:31:12Z", "actor": "root", "action": "merged_branches", "count": 13, "branches": ["orch/w2/e08", "orch/w2/e01", "orch/w2/e06", "orch/w2/e04", "orch/w2/e07", "orch/w2/e00", "orch/w2/e02", "orch/w2/e05", "orch/w2/e09", "orch/w3/e04", "orch/w3/e06", "orch/w3/e00", "orch/w3/e02"], "note": "all built clean on master; headless verified frames advancing"}
+{"ts":"2026-11-26T15:38:14Z","event":"merge","branch":"orch/w3/e01","note":"alias/CPS entries 0x80137394-0x80143798; clean_cps.map union-resolved, tables regen, 6786 wrappers, headless verified frames advancing"}
+{"ts":"2026-11-26T15:43:05Z","event":"spawn","wave":"w4","peer":"w4-e00","pane":"w59:p1","scope":"residual uncovered addrs"}
+{"ts":"2026-11-26T15:43:05Z","event":"spawn","wave":"w4","peer":"w4-e01","pane":"w5A:p1","scope":"residual uncovered addrs"}
+{"ts":"2026-11-26T15:43:05Z","event":"spawn","wave":"w4","peer":"w4-e02","pane":"w5B:p1","scope":"residual uncovered addrs"}
+{"ts":"2026-11-26T15:45:47Z","event":"merge","branch":"orch/w2/e03"}
+{"ts":"2026-11-26T15:45:47Z","event":"merge","branch":"orch/w3/e05"}
+{"ts":"2026-11-26T15:45:47Z","event":"merge","branch":"orch/w3/e08"}
+{"ts":"2026-11-26T15:45:47Z","event":"merge","branch":"orch/w3/e09"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e00"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e01"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e02"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e03"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e04"}
+{"ts":"2026-11-26T15:49:14Z","event":"spawn","wave":"w5","peer":"w5-e05"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p00","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p01","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p02","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p03","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p04","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p05","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p06","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p07","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p08","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:51:49Z","event":"merge","branch":"orch/emit/p09","note":"86 GTE/emit addrs"}
+{"ts":"2026-11-26T15:55:17Z","event":"merge","branch":"orch/w3/e03","note":"dedupe ko_count_announce_cps -> _e03 for 0x80150f30"}
+{"ts":"2026-11-26T15:56:17Z","event":"spawn","wave":"w6","peer":"w6-e00","scope":"readability 0x80140000-0x80147fff"}
+{"ts":"2026-11-26T16:14:02Z","event":"merge","branch":"orch/w5/e00","note":"5 CD kobj jal-targets clean CPS"}
+2026-11-26T16:37:59Z merged w4e00 w4e02 w5e01 w5e02 w5e03 w5e04 w5e05 w6e00 w4e01; retasked 6 peers to readability bands 0x80148000-0x80177fff; master verified frames advancing
+2026-11-26T16:42:53Z merged w4e01 w5e02 w6e00 readability; retasked 6 peers to CD/IRQ-region readability bands 0x80180000-0x801affff
+2026-11-26T16:47:38Z merged w5e03/e04/e05 readability bands; retasked w5e03->0x80178-7f w5e04->0x801b0-bf w5e05+w6e00->jal-target enumeration; all 10 peers working
+2026-11-26T16:54:15Z DISK FULL incident: freed ~8.5GB by removing build dirs of 38 merged/inactive worktrees; rebuilt master 55fd660 clean; verified frames 33k->37k; w5e01+w5e02 readability merges landed
+2026-11-26T17:01:17Z merged w4e00 w4e01 w5e01(2nd) w5e03; fixed union-merge 'ret' bug in cps_80172a2c; retasked 5 done peers to continue bands
+2026-11-26T17:01:51Z w5e05 audit: jal-target frontier EXHAUSTED; retasked to gen_cps_clean.py CD/IRQ per-block cycle charging (§4-hard frontier); 5 peers continuing readability bands
+2026-11-26T17:06:29Z cleanup: removed 49 stale worktrees (w2/w3/emit/gpu waves, all merged) + 48 merged branches; disk 42GB free; 10 active worktrees remain; w4e00 retasked to game/cd.c readability; merged w4e01(2nd)+w5e03 -> master 9bcc7aa
+2026-11-26T17:27:28Z harvested 6 branches (w4e01/e02 w5e00/e01/e04 readability + w5e05 transformer --timing cd_read_poll); merged 6 late orphans (w2e04 + gpu d01/d02/d03/d06/d07); removed 49 stale worktrees + 55 merged branches; retasked all to continue bands / transformer batch2 / cd.c+save.c readability; master 38d0a1a verified
+2026-11-26T17:32:16Z merged w4e00 cd.c readability + w5e03 band-0x8017-complete; retasked w5e03->menu.c w4e00->gfx.c readability; master a642b10
+2026-11-26T17:45:12Z merged w4e02 w5e00 w5e02(6 commits) w5e01(2) w6e00 save.c -> master aad9606; verified frames 39k->50k; all 10 peers continue
+2026-11-26T17:53:30Z merged w4e01 battle.c + w5e03 menu.c + w5e02 + w5e04 cps batches; fixed union-merge return_pc bug (8 fns); master 18f21ee verified; retasked w4e00->rename-shadow audit w4e02->ev.c w5e01->resolve.c w6e00->save.c cont
+2026-11-26T17:55:28Z merged w5e05 transformer batch2 (self-delegate 48->47) master 0be58c2; retasked w5e03->bind.c w5e04->game.c; rename-shadow audit assigned w4e00
+2026-11-26T18:38:21Z merged 8 branches (w4e01 battle, w4e02 ev, w5e00 cps, w5e01 resolve, w5e02 cps, w5e03 bind, w5e04 game.c x8, w5e05 clean_stats) -> master 0eaf9ab; PERF INVESTIGATION: headless frame rate dropped to ~3-30fps vs earlier thousands/s; A/B attempt inconclusive (72ace53 + 0be58c2 both wedge in BIOS VECGA loop in scratch worktree, HEAD boots fine) — flagged for follow-up
+2026-11-26T18:39:07Z all 10 peers re-tasked: w5e00+w5e02 cps bands cont, w5e05 transformer batch4, 7 peers on decompiled-file readability (battle/menu/resolve/bind/game/gfx/save); master 0eaf9ab
+2026-11-26T18:46:32Z merged w5e00 last cps batch -> 6726797; bind.c COMPLETE (w5e01); re-tasked w5e01->action.c+tails, w5e00->final 3 band bodies; 10/10 working
+2026-11-26T19:02:53Z merged w4e00 battle w4e01 menu w5e00/w5e02 cps w5e05 cd_irq w5e01 action+ev; union-merge corrupted battle/resolve/game/gfx/save/ev/cps x3 — restored peer versions + fixed cond_slot_pending; master 34a0dca+fixes green; all 10 re-tasked
+2026-11-26T19:03:41Z pushed master -> mine/master (324 commits, 4b1effb..8d60e6e); will push after each merge batch

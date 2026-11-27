@@ -995,6 +995,7 @@ void cd_channel_init_seq(void)
     call_guest(0x801a1250u,0,0);
 }
 
+/* scratch_zero_reset — zero the 0x1F800000-0x1F800400 scratchpad block. */
 void scratch_zero_reset(void)
 {
     uint32_t *cell;
@@ -1112,6 +1113,8 @@ disp_env_tail:
     return;
 }
 
+/* frame_advance_helper — per-frame tail: draw sync, CD timer read,
+ * frame counter bump, scratch flag set. */
 void frame_advance_helper(void)
 {
     gpu_draw_sync(0);
@@ -1120,11 +1123,14 @@ void frame_advance_helper(void)
     scratch_013_set(1);
 }
 
+/* scratch_013_set — write frame flag byte @0x1F800013. */
 void scratch_013_set(uint8_t val)
 {
     DAT_1f800013 = val;
 }
 
+/* gfx_tbls_init — init all four sprite descriptor tables
+ * (spr_desc_tbl_a/b + spr_tbl_a/b). */
 void gfx_tbls_init(void)
 {
     spr_desc_tbl_a_init();
@@ -1133,6 +1139,7 @@ void gfx_tbls_init(void)
     spr_tbl_init_b();
 }
 
+/* game_globals_reset — clear game state globals + DAT_1f8000xx cells. */
 void game_globals_reset(void)
 {
     g_game_state = 0;
@@ -1179,16 +1186,19 @@ void game_globals_reset(void)
     DAT_801c15f4 = 0;
 }
 
+/* tag_table_get — return the tag-table base g_DAT_801c47c0. */
 uint8_t *tag_table_get(void)
 {
     return g_DAT_801c47c0;
 }
 
+/* ret_stub_b — empty return stub (guest bare ret). */
 void ret_stub_b(void)
 {
     return;
 }
 
+/* status_flag_cond_set — set DAT_801c15f0=1 when flag==1. */
 void status_flag_cond_set(uint32_t arg,int flag)
 {
     if ((flag != 0) && (flag == 1)) {
@@ -2641,6 +2651,7 @@ extern void spr_prim_tag_a(uint32_t);
 extern void spr_prim_tag_b(uint32_t);
 static void sh16(uint32_t addr,uint32_t off,uint32_t val)
 { *(uint16_t *)((uint8_t *)guest_at(addr) + off) = (uint16_t)val; }
+/* sb8 — store byte val at guest addr+off (sibling of sh16). */
 static void sb8(uint32_t addr,uint32_t off,uint32_t val)
 { *(uint8_t *)((uint8_t *)guest_at(addr) + off) = (uint8_t)val; }
 void sprite_rect_table_init(int32_t x0,int32_t y0,int32_t unused)

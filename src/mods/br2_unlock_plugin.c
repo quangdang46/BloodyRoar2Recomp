@@ -103,6 +103,7 @@ static int br2_id_is(const char* a, const char* b) {
     }
 }
 
+/* Pick the unlock-value table for the active game region. */
 static const uint32_t* br2_unlock_table(void) {
     const PsxGameBackend* be = psx_game_backend_active();
     const char* id = be ? be->game_id : 0;
@@ -111,6 +112,7 @@ static const uint32_t* br2_unlock_table(void) {
     return kUnlockPal;
 }
 
+/* Per-frame: write 0xFFFF to every tracked unlock flag. */
 static void br2_unlock_all_vblank(void) {
     const uint32_t* table;
     uint32_t i;
@@ -120,6 +122,7 @@ static void br2_unlock_all_vblank(void) {
         (void)psx_mod_write_half(table[i], 0xFFFFu);
 }
 
+/* Register the unlock-all vblank plugin. */
 PSX_MOD_CONSTRUCTOR(br2_register_unlock_all) {
     (void)psx_mod_register_vblank_plugin(PKG, br2_unlock_all_vblank);
 }

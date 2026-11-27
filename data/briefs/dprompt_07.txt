@@ -1,0 +1,82 @@
+Read AGENTS.md at the repo root first — it defines the clean-room RE mission and the non-negotiable rules (faithful ports, no stubs, delegation rule §4, runtime verification §6).
+
+TASK: clean-port the following guest GPU/render functions from generated recompiler output into readable C, in THIS worktree (branch orch/gpu/07).
+
+Guest functions to port:
+  - 0x8019457c  (generated/SLES_017.22_full_44.c, search `br2eu_func_8019457c`)
+  - 0x80194614  (generated/SLES_017.22_full_44.c, search `br2eu_func_80194614`)
+  - 0x8019466c  (generated/SLES_017.22_full_44.c, search `br2eu_func_8019466c`)
+  - 0x80194940  (generated/SLES_017.22_full_44.c, search `br2eu_func_80194940`)
+
+NOTE: this range (0x80190xxx-0x80194xxx) is GPU/render code — gpu packet/coordinate/sprite/text/vram helpers — NOT CD-ROM. Some listed addrs may be tiny jump stubs or internal CPS piece-entries rather than standalone functions; handle each faithfully (a stub that tail-jumps should tail-dispatch to the right target). Larger bodies are GPU command/packet builders — transcribe every op.
+
+For EACH function:
+1. Read its generated body (search `br2eu_func_<addr>`). Transcribe FAITHFULLY, op-by-op — preserve every cpu->gpr[]/cpu->gte_data[] access, every br2_ld*/br2_st*, every gte_execute/gte_write_data/gte_read_ctrl/psx_cyc_lwc2_read/swl_guest/gte_precision_store_word/psx_check_interrupts_at call, every branch and delay-slot. Follow the idiom in game/gfx.c (prim_poly_emit_64, prim_nclip_emit_64, gpu_prim_pkt_build): `CPUState *cpu = clean_cpu_state()`, `cpu->gpr[N]`, `cpu->gte_data[N]`, `block_XXXX:` labels + goto, return cpu->gpr[2]. CRITICAL: do not drop <<16/>>16 splits, sign-extends, masked-vs-direct GTE writes, or psx_check_interrupts_at resume points — diff op-by-op against generated.
+2. Write ALL functions into ONE new file `game/gfx_gpu_d07.c` with this preamble at top (add externs only if compiler demands):
+
+```c
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include "cpu_state.h"
+
+typedef uint8_t  undefined;
+typedef uint8_t  undefined1;
+typedef uint16_t undefined2;
+typedef uint32_t undefined4;
+typedef int8_t   byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef int      int32_t_ghidra;
+#ifndef bool
+#define bool int
+#define true 1
+#define false 0
+#endif
+
+extern void *guest_at(uint32_t addr);
+extern uint32_t guest_of(const void *p);
+extern CPUState *clean_cpu_state(void);
+extern uint32_t br2_ld32(uint32_t a);
+extern void     br2_st32(uint32_t a, uint32_t v);
+extern uint8_t  br2_ld8(uint32_t a);
+extern uint16_t br2_ld16(uint32_t a);
+extern void     br2_st8(uint32_t a, uint8_t v);
+extern void     br2_st16(uint32_t a, uint16_t v);
+extern int      psx_ws_cull_sltiu(uint32_t sx, uint32_t imm);
+extern uint32_t br2_call_generated(uint32_t addr, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
+
+#define DB16(a) (*(uint16_t *)guest_at(a))
+#define DB32(a) (*(uint32_t *)guest_at(a))
+
+static void swl_guest(uint32_t addr, uint32_t v)
+{
+  uint32_t al = addr & ~3u;
+  uint32_t w = DB32(al);
+  switch (addr & 3u) {
+  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
+  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
+  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
+  default: w = v; break;
+  }
+  DB32(al) = w;
+}
+
+static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
+{
+  uint32_t slot = ot + (otz & 0x1ffcu);
+  uint32_t old  = DB32(slot);
+  swl_guest(slot + 2, out << 8);
+  swl_guest(out + 2, old << 8);
+}
+```
+
+3. If a body requires IRQ-timing / deferred-coroutine / BIOS-kernel / GPU-DMA semantics clean C cannot express, do NOT guess — delegate the whole body: `return br2_call_generated(0x<addr>, a0,a1,a2,a3);` per AGENTS.md §4. Faithful leaf/packet render logic MUST be real clean C.
+4. Pick a descriptive name per function, add `<addr> <name>` lines to game/renames.map keeping it sorted by addr.
+5. Regenerate from repo root: `python3 game/gen_fnmap.py && python3 game/gen_clean_table.py`.
+6. Build: `cmake --build build -j8` — must compile clean.
+7. Verify: `./build/BloodyRoar2_Recompiled --disc /Users/tranquangdang21/Projects/bloody-roar-2/Game.cue --debug-port 4507 --headless`, confirm frames advance / no crash, then kill it. Use debug-port 4507.
+8. Commit on current branch: `git add game/gfx_gpu_d07.c game/renames.map game/fnmap.c src/clean_table.c && git commit -m "port: N gpu/render fns ..."`.
+
+Do NOT edit generated/, do NOT edit other game/*.c files, no stubs/TODOs/return-0 guesses. Report which functions you ported vs delegated and the commit hash.

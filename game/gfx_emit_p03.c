@@ -17,20 +17,6 @@
 #include <string.h>
 #include "cpu_state.h"
 
-typedef uint8_t  undefined;
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef int8_t   byte;
-typedef uint16_t ushort;
-typedef uint32_t uint;
-typedef int      int32_t_ghidra;
-#ifndef bool
-#define bool int
-#define true 1
-#define false 0
-#endif
-
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
 extern CPUState *clean_cpu_state(void);
@@ -46,27 +32,6 @@ extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
 
 #define DB16(a) (*(uint16_t *)guest_at(a))
 #define DB32(a) (*(uint32_t *)guest_at(a))
-
-static void swl_guest(uint32_t addr, uint32_t v)
-{
-  uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
-  switch (addr & 3u) {
-  case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
-  case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
-  case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
-  default: w = v; break;
-  }
-  DB32(al) = w;
-}
-
-static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
-{
-  uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
-  swl_guest(slot + 2, out << 8);
-  swl_guest(out + 2, old << 8);
-}
 
 /* MIPS GPR names — file-local aliases for cpu->gpr[N] (readability). */
 #define zero cpu->gpr[0]
@@ -204,7 +169,7 @@ void dir_emit_ret_t5(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D47C:
+block_8018D47C:;
     uint32_t jr_target = t5;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D480: 0x00000000 */
@@ -276,7 +241,7 @@ void emit_tail_ra(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D668:
+block_8018D668:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     /* nop */  /* 0x8018D66C: 0x00000000 */
@@ -327,7 +292,7 @@ void emit_tail_zero(void)
   CPUState *cpu = clean_cpu_state();
   if (!cpu) return;
 
-block_8018D694:
+block_8018D694:;
     uint32_t jr_target = ra;  /* latch indirect target before delay slot */
     /* delay slot (always executes) */
     v0 = zero;

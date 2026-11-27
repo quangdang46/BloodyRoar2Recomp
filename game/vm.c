@@ -925,6 +925,8 @@ static uint32_t bsr_call(uint8_t *ctx, uint32_t pcg, uint8_t *pc,
     return ret;
 }
 
+/* scriptop_bra — script Bra: resolve target via bra_target()
+ * against the anim base + compare value, store to ctx->pc. */
 int scriptop_bra(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
@@ -1061,6 +1063,8 @@ static void wait_arm(uint8_t *ctx, int32_t w)
         GS16(ctx, 0x3c) = (int16_t)w;
 }
 
+/* scriptop_wait — script Wait family: sub-op dispatch — rand3
+ * wait arm/tick, foe-state waits; arms ctx+0x3c once. */
 int scriptop_wait(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
@@ -1571,6 +1575,8 @@ static int32_t pct100(int32_t num, int32_t den)
     return den ? (int32_t)((int64_t)num * 100 / den) : -1;
 }
 
+/* scriptop_move — script Move: dst/src nibble decode — imm16
+ * sign-extended or vm-register source -> store to dst. */
 int scriptop_move(uint32_t a0, uint32_t a1, uint8_t *ctx, uint32_t a3)
 {
     uint32_t pcg = GU32(ctx, VX_PC);
