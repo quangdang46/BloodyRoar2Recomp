@@ -75,8 +75,10 @@ typedef struct CPUState {
  * so their barrier compiles to nothing. */
 #ifdef PSX_OVERLAY_DLL_BUILD
 void overlay_flush_cycles(void);
+/* psx store cycle barrier: overlay_flush_cycles(); */
 static inline void psx_store_cycle_barrier(void) { overlay_flush_cycles(); }
 #else
+/* psx store cycle barrier: PSX_EXC_ESCAPE_NONE = 0, */
 static inline void psx_store_cycle_barrier(void) { }
 #endif
 
@@ -171,6 +173,7 @@ void psx_precise_slice_init_from_env(void);
 #ifdef PSX_OVERLAY_DLL_BUILD
 int psx_slice_block(CPUState* cpu, uint32_t block_addr, uint32_t bcyc, int side_effects);
 #else
+/* psx slice block: if (!g_psx_precise_slice) return 0 */
 static inline int psx_slice_block(CPUState* cpu, uint32_t block_addr, uint32_t bcyc, int side_effects) {
     if (!g_psx_precise_slice) return 0;
     return psx_slice_block_impl(cpu, block_addr, bcyc, side_effects);
@@ -343,6 +346,7 @@ extern volatile uint32_t g_psx_last_fn_entry;
 #ifdef PSX_OVERLAY_DLL_BUILD
 void debug_server_log_call_entry(uint32_t func_addr);
 #else
+/* debug server log call entry: g_psx_last_fn_entry = func_addr */
 static inline void debug_server_log_call_entry(uint32_t func_addr) {
     g_psx_last_fn_entry = func_addr;
 }

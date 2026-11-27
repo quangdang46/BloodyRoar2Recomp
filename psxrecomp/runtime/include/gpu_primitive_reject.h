@@ -24,6 +24,7 @@ static inline int psx_gpu_triangle_oversize(const int32_t* vx,
     return maxy - miny > 511;
 }
 
+/* psx gpu line oversize: int32_t dx = x0 > x1 ? x0 - x1 : x1 - x0 */
 static inline int psx_gpu_line_oversize(int32_t x0, int32_t y0,
                                         int32_t x1, int32_t y1) {
     int32_t dx = x0 > x1 ? x0 - x1 : x1 - x0;

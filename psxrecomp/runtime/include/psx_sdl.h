@@ -34,16 +34,19 @@
 #define SDL_HINT_RENDER_SCALE_QUALITY "SDL_RENDER_SCALE_QUALITY"
 #endif
 
+/* psx sdl init: return SDL_Init(flags) ? 0 : -1 */
 static inline int psx_sdl_init(SDL_InitFlags flags)
 {
     return SDL_Init(flags) ? 0 : -1;
 }
 
+/* psx sdl init subsystem: return SDL_InitSubSystem(flags) ? 0 : -1 */
 static inline int psx_sdl_init_subsystem(SDL_InitFlags flags)
 {
     return SDL_InitSubSystem(flags) ? 0 : -1;
 }
 
+/* psx sdl create window: return SDL_CreateWindow(title, w, h, (SDL_WindowFlags)flags) */
 static inline SDL_Window *psx_sdl_create_window(
     const char *title, int x, int y, int w, int h, Uint64 flags)
 {
@@ -52,6 +55,7 @@ static inline SDL_Window *psx_sdl_create_window(
     return SDL_CreateWindow(title, w, h, (SDL_WindowFlags)flags);
 }
 
+/* psx sdl create renderer: SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL) */
 static inline SDL_Renderer *psx_sdl_create_renderer(
     SDL_Window *window, int driver_index, Uint32 flags)
 {
@@ -63,6 +67,7 @@ static inline SDL_Renderer *psx_sdl_create_renderer(
     return renderer;
 }
 
+/* psx sdl render set logical size: return SDL_SetRenderLogicalPresentation( */
 static inline int psx_sdl_render_set_logical_size(
     SDL_Renderer *renderer, int w, int h)
 {
@@ -72,6 +77,7 @@ static inline int psx_sdl_render_set_logical_size(
                : -1;
 }
 
+/* psx sdl render copy: SDL_FRect srcf */
 static inline int psx_sdl_render_copy(
     SDL_Renderer *renderer, SDL_Texture *texture,
     const SDL_Rect *src, const SDL_Rect *dst)
@@ -97,29 +103,34 @@ static inline int psx_sdl_render_copy(
     return SDL_RenderTexture(renderer, texture, srcp, dstp) ? 0 : -1;
 }
 
+/* psx sdl render set vsync: return SDL_SetRenderVSync(renderer, enabled) ? 0 : -1 */
 static inline int psx_sdl_render_set_vsync(
     SDL_Renderer *renderer, int enabled)
 {
     return SDL_SetRenderVSync(renderer, enabled) ? 0 : -1;
 }
 
+/* psx sdl gl make current: return SDL_GL_MakeCurrent(window, context) ? 0 : -1 */
 static inline int psx_sdl_gl_make_current(
     SDL_Window *window, SDL_GLContext context)
 {
     return SDL_GL_MakeCurrent(window, context) ? 0 : -1;
 }
 
+/* psx sdl gl set swap interval: return SDL_GL_SetSwapInterval(interval) ? 0 : -1 */
 static inline int psx_sdl_gl_set_swap_interval(int interval)
 {
     return SDL_GL_SetSwapInterval(interval) ? 0 : -1;
 }
 
+/* psx sdl gl get drawable size */
 static inline void psx_sdl_gl_get_drawable_size(
     SDL_Window *window, int *w, int *h)
 {
     (void)SDL_GetWindowSizeInPixels(window, w, h);
 }
 
+/* psx sdl get display usable bounds: if (!display) display = SDL_GetPrimaryDisplay() */
 static inline int psx_sdl_get_display_usable_bounds(
     SDL_DisplayID display, SDL_Rect *bounds)
 {
@@ -127,6 +138,7 @@ static inline int psx_sdl_get_display_usable_bounds(
     return SDL_GetDisplayUsableBounds(display, bounds) ? 0 : -1;
 }
 
+/* psx sdl get current display mode: if (!display) display = SDL_GetPrimaryDisplay() */
 static inline int psx_sdl_get_current_display_mode(
     SDL_DisplayID display, SDL_DisplayMode *mode)
 {
@@ -137,11 +149,13 @@ static inline int psx_sdl_get_current_display_mode(
     return 0;
 }
 
+/* psx sdl get keyboard state: return (const Uint8 *)(const void *)SDL_GetKeyboardState(count) */
 static inline const Uint8 *psx_sdl_get_keyboard_state(int *count)
 {
     return (const Uint8 *)(const void *)SDL_GetKeyboardState(count);
 }
 
+/* psx sdl joystick id for index: int count = 0 */
 static inline SDL_JoystickID psx_sdl_joystick_id_for_index(int index)
 {
     int count = 0;
@@ -152,6 +166,7 @@ static inline SDL_JoystickID psx_sdl_joystick_id_for_index(int index)
     return result;
 }
 
+/* psx sdl num joysticks: int count = 0 */
 static inline int psx_sdl_num_joysticks(void)
 {
     int count = 0;
@@ -160,34 +175,40 @@ static inline int psx_sdl_num_joysticks(void)
     return count;
 }
 
+/* psx sdl is game controller: SDL_JoystickID id = psx_sdl_joystick_id_for_index(index) */
 static inline bool psx_sdl_is_game_controller(int index)
 {
     SDL_JoystickID id = psx_sdl_joystick_id_for_index(index);
     return id && SDL_IsGamepad(id);
 }
 
+/* psx sdl game controller open: SDL_JoystickID id = psx_sdl_joystick_id_for_index(index) */
 static inline SDL_Gamepad *psx_sdl_game_controller_open(int index)
 {
     SDL_JoystickID id = psx_sdl_joystick_id_for_index(index);
     return id ? SDL_OpenGamepad(id) : NULL;
 }
 
+/* psx sdl joystick get device guid: return SDL_GetJoystickGUIDForID(psx_sdl_joystick_id_for_index(index)) */
 static inline SDL_GUID psx_sdl_joystick_get_device_guid(int index)
 {
     return SDL_GetJoystickGUIDForID(psx_sdl_joystick_id_for_index(index));
 }
 
+/* psx sdl joystick get device instance id: return psx_sdl_joystick_id_for_index(index) */
 static inline SDL_JoystickID psx_sdl_joystick_get_device_instance_id(int index)
 {
     return psx_sdl_joystick_id_for_index(index);
 }
 
+/* psx sdl joystick get guid string */
 static inline void psx_sdl_joystick_get_guid_string(
     SDL_GUID guid, char *buffer, int buffer_size)
 {
     SDL_GUIDToString(guid, buffer, buffer_size);
 }
 
+/* psx sdl cond wait timeout: return SDL_WaitConditionTimeout(condition, mutex, timeout_ms) */
 static inline int psx_sdl_cond_wait_timeout(
     SDL_Condition *condition, SDL_Mutex *mutex, Sint32 timeout_ms)
 {

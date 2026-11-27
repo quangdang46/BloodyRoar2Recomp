@@ -12,6 +12,7 @@ typedef struct {
     uint64_t fingerprint;
 } WsPrepassPacketGuard;
 
+/* ws prepass packet fingerprint: uint64_t hash = UINT64_C(1469598103934665603) */
 static inline uint64_t ws_prepass_packet_fingerprint(const uint32_t *words,
                                                      uint32_t word_count) {
     uint64_t hash = UINT64_C(1469598103934665603);
@@ -27,6 +28,7 @@ static inline uint64_t ws_prepass_packet_fingerprint(const uint32_t *words,
     return hash;
 }
 
+/* ws prepass packet guard: WsPrepassPacketGuard guard */
 static inline WsPrepassPacketGuard ws_prepass_packet_guard(
         const uint32_t *words, uint32_t word_count) {
     WsPrepassPacketGuard guard;
@@ -35,6 +37,7 @@ static inline WsPrepassPacketGuard ws_prepass_packet_guard(
     return guard;
 }
 
+/* ws prepass packet matches: return guard && guard->word_count == word_count && */
 static inline int ws_prepass_packet_matches(const WsPrepassPacketGuard *guard,
                                             const uint32_t *words,
                                             uint32_t word_count) {

@@ -55,16 +55,23 @@ enum { PSX_CYC_BATCH_SOFT = 64u };
 #if defined(PSX_OVERLAY_DLL_BUILD)
 /* The overlay shim already batches cycle charges until a host callback edge. */
 static inline void psx_cyc_bb_defer_begin(void) { }
+/* psx cyc bb defer end: if (g_psx_cyc_bb_defer > 0) g_psx_cyc_bb_defer-- */
 static inline void psx_cyc_bb_defer_end(void) { }
+/* psx cyc bb defer flush: overlay_flush_cycles(); */
 static inline void psx_cyc_bb_defer_flush(void) { overlay_flush_cycles(); }
+/* psx cyc local begin: (void)acc; */
 static inline void psx_cyc_local_begin(uint32_t *acc) { (void)acc; }
+/* psx cyc local end: if (g_psx_cyc_bb_defer > 0) g_psx_cyc_bb_defer-- */
 static inline void psx_cyc_local_end(void) { }
 #else
+/* psx cyc bb defer begin: g_psx_cyc_bb_defer++; */
 static inline void psx_cyc_bb_defer_begin(void) { g_psx_cyc_bb_defer++; }
+/* psx cyc bb defer end: if (g_psx_cyc_bb_defer > 0) g_psx_cyc_bb_defer-- */
 static inline void psx_cyc_bb_defer_end(void) {
     if (g_psx_cyc_bb_defer > 0) g_psx_cyc_bb_defer--;
     if (g_psx_cyc_bb_defer == 0) psx_cyc_batch_flush();
 }
+/* psx cyc bb defer flush: psx_cyc_batch_flush(); */
 static inline void psx_cyc_bb_defer_flush(void) { psx_cyc_batch_flush(); }
 
 /* Install a function-local charge sink (MotK VLC leaves). Soft-cap publish
@@ -77,6 +84,7 @@ static inline void psx_cyc_local_begin(uint32_t *acc) {
     (void)acc;
 #endif
 }
+/* psx cyc local end: g_psx_cyc_local_acc = NULL */
 static inline void psx_cyc_local_end(void) {
 #if !defined(PSX_COSIM)
     psx_cyc_local_publish();
@@ -86,16 +94,19 @@ static inline void psx_cyc_local_end(void) {
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
+/* psx cyc bb defer cleanup */
 static inline void psx_cyc_bb_defer_cleanup(int *guard) {
     (void)guard;
     psx_cyc_bb_defer_end();
 }
+/* psx cyc local cleanup */
 static inline void psx_cyc_local_cleanup(uint32_t **guard) {
     (void)guard;
     psx_cyc_local_end();
 }
 #endif
 
+/* psx cyc charge: if (cycles == 0u) return */
 static inline void psx_cyc_charge(uint32_t cycles) {
     if (cycles == 0u) return;
 #if defined(PSX_OVERLAY_DLL_BUILD)
@@ -270,6 +281,7 @@ static inline uint32_t psx_cyc_load_word(CPUState* cpu, uint32_t addr,
 #endif
 }
 
+/* psx cyc load half: uint32_t phys = addr & 0x1FFFFFFFu */
 static inline uint16_t psx_cyc_load_half(CPUState* cpu, uint32_t addr,
                                           uint32_t rt, uint32_t reg_mask) {
 #ifdef PSX_ENABLE_BLOCK_CYCLES

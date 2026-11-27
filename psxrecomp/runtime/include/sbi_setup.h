@@ -26,6 +26,7 @@ struct SbiSetupResult {
     std::string message;
 };
 
+/* sbi setup hash: if (!input) return  */
 inline std::string sbi_setup_hash(const std::filesystem::path& path) {
     std::ifstream input(path, std::ios::binary);
     if (!input) return {};
@@ -47,6 +48,7 @@ inline std::string sbi_setup_hash(const std::filesystem::path& path) {
     return result;
 }
 
+/* check sbi setup: std::error_code error */
 inline SbiSetupResult check_sbi_setup(
     const std::filesystem::path& data_track, const std::filesystem::path& mounted_image,
     const SbiRequirement* requirements = kSbiRequirements,
