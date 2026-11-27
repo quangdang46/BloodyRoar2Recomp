@@ -281,8 +281,8 @@ extern void particle_burst_update(int ctx,undefined4 arg,undefined4 pos,int rec)
 extern void radial_glow_draw(int *rec);
 extern void iris_wipe_spawn(int req,int arg);
 extern undefined4 * gte_xform3_ip(undefined4 *rt,undefined2 *in);
-extern int deferred_cmd_post();
-extern int range_circle_test();
+extern void deferred_cmd_post(uint cmd,int arg,short aux);
+extern int range_circle_test(int x,int y,uint *box,int radius);
 extern void vec_emit_spawn(undefined4 *rec);
 extern void iris_wipe_update(int *rec);
 extern undefined4 script_op_dispatch(undefined4 ctrl,undefined4 pad,int script,undefined4 ctx);
@@ -313,7 +313,7 @@ extern void verts_offset_apply(undefined4 *v,uint *c,int n,short *off,int cnt, u
 extern void verts_rgb_apply(uint *v,uint *c,int n,short *off,int cnt, undefined4 fl);
 extern void verts_add_apply(int n,undefined4 *v,ushort *c,int d);
 extern void verts_sub_apply(int n,undefined4 *v,ushort *c,int d);
-extern int getCopControlWord();
+extern int getCopControlWord(int fmt,int reg);
 extern int fixed_point_divide(int num,int den);
 extern undefined4 * gte_xform3_t_ip(undefined4 *rt,undefined2 *in);
 extern int prim_task_run(int rec,undefined4 a1,undefined4 a2,int mode);
@@ -1240,8 +1240,8 @@ extern void     setCopReg(int,int,int);
 extern void     copFunction(int,int);
 extern int      getCopReg(int,int);
 extern void     setCopControlWord(int,int,int);
-extern int lut_cos_q12();
-extern int lut_sin_q12();
+extern int lut_cos_q12(int angle);
+extern int lut_sin_q12(uint angle);
 extern int FUN_80194500(uint32_t a0, ...);
 
 /* Faithful signed 32/32 `div` LO result (same idiom as resolve.c).
@@ -13890,13 +13890,13 @@ undefined2 * vec2_rot(undefined4 ang0,undefined4 ang1,undefined2 *dst)
   int ns0;
   int p;
   int c1;
-  ns0 = lut_sin_q12();
+  ns0 = lut_sin_q12(ang0);
   ns0 = -ns0;
-  c0 = lut_cos_q12();
+  c0 = lut_cos_q12(ang0);
   dst[1] = c0;
   p = lut_sin_q12(ang1);
   p = ns0 * p;
-  c1 = lut_cos_q12();
+  c1 = lut_cos_q12(ang1);
   *dst = (short)(p >> 0xc);
   dst[2] = (short)(ns0 * c1 >> 0xc);
   return dst;
@@ -15475,7 +15475,7 @@ extern uint32_t *g_PTR_DAT_801b1d44;
 #define PTR_DAT_801b1d44 ((undefined4)(uintptr_t)g_PTR_DAT_801b1d44)
 extern void *g_PTR_FUN_801b1ec0;
 extern void motion_integrator_tail(int f,int n);
-extern void keyframe_advance();
+extern void keyframe_advance(byte *ctrl,byte *motion);
 extern void spark_trail_task_update();
 extern void confetti_burst_update();
 extern void LAB_8013e558(undefined4 *ctx);
@@ -17451,7 +17451,7 @@ extern int  cd_dispatch_tbl4(int a0,uint32_t a1);
 extern int  mdec_stat_wait_a();
 extern int  mdec_stat_wait_b();
 extern int  mdec_status_read();   /* guest 0x8018fe44 — no C def yet (weak-stub needed) */
-extern void gpu_load_image_cmd();
+extern void gpu_load_image_cmd(uint32_t rect,uint32_t src);
 extern uint32_t gpu_rect(const void *p);
 
 /* guest file_op_dispatch @0x8018fac8 — file-op dispatch wrapper: cd_dispatch_tbl4(0,arg). */
@@ -18130,7 +18130,7 @@ void corner_emit_variant(int spr,int x0,int y0,int dx,int dy,int abs)
 /* ======== batch31: debug putc + emit chains + vec lerp + record init ===== */
 /* externs for batch31 callees */
 extern int  console_emit(int a0);
-extern void bios_tramp_b035();
+extern int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2);
 extern int  rotate_xy_pairs(int n,uint32_t ang);  /* guest 0x80195570 — battle.c */
 extern int spr_pool_b_alloc();   /* weak-stubbed in bind.c; returns prim ptr */
 extern void *spr_desc_slot_alloc(void);   /* gfx.c — returns host ptr */
