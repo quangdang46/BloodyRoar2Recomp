@@ -17,17 +17,11 @@
  */
 
 #include <stdint.h>
-#include <stddef.h>
 #include "cpu_state.h"
 
-#define G8(p,o)   (((const uint8_t *)(p))[(o)])
 #define G16(p,o)  (*(const int16_t  *)((const uint8_t *)(p) + (o)))
-#define GU16(p,o) (*(const uint16_t *)((const uint8_t *)(p) + (o)))
-#define G32(p,o)  (*(const int32_t  *)((const uint8_t *)(p) + (o)))
 #define GU32(p,o) (*(const uint32_t *)((const uint8_t *)(p) + (o)))
-#define S8(p,o,v)  (((uint8_t *)(p))[(o)] = (uint8_t)(v))
 #define S16(p,o,v) (*(int16_t  *)((uint8_t *)(p) + (o)) = (int16_t)(v))
-#define SU16(p,o,v) (*(uint16_t *)((uint8_t *)(p) + (o)) = (uint16_t)(v))
 #define SU32(p,o,v) (*(uint32_t *)((uint8_t *)(p) + (o)) = (uint32_t)(v))
 
 /* ctrl offsets (shared with ev.c convention) */
