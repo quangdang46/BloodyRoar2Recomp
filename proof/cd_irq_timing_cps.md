@@ -1169,3 +1169,19 @@ peer-scope) documented but untouched per convention.
 
 Verified: clean build EU + USA; headless :5167 frame 28750,
 clean_fallback_stats count=0.
+
+## Batch 59 (orch/w5/e05) — untimed-band resume rows (58)
+
+Precise re-audit restricted to real dispatch switches
+(switch(_cont)/switch(entry)/switch(cpu->pc)) inside already-
+dispatched clean bodies — jt data-switch cases (menu.c desc_cmd_
+interp etc.) and undispatched helpers (ev.c) correctly excluded.
+Found 58 unrowed resume/entry addrs across 9 bodies in the
+untimed 0x8013-0x8017 band (w3_e01 aliases, w3_e03 cps, w3_e09
+reset_guest_cps, plus impact_fx_type_alias 0x80139DE8 which is the
+literal cpu->pc tail target of several cps_clean.c splits).
+Rows route resume/entry PCs to the clean syms instead of generated
+alias bodies. clean_table: 10,812 -> 10,870 wrappers, 0 skipped.
+
+Verified: clean build EU + USA; headless :5171 frame 24691,
+clean_fallback_stats count=0.

@@ -17083,3 +17083,67 @@
 80182a88 fighter_script_fsm_cps
 80182aa4 fighter_script_fsm_cps
 80182ea4 fighter_script_fsm_cps
+
+# Batch 59 (orch/w5/e05) — untimed-band _cont/entry resume rows.
+# Precise audit: only switch(_cont)/switch(entry)/switch(cpu->pc)
+# cases in already-dispatched clean bodies (jt data-switches and
+# undispatched helpers excluded). Resume/entry PCs previously fell
+# back to generated alias bodies; rows route them to the clean sym.
+8013738c battle_intro_fsm_alias
+801373b0 battle_intro_fsm_alias
+80139de8 impact_fx_type_alias
+80141d90 ev_cmd_dispatch_alias
+80141dd4 ev_cmd_dispatch_alias
+80141df0 ev_cmd_dispatch_alias
+80141e18 ev_cmd_dispatch_alias
+80141e40 ev_cmd_dispatch_alias
+80141e84 ev_cmd_dispatch_alias
+80141e94 ev_cmd_dispatch_alias
+80141eac ev_cmd_dispatch_alias
+80141ec4 ev_cmd_dispatch_alias
+80141ef8 ev_cmd_dispatch_alias
+80141f10 ev_cmd_dispatch_alias
+80141f80 ev_cmd_dispatch_alias
+80141f98 ev_cmd_dispatch_alias
+80141fc4 ev_cmd_dispatch_alias
+801420e0 ev_cmd_dispatch_alias
+801428d4 ev24_fx_spawn_alias
+801429f4 ev24_fx_spawn_alias
+8014333c action_from_input_alias
+8014336c action_from_input_alias
+801435f0 cmd_input_parse_alias
+801435fc cmd_input_parse_alias
+801436c0 cmd_input_parse_alias
+801437a4 cmd_input_parse_alias
+801437b0 cmd_input_parse_alias
+801437bc cmd_input_parse_alias
+801437c8 cmd_input_parse_alias
+801437d4 cmd_input_parse_alias
+801437ec cmd_input_parse_alias
+801438a0 cmd_input_parse_alias
+80150f50 ko_count_announce_cps_e03
+801510c8 ko_count_announce_cps_e03
+8015130c confirm_bookkeeping_cps
+801514fc hud_announce_cps
+801515c4 hud_announce_cps
+801516dc hud_announce_cps
+801517ac hud_announce_cps
+8015186c hud_announce_cps
+801518c0 hud_announce_cps
+801519bc hud_announce_cps
+80151a10 hud_announce_cps
+80151a64 hud_announce_cps
+80151ab8 hud_announce_cps
+80151b0c hud_announce_cps
+80151b60 hud_announce_cps
+80151bb4 hud_announce_cps
+80151c50 hud_announce_cps
+80175944 reset_guest_cps
+8017597c reset_guest_cps
+80175980 reset_guest_cps
+80175990 reset_guest_cps
+801759a0 reset_guest_cps
+801759b0 reset_guest_cps
+801759c4 reset_guest_cps
+801759d0 reset_guest_cps
+80175a10 reset_guest_cps
