@@ -645,6 +645,28 @@ def _gpr_names(m):
 _WRAP_MAP = None
 
 
+_RENAMES = None
+
+
+def _renames_map():
+    """guest addr -> canonical name from game/renames.map (readability authority)."""
+    global _RENAMES
+    if _RENAMES is not None:
+        return _RENAMES
+    _RENAMES = {}
+    path = os.path.join(ROOT, 'game', 'renames.map')
+    try:
+        for line in open(path):
+            line = line.split('#', 1)[0].strip()
+            if not line:
+                continue
+            a, n = line.split(None, 1)
+            _RENAMES[int(a, 16)] = n.strip()
+    except OSError:
+        pass
+    return _RENAMES
+
+
 def _wrap_name_map():
     """guest addr -> called function name, from src/clean_table.c wrap_* bodies.
 
@@ -740,7 +762,9 @@ def emit_fn(addr):
         # still caught by the _cont switch first; alias entries fall
         # through to switch(entry) exactly as generated.
         core = '    uint32_t entry = cpu->pc;\n' + core
-    hdr = (f'\n/* {sym} — clean CPS transliteration of {name} (guest {addr:#x})\n'
+    canon = _renames_map().get(addr)
+    src_name = f'{canon} ({name})' if canon else name
+    hdr = (f'\n/* {sym} — clean CPS transliteration of {src_name} (guest {addr:#x})\n'
            f' * from {os.path.basename(path)}. */\n')
     return hdr + f'void {sym}(void)\n{{\n  CPUState *cpu = clean_cpu_state();\n  if (!cpu) return;\n' + core + '\n}\n'
 
