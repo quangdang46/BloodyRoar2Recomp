@@ -5795,6 +5795,146 @@ int dialog_sel_dispatch_wide(intptr_t a0,uint32_t a1)
 #undef BDC0_E58C
 #undef BDC0_STATUS
 
+/* ---- menu_stepper_row_dispatch @0x8015b190 (175 CPS blocks) ----
+   a0 = guest stepper-desc ptr (host ptr into guest RAM via the
+   fn_lookup leg too), a1 = row selector (u16). Ordered selector
+   compares + four bounded string-table jumps; every path returns 0. */
+int menu_stepper_row_dispatch(intptr_t a0,uint32_t a1)
+{
+  extern uint32_t br2_gaddr(const void *);
+  extern void print_dispatch_selfdesc_guest(void *,const char *,
+      uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
+  extern void mode_string_dispatch(uint32_t,int32_t);
+  extern void display_mode_setup(uint32_t);
+  extern void frame_advance_helper(void);
+  extern void battle_math_init(uint32_t,uint32_t);
+  extern CPUState *clean_cpu_state(void);
+  CPUState *cpu = clean_cpu_state();
+  a0 = (intptr_t)br2_gaddr((const void *)a0);
+  uint32_t desc = (uint32_t)a0;
+  uint8_t *d = (uint8_t *)guest_at(desc);
+  uint32_t sel = a1 & 0xffff;
+
+  /* Marshal identical to wrap_8012cf64: a2/a3 = live gpr[6]/gpr[7]
+   * (this fn never writes a2-a7, so they are the caller's args),
+   * a4-a7 = caller stack words sp+0x10..0x1c. */
+#define ROW_PRINT(fmt_g) do { \
+    print_dispatch_selfdesc_guest((void *)guest_at(desc), \
+        (const char *)guest_at(fmt_g), \
+        (uint32_t)cpu->gpr[6],(uint32_t)cpu->gpr[7], \
+        (uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu), \
+        (uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu), \
+        (uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu), \
+        (uint32_t)cpu->read_word((cpu->gpr[29] + 28) & 0xffffffffu)); \
+  } while (0)
+#define ROW_STEP(off,mx,sfx) u16_counter_step_pad_a(desc + (off),(mx),(sfx))
+#define ROW_MODE(off) mode_string_dispatch(desc,(int32_t)gs16(desc + (off)))
+
+  if (sel == 0x100) { ROW_PRINT(0x80120f90); return 0; }
+  if (sel < 0x101) {
+    switch (sel) {
+    case 1:  ROW_STEP(0x14,1,1); return 0;
+    case 2:  ROW_STEP(0x16,1,1); return 0;
+    case 3:  ROW_STEP(0x18,1,1); return 0;
+    case 4:  ROW_STEP(0x1a,1,1); return 0;
+    case 5:  ROW_STEP(0x1c,1,1); return 0;
+    case 6:  ROW_STEP(0x1e,1,1); return 0;
+    case 7:  ROW_STEP(0x20,15,1); return 0;
+    case 8:  ROW_STEP(0x22,15,1); return 0;
+    case 9:  ROW_STEP(0x24,5,1);  return 0;
+    case 10: ROW_STEP(0x26,5,1);  return 0;
+    case 11: ROW_STEP(0x28,1,1); return 0;
+    case 12: ROW_STEP(0x2a,1,1); return 0;
+    case 13: ROW_STEP(0x2c,3,1); return 0;
+    case 14:
+      ROW_STEP(0x2e,7,1);
+      /* block_8015B864: commit desc+0x2e into config[0xB] when it
+       * differs, then refresh display mode + battle math. */
+      {
+        uint32_t cfg = g32(0x1f8000c0);
+        if ((int32_t)gs16(desc + 0x2e) != (int32_t)g8(cfg + 0xb)) {
+          deferred_cmd_post(0x400,0xb,0);
+          *(uint8_t *)guest_at(cfg + 0xb) = d[0x2e];
+          display_mode_setup(g8(cfg + 0xb));
+          frame_advance_helper();
+          battle_math_init(g32(0x1f8000bc),0x1f800000);
+        }
+      }
+      return 0;
+    case 15: ROW_STEP(0x30,1,1); return 0;
+    case 16: ROW_STEP(0x32,1,1); return 0;
+    case 17: ROW_STEP(0x34,1,1); return 0;
+    default: return 0;
+    }
+  }
+  switch (sel) {
+  case 0x101: ROW_PRINT(0x80120fac); ROW_MODE(0x14); return 0;
+  case 0x102: ROW_PRINT(0x80120fb8); ROW_MODE(0x16); return 0;
+  case 0x103: ROW_PRINT(0x80120fc4); ROW_MODE(0x18); return 0;
+  case 0x104: ROW_PRINT(0x80120fd0); ROW_MODE(0x1a); return 0;
+  case 0x105: ROW_PRINT(0x80120fdc); ROW_MODE(0x1c); return 0;
+  case 0x106: ROW_PRINT(0x80120fe8); ROW_MODE(0x1e); return 0;
+  case 0x107: {
+      int32_t ix;
+      ROW_PRINT(0x80120ff4);
+      ix = gs16(desc + 0x20);
+      /* slti signed bound <15; >=15 prints the fallback string,
+       * negative indexes the table like the guest (wild read). */
+      ROW_PRINT((int32_t)ix < 15 ? g32(0x80121158 + ix * 4)
+                                 : 0x8012108c);
+      return 0;
+    }
+  case 0x108: {
+      int32_t ix;
+      ROW_PRINT(0x80121094);
+      ix = gs16(desc + 0x22);
+      ROW_PRINT((int32_t)ix < 15 ? g32(0x80121198 + ix * 4)
+                                 : 0x8012108c);
+      return 0;
+    }
+  case 0x109: {
+      int32_t ix;
+      ROW_PRINT(0x801210a0);
+      ix = gs16(desc + 0x24);
+      if (ix < 6) ROW_PRINT(g32(0x801211d8 + ix * 4));
+      return 0;
+    }
+  case 0x10a: {
+      int32_t ix;
+      ROW_PRINT(0x801210dc);
+      ix = gs16(desc + 0x26);
+      if (ix < 6) ROW_PRINT(g32(0x801211f0 + ix * 4));
+      return 0;
+    }
+  case 0x10b: ROW_PRINT(0x801210e8); ROW_MODE(0x28); return 0;
+  case 0x10c: ROW_PRINT(0x801210f4); ROW_MODE(0x2a); return 0;
+  case 0x10d:
+      ROW_PRINT(0x80121100);
+      switch (gs16(desc + 0x2c)) {
+      case 0: ROW_PRINT(0x8012110c); break;
+      case 1: ROW_PRINT(0x80121114); break;
+      case 2: ROW_PRINT(0x8012111c); break;
+      case 3: ROW_PRINT(0x80121124); break;
+      }
+      return 0;
+  case 0x10e: {
+      /* block_8015B8CC: config[0xB]-indexed string table then a
+       * fixed second string; no bounds check in the guest. */
+      uint32_t cfg = g32(0x1f8000c0);
+      ROW_PRINT(g32(0x801b4008 + (uint32_t)g8(cfg + 0xb) * 4));
+      ROW_PRINT(0x8012112c);
+      return 0;
+    }
+  case 0x10f: ROW_PRINT(0x80121130); ROW_MODE(0x30); return 0;
+  case 0x110: ROW_PRINT(0x8012113c); ROW_MODE(0x32); return 0;
+  case 0x111: ROW_PRINT(0x80121148); ROW_MODE(0x34); return 0;
+  default:   return 0;   /* incl. sel==0x1ff -> v0=0 */
+  }
+#undef ROW_PRINT
+#undef ROW_STEP
+#undef ROW_MODE
+}
+
 /* ======================================================================
  * Round-3 ports: save/load state machines, memcard wrappers, HUD debug
  * dumps. Guest addrs via guest_at/br2_g*; buffer params that callers

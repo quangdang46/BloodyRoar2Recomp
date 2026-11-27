@@ -1075,6 +1075,7 @@ extern void menu_stepper_button_wait(void);
 extern void menu_stepper_input(void);
 extern void menu_stepper_masked_sweep(void);
 extern void menu_stepper_redraw(void);
+extern void menu_stepper_row_dispatch(void);
 extern void menu_stepper_sm(void);
 extern void menu_stepper_state_advance(void);
 extern void midpoint_angles_set(void);
@@ -2257,6 +2258,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8015ab88, (void *)u16_tbl_copy },
   { 0x8015abc0, (void *)menu_sprite_load_sm },
   { 0x8015ace4, (void *)menu_stepper_sm },
+  { 0x8015b190, (void *)menu_stepper_row_dispatch },
   { 0x8015b9a0, (void *)system_config_menu_b },
   { 0x8015bdc0, (void *)dialog_sel_dispatch_wide },
   { 0x8015c754, (void *)system_config_menu_a },

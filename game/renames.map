@@ -538,6 +538,7 @@
 8016d478 sprite_anim_chain_build
 8016f588 status_text_display
 80160598 dialog_sel_dispatch
+8015b190 menu_stepper_row_dispatch
 8015bdc0 dialog_sel_dispatch_wide
 8015caa8 dialog_msg_dispatch
 80170d38 save_channel_init_commit
