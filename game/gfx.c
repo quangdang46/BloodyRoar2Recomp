@@ -47,6 +47,7 @@ extern void     br2_bios_tramp(uint32_t,uint32_t);
 extern uint32_t bios_svc6(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t,uint32_t);
 extern void     gte_precision_store_word(uint32_t, uint8_t);
 extern void     psx_check_interrupts_at(CPUState *cpu, uint32_t resume_pc);
+extern uint32_t guest_gp(void);
 
 void gpu_load_image_cmd(uint32_t,uint32_t);
 void prim_packet_init_tex(int,int,int,uint32_t,int8_t *);
@@ -729,7 +730,6 @@ uint32_t bios_call(uint32_t,uint32_t);
 
 extern char *s__s_bad_RECT_801254c8;
 extern char *s___d__d____d__d__801254d4;
-extern char *s__Id__sys_c_v_1_140_1998_01_12_07_801b82d8;
 
 #define GP32(a)   (*(uint32_t *)guest_at(a))
 #define GP8(a)    (*(uint8_t  *)guest_at(a))
@@ -2586,7 +2586,6 @@ uint32_t gpu_coord_clamp_b(uint32_t a0,uint32_t a1)
  * spr_pool_b_alloc; fail -> -1. sin/cos via lut_sin_q12/8d298; corner
  * offsets rounded /8192; writes 4 corner xy pairs + tag 0x2c808080,
  * links node into *a0. Disasm 0x8018c31c-0x8018c574. */
-extern void *spr_pool_b_alloc(void);
 extern int lut_cos_q12(int);
 extern int lut_sin_q12(uint32_t);
 int sprite_quad_emit(uint32_t a0g, int32_t s7, uint32_t s0, uint32_t s4,
@@ -5190,12 +5189,6 @@ uint32_t prim_attr_repack(uint32_t src_a, uint32_t dst_a)
 
 /* ======== op_* leaf helpers (0x801ad3xx-0x801ad9xx) ======== */
 
-extern uint8_t  br2_ld8 (uint32_t a);
-extern uint16_t br2_ld16(uint32_t a);
-extern uint32_t br2_ld32(uint32_t a);
-extern void     br2_st16(uint32_t a, uint16_t v);
-extern void     br2_st32(uint32_t a, uint32_t v);
-extern uint32_t guest_gp(void);
 
 /* op_tbl_elem_copy — copy one u32 between two indexed tables.
  * Guest: i = s16(a0+2)<<2, j = s16(a0+6)<<2;
@@ -7698,8 +7691,6 @@ extern uint16_t *gte_rtps_xform1(uint32_t *, uint32_t *, uint16_t *);
 extern uint32_t *gte_rtps_xform3(uint32_t *, uint16_t *, uint32_t *);
 extern void part_matrix_compute(uint32_t *, int8_t *, short *, uint32_t);
 extern int atan2_lut(int, int);
-extern int lut_cos_q12(int);
-extern int lut_sin_q12(uint32_t);
 
 static void psk_mult_lo(CPUState *c, uint32_t x, uint32_t y)
 {
@@ -8117,7 +8108,6 @@ uint32_t part_skin_emit(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte_data[] write for reg 6 and gte_write_data for regs 16-19 (the
  * helper masks to 0xFFFF — different semantics, both replicated).
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188510. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -8246,7 +8236,6 @@ uint32_t prim_poly_emit_6c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * generated direct gte_data[] write (gte_write_data would mask to
  * 0xFFFF); swc2 keeps the generated gte_precision_store_word side-call.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018866C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -8815,7 +8804,6 @@ uint32_t prim_poly_emit_64_vs(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3
  * t5/t9/t1 (out+8+t8 / +2t8 / +3t8); mfc2 data7 -> OTZ; OT slot =
  * a1 + (otz & 0x1ffc) linked with the swl pair; loop a0 += t7.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80188C34. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9246,7 +9234,6 @@ uint32_t prim_nclip_emit_60(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[12]/[13]/[14] -> out+8/+20/+32; FIXED OT link at a1 (lw *a1, swl
  * pair); swc2 gte[20]/[21]/[22] -> out+4/+16/+28.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_801891A4. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9324,7 +9311,6 @@ uint32_t prim_nclip_emit_80(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * out+20/+32 and gte[20]->out+4; lwc2 gte[0]/[1] @a0+56/+60; gte cmd
  * 0x108041B; FIXED OT link at a1; swc2 gte[22]/[20]/[21] -> out+40/+16/+28.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018926C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9413,7 +9399,6 @@ uint32_t prim_nclip_emit_a8(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * OT link at a1, swc2 gte[22]->out+12; vertex 3 gets gte[6] @a0+32, gte cmd
  * 0x108041B, swc2 gte[22]->out+20. a0 += 100 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189360. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9486,7 +9471,6 @@ uint32_t prim_nclip_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * v3 = gte[6] @a0+32 + gte[0]/[1] @a0+52/+56 + cmd 0x1B, gte[22]->out+20.
  * a0 += 116 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189428. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9567,7 +9551,6 @@ uint32_t prim_nclip_emit_74(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[22]->out+20; v5 = gte[6] @a0+44 + cmd 0x1B, gte[22]->out+28.
  * a0 += 128 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189500. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -9651,7 +9634,6 @@ uint32_t prim_nclip_emit_80b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * gte[6] @a0+44 + gte[0]/[1] @a0+72/+76 + cmd 0x1B, gte[22]->out+28.
  * a0 += 152 per element.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_801895F8. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_nclip_emit_98(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10249,7 +10231,6 @@ uint32_t prim_poly_emit_5c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * split into lhu x @+0 / lhu y @+2 -> data9/10, lwc2 data11 = t2+4.
  * swc2 gte[22] -> out+4; FIXED OT link at a1 before the swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189C4C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_point_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10330,7 +10311,6 @@ uint32_t prim_point_emit_48(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swc2). swc2 gte[22] -> out+4/+12/+20/+28; FIXED OT link at a1 before
  * the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189D08. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6cb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10439,7 +10419,6 @@ uint32_t prim_poly_emit_6cb(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * written DIRECT to gte_data[6] once; swc2 gte[22] ->
  * out+4/+16/+28/+40; FIXED OT link at a1 before the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_80189EFC. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_88b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10553,7 +10532,6 @@ uint32_t prim_poly_emit_88b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swc2 gte[22] -> out+4/+12/+20/+28; FIXED OT link at a1 before the
  * last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018A030. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10660,7 +10638,6 @@ uint32_t prim_poly_emit_6cc(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * a0+16/+20/+24/+28 before each RTPS. swc2 gte[22] ->
  * out+4/+12/+20/+28; FIXED OT link at a1 before the last swc2.
  * Disasm generated/SLES_017.22_full_40.c br2eu_func_8018A14C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10776,7 +10753,6 @@ uint32_t prim_poly_emit_78b(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * (t6 param) is clobbered by `out << 8` inside the body — faithful,
  * the guest reuses t6 per iteration.
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018A27C. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
@@ -10849,7 +10825,6 @@ uint32_t prim_xform_emit_64(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
  * swl(a1+2, base<<8) / swl(base+2, old<<8), then t9=t5+t8, t3=t9+t8 and
  * swc2 gte[12]/[13]/[14] -> t5/t9/t3 (SXY0',SXY1,SXY2 at base+12/+16/+20).
  * Disasm generated/SLES_017.22_full_41.c br2eu_func_8018A340. */
-extern void gte_precision_store_word(uint32_t addr, uint8_t reg);
 
 uint32_t prim_persp_ot_emit_50(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
 {
