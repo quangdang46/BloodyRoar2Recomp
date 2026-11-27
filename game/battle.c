@@ -166,7 +166,6 @@ extern void tween_dur_spread(int a0,int a1);
 extern int str_len(char *a0);
 extern char * strchr_bounded(char *a0,char a1,int a2);
 extern undefined1 * mem_move(undefined1 *a0,undefined1 *a1,int a2);
-extern undefined1 FUN_801b0db8[];
 extern uint32_t *g__DAT_801f0654, *g__DAT_801f0656;
 extern uint8_t  *g__DAT_1f800082;
 /* guest lh/lhu @0x1f800082 — a u16 sim/pause gate, NOT a u32. Reading
@@ -1230,10 +1229,7 @@ extern uint16_t *g_DAT_801b4b54, *g_DAT_801b4b56;
 extern uint8_t  *g_DAT_8011fd7a2, *g_DAT_801b1840, *g_DAT_801b1844, *g_DAT_801b1848, *g_DAT_801b184c, *g_DAT_801b1850, *g_DAT_801b1854, *g_DAT_801b1858, *g_DAT_801b185c, *g_DAT_801b1d78, *g_DAT_801b1d70, *g_DAT_8011fd7a, *g_DAT_1f800394, *g_DAT_1f80039c, *g_DAT_8011fd78, *g_DAT_8011fd98, *g_DAT_801f04a8, *g_DAT_801f04c8, *g_DAT_801f04c9, *g_DAT_801f04e4, *g_DAT_1f8003a8, *g_DAT_1f8003a0, *g_DAT_1f8003b4, *g_DAT_801b1ea4, *g_DAT_1f800108, *g_DAT_1f8003f8, *g_DAT_801be838, *g_DAT_801b17f4, *g_DAT_801b1528, *g_DAT_801b152a, *g_DAT_1f8000eb, *g_DAT_1f8000ec, *g_DAT_1f800148, *g_DAT_1f8003e0, *g_DAT_8011fea0, *g_DAT_8011fea1, *g_DAT_8011fea2, *g_DAT_8011feac, *g_DAT_8011fead, *g_DAT_8011feae, *g_DAT_801bef20, *g_DAT_801e40ba, *g_DAT_801e40bb, *g_DAT_801f0664, *g_DAT_801f0750, *g_DAT_801f0780, *g_DAT_801f0790, *g_DAT_801f0ad8, *g_DAT_801f0ad9, *g_DAT_801f0ae4, *g_DAT_801f4cbc, *g_DAT_8011ed80, *g_DAT_8011ede0, *g_DAT_8011ee40, *g_DAT_8011ee5b, *g_DAT_8011ee74, *g_DAT_8011ee8f, *g_DAT_8011eea4, *g_DAT_8011eed4, *g_DAT_8011ef04, *g_DAT_8011ef64, *g_DAT_8011ef75, *g_DAT_801f0300, *g_DAT_801f0304, *g_DAT_801f0328, *g_DAT_801237e0, *g_DAT_80124048;
 extern int32_t *g__DAT_801f04a4;
 extern uint32_t *g__DAT_1f80000c, *g__DAT_1f8003e0, *g__DAT_1f8003e4, *g__DAT_1f8003e8, *g__DAT_1f8003ec, *g__DAT_1f8003f0, *g__DAT_1f8003f4, *g__DAT_1f8003f8, *g__DAT_1f8003fc, *g__DAT_801c4508, *g__DAT_801f0298, *g__DAT_801f029a, *g__DAT_1f80038e, *g__DAT_1f800392, *g__DAT_1f800396, *g__DAT_1f80039a, *g__DAT_1f80039e, *g__DAT_1f8003a2, *g__DAT_801f0228, *g__DAT_801f04b0, *g__DAT_801f04c0, *g__DAT_801f04c6, *g__DAT_801f0730, *g__DAT_801f0734, *g__DAT_801f0738, *g__DAT_801f0740, *g__DAT_801f0744, *g__DAT_801f0758, *g__DAT_801f075c, *g__DAT_801f0930, *g__DAT_801f0938, *g__DAT_801f093a, *g__DAT_801f093c, *g__DAT_801f093e, *g__DAT_801f0940, *g__DAT_801f0944, *g__DAT_801f4cb4, *g__DAT_801f4cb8, *g__DAT_801f4cba, *g__DAT_1f80037c, *g__DAT_1f80037e, *g__DAT_1f800380, *g__DAT_1f800388, *g__DAT_1f8003cc, *g__DAT_1f8003d0, *g__DAT_1f8003d4, *g__DAT_1f8003d8, *g__DAT_1f8003dc, *g__DAT_1f800008, *g__DAT_1f800024, *g__DAT_801f68e0, *g__DAT_801f04a0, *g__DAT_801f04b8, *g__DAT_801f04bc, *g__DAT_801f0760, *g__DAT_801f0764, *g__DAT_801f0768, *g__DAT_801f076c, *g__DAT_801f0770;
-extern uint32_t PTR_DAT_801b5574[];
 extern uint32_t PTR_entry_0x80182f3c_801b5528[];
-extern undefined1 LAB_801aae08[];
-extern code    **PTR_LAB_801200b8;
 extern uint8_t **g_PTR_DAT_801be84c;
 extern undefined4 **g_PTR_PTR_801be894;
 #define PTR_DAT_801be84c   (*g_PTR_DAT_801be84c)
@@ -1245,7 +1241,6 @@ extern uint32_t *g__DAT_1f8000c4;
 #define _DAT_1f8000c4   (*g__DAT_1f8000c4)
 extern char     s__1___02d__1x_0_80123264[];
 extern char     s_0123456789ABCDEF_80125208[], s_0123456789abcdef_8012521c[];
-extern undefined1 LAB_8013ce68[];
 extern void     setCopReg(int,int,int);
 extern void     copFunction(int,int);
 extern int      getCopReg(int,int);
@@ -3236,7 +3231,6 @@ extern uint32_t *g__DAT_1f8000c4, *g__DAT_1f80038c, *g__DAT_1f800390, *g__DAT_1f
 #define _DAT_801f0790   (*g__DAT_801f0790)
 #define _DAT_801f0794   (*g__DAT_801f0794)
 #define _DAT_801f0798   (*g__DAT_801f0798)
-extern int FUN_80194690();
 
 extern uint8_t *g_DAT_8011ec40, *g_DAT_801b1820, *g_DAT_801b1824, *g_DAT_801b1828, *g_DAT_801b182c, *g_DAT_801b1830, *g_DAT_801b1880, *g_DAT_801b18a8, *g_DAT_801b18d0, *g_DAT_801b18f8, *g_DAT_801b1904, *g_DAT_801b192c, *g_DAT_801b1a18, *g_DAT_801b1a2c, *g_DAT_801b1a3c, *g_DAT_801b1a50, *g_DAT_801b1a74, *g_DAT_801b1a94, *g_DAT_801b1ab8, *g_DAT_801b1ad8, *g_DAT_801b1b1c, *g_DAT_801b1b5c, *g_DAT_801b1b78, *g_DAT_801b1b90, *g_DAT_801b1bb4, *g_DAT_801b1bfc, *g_DAT_801b1c30, *g_DAT_801b1c60, *g_DAT_801b1c74, *g_DAT_801b1cbc, *g_DAT_801b1ccc, *g_DAT_801b2330, *g_DAT_801b2332, *g_DAT_801b2334, *g_DAT_801b2338, *g_DAT_801b2340, *g_DAT_801b2342, *g_DAT_801b2344, *g_DAT_801b2348, *g_DAT_801c43a8, *g_DAT_801e83aa, *g_DAT_801e83b0, *g_DAT_801f0740;
 #define DAT_8011ec40   (*g_DAT_8011ec40)
@@ -15469,7 +15463,6 @@ extern uint8_t  *g_DAT_1f8001f3;
 extern uint32_t *g__DAT_801c4494,*g__DAT_801c44e4;
 #define _DAT_801c4494  (*g__DAT_801c4494)
 #define _DAT_801c44e4  (*g__DAT_801c44e4)
-extern uint8_t  *g_PTR_DAT_801b1ec0;
 extern uint8_t  *g_DAT_801b1eac;
 #define DAT_801b1eac   (*g_DAT_801b1eac)
 extern undefined **g_DAT_801b22ec;
@@ -17466,7 +17459,6 @@ extern int  cd_dispatch_tbl4(int a0,uint32_t a1);
 extern int  mdec_stat_wait_a();
 extern int  mdec_stat_wait_b();
 extern int  mdec_status_read();   /* guest 0x8018fe44 — no C def yet (weak-stub needed) */
-extern int  mdec_decode_issue(uint32_t a0,uint32_t a1);
 extern void gpu_load_image_cmd();
 extern uint32_t gpu_rect(const void *p);
 
