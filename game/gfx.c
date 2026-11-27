@@ -152,6 +152,15 @@ static void gpu_dbg(const char *fmt, ...)
 }
 #define GPU_DBG(...) gpu_dbg(__VA_ARGS__)
 
+/* Dual-form pointer params: callers hand either a host pointer (the
+ * clean_table wrapper's guest_at() result) or a raw guest-address value
+ * cast to pointer — resolve either form to the guest address. */
+static uint32_t guest_ptr_addr(const void *p)
+{
+  uint32_t g = guest_of(p);
+  return g ? g : (uint32_t)(uintptr_t)p;
+}
+
 /* ======== 0x8018bd50 ======== */
 
 void gpu_pkt_unlink_n(uint32_t *head, int count)
@@ -161,14 +170,13 @@ void gpu_pkt_unlink_n(uint32_t *head, int count)
   uint32_t expect;
   uint32_t *prev;
   uint32_t *hp;
-  uint32_t p1g, p1;
+  uint32_t p1;
 
   /* head arrives as a host pointer from the clean_table wrapper
    * (guest_at(gpr4)) but as a raw guest-address value from the game.c/
    * menu.c callers — resolve either form. The link value walked below
    * is the guest address's low 24 bits. */
-  p1g = guest_of(head);
-  p1 = p1g ? p1g : (uint32_t)(uintptr_t)head;
+  p1 = guest_ptr_addr(head);
   hp = (uint32_t *)guest_at(p1);
   expect = p1 & 0xffffff;
   do {
@@ -369,12 +377,8 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
 
   /* ot_cell carries either a pkt_g address value (direct clean callers
    * pass _DAT_1f800008+n) or a host pointer (clean_table.c wrapper passes
-   * guest_at(gpr4)). guest_of() resolves the host form; fall back to the
-   * raw value otherwise. */
-  {
-    uint32_t p1g = guest_of(ot_cell);
-    cell = (uint32_t *)guest_at(p1g ? p1g : (uint32_t)(uintptr_t)ot_cell);
-  }
+   * guest_at(gpr4)) — guest_ptr_addr() resolves either form. */
+  cell = (uint32_t *)guest_at(guest_ptr_addr(ot_cell));
   pkt = (uint32_t *)spr_desc_slot_alloc();
   if (pkt == (uint32_t *)0x0) {
     ret = 0xffffffff;
@@ -751,8 +755,7 @@ void guest_memset(uint32_t *dst, uint8_t val, int len)
   int i;
   /* dst: host pointer from clean_table wrapper, guest-address value
    * from in-file callers (0x801b83xx constants) — resolve either form. */
-  uint32_t g1 = guest_of(dst);
-  uint8_t *d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)dst);
+  uint8_t *d = (uint8_t *)guest_at(guest_ptr_addr(dst));
 
   i = len + -1;
   if (len != 0) {
@@ -778,12 +781,8 @@ uint8_t * guest_memcpy(uint32_t *dst, uint32_t *src, int len)
   ret = (uint8_t *)0x0;
   /* params arrive as host pointers from the clean_table wrapper but as
    * guest-address values from cd.c callers — resolve either form. */
-  {
-    uint32_t g1 = guest_of(dst);
-    uint32_t g2 = guest_of(src);
-    d = (uint8_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)dst);
-    s = (uint8_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)src);
-  }
+  d = (uint8_t *)guest_at(guest_ptr_addr(dst));
+  s = (uint8_t *)guest_at(guest_ptr_addr(src));
   wp = d;
   if (dst != (uint32_t *)0x0) {
     for (; ret = (uint8_t *)d, 0 < len; len = len + -1) {
@@ -814,9 +813,8 @@ void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
   /* env_p: host pointer from clean_table wrapper, guest-address value
    * from gpu_draw_env_put — resolve either form. pkt_g stays a guest
    * address value in both paths. */
-  uint32_t p2g = guest_of(env_p);
   dst = (uint8_t *)guest_at((uint32_t)pkt_g);
-  env = (uint16_t *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)env_p);
+  env = (uint16_t *)guest_at(guest_ptr_addr(env_p));
   word = gpu_coord_clamp_a((int)(int16_t)env[0], (int)(int16_t)env[1]);
   *(uint32_t *)(dst + 4) = word;
   word = gpu_coord_clamp_b((int)(((uint32_t)env[2] + (uint32_t)env[0] + -1) * 0x10000) >> 0x10,
@@ -939,8 +937,7 @@ void gpu_rect_bounds_dbg(uint32_t name, int16_t *rect)
   /* rect arrives as a host pointer from the clean_table wrapper
    * (guest_at(gpr5)) but as a guest-address value from gpu_load_image_cmd
    * family callers — resolve either form. */
-  uint32_t p2g = guest_of(rect);
-  int16_t *rc = (int16_t *)guest_at(p2g ? p2g : (uint32_t)(uintptr_t)rect);
+  int16_t *rc = (int16_t *)guest_at(guest_ptr_addr(rect));
 
   if (gpu_dbg_level == '\x01') {
     x = (int)rc[2];
@@ -1034,8 +1031,7 @@ void printf_forward(const char *fmt, ...)
   va_start(ap, fmt);
   for (i = 0; i < 8; i++) {
     uintptr_t v = va_arg(ap, uintptr_t);
-    uint32_t g = guest_of((const void *)v);
-    args[i] = g ? g : (uint32_t)v;
+    args[i] = guest_ptr_addr((const void *)v);
   }
   va_end(ap);
   printf_core(1, (const uint8_t *)fmt, args);
@@ -2454,11 +2450,7 @@ void vram_tile_decode(uint8_t *vram)
   /* vram: host pointer from the clean_table wrapper, guest-address
    * value from game.c scene_entry (0x801f4758 = 0x80010000+0x6f000) —
    * resolve either form. */
-  uint8_t *base;
-  {
-    uint32_t g = guest_of(vram);
-    base = (uint8_t *)guest_at(g ? g : (uint32_t)(uintptr_t)vram);
-  }
+  uint8_t *base = (uint8_t *)guest_at(guest_ptr_addr(vram));
   uint8_t *d = base;
   uint32_t dist = 0;
   uint32_t i;
@@ -2676,10 +2668,8 @@ void sprite_rect_pkt_fill(uint32_t *pkt, uint16_t *r)
   /* pkt/r: host pointers from the clean_table wrapper and menu.c/save.c
    * guest_at() callers, but raw guest-address values from save.c
    * (0x801f4xxx constants) — resolve either form. */
-  uint32_t g1 = guest_of(pkt);
-  uint32_t g2 = guest_of(r);
-  pkt = (uint32_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)pkt);
-  r = (uint16_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)r);
+  pkt = (uint32_t *)guest_at(guest_ptr_addr(pkt));
+  r = (uint16_t *)guest_at(guest_ptr_addr(r));
   ((uint8_t *)pkt)[3] = 2;
   pkt[1] = gpu_coord_clamp_a((uint32_t)(int16_t)r[0],
                         (uint32_t)(int16_t)r[1]);
@@ -2696,12 +2686,8 @@ uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
   uint32_t mode = 5;
   /* t0/a1: host pointers from the clean_table wrapper/menu.c, raw
    * guest-address values from save.c — resolve either form. */
-  {
-    uint32_t g1 = guest_of(t0);
-    uint32_t g2 = guest_of(a1);
-    t0 = (uint32_t *)guest_at(g1 ? g1 : (uint32_t)(uintptr_t)t0);
-    a1 = (uint32_t *)guest_at(g2 ? g2 : (uint32_t)(uintptr_t)a1);
-  }
+  t0 = (uint32_t *)guest_at(guest_ptr_addr(t0));
+  a1 = (uint32_t *)guest_at(guest_ptr_addr(a1));
   if (*(int16_t *)((uint8_t *)a1 + 4) == 0 ||
       *(int16_t *)((uint8_t *)a1 + 6) == 0)
     mode = 0;
