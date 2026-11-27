@@ -7002,136 +7002,136 @@ extern void hud_announce(uint32_t,uint32_t,uint32_t);
 extern uint32_t g_pbd_calls,g_pbd_phase,g_pbd_ctr,g_pbd_exit,g_pbd_writes;
 int32_t post_battle_dispatch(uint8_t *side_a,uint8_t *side_b,uint32_t battle)
 {
-  uint32_t s1 = battle;
+
   uint32_t g2 = guest_of(side_a);
   uint32_t g3 = guest_of(side_b);
-  uint32_t s5 = 0;
+  uint32_t cfgfl = 0;
   int32_t  r;
   uint32_t b92;
   g_pbd_calls++;
-  g_pbd_phase = MB8(s1 + 0x92);
-  g_pbd_ctr   = (uint16_t)MBS16(s1 + 0x8c);
+  g_pbd_phase = MB8(battle + 0x92);
+  g_pbd_ctr   = (uint16_t)MBS16(battle + 0x8c);
 
   /* ---- preamble ---- */
   if ((int32_t)MB32(MB32(g2 + 0x20) + 0x38) > 0 ||
       (int32_t)MB32(MB32(g3 + 0x20) + 0x38) > 0)
-    MW8(s1 + 0x9d,1);
+    MW8(battle + 0x9d,1);
   else
-    MW8(s1 + 0x9d,0);
-  s5  = (uint32_t)battle_config_eval(side_a,s1,0);
-  s5 |= (uint32_t)battle_config_eval(side_b,s1,0);
+    MW8(battle + 0x9d,0);
+  cfgfl  = (uint32_t)battle_config_eval(side_a,battle,0);
+  cfgfl |= (uint32_t)battle_config_eval(side_b,battle,0);
 
   {
-    uint32_t v1 = MB16(s1 + 0xb4) & 0xf00;
-    uint32_t v0 = MB16(s1 + 0xb6) & 0xf00;
-    if (v1 == 0x700 || v0 == 0x700 || v1 == 0x100 || v0 == 0x100) {
-      if ((MB16(s1 + 0x92) & 0x1000) == 0) {
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x92,MB16(s1 + 0x92) | 0x1000);
+    uint32_t ph_a = MB16(battle + 0xb4) & 0xf00;
+    uint32_t ph_b = MB16(battle + 0xb6) & 0xf00;
+    if (ph_a == 0x700 || ph_b == 0x700 || ph_a == 0x100 || ph_b == 0x100) {
+      if ((MB16(battle + 0x92) & 0x1000) == 0) {
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x92,MB16(battle + 0x92) | 0x1000);
       }
     }
   }
-  if (MB16(s1 + 0x92) & 0x1000) {
+  if (MB16(battle + 0x92) & 0x1000) {
     g_pbd_exit = 3;   /* armed path */
     /* armed: tick 0x8c and gate on select_phase_gate */
-    MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
-    r = select_phase_gate(s1,0);
+    MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
+    r = select_phase_gate(battle,0);
     if (r == 0) {
-      r = select_phase_gate(s1,1);
+      r = select_phase_gate(battle,1);
       if (r == 0) goto L54af0;
     }
-    if (MBS16(s1 + 0x8c) < 10) return 0;
+    if (MBS16(battle + 0x8c) < 10) return 0;
     deferred_cmd_post(0x204,0,0);
-    frame_present(s1);
+    frame_present(battle);
     scroll_cfg_set(2,8);
     match_mode_set(1);
-    if (MB8(MB32(s1 + 0xc0) + 0x23) != 0) { MW8(s1 + 1,1); return 0; }
-    if (MBS16(s1 + 0xb4) != 0) {
-      if (MBS16(s1 + 0xb6) != 0) { MW8(s1 + 1,1); return 0; }
-      MW16(s1 + 0xb4,MB16(s1 + 0xb4) | 0x1000);
+    if (MB8(MB32(battle + 0xc0) + 0x23) != 0) { MW8(battle + 1,1); return 0; }
+    if (MBS16(battle + 0xb4) != 0) {
+      if (MBS16(battle + 0xb6) != 0) { MW8(battle + 1,1); return 0; }
+      MW16(battle + 0xb4,MB16(battle + 0xb4) | 0x1000);
     }
-    if (MBS16(s1 + 0xb6) != 0)
-      MW16(s1 + 0xb6,MB16(s1 + 0xb6) | 0x1000);
-    MW8(s1 + 1,2);
+    if (MBS16(battle + 0xb6) != 0)
+      MW16(battle + 0xb6,MB16(battle + 0xb6) | 0x1000);
+    MW8(battle + 1,2);
     return 0;
   }
   /* L54b40: disarmed path */
-  if (((MB16(s1 + 0x92) & 0xff) == 4))
-    battle_input_dispatch(s1,s5 & 0xffff);
-  if (MBS16(s1 + 0x82) != 0) { g_pbd_exit=1; return 0; }
-  b92 = MB8(s1 + 0x92);
+  if (((MB16(battle + 0x92) & 0xff) == 4))
+    battle_input_dispatch(battle,cfgfl & 0xffff);
+  if (MBS16(battle + 0x82) != 0) { g_pbd_exit=1; return 0; }
+  b92 = MB8(battle + 0x92);
   if (b92 >= 0x11) { g_pbd_exit=2; return 0; }
   g_pbd_exit = 10 + b92;   /* reached the phase switch; low nibble = phase */
 
   switch (b92) {
   case 0: {
     int32_t c, cond;
-    if (MBS8(s1 + 0x99) != 0) {
-      if ((uint32_t)(MB8(s1 + 0x9a) - 2) < 2)
-        MW16(MB32(s1 + 0xbc) + 0x82,(uint16_t)-1);
-      battle_field_set(MB32(s1 + 0xbc),3);
+    if (MBS8(battle + 0x99) != 0) {
+      if ((uint32_t)(MB8(battle + 0x9a) - 2) < 2)
+        MW16(MB32(battle + 0xbc) + 0x82,(uint16_t)-1);
+      battle_field_set(MB32(battle + 0xbc),3);
       clear_f0300_records();
-      MW16(s1 + 0x8c,0);
-      MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 1);
-      battle_subrecord_reset(s1);
+      MW16(battle + 0x8c,0);
+      MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 1);
+      battle_subrecord_reset(battle);
       goto L_case1;                       /* j 0x80154cd8 */
     }
-    c = MBS16(s1 + 0x8c);
+    c = MBS16(battle + 0x8c);
     if (c == 0) {
-      MW16(MB32(s1 + 0xbc) + 0x82,(uint16_t)-1);
-      battle_field_set(MB32(s1 + 0xbc),3);
+      MW16(MB32(battle + 0xbc) + 0x82,(uint16_t)-1);
+      battle_field_set(MB32(battle + 0xbc),3);
       clear_f0300_records();
-      c = MBS16(s1 + 0x8c);
+      c = MBS16(battle + 0x8c);
     }
     cond = (c < 10);
-    if (!cond && (s5 & 0x8e8) != 0) {
-      MW16(s1 + 0x8c,0x1356);
+    if (!cond && (cfgfl & 0x8e8) != 0) {
+      MW16(battle + 0x8c,0x1356);
       MW16(g2 + 0x4e,0x400);
       MW16(MB32(g2 + 0x38) + 0xd0,0x400);
       MW16(g3 + 0x4e,(uint16_t)-0x400);
       MW16(MB32(g3 + 0x38) + 0xd0,(uint16_t)-0x400);
     }
-    if (MBS16(s1 + 0x8c) == 0x3c) {
+    if (MBS16(battle + 0x8c) == 0x3c) {
       MW16(MB32(g2 + 0x38) + 0x80,0x29);
       MW16(MB32(g3 + 0x38) + 0x80,0x29);
     }
-    if (MBS16(s1 + 0x8c) < 0xa0) {
+    if (MBS16(battle + 0x8c) < 0xa0) {
       g_pbd_writes++;
-      MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
+      MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
       return 0;
     }
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 1);
-    battle_subrecord_reset(s1);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 1);
+    battle_subrecord_reset(battle);
     return 0;
   }
 
 L_case1:
   case 1: {
-    int32_t v1 = MBS8(s1 + 0x99);
-    int32_t a1, a2;
-    if (v1 < 0) {
-      MW8(s1 + 0xb0,0);
-      a1 = 1; a2 = MBS16(s1 + 0x8c);
+    int32_t scnt = MBS8(battle + 0x99);
+    int32_t ann, aval;
+    if (scnt < 0) {
+      MW8(battle + 0xb0,0);
+      ann = 1; aval = MBS16(battle + 0x8c);
     } else {
-      uint32_t t = MB8(MB32(s1 + 0xc0) + 4);
-      v1 = v1 + 1;
-      a1 = (v1 < (int32_t)(t * 2 - 1)) ? 3 : 2;
-      a2 = MBS16(s1 + 0x8c);
+      uint32_t t = MB8(MB32(battle + 0xc0) + 4);
+      scnt = scnt + 1;
+      ann = (scnt < (int32_t)(t * 2 - 1)) ? 3 : 2;
+      aval = MBS16(battle + 0x8c);
     }
-    hud_announce(s1,(uint32_t)a1,(uint32_t)a2);
-    if (MBS16(s1 + 0x8c) == 0) {
+    hud_announce(battle,(uint32_t)ann,(uint32_t)aval);
+    if (MBS16(battle + 0x8c) == 0) {
       if (MB8(g2 + 1) != 0) MW8(g2 + 1,MB8(g2 + 1) | 0x80);
       if (MB8(g3 + 1) != 0) MW8(g3 + 1,MB8(g3 + 1) | 0x80);
       MW32(g2 + 0x60,0x10008004);
       MW32(g3 + 0x60,0x10008004);
     }
-    if (MBS16(s1 + 0x8c) < 0x5a) {
-      MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
+    if (MBS16(battle + 0x8c) < 0x5a) {
+      MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
       return 0;
     }
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 2);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 2);
     deferred_cmd_post(0x400,0x64,0);
     deferred_cmd_post(0x400,0x65,6);
     deferred_cmd_post(0x400,0x66,0xc);
@@ -7139,38 +7139,38 @@ L_case1:
   }
 
   case 2:
-    hud_announce(s1,4,(uint32_t)(MBS16(s1 + 0x8c) - 0x1e));
-    if (MBS16(s1 + 0x8c) < 0x3c) {
-      MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
+    hud_announce(battle,4,(uint32_t)(MBS16(battle + 0x8c) - 0x1e));
+    if (MBS16(battle + 0x8c) < 0x3c) {
+      MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
       return 0;
     }
     if (MB8(g2 + 1) != 0) MW8(g2 + 1,MB8(g2 + 1) & 0x7f);
     if (MB8(g3 + 1) != 0) MW8(g3 + 1,MB8(g3 + 1) & 0x7f);
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 3);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 3);
     deferred_cmd_post(0x400,0x67,0);
     deferred_cmd_post(0x400,0x68,6);
     deferred_cmd_post(0x400,0x69,0xc);
     return 0;
 
   case 3:
-    hud_announce(s1,5,(uint32_t)MBS16(s1 + 0x8c));
-    if (MBS16(s1 + 0x8c) == 0) {
+    hud_announce(battle,5,(uint32_t)MBS16(battle + 0x8c));
+    if (MBS16(battle + 0x8c) == 0) {
       MW32(g2 + 0x60,0);
       MW32(g3 + 0x60,0);
-      battle_subrecord_set1(s1);
-    } else if (MBS16(s1 + 0x8c) >= 0x19) {
-      MW16(s1 + 0x8c,0);
-      MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 4);
+      battle_subrecord_set1(battle);
+    } else if (MBS16(battle + 0x8c) >= 0x19) {
+      MW16(battle + 0x8c,0);
+      MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 4);
     }
-    MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
+    MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
     /* fallthrough into case 4 */
 
   case 4: {
     int32_t skip;
-    s16_dec_with_floor(s1);
-    skip = (MB8(s1 + 0x9c) == 0 &&
-            (int32_t)MBS16(s1 + 0xa2) == (int32_t)MB8(MB32(s1 + 0xc0) + 0x10));
+    s16_dec_with_floor(battle);
+    skip = (MB8(battle + 0x9c) == 0 &&
+            (int32_t)MBS16(battle + 0xa2) == (int32_t)MB8(MB32(battle + 0xc0) + 0x10));
     if (!skip) {
       if (MB8(g2 + 1) == 0 && MB8(g3 + 1) != 0) {
         MW32(g2 + 0xf4,MB32(g2 + 0xf4) + 1);
@@ -7181,17 +7181,17 @@ L_case1:
         MW32(g3 + 0xf0,MB32(g3 + 0xf0) + 1);
       }
     }
-    post_battle_side_commit(side_a,side_b,s1);
+    post_battle_side_commit(side_a,side_b,battle);
     if (((MB32(g2 + 0x64) | MB32(g3 + 0x64)) & 1) != 0) {
       MW32(g2 + 0x64,MB32(g2 + 0x64) & 0xfffffffe);
       MW32(g3 + 0x64,MB32(g3 + 0x64) & 0xfffffffe);
-      subrecord_u16_rw(s1,6);
+      subrecord_u16_rw(battle,6);
     }
-    if (MBS16(s1 + 0x94) == 0) {
+    if (MBS16(battle + 0x94) == 0) {
       int32_t d2, d3, dd;
       if (MB8(g2 + 0) == 1) MW8(g2 + 0,2);
       if (MB8(g3 + 0) == 1) MW8(g3 + 0,2);
-      battle_subrecord_set2(s1);
+      battle_subrecord_set2(battle);
       /* guest 0x8015500C/0x80155028: lh/lh/subu/sll12/div with NO
        * den==0 branch — MIPS div-by-zero yields LO = num>=0 ? -1 : 1. */
       {
@@ -7205,57 +7205,57 @@ L_case1:
         d3 = dd != 0 ? n2 / dd : (n2 >= 0 ? -1 : 1);
       }
       if (d2 == d3) {
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 8);
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 8);
       } else if (d3 < d2) {
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 5);
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 5);
       } else {
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 6);
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 6);
       }
     }
     if (MBS8(g2 + 0) < 0) {
       if (MBS8(g3 + 0) < 0) {
-        if (MBS16(s1 + 0x94) == 0)
-          MW16(s1 + 0x94,MB16(s1 + 0x94) + 1);
-        battle_subrecord_set2(s1);
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 7);
+        if (MBS16(battle + 0x94) == 0)
+          MW16(battle + 0x94,MB16(battle + 0x94) + 1);
+        battle_subrecord_set2(battle);
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 7);
         return 0;
       }
       goto L_c4b;
     }
     if (MBS8(g3 + 0) >= 0) goto L_c4b;
-    if (MBS16(s1 + 0x94) == 0)
-      MW16(s1 + 0x94,MB16(s1 + 0x94) + 1);
+    if (MBS16(battle + 0x94) == 0)
+      MW16(battle + 0x94,MB16(battle + 0x94) + 1);
     if (MB8(g2 + 0) == 1) MW8(g2 + 0,2);
-    battle_subrecord_set2(s1);
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 5);
+    battle_subrecord_set2(battle);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 5);
     return 0;
 L_c4b:
     if (MBS8(g2 + 0) >= 0) return 0;
-    if (MBS16(s1 + 0x94) == 0)
-      MW16(s1 + 0x94,MB16(s1 + 0x94) + 1);
+    if (MBS16(battle + 0x94) == 0)
+      MW16(battle + 0x94,MB16(battle + 0x94) + 1);
     if (MB8(g3 + 0) == 1) MW8(g3 + 0,2);
-    battle_subrecord_set2(s1);
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 6);
+    battle_subrecord_set2(battle);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 6);
     return 0;
   }
 
   case 5:
-    vs_confirm_c(side_a,side_b,s1,s5 & 0xffff);
+    vs_confirm_c(side_a,side_b,battle,cfgfl & 0xffff);
     return 0;
   case 6:
-    vs_confirm_c(side_b,side_a,s1,s5 & 0xffff);
+    vs_confirm_c(side_b,side_a,battle,cfgfl & 0xffff);
     return 0;
 
   case 7: case 8: {
     int inc2, inc3;
-    hud_announce(s1,(b92 == 7) ? 0xe : 0xf,(uint32_t)MBS16(s1 + 0x8c));
-    if (MBS16(s1 + 0x94) == 0 && MBS16(s1 + 0x8c) == 0) {
+    hud_announce(battle,(b92 == 7) ? 0xe : 0xf,(uint32_t)MBS16(battle + 0x8c));
+    if (MBS16(battle + 0x94) == 0 && MBS16(battle + 0x8c) == 0) {
       deferred_cmd_post(0x400,0x6d,0x14);
       deferred_cmd_post(0x400,0x6e,0x18);
       deferred_cmd_post(0x400,0x6f,0x1c);
@@ -7270,15 +7270,15 @@ L_c4b:
       MW32(g3 + 0x60,(MB32(g3 + 0x60) & 2) | 0x40810005);
       MW16(MB32(g3 + 0x38) + 0x80,0x2e);
     }
-    if (MBS16(s1 + 0x8c) != 0) goto L_c78;
+    if (MBS16(battle + 0x8c) != 0) goto L_c78;
     if (MB8(g2 + 1) != 0) MW8(g2 + 1,MB8(g2 + 1) | 0x80);
     if (MB8(g3 + 1) != 0) MW8(g3 + 1,MB8(g3 + 1) | 0x80);
     inc2 = inc3 = 0;
-    if (MBS8(s1 + 0x99) < 0) {
+    if (MBS8(battle + 0x99) < 0) {
       if (MB8(g2 + 1) == MB8(g3 + 1)) {
         if (MB16(g2 + 0xe2) != 0) inc3 = 1;
         else if (MB16(g3 + 0xe2) != 0) inc2 = 1;
-        else if (MB16(s1 + 0xb6) & 0x1000) inc2 = 1;
+        else if (MB16(battle + 0xb6) & 0x1000) inc2 = 1;
         else inc3 = 1;
       } else {
         if (MB8(g2 + 1) != 0) inc3 = 1; else inc2 = 1;
@@ -7287,24 +7287,24 @@ L_c4b:
     if (inc2) MW8(g2 + 0xe4,MB8(g2 + 0xe4) + 1);
     if (inc3) MW8(g3 + 0xe4,MB8(g3 + 0xe4) + 1);
 L_c78:
-    MW16(s1 + 0x8c,(int16_t)(MB16(s1 + 0x8c) + 1));
-    if ((int16_t)MB16(s1 + 0x8c) < 0x32) return 0;
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 0xb);
+    MW16(battle + 0x8c,(int16_t)(MB16(battle + 0x8c) + 1));
+    if ((int16_t)MB16(battle + 0x8c) < 0x32) return 0;
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 0xb);
     return 0;
   }
 
   case 9:
-    vs_confirm_d(side_a,side_b,s1,s5 & 0xffff);
+    vs_confirm_d(side_a,side_b,battle,cfgfl & 0xffff);
     return 0;
   case 10:
-    vs_confirm_d(side_b,side_a,s1,s5 & 0xffff);
+    vs_confirm_d(side_b,side_a,battle,cfgfl & 0xffff);
     return 0;
 
   case 11: {
     uint32_t e2, e3, lim;
-    MW8(s1 + 0xb0,1);
-    lim = MB8(MB32(s1 + 0xc0) + 4);
+    MW8(battle + 0xb0,1);
+    lim = MB8(MB32(battle + 0xc0) + 4);
     e2 = MB8(g2 + 0xe4);
     e3 = MB8(g3 + 0xe4);
     if (e2 < lim) {
@@ -7313,7 +7313,7 @@ L_c78:
     if (e3 < lim) goto L_bchk;
     if (e2 < e3) goto L_cwin;
     if (e3 < e2) goto L_dwin;
-    MW8(s1 + 0x99,0xff);
+    MW8(battle + 0x99,0xff);
     goto L_ewin;
 L_bchk:
     if (e2 < lim) goto L_ewin;
@@ -7321,7 +7321,7 @@ L_bchk:
 L_cwin: {
     MW32(g2 + 0xf4,0);
     MW32(g3 + 0xf4,0);
-    battle_field_set(MB32(s1 + 0xbc),3);
+    battle_field_set(MB32(battle + 0xbc),3);
     if (MB8(g3 + 1) == 0) {
       MW16(g2 + 0xe2,MB16(g2 + 0xe2) + 1);
       if (MB16(g2 + 0xe0) < MB16(g2 + 0xe2))
@@ -7331,23 +7331,23 @@ L_cwin: {
     if (MBS16(g2 + 0xac) == 0)
       MW16(g2 + 0xea,MB16(g2 + 0xea) + 1);
     MW16(g3 + 0xe2,0);
-    if ((MB16(s1 + 0xb4) & 0xf00) == 0x300) {
+    if ((MB16(battle + 0xb4) & 0xf00) == 0x300) {
       stat_counter_accum((int32_t)g2,(int32_t)MB8(g3 + 1));
-      MW16(s1 + 0xb4,0x1400);
+      MW16(battle + 0xb4,0x1400);
     }
-    if ((MB16(s1 + 0xb6) & 0xf00) == 0x300) {
+    if ((MB16(battle + 0xb6) & 0xf00) == 0x300) {
       record_field_step((int32_t)g3,(int32_t)MB8(g2 + 1));
-      MW16(s1 + 0xb6,0x500);
+      MW16(battle + 0xb6,0x500);
     }
-    side_phase_advance(s1,g2,g3,0);
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 0xd);
+    side_phase_advance(battle,g2,g3,0);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 0xd);
     return 0;
   }
 L_dwin: {
     MW32(g2 + 0xf4,0);
     MW32(g3 + 0xf4,0);
-    battle_field_set(MB32(s1 + 0xbc),3);
+    battle_field_set(MB32(battle + 0xbc),3);
     if (MB8(g2 + 1) == 0) {
       MW16(g3 + 0xe2,MB16(g3 + 0xe2) + 1);
       if (MB16(g3 + 0xe0) < MB16(g3 + 0xe2))
@@ -7357,56 +7357,56 @@ L_dwin: {
     if (MBS16(g3 + 0xac) == 0)
       MW16(g3 + 0xea,MB16(g3 + 0xea) + 1);
     MW16(g2 + 0xe2,0);
-    if ((MB16(s1 + 0xb6) & 0xf00) == 0x300) {
+    if ((MB16(battle + 0xb6) & 0xf00) == 0x300) {
       stat_counter_accum((int32_t)g3,(int32_t)MB8(g2 + 1));
-      MW16(s1 + 0xb6,0x1400);
+      MW16(battle + 0xb6,0x1400);
     }
-    if ((MB16(s1 + 0xb4) & 0xf00) == 0x300) {
+    if ((MB16(battle + 0xb4) & 0xf00) == 0x300) {
       record_field_step((int32_t)g2,(int32_t)MB8(g3 + 1));
-      MW16(s1 + 0xb4,0x500);
+      MW16(battle + 0xb4,0x500);
     }
-    side_phase_advance(s1,g2,g3,1);
-    MW16(s1 + 0x8c,0);
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 0xe);
+    side_phase_advance(battle,g2,g3,1);
+    MW16(battle + 0x8c,0);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 0xe);
     return 0;
   }
 L_ewin:
-    MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 0xc);
+    MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 0xc);
     return 0;
   }
 
   case 12:
-    if (MBS16(s1 + 0x8c) >= 0x1e) {
+    if (MBS16(battle + 0x8c) >= 0x1e) {
       MW32(g2 + 0x60,MB32(g2 + 0x60) | 0x80028000);
       MW32(g3 + 0x60,MB32(g3 + 0x60) | 0x80028000);
     }
-    if (MBS16(s1 + 0x8c) < 0x5a) {
-      MW16(s1 + 0x8c,MB16(s1 + 0x8c) + 1);
+    if (MBS16(battle + 0x8c) < 0x5a) {
+      MW16(battle + 0x8c,MB16(battle + 0x8c) + 1);
       return 0;
     }
-    side_phase_commit(s1,g2,g3);
-    MW16(s1 + 0x8c,0);
+    side_phase_commit(battle,g2,g3);
+    MW16(battle + 0x8c,0);
     return 0;
 
   case 13:
-    vs_confirm_e(side_a,side_b,s1,s5 & 0xffff);
+    vs_confirm_e(side_a,side_b,battle,cfgfl & 0xffff);
     return 0;
   case 14:
-    vs_confirm_e(side_b,side_a,s1,s5 & 0xffff);
+    vs_confirm_e(side_b,side_a,battle,cfgfl & 0xffff);
     return 0;
 
   case 15: {
     int32_t src_val, mulhi, quot, rem;
-    MW8(s1 + 0xb1,1);                    /* jal delay slot: always */
-    if (MBS16(s1 + 0x8c) == 0) task_table_init(1);
+    MW8(battle + 0xb1,1);                    /* jal delay slot: always */
+    if (MBS16(battle + 0x8c) == 0) task_table_init(1);
     slot_triple_set(1,-1,-1,-1);
     slot_triple_set(2,-1,-1,-1);
     match_mode_set(3);
-    if ((MB16(s1 + 0xb6) & 0xf00) == 0x600) {
+    if ((MB16(battle + 0xb6) & 0xf00) == 0x600) {
       MW32(g2 + 0x60,MB32(g2 + 0x60) | 2);
       MW32(g3 + 0x60,MB32(g3 + 0x60) & 0xfffffffd);
-      if (MBS16(s1 + 0x8c) == 0)
-        battle_field_set(MB32(s1 + 0xbc),7);
+      if (MBS16(battle + 0x8c) == 0)
+        battle_field_set(MB32(battle + 0xbc),7);
       if ((MB32(g3 + 0x5c) & 0x10000000) != 0 ||
           MBS16(MB32(g3 + 0x38) + 0x80) == 0x2e) {
         MW32(g3 + 0x60,0x40810005);
@@ -7414,11 +7414,11 @@ L_ewin:
       }
       MW16(MB32(g2 + 0x38) + 0x80,1);
     }
-    if ((MB16(s1 + 0xb4) & 0xf00) == 0x600) {
+    if ((MB16(battle + 0xb4) & 0xf00) == 0x600) {
       MW32(g2 + 0x60,MB32(g2 + 0x60) & 0xfffffffd);
       MW32(g3 + 0x60,MB32(g3 + 0x60) | 2);
-      if (MBS16(s1 + 0x8c) == 0)
-        battle_field_set(MB32(s1 + 0xbc),6);
+      if (MBS16(battle + 0x8c) == 0)
+        battle_field_set(MB32(battle + 0xbc),6);
       if ((MB32(g2 + 0x5c) & 0x10000000) != 0 ||
           MBS16(MB32(g2 + 0x38) + 0x80) == 0x2e) {
         MW32(g2 + 0x60,0x40810005);
@@ -7426,28 +7426,28 @@ L_ewin:
       }
       MW16(MB32(g3 + 0x38) + 0x80,1);
     }
-    if (MBS16(s1 + 0x8c) == 1)
-      mc_confirm_dispatch(MB8(MB32(s1 + 0xc0) + 0xd) != 0 ? 5 : 0x2a,0);
+    if (MBS16(battle + 0x8c) == 1)
+      mc_confirm_dispatch(MB8(MB32(battle + 0xc0) + 0xd) != 0 ? 5 : 0x2a,0);
     /* signed a0 % 80 via mult 0x66666667/mulhi>>5 */
-    src_val = (int16_t)(MB16(s1 + 0xb2) & 0x3fff);
+    src_val = (int16_t)(MB16(battle + 0xb2) & 0x3fff);
     mulhi  = (int32_t)(((int64_t)src_val * (int64_t)0x66666667) >> 32);
     quot   = (mulhi >> 5) - (src_val >> 31);
     rem = (int16_t)(src_val - quot * 80);
     if (rem == 4) deferred_cmd_post(0x400,0x11,0);
     {
-      uint32_t c8  = MB16(s1 + 0x8c) + 1;
-      uint32_t f4  = MB16(s1 + 0xb4) & 0xf00;
-      uint32_t f6  = MB16(s1 + 0xb6) & 0xf00;
-      MW16(s1 + 0x8c,c8);
+      uint32_t c8  = MB16(battle + 0x8c) + 1;
+      uint32_t f4  = MB16(battle + 0xb4) & 0xf00;
+      uint32_t f6  = MB16(battle + 0xb6) & 0xf00;
+      MW16(battle + 0x8c,c8);
       if (f4 == 0x900 || f6 == 0x900 || f4 == 0x800 || f6 == 0x800) {
-        MW16(s1 + 0x8c,0);
-        MW16(s1 + 0x8e,0);
-        MW16(s1 + 0x90,0);
-        MW16(s1 + 0x92,(MB16(s1 + 0x92) & 0xff00) | 0x10);
+        MW16(battle + 0x8c,0);
+        MW16(battle + 0x8e,0);
+        MW16(battle + 0x90,0);
+        MW16(battle + 0x92,(MB16(battle + 0x92) & 0xff00) | 0x10);
         deferred_cmd_post(0x204,0,0);
         return 0;
       }
-      hud_announce(s1,0x15,(int32_t)(int16_t)c8);
+      hud_announce(battle,0x15,(int32_t)(int16_t)c8);
     }
     return 0;
   }
@@ -7456,61 +7456,61 @@ L_ewin:
     int32_t spr_idx = -1, aux_b5 = 1;
     uint32_t nv, bval;
     int32_t tv;
-    MW8(s1 + 0xb1,0xff);                 /* jal delay slot: before call */
+    MW8(battle + 0xb1,0xff);                 /* jal delay slot: before call */
     slot_triple_set(1,-1,-1,-1);
     slot_triple_set(2,-1,-1,-1);
     match_mode_set(3);
-    if ((MB32(s1 + 0xb4) & 0x0f000f00) == 0) {
-      if (MB16(s1 + 0x7c) & 0x800) MW16(s1 + 0x8e,0x1356);
-      if (MB16(s1 + 0x7c) & 0xe8)  MW16(s1 + 0x8e,0x1356);
+    if ((MB32(battle + 0xb4) & 0x0f000f00) == 0) {
+      if (MB16(battle + 0x7c) & 0x800) MW16(battle + 0x8e,0x1356);
+      if (MB16(battle + 0x7c) & 0xe8)  MW16(battle + 0x8e,0x1356);
     }
     if (MB8(g2 + 1) == 0) { aux_b5 = MB8(g2 + 5); spr_idx = MB8(g2 + 3); }
     if (MB8(g3 + 1) == 0) { aux_b5 = MB8(g3 + 5); spr_idx = MB8(g3 + 3); }
-    nv = MB16(s1 + 0x90) + 1;
-    MW16(s1 + 0x90,nv);
+    nv = MB16(battle + 0x90) + 1;
+    MW16(battle + 0x90,nv);
     if ((int16_t)nv < 4) return 0;
     if (aux_b5 == 0) {
       uint32_t sv = MB8(0x801b49f8 + (uint32_t)spr_idx);
-      if (menu_sprite_load_sm(s1,sv + 0xc5,0x13,2,1) == 0) return 0;
+      if (menu_sprite_load_sm(battle,sv + 0xc5,0x13,2,1) == 0) return 0;
     }
-    if (MBS16(s1 + 0x8e) == 0) {
-      uint32_t v0 = 6;
-      if ((MB16(s1 + 0xb6) & 0xf00) == 0x900) v0 = 7;
-      if (MBS16(MB32(s1 + 0xbc) + 0x76) != (int32_t)v0)
-        battle_field_set(MB32(s1 + 0xbc),v0);
-      mc_confirm_dispatch(MB8(MB32(s1 + 0xc0) + 0xd) != 0 ? 6 : 0x27,0);
-      se_value_select((uint32_t)MBS8(s1 + 0x98));
+    if (MBS16(battle + 0x8e) == 0) {
+      uint32_t fv = 6;
+      if ((MB16(battle + 0xb6) & 0xf00) == 0x900) fv = 7;
+      if (MBS16(MB32(battle + 0xbc) + 0x76) != (int32_t)fv)
+        battle_field_set(MB32(battle + 0xbc),fv);
+      mc_confirm_dispatch(MB8(MB32(battle + 0xc0) + 0xd) != 0 ? 6 : 0x27,0);
+      se_value_select((uint32_t)MBS8(battle + 0x98));
       if (aux_b5 == 0) deferred_cmd_post(0x400,0x80,0x1e);
     }
-    nv = MB16(s1 + 0x8e) + 1;
-    MW16(s1 + 0x8e,nv);
-    hud_announce(s1,0x16,(int32_t)(int16_t)nv);
-    bval = MB8(MB32(s1 + 0xc0) + 0xd);
-    tv = MBS16(s1 + 0x8e);
+    nv = MB16(battle + 0x8e) + 1;
+    MW16(battle + 0x8e,nv);
+    hud_announce(battle,0x16,(int32_t)(int16_t)nv);
+    bval = MB8(MB32(battle + 0xc0) + 0xd);
+    tv = MBS16(battle + 0x8e);
     if (bval != 0) {
       if (tv < 0x15e) return 0;
     } else {
       if (tv < 0x2ee) return 0;
     }
-    MW16(s1 + 0x8e,0);
-    MW16(s1 + 0x90,0);
-    rec_clear_irq(s1,0x18);
+    MW16(battle + 0x8e,0);
+    MW16(battle + 0x90,0);
+    rec_clear_irq(battle,0x18);
     match_mode_set(1);
     deferred_cmd_post(0x204,0,0);
-    frame_present(s1);
+    frame_present(battle);
     scroll_cfg_set(2,8);
-    MW8(s1 + 1,9);
+    MW8(battle + 1,9);
     return 0;
   }
   }
   return 0;
 
 L54af0:
-  if (MBS16(s1 + 0x8c) == 0) mc_confirm_dispatch(2,0);
-  if (MBS16(s1 + 0x8c) < 0xfa)
-    hud_announce(s1,0,(uint32_t)MBS16(s1 + 0x8c));
+  if (MBS16(battle + 0x8c) == 0) mc_confirm_dispatch(2,0);
+  if (MBS16(battle + 0x8c) < 0xfa)
+    hud_announce(battle,0,(uint32_t)MBS16(battle + 0x8c));
   else
-    MW8(s1 + 1,1);
+    MW8(battle + 1,1);
   state_word_set_ffff();
   return 0;
 }
