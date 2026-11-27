@@ -1532,3 +1532,31 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   bodies. battle_slot_draw stays (deliberate IRQ-yield CPS port).
 - clean_cps.map now ~7894 rows (was 8623 at session start);
   clean_table 9031 wrappers.
+
+### Session update 33 (cps_8017caf4 hand port — fighter_motion_step)
+
+- **cps_8017caf4 → fighter_motion_step** (`ec53156a`): hand port of the
+  55-block CPS cluster @0x8017CAF4 into battle.c (~140 lines). Per-
+  fighter motion integrator: mode = s8(param_h0>>8) selects 1 of 4 arms
+  over the state record's halfword channels (+172/+176 bounds,
+  +192/+200/+202/+204 channels, +258/+260/+262 counters, +214/+216
+  velocities); shared commit tail runs the battle_reset_tail-style
+  conditional reset (deferred_cmd_post + fighter_reset_fx + slot_apply_
+  guest + 3 hit clears). Uses br2_ld8/16/32 + br2_st8/16 guest-access
+  helpers; arm 2 faithfully models cpu->lo low-word muldiv semantics.
+  55 map rows retired; headless versus_fight_mash verified (26k→65k).
+- **Frontier rescanned**: ~700 cps_ clusters remain. Top-of-list audit
+  (3 background agents) classifying the biggest clusters as RETIRE
+  (residual pieces of already-clean ports, like battle_camera_step)
+  vs PORT (genuine unported) vs KEEP (IRQ/coroutine). Notable: many
+  cluster bases sit 0x80–0x600 bytes after a named renames.map entry —
+  strong residual-piece smell.
+- **cps_801393b8 scoping** (34 rows, 1148B): GTE-using FX sprite
+  placement routine, SPLIT across ≥3 clusters (801393b8→80139834→
+  80139d98/impact_fx_type_alias) with gte_execute/rtps coord transforms
+  + signed-div-8/div-4 halfword smoothing. Multi-cluster port — NOT a
+  quick win; defer unless audits clear the field.
+- **0x80126xxx region**: ~200 tiny clusters (1–6 rows) — init/atexit
+  trampolines + small system fns (bzero wrapper → tail-jump chains).
+  Low per-port value; batch candidate only if a shared convention
+  emerges.
