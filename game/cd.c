@@ -6261,7 +6261,7 @@ int cd_job_submit5(uint32_t a0)
     cd_job_slot_alloc(0x8019e798,0);
     *s1 = 0xa;
     return 0;
-  case 10: {
+  case 0xa: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
@@ -6276,11 +6276,11 @@ int cd_job_submit5(uint32_t a0)
     cd_job_slot_alloc(0x8019f02c,0);
     return 0;
   }
-  case 11:
+  case 0xb:
     *s1 = 0x14;
     cd_job_slot_alloc(0x8019f02c,0);
     return 0;
-  case 20: {
+  case 0x14: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
       cd_pending_args_pump();
@@ -6294,7 +6294,7 @@ int cd_job_submit5(uint32_t a0)
     s0[4] = 0xffffffffu;
     return 1;
   }
-  case 22:
+  case 0x16:
     if (cd_queue_b_read() == 0) return 0;
     cd_queue_b_status();
     *s1 = 0xb;
@@ -6316,7 +6316,7 @@ int cd_job_submit6(uint32_t a0)
     cd_job_slot_alloc(0x8019f220,0);
     *s1 = 0xa;
     return 0;
-  case 10: {
+  case 0xa: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] != 0) return 1;
     {
@@ -6331,11 +6331,11 @@ int cd_job_submit6(uint32_t a0)
     cd_job_slot_alloc(0x8019f220,0);
     return 0;
   }
-  case 11:
+  case 0xb:
     *s1 = 0x14;
     cd_job_slot_alloc(0x8019f220,0);
     return 0;
-  case 20: {
+  case 0x14: {
     uint32_t *s0 = (uint32_t *)guest_at(0x801febe4);
     if (s0[0] == 3) {
       cd_pending_args_pump();
@@ -6349,7 +6349,7 @@ int cd_job_submit6(uint32_t a0)
     s0[4] = 0xffffffffu;
     return 1;
   }
-  case 22:
+  case 0x16:
     if (cd_queue_b_read() == 0) return 0;
     cd_queue_b_status();
     *s1 = 0xb;
