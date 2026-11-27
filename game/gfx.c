@@ -120,7 +120,6 @@ static uint32_t gpu_call(uint32_t off, uint32_t a0, uint32_t a1,
     uint32_t *t = GPU_TBL();
     return gpu_invoke(t[off >> 2], a0, a1, a2, a3);
 }
-#define GPU_ADDR(p) guest_of((const void *)(uintptr_t)(p))
 /* PSX callers hand gpu_load_image_cmd a stack RECT (x,y,w,h s16 x4); the
  * port has no guest stack, so stage the 8-int8_t rect in the arg-build
  * area below the guest stack pointer (o32 sp-0x10..sp-1) — scratchpad
@@ -130,8 +129,6 @@ uint32_t gpu_rect(const void *p)
     memcpy(guest_at((uint32_t)(guest_sp() - 0x10)), p, 8);
     return (uint32_t)(guest_sp() - 0x10);
 }
-#define DB16(a) (*(uint16_t *)guest_at(a))
-#define DB32(a) (*(uint32_t *)guest_at(a))
 static void gpu_dbg(const char *fmt, ...)
 {
     /* PTR_FUN_801b831c -> debug/trace printf (guest func addr) */
@@ -139,6 +136,13 @@ static void gpu_dbg(const char *fmt, ...)
     (void)fn; (void)fmt;
 }
 #define GPU_DBG(...) gpu_dbg(__VA_ARGS__)
+
+/* guest-memory accessors: GP8/GP16/GP16S/GP32/GP32S = *(T*)guest_at(a). */
+#define GP32(a)   (*(uint32_t *)guest_at(a))
+#define GP8(a)    (*(uint8_t  *)guest_at(a))
+#define GP16(a)   (*(uint16_t *)guest_at(a))
+#define GP32S(a)  (*(int32_t  *)guest_at(a))
+#define GP16S(a)  (*(int16_t  *)guest_at(a))
 
 /* ======== 0x8018bd50 ======== */
 
@@ -526,11 +530,11 @@ uint32_t gpu_graph_reset(uint32_t arg)
     }
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
-    bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
+    bios_call_a0(GP32(0x801b8318) & 0xffffff);
     gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
     gpu_mode_state = 1;
-    disp_width = *(uint16_t *)((char *)guest_at(0x801b83a0) + (uint32_t)gpu_mode * 4);
-    disp_height = *(uint16_t *)((char *)guest_at(0x801b83ac) + (uint32_t)gpu_mode * 4);
+    disp_width = GP16(0x801b83a0u + (uint32_t)gpu_mode * 4);
+    disp_height = GP16(0x801b83acu + (uint32_t)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
     v = (uint32_t)gpu_mode;
@@ -575,9 +579,9 @@ uint32_t draw_env_timing(uint32_t env_g)
     GPU_DBG(s_PutDispEnv__08x_____801255a0,env_g);
   }
   gpu_call(0x10,((env[1] & 0x3ff) << 10 | env[0] & 0x3ff | 0x5000000),0,0,0);
-  if ((((DB32(0x801b839c) != *(int *)(env + 8)) || (DB16(0x801b838c) != env[0])) ||
-      (DB16(0x801b838e) != env[1])) ||
-     ((DB16(0x801b8390) != env[2] || (DB16(0x801b8392) != env[3])))) {
+  if ((((GP32(0x801b839c) != *(int *)(env + 8)) || (GP16(0x801b838c) != env[0])) ||
+      (GP16(0x801b838e) != env[1])) ||
+     ((GP16(0x801b8390) != env[2] || (GP16(0x801b8392) != env[3])))) {
     gp_type = gp_bde20_read();
     *(char *)(env + 9) = gp_type;
     /* s0 = 0x08000000 unconditionally (lui @0x801919DC delay slot);
@@ -620,8 +624,8 @@ uint32_t draw_env_timing(uint32_t env_g)
     gpu_call(0x10,tc,0,0,0);
     *(uint8_t *)(env + 9) = 8;
   }
-  if (!(((DB16(0x801b8394) == env[4]) && (DB16(0x801b8396) == env[5])) &&
-       ((DB16(0x801b8398) == env[6] && ((DB16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
+  if (!(((GP16(0x801b8394) == env[4]) && (GP16(0x801b8396) == env[5])) &&
+       ((GP16(0x801b8398) == env[6] && ((GP16(0x801b839a) == env[7] && ((char)env[9] != '\b'))))))) {
   gp_type = gp_bde20_read();
   *(char *)(env + 9) = gp_type;
   tc = (int)(short)env[5] + 0x13;
@@ -725,14 +729,6 @@ uint32_t bios_call(uint32_t,uint32_t);
 
 extern char *s__s_bad_RECT_801254c8;
 extern char *s___d__d____d__d__801254d4;
-
-#define GP32(a)   (*(uint32_t *)guest_at(a))
-#define GP8(a)    (*(uint8_t  *)guest_at(a))
-#define GP16(a)   (*(uint16_t *)guest_at(a))
-#define GP32S(a)  (*(int32_t  *)guest_at(a))
-#define GP16S(a)  (*(int16_t  *)guest_at(a))
-#define GPP(a)    ((uint32_t *)guest_at(a))
-#define GPTRW(a)  (*(uint32_t *)guest_at(GP32(a)))
 
 /* ======== 0x80193d08 ======== */
 
@@ -2734,7 +2730,7 @@ uint32_t gpu_texclut_pkt(uint32_t *t0, uint32_t *a1, uint32_t a2, uint32_t a3)
  * generated emitter uses for every MTC2/LWC2 (helper or raw write). */
 static uint32_t gte_lwc2(uint32_t gaddr, int reg)
 {
-  uint32_t v = DB32(gaddr);
+  uint32_t v = GP32(gaddr);
   setCopReg(2, GTE_DREG(reg), v);
   return v;
 }
@@ -2744,7 +2740,7 @@ static uint32_t gte_lwc2(uint32_t gaddr, int reg)
  * emitter produces for both raw and helper-classified registers. */
 static void gte_swc2(uint32_t gaddr, int reg)
 {
-  DB32(gaddr) = (uint32_t)getCopReg(2, GTE_DREG(reg));
+  GP32(gaddr) = (uint32_t)getCopReg(2, GTE_DREG(reg));
 }
 
 /* ======== 0x80190228 ======== */
@@ -3073,9 +3069,9 @@ void gte_op_vec3_a(uint32_t mtx, uint32_t vec, uint32_t out)
   int32_t c0 = getCopControlWord(2, GTE_CREG(0));
   int32_t c2 = getCopControlWord(2, GTE_CREG(2));
   int32_t c4 = getCopControlWord(2, GTE_CREG(4));
-  setCopControlWord(2, GTE_CREG(0), DB32(mtx + 0));
-  setCopControlWord(2, GTE_CREG(2), DB32(mtx + 4));
-  setCopControlWord(2, GTE_CREG(4), DB32(mtx + 8));
+  setCopControlWord(2, GTE_CREG(0), GP32(mtx + 0));
+  setCopControlWord(2, GTE_CREG(2), GP32(mtx + 4));
+  setCopControlWord(2, GTE_CREG(4), GP32(mtx + 8));
   gte_lwc2(vec + 8, 11);
   gte_lwc2(vec + 0, 9);
   gte_lwc2(vec + 4, 10);
@@ -3097,9 +3093,9 @@ void gte_op_vec3_b(uint32_t mtx, uint32_t vec, uint32_t out)
   int32_t c0 = getCopControlWord(2, GTE_CREG(0));
   int32_t c2 = getCopControlWord(2, GTE_CREG(2));
   int32_t c4 = getCopControlWord(2, GTE_CREG(4));
-  setCopControlWord(2, GTE_CREG(0), DB32(mtx + 0));
-  setCopControlWord(2, GTE_CREG(2), DB32(mtx + 4));
-  setCopControlWord(2, GTE_CREG(4), DB32(mtx + 8));
+  setCopControlWord(2, GTE_CREG(0), GP32(mtx + 0));
+  setCopControlWord(2, GTE_CREG(2), GP32(mtx + 4));
+  setCopControlWord(2, GTE_CREG(4), GP32(mtx + 8));
   gte_lwc2(vec + 8, 11);
   gte_lwc2(vec + 0, 9);
   gte_lwc2(vec + 4, 10);
@@ -3126,7 +3122,7 @@ uint32_t gte_rtps_vec3(uint32_t in, uint32_t out_sxy, uint32_t out_mac,
   copFunction(2, 0x0180001);
   gte_swc2(out_sxy + 0, 14);
   gte_swc2(out_mac + 0, 8);
-  DB32(out_flag + 0) = (uint32_t)getCopControlWord(2, GTE_CREG(31));
+  GP32(out_flag + 0) = (uint32_t)getCopControlWord(2, GTE_CREG(31));
   return (uint32_t)((int32_t)getCopReg(2, GTE_DREG(19)) >> 2);
 }
 
@@ -3150,15 +3146,15 @@ uint32_t gte_rtps3_sxy_pack(uint32_t a0g)
   uint32_t d9_3, d10_3;
 
   setCopReg(2, GTE_DREG(0),
-            (DB32(a0g + 0) & 0xffffu) | (DB32(a0g + 4) & 0xffff0000u));
-  setCopReg(2, GTE_DREG(1), DB32(a0g + 12));
+            (GP32(a0g + 0) & 0xffffu) | (GP32(a0g + 4) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), GP32(a0g + 12));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_1  = (uint32_t)getCopReg(2, GTE_DREG(9));
   d10_1 = (uint32_t)getCopReg(2, GTE_DREG(10));
   d11_1 = (uint32_t)getCopReg(2, GTE_DREG(11));
 
   setCopReg(2, GTE_DREG(0),
-            (uint32_t)(int32_t)*(int16_t *)(r + 2) | (DB32(a0g + 8) << 16));
+            (uint32_t)(int32_t)*(int16_t *)(r + 2) | (GP32(a0g + 8) << 16));
   setCopReg(2, GTE_DREG(1), (uint32_t)(int32_t)*(int16_t *)(r + 14));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_2  = (uint32_t)getCopReg(2, GTE_DREG(9));
@@ -3167,16 +3163,16 @@ uint32_t gte_rtps3_sxy_pack(uint32_t a0g)
 
   setCopReg(2, GTE_DREG(0),
             (uint32_t)(int32_t)*(int16_t *)(r + 4) |
-            (DB32(a0g + 8) & 0xffff0000u));
-  setCopReg(2, GTE_DREG(1), DB32(a0g + 16));
+            (GP32(a0g + 8) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), GP32(a0g + 16));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_3  = (uint32_t)getCopReg(2, GTE_DREG(9));
   d10_3 = (uint32_t)getCopReg(2, GTE_DREG(10));
 
-  DB32(a0g + 0)  = (d9_2  << 16) | (d9_1  & 0xffffu);
-  DB32(a0g + 12) = (d11_2 << 16) | (d11_1 & 0xffffu);
-  DB32(a0g + 4)  = (d9_3  & 0xffffu) | (d10_1 << 16);
-  DB32(a0g + 8)  = (d10_3 << 16) | (d10_2 & 0xffffu);
+  GP32(a0g + 0)  = (d9_2  << 16) | (d9_1  & 0xffffu);
+  GP32(a0g + 12) = (d11_2 << 16) | (d11_1 & 0xffffu);
+  GP32(a0g + 4)  = (d9_3  & 0xffffu) | (d10_1 << 16);
+  GP32(a0g + 8)  = (d10_3 << 16) | (d10_2 & 0xffffu);
   gte_swc2(a0g + 16, 11);
   return a0g;
 }
@@ -3203,16 +3199,16 @@ uint32_t gte_rtps3_sxy_pack_ctrl(uint32_t a0g, uint32_t a1g)
   uint32_t d9_3, d10_3, d11_3;
 
   /* entry: five control words a0[0..4] -> ctc2 ctrl 0..4 */
-  setCopControlWord(2, GTE_CREG(0), DB32(a0g + 0));
-  setCopControlWord(2, GTE_CREG(1), DB32(a0g + 4));
-  setCopControlWord(2, GTE_CREG(2), DB32(a0g + 8));
-  setCopControlWord(2, GTE_CREG(3), DB32(a0g + 12));
-  setCopControlWord(2, GTE_CREG(4), DB32(a0g + 16));
+  setCopControlWord(2, GTE_CREG(0), GP32(a0g + 0));
+  setCopControlWord(2, GTE_CREG(1), GP32(a0g + 4));
+  setCopControlWord(2, GTE_CREG(2), GP32(a0g + 8));
+  setCopControlWord(2, GTE_CREG(3), GP32(a0g + 12));
+  setCopControlWord(2, GTE_CREG(4), GP32(a0g + 16));
 
   /* pass 1: vertex @a1+0 */
   setCopReg(2, GTE_DREG(0),
-            (uint32_t)*(uint16_t *)(v + 0) | (DB32(a1g + 4) & 0xffff0000u));
-  setCopReg(2, GTE_DREG(1), DB32(a1g + 12));
+            (uint32_t)*(uint16_t *)(v + 0) | (GP32(a1g + 4) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), GP32(a1g + 12));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_1  = (uint32_t)getCopReg(2, GTE_DREG(9));
   d10_1 = (uint32_t)getCopReg(2, GTE_DREG(10));
@@ -3220,7 +3216,7 @@ uint32_t gte_rtps3_sxy_pack_ctrl(uint32_t a0g, uint32_t a1g)
 
   /* pass 2: vertex @a1+2 (lh @+0xe sign-extends) */
   setCopReg(2, GTE_DREG(0),
-            (uint32_t)*(uint16_t *)(v + 2) | (DB32(a1g + 8) << 16));
+            (uint32_t)*(uint16_t *)(v + 2) | (GP32(a1g + 8) << 16));
   setCopReg(2, GTE_DREG(1), (uint32_t)(int32_t)*(int16_t *)(v + 14));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_2  = (uint32_t)getCopReg(2, GTE_DREG(9));
@@ -3229,8 +3225,8 @@ uint32_t gte_rtps3_sxy_pack_ctrl(uint32_t a0g, uint32_t a1g)
 
   /* pass 3: vertex @a1+4 */
   setCopReg(2, GTE_DREG(0),
-            (uint32_t)*(uint16_t *)(v + 4) | (DB32(a1g + 8) & 0xffff0000u));
-  setCopReg(2, GTE_DREG(1), DB32(a1g + 16));
+            (uint32_t)*(uint16_t *)(v + 4) | (GP32(a1g + 8) & 0xffff0000u));
+  setCopReg(2, GTE_DREG(1), GP32(a1g + 16));
   copFunction(2, 0x0486012);                    /* RTPS */
   d9_3  = (uint32_t)getCopReg(2, GTE_DREG(9));
   d10_3 = (uint32_t)getCopReg(2, GTE_DREG(10));
@@ -5609,16 +5605,16 @@ uint32_t gte_persp_batch(uint32_t cur, uint32_t a1, uint32_t a2,
 {
   (void)a1; (void)a2;
   while (count > 0) {
-    uint32_t t0 = DB32(cur);
-    uint32_t t1 = DB32(cur + 4);
+    uint32_t t0 = GP32(cur);
+    uint32_t t1 = GP32(cur + 4);
     uint32_t h;
     setCopReg(2, GTE_DREG(0), t0);
     setCopReg(2, GTE_DREG(1), t1);
     count--;
     copFunction(2, 0x4A6412u);
-    DB32(cur + 8)  = (uint32_t)getCopReg(2, GTE_DREG(9));
+    GP32(cur + 8)  = (uint32_t)getCopReg(2, GTE_DREG(9));
     h = (uint32_t)getCopReg(2, GTE_DREG(10));
-    DB32(cur + 12) = (uint32_t)getCopReg(2, GTE_DREG(11));
+    GP32(cur + 12) = (uint32_t)getCopReg(2, GTE_DREG(11));
     GP16(cur + 10) = (uint16_t)h;
     cur += 0x10;
   }
@@ -5680,11 +5676,11 @@ static void prim_emit_desc(uint32_t a1,uint32_t a2,
                            uint32_t *s2,uint32_t *s3,int32_t *s5)
 {
   a1 <<= 2;
-  *s0 = DB32(a1 + a2);
-  *s4 = DB32(a1 + a2 + 8);        /* dead in these bodies (no 0x100 chain) */
-  *s1 = DB32(a2 + 0x10);
-  *s2 = DB32(a2 + 0x18);
-  *s3 = DB32(a2 + 0x24);
+  *s0 = GP32(a1 + a2);
+  *s4 = GP32(a1 + a2 + 8);        /* dead in these bodies (no 0x100 chain) */
+  *s1 = GP32(a2 + 0x10);
+  *s2 = GP32(a2 + 0x18);
+  *s3 = GP32(a2 + 0x24);
   *s5 = (int32_t)*(int16_t *)guest_at(a2 + 0x30);
 }
 
@@ -5705,7 +5701,7 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
   (void)s4;
 
-  w  = DB32(s2);
+  w  = GP32(s2);
   i0 = w & 0xffffu;
   i1 = w >> 16;
   i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
@@ -5729,7 +5725,7 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
     i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
     p  = s1 + (i0 << 3);
-    va0 = DB32(p); va1 = DB32(p + 4);
+    va0 = GP32(p); va1 = GP32(p + 4);
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
     sz3 = (uint32_t)getCopReg(2, GTE_DREG(19));       /* SZ3 (pre-NCLIP) */
     copFunction(2, 0x0400006);                        /* NCLIP */
@@ -5742,11 +5738,11 @@ uint32_t prim_emit_tri_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     if (mac0 >= 0 || (flags & 0x200) != 0) {
       slot = a0 + ((uint32_t)t1s << 2);
       if (t1s >= 10) {
-        old = DB32(slot);               /* delay-slot load: t1s>=0x800 too */
+        old = GP32(slot);               /* delay-slot load: t1s>=0x800 too */
         if (t1s < 0x800) {
           gte_swc2(s0 + 0x18, 14);
-          DB32(s0)   = 0x07000000u | old;
-          DB32(slot) = s0 & 0x00ffffffu;
+          GP32(s0)   = 0x07000000u | old;
+          GP32(slot) = s0 & 0x00ffffffu;
         }
       }
     }
@@ -5773,7 +5769,7 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
   (void)s4;
 
-  w  = DB32(s2);
+  w  = GP32(s2);
   i0 = w & 0xffffu;
   i1 = w >> 16;
   i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
@@ -5797,7 +5793,7 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     i1 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 2);
     i2 = (uint32_t)(int32_t)*(int16_t *)guest_at(s2 + 4);
     p  = s1 + (i0 << 3);
-    va0 = DB32(p); va1 = DB32(p + 4);
+    va0 = GP32(p); va1 = GP32(p + 4);
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
     (void)getCopReg(2, GTE_DREG(19));           /* SZ3 — dead here */
     copFunction(2, 0x0400006);                  /* NCLIP */
@@ -5806,11 +5802,11 @@ uint32_t prim_emit_tri_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     gte_swc2(s0 + 0x10, 13);
     mac0  = (int32_t)getCopReg(2, GTE_DREG(24));
     flags = (int32_t)*(int16_t *)guest_at(s3);
-    old   = DB32(a0);                    /* guest loads *a0 on pass AND fail */
+    old   = GP32(a0);                    /* guest loads *a0 on pass AND fail */
     if (mac0 >= 0 || (flags & 0x200) != 0) {
       gte_swc2(s0 + 0x18, 14);
-      DB32(s0) = 0x07000000u | old;
-      DB32(a0) = s0 & 0x00ffffffu;
+      GP32(s0) = 0x07000000u | old;
+      GP32(a0) = s0 & 0x00ffffffu;
     }
     s0 += 0x20; s2 += 6; s3 += 2;
     if (s5 > 0) continue;
@@ -5837,7 +5833,7 @@ uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
   (void)s4;
 
-  w0 = DB32(s2); w1 = DB32(s2 + 4);
+  w0 = GP32(s2); w1 = GP32(s2 + 4);
   i0 = w0 & 0xffffu; i1 = w0 >> 16;
   i2 = w1 & 0xffffu;
   p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
@@ -5857,10 +5853,10 @@ uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     s5 -= 1;
     copFunction(2, 0x0280030);                  /* RTPT */
 
-    w0 = DB32(s2); w1 = DB32(s2 + 4);
+    w0 = GP32(s2); w1 = GP32(s2 + 4);
     i0 = w0 & 0xffffu;
     p  = s1 + (i0 << 3);
-    va0 = DB32(p); va1 = DB32(p + 4);
+    va0 = GP32(p); va1 = GP32(p + 4);
     i1 = w0 >> 16;
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
     sz3 = (uint32_t)getCopReg(2, GTE_DREG(19));       /* SZ3 (pre-NCLIP) */
@@ -5878,10 +5874,10 @@ uint32_t prim_emit_quad_ot_idx(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
       slot = a0 + ((uint32_t)t1s << 2);
       gte_lwc2(t4,0); gte_lwc2(t4 + 4,1);
       copFunction(2, 0x0180001);                /* RTPS — 4th vertex */
-      old = DB32(slot);                 /* unconditional once gate passed */
+      old = GP32(slot);                 /* unconditional once gate passed */
       if (t1s >= 10 && t1s < 0x800) {
-        DB32(s0)   = 0x09000000u | old;
-        DB32(slot) = s0 & 0x00ffffffu;
+        GP32(s0)   = 0x09000000u | old;
+        GP32(slot) = s0 & 0x00ffffffu;
         gte_swc2(s0 + 0x20, 14);
       }
     }
@@ -5912,7 +5908,7 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
   prim_emit_desc(a1,a2,&s0,&s4,&s1,&s2,&s3,&s5);
   (void)s4;
 
-  w0 = DB32(s2); w1 = DB32(s2 + 4);
+  w0 = GP32(s2); w1 = GP32(s2 + 4);
   i0 = w0 & 0xffffu; i1 = w0 >> 16;
   i2 = w1 & 0xffffu;
   p  = s1 + (i0 << 3); gte_lwc2(p,0);     gte_lwc2(p + 4,1);
@@ -5932,10 +5928,10 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     s5 -= 1;
     copFunction(2, 0x0280030);                  /* RTPT */
 
-    w0 = DB32(s2); w1 = DB32(s2 + 4);
+    w0 = GP32(s2); w1 = GP32(s2 + 4);
     i0 = w0 & 0xffffu;
     p  = s1 + (i0 << 3);
-    va0 = DB32(p); va1 = DB32(p + 4);
+    va0 = GP32(p); va1 = GP32(p + 4);
     i1 = w0 >> 16;
     p  = s1 + (i1 << 3); gte_lwc2(p,2); gte_lwc2(p + 4,3);
     (void)getCopReg(2, GTE_DREG(19));           /* SZ3 — dead here */
@@ -5947,7 +5943,7 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     gte_swc2(s0 + 0x10, 13);
     gte_swc2(s0 + 0x18, 14);
 
-    old  = DB32(a0);
+    old  = GP32(a0);
     gte_lwc2(t4,0); gte_lwc2(t4 + 4,1);
     link = 0x09000000u | old;
     mac0 = (int32_t)getCopReg(2, GTE_DREG(24)); /* pre-RTPS MAC0 */
@@ -5956,9 +5952,9 @@ uint32_t prim_emit_quad_ot_fix(uint32_t a0,uint32_t a1,uint32_t a2,uint32_t a3)
     /* Guest stores the link word unconditionally here: it sits in the
      * delay-slot path shared by the mac0>=0 pass and the (flags+0x200)!=0
      * pass, ahead of the *a0/swc2+0x20 stores that stay gated. */
-    DB32(s0) = link;
+    GP32(s0) = link;
     if (mac0 >= 0 || (flags + 0x200) != 0) {
-      DB32(a0) = s0 & 0x00ffffffu;
+      GP32(a0) = s0 & 0x00ffffffu;
       gte_swc2(s0 + 0x20, 14);
     }
     t4 = t5;
@@ -5986,8 +5982,8 @@ static int prim_emit_tex_desc(uint32_t desc, uint32_t *slotidx,
     return 0;
   mode = (int32_t)(int16_t)GP16(desc + 0x32);
   *slotidx = br2_ld32((uint32_t)(guest_gp() + 0x24));
-  *out     = DB32(desc + (*slotidx << 2));
-  *flags   = DB32(desc + 0x24);
+  *out     = GP32(desc + (*slotidx << 2));
+  *flags   = GP32(desc + 0x24);
   *mode_out = mode;
   *depth_out = mode;
   return 1;
@@ -6010,9 +6006,9 @@ static void prim_emit_tag_insert(uint32_t otbase, uint32_t out,
                                  uint32_t depth, uint32_t tag)
 {
   uint32_t slot = otbase + ((uint32_t)depth << 2);
-  uint32_t old  = DB32(slot);
-  DB32(out)  = tag | old;
-  DB32(slot) = out & 0x00ffffffu;
+  uint32_t old  = GP32(slot);
+  GP32(out)  = tag | old;
+  GP32(slot) = out & 0x00ffffffu;
 }
 
 /* 0x801A88DC — textured triangle emitter. Descriptor layout matches the
@@ -6033,7 +6029,7 @@ uint32_t prim_emit_tri_tex_ot(uint32_t desc)
   if (!prim_emit_tex_desc(desc, &slotidx, &out, &flags, &mode, &depth))
     return 0;
 
-  if (DB32(desc + 0x1c) == 0) {
+  if (GP32(desc + 0x1c) == 0) {
     otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
     if (mode != 0) {
       uint32_t m = (uint32_t)mode;
@@ -6044,9 +6040,9 @@ uint32_t prim_emit_tri_tex_ot(uint32_t desc)
     return prim_emit_tri_ot_idx(otbase, slotidx, desc, out);
   }
 
-  vtab  = DB32(desc + 0x10);
-  idxs  = DB32(desc + 0x18);
-  cols  = DB32(desc + 0x14);
+  vtab  = GP32(desc + 0x10);
+  idxs  = GP32(desc + 0x18);
+  cols  = GP32(desc + 0x14);
   cidxs = desc + 0x20;
   count = (int32_t)(int16_t)GP16(desc + 0x30);
   if (count <= 0)
@@ -6081,7 +6077,7 @@ uint32_t prim_emit_tri_tex_ot(uint32_t desc)
         if ((uint32_t)depth < 0x800u) {
           int32_t ci = (int32_t)(int16_t)GP16(cidxs);
           uint8_t ab;
-          ctab = DB32(desc + 0x1c) + ((uint32_t)ci << 3);
+          ctab = GP32(desc + 0x1c) + ((uint32_t)ci << 3);
           ab = GP8(out + 7);
           gte_lwc2(ctab,     0);
           gte_lwc2(ctab + 4, 1);
@@ -6119,7 +6115,7 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
   if (!prim_emit_tex_desc(desc, &slotidx, &out, &flags, &mode, &depth))
     return 0;
 
-  if (DB32(desc + 0x1c) == 0) {
+  if (GP32(desc + 0x1c) == 0) {
     otbase = br2_ld32((uint32_t)(guest_gp() + 0x48));
     if (mode != 0) {
       uint32_t m = (uint32_t)mode;
@@ -6130,9 +6126,9 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
     return prim_emit_quad_ot_idx(otbase, slotidx, desc, out);
   }
 
-  vtab  = DB32(desc + 0x10);
-  idxs  = DB32(desc + 0x18);
-  cols  = DB32(desc + 0x14);
+  vtab  = GP32(desc + 0x10);
+  idxs  = GP32(desc + 0x18);
+  cols  = GP32(desc + 0x14);
   cidxs = desc + 0x20;
   count = (int32_t)(int16_t)GP16(desc + 0x30);
   if (count <= 0)
@@ -6174,7 +6170,7 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
           copFunction(2, 0x0180001u);        /* RTPS — 4th vertex */
           gte_swc2(out + 0x20, 14);
           ci = (int32_t)(int16_t)GP16(cidxs);
-          ctab = DB32(desc + 0x1c) + ((uint32_t)ci << 3);
+          ctab = GP32(desc + 0x1c) + ((uint32_t)ci << 3);
           ab = GP8(out + 7);
           gte_lwc2(ctab,     0);
           gte_lwc2(ctab + 4, 1);
@@ -6205,7 +6201,7 @@ uint32_t prim_emit_quad_tex_ot(uint32_t desc)
  * li v0,1; sw v0,0x55d0(v1); jr ra). */
 uint32_t flag_801b55d0_set(void)
 {
-  DB32(0x801b55d0) = 1;
+  GP32(0x801b55d0) = 1;
   return 1;
 }
 
@@ -6218,7 +6214,7 @@ uint32_t flag_801b55d0_set(void)
  * (lw, sll x2, sh x2, jr ra with v0=a0 in the delay slot). */
 uint32_t rec_hibyte_pair_swap(uint32_t a0, uint32_t a1)
 {
-  uint32_t t = DB32(a0);
+  uint32_t t = GP32(a0);
   GP16(a0 + 2) = (uint16_t)(a1 << 8);
   GP16(a1 + 2) = (uint16_t)(t << 8);
   return a0;
@@ -6233,14 +6229,14 @@ uint32_t rec_hibyte_pair_swap(uint32_t a0, uint32_t a1)
 static void swl_guest(uint32_t addr, uint32_t v)
 {
   uint32_t al = addr & ~3u;
-  uint32_t w = DB32(al);
+  uint32_t w = GP32(al);
   switch (addr & 3u) {
   case 0: w = (w & 0xFFFFFF00u) | (v >> 24); break;
   case 1: w = (w & 0xFFFF0000u) | (v >> 16); break;
   case 2: w = (w & 0xFF000000u) | (v >> 8);  break;
   default: w = v; break;
   }
-  DB32(al) = w;
+  GP32(al) = w;
 }
 
 /* prim_ot_link_indexed — shared OT-link tail of the 0x801872cc-0x8018786c
@@ -6249,7 +6245,7 @@ static void swl_guest(uint32_t addr, uint32_t v)
 static void prim_ot_link_indexed(uint32_t ot, uint32_t out, uint32_t otz)
 {
   uint32_t slot = ot + (otz & 0x1ffcu);
-  uint32_t old  = DB32(slot);
+  uint32_t old  = GP32(slot);
   swl_guest(slot + 2, out << 8);
   swl_guest(out + 2, old << 8);
 }
@@ -6277,9 +6273,9 @@ uint32_t prim_emit_4c(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;
     copFunction(2, 0x0280030u);                  /* RTPT */
-    w18 = DB32(cur + 0x18);
-    w1c = DB32(cur + 0x1c);
-    w20 = DB32(cur + 0x20);
+    w18 = GP32(cur + 0x18);
+    w1c = GP32(cur + 0x1c);
+    w20 = GP32(cur + 0x20);
     (void)getCopControlWord(2, GTE_CREG(31));    /* cfc2 FLAG (dead) */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* MAC0 */
@@ -6289,13 +6285,13 @@ uint32_t prim_emit_4c(uint32_t cur, uint32_t ot, uint32_t sel,
       setCopReg(2, GTE_DREG(6), w18);
       setCopReg(2, GTE_DREG(0), w1c);
       setCopReg(2, GTE_DREG(1), w20);
-      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
       copFunction(2, 0x108041bu);                /* NCCS */
-      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(14));
       otz = (uint32_t)getCopReg(2, GTE_DREG(7)); /* OTZ */
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x4c;
   } while (cnt > 0);
@@ -6323,31 +6319,31 @@ uint32_t prim_emit_5c(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;
     copFunction(2, 0x0280030u);                  /* RTPT */
-    w18 = DB32(cur + 0x18);
-    w1c = DB32(cur + 0x1c);
-    w20 = DB32(cur + 0x20);
+    w18 = GP32(cur + 0x18);
+    w1c = GP32(cur + 0x1c);
+    w20 = GP32(cur + 0x20);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     out  = cur + delta;
     if ((int32_t)mac0 > 0) {
-      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
       setCopReg(2, GTE_DREG(0), w18);
       setCopReg(2, GTE_DREG(1), w1c);
       setCopReg(2, GTE_DREG(6), w20);
       copFunction(2, 0x0180001u);                /* RTPS */
-      w24 = DB32(cur + 0x24);
-      w28 = DB32(cur + 0x28);
+      w24 = GP32(cur + 0x24);
+      w28 = GP32(cur + 0x28);
       copFunction(2, 0x168002eu);                /* AVSZ4 */
       setCopReg(2, GTE_DREG(0), w24);
       setCopReg(2, GTE_DREG(1), w28);
-      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(12));
       copFunction(2, 0x108041bu);                /* NCCS */
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(14));
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x5c;
   } while (cnt > 0);
@@ -6375,12 +6371,12 @@ uint32_t prim_emit_6c(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;
     copFunction(2, 0x0280030u);                  /* RTPT */
-    w18 = DB32(cur + 0x18);
-    w1c = DB32(cur + 0x1c);
-    w20 = DB32(cur + 0x20);
+    w18 = GP32(cur + 0x18);
+    w1c = GP32(cur + 0x1c);
+    w20 = GP32(cur + 0x20);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    w24 = DB32(cur + 0x24);
+    w24 = GP32(cur + 0x24);
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     out  = cur + delta;
     if ((int32_t)mac0 > 0) {
@@ -6392,15 +6388,15 @@ uint32_t prim_emit_6c(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(cur + 0x28, 3);
       gte_lwc2(cur + 0x2c, 4);
       gte_lwc2(cur + 0x30, 5);
-      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
       copFunction(2, 0x118043fu);                /* NCCT */
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4)  = (uint32_t)getCopReg(2, GTE_DREG(20));
-      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(21));
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4)  = (uint32_t)getCopReg(2, GTE_DREG(20));
+      GP32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x6c;
   } while (cnt > 0);
@@ -6428,16 +6424,16 @@ uint32_t prim_emit_8c(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;
     copFunction(2, 0x0280030u);                  /* RTPT */
-    w20 = DB32(cur + 0x20);
-    w18 = DB32(cur + 0x18);
-    w1c = DB32(cur + 0x1c);
+    w20 = GP32(cur + 0x20);
+    w18 = GP32(cur + 0x18);
+    w1c = GP32(cur + 0x1c);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    w2c = DB32(cur + 0x2c);
+    w2c = GP32(cur + 0x2c);
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     out  = cur + delta;
     if ((int32_t)mac0 > 0) {
-      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
       setCopReg(2, GTE_DREG(0), w18);
       setCopReg(2, GTE_DREG(1), w1c);
       setCopReg(2, GTE_DREG(6), w20);
@@ -6450,21 +6446,21 @@ uint32_t prim_emit_8c(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(cur + 0x28, 1);
       g14 = (uint32_t)getCopReg(2, GTE_DREG(14));
       copFunction(2, 0x118043fu);                /* NCCT */
-      w3c = DB32(cur + 0x3c);
-      w40 = DB32(cur + 0x40);
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
-      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x20) = g14;
+      w3c = GP32(cur + 0x3c);
+      w40 = GP32(cur + 0x40);
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x20) = g14;
       copFunction(2, 0x168002eu);                /* AVSZ4 */
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(20));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(20));
       setCopReg(2, GTE_DREG(0), w3c);
       setCopReg(2, GTE_DREG(1), w40);
       copFunction(2, 0x108041bu);                /* NCCS */
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(20));
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(21));
-      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(20));
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      GP32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x8c;
   } while (cnt > 0);
@@ -6494,8 +6490,8 @@ uint32_t prim_emit_60(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     out  = cur + delta;
     attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-    w18  = DB32(cur + 0x18);
-    w1c  = DB32(cur + 0x1c);
+    w18  = GP32(cur + 0x18);
+    w1c  = GP32(cur + 0x1c);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
     setCopReg(2, GTE_DREG(6), attr);
@@ -6504,13 +6500,13 @@ uint32_t prim_emit_60(uint32_t cur, uint32_t ot, uint32_t sel,
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     if ((int32_t)mac0 > 0) {
       copFunction(2, 0x158002du);                /* AVSZ3 */
-      DB32(out + 8)  = (uint32_t)getCopReg(2, GTE_DREG(12));
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(out + 8)  = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(14));
       copFunction(2, 0x108041bu);                /* NCCS */
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x60;
   } while (cnt > 0);
@@ -6540,8 +6536,8 @@ uint32_t prim_emit_78(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     out  = cur + delta;
     attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-    w18  = DB32(cur + 0x18);
-    w1c  = DB32(cur + 0x1c);
+    w18  = GP32(cur + 0x18);
+    w1c  = GP32(cur + 0x1c);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
     setCopReg(2, GTE_DREG(6), attr);
@@ -6551,19 +6547,19 @@ uint32_t prim_emit_78(uint32_t cur, uint32_t ot, uint32_t sel,
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12));
     if ((int32_t)mac0 > 0) {
       copFunction(2, 0x0180001u);                /* RTPS */
-      w20 = DB32(cur + 0x20);
-      w24 = DB32(cur + 0x24);
-      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      w20 = GP32(cur + 0x20);
+      w24 = GP32(cur + 0x24);
+      GP32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
       setCopReg(2, GTE_DREG(0), w20);
       setCopReg(2, GTE_DREG(1), w24);
-      DB32(out + 8) = sxy0;
+      GP32(out + 8) = sxy0;
       copFunction(2, 0x168002eu);                /* AVSZ4 */
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
-      DB32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
       copFunction(2, 0x108041bu);                /* NCCS */
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x78;
   } while (cnt > 0);
@@ -6592,13 +6588,13 @@ uint32_t prim_emit_80(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     out  = cur + delta;
     attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-    w18  = DB32(cur + 0x18);
-    w1c  = DB32(cur + 0x1c);
+    w18  = GP32(cur + 0x18);
+    w1c  = GP32(cur + 0x1c);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
     setCopReg(2, GTE_DREG(0), w18);
     setCopReg(2, GTE_DREG(1), w1c);
-    w20 = DB32(cur + 0x20);
+    w20 = GP32(cur + 0x20);
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     setCopReg(2, GTE_DREG(6), attr);
     if ((int32_t)mac0 > 0) {
@@ -6607,15 +6603,15 @@ uint32_t prim_emit_80(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(cur + 0x24, 3);
       gte_lwc2(cur + 0x28, 4);
       gte_lwc2(cur + 0x2c, 5);
-      DB32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 8) = (uint32_t)getCopReg(2, GTE_DREG(12));
       copFunction(2, 0x118043fu);                /* NCCT */
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(14));
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4)   = (uint32_t)getCopReg(2, GTE_DREG(20));
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(21));
-      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4)   = (uint32_t)getCopReg(2, GTE_DREG(20));
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(21));
+      GP32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x80;
   } while (cnt > 0);
@@ -6645,13 +6641,13 @@ uint32_t prim_emit_a8(uint32_t cur, uint32_t ot, uint32_t sel,
     copFunction(2, 0x0280030u);                  /* RTPT */
     out  = cur + delta;
     attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-    w18  = DB32(cur + 0x18);
-    w1c  = DB32(cur + 0x1c);
+    w18  = GP32(cur + 0x18);
+    w1c  = GP32(cur + 0x1c);
     (void)getCopControlWord(2, GTE_CREG(31));
     copFunction(2, 0x1400006u);                  /* NCLIP */
     setCopReg(2, GTE_DREG(0), w18);
     setCopReg(2, GTE_DREG(1), w1c);
-    w28 = DB32(cur + 0x28);
+    w28 = GP32(cur + 0x28);
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12));
     if ((int32_t)mac0 > 0) {
@@ -6665,25 +6661,25 @@ uint32_t prim_emit_a8(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(cur + 0x24, 1);
       g14 = (uint32_t)getCopReg(2, GTE_DREG(14));
       copFunction(2, 0x118043fu);                /* NCCT */
-      w38 = DB32(cur + 0x38);
-      w3c = DB32(cur + 0x3c);
-      DB32(out + 8)    = sxy0;
-      DB32(out + 0x2c) = g14;
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(12));
-      DB32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      w38 = GP32(cur + 0x38);
+      w3c = GP32(cur + 0x3c);
+      GP32(out + 8)    = sxy0;
+      GP32(out + 0x2c) = g14;
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(out + 0x20) = (uint32_t)getCopReg(2, GTE_DREG(13));
       copFunction(2, 0x168002eu);                /* AVSZ4 */
       c0 = (uint32_t)getCopReg(2, GTE_DREG(20));
       c1 = (uint32_t)getCopReg(2, GTE_DREG(21));
       c2 = (uint32_t)getCopReg(2, GTE_DREG(22));
       setCopReg(2, GTE_DREG(0), w38);
       setCopReg(2, GTE_DREG(1), w3c);
-      DB32(out + 4)    = c0;
+      GP32(out + 4)    = c0;
       copFunction(2, 0x108041bu);                /* NCCS */
-      DB32(out + 0x10) = c1;
-      DB32(out + 0x1c) = c2;
+      GP32(out + 0x10) = c1;
+      GP32(out + 0x1c) = c2;
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0xa8;
   } while (cnt > 0);
@@ -6829,7 +6825,7 @@ uint32_t prim_emit_80b(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(cur + 0x18, 0);
       gte_lwc2(cur + 0x1c, 1);
       copFunction(2, 0x0180001u);                /* RTPS */
-      DB32(out + 0x08) = sxy0;
+      GP32(out + 0x08) = sxy0;
       gte_swc2(out + 0x20, 14);
       gte_lwc2(cur + 0x20, 6);
       gte_lwc2(cur + 0x30, 0);
@@ -6940,28 +6936,28 @@ uint32_t prim_emit_3c(uint32_t cur, uint32_t ot, uint32_t sel,
   delta = (sel == 0) ? 0x14u : 0x28u;
   do {
     uint32_t out, pa, pb, pc, pd, mac0, otz, col, v8, v9, v10;
-    pa = DB32(cur + 0x00);
-    pb = DB32(cur + 0x04);
-    pc = DB32(cur + 0x08);
-    v8 = DB32(pa);
-    v9 = DB32(pb);
-    v10 = DB32(pc);
+    pa = GP32(cur + 0x00);
+    pb = GP32(cur + 0x04);
+    pc = GP32(cur + 0x08);
+    v8 = GP32(pa);
+    v9 = GP32(pb);
+    v10 = GP32(pc);
     setCopReg(2, GTE_DREG(12), v8);
     setCopReg(2, GTE_DREG(13), v9);
     setCopReg(2, GTE_DREG(14), v10);
     cnt--;
     out = cur + delta;
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    pd  = DB32(cur + 0x10);
-    DB32(out + 0x08) = v8;
-    DB32(out + 0x0c) = v9;
+    pd  = GP32(cur + 0x10);
+    GP32(out + 0x08) = v8;
+    GP32(out + 0x0c) = v9;
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24));
-    DB32(out + 0x10) = v10;
+    GP32(out + 0x10) = v10;
     if ((int32_t)mac0 > 0) {
       gte_lwc2(pa + 4, 17);
       gte_lwc2(pb + 4, 18);
       gte_lwc2(pc + 4, 19);
-      col = DB32(pd);
+      col = GP32(pd);
       copFunction(2, 0x158002Du);                /* AVSZ3 */
       gte_lwc2(cur + 0x0c, 6);
       setCopReg(2, GTE_DREG(9),  col & 0xffffu);
@@ -6992,12 +6988,12 @@ uint32_t prim_tri_batch_rtpt(uint32_t cur, uint32_t a1, uint32_t a2,
   (void)a1; (void)a2;
   if (rem <= 0) return cur;
   do {
-    uint32_t w0 = DB32(cur + 0x00);
-    uint32_t w1 = DB32(cur + 0x04);
-    uint32_t w2 = DB32(cur + 0x10);
-    uint32_t w3 = DB32(cur + 0x14);
-    uint32_t w4 = DB32(cur + 0x20);
-    uint32_t w5 = DB32(cur + 0x24);
+    uint32_t w0 = GP32(cur + 0x00);
+    uint32_t w1 = GP32(cur + 0x04);
+    uint32_t w2 = GP32(cur + 0x10);
+    uint32_t w3 = GP32(cur + 0x14);
+    uint32_t w4 = GP32(cur + 0x20);
+    uint32_t w5 = GP32(cur + 0x24);
     int32_t verts = (rem < 3) ? rem : 3;
     setCopReg(2, GTE_DREG(0), w0);
     setCopReg(2, GTE_DREG(1), w1);
@@ -7008,16 +7004,16 @@ uint32_t prim_tri_batch_rtpt(uint32_t cur, uint32_t a1, uint32_t a2,
     rem -= 3;
     copFunction(2, 0x0280030u);                  /* RTPT */
     if (verts >= 1) {
-      DB32(cur + 0x08) = (uint32_t)getCopReg(2, GTE_DREG(12));
-      DB32(cur + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(17));
+      GP32(cur + 0x08) = (uint32_t)getCopReg(2, GTE_DREG(12));
+      GP32(cur + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(17));
     }
     if (verts >= 2) {
-      DB32(cur + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
-      DB32(cur + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(18));
+      GP32(cur + 0x18) = (uint32_t)getCopReg(2, GTE_DREG(13));
+      GP32(cur + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(18));
     }
     if (verts >= 3) {
-      DB32(cur + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(14));
-      DB32(cur + 0x2c) = (uint32_t)getCopReg(2, GTE_DREG(19));
+      GP32(cur + 0x28) = (uint32_t)getCopReg(2, GTE_DREG(14));
+      GP32(cur + 0x2c) = (uint32_t)getCopReg(2, GTE_DREG(19));
     }
     cur += 0x30;
   } while (rem > 0);
@@ -7040,12 +7036,12 @@ uint32_t prim_emit_ptr_54(uint32_t cur, uint32_t ot, uint32_t sel,
   if (cnt <= 0) return cur;
   do {
     uint32_t delta = (sel == 0) ? 0x1cu : 0x38u;
-    uint32_t p0 = DB32(cur + 0x00);
-    uint32_t p1 = DB32(cur + 0x04);
-    uint32_t p2 = DB32(cur + 0x08);
-    uint32_t w0 = DB32(p0);
-    uint32_t w1 = DB32(p1);
-    uint32_t w2 = DB32(p2);
+    uint32_t p0 = GP32(cur + 0x00);
+    uint32_t p1 = GP32(cur + 0x04);
+    uint32_t p2 = GP32(cur + 0x08);
+    uint32_t w0 = GP32(p0);
+    uint32_t w1 = GP32(p1);
+    uint32_t w2 = GP32(p2);
     uint32_t out, pa, pb, pc, t2, otz;
     int32_t mac0;
     setCopReg(2, GTE_DREG(12), w0);
@@ -7054,33 +7050,33 @@ uint32_t prim_emit_ptr_54(uint32_t cur, uint32_t ot, uint32_t sel,
     cnt--;
     out = cur + delta;
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    pa = DB32(cur + 0x10);
-    DB32(out + 0x08) = w0;
-    DB32(out + 0x10) = w1;
+    pa = GP32(cur + 0x10);
+    GP32(out + 0x08) = w0;
+    GP32(out + 0x10) = w1;
     mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
-    DB32(out + 0x18) = w2;
+    GP32(out + 0x18) = w2;
     if (mac0 > 0) {
-      t2 = DB32(pa);
+      t2 = GP32(pa);
       gte_lwc2(cur + 0x0c, 6);
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
       gte_lwc2(pa + 4, 11);
       gte_lwc2(p0 + 4, 17);
       copFunction(2, 0x138041cu);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
 
-      pb = DB32(cur + 0x14);
+      pb = GP32(cur + 0x14);
       gte_lwc2(p1 + 4, 18);
-      t2 = DB32(pb);
+      t2 = GP32(pb);
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
       gte_lwc2(pb + 4, 11);
       copFunction(2, 0x138041cu);
-      DB32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 0x0c) = (uint32_t)getCopReg(2, GTE_DREG(22));
 
-      pc = DB32(cur + 0x18);
+      pc = GP32(cur + 0x18);
       gte_lwc2(p2 + 4, 19);
-      t2 = DB32(pc);
+      t2 = GP32(pc);
       copFunction(2, 0x158002du);                /* AVSZ3 */
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
@@ -7088,7 +7084,7 @@ uint32_t prim_emit_ptr_54(uint32_t cur, uint32_t ot, uint32_t sel,
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       copFunction(2, 0x138041cu);
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 0x14) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x54;
   } while (cnt > 0);
@@ -7109,12 +7105,12 @@ uint32_t prim_emit_ptr_50(uint32_t cur, uint32_t ot, uint32_t sel,
   if (cnt <= 0) return cur;
   do {
     uint32_t delta = (sel == 0) ? 0x10u : 0x30u;
-    uint32_t p0 = DB32(cur + 0x00);
-    uint32_t p1 = DB32(cur + 0x04);
-    uint32_t p2 = DB32(cur + 0x08);
-    uint32_t w0 = DB32(p0);
-    uint32_t w1 = DB32(p1);
-    uint32_t w2 = DB32(p2);
+    uint32_t p0 = GP32(cur + 0x00);
+    uint32_t p1 = GP32(cur + 0x04);
+    uint32_t p2 = GP32(cur + 0x08);
+    uint32_t w0 = GP32(p0);
+    uint32_t w1 = GP32(p1);
+    uint32_t w2 = GP32(p2);
     uint32_t out, pn, attr, t2, otz;
     int32_t mac0;
     setCopReg(2, GTE_DREG(12), w0);
@@ -7123,14 +7119,14 @@ uint32_t prim_emit_ptr_50(uint32_t cur, uint32_t ot, uint32_t sel,
     cnt--;
     out = cur + delta;
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    DB32(out + 0x08) = w0;
-    DB32(out + 0x10) = w1;
-    DB32(out + 0x18) = w2;
+    GP32(out + 0x08) = w0;
+    GP32(out + 0x10) = w1;
+    GP32(out + 0x18) = w2;
     mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
     if (mac0 > 0) {
-      pn   = DB32(cur + 0x0c);
+      pn   = GP32(cur + 0x0c);
       attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-      t2   = DB32(pn);
+      t2   = GP32(pn);
       setCopReg(2, GTE_DREG(6), attr);
       gte_lwc2(p0 + 4, 17);
       gte_lwc2(p1 + 4, 18);
@@ -7142,7 +7138,7 @@ uint32_t prim_emit_ptr_50(uint32_t cur, uint32_t ot, uint32_t sel,
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       copFunction(2, 0x138041cu);
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x50;
   } while (cnt > 0);
@@ -7162,12 +7158,12 @@ uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
   if (cnt <= 0) return cur;
   do {
     uint32_t delta = (sel == 0) ? 0x18u : 0x40u;
-    uint32_t p0 = DB32(cur + 0x00);
-    uint32_t p1 = DB32(cur + 0x04);
-    uint32_t p2 = DB32(cur + 0x08);
-    uint32_t w0 = DB32(p0);
-    uint32_t w1 = DB32(p1);
-    uint32_t w2 = DB32(p2);
+    uint32_t p0 = GP32(cur + 0x00);
+    uint32_t p1 = GP32(cur + 0x04);
+    uint32_t p2 = GP32(cur + 0x08);
+    uint32_t w0 = GP32(p0);
+    uint32_t w1 = GP32(p1);
+    uint32_t w2 = GP32(p2);
     uint32_t out, pa, pb, pc, attr, t2, otz;
     int32_t mac0;
     setCopReg(2, GTE_DREG(12), w0);
@@ -7176,14 +7172,14 @@ uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
     cnt--;
     out = cur + delta;
     copFunction(2, 0x1400006u);                  /* NCLIP */
-    DB32(out + 0x08) = w0;
-    DB32(out + 0x14) = w1;
-    DB32(out + 0x20) = w2;
+    GP32(out + 0x08) = w0;
+    GP32(out + 0x14) = w1;
+    GP32(out + 0x20) = w2;
     mac0 = (int32_t)getCopReg(2, GTE_DREG(24));
     if (mac0 > 0) {
-      pa   = DB32(cur + 0x0c);
+      pa   = GP32(cur + 0x0c);
       attr = ((uint32_t)GP8(out + 7) << 24) | 0x00808080u;
-      t2   = DB32(pa);
+      t2   = GP32(pa);
       setCopReg(2, GTE_DREG(6), attr);
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
@@ -7191,19 +7187,19 @@ uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
       gte_lwc2(p0 + 4, 17);
       copFunction(2, 0x138041cu);
 
-      pb = DB32(cur + 0x10);
+      pb = GP32(cur + 0x10);
       gte_lwc2(p1 + 4, 18);
-      t2 = DB32(pb);
-      DB32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      t2 = GP32(pb);
+      GP32(out + 4) = (uint32_t)getCopReg(2, GTE_DREG(22));
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
       gte_lwc2(pb + 4, 11);
       copFunction(2, 0x138041cu);
 
-      pc = DB32(cur + 0x14);
+      pc = GP32(cur + 0x14);
       gte_lwc2(p2 + 4, 19);
-      t2 = DB32(pc);
-      DB32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      t2 = GP32(pc);
+      GP32(out + 0x10) = (uint32_t)getCopReg(2, GTE_DREG(22));
       copFunction(2, 0x158002du);                /* AVSZ3 */
       setCopReg(2, GTE_DREG(9),  t2 & 0xffffu);
       setCopReg(2, GTE_DREG(10), t2 >> 16);
@@ -7211,7 +7207,7 @@ uint32_t prim_emit_ptr_68(uint32_t cur, uint32_t ot, uint32_t sel,
       otz = (uint32_t)getCopReg(2, GTE_DREG(7));
       copFunction(2, 0x138041cu);
       prim_ot_link_indexed(ot, out, otz);
-      DB32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
+      GP32(out + 0x1c) = (uint32_t)getCopReg(2, GTE_DREG(22));
     }
     cur += 0x68;
   } while (cnt > 0);
@@ -7249,8 +7245,8 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     gte_lwc2(cur + 20, 5);
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030u);                  /* RTPT */
-    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
@@ -7261,13 +7257,13 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
-    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+    GP32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
     if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
-    out += out_stride; DB32(out) = sxy1;
-    out += out_stride; DB32(out) = sxy2;
+    out += out_stride; GP32(out) = sxy1;
+    out += out_stride; GP32(out) = sxy2;
     copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
 
     /* Cull accumulation — same ops/order as the guest: sx tests ride the
@@ -7280,7 +7276,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
-    out += out_stride; DB32(out) = sxy2;
+    out += out_stride; GP32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
@@ -7291,7 +7287,7 @@ uint32_t prim_persp_ot_emit(uint32_t cur, uint32_t ot, uint32_t count,
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
-    old = DB32(ot);                              /* lw t0,(a1) */
+    old = GP32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
     }
@@ -7333,8 +7329,8 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030u);                  /* RTPT */
-    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     base = cur + delta;                          /* t3 = a0 + t4 */
@@ -7345,13 +7341,13 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     setCopReg(2, GTE_DREG(1), t2);               /* mtc2 V0.z  */
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
-    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+    GP32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
     if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
-    out += 8; DB32(out) = sxy1;
-    out += 8; DB32(out) = sxy2;
+    out += 8; GP32(out) = sxy1;
+    out += 8; GP32(out) = sxy2;
     copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
 
     /* Cull accumulation — identical op order to the sibling emit:
@@ -7364,7 +7360,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
-    out += 8; DB32(out) = sxy2;
+    out += 8; GP32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
@@ -7375,7 +7371,7 @@ uint32_t prim_persp_ot_emit_112(uint32_t cur, uint32_t ot, uint32_t sel,
 
     /* OT link tail: t3 was recomputed to base (a0+t4) in the branch delay
      * slot, so the swl targets are base+2 / ot+2. */
-    old = DB32(ot);                              /* lw t0,(a1) */
+    old = GP32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
     }
@@ -7443,8 +7439,8 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     gte_lwc2(cur + 20, 5);
     cnt--;                                       /* addiu a3,-1 */
     copFunction(2, 0x0280030u);                  /* RTPT */
-    t1   = DB32(cur + 24);                       /* lw t1,0x18(a0) */
-    t2   = DB32(cur + 28);                       /* lw t2,0x1C(a0) */
+    t1   = GP32(cur + 24);                       /* lw t1,0x18(a0) */
+    t2   = GP32(cur + 28);                       /* lw t2,0x1C(a0) */
     flag = (uint32_t)getCopControlWord(2, GTE_CREG(31)); /* cfc2 FLAG */
     copFunction(2, 0x1400006u);                  /* NCLIP */
     /* mtc2 gte[0]=t1 sits in the flag-branch DELAY SLOT — unconditional. */
@@ -7456,13 +7452,13 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     out  = base + 8;                             /* addiu t3,8 */
     mac0 = (uint32_t)getCopReg(2, GTE_DREG(24)); /* mfc2 MAC0 */
     sxy0 = (uint32_t)getCopReg(2, GTE_DREG(12)); /* mfc2 SXY0 */
-    DB32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
+    GP32(out) = sxy0;   /* sw SXY0,(out) is the blez MAC0 DELAY SLOT —
                          * unconditional even when mac0 <= 0. */
     if ((int32_t)mac0 > 0) {
     sxy1 = (uint32_t)getCopReg(2, GTE_DREG(13)); /* mfc2 SXY1 */
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* mfc2 SXY2 */
-    out += 8; DB32(out) = sxy1;
-    out += 8; DB32(out) = sxy2;
+    out += 8; GP32(out) = sxy1;
+    out += 8; GP32(out) = sxy2;
     copFunction(2, 0x180001u);                   /* RTPS: V0 -> SXY0 */
 
     /* Cull accumulation — identical op order to the sibling emit:
@@ -7475,7 +7471,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
     sxy2 = (uint32_t)getCopReg(2, GTE_DREG(14)); /* post-RTPS SXY2 */
-    out += 8; DB32(out) = sxy2;
+    out += 8; GP32(out) = sxy2;
     sx_ok += (uint32_t)psx_ws_cull_sltiu(sxy2 & 0xFFFFu, 512u);
     if (sx_ok != 0) {
     sy_ok += ((uint32_t)((int32_t)sxy2 >> 16) < 480u) ? 1u : 0u;
@@ -7486,7 +7482,7 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     /* Depth-shade attribute word at base+12 (lw t2,0xC(t3) — t3 was
      * recomputed to base in the sy-branch delay slot). */
     base = cur + delta;
-    mem  = DB32(base + 12);
+    mem  = GP32(base + 12);
     z    = (uint32_t)getCopReg(2, GTE_DREG(7));  /* mfc2 OTZ (16-bit) */
     if (z < 256u) {
       attr = mem & ~0x03C00000u;
@@ -7496,10 +7492,10 @@ uint32_t prim_depth_shade_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     } else {
       attr = mem | 0x03C00000u;
     }
-    DB32(base + 12) = attr;
+    GP32(base + 12) = attr;
 
     /* OT link tail: identical swl pair to the sibling emit. */
-    old = DB32(ot);                              /* lw t0,(a1) */
+    old = GP32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
     }
@@ -7570,16 +7566,16 @@ static uint32_t prim_cull3_emit(uint32_t cur, uint32_t ot, uint32_t sel,
     sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
     sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
     sy_ok += (((uint32_t)((int32_t)sxy2 >> 16)) < 480u) ? 1u : 0u;
-    DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT —
+    GP32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT —
                           * unconditional once sx_ok > 0. */
     if (sy_ok != 0) {
 
-    out = base + out_stride; DB32(out) = sxy1;
-    out += out_stride;      DB32(out) = sxy2;
+    out = base + out_stride; GP32(out) = sxy1;
+    out += out_stride;      GP32(out) = sxy2;
 
     /* OT link tail: t3 recomputed to base (a0+t4) in the guest, so the
      * swl targets are base+2 / ot+2 with ot used directly as the slot. */
-    old = DB32(ot);                              /* lw t0,(a1) */
+    old = GP32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
     }
@@ -7632,8 +7628,8 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
   delta = (sel == 0) ? 16u : 32u;               /* t4 = 16 (+s6=16 if a2) */
 
   do {
-    w0 = DB32(cur + 0);                         /* lw t0,(a0)   */
-    w4 = DB32(cur + 4);                         /* lw t1,4(a0)   */
+    w0 = GP32(cur + 0);                         /* lw t0,(a0)   */
+    w4 = GP32(cur + 4);                         /* lw t1,4(a0)   */
     setCopReg(2, GTE_DREG(0), w0);              /* mtc2 V0.xy    */
     setCopReg(2, GTE_DREG(1), w4);              /* mtc2 V0.z     */
     gte_lwc2(cur + 8, 2);                       /* lwc2 V1.xy    */
@@ -7654,13 +7650,13 @@ uint32_t prim_cull2_emit_30(uint32_t cur, uint32_t ot, uint32_t sel,
 
     sy_ok  = (((uint32_t)((int32_t)sxy0 >> 16)) < 480u) ? 1u : 0u;
     sy_ok += (((uint32_t)((int32_t)sxy1 >> 16)) < 480u) ? 1u : 0u;
-    DB32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT. */
+    GP32(base) = sxy0;   /* sw SXY0,(t3) is the sy-cull DELAY SLOT. */
     if (sy_ok != 0) {
 
-    DB32(base + 4) = sxy1;                       /* t3 += t8(4); sw */
+    GP32(base + 4) = sxy1;                       /* t3 += t8(4); sw */
 
     /* OT link tail: direct slot (a1), same swl pair as the cull3 family. */
-    old = DB32(ot);                              /* lw t0,(a1) */
+    old = GP32(ot);                              /* lw t0,(a1) */
     swl_guest(ot + 2, base << 8);                /* swl (t3<<8),2(a1) */
     swl_guest(base + 2, old << 8);               /* swl (t0<<8),2(t3) */
     }

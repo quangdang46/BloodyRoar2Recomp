@@ -877,6 +877,8 @@ static void bind_globals_1(void)
     g__DAT_801f68e0 = (uint8_t *)guest_for("g__DAT_801f68e0");
 }
 
+/* host_rand — host-side rand() % 100 for guest random calls that have
+ * no deterministic guest-RAM source in clean ports. */
 int host_rand(void) { return rand() % 100; }
 /* action_select — select the event stream for action `idx` on `ctrl`.
  * Only reachable from the legacy ev_step EV5 path in ev.c (dead code —
@@ -932,6 +934,8 @@ uint8_t *g_DAT_801b4e50, *g_DAT_801b4e5c, *g_DAT_801e40b6;
 uint8_t *g_DAT_801f04f2, *g_DAT_801f04f4, *g_DAT_801f04f6, *g_DAT_801f04f8, *g_DAT_801f04fa;
 uint8_t *g_DAT_801f4d7a, *g_DAT_801f4d7c;
 
+/* trap — guest `break`/`trap` code delivery; no-op in clean ports
+ * (the runtime handles break via br2_bail_pending unwinds). */
 void trap(int code) { (void)code; }
 
 /* pending_action_gate == pending_gate (fight.c), guest arg order:
@@ -2321,6 +2325,10 @@ static void bind_globals_12(void)
     s___d__8012580c = (char *)guest_at(0x8012580c);
 }
 
+/* bios_call — standalone-build fallback for the recompiled-BIOS call
+ * path. The runtime build overrides bios_svc/bios_call through
+ * src/clean_bridge.c (real svc_call into the recompiled BIOS); this
+ * weak def only satisfies link in builds with no BIOS image. */
 __attribute__((weak))
 /* bios_call — weak BIOS-call stub: returns 0 until a real
  * dispatcher is bound. */
@@ -2454,6 +2462,9 @@ void FUN_8018e310(uint32_t arg)
     cpu->gpr[4] = 2;
     psx_syscall(cpu, 0);
 }
+/* bios_svc — 4-arg BIOS-vector trampoline. Runtime: strong def in
+ * clean_bridge.c routes through svc_call. Standalone: this weak
+ * fallback degrades to bios_call (see above). */
 __attribute__((weak))
 /* bios_svc — weak BIOS-service shim: forwards (table,a0) to
  * bios_call, dropping svc/a1 (real svc dispatch not yet bound). */
