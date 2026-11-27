@@ -170,7 +170,6 @@ static uint32_t guest_link24(const void *p)
 /* ======== 0x8018bd50 ======== */
 
 void gpu_pkt_unlink_n(uint32_t *head, int count)
-
 {
   uint32_t word;
   uint32_t expect;
@@ -225,7 +224,6 @@ static void spr_rect_frame_emit(const void *rect, uint32_t src, uint32_t frame)
 }
 
 void spr_draw_off(int spr, int16_t x, int16_t y, int abs_coords)
-
 {
   /* Guest builds one contiguous 8-int8_t RECT at sp+0x10..0x17
    * (sh @0x10, @0x12, @0x14, @0x16, disasm 0x8018bf40: frame 0x20) and
@@ -258,7 +256,6 @@ void spr_draw_off(int spr, int16_t x, int16_t y, int abs_coords)
 /* ======== 0x8018bec0 ======== */
 
 void spr_draw_cond(int spr, int16_t x, int16_t y, int abs_coords)
-
 {
   uint16_t rect[4];
   uint8_t *desc;
@@ -285,7 +282,6 @@ void spr_draw_cond(int spr, int16_t x, int16_t y, int abs_coords)
 
 void spr_draw_pair(uint32_t spr, uint32_t cx, uint32_t cy, uint32_t cflag,
                  uint32_t ox, uint32_t oy, uint32_t oflag)
-
 {
   spr_draw_off(spr, ox, oy, oflag);
   spr_draw_cond(spr, cx, cy, cflag);
@@ -295,7 +291,6 @@ void spr_draw_pair(uint32_t spr, uint32_t cx, uint32_t cy, uint32_t cflag,
 /* ======== 0x8018c034 ======== */
 
 void spr_desc_tbl_a_init(void)
-
 {
   int i;
   uint8_t *rec;
@@ -321,7 +316,6 @@ void spr_desc_tbl_a_init(void)
 /* ======== 0x8018c118 ======== */
 
 void spr_desc_tbl_b_init(void)
-
 {
   int i;
   uint8_t *rec;
@@ -349,7 +343,6 @@ void spr_desc_tbl_b_init(void)
 /* Guest returned a 32-bit guest pointer; widened to host pointer —
  * sole caller spr_slot_pkt_submit is in this file. */
 void *spr_desc_slot_alloc(void)
-
 {
   uint32_t off;
   int32_t owner;
@@ -374,7 +367,6 @@ void *spr_desc_slot_alloc(void)
 /* ======== 0x8018c824 ======== */
 
 uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint32_t attr)
-
 {
   uint32_t *pkt;
   uint32_t ret;
@@ -415,7 +407,6 @@ uint32_t spr_slot_pkt_submit(uint32_t *ot_cell, uint32_t pos, uint32_t col, uint
 /* ======== 0x80191428 ======== */
 
 void gpu_load_image_cmd(uint32_t rect, uint32_t src)
-
 {
   gpu_rect_bounds_dbg(guest_of(s_LoadImage_80125504), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[8], rect, 8, src);
@@ -425,7 +416,6 @@ void gpu_load_image_cmd(uint32_t rect, uint32_t src)
 /* ======== 0x80191300 ======== */
 
 void gpu_clear_image_cmd(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
-
 {
   gpu_rect_bounds_dbg(guest_of(s_ClearImage_801254ec), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[3], rect, 8,
@@ -436,7 +426,6 @@ void gpu_clear_image_cmd(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
 /* ======== 0x80191390 ======== */
 
 void gpu_clear_image_cmd2(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
-
 {
   gpu_rect_bounds_dbg(guest_of(s_ClearImage2_801254f8), (int16_t *)(uintptr_t)rect);
   gpu_call(8, GPU_TBL()[3], rect, 8,
@@ -447,7 +436,6 @@ void gpu_clear_image_cmd2(uint32_t rect, uint32_t r, uint32_t g, uint32_t b)
 /* ======== 0x80191668 ======== */
 
 void gpu_clear_otag_r(uint32_t addr, uint32_t tag)
-
 {
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_ClearOTagR__08x__d_____80125540, addr, tag);
@@ -463,7 +451,6 @@ void gpu_clear_otag_r(uint32_t addr, uint32_t tag)
 /* ======== 0x80191770 ======== */
 
 void gpu_draw_otag(uint32_t otag)
-
 {
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_DrawOTag__08x_____80125558, otag);
@@ -475,7 +462,6 @@ void gpu_draw_otag(uint32_t otag)
 /* ======== 0x801917e0 ======== */
 
 int gpu_draw_env_put(int env_g)
-
 {
   uint8_t *envp = (uint8_t *)guest_at((uint32_t)env_g);
 
@@ -492,7 +478,6 @@ int gpu_draw_env_put(int env_g)
 /* ======== 0x80191ed8 ======== */
 
 uint32_t gpu_stat_sign(void)
-
 {
   uint32_t stat;
 
@@ -503,7 +488,6 @@ uint32_t gpu_stat_sign(void)
 /* ======== 0x801910e4 ======== */
 
 void gpu_disp_mask_set(int enable)
-
 {
   uint32_t cmd;
 
@@ -524,7 +508,6 @@ void gpu_disp_mask_set(int enable)
 /* ======== 0x8019117c ======== */
 
 void gpu_draw_sync(uint32_t n)
-
 {
   if (1 < gpu_dbg_level) {
     GPU_DBG(s_DrawSync__d_____801254b4, n);
@@ -537,7 +520,6 @@ void gpu_draw_sync(uint32_t n)
 /* ======== 0x80190e00 ======== */
 
 uint32_t gpu_graph_reset(uint32_t arg)
-
 {
   uint32_t v;
 
@@ -575,7 +557,6 @@ uint32_t gpu_graph_reset(uint32_t arg)
  * 20-int8_t env struct (callers pass 0x801e40fc/0x801e624c-style addrs);
  * bridged to host here. Returns the host env pointer. */
 uint32_t draw_env_timing(uint32_t env_g)
-
 {
   uint16_t hgt;
   bool narrow;
@@ -750,7 +731,6 @@ extern char *s___d__d____d__d__801254d4;
 /* ======== 0x80193d08 ======== */
 
 void guest_memset(uint32_t *dst, uint8_t val, int len)
-
 {
   int i;
   /* dst: host pointer from clean_table wrapper, guest-address value
@@ -771,7 +751,6 @@ void guest_memset(uint32_t *dst, uint8_t val, int len)
 /* ======== 0x8018e490 ======== */
 
 uint8_t *guest_memcpy(uint32_t *dst, uint32_t *src, int len)
-
 {
   uint8_t c;
   uint8_t *wp;
@@ -798,7 +777,6 @@ uint8_t *guest_memcpy(uint32_t *dst, uint32_t *src, int len)
 /* ======== 0x801921c0 ======== */
 
 void gpu_prim_pkt_build(int pkt_g, uint16_t *env_p)
-
 {
   uint16_t h_raw;
   uint16_t w;
@@ -916,7 +894,6 @@ uint32_t gpu_mode_regs_apply(uint32_t arg)
 /* ======== 0x80193d30 ======== */
 
 void bios_call_a0(uint32_t arg)
-
 {
   /* guest 0x80193d30: `li t2, 0xa0; jr t2; li t1, 0x49` — BIOS svc A0/0x49
    * with a0 = arg (caller's arg register). */
@@ -927,7 +904,6 @@ void bios_call_a0(uint32_t arg)
 /* ======== 0x801911e4 ======== */
 
 void gpu_rect_bounds_dbg(uint32_t name, int16_t *rect)
-
 {
   int y;
   char *msg;
@@ -963,7 +939,6 @@ void gpu_rect_bounds_dbg(uint32_t name, int16_t *rect)
 /* ======== 0x8019b1e4 ======== */
 
 uint32_t gp_bde20_read(void)
-
 {
   return GP32(0x801bde20);
 }
@@ -971,7 +946,6 @@ uint32_t gp_bde20_read(void)
 /* ======== 0x8019b220 ======== */
 
 void cd_chan_boot_init(int chan)
-
 {
   /* Keep clean: it must reach cd_ext_init_once() so the CD
    * OpenEvent(0xf0000009) init path runs. Delegating this body (and
@@ -1903,7 +1877,6 @@ void     gp_20_store(uint32_t);
 /* ======== 0x8018fc00 ======== */
 
 void mdec_decode_issue(uint32_t bfr_g, uint32_t size)
-
 {
   uint32_t sz;
 
@@ -1920,7 +1893,6 @@ void mdec_decode_issue(uint32_t bfr_g, uint32_t size)
 /* ======== 0x8018fd1c ======== */
 
 int32_t mdec_stat_wait_a(void)
-
 {
   int32_t cnt = 0x10;
 
@@ -1940,7 +1912,6 @@ int32_t mdec_stat_wait_a(void)
 /* ======== 0x8018fdb0 ======== */
 
 int32_t mdec_stat_wait_b(void)
-
 {
   int32_t cnt = 0x10;
 
@@ -1960,7 +1931,6 @@ int32_t mdec_stat_wait_b(void)
 /* ======== 0x8018fe5c ======== */
 
 void mdec_error_reset(uint32_t msg_g)
-
 {
   printf_forward((const char *)guest_at(0x80125324),
                (const char *)guest_at(msg_g));
@@ -1974,7 +1944,6 @@ void mdec_error_reset(uint32_t msg_g)
 /* ======== 0x8018fb10 ======== */
 
 void mdec_pump_a(int32_t code)
-
 {
   if (code == 0) {
     MDECREG_ST(0x801b68f4, 0x80000000);
@@ -1997,7 +1966,6 @@ void mdec_pump_a(int32_t code)
 /* ======== 0x8018fc90 ======== */
 
 void mdec_pump_b(uint32_t bfr_g, uint32_t size)
-
 {
   uint32_t sz;
 
@@ -2017,7 +1985,6 @@ void mdec_pump_b(uint32_t bfr_g, uint32_t size)
 
 uint32_t gpu_bits_pack_a(uint32_t a0, uint32_t a1, uint32_t a2,
                       uint32_t a3)
-
 {
   return ((a0 & 3) << 7) | ((a1 & 3) << 5) |
          ((a3 & 0x100) >> 4) | ((a2 & 0x3ff) >> 6) |
@@ -2027,7 +1994,6 @@ uint32_t gpu_bits_pack_a(uint32_t a0, uint32_t a1, uint32_t a2,
 /* ======== 0x80193fe0 ======== */
 
 uint32_t gpu_coord_pack_b(uint32_t a0, uint32_t a1)
-
 {
   return (((a1 << 6) | ((a0 >> 4) & 0x3f)) & 0xffff);
 }
@@ -2035,7 +2001,6 @@ uint32_t gpu_coord_pack_b(uint32_t a0, uint32_t a1)
 /* ======== 0x80193e30 ======== */
 
 uint32_t gpu_sprite_rect_emit(uint32_t src, uint32_t x, uint32_t y)
-
 {
   int16_t rect[4];
 
@@ -2054,7 +2019,6 @@ uint32_t gpu_sprite_rect_emit(uint32_t src, uint32_t x, uint32_t y)
 uint32_t gpu_sprite_rect_emit_mode(uint32_t src, uint32_t mode, uint32_t arg3,
                       uint32_t x, uint32_t y, uint32_t v,
                       uint32_t h)
-
 {
   int16_t rect[4];
   int16_t dim;                          /* guest leaves +0x14 uninit for
@@ -2082,7 +2046,6 @@ uint32_t gpu_sprite_rect_emit_mode(uint32_t src, uint32_t mode, uint32_t arg3,
 /* ======== 0x80194120 ======== */
 
 void gpu_pkt_tag_74(uint32_t pkt_g)
-
 {
   uint8_t *p = (uint8_t *)guest_at(pkt_g);
   p[3] = 3;
@@ -2093,7 +2056,6 @@ void gpu_pkt_tag_74(uint32_t pkt_g)
 /* ======== 0x80194140 ======== */
 
 void gpu_pkt_tag_60(uint32_t pkt_g)
-
 {
   uint8_t *p = (uint8_t *)guest_at(pkt_g);
   p[3] = 3;
@@ -2104,7 +2066,6 @@ void gpu_pkt_tag_60(uint32_t pkt_g)
 /* ======== 0x80190dd0 ======== */
 
 void guest_memset_b(uint32_t dst, uint32_t val, uint32_t len)
-
 {
   uint8_t *d;
   int32_t n = (int32_t)len;
@@ -2145,7 +2106,6 @@ static int32_t win_putc(uint32_t slot, int32_t c)
 
 int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
                      uint32_t a3, ...)
-
 {
   uint32_t iargs[3];
   va_list ap;
@@ -2311,7 +2271,6 @@ int32_t text_win_printf(int32_t sel, uint32_t a1, uint32_t a2,
 /* ======== 0x801a4aa0 ======== */
 
 void gp_20_store(uint32_t val)
-
 {
   /* $gp = 0x801beedc (set at 0x801261f8: lui/addiu $gp); +0x20 cell */
   GP32(0x801beefc) = val;
@@ -2321,7 +2280,6 @@ void gp_20_store(uint32_t val)
 /* ======== 0x801a6ae8 ======== */
 
 void gp_20_store_default(void)
-
 {
   gp_20_store(0x801b17b4);
   return;
@@ -2330,7 +2288,6 @@ void gp_20_store_default(void)
 /* ======== 0x801ad59c ======== */
 
 int32_t aux_tbl_store_a(uint32_t val, int32_t idx)
-
 {
   if (idx < 5) {
     GP32(0x801ff638 + idx * 4) = val;
@@ -2342,7 +2299,6 @@ int32_t aux_tbl_store_a(uint32_t val, int32_t idx)
 /* ======== 0x801ad1e4 ======== */
 
 int32_t aux_tbl_store_b(uint32_t val, int32_t idx)
-
 {
   if (idx < 5) {
     GP32(0x801ff620 + idx * 4) = val;
