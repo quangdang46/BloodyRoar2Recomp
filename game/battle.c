@@ -342,6 +342,9 @@ extern void table_1f0ae0_clear(int a0);
 extern void sprite_place_centered(undefined4 a0,undefined4 a1,short a2,short a3,int arg5, int arg6);
 extern void fighter_tint_fade(int a0,int a1,int a2,int a3);
 
+/* battle_frame_tick @0x80166544 — per-frame battle tick: fighter contact
+ * resolve + pair update (gated on battle+0x82), phase-gated HUD draw,
+ * camera step + state cache, then the remaining per-frame systems. */
 void battle_frame_tick(int battle,uint phase)
 
 {
@@ -16911,6 +16914,9 @@ extern void hud_text_b(undefined4,undefined4,const void *,undefined4,undefined2,
 extern void hud_text_c(undefined4,undefined4,const void *,undefined4,undefined2,undefined4);
 extern void print_dispatch(const char *,...);
 extern void slot_name_measure(char *,uint32_t);
+/* hud_time_score_draw @0x80163e38 — draw the time/score readout: split the
+ * frame counter into mm:ss:ff (clamped), sprintf_core into a reserved
+ * guest-frame buffer, then render via the hud_text/announce helpers. */
 void hud_time_score_draw(uint32_t tbl,uint16_t a1,int32_t a2,int32_t a3,
                   uint8_t *arg5,int32_t arg6)
 {
