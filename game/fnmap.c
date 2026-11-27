@@ -566,12 +566,25 @@ extern void desc_cmd_interp(void);
 extern void desc_cmd_map(void);
 extern void desc_cursor_advance(void);
 extern void desc_cursor_select(void);
+extern void desc_f84_f90_commit(void);
+extern void desc_f88_get(void);
+extern void desc_f88_set_a2p2(void);
 extern void desc_flagbit_dispatch(void);
 extern void desc_frag_op_dispatch(void);
 extern void desc_frag_scale_store(void);
 extern void desc_frag_sum_store(void);
 extern void desc_frag_tail(void);
+extern void desc_h2_f30_sum(void);
 extern void desc_opcode_dispatch(void);
+extern void desc_ret_a2p2(void);
+extern void desc_ret_a2p2_b(void);
+extern void desc_ret_a2p4(void);
+extern void desc_ret_a2p4_b(void);
+extern void desc_ret_a2p6(void);
+extern void desc_ret_a2p6_b(void);
+extern void desc_ret_empty_a(void);
+extern void desc_ret_empty_b(void);
+extern void desc_ret_zero(void);
 extern void desc_slot_alloc(void);
 extern void desc_slot_fill_x15(void);
 extern void desc_state_commit(void);
@@ -2451,15 +2464,28 @@ const Br2FnEnt fn_table[] = {
   { 0x8017a05c, (void *)apply_guest },
   { 0x8017a6a8, (void *)part_desc_clear_gate },
   { 0x8017a6b4, (void *)part_desc_clear },
+  { 0x8017a6e0, (void *)desc_ret_empty_a },
   { 0x8017a6e8, (void *)action_switch_guest },
   { 0x8017a818, (void *)gte_quad_attr_emit },
   { 0x8017a8b4, (void *)desc_cursor_select },
+  { 0x8017a9b8, (void *)desc_f88_get },
+  { 0x8017a9c4, (void *)desc_f88_set_a2p2 },
+  { 0x8017a9fc, (void *)desc_ret_a2p2 },
+  { 0x8017aa04, (void *)desc_ret_zero },
   { 0x8017aa0c, (void *)ev2_hitstun_gate_dispatch },
+  { 0x8017ab5c, (void *)desc_f84_f90_commit },
   { 0x8017ab74, (void *)ev4_branch_dispatch },
+  { 0x8017ac44, (void *)desc_ret_a2p4 },
+  { 0x8017ae00, (void *)desc_h2_f30_sum },
+  { 0x8017ae10, (void *)desc_ret_empty_b },
   { 0x8017ae18, (void *)ev5_action_select },
   { 0x8017b0d4, (void *)ev6_guard_sync_dispatch },
   { 0x8017b1ec, (void *)desc_transform_dispatch },
+  { 0x8017b648, (void *)desc_ret_a2p4_b },
+  { 0x8017b8b4, (void *)desc_ret_a2p6 },
+  { 0x8017baac, (void *)desc_ret_a2p6_b },
   { 0x8017bad4, (void *)desc_flagbit_dispatch },
+  { 0x8017bd8c, (void *)desc_ret_a2p2_b },
   { 0x8017bd94, (void *)stat_field_dispatch },
   { 0x8017bfb8, (void *)desc_slot_alloc },
   { 0x8017c66c, (void *)desc_state_commit },
