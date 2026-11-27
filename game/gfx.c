@@ -534,11 +534,11 @@ uint32_t gpu_graph_reset(uint32_t arg)
     }
     guest_memset((uint32_t *)0x801b8320,0,0x80);
     cd_dispatch_tblc();
-    bios_call_a0((*(uint32_t *)guest_at(0x801b8318)) & 0xffffff);
+    bios_call_a0(GP32(0x801b8318) & 0xffffff);
     gpu_mode = (uint8_t)gpu_mode_regs_apply(arg);
     gpu_mode_state = 1;
-    disp_width = *(uint16_t *)((char *)guest_at(0x801b83a0) + (uint32_t)gpu_mode * 4);
-    disp_height = *(uint16_t *)((char *)guest_at(0x801b83ac) + (uint32_t)gpu_mode * 4);
+    disp_width = GP16(0x801b83a0u + (uint32_t)gpu_mode * 4);
+    disp_height = GP16(0x801b83acu + (uint32_t)gpu_mode * 4);
     guest_memset((uint32_t *)0x801b8330,0xff,0x5c);
     guest_memset((uint32_t *)0x801b838c,0xff,0x14);
     v = (uint32_t)gpu_mode;
