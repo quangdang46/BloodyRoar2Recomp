@@ -4648,6 +4648,9 @@ void camera_aim_offset(int f0,int f1,undefined4 ang)
 
 }
 
+/* node_translate_tree — translate a node subtree: add (dx,-dy,dz) to
+ * the node position at +0x34/+0x38/+0x3c and recurse into children
+ * (+0x4c chain, +0x44/+0x48 links). */
 void node_translate_tree(int node,int dx,int dy,int dz)
 {
   int child;
@@ -4839,6 +4842,9 @@ void fighter_attach_run(int f)
 
 }
 
+/* fighter_height_track — track fighter height: compare target height
+ * f+0x94 against current node height, set the +0x5c dirty bit on change,
+ * and snap/zero climb state when the fighter lands. */
 void fighter_height_track(int f,int st)
 {
   short hnew;
@@ -5801,12 +5807,15 @@ void debug_strike_fx_b(short *pos,undefined4 x,undefined4 y,ushort ang,int f)
 
 }
 
+/* noop_fn — empty task callback (guest fn-table placeholder). */
 void noop_fn(void)
 {
   return;
 
 }
 
+/* rtps_pt_xform — transform one s16 vec3 point through the current
+ * GTE RTPS matrix; writes s16 x/y/z to out[0..2]. */
 undefined2 * rtps_pt_xform(ushort *pt,undefined2 *out)
 {
   undefined4 tx;
@@ -5826,6 +5835,9 @@ undefined2 * rtps_pt_xform(ushort *pt,undefined2 *out)
 }
 
 
+/* node_xform_apply — recursively transform a node tree: RTPS the local
+ * vec/angles at +0x18/+0x20, then descend +0x48 (same mat) and +0x44
+ * (local mat at node+0x20) children. */
 void node_xform_apply(int node,undefined4 mat,undefined4 flg)
 {
   int aux;
@@ -5855,6 +5867,9 @@ void node_xform_apply(int node,undefined4 mat,undefined4 flg)
 
 }
 
+/* attr_flag_mask — compose the attribute flag mask for a node class:
+ * base flags from DAT_1f80006c[class*2] plus per-class table words
+ * selected by fl&0x80 / fl&0x40. */
 ushort attr_flag_mask(uint node)
 {
   ushort fl;
@@ -5891,6 +5906,9 @@ ushort attr_flag_mask(uint node)
 
 }
 
+/* pad_hist_record — push pad state into the per-controller u16 history
+ * ring at ctrl_g+0xcc; returns the edge-mapped button flags for this
+ * pad from DAT_801cf88c. */
 undefined2 pad_hist_record(int ctrl_g,int pad,undefined2 flags)
 {
   undefined2 *hist;
@@ -6469,6 +6487,7 @@ bool pt_box_radius_test(int r0,int r1,int *p,int *q)
   return false;
 
 }
+/* always_one — task callback returning constant 1. */
 undefined4 always_one(int unused)
 {
   (void)unused;
@@ -7596,6 +7615,8 @@ void hud_digits_color(int val,int cell)
 
 }
 
+/* fighter_height_check — return the height-limit code for a fighter:
+ * bit 0x10 set -> constant 2, else 0x1dff < f+0xd8 short -> 1/0. */
 bool fighter_height_check(int f)
 {
   if ((*(byte *)guest_at((uint32_t)(uintptr_t)((f + 5) ))& 0x10) == 0) {
