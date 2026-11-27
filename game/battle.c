@@ -353,7 +353,7 @@ void battle_frame_tick(int battle,uint phase)
   undefined4 prim_list;
   undefined4 aux;
   int ctx;
-  
+
   ctx = battle + 0x28;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((battle + 0x82) ))== 0) {
     fighter_contact_resolve((int)guest_of(&DAT_1f8000e8),(int)guest_of(&DAT_1f8001f0),battle);
@@ -462,7 +462,7 @@ void fighter_contact_resolve(int f0,int f1,int battle)
   undefined4 cam;
   int work1;
   int work0;
-  
+
   cam = *(undefined4 *)guest_at((uint32_t)(uintptr_t)((battle + 0xbc)));
   work0 = *(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x38)));
   work1 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
@@ -629,7 +629,7 @@ void player_light_apply(byte *ctrl,int side)
 {
   short ang;
   int tmp;
-  
+
   tmp = side * 8;
   gte_light_set((int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x1f800324))),(int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x1f800326))),
                (int)*(short *)guest_at((uint32_t)(uintptr_t)((tmp + 0x1f800328))));
@@ -697,7 +697,7 @@ void fighter_pair_update(int f0,int f1,int battle)
    * hitres0[2], local_2c is hitres1[2]. */
   short hitres0 [4];
   short hitres1 [4];
-  
+
   t9 = 0;
   t8 = 0;
   hitbox_corners_xform(f0,f1);
@@ -1304,7 +1304,7 @@ void battle_camera_step(uint cam,byte *f0,byte *f1,int battle)
   undefined1 v5 [8];
   undefined1 v6 [8];
   undefined2 lim [4];
-  
+
   switch(*(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x76) ))& 0x7f) {
   case 0:
     if ((*(ushort *)guest_at((uint32_t)(uintptr_t)((cam + 0x76) ))& 0x80) == 0) {
@@ -1582,7 +1582,7 @@ LAB_80130048:
     }
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x124)));
     t0 = *(int *)(f0 + 0x20);
-    goto code_r0x8013181c;
+    goto LAB_8013181c;
   case 5:
     if (*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x78) ))== 0) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x2c) ))= 0;
@@ -1597,7 +1597,7 @@ LAB_80130048:
     }
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f1 + 0x20) + 0x124)));
     t0 = *(int *)(f1 + 0x20);
-code_r0x8013181c:
+LAB_8013181c:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t0 + 300)));
     t1 = *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x78)));
     if (t1 == 2) {
@@ -2039,7 +2039,7 @@ LAB_8013062c:
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f1 + 0x20) + 0x128)));
       t0 = *(int *)(f1 + 0x20);
     }
-    goto code_r0x8013065c;
+    goto LAB_8013065c;
   case 0xf:
   case 0x11:
     if (*(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x76) ))== 0xf) {
@@ -2066,7 +2066,7 @@ LAB_80130574:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4a) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x124)));
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((*(int *)(f0 + 0x20) + 0x128)));
     t0 = *(int *)(f0 + 0x20);
-code_r0x8013065c:
+LAB_8013065c:
     *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4e) ))= *(undefined2 *)guest_at((uint32_t)(uintptr_t)((t0 + 300)));
     if (-0x100 < *(short *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c)))) {
       *(undefined2 *)guest_at((uint32_t)(uintptr_t)((cam + 0x4c) ))= 0xff00;
@@ -2391,7 +2391,7 @@ void battle_hud_draw(int unused,int fighter,int aux0,int aux1)
   int o12;
   int o13;
   uint *o14;
-  
+
   t0 = *(int *)guest_at((uint32_t)(uintptr_t)((fighter + 0xc)));
   rectbl2 = (uint *)guest_at((uint32_t)(uintptr_t)((t0 * 0xc0 + -0x7fe0b0d0)));
   rectbl3 = (uint *)guest_at((uint32_t)(uintptr_t)((t0 * 0x90 + -0x7fe0af50)));
@@ -3300,7 +3300,7 @@ void fighter_state_tick(uint *ctrl,undefined4 pad,int ctx)
   ushort afl;
   uint st;
   uint tv;
-  
+
   st = ctrl[0xe];
   padf = 0;
   if (((ctrl[0x17] & 0x40) == 0) && ((ctrl[0x18] & 0x10) == 0)) {
@@ -3404,7 +3404,7 @@ undefined4 fighter_atk_dir(int atk,int def)
   int dist;
   undefined4 res;
   int st;
-  
+
   st = *(int *)guest_at((uint32_t)(uintptr_t)((atk + 0x38)));
   if (*(short *)guest_at((uint32_t)(uintptr_t)((st + 0x24) ))< 0) {
     return 0;
@@ -3499,7 +3499,7 @@ void hit_pose_swap(int f0,int f1)
 {
   undefined2 tmp;
   int anim;
-  
+
   if (*(char *)guest_at((uint32_t)(uintptr_t)((f1 + 0x9c) ))!= '\0') {
     *(undefined1 *)guest_at((uint32_t)(uintptr_t)((f1 + 0x9c) ))= 0;
     *(byte *)guest_at((uint32_t)(uintptr_t)((f1 + 0x100) ))= *(byte *)guest_at((uint32_t)(uintptr_t)((f1 + 0x100) ))^ 1;
@@ -3523,7 +3523,7 @@ undefined4 hit_elig_check(int f0,int f1)
 {
   uint fb;
   uint fa;
-  
+
   if ((((*(char *)guest_at((uint32_t)(uintptr_t)((f0 + 0xdc) ))== '\0') || (*(char *)guest_at((uint32_t)(uintptr_t)((f0 + 0x26) ))== -1)) ||
       (*(char *)guest_at((uint32_t)(uintptr_t)((f1 + 0x27) ))== -1)) ||
      (((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x60) ))& 4) != 0 || ((*(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x5c) ))& 0x80080000) != 0)))) {
@@ -3578,7 +3578,7 @@ undefined4 hitbox_pair_test(int f0,int f1,undefined2 *out)
   int ht;
   int off;
   undefined2 *dst;
-  
+
   md = 0;
   fl = *(uint *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58)));
   cur = *(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x14)));
@@ -3663,7 +3663,7 @@ uint fighter_range_code(int f0,int f1)
 {
   int rel;
   uint code;
-  
+
   if (*(char *)guest_at((uint32_t)(uintptr_t)((f0 + 0xdb) ))== '\0') {
     rel = (int)*(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x4e) ))+ (int)*(short *)guest_at((uint32_t)(uintptr_t)((f0 + 0x74)));
   }
@@ -3697,7 +3697,7 @@ int hit_scale_calc(int f0,int f1)
 {
   uint fa;
   int scale;
-  
+
   fa = *(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 100)));
   scale = 0x80;
   if ((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x58) ))< 0) &&
@@ -3737,7 +3737,7 @@ undefined4 hit_react_apply(int atk,int def,int scale,short *hits,int n)
   uint t5;
   uint af;
   undefined4 rc;
-  
+
   *(undefined1 *)guest_at((uint32_t)(uintptr_t)((atk + 0x26) ))= 0xff;
   df = *(uint *)guest_at((uint32_t)(uintptr_t)((def + 0x68)));
   af = *(uint *)guest_at((uint32_t)(uintptr_t)((atk + 100)));
@@ -4346,7 +4346,7 @@ uint hitbox_wall_collide(int f0,undefined2 *hits,int battle)
   int t15;
   int pen0;
   int pen1;
-  
+
   pen0 = 0;
   pen1 = 0;
   wh = 0;
@@ -4543,7 +4543,7 @@ void camera_aim_offset(int f0,int f1,undefined4 ang)
   int l1;
   int n0;
   int n1;
-  
+
   rotmat_rtps_build(ang,rt);
   dlt[0] = (short)(((*(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x18) ))+ 0x10) ))+
                       *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x18) ))+ 0x60)))) -
@@ -4706,7 +4706,7 @@ void node_translate_tree(int node,int dx,int dy,int dz)
   int child;
   int z0;
   undefined4 child2;
-  
+
   if (node != 0) {
     z0 = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x3c)));
     child = *(int *)guest_at((uint32_t)(uintptr_t)((node + 0x4c)));
@@ -4859,7 +4859,7 @@ void fighter_attach_run(int f)
   int idx;
   int ni;
   int aux;
-  
+
   idx = 0x13;
   aux = *(int *)guest_at((uint32_t)(uintptr_t)((f + 0x20) ))+ 0x5f0;
   ent = *(int *)guest_at((uint32_t)(uintptr_t)((f + 0x40) ))+ 0x214;
@@ -4903,7 +4903,7 @@ void fighter_height_track(int f,int st)
   int cur_h;
   uint fl;
   int hnew_i;
-  
+
   hnew = *(short *)guest_at((uint32_t)(uintptr_t)((f + 0x94)));
   hnew_i = (int)hnew;
   fl = *(uint *)guest_at((uint32_t)(uintptr_t)((f + 0x5c) ))& 0xfffffe7f;
@@ -4943,7 +4943,7 @@ void hitbox_corners_xform(int f0,int f1)
   int t9;
   int t10;
   undefined4 t30;
-  
+
   t8 = *(int *)guest_at((uint32_t)(uintptr_t)((f0 + 0x38)));
   t9 = *(int *)guest_at((uint32_t)(uintptr_t)((f1 + 0x38)));
   if ((*(uint *)guest_at((uint32_t)(uintptr_t)((f0 + 0x6c) ))& 0x60000) == 0) {
@@ -5438,9 +5438,9 @@ LAB_801439c4:
   goto switchD_801435e8_default;
 LAB_801436a8:
   j = j + 1;
-  if ((int)t7 <= (int)j) goto code_r0x801436b8;
+  if ((int)t7 <= (int)j) goto LAB_801436b8;
   goto LAB_8014365c;
-code_r0x801436b8:
+LAB_801436b8:
   *tab = 0;
   goto switchD_801435e8_default;
 switchD_801435e8_caseD_0:
@@ -9612,7 +9612,7 @@ void fighter_tint_fade(int scene,int idx,int battle,int anim)
   rec = idx * 0x68;
   if (*(short *)guest_at((uint32_t)(uintptr_t)((battle + 0x82) ))!= 0) {
     tint = (int)_DAT_801f4cb4;
-    goto code_r0x8016d2ec;
+    goto LAB_8016d2ec;
   }
   tint = (int)_DAT_801f4cb4 + (int)_DAT_801f4cb6;
   if (tint < 0x100) {
@@ -9627,7 +9627,7 @@ LAB_8016d2d4:
     _DAT_801f4cb6 = 0;
   }
   _DAT_801f4cb4 = (short)tint;
-code_r0x8016d2ec:
+LAB_8016d2ec:
   *(bool *)guest_at((uint32_t)(uintptr_t)((battle + 0x9f) ))= tint == 0xff;
   if ((tint != _DAT_801f4cb8) || (tint != _DAT_801f4cba)) {
     _DAT_801f4cba = _DAT_801f4cb8;
@@ -15511,7 +15511,7 @@ void popup_spawn(int ent,uint kind,uint fl)
   int *rec;
   int t2;
   int t3;
-  
+
   t1 = 0;
   cur = &DAT_1f8000e8;
   while (((*(uint *)(cur + 0x58) & 0xc0000000) == 0 || (cur[5] != '\0'))) {
@@ -15582,7 +15582,7 @@ void confetti_burst_spawn(undefined4 ent,undefined4 arg)
   undefined4 *d1;
   int it;
   undefined4 *rec;
-  
+
   t0 = (int)(uintptr_t)task_node_alloc(1,2,0xb,0x8013d7e4,0,0x598);
   it = 0;
   if (t0 != 0) {
@@ -15651,7 +15651,7 @@ void speech_bubble_spawn(undefined4 *pos,short ang,int idx,ushort fl)
   int t1;
   uint q;
   int *rec;
-  
+
   if (((DAT_1f8000b1 == '\0') && (_DAT_801f0930 < 3)) &&
      ((*(ushort *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) {
     if ((DAT_1f800098 != '\x01') && ((fl & 0xf0) == 0)) {
@@ -15726,7 +15726,7 @@ void effect_arg_set(undefined4 arg)
 
 {
   undefined4 *ent;
-  
+
   if ((DAT_1f8000b1 == '\0') &&
      (ent = (undefined4 *)guest_at((uint32_t)(uintptr_t)(task_alloc_wrap_e(4,(int)br2_gaddr(g_PTR_FUN_801b1ec0),(int)guest_of(&DAT_801b1eac)))),
      ent != (undefined4 *)0x0)) {
@@ -15742,7 +15742,7 @@ void hit_spark_spawn(undefined4 pos,uint kind,undefined2 aux)
   int node;
   undefined4 *rec;
   undefined *dat;
-  
+
   if ((DAT_1f8000b1 == '\0') && ((kind & 0x7f) < 3)) {
     node = (int)(uintptr_t)task_node_alloc(1,2,8,0x80140510,0,0x14);
     if (node != 0) {
@@ -15776,7 +15776,7 @@ void sprite_burst_spawn(undefined4 ent,undefined4 arg)
   undefined2 *s1;
   int it;
   undefined4 *rec;
-  
+
   if (DAT_1f8000b1 == '\0') {
     t0 = (int)(uintptr_t)task_node_alloc(1,2,0xe,0x801407cc,0,400);
     it = 0;
@@ -15838,7 +15838,7 @@ void firework_spawn(undefined2 *pos)
   int it;
   int it2;
   undefined4 *d0;
-  
+
   t0 = (int)(uintptr_t)(int)(uintptr_t)task_node_alloc(1,2,0xb,0x80140d38,0,0x3d8);
   it = 0;
   if (t0 != 0) {
@@ -15908,7 +15908,7 @@ void gte_mat_vec_swap(undefined4 *mb,ushort *vec,undefined4 *ma)
   undefined4 x2;
   undefined4 y2;
   undefined4 z2;
-  
+
   setCopControlWord(2,0,*ma);
   setCopControlWord(2,0x800,ma[1]);
   setCopControlWord(2,0x1000,ma[2]);
@@ -15978,7 +15978,7 @@ int trig_cos(int ang)
 {
   int idx;
   uint q;
-  
+
   q = ang + 0x400;
   idx = (q & 0x3ff) * 2;
   if ((q & 0x400) != 0) {
@@ -15995,7 +15995,7 @@ int trig_sin(uint ang)
 
 {
   int idx;
-  
+
   idx = (ang & 0x3ff) * 2;
   if ((ang & 0x400) != 0) {
     idx = (ang & 0x3ff) * -2 + 0x800;
@@ -16014,7 +16014,7 @@ void fighter_anim_advance(int f,int n)
   undefined2 t;
   short v;
   int rec;
-  
+
   if (*(short *)guest_at((uint32_t)(uintptr_t)((n + 0xc0) ))== 0) {
     motion_integrator_tail(f,n);
   }
@@ -16055,7 +16055,7 @@ void pose_chain_build(int node)
   short *kf;
   int tag;
   int it;
-  
+
   it = 0x13;
   kf = (short *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(((*(byte *)guest_at((uint32_t)(uintptr_t)((node + 5) ))& 1) * 0x1c +
                               *(int *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)((node + 0x38) ))+ 0x10) ))+ 0x14) ))+
@@ -16110,7 +16110,7 @@ undefined2 * euler_rotmat(uint node,uint ang0,uint ang1,undefined2 *out)
   int t8;
   int t9;
   uint an;
-  
+
   t0 = (ang0 & 0x3ff) * 2;
   t2 = (ang0 & 0x3ff) * -2 + 0x800;
   t1 = t0;
