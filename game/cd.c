@@ -2653,8 +2653,8 @@ uint32_t cd_status_shifted_read(uint32_t a0)
   if (a0 - 0x1010 <= 0x7efe8) {
     int32_t r = cd_reg_indexed_rw(-1,a0);
     uint32_t sh = (uint16_t)r;
-    *(uint16_t *)guest_at(0x801bdec8) = (uint16_t)sh;
-    sh = *(uint16_t *)guest_at(0x801bdec8);
+    DB16(0x801bdec8) = (uint16_t)sh;
+    sh = DB16(0x801bdec8);
     return sh << (*(uint32_t *)guest_at(0x801bded8) & 31);
   }
   return 0;
