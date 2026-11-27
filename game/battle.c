@@ -8011,7 +8011,7 @@ int sprintf_core(char *dst,char *fmt,...)
    * into &fl/&local_39 scalars, so digits written wp-1 ran
    * off into unrelated host stack — keep it one array. */
   byte sc_buf[0x200];
-#define local_39 sc_buf[0x1ff]
+#define sc_top sc_buf[0x1ff]
   undefined4 fl;
   uint wid;
   uint prc;
@@ -8102,9 +8102,9 @@ joined_r0x8018efa8:
         default:
           goto switchD_8018f218_caseD_4d;
         case 99:
-          wp = &local_39;
+          wp = &sc_top;
           nd = 1;
-          local_39 = (byte)va_arg(ap,uint32_t);
+          sc_top = (byte)va_arg(ap,uint32_t);
 
           goto LAB_8018f700;
         case 100:
@@ -8309,7 +8309,7 @@ LAB_8018f78c:
   goto joined_r0x8018efa8;
 
 }
-#undef local_39
+#undef sc_top
 
 /* rtps_basis_xform @0x80186d20 — transform a basis-vector set through matrix rt
  * and repack into out. */
