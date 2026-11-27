@@ -893,7 +893,7 @@ bb_8015fbfc:
       scroll_offset_accumulate(0,0x10);
       if ((_DAT_1f80007c & 0xa000) != 0) {
         deferred_cmd_post(0x400,0xb,0);
-        ow_flag = ow_flag ^ 1;
+        ow_flag ^= 1;
       }
       if ((_DAT_1f80007c & 0x10) == 0) {
         if ((_DAT_1f80007c & 0xe0) != 0) {
@@ -1646,16 +1646,16 @@ uint32_t attr_word_decode(uint8_t *a0)
     }
     attr_word = ~(uint32_t)CONCAT11(*(uint8_t *)(a0 + 2),*(uint8_t *)(a0 + 3)) & 63999;
     if (*(uint8_t *)(a0 + 6) < 0x40) {
-      attr_word = attr_word | 0x8000;
+      attr_word |= 0x8000;
     }
     else if (0xc0 < *(uint8_t *)(a0 + 6)) {
-      attr_word = attr_word | 0x2000;
+      attr_word |= 0x2000;
     }
     if (*(uint8_t *)(a0 + 7) < 0x40) {
-      attr_word = attr_word | 0x1000;
+      attr_word |= 0x1000;
     }
     else if (0xc0 < *(uint8_t *)(a0 + 7)) {
-      attr_word = attr_word | 0x4000;
+      attr_word |= 0x4000;
     }
   }
   return attr_word;
@@ -1931,7 +1931,7 @@ int slot_icon_nibble_resolve(uint8_t *a0)
   uint32_t tbl_addr = 0x801b3f88u + (uint32_t)(int32_t)*(int16_t *)(a0 + 0xa4) +
                    ((uint32_t)p[7] << 4);
   int32_t icon_val = *(uint8_t *)guest_at(tbl_addr);
-  icon_val = icon_val << 4;
+  icon_val <<= 4;
   *(int16_t *)(a0 + 0xa0) = (int16_t)icon_val;
   return icon_val;
 }
