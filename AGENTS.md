@@ -1958,3 +1958,26 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   disassembled (90,924 records, 100% branch-validated).
 - Master verify: versus fight mash on :19790 sustained deep into CD
   loads, zero wedge (binary 2743ddb9, pre-devin-h merge).
+
+### Session update 41 (GENERATED_ONLY sweep ~50% + 0x8014-16 band EXHAUSTED + model50 UVs SOLVED)
+
+- **devin-i sweep status**: 21/46 GENERATED_ONLY addrs restored and
+  merged (master `79d4c890`). Big wins: `cd_response_pump` (0x801979F8,
+  372k hits in versus CD streaming now clean-CPS), `cd_cmd_sequence`,
+  `cd_subsys_init_full`, `cd_kobj_init_a/b`, `cd_kobj_b56/b57_commit`,
+  `cd_kobj_mcall_58/5c`, `gpu_state_patch_submit_3w`,
+  `cd_hw_chan_release_all`, `cd_cmd_rec_arm_{extent,op}`, first
+  `--timing` cpst_ transliterations (`cpst_801990f0`, `cpst_8019a6e0`).
+  First wedge-class revert hasn't happened yet — every restored batch
+  verified 200s versus mash, miss_total=0. Currently on the heavy
+  cd_timer_read/vsync_wait_n batch.
+- **devin-j band done**: 0x8014–0x8016 exhausted — 9 ports + 63 dead
+  rows retired (`gpu_pkt_grid_build` was the only real fn left).
+  Remaining there: only the 3 forbidden coroutines + KEEP rows.
+- **br2-assets model50 COMPLETE**: UVs were hiding in plain sight —
+  textured tags (09/0d/11/15 + 0x40049/4d/51/55) carry GP0 texcoord
+  words in the attr stream; H-family textured tags map to FT3/GT3/
+  FT4/GT4. faces.py now emits v/vt/vn/f — 202 files regenerated,
+  57,854 texcoords, ~84% faces textured. Earlier "no UVs" verdict was
+  a misread of the gte_cc normal loads.
+- Worktrees: master + br2-wt-devin-i only.
