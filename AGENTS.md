@@ -1560,3 +1560,49 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   trampolines + small system fns (bzero wrapper → tail-jump chains).
   Low per-port value; batch candidate only if a shared convention
   emerges.
+
+### Session update 34 (hit_react_apply crash fix + 246-row retire batch + wedge bisect)
+
+- **REAL BUG FIXED** (`b3317582`): `hit_react_apply` passed
+  `(uint8_t*)(intptr_t)def` — a guest ctrl address — as the HOST
+  motion pointer to `trig_lut_read`/`trig_vel_flat`/`trig_up`/`trig_diag`
+  (resolve.c callers pass an already-translated host ptr). Host deref
+  at literal guest addr `0x1f8xxxxx` → SIGSEGV `KERN_INVALID_ADDRESS
+  at 0x1f8002a2` on the battle_intro_flow → fighter_pair_update →
+  hit_react_apply path. Found via `PSX_NO_CPS=1` runtime. ALSO fixed
+  earlier this session (same commit chain): `hitres0`/`hitres1`
+  redeclared `short[4]` — decompiler split each 8-uint8 slot into
+  2-short + scalar; index-2 writes smashed `fighter_pair_update`'s
+  saved x28 → garbage a3 → same crash class.
+- **246 rows retired** (`d8a82e03`): audit-verified RETIRE spans —
+  script_stream_tick (23), LAB_80137acc+LAB_80137cd0 opcode-dispatch
+  (45), camera_track_shot (26), intro_movie_state (46),
+  slot_attr_packet_build (87), fighter_atk_dir head (19).
+  **display_page_commit span (19 rows, cps_8015e8bc) KEPT** — audit
+  flagged its entry piece carries a prologue (possible alternate call
+  entry); zero-cost insurance pending runtime smoke.
+- **Boot wedge bisected to 0x80194000–0x801A0000**: `PSX_CPS_KEEP`
+  env filter (clean_table.c:~34651, ranges of `lo-hi` keep cps_ ONLY
+  inside; generated for the rest; named ports never filtered).
+  Results: keep-80190000-801A8000 → WEDGED (gs=0, state
+  `0000000020621280`); keep-complement-of-80194000-801A0000 →
+  progressed (`...a0401e80`); keep-80198000-801A0000 → all-zeros
+  (AMBIGUOUS — log shows stall in early VECWR/kernel-init, likely
+  sparse-cps config hits a different early path or needs longer than
+  the 120s probe). Region contents: the CD-driver coroutine cluster —
+  ~1291 rows, mostly `cpst_*` timing variants (cpst_8019dad0 alone 222,
+  cpst_80199440/cdst_80196370/cdst_80196e14 ~50-70 each) + named
+  cd_irq_init_seq/cd_response_pump/cd_kobj_*. **`PSX_NO_CPS=1` runs
+  the full game on generated paths — every RETIRE verdict is safe by
+  construction; use it to verify any future mass-retire before commit.**
+  Next step for wedge: per-FUNCTION isolation inside the region —
+  bisect by retiring map-row ranges for the big cpst_ entries
+  (rebuild-per-test), or extend PSX_CPS_KEEP granularity.
+- **Pending audit PORT candidates** (9d974fa9): task fn @0x8013f828
+  (~46 rows, KEEP→PORT as one fn — live task callback, GTE);
+  cps_8013dbd8 (25, ends task_packet_emit @0x8013e0f0, GTE);
+  cps_8013ae1c (26, ends fx_record_alloc @0x8013b088, jump-table
+  @0x80120158); cps_80134c30 + continuation pieces (port as one fn
+  ending @0x80134e44); cps_8014c324 (20, ends resource_rebuild_b
+  @0x8014c76c). KEEP (do not touch): cps_8017b8d4, cps_8017e4d4,
+  cps_8017e6b0, cps_8013c5e0 (unported generated gaps).
