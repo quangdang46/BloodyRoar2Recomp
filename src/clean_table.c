@@ -19732,64 +19732,64 @@ extern void tween_seq_step(short *seq);
     tween_seq_step(((short *)guest_at(cpu->gpr[4])));
 }
 static void wrap_801aa558(CPUState *cpu) {
-extern void cpst_801aa558(void);
-    cpst_801aa558();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa55c(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa594(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa59c(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5a4(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5b0(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5b8(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5c4(CPUState *cpu) {
-extern void cpst_801aa55c(void);
-    cpst_801aa55c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5c8(CPUState *cpu) {
-extern void cpst_801aa5c8(void);
-    cpst_801aa5c8();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5cc(CPUState *cpu) {
-extern void cpst_801aa5cc(void);
-    cpst_801aa5cc();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5d4(CPUState *cpu) {
-extern void cpst_801aa5d4(void);
-    cpst_801aa5d4();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5e0(CPUState *cpu) {
-extern void cpst_801aa5e0(void);
-    cpst_801aa5e0();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa5ec(CPUState *cpu) {
-extern void cpst_801aa5ec(void);
-    cpst_801aa5ec();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa600(CPUState *cpu) {
-extern void cpst_801aa600(void);
-    cpst_801aa600();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa608(CPUState *cpu) {
-extern void cpst_801aa608(void);
-    cpst_801aa608();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa618(CPUState *cpu) {
 extern void op_verts_a618(void);
@@ -19972,8 +19972,8 @@ extern void op_verts_a7e8(void);
     op_verts_a7e8();
 }
 static void wrap_801aa95c(CPUState *cpu) {
-extern void cpst_801aa95c(void);
-    cpst_801aa95c();
+extern void op_verts_a558(void);
+    op_verts_a558();
 }
 static void wrap_801aa96c(CPUState *cpu) {
 extern void data_relocate(uint32_t a0);

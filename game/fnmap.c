@@ -1239,6 +1239,7 @@ extern void op_tag_dispatch(void);
 extern void op_tbl_elem_copy(void);
 extern void op_trace_print_a(void);
 extern void op_trace_print_b(void);
+extern void op_verts_a558(void);
 extern void op_verts_a618(void);
 extern void op_verts_a7e8(void);
 extern void op_walk_dispatch_a(void);
@@ -3529,6 +3530,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801aa3fc, (void *)op_slot_free },
   { 0x801aa47c, (void *)op_walk_dispatch_c },
   { 0x801aa4fc, (void *)tween_seq_step },
+  { 0x801aa558, (void *)op_verts_a558 },
   { 0x801aa618, (void *)op_verts_a618 },
   { 0x801aa7e8, (void *)op_verts_a7e8 },
   { 0x801aa96c, (void *)data_relocate },
