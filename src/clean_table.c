@@ -19682,116 +19682,116 @@ extern void cpst_8019a3f0(void);
     cpst_8019a3f0();
 }
 static void wrap_8019a460(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a484(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4a4(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4c0(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4d0(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4dc(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4e4(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a4fc(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a504(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a50c(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a510(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a518(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a53c(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a54c(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a56c(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a584(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a59c(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a5c0(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a5c4(CPUState *cpu) {
-extern void cpst_8019a460(void);
-    cpst_8019a460();
+extern void cd_timer_read_cps(void);
+    cd_timer_read_cps();
 }
 static void wrap_8019a5d8(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a5fc(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a600(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a620(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a62c(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a634(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a640(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a648(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a660(CPUState *cpu) {
-extern void cpst_8019a5d8(void);
-    cpst_8019a5d8();
+extern void vsync_wait_n_cps(void);
+    vsync_wait_n_cps();
 }
 static void wrap_8019a670(CPUState *cpu) {
 extern void bios_kobj_tramp(void);
