@@ -445,7 +445,7 @@
 80147bb4 sprite_blit_center_b
 80157188 voice_desc_fill
 8012ce30 print_mode_dispatch_guest
-8014b818 scroll_attr_100_update
+8014b810 scroll_attr_100_update
 80158698 spr_attr_alloc_c
 8015e8c4 mode_select_commit
 8017c66c desc_state_commit
@@ -2260,3 +2260,12 @@
 8017d25c desc_op7_dispatch
 8017caec desc_ret_empty_c
 8017d5c0 desc_ret_a2p4_c
+8014cd48 display_flag_100_set
+8014cd68 display_flag_200_set
+8014cd88 display_flag_400_set
+8014cda8 frame_stage_09_set
+8014cdbc frame_stage_f0_set
+80140c98 noop_fn_b
+80147de4 ret_stub_c
+80147dec ret_stub_d
+801478b0 gpu_pkt_grid_build
