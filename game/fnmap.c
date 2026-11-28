@@ -829,6 +829,7 @@ extern void gpu_pkt_tag_74(void);
 extern void gpu_pkt_unlink_n(void);
 extern void gpu_prim8_emit(void);
 extern void gpu_prim_pkt_build(void);
+extern void gpu_prim_pkt_emit_cps(void);
 extern void gpu_rect_bounds_dbg(void);
 extern void gpu_reg_cells_init(void);
 extern void gpu_reg_cmd_commit(void);
@@ -843,6 +844,7 @@ extern void gpu_tag_cmd_byte_get(void);
 extern void gpu_tag_cmd_store(void);
 extern void gpu_texclut_pkt(void);
 extern void gpu_texpage_pack(void);
+extern void gpu_texprim_pkt_emit_cps(void);
 extern void group_fx_spawn(void);
 extern void gte_avsz3_wrap(void);
 extern void gte_avsz4_wrap(void);
@@ -3048,6 +3050,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80191ee0, (void *)cd_vcall_38 },
   { 0x80191f08, (void *)sprite_rect_pkt_fill },
   { 0x80191f88, (void *)cd_coord_pack_entry },
+  { 0x80191fc8, (void *)gpu_texprim_pkt_emit_cps },
   { 0x801921c0, (void *)gpu_prim_pkt_build },
   { 0x80192430, (void *)gpu_pkt_pack },
   { 0x80192450, (void *)gpu_coord_clamp_a },
@@ -3056,6 +3059,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8019259c, (void *)gpu_texpage_pack },
   { 0x8019261c, (void *)gpu_data_reg_read },
   { 0x80192634, (void *)cd_cmd_queue_load },
+  { 0x80192714, (void *)gpu_prim_pkt_emit_cps },
   { 0x80192944, (void *)gpu_draw_env_dma },
   { 0x80192b80, (void *)gpu_image_transfer_dma },
   { 0x80192e00, (void *)gpu_tag_cmd_store },

@@ -7984,39 +7984,39 @@
 
 
 80175964 reset_guest_cps
-80192714 cpst_80192714
+80192714 gpu_prim_pkt_emit_cps
 
-8019287c cpst_80192714
+8019287c gpu_prim_pkt_emit_cps
 
-8019288c cpst_80192714
+8019288c gpu_prim_pkt_emit_cps
 
-801928a0 cpst_80192714
+801928a0 gpu_prim_pkt_emit_cps
 
-80192928 cpst_80192714
+80192928 gpu_prim_pkt_emit_cps
 
-8019273c cpst_80192714
+8019273c gpu_prim_pkt_emit_cps
 
-80192760 cpst_80192714
+80192760 gpu_prim_pkt_emit_cps
 
-80192768 cpst_80192714
+80192768 gpu_prim_pkt_emit_cps
 
-8019276c cpst_80192714
+8019276c gpu_prim_pkt_emit_cps
 
-8019277c cpst_80192714
+8019277c gpu_prim_pkt_emit_cps
 
-801927a0 cpst_80192714
+801927a0 gpu_prim_pkt_emit_cps
 
-801927a8 cpst_80192714
+801927a8 gpu_prim_pkt_emit_cps
 
-801927ac cpst_80192714
+801927ac gpu_prim_pkt_emit_cps
 
-801927c0 cpst_80192714
+801927c0 gpu_prim_pkt_emit_cps
 
-801927d4 cpst_80192714
+801927d4 gpu_prim_pkt_emit_cps
 
-801928ac cpst_80192714
+801928ac gpu_prim_pkt_emit_cps
 
-8019291c cpst_80192714
+8019291c gpu_prim_pkt_emit_cps
 
 
 
@@ -9099,41 +9099,25 @@
 
 8018d1a0 cpst_8018d150
 
-8018bbd8 cpst_8018bba8
-
-8018bc00 cpst_8018bba8
-
-8018bc08 cpst_8018bba8
-
-8018bc18 cpst_8018bba8
-
-
-8018bc3c cpst_8018bba8
-
-8018bc4c cpst_8018bba8
-
-8018bc54 cpst_8018bba8
-
-8018bc60 cpst_8018bba8
-
-8018bc70 cpst_8018bba8
-
-8018bc74 cpst_8018bba8
-
-8018bc88 cpst_8018bba8
-
-8018bc90 cpst_8018bba8
-
-8018bc94 cpst_8018bba8
-
-8018bca4 cpst_8018bba8
-
-8018bcac cpst_8018bba8
 
 
 
 
-8018bd00 cpst_8018bba8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -10146,7 +10130,7 @@
 801aa0a4 cpst_801a9f64
 801aa0b8 cpst_801a9f64
 801aa0bc cpst_801a9f64
-80191fc8 cpst_80191fc8
+80191fc8 gpu_texprim_pkt_emit_cps
 801aa7e8 op_verts_a7e8
 801aa618 op_verts_a618
 801afb28 scene_prim_tag_dispatch
@@ -10155,20 +10139,20 @@
 801ab470 cpst_801ab470
 801a91e0 prim_emit_xform_b
 801ab84c cpst_801ab84c
-80191ff0 cpst_80191fc8
-80192028 cpst_80191fc8
-8019203c cpst_80191fc8
-80192054 cpst_80191fc8
-80192060 cpst_80191fc8
-8019207c cpst_80191fc8
-801920bc cpst_80191fc8
-801920e0 cpst_80191fc8
-801920e4 cpst_80191fc8
-801920f4 cpst_80191fc8
-80192118 cpst_80191fc8
-80192120 cpst_80191fc8
-80192124 cpst_80191fc8
-801921a4 cpst_80191fc8
+80191ff0 gpu_texprim_pkt_emit_cps
+80192028 gpu_texprim_pkt_emit_cps
+8019203c gpu_texprim_pkt_emit_cps
+80192054 gpu_texprim_pkt_emit_cps
+80192060 gpu_texprim_pkt_emit_cps
+8019207c gpu_texprim_pkt_emit_cps
+801920bc gpu_texprim_pkt_emit_cps
+801920e0 gpu_texprim_pkt_emit_cps
+801920e4 gpu_texprim_pkt_emit_cps
+801920f4 gpu_texprim_pkt_emit_cps
+80192118 gpu_texprim_pkt_emit_cps
+80192120 gpu_texprim_pkt_emit_cps
+80192124 gpu_texprim_pkt_emit_cps
+801921a4 gpu_texprim_pkt_emit_cps
 801aa820 op_verts_a7e8
 801aa840 op_verts_a7e8
 801aa8c4 op_verts_a7e8
@@ -10299,11 +10283,6 @@
 801841fc cpst_801841fc
 8018423c cpst_8018423c
 801842bc cpst_801842bc
-801843c0 cpst_801843c0
-801843d4 cpst_801843d4
-801843e0 cpst_801843e0
-801843f0 cpst_801843f0
-801843f8 cpst_801843f8
 801845c4 cpst_801845c4
 801845d0 cpst_801845d0
 801845dc cpst_801845dc
@@ -10338,19 +10317,6 @@
 801b0ac0 cpst_801b0ac0
 801b0bcc cpst_801b0bcc
 801b0d40 cpst_801b0d40
-801843a4 cpst_801843f8
-801843c0 cpst_801843f8
-801843d4 cpst_801843f8
-801843e0 cpst_801843f8
-801843f0 cpst_801843f8
-801843f8 cpst_801843f8
-80184400 cpst_801843f8
-8018440c cpst_801843f8
-80184418 cpst_801843f8
-80184420 cpst_801843f8
-80184430 cpst_801843f8
-80184438 cpst_801843f8
-80184440 cpst_801843f8
 801844c0 cpst_801846a4
 8018457c cpst_801846a4
 80184498 cpst_801846a4

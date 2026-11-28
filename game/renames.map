@@ -2310,3 +2310,5 @@
 801a8ee0 prim_emit_xform_a
 801a91e0 prim_emit_xform_b
 801afb28 scene_prim_tag_dispatch
+80192714 gpu_prim_pkt_emit_cps
+80191fc8 gpu_texprim_pkt_emit_cps
