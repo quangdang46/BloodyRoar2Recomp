@@ -92,6 +92,7 @@ extern void anim_ret_nop(void);
 extern void anim_vec3_normalize(void);
 extern void anim_wb_init_gate(void);
 extern void anim_workblock_init(void);
+extern void anim_workblock_tick(void);
 extern void announce_param_block_init(void);
 extern void announce_param_block_init_alt(void);
 extern void announce_param_block_init_b(void);
@@ -1997,6 +1998,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013f714, (void *)task_node_alloc_init },
   { 0x8013f7a0, (void *)empty_leaf_d },
   { 0x8013f7a8, (void *)node_list_walk_e },
+  { 0x8013f828, (void *)anim_workblock_tick },
   { 0x801401c8, (void *)anim_wb_init_gate },
   { 0x801401d0, (void *)anim_workblock_init },
   { 0x80140510, (void *)LAB_80140510 },

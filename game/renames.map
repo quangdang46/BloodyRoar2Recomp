@@ -476,6 +476,7 @@
 80137578 rec16_fill
 801401d0 anim_workblock_init
 801401c8 anim_wb_init_gate
+8013f828 anim_workblock_tick
 8017bfb8 desc_slot_alloc
 80141d34 desc_opcode_dispatch
 8014b37c script_move_timer_eval
