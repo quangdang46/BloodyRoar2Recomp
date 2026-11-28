@@ -15921,284 +15921,284 @@ extern void cpst_80196370(void);
     cpst_80196370();
 }
 static void wrap_801968cc(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196908(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_8019694c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196954(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_8019696c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196998(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_801969a4(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_801969f0(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_801969f8(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a00(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a04(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a0c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a14(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a1c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a34(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a3c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a48(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a50(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a64(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a74(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a78(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a80(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196a94(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196aa4(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196aac(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196abc(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196ad0(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196ad8(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196af0(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196af4(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196b0c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196b14(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196b1c(CPUState *cpu) {
-extern void cpst_801968cc(void);
-    cpst_801968cc();
+extern uint32_t cd_result_wait_a_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_a_cps());
 }
 static void wrap_80196b4c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196b88(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196bcc(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196bd4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196bec(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c18(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c24(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c70(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c78(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c80(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c84(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c8c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c94(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196c9c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cb4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cbc(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cc8(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cd0(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196ce4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cf4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196cf8(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d00(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d14(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d24(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d2c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d3c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d50(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d64(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d6c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d84(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196d8c(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196da0(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196db8(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196dbc(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196dd4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196ddc(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196de4(CPUState *cpu) {
-extern void cpst_80196b4c(void);
-    cpst_80196b4c();
+extern uint32_t cd_result_wait_b_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_result_wait_b_cps());
 }
 static void wrap_80196e14(CPUState *cpu) {
 extern void cpst_80196e14(void);
