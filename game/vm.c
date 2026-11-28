@@ -1775,17 +1775,18 @@ uint32_t ev20_timer_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc,
 }
 
 /* desc_flagbit_dispatch — guest @0x8017BAD4 (descriptor flag-bit ops).
- * op = pc[1] & 0x3f; op < 35 indexes table 0x80122814 (entries 0-17
- * reach sibling handlers incl. blocks inside 0x8017B668's range,
- * 18-34 reach this function's own flag-op blocks). op >= 35 -> pc+6.
- * The selected handler returns the next stream addr in $v0. */
+ * op = pc[1] & 0x3f; op < 35 indexes table 0x8012285C (lui 0x8012 +
+ * addiu 0x285C @0x8017BAEC/0x8017BAF0 — verified against SLES_017.22
+ * bytes; entries point into this function's own 0x8017BBxx handler
+ * blocks). op >= 35 -> pc+6. The selected handler returns the next
+ * stream addr in $v0. */
 uint32_t desc_flagbit_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
                                uint32_t a3)
 {
     uint32_t op = GU8((const uint8_t *)guest_at(a2), 1) & 0x3f;
     if (op >= 35u) return a2 + 6;
     return call_guest4(
-        GU32((const uint8_t *)guest_at(0x80122814u), op * 4),
+        GU32((const uint8_t *)guest_at(0x8012285Cu), op * 4),
         a0, a1, a2, a3);
 }
 
