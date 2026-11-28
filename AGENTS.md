@@ -2059,3 +2059,35 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   fail. Configure worktrees with `-DCMAKE_BUILD_TYPE=RelWithDebInfo`
   (or `-DPSX_DEBUG_TOOLS=ON`) or the debug port never opens.
 - **Progress**: 31.18% clean-port; ~4400 CPS rows remain.
+
+### Session update 45 (devin-ab — straggler sweep: 3 ports + 228 retire rows)
+
+- **Ports (verified)**:
+  - `desc_u16pair_dispatch` (0x8017B8D4, 19 rows) + `desc_flagcond_store`
+    (0x8017E6B0, 18 rows) → game/recon_8017b.c — commit `343bb249`.
+  - `op_verts_a558` (0x801AA558, merged 9 cpst_ pieces + 0x801AA95C
+    epilogue, 16 rows) → game/recon_8019.c — commit `f92ff9fb`.
+- **Retires (verified)**:
+  - 23 residual rows inside clean `midpoint_angles_set` — `0dc36092`.
+  - **NEW AUDIT RULE**: a cps_/cpst_ cluster is retirable when EVERY row
+    addr has a `generated/SLES_017.22_dispatch.c` entry routing to the
+    faithful `br2eu_func_*` body AND the cps_ source is a transliteration
+    of that same function (check the `— clean CPS transliteration of`
+    comment). The CPS layer was coverage scaffolding; where generated
+    dispatch covers all piece-entries the rows are pure duplicates.
+    Scriptable check: row addr ∈ dispatch table.
+  - 120 rows (9 clusters, 0x8017/0x8018/0x8019-gfx/0x801A) — `0dc107a4`.
+  - 85 rows (8 unclaimed 0x8012-band clusters) — `a2affa4a`.
+  - clean_table.c: 5375 → 5185 wrappers.
+- **Deliberately NOT touched**: 5 CD-subsystem cpst_ clusters
+  (cpst_80198e2c/80192714/80191fc8/8019d500/8019e330, 73 rows — all have
+  generated coverage too, but §4 CD wedge history warrants dedicated
+  audit); cps_801337bc + all 0x8013 band (devin-q); named/ported
+  clusters.
+- **Verify**: RelWithDebInfo build clean; arcade_fight_mash FIGHT at
+  frames 6600–9308 across runs, LEFT FIGHT gs=8/9 cycling, 34k–52k+
+  frames sustained on ports 19874/19875.
+- **Tooling hazard**: `python3 game/gen_clean_table.py` writes relative
+  to CWD — running it from the wrong tree (br2-recomp master, which was
+  mid-merge) clobbered an unmerged src/clean_table.c; restored via
+  `git checkout -m`. Always `cd` into the worktree first.
