@@ -87,6 +87,28 @@ Headless: `PSX_FN_FILTER="0x80010000:0x80200000"
 - Zero wedge, zero crash across ~430s of versus/arcade mash incl. CD
   streaming (asset loads exercise printf via debug/text paths).
 
+## Bonus retirement: cpst_801b0db8 — scene_node_walk (45 rows)
+
+Same session, same class, found while profiling the remaining cpst_
+landscape: `cpst_801b0db8` (45 rows, span 0x801B0DB8–0x801B1124) is
+residual CPS coverage inside `scene_node_walk` — the scene-graph
+node-dispatcher clean port at `game/gfx.c:4432` (fnmap.c:3642), whose
+comment explicitly states the fragments are "internal CPS/jump-table
+continuations only: no generated source jal's to them directly".
+
+- The entry row `801b0db8 cpst_801b0db8` was SHADOWING the clean port —
+  removing it restores `scene_node_walk` at dispatch (the only jal
+  target in the span is the real entry 0x801b0db8 itself).
+ - All 45 addrs have generated dispatch coverage; no other clean_cps.map
+  rows in the span; zero non-entry jal targets.
+- Verified: build clean; headless run reached `*** FIGHT REACHED
+  frame=1983 ***` (scene_node_walk runs during battle scene setup),
+  process healthy in `psx_scheduler_run`/`dirty_ram_dispatch` at 163%
+  CPU. Debug-server accept starved late in the run by machine-wide
+  contention (~6 parallel emulator instances from sibling agents —
+  SYN_SENT backlog), an environmental issue not a game defect; the
+  pre-starvation window showed normal boot→attract→FIGHT progression.
+
 ## Leftovers / notes
 
 - The `cpst_*` bodies remain compiled-but-unreferenced in
@@ -101,3 +123,17 @@ Headless: `PSX_FN_FILTER="0x80010000:0x80200000"
   extended with psx_cyc_step charging and the piece addrs re-pointed to
   it — but with zero observed dispatches to those addrs, generated
   fallback is the faithful and simpler choice.
+
+## Remaining cpst_ landscape (post-retire)
+
+314 cpst_ clusters / ~1530 rows remain. Top entries are the known §4
+CD-coroutine class — `cpst_80196370` cd_response_process (70),
+`cpst_80199440` cd_mc_state_machine (65), `cpst_80196e14` cd_cmd_issue
+(53), `cpst_801968cc` cd_result_wait_a (33), `cpst_801985c4`
+cd_read_step_cb (39), `cpst_80196b4c`, `cpst_801a8410` — plus non-CD
+stragglers worth the same shadow-audit: `cpst_80183664` scriptop_wait
+(50), `cpst_80190a14`/`cpst_801906e8` (text_win_printf band, 49/39),
+`cpst_801842fc` (48). The audit recipe that worked here — check whether
+the cluster's addr span sits inside an already-clean-ported fnmap
+function, verify zero non-entry jal targets + full generated dispatch
+coverage, then delete rows — should be applied cluster-by-cluster.
