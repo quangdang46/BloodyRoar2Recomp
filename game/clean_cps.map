@@ -6759,39 +6759,39 @@
 
 
 80175964 reset_guest_cps
-80192714 cpst_80192714
+80192714 gpu_prim_pkt_emit_cps
 
-8019287c cpst_80192714
+8019287c gpu_prim_pkt_emit_cps
 
-8019288c cpst_80192714
+8019288c gpu_prim_pkt_emit_cps
 
-801928a0 cpst_80192714
+801928a0 gpu_prim_pkt_emit_cps
 
-80192928 cpst_80192714
+80192928 gpu_prim_pkt_emit_cps
 
-8019273c cpst_80192714
+8019273c gpu_prim_pkt_emit_cps
 
-80192760 cpst_80192714
+80192760 gpu_prim_pkt_emit_cps
 
-80192768 cpst_80192714
+80192768 gpu_prim_pkt_emit_cps
 
-8019276c cpst_80192714
+8019276c gpu_prim_pkt_emit_cps
 
-8019277c cpst_80192714
+8019277c gpu_prim_pkt_emit_cps
 
-801927a0 cpst_80192714
+801927a0 gpu_prim_pkt_emit_cps
 
-801927a8 cpst_80192714
+801927a8 gpu_prim_pkt_emit_cps
 
-801927ac cpst_80192714
+801927ac gpu_prim_pkt_emit_cps
 
-801927c0 cpst_80192714
+801927c0 gpu_prim_pkt_emit_cps
 
-801927d4 cpst_80192714
+801927d4 gpu_prim_pkt_emit_cps
 
-801928ac cpst_80192714
+801928ac gpu_prim_pkt_emit_cps
 
-8019291c cpst_80192714
+8019291c gpu_prim_pkt_emit_cps
 
 
 
@@ -7874,6 +7874,7 @@
 
 8018d1a0 cpst_8018d150
 
+<<<<<<< HEAD
 
 
 
@@ -7889,10 +7890,30 @@
 
 
 
+=======
+>>>>>>> agent/devin-ac
 
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> agent/devin-ac
 
 
 
@@ -8545,6 +8566,7 @@
 
 
 
+<<<<<<< HEAD
 801aa55c op_verts_a558
 801aa594 op_verts_a558
 801aa59c op_verts_a558
@@ -8553,11 +8575,332 @@
 801aa5b8 op_verts_a558
 801aa5c4 op_verts_a558
 80191fc8 cpst_80191fc8
+=======
+801ad650 cpst_801ad650
+801ad8f0 cpst_801ad8f0
+801ad908 cpst_801ad908
+801ad9a4 cpst_801ad9a4
+801ada40 cpst_801ada40
+801ada58 cpst_801ada58
+801ada70 cpst_801ada70
+801ae268 cpst_801ae268
+801ae280 cpst_801ae280
+801ae44c cpst_801ae44c
+801ae460 cpst_801ae460
+801ae478 cpst_801ae478
+801ad8d0 cpst_801ad8d0
+801ae674 cpst_801ae674
+801adb24 cpst_801adb24
+801adc00 cpst_801adc00
+801ad9bc cpst_801ad9bc
+801ae4c4 cpst_801ae4c4
+801ae098 cpst_801ae098
+801adae4 cpst_801adae4
+801adb70 cpst_801adb70
+801adbb8 cpst_801adbb8
+801adbd0 cpst_801adbd0
+801afeb8 cpst_801afeb8
+801adb40 cpst_801adb40
+801ae4a8 cpst_801ae4a8
+801a9f48 cpst_801a9f48
+801adc18 cpst_801adc18
+801adbe8 cpst_801adbe8
+801adc30 cpst_801adc30
+801ada88 cpst_801ada88
+801adb88 cpst_801adb88
+801adb58 cpst_801adb58
+801adba0 cpst_801adba0
+801aff04 cpst_801aff04
+801ae298 cpst_801ae298
+801ae300 cpst_801ae300
+801ae5b0 cpst_801ae5b0
+801adb00 cpst_801adb00
+801ae4e0 cpst_801ae4e0
+801ae524 cpst_801ae524
+801ae2dc cpst_801ae2dc
+801ae344 cpst_801ae344
+801ae3b0 cpst_801ae3b0
+801ae5f4 cpst_801ae5f4
+801add14 cpst_801add14
+801adcf4 cpst_801adcf4
+801ae2b8 cpst_801ae2b8
+801ae320 cpst_801ae320
+801ae38c cpst_801ae38c
+801ae5d0 cpst_801ae5d0
+801ae548 cpst_801ae548
+801a9d14 cpst_801a9d14
+801ae58c cpst_801ae58c
+801ae500 cpst_801ae500
+801ae368 cpst_801ae368
+801a9d84 cpst_801a9d84
+801ae568 cpst_801ae568
+801adf00 cpst_801adf00
+801ae6f8 cpst_801ae6f8
+801a9dac cpst_801a9dac
+801ae6d0 cpst_801ae6d0
+801a9e5c cpst_801a9e5c
+801add5c cpst_801add5c
+801adde4 cpst_801adde4
+801ae010 cpst_801ae010
+801ae6a8 cpst_801ae6a8
+801adf58 cpst_801adf58
+801a9db4 cpst_801a9db4
+801ade3c cpst_801ade3c
+801ae068 cpst_801ae068
+801adf88 cpst_801adf88
+801ad854 cpst_801ad854
+801ade0c cpst_801ade0c
+801ae038 cpst_801ae038
+80191e0c cpst_80191e0c
+801adfe0 cpst_801adfe0
+801adf28 cpst_801adf28
+801adfb0 cpst_801adfb0
+801a9ed4 cpst_801a9ed4
+801a9e14 cpst_801a9e14
+801a9e8c cpst_801a9e8c
+801ada08 cpst_801ada08
+801ad9ec cpst_801ad9ec
+801afed0 cpst_801afed0
+801ae424 cpst_801ae424
+801ae3fc cpst_801ae3fc
+80191d90 cpst_80191d90
+801afe7c cpst_801afe7c
+801ae7b0 cpst_801ae7b0
+801ae3d4 cpst_801ae3d4
+801ade6c cpst_801ade6c
+80191d98 cpst_80191d90
+801ae768 cpst_801ae768
+801a9ec0 cpst_801a9ec0
+801adecc cpst_801adecc
+801ade98 cpst_801ade98
+801ae720 cpst_801ae720
+801a9e4c cpst_801a9e4c
+801a9d1c cpst_801a9d1c
+801a9e3c cpst_801a9e3c
+801aecbc cpst_801aecbc
+801a9ec8 cpst_801a9ec0
+801a9e54 cpst_801a9e4c
+801a9d2c cpst_801a9d1c
+801a9e44 cpst_801a9e3c
+801aeccc cpst_801aecbc
+80191e74 cpst_80191e74
+801a9f10 cpst_801a9f10
+801af9c4 cpst_801af9c4
+801af9fc cpst_801af9fc
+801af428 cpst_801af428
+801af460 cpst_801af460
+801a9de0 cpst_801a9de0
+801af6d4 cpst_801af6d4
+801a9c7c cpst_801a9c7c
+80191e88 cpst_80191e74
+801af9e4 cpst_801af9c4
+801afa1c cpst_801af9fc
+801af44c cpst_801af428
+801af484 cpst_801af460
+801a9de8 cpst_801a9de0
+801af6fc cpst_801af6d4
+801a9c88 cpst_801a9c7c
+801af93c cpst_801af93c
+801af980 cpst_801af980
+801af314 cpst_801af314
+801af38c cpst_801af38c
+801a9e28 cpst_801a9e28
+801ad788 cpst_801ad788
+801ad810 cpst_801ad810
+801ad744 cpst_801ad744
+801ad7cc cpst_801ad7cc
+801af96c cpst_801af93c
+801af9b0 cpst_801af980
+801af338 cpst_801af314
+801af3b0 cpst_801af38c
+801a9e34 cpst_801a9e28
+801ad7a0 cpst_801ad788
+801ad828 cpst_801ad810
+801ad75c cpst_801ad744
+801ad7e4 cpst_801ad7cc
+801afa34 cpst_801afa34
+801afa84 cpst_801afa84
+801afad4 cpst_801afad4
+801ae9c8 cpst_801ae9c8
+801ae96c cpst_801ae96c
+80191a78 cpst_80191a78
+801afa6c cpst_801afa34
+801afabc cpst_801afa84
+801afb10 cpst_801afad4
+801ae9e4 cpst_801ae9c8
+801ae988 cpst_801ae96c
+80191a8c cpst_80191a78
+801ad880 cpst_801ad880
+801ae16c cpst_801ae16c
+801af714 cpst_801af714
+801ad8bc cpst_801ad880
+801ae194 cpst_801ae16c
+801ae198 cpst_801ae16c
+801af748 cpst_801af714
+801af730 cpst_801af714
+801af23c cpst_801af23c
+801af288 cpst_801af288
+801ae618 cpst_801ae618
+801a9d38 cpst_801a9d38
+801ae0b4 cpst_801ae0b4
+801a9cb8 cpst_801a9cb8
+801ae108 cpst_801ae108
+801aeb24 cpst_801aeb24
+801af270 cpst_801af23c
+801af268 cpst_801af23c
+801af274 cpst_801af23c
+801af2c8 cpst_801af288
+801af2c0 cpst_801af288
+801af2cc cpst_801af288
+801ae628 cpst_801ae618
+801ae654 cpst_801ae618
+801a9d80 cpst_801a9d38
+801ae0c4 cpst_801ae0b4
+801ae100 cpst_801ae0b4
+801a9cc4 cpst_801a9cb8
+801a9cf4 cpst_801a9cb8
+801a9cfc cpst_801a9cb8
+801a9d08 cpst_801a9cb8
+801ae11c cpst_801ae108
+801ae164 cpst_801ae108
+801aeb40 cpst_801aeb24
+801ae7f8 cpst_801ae7f8
+801af628 cpst_801af628
+801aece4 cpst_801aece4
+801af098 cpst_801af098
+801af11c cpst_801af11c
+801af1ac cpst_801af1ac
+801aed3c cpst_801aed3c
+801ae810 cpst_801ae7f8
+801ae818 cpst_801ae7f8
+801ae854 cpst_801ae7f8
+801af658 cpst_801af628
+801af668 cpst_801af628
+801af650 cpst_801af628
+801af660 cpst_801af628
+801aed14 cpst_801aece4
+801aed2c cpst_801aece4
+801aecf8 cpst_801aece4
+801aed1c cpst_801aece4
+801af0f0 cpst_801af098
+801af0bc cpst_801af098
+801af0f8 cpst_801af098
+801af104 cpst_801af098
+801af180 cpst_801af11c
+801af150 cpst_801af11c
+801af188 cpst_801af11c
+801af194 cpst_801af11c
+801af214 cpst_801af1ac
+801af1e4 cpst_801af1ac
+801af21c cpst_801af1ac
+801af228 cpst_801af1ac
+801aed80 cpst_801aed3c
+801aedac cpst_801aed3c
+801aed58 cpst_801aed3c
+801aed88 cpst_801aed3c
+801aedbc cpst_801aedbc
+801afd68 cpst_801afd68
+801ae1fc cpst_801ae1fc
+801ae1a4 cpst_801ae1a4
+801aee58 cpst_801aee58
+801a9c28 cpst_801a9c28
+801ad520 cpst_801ad520
+801aee10 cpst_801aedbc
+801aee48 cpst_801aedbc
+801aedd8 cpst_801aedbc
+801aee18 cpst_801aedbc
+801ae22c cpst_801ae1fc
+801ae230 cpst_801ae1fc
+801ae23c cpst_801ae1fc
+801ae244 cpst_801ae1fc
+801ae248 cpst_801ae1fc
+801ae1d4 cpst_801ae1a4
+801ae1d8 cpst_801ae1a4
+801ae1e4 cpst_801ae1a4
+801ae1ec cpst_801ae1a4
+801ae1f0 cpst_801ae1a4
+801aeec0 cpst_801aee58
+801aef08 cpst_801aee58
+801aee78 cpst_801aee58
+801aeec8 cpst_801aee58
+801a9c38 cpst_801a9c28
+801a9c48 cpst_801a9c28
+801a9c50 cpst_801a9c28
+801a9c60 cpst_801a9c28
+801a9c70 cpst_801a9c28
+801ad578 cpst_801ad520
+801ad588 cpst_801ad520
+801ad538 cpst_801ad520
+801ad540 cpst_801ad520
+801ad54c cpst_801ad520
+801ad580 cpst_801ad520
+801aef18 cpst_801aef18
+801aa55c cpst_801aa55c
+80191d9c cpst_80191d9c
+801a9b20 cpst_801a9b20
+801aff70 cpst_801aff70
+801aef90 cpst_801aef18
+801aefe8 cpst_801aef18
+801aef38 cpst_801aef18
+801aef98 cpst_801aef18
+801aa594 cpst_801aa55c
+801aa59c cpst_801aa55c
+801aa5a4 cpst_801aa55c
+801aa5b0 cpst_801aa55c
+801aa5b8 cpst_801aa55c
+801aa5c4 cpst_801aa55c
+80191dc0 cpst_80191d9c
+80191dcc cpst_80191d9c
+80191dd0 cpst_80191d9c
+80191dd4 cpst_80191d9c
+80191ddc cpst_80191d9c
+80191de8 cpst_80191d9c
+80191df0 cpst_80191d9c
+80191df4 cpst_80191d9c
+80191e08 cpst_80191d9c
+801a9b94 cpst_801a9b20
+801a9b44 cpst_801a9b20
+801a9b48 cpst_801a9b20
+801a9b64 cpst_801a9b20
+801a9b78 cpst_801a9b20
+801a9b8c cpst_801a9b20
+801a9ba4 cpst_801a9b20
+801aff88 cpst_801aff70
+801affa4 cpst_801aff70
+801affa8 cpst_801aff70
+801b0088 cpst_801aff70
+801ac8f0 cpst_801ac8f0
+801a9f64 cpst_801a9f64
+801ac944 cpst_801ac8f0
+801ac970 cpst_801ac8f0
+801ac988 cpst_801ac8f0
+801ac9a0 cpst_801ac8f0
+801ac910 cpst_801ac8f0
+801ac920 cpst_801ac8f0
+801ac93c cpst_801ac8f0
+801ac958 cpst_801ac8f0
+801ac968 cpst_801ac8f0
+801ac980 cpst_801ac8f0
+801ac998 cpst_801ac8f0
+801aa06c cpst_801a9f64
+801a9f74 cpst_801a9f64
+801a9f84 cpst_801a9f64
+801a9f94 cpst_801a9f64
+801a9ff0 cpst_801a9f64
+801a9ffc cpst_801a9f64
+801aa004 cpst_801a9f64
+801aa074 cpst_801a9f64
+801aa0a4 cpst_801a9f64
+801aa0b8 cpst_801a9f64
+801aa0bc cpst_801a9f64
+80191fc8 gpu_texprim_pkt_emit_cps
+>>>>>>> agent/devin-ac
 801aa7e8 op_verts_a7e8
 801aa618 op_verts_a618
 801afb28 scene_prim_tag_dispatch
 801a8ee0 prim_emit_xform_a
 801a91e0 prim_emit_xform_b
+<<<<<<< HEAD
 80191ff0 cpst_80191fc8
 80192028 cpst_80191fc8
 8019203c cpst_80191fc8
@@ -8572,6 +8915,23 @@
 80192120 cpst_80191fc8
 80192124 cpst_80191fc8
 801921a4 cpst_80191fc8
+=======
+801ab84c cpst_801ab84c
+80191ff0 gpu_texprim_pkt_emit_cps
+80192028 gpu_texprim_pkt_emit_cps
+8019203c gpu_texprim_pkt_emit_cps
+80192054 gpu_texprim_pkt_emit_cps
+80192060 gpu_texprim_pkt_emit_cps
+8019207c gpu_texprim_pkt_emit_cps
+801920bc gpu_texprim_pkt_emit_cps
+801920e0 gpu_texprim_pkt_emit_cps
+801920e4 gpu_texprim_pkt_emit_cps
+801920f4 gpu_texprim_pkt_emit_cps
+80192118 gpu_texprim_pkt_emit_cps
+80192120 gpu_texprim_pkt_emit_cps
+80192124 gpu_texprim_pkt_emit_cps
+801921a4 gpu_texprim_pkt_emit_cps
+>>>>>>> agent/devin-ac
 801aa820 op_verts_a7e8
 801aa840 op_verts_a7e8
 801aa8c4 op_verts_a7e8
@@ -8680,6 +9040,7 @@
 801a9528 prim_emit_xform_b
 8018423c cpst_8018423c
 801842bc cpst_801842bc
+<<<<<<< HEAD
 801843c0 cpst_801843c0
 801843d4 cpst_801843d4
 801843e0 cpst_801843e0
@@ -8697,6 +9058,113 @@
 80184430 cpst_801843f8
 80184438 cpst_801843f8
 80184440 cpst_801843f8
+=======
+801845c4 cpst_801845c4
+801845d0 cpst_801845d0
+801845dc cpst_801845dc
+801845f0 cpst_801845f0
+801845fc cpst_801845fc
+801846a4 cpst_801846a4
+8018476c cpst_8018476c
+801847a4 cpst_801847a4
+801847b0 cpst_801847b0
+801847bc cpst_801847bc
+801847cc cpst_801847cc
+801847e4 cpst_801847e4
+80184d80 cpst_80184d80
+80184d94 cpst_80184d94
+80184dc0 cpst_80184dc0
+80184df0 cpst_80184df0
+80184e1c cpst_80184e1c
+80184e48 cpst_80184e48
+80184e7c cpst_80184e7c
+80184e90 cpst_80184e90
+80184ea4 cpst_80184ea4
+80184eb8 cpst_80184eb8
+801a8040 cpst_801a8040
+801a8254 cpst_801a8254
+801b00a0 cpst_801b00a0
+801b03d8 cpst_801b03d8
+801b03f0 cpst_801b03f0
+801b07d8 cpst_801b07d8
+801b0874 cpst_801b0874
+801b08c8 cpst_801b08c8
+801b09bc cpst_801b09bc
+801b0ac0 cpst_801b0ac0
+801b0bcc cpst_801b0bcc
+801b0d40 cpst_801b0d40
+801844c0 cpst_801846a4
+8018457c cpst_801846a4
+80184498 cpst_801846a4
+801844b4 cpst_801846a4
+801844d0 cpst_801846a4
+801844e8 cpst_801846a4
+801844f0 cpst_801846a4
+801844fc cpst_801846a4
+80184504 cpst_801846a4
+8018450c cpst_801846a4
+80184514 cpst_801846a4
+80184528 cpst_801846a4
+80184534 cpst_801846a4
+80184544 cpst_801846a4
+80184560 cpst_801846a4
+8018458c cpst_801846a4
+80184590 cpst_801846a4
+8018459c cpst_801846a4
+801845b8 cpst_801846a4
+801845c4 cpst_801846a4
+801845d0 cpst_801846a4
+801845dc cpst_801846a4
+801845f0 cpst_801846a4
+801845fc cpst_801846a4
+80184600 cpst_801846a4
+8018460c cpst_801846a4
+80184614 cpst_801846a4
+80184618 cpst_801846a4
+801846a4 cpst_801846a4
+8018473c cpst_801847e4
+8018476c cpst_801847e4
+801847a4 cpst_801847e4
+801847b0 cpst_801847e4
+801847bc cpst_801847e4
+801847cc cpst_801847e4
+801847d8 cpst_801847e4
+801847e4 cpst_801847e4
+80184d64 cpst_80184eb8
+80184d80 cpst_80184eb8
+80184d94 cpst_80184eb8
+80184dc0 cpst_80184eb8
+80184df0 cpst_80184eb8
+80184e1c cpst_80184eb8
+80184e48 cpst_80184eb8
+80184e7c cpst_80184eb8
+80184e90 cpst_80184eb8
+80184ea4 cpst_80184eb8
+80184eb8 cpst_80184eb8
+80184f18 cpst_80184eb8
+80184f1c cpst_80184eb8
+801b0110 cpst_801b00a0
+801b0128 cpst_801b00a0
+801b012c cpst_801b00a0
+801b0138 cpst_801b00a0
+801b0140 cpst_801b00a0
+801b0144 cpst_801b00a0
+801b0220 cpst_801b00a0
+801b0470 cpst_801b03f0
+801b0488 cpst_801b03f0
+801b048c cpst_801b03f0
+801b0498 cpst_801b03f0
+801b04a0 cpst_801b03f0
+801b04a4 cpst_801b03f0
+801b057c cpst_801b03f0
+801b07fc cpst_801b07d8
+801b081c cpst_801b07d8
+801b0830 cpst_801b07d8
+801b086c cpst_801b07d8
+801b08b4 cpst_801b0874
+801b0be8 cpst_801b0bcc
+801b0d28 cpst_801b0bcc
+>>>>>>> agent/devin-ac
 
 # Batch 56 (orch/w5/e05) — w3_e06 alias-body _cont resume rows. The
 # confirm_code_entry_cps body carries ~20 CPS continuation cases whose

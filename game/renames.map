@@ -2316,4 +2316,6 @@
 801afb28 scene_prim_tag_dispatch
 8017b8d4 desc_u16pair_dispatch
 8017e6b0 desc_flagcond_store
+80191fc8 gpu_texprim_pkt_emit_cps
+80192714 gpu_prim_pkt_emit_cps
 801aa558 op_verts_a558
