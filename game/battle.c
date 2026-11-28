@@ -180,7 +180,7 @@ extern void impact_fx_spawn(uint32_t*pos,uint32_t fid,int ang,int aux,uint32_t f
 extern int fx_record_alloc(uint32_t pos_g,int kind,uint32_t fl,uint32_t aux,uint32_t pal_g);
 extern void emit_task_spawn(int*pos,int kind,uint16_t x,short y,uint16_t p5,uint16_t p6);
 extern void emit_task_spawn_b(uint32_t*pos,uint32_t ea,uint32_t eb,uint32_t fl);
-extern void quad_fx_spawn(int f,int kind,uint32_t*pos,uint16_t aux,uint16_t fl,int p6,int p7);
+extern void quad_fx_spawn(int f,int kind,uint32_t pos,uint16_t aux,uint16_t fl,int p6,int p7);
 extern void group_fx_spawn(uint32_t arg,uint32_t w0,uint32_t w1,uint32_t w2,uint32_t w3,uint32_t w4,uint32_t w5);
 extern uint32_t *vec3_step_toward(uint32_t*out,short*pos,short*dst,short stp);
 extern uint32_t *vec3_step_toward_spd(uint32_t*out,short*pos,short*dst,int spd);
@@ -3056,7 +3056,10 @@ LAB_80173de8:
     }
     task_pools_tick(0);
     t8 = 0;
-    o14 = (uint32_t *)0x801f5220;
+    /* Guest base 0x801F5220 (per-player combo/hit cells, generated 0x8017528C):
+     * o14 is the HOST arena pointer for direct field R/W; t2/t3/t6 carry the
+     * GUEST address for guest_at() accesses. Never mix the two domains. */
+    o14 = (uint32_t *)guest_at(0x801f5220);
     t4 = 0;
     t5 = 4;
     tC = &DAT_801b4e20;
@@ -3065,8 +3068,8 @@ LAB_80173de8:
     o0 = rectbl;
     t0 = aux1;
     t1 = aux0;
-    t2 = (intptr_t)o14;
-    t3 = (intptr_t)o14;
+    t2 = 0x801f5220;
+    t3 = 0x801f5220;
     do {
       t7 = (uint32_t)*(uint8_t *)guest_at((uint32_t)(uintptr_t)((t1 + 0xdd) ))+ *o2;
       if (t7 != 0) {
@@ -3125,7 +3128,7 @@ LAB_8017544c:
         t0 = t4;
         if (*(short *)guest_at((uint32_t)(uintptr_t)((t2 + 0x2c) ))!= 0) {
           do {
-            t6 = (intptr_t)o14 + t0;
+            t6 = 0x801f5220 + t0;   /* guest addr: o14 host ptr + byte off */
             t7 = *(short *)guest_at((uint32_t)(uintptr_t)((t6 + 0x1c) ))* 0xed8;
             *(short *)guest_at((uint32_t)(uintptr_t)((t6 + 0x10) ))= *(short *)guest_at((uint32_t)(uintptr_t)((t6 + 0x10) ))+ *(short *)guest_at((uint32_t)(uintptr_t)((t6 + 0x1c)));
             if (t7 < 0) {
@@ -5982,18 +5985,19 @@ uint32_t sphere_pt_hit(int r0,int r1,int *p,int *q,short *mid)
 void debug_strike_fx_a(short *pos,int x,int y,uint32_t unused,int f)
 {
   int en;
-  /* Guest vec3 slot: quad_fx_spawn reads y[0..2] as 3
-   * contiguous u32; the decompiler split the 12-uint8_t vec3 into
-   * scalars. vpos[0..2] = old vpos/local_24/local_20. */
-  int vpos [3];
   if ((((DAT_1f8000b1 == '\0') && (en = always_one(8), en != 0)) &&
       ((*(uint16_t *)(_g_pad_buffer + 2) >> 4 & 1) != 0)) && (DAT_1f8000b1 == '\0')) {
     impact_fx_spawn(pos,0x40000001,0,0,0);
     if ((*(uint32_t *)guest_at((uint32_t)(uintptr_t)((f + 100) ))& 0x20000) != 0) {
-      vpos[0] = (int)*pos;
-      vpos[1] = (int)pos[1];
-      vpos[2] = (int)pos[2];
-      quad_fx_spawn(f,0x13,(uint32_t *)vpos,800,0x1000,0,1);
+      /* Guest builds the vec3 on its stack (sp+0x20) and passes that guest
+       * address to quad_fx_spawn. Stage the same 3 u32s below guest_sp()
+       * (red zone, same lifetime as the guest frame slot). */
+      uint32_t vpos_g = (uint32_t)(guest_sp() - 0x20);
+      uint32_t *vposp = (uint32_t *)guest_at(vpos_g);
+      vposp[0] = (uint32_t)*pos;
+      vposp[1] = (uint32_t)pos[1];
+      vposp[2] = (uint32_t)pos[2];
+      quad_fx_spawn(f,0x13,vpos_g,800,0x1000,0,1);
       emit_task_spawn(pos,6,x,y,0x18,1);
       emit_task_spawn(pos,6,x + 0x800,0x800 - y,0xc,1);
     }
@@ -7311,8 +7315,10 @@ void emit_task_spawn_b(uint32_t *pos,uint32_t ea,uint32_t eb,uint32_t fl)
 
 }
 
-/* quad_fx_spawn @0x80141814 — see emit_task_spawn (quad variant). */
-void quad_fx_spawn(int f,int kind,uint32_t *pos,uint16_t aux,uint16_t fl, int p6,int p7)
+/* quad_fx_spawn @0x80141814 — see emit_task_spawn (quad variant).
+ * pos is a GUEST address (a2): the vec3 is read through guest memory and the
+ * raw guest pointer is stored in pay[3] for quad_fx_update to re-deref. */
+void quad_fx_spawn(int f,int kind,uint32_t pos,uint16_t aux,uint16_t fl, int p6,int p7)
 {
   int d0;
   int d1;
@@ -7322,6 +7328,7 @@ void quad_fx_spawn(int f,int kind,uint32_t *pos,uint16_t aux,uint16_t fl, int p6
   uint16_t *tp;
   uint16_t w;
   int *pay;
+  uint32_t *pp = (uint32_t *)guest_at(pos);
   if (DAT_1f8000b1 != '\0') {
     return;
   }
@@ -7339,12 +7346,12 @@ void quad_fx_spawn(int f,int kind,uint32_t *pos,uint16_t aux,uint16_t fl, int p6
       if (kind != 0x17) {
 LAB_80141918:
         *pay = f;
-        pay[3] = (intptr_t)pos;
+        pay[3] = (int)pos;
         *(uint16_t *)(pay + 0x1c) = fl;
         *(short *)((intptr_t)pay + 0x72) = (short)p6;
-        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x14) ))= *pos;
-        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x18) ))= pos[1];
-        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x1c) ))= pos[2];
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x14) ))= pp[0];
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x18) ))= pp[1];
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)((*(int *)guest_at((uint32_t)(uintptr_t)(pay[1] ))+ 0x1c) ))= pp[2];
         if (p7 != 0) {
           prim_attr_word_set(pay[1],(p7 + 0x1e0U & 0x1ff) << 6 | 0x1a);
         }
