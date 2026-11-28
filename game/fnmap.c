@@ -1505,6 +1505,7 @@ extern void save_channel_init_commit(void);
 extern void save_defaults_fill(void);
 extern void save_flow_state_machine(void);
 extern void save_load_state_machine(void);
+extern void save_menu_stepper_cb(void);
 extern void save_rec_table_copy(void);
 extern void save_slot_state_fixup(void);
 extern void save_state_machine_alt(void);
@@ -1523,6 +1524,7 @@ extern void scratch_013_set(void);
 extern void scratch_zero_reset(void);
 extern void scratchpad_pair_init(void);
 extern void screen_flow_state_machine(void);
+extern void screen_menu_stepper_cb(void);
 extern void script_ctx28_clear(void);
 extern void script_entry_walk(void);
 extern void script_move_timer_eval(void);
@@ -2276,6 +2278,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8015c754, (void *)system_config_menu_a },
   { 0x8015caa8, (void *)dialog_msg_dispatch },
   { 0x8015d420, (void *)save_flow_state_machine },
+  { 0x8015d69c, (void *)save_menu_stepper_cb },
   { 0x8015e87c, (void *)display_cur_invalidate },
   { 0x8015e88c, (void *)display_pair_invalidate },
   { 0x8015e8a4, (void *)display_page_commit_a },
@@ -2297,6 +2300,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80160514, (void *)memcard_flow_poll_node },
   { 0x80160598, (void *)dialog_sel_dispatch },
   { 0x8016088c, (void *)screen_flow_state_machine },
+  { 0x80160a64, (void *)screen_menu_stepper_cb },
   { 0x80161630, (void *)ret_zero_e_entry_0x80161630 },
   { 0x80161c54, (void *)pad_handler_a },
   { 0x80162280, (void *)pad_handler_b },
