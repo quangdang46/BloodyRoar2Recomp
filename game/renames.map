@@ -2310,3 +2310,5 @@
 801a8ee0 prim_emit_xform_a
 801a91e0 prim_emit_xform_b
 801afb28 scene_prim_tag_dispatch
+8017b8d4 desc_u16pair_dispatch
+8017e6b0 desc_flagcond_store

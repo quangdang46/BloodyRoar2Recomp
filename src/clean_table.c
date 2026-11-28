@@ -10390,80 +10390,80 @@ extern void cps_8017b8d0(void);
     cps_8017b8d0();
 }
 static void wrap_8017b8d4(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b8e0(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b8fc(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b914(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b92c(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b944(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b950(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b970(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b974(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b98c(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b9b4(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b9c0(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b9cc(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017b9dc(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba04(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba10(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba18(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba30(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba34(CPUState *cpu) {
-extern void cps_8017b8d4(void);
-    cps_8017b8d4();
+extern void desc_u16pair_dispatch(void);
+    desc_u16pair_dispatch();
 }
 static void wrap_8017ba3c(CPUState *cpu) {
 extern void cps_8017ba3c(void);
@@ -11114,76 +11114,76 @@ extern void cps_8017e6ac(void);
     cps_8017e6ac();
 }
 static void wrap_8017e6b0(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6b8(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6c0(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6c8(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6d0(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6d8(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6e0(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6e8(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e6f8(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e704(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e714(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e724(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e730(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e740(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e74c(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e760(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e76c(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e774(CPUState *cpu) {
-extern void cps_8017e6b0(void);
-    cps_8017e6b0();
+extern void desc_flagcond_store(void);
+    desc_flagcond_store();
 }
 static void wrap_8017e77c(CPUState *cpu) {
 extern uint32_t battle_reset_tail(uint32_t obj,uint32_t unused,uint32_t desc);
