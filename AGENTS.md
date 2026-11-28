@@ -2091,3 +2091,26 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   to CWD — running it from the wrong tree (br2-recomp master, which was
   mid-merge) clobbered an unmerged src/clean_table.c; restored via
   `git checkout -m`. Always `cd` into the worktree first.
+
+### Session update 46 (devin-af — final unclaimed cps_/cpst_ sweep: 1166 rows retired)
+
+- **Scripted shadow-audit over all 732 unclaimed cps_/cpst_ symbols**
+  (2119 rows): retirable iff EVERY row addr has a generated
+  `SLES_017.22_dispatch.c` entry to a faithful `br2eu_func_*` body AND
+  the symbol comment is `clean CPS transliteration of ...`. Result:
+  557 symbols / **1166 rows RETIRED** in one verified batch — bands
+  0x8012 x639, 0x8017 x120, 0x8018 x45, 0x8019 x10, 0x801A x321,
+  0x801B x31. clean_table.c 5185 → **4013 wrappers**. Commit `a18dc8db`,
+  proof `proof/cps_final_sweep_retire_1166.md`.
+- **Ports: none needed** — every other unowned cluster either retired or
+  is CD-band (generated fallback already faithful).
+- **Deliberately left**: 14 CD/dev_cmd transliteration clusters (77
+  rows — cd_read_issue, cd_cmd_sequence, cd_subsys_init_full,
+  cd_kobj_init_a/b, cd_chan_full_init [devin-k restored], cd_mode_reset_seq,
+  cd_hw_chan_init, cd_channel_main_init, dev_cmd_seq,
+  dev_cmd_round_dispatch, cd_channel_table_init, cd_dir_entry_finalize,
+  cd_dispatch_tbl4) — pass the audit mechanically but carry §4 CD
+  wedge history; needs the CD-band owner's dedicated audit. Plus
+  cpst_8019b308 (8 rows — no generated coverage for embedded entry).
+- **Verify**: RelWithDebInfo build clean; arcade_fight_mash port 19875 —
+  FIGHT frame 4268, sustained 38k+ frames, gs 8↔9 cycling.
