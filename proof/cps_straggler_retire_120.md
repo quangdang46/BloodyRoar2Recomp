@@ -54,3 +54,18 @@ the retired CPS transliteration, minus the duplicate.
 The `cps_*`/`cpst_*` C functions themselves remain in `cps_clean.c` /
 `cd_irq_probe.c` (still referenced by any remaining rows and by their own
 continuation switches); only the dispatch rows are retired.
+
+## Addendum — 0x8012 band (85 more rows, commit 2)
+
+Same audit applied to the eight unclaimed 0x8012-band clusters; all 85
+rows have full generated dispatch coverage and each cps_ symbol is a
+transliteration of its br2eu_func_* twin. Retired:
+
+cps_8012ab30(13) cps_8012abe8(11) cps_8012c824(11) cps_8012a94c(10)
+cps_80129664(10) cps_8012b700(10) cps_8012b604(10) cps_8012f1b0(10)
+
+clean_table regen 5270 -> 5185 wrappers. `cps_801337bc` (11 rows)
+excluded — 0x8013 band is devin-q's claimed cluster.
+
+Verified: build clean; headless arcade — FIGHT frame 6600, LEFT FIGHT
+gs=8/9 cycling, frames sustain 34k+ (arcade_fight_mash port 19875).
