@@ -7176,25 +7176,17 @@
 
 80181f18 ani_cat_tail_ret
 
-80181ff8 fighter_script_fsm_cps
 
-80182090 fighter_script_fsm_cps
 
 80182118 fsm_combat_mode_eval
 
 8018212c fsm_combat_mode_eval
 
-801822d0 fighter_script_fsm_cps
 
-801823bc fighter_script_fsm_cps
 
-80182690 fighter_script_fsm_cps
 
-80182740 fighter_script_fsm_cps
 
-8018287c fighter_script_fsm_cps
 
-80182960 fighter_script_fsm_cps
 
 80182a58 fsm_script_vm_gate
 
@@ -11282,149 +11274,6 @@
 80158220 memcard_dialog_cps
 8015822c memcard_dialog_cps
 
-# Batch 58 (orch/w5-e05) — fighter_script_fsm_cps _cont resume rows.
-# Same yield-resume gap as the w3_e06 batch-56 rows: the body is
-# dispatched (entry rows above) but its 138 continuation PCs had
-# no rows, so a yield inside the script FSM resumed into
-# generated code. Rows point at the owning peer body.
-80181f70 fighter_script_fsm_cps
-80181f88 fighter_script_fsm_cps
-80181f94 fighter_script_fsm_cps
-80181fac fighter_script_fsm_cps
-80181fb0 fighter_script_fsm_cps
-80181fdc fighter_script_fsm_cps
-80182040 fighter_script_fsm_cps
-80182044 fighter_script_fsm_cps
-801820a4 fighter_script_fsm_cps
-801820b0 fighter_script_fsm_cps
-801820c0 fighter_script_fsm_cps
-801820d8 fighter_script_fsm_cps
-801820e0 fighter_script_fsm_cps
-80182134 fighter_script_fsm_cps
-8018213c fighter_script_fsm_cps
-80182144 fighter_script_fsm_cps
-80182154 fighter_script_fsm_cps
-80182158 fighter_script_fsm_cps
-80182164 fighter_script_fsm_cps
-80182170 fighter_script_fsm_cps
-80182178 fighter_script_fsm_cps
-80182180 fighter_script_fsm_cps
-80182190 fighter_script_fsm_cps
-801821a0 fighter_script_fsm_cps
-801821b4 fighter_script_fsm_cps
-801821bc fighter_script_fsm_cps
-801821cc fighter_script_fsm_cps
-801821dc fighter_script_fsm_cps
-80182218 fighter_script_fsm_cps
-80182248 fighter_script_fsm_cps
-80182250 fighter_script_fsm_cps
-80182258 fighter_script_fsm_cps
-8018226c fighter_script_fsm_cps
-80182274 fighter_script_fsm_cps
-801822a4 fighter_script_fsm_cps
-801822b8 fighter_script_fsm_cps
-801822bc fighter_script_fsm_cps
-801822c8 fighter_script_fsm_cps
-801822e4 fighter_script_fsm_cps
-801822f4 fighter_script_fsm_cps
-801822f8 fighter_script_fsm_cps
-8018230c fighter_script_fsm_cps
-80182318 fighter_script_fsm_cps
-8018233c fighter_script_fsm_cps
-80182350 fighter_script_fsm_cps
-80182370 fighter_script_fsm_cps
-801823a0 fighter_script_fsm_cps
-801823a8 fighter_script_fsm_cps
-801823b0 fighter_script_fsm_cps
-801823b8 fighter_script_fsm_cps
-801823d0 fighter_script_fsm_cps
-801823e4 fighter_script_fsm_cps
-801823ec fighter_script_fsm_cps
-80182408 fighter_script_fsm_cps
-80182420 fighter_script_fsm_cps
-80182444 fighter_script_fsm_cps
-80182448 fighter_script_fsm_cps
-80182458 fighter_script_fsm_cps
-8018246c fighter_script_fsm_cps
-80182474 fighter_script_fsm_cps
-80182480 fighter_script_fsm_cps
-80182494 fighter_script_fsm_cps
-801824a8 fighter_script_fsm_cps
-801824b4 fighter_script_fsm_cps
-801824bc fighter_script_fsm_cps
-801824c8 fighter_script_fsm_cps
-801824dc fighter_script_fsm_cps
-801824e4 fighter_script_fsm_cps
-801824e8 fighter_script_fsm_cps
-801824f8 fighter_script_fsm_cps
-80182500 fighter_script_fsm_cps
-80182518 fighter_script_fsm_cps
-8018252c fighter_script_fsm_cps
-80182530 fighter_script_fsm_cps
-80182544 fighter_script_fsm_cps
-80182564 fighter_script_fsm_cps
-80182590 fighter_script_fsm_cps
-801825cc fighter_script_fsm_cps
-801825e8 fighter_script_fsm_cps
-801825f8 fighter_script_fsm_cps
-80182608 fighter_script_fsm_cps
-80182678 fighter_script_fsm_cps
-8018267c fighter_script_fsm_cps
-801826a4 fighter_script_fsm_cps
-801826b0 fighter_script_fsm_cps
-801826c0 fighter_script_fsm_cps
-801826d4 fighter_script_fsm_cps
-801826dc fighter_script_fsm_cps
-801826ec fighter_script_fsm_cps
-801826f4 fighter_script_fsm_cps
-80182724 fighter_script_fsm_cps
-80182730 fighter_script_fsm_cps
-8018273c fighter_script_fsm_cps
-80182754 fighter_script_fsm_cps
-80182768 fighter_script_fsm_cps
-80182774 fighter_script_fsm_cps
-80182788 fighter_script_fsm_cps
-8018278c fighter_script_fsm_cps
-80182794 fighter_script_fsm_cps
-801827a0 fighter_script_fsm_cps
-801827b0 fighter_script_fsm_cps
-801827b8 fighter_script_fsm_cps
-801827e8 fighter_script_fsm_cps
-801827f4 fighter_script_fsm_cps
-80182800 fighter_script_fsm_cps
-8018280c fighter_script_fsm_cps
-80182814 fighter_script_fsm_cps
-8018284c fighter_script_fsm_cps
-80182860 fighter_script_fsm_cps
-80182868 fighter_script_fsm_cps
-80182874 fighter_script_fsm_cps
-8018288c fighter_script_fsm_cps
-80182894 fighter_script_fsm_cps
-801828a4 fighter_script_fsm_cps
-801828ac fighter_script_fsm_cps
-801828b8 fighter_script_fsm_cps
-801828c0 fighter_script_fsm_cps
-801828c8 fighter_script_fsm_cps
-801828d0 fighter_script_fsm_cps
-80182900 fighter_script_fsm_cps
-80182904 fighter_script_fsm_cps
-80182908 fighter_script_fsm_cps
-80182944 fighter_script_fsm_cps
-80182958 fighter_script_fsm_cps
-80182974 fighter_script_fsm_cps
-80182988 fighter_script_fsm_cps
-8018298c fighter_script_fsm_cps
-8018299c fighter_script_fsm_cps
-801829b4 fighter_script_fsm_cps
-801829ec fighter_script_fsm_cps
-801829fc fighter_script_fsm_cps
-80182a18 fighter_script_fsm_cps
-80182a4c fighter_script_fsm_cps
-80182a50 fighter_script_fsm_cps
-80182a80 fighter_script_fsm_cps
-80182a88 fighter_script_fsm_cps
-80182aa4 fighter_script_fsm_cps
-80182ea4 fighter_script_fsm_cps
 
 # Batch 59 (orch/w5/e05) — untimed-band _cont/entry resume rows.
 # Precise audit: only switch(_cont)/switch(entry)/switch(cpu->pc)
