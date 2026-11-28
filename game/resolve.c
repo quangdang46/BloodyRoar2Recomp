@@ -196,7 +196,7 @@ extern void keyframe_blend_apply(uint8_t*,uint8_t*);
 void keyframe_advance(uint8_t*,uint8_t*);
 void skeleton_pose_step(uint8_t*,uint16_t*,uint8_t*,int);
 extern void fx_record_alloc(int,int,int,int,void*);
-extern void quad_fx_spawn(int,int,uint32_t*,uint16_t,uint16_t,int,int);
+extern void quad_fx_spawn(int,int,uint32_t,uint16_t,uint16_t,int,int);
 extern void triple_track_spawn(int,int,int);
 uint64_t vec2_rot_lut(uint32_t,int);
 void anim_lerp_scalar(short*,short,int,int);
@@ -2785,7 +2785,7 @@ void fighter_reset_fx(int reset,uint8_t *ctrl)
 {
   if ((DAT_1f8000b1 == '\0') && (reset == 1)) {
     fx_record_alloc(*(int *)(ctrl + 0x20) + 0x124,6,0x8000000e,0x83,&DAT_801b1d48);
-    quad_fx_spawn((int)guest_of(ctrl),0x12,(uint32_t *)guest_at((uint32_t)(*(int *)(ctrl + 0x20) + 0x124)),0x420,0x3000,2,2);
+    quad_fx_spawn((int)guest_of(ctrl),0x12,(uint32_t)(*(int *)(ctrl + 0x20) + 0x124),0x420,0x3000,2,2);
     triple_track_spawn(*(uint8_t *)(ctrl + 2),0x30,0);
   }
   return;

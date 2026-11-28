@@ -7886,8 +7886,8 @@ extern void quad_fx_update(int rec);
     quad_fx_update(((int)cpu->gpr[4]));
 }
 static void wrap_80141814(CPUState *cpu) {
-extern void quad_fx_spawn(int f,int kind,uint32_t *pos,uint16_t aux,uint16_t fl, int p6,int p7);
-    quad_fx_spawn(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((uint32_t *)guest_at(cpu->gpr[6])), ((uint16_t)cpu->gpr[7]), ((uint16_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)));
+extern void quad_fx_spawn(int f,int kind,uint32_t pos,uint16_t aux,uint16_t fl, int p6,int p7);
+    quad_fx_spawn(((int)cpu->gpr[4]), ((int)cpu->gpr[5]), ((uint32_t)cpu->gpr[6]), ((uint16_t)cpu->gpr[7]), ((uint16_t)(uint32_t)cpu->read_word((cpu->gpr[29] + 16) & 0xffffffffu)), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 20) & 0xffffffffu)), ((int)(uint32_t)cpu->read_word((cpu->gpr[29] + 24) & 0xffffffffu)));
 }
 static void wrap_80141b78(CPUState *cpu) {
 extern uint16_t * ev_spark_spawn(int ctrl_g,uint32_t unused,uint16_t *stream);
