@@ -3060,10 +3060,16 @@ void menu_stepper_state_advance(void *desc)
      * Guest jalr is unconditional: a0 = desc guest addr, a1 = lhu @+8. */
     uint32_t cb_g = *(uint32_t *)(p + 0xc);
     void *cb = fn_lookup(cb_g);
-    if (cb != NULL)
+    if (cb != NULL) {
+      /* Stage gpr[4]/[5] so a clean cb that reads cpu->gpr for its args
+       * sees the jalr values, not the outer function's stale regs.
+       * gpr[6]/[7] already hold the faithful live a2/a3 passthrough. */
+      CPUState *c = clean_cpu_state();
+      if (c != NULL) { c->gpr[4] = guest_of(desc); c->gpr[5] = *(uint16_t *)(p + 8); }
       ((void (*)(void *,uint16_t))cb)(desc,*(uint16_t *)(p + 8));
-    else
+    } else {
       call_guest(cb_g,guest_of(desc),(uint32_t)*(uint16_t *)(p + 8));
+    }
   }
   menu_stepper_redraw(desc);
 }
@@ -4818,10 +4824,13 @@ L_cb:
      * fn_lookup — not a host pointer. */
     uint32_t cb_g = *(uint32_t *)(p + 0xc);
     void *cb = fn_lookup(cb_g);
-    if (cb != NULL)
+    if (cb != NULL) {
+      CPUState *c = clean_cpu_state();
+      if (c != NULL) { c->gpr[4] = guest_of(desc); c->gpr[5] = *(uint16_t *)(p + 8); }
       ((void (*)(void *,uint16_t))cb)(desc,*(uint16_t *)(p + 8));
-    else
+    } else {
       call_guest(cb_g,guest_of(desc),(uint32_t)*(uint16_t *)(p + 8));
+    }
   }
 L_tail:
   menu_stepper_masked_sweep(desc,btn_mask);
@@ -5286,8 +5295,13 @@ void menu_stepper_masked_sweep(void *desc, uint32_t btn_mask)
       (void (*)(void *,uint32_t))fn_lookup(cb_g);
   uint32_t bidx;
 #define CB_CALL(code_) do { \
-    if (cb != NULL) cb(desc,(code_)); \
-    else            call_guest(cb_g,guest_of(desc),(code_)); \
+    if (cb != NULL) { \
+      CPUState *c_ = clean_cpu_state(); \
+      if (c_ != NULL) { c_->gpr[4] = guest_of(desc); c_->gpr[5] = (code_); } \
+      cb(desc,(code_)); \
+    } else { \
+      call_guest(cb_g,guest_of(desc),(code_)); \
+    } \
   } while (0)
   CB_CALL(0x100);
   if (*(uint16_t *)(p + 6) == 0) goto L_tail;

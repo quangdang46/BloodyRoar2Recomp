@@ -2365,21 +2365,31 @@ void menu_stepper_redraw(void *desc)
    * unported targets fall back to call_guest so the generated body runs. */
   uint32_t cb_g = *(uint32_t *)(p + 0xc);
   cb = (void (*)(void *,uint32_t))fn_lookup(cb_g);
-  if (cb != NULL) cb(desc,0x100);
-  else            call_guest(cb_g,guest_of(desc),0x100);
+  /* Stage gpr[4]/[5] before each direct cb call so a clean cb reading
+   * cpu->gpr sees the jalr args (desc guest addr, row code), not stale
+   * outer-function regs. gpr[6]/[7] keep the live a2/a3 passthrough. */
+#define CB_STAGE(code_) do { \
+    CPUState *c_ = clean_cpu_state(); \
+    if (c_ != NULL) { c_->gpr[4] = guest_of(desc); c_->gpr[5] = (code_); } \
+  } while (0)
+#define CB_DISP(code_) do { \
+    if (cb != NULL) { CB_STAGE(code_); cb(desc,(code_)); } \
+    else            call_guest(cb_g,guest_of(desc),(code_)); \
+  } while (0)
+  CB_DISP(0x100);
   i = 1;
   for (;;) {
     uint32_t code;
     if (i == *(uint16_t *)(p + 8)) menu_row_paint(desc);
     else                            menu_row_paint_b(desc);
     code = (i + 0x100) & 0xffff;
-    if (cb != NULL) cb(desc,code);
-    else            call_guest(cb_g,guest_of(desc),code);
+    CB_DISP(code);
     i++;
     if (*(uint16_t *)(p + 6) < i) break;
   }
-  if (cb != NULL) cb(desc,0x1ff);
-  else            call_guest(cb_g,guest_of(desc),0x1ff);
+  CB_DISP(0x1ff);
+#undef CB_DISP
+#undef CB_STAGE
 }
 
 /* menu_stepper_input — menu stepper input: pad flags @0x1f80007e; uint8_t+5
