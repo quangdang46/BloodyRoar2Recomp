@@ -1,14 +1,14 @@
 {
   "done": 1999,
-  "todo": 4270,
-  "total": 6269,
-  "percent": 31.89,
+  "todo": 4190,
+  "total": 6189,
+  "percent": 32.3,
   "groups": [
     {
       "name": "cps_clean",
       "label": "cps_clean",
       "done": 0,
-      "todo": 2071
+      "todo": 1991
     },
     {
       "name": "cd_irq_probe",
@@ -395,5 +395,5 @@
       "todo": 1
     }
   ],
-  "cps_rows_remaining": 4152
+  "cps_rows_remaining": 4050
 }
