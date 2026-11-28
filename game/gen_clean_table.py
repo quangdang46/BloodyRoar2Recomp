@@ -311,7 +311,7 @@ WRAP_OK_DELEGATE = {
 # wrapper so dispatch falls through to generated, matching the proven
 # PSX_CPS_KEEP boot config. fn_lookup still resolves them for indirect calls.
 GENERATED_ONLY = {
-    0x8019e39c, 0x801a0be0, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a36f0,
+    0x8019e39c,
     # NOTE: 0x80126234 (guest_main) was excluded here after a bisect blamed it
     # for the attract-exit regression — but the real defect turned out to be
     # ctx_fn_send (0x801a30c0) dropping a1-a3 on its fn-ptr jalr. With that
