@@ -1837,3 +1837,17 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   missing, ~481MB). formats/ has FORMATS_ACT_ANI.md + FORMATS_DAT.md +
   parse_act/parse_ani/dump_dat.py. In flight: audio (.SND/.XA/.STR→wav),
   stage/UI/common formats, character .DAT section decode.
+
+### Session update 38b (droid-b merge + CMake GLOB gotcha)
+
+- **Merged `agent/droid-b` (`08fa9faa`)**: clean ports
+  `task_packet_transform` (0x8013dbd8, 634 LoC) + `fx_record_update`
+  (0x8013ae1c, 380 LoC) in new files `game/task_packet_transform.c` /
+  `game/fx_record_update.c`; 51 clean_cps.map rows retired. Build +
+  headless boot verified (attract ARMED).
+- **⚠ CMake GLOB gotcha**: `game/*.c` is `file(GLOB)` at configure time —
+  agents adding NEW .c files must re-run `cmake -S . -B build` before
+  `cmake --build`, else link fails with undefined `_<newfn>` symbols.
+- Master @ `068c0036`. Remaining fleet: devin-a (anim workblock port,
+  recon_80138.c +1134), droid-c (cps_80134c30+cps_8014c324, verifying),
+  devin-d (indirect-call audit r3, 7 files).
