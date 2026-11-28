@@ -315,6 +315,7 @@
 80175e08 slot_apply_guest
 8017a05c apply_guest
 80175898 reset_guest
+80175a18 entry_rate_seed
 80175a7c entry_setup_guest
 80181db8 ani_fixup_guest
 80178664 pending_gate_guest
@@ -332,6 +333,7 @@
 8012bf0c banner_stripe_scroll
 8012a884 cursor_sprite_anim
 8014f1c8 select_cursor_step
+801484e8 slot_flags_patch
 80148528 select_confirm_handler
 80153484 select_phase_gate
 80127b64 selection_stat_bump
@@ -459,6 +461,7 @@
 80158e5c cd_sector_debug_dump
 801690fc record_table_expand_b
 8017d378 condition_word_dispatch
+8017d6ac desc_param_bytes_dispatch
 8017d7f4 button_cond_eval
 80140518 script_entry_walk
 8014140c color_rec_table_init

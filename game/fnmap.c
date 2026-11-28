@@ -574,6 +574,7 @@ extern void desc_frag_sum_store(void);
 extern void desc_frag_tail(void);
 extern void desc_h2_f30_sum(void);
 extern void desc_opcode_dispatch(void);
+extern void desc_param_bytes_dispatch(void);
 extern void desc_ret_a2p2(void);
 extern void desc_ret_a2p2_b(void);
 extern void desc_ret_a2p4(void);
@@ -665,6 +666,7 @@ extern void empty_ret(void);
 extern void engine_record_pair_update(void);
 extern void engine_tables_restore(void);
 extern void entry_attr_bump_loop(void);
+extern void entry_rate_seed(void);
 extern void entry_setup_guest(void);
 extern void euler_rotmat(void);
 extern void euler_rotmat_core(void);
@@ -1579,6 +1581,7 @@ extern void slot_byte_commit(void);
 extern void slot_display_pos(void);
 extern void slot_field_clear(void);
 extern void slot_field_clear_wrap(void);
+extern void slot_flags_patch(void);
 extern void slot_height_proj(void);
 extern void slot_icon_nibble_resolve(void);
 extern void slot_mark2_set(void);
@@ -2060,6 +2063,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80147cdc, (void *)sprite_blit_center_a },
   { 0x80147df4, (void *)battle_bringup_b },
   { 0x80148170, (void *)battle_bringup_a },
+  { 0x801484e8, (void *)slot_flags_patch },
   { 0x80148528, (void *)select_confirm_handler },
   { 0x801487ac, (void *)fighter_spawn_setup },
   { 0x80148cb0, (void *)width3_num_format },
@@ -2439,6 +2443,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80175760, (void *)sprite_rect_set_c },
   { 0x801757b8, (void *)players_ctrl_init },
   { 0x80175898, (void *)reset_guest },
+  { 0x80175a18, (void *)entry_rate_seed },
   { 0x80175a7c, (void *)entry_setup_guest },
   { 0x80175e08, (void *)slot_apply_guest },
   { 0x80175fec, (void *)action_enter_fwd },
@@ -2496,6 +2501,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017d19c, (void *)desc_frag_sum_store },
   { 0x8017d1c4, (void *)desc_frag_tail },
   { 0x8017d378, (void *)condition_word_dispatch },
+  { 0x8017d6ac, (void *)desc_param_bytes_dispatch },
   { 0x8017d7f4, (void *)button_cond_eval },
   { 0x8017db88, (void *)desc_cmd_interp },
   { 0x8017e138, (void *)desc_cmd_map },
