@@ -321,6 +321,11 @@ GENERATED_ONLY = {
     0x8019e55c, 0x8019e5cc, 0x8019e600, 0x801a0660, 0x801a0be0,
     0x801a0ddc, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a2808,
     0x801a2ec8, 0x801a36f0,
+    # NOTE: 0x80126234 (guest_main) was excluded here after a bisect blamed it
+    # for the attract-exit regression — but the real defect turned out to be
+    # ctx_fn_send (0x801a30c0) dropping a1-a3 on its fn-ptr jalr. With that
+    # fixed, guest_main's clean port is restored and verified (ARM + attract
+    # exit + versus). See save.c ctx_fn_send.
 }
 
 # Guest addrs whose leading param is a HOST pointer even though declared as a

@@ -8187,17 +8187,18 @@ void cd_channel_init(void)
 /* 0x801a30c0 — ctx fn-ptr call + dev_byte_xfer(ctx,-2). */
 void ctx_fn_send(uint8_t *a0)
 {
+  /* Guest jalr is unconditional: a0 = ctx guest addr, a1-a3 = caller's live
+   * regs (jalr passthrough), $t0 = link target. fn_lookup + a 1-arg direct
+   * call dropped a1-a3 (and skipped $t0/$ra observables) — cd_cmd_state_commit
+   * ran with a garbage a1 and the channel-record arm chain never completed
+   * (bisect-proven: excluding only 0x801a30c0 restores the ARM). Route through
+   * br2_call_clean which forwards all four arg regs + $t0 faithfully. */
+  CPUState *cpu = clean_cpu_state();
   uint32_t fn_g = *(uint32_t *)guest_at(0x801be798);
-  void *fn = fn_lookup(fn_g);
-  uint32_t r = 0;
-  if (fn != NULL) {
-    r = ((uint32_t (*)(uint32_t))fn)(guest_of(a0));
-  } else {
-    /* Guest jalr is unconditional: a0 = desc guest addr, a1 = caller's
-     * live $a1 (jalr passthrough), a2/a3 likewise untouched. */
-    CPUState *cpu = clean_cpu_state();
-    r = call_guest(fn_g,guest_of(a0),cpu != NULL ? cpu->gpr[5] : 0u);
-  }
+  uint32_t r = br2_call_clean(fn_g, guest_of(a0),
+      cpu != NULL ? cpu->gpr[5] : 0u,
+      cpu != NULL ? cpu->gpr[6] : 0u,
+      cpu != NULL ? cpu->gpr[7] : 0u);
   *(uint32_t *)guest_at(0x801be800) = r;
   *(uint8_t *)guest_at(*(uint32_t *)(a0 + 0x3c)) = 0;
   dev_byte_xfer(a0,-2);
