@@ -300,6 +300,29 @@ WRAP_OK_DELEGATE = {
     # would recurse. It stays generated-authoritative per the delegation rule.
 }
 
+# Guest addrs that must stay GENERATED-authoritative: their fnmap clean port
+# is correct for direct C callers but cannot replace the generated CPS frame
+# when reached via cpu->pc / jal dispatch — the §4 deferred-IRQ coroutine
+# contract needs live resume-PC + per-block psx_check_interrupts_at that a
+# flag-0 wrapper cannot supply (clean_try_dispatch forces pc=$ra on return,
+# clobbering any coroutine yield). These addrs were previously shadowed by
+# clean_cps.map rows (flag 1, KEEP-filterable to generated); with those rows
+# retired the fnmap port would win and flip them to flag 0. Force-skip the
+# wrapper so dispatch falls through to generated, matching the proven
+# PSX_CPS_KEEP boot config. fn_lookup still resolves them for indirect calls.
+GENERATED_ONLY = {
+    0x80194470, 0x8019457c, 0x80194614, 0x8019466c, 0x80194940,
+    0x80196370, 0x801968cc, 0x80196b4c, 0x80196e14, 0x801979f8,
+    0x801985c4, 0x80198af0, 0x80198c90, 0x80198e2c, 0x801990f0,
+    0x80199440, 0x8019a00c, 0x8019a09c, 0x8019a350, 0x8019a364,
+    0x8019a378, 0x8019a3f0, 0x8019a460, 0x8019a5d8, 0x8019a6e0,
+    0x8019a814, 0x8019a8ec, 0x8019aabc, 0x8019b308, 0x8019b310,
+    0x8019d500, 0x8019d508, 0x8019e330, 0x8019e39c, 0x8019e4c8,
+    0x8019e55c, 0x8019e5cc, 0x8019e600, 0x801a0660, 0x801a0be0,
+    0x801a0ddc, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a2808,
+    0x801a2ec8, 0x801a36f0,
+}
+
 # Guest addrs whose leading param is a HOST pointer even though declared as a
 # scalar (intptr_t). These clean fns dereference param_1 directly as a host
 # buffer (e.g. battle_flow_state_machine reads lhu at +2/+4 pad buttons), so
@@ -391,6 +414,8 @@ ARG_GPRS = {
 # ---- emit loop: classify each entry, build wrapper + dispatch row ----
 wrappers, table, skipped = [], [], []
 for addr, name in sorted(entries):
+    if addr in GENERATED_ONLY:
+        skipped.append((addr, name, 'generated-only')); continue
     if name not in defs:
         skipped.append((addr, name, 'no-def')); continue
     ret_raw, params, f, gen_args, call_args = defs[name]

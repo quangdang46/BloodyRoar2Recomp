@@ -1651,3 +1651,38 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   cd_cb8_dispatch 0x8019AE68, bios_tramp_b017 0x8019AD60 — the CD
   driver proper. The buggy transliteration is probably one of the
   cpst_ timing variants of these.
+
+### Session update 35 (wedge puzzle SOLVED + frame-1467 crash root-caused to cpst_8018cfdc)
+
+- **Removal-vs-KEEP puzzle RESOLVED**: deleting the 1924 clean_cps.map rows
+  in 0x80194000–0x801A8000 is dispatch-equivalent to the proven
+  `PSX_CPS_KEEP` config — PROVIDED every fnmap-named addr the cps rows
+  shadowed is force-generated. `gen_clean_table.py` gained a
+  `GENERATED_ONLY` set (47 addrs = every deleted row that also had a
+  renames.map entry; the original 22 was incomplete — cd_cmd_issue
+  0x80196E14, cd_result_wait_a 0x801968cc etc. were missing and their
+  flag-0 clean wrappers ran where generated CPS frames were required).
+- **NEW deterministic crash found + fixed**: `DISPATCH FATAL: misaligned
+  target 0x00120201` at ~frame 1412–1467, ra=0x80126220 = the
+  post-`jal guest_main` break — i.e. guest_main RETURNED via the
+  bail-unwind path. **Pre-existing under PSX_CPS_KEEP** (old table +
+  env reproduces identically); the earlier "proven fix" only fixed the
+  gs=0 boot wedge, nobody ran it past ~frame 1412. Bisected with
+  PSX_CPS_KEEP ranges (~3 min per probe): culprit = the
+  **cpst_8018cfdc coroutine (cd_file_load_sm, 25 map rows)** — its clean
+  CPS transliteration corrupts flow on file loads (~frame 1467 CD
+  activity). `PSX_NO_CPS=1` never crashed (45k+ frames) confirming
+  generated is authoritative for this fn — consistent with §4
+  (cd_file_load_sm is already a delegated port calling
+  `br2_call_clean(0x8018cfdc)`; with the rows gone it falls through to
+  `psx_dispatch_call` generated).
+- **Fix**: retired all 25 cpst_8018cfdc rows. Verified: boot healthy
+  (gs=06, vblank ack≈deliver), 63k+ frames no crash, versus_fight_mash
+  driving. NOTE: bisect configs were MIXED (entry piece clean + tail
+  pieces ≥0x8018d000 generated) — every crash config had the entry clean;
+  every clean config had all 25 generated, so the fully-clean coroutine
+  is itself buggy, not just the boundary.
+- **Watch for siblings**: other cpst_/cps_ auto-transliterations may
+  have the same latent bug — whack-a-mole via the same KEEP-bisect if a
+  new frame-N crash appears. `tools/bisect_keep.sh` +
+  `tools/wedge_test.sh` are the probe harness.
