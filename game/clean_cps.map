@@ -312,6 +312,18 @@
 
 
 # --- impact_fx_update cluster + op_cb ctx8 callbacks ---
+# ANALYZED 2026-11-28 (devin-t): the cps_80138cec/801393b8/80139834/80139954/
+# 80139a0c/80139d98 rows are mid-function continuations of ONE guest function
+# (impact_fx_update @0x80138CEC, ~0x1120 bytes to ~0x80139E0B). They CANNOT be
+# retired piecemeal: the function's type dispatch is a computed goto
+# (lw v0,(0x801200B8+type*4); jr v0) whose alias entries land INSIDE these
+# pieces (0x80139424/9504/9560/9620/9664/9830 in cps_801393b8, 0x80139A74/9DE8
+# in the 39a0c/39d98 pieces), and every piece consumes the live s0-s5 file
+# the prologue installs. battle.c impact_fx_update already self-delegates the
+# whole body via call_guest4 per the delegation rule; the rows are
+# load-bearing for that CPS continuation chain (cpu->pc handoffs between
+# pieces). Only a whole-function clean port (~110 rows, GTE + mul/div +
+# nested jal) could retire them — deferred as too large/risky for now.
 
 801393b8 cps_801393b8
 
