@@ -568,6 +568,7 @@ extern void desc_f84_f90_commit(void);
 extern void desc_f88_get(void);
 extern void desc_f88_set_a2p2(void);
 extern void desc_flagbit_dispatch(void);
+extern void desc_flagcond_store(void);
 extern void desc_flagword_b27_clear(void);
 extern void desc_flagword_b27_set(void);
 extern void desc_frag_op_dispatch(void);
@@ -594,6 +595,7 @@ extern void desc_slot_alloc(void);
 extern void desc_slot_fill_x15(void);
 extern void desc_state_commit(void);
 extern void desc_transform_dispatch(void);
+extern void desc_u16pair_dispatch(void);
 extern void descblk_variant_a(void);
 extern void descblk_variant_b(void);
 extern void descblk_variant_c(void);
@@ -1237,6 +1239,7 @@ extern void op_tag_dispatch(void);
 extern void op_tbl_elem_copy(void);
 extern void op_trace_print_a(void);
 extern void op_trace_print_b(void);
+extern void op_verts_a558(void);
 extern void op_verts_a618(void);
 extern void op_verts_a7e8(void);
 extern void op_walk_dispatch_a(void);
@@ -2579,6 +2582,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017b648, (void *)desc_ret_a2p4_b },
   { 0x8017b668, (void *)desc_analog_dispatch },
   { 0x8017b8b4, (void *)desc_ret_a2p6 },
+  { 0x8017b8d4, (void *)desc_u16pair_dispatch },
   { 0x8017baac, (void *)desc_ret_a2p6_b },
   { 0x8017bad4, (void *)desc_flagbit_dispatch },
   { 0x8017bd8c, (void *)desc_ret_a2p2_b },
@@ -2608,6 +2612,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8017db88, (void *)desc_cmd_interp },
   { 0x8017e138, (void *)desc_cmd_map },
   { 0x8017e46c, (void *)desc_cursor_advance },
+  { 0x8017e6b0, (void *)desc_flagcond_store },
   { 0x8017e77c, (void *)battle_reset_tail },
   { 0x8017e840, (void *)ev_cam_param_dispatch },
   { 0x8017e87c, (void *)ev_cam_op00 },
@@ -3525,6 +3530,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801aa3fc, (void *)op_slot_free },
   { 0x801aa47c, (void *)op_walk_dispatch_c },
   { 0x801aa4fc, (void *)tween_seq_step },
+  { 0x801aa558, (void *)op_verts_a558 },
   { 0x801aa618, (void *)op_verts_a618 },
   { 0x801aa7e8, (void *)op_verts_a7e8 },
   { 0x801aa96c, (void *)data_relocate },
