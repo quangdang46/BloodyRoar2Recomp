@@ -12159,3 +12159,20 @@
 801a2efc cd_cmd_rec_arm_op
 801a2f04 cd_cmd_rec_arm_op
 801a2f44 cd_cmd_rec_arm_op
+
+# GENERATED_ONLY restoration — bbbd6966 collateral rows
+80194470 gte_screen_init_defer_mfhi
+8019457c fixed_rsqrt_q12_zero_result
+80194614 fixed_point_ret_neg1
+801979f8 cd_response_pump
+80197a2c cd_response_pump
+80197a34 cd_response_pump
+80197a40 cd_response_pump
+80197a48 cd_response_pump
+80197a5c cd_response_pump
+80197a6c cd_response_pump
+80197a70 cd_response_pump
+80197a78 cd_response_pump
+80197a8c cd_response_pump
+80197a9c cd_response_pump
+80197aa4 cd_response_pump
