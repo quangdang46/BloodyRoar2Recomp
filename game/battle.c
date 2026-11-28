@@ -6204,6 +6204,14 @@ switchD_801289e8_caseD_4:
 
 }
 
+/* ret_t0_lo16 @0x801289F0 — alias entry sharing pad_hist_record's
+ * epilogue tail: guest `jr $ra` at 0x801289F0 with delay slot
+ * `andi v0,t0,0xFFFF` at 0x801289F4. Returns the low 16 bits of t0. */
+uint32_t ret_t0_lo16(void)
+{
+  return clean_cpu_state()->gpr[8] & 0xFFFFu;
+}
+
 /* fighter_script_fsm @0x80181f20 — per-fighter script bytecode VM: fetch
  * opcode at ip, dispatch handler through the opcode table, update
  * phase/operand regs until the script ends. */
