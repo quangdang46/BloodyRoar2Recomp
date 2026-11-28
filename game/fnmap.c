@@ -663,6 +663,7 @@ extern void elem_pair_flag100(void);
 extern void elem_pair_flag100_wrap(void);
 extern void elem_pair_flag8(void);
 extern void elem_pair_flag8_wrap(void);
+extern void emit_fx_task_update(void);
 extern void emit_tail_ra(void);
 extern void emit_tail_zero(void);
 extern void emit_task_spawn(void);
@@ -1680,6 +1681,7 @@ extern void sprite_blit_center_a(void);
 extern void sprite_blit_center_b(void);
 extern void sprite_burst_spawn(void);
 extern void sprite_desc_table_init(void);
+extern void sprite_kind_emit_dispatch(void);
 extern void sprite_node_alloc(void);
 extern void sprite_node_alloc_commit(void);
 extern void sprite_node_emit_a(void);
@@ -1698,6 +1700,8 @@ extern void sprite_rect_table_init(void);
 extern void sprite_slot_commit(void);
 extern void sprite_strip_draw_dual(void);
 extern void stage_char_data_load(void);
+extern void stage_env_fx_task_emit(void);
+extern void stage_env_fx_task_xform(void);
 extern void stage_env_task_spawn(void);
 extern void stage_fight_announce(void);
 extern void stat_counter_accum(void);
@@ -1980,6 +1984,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801341a0, (void *)channel_script_emit_triple },
   { 0x80134234, (void *)channel_script_emit_chain_triple },
   { 0x801343bc, (void *)fighter_hud_emit_pair },
+  { 0x80134648, (void *)sprite_kind_emit_dispatch },
   { 0x80134b34, (void *)channel_script_emit_chain_tick },
   { 0x80134c30, (void *)channel_script_emit_slot_cycle },
   { 0x80134e44, (void *)channel_script_emit_chain },
@@ -2038,8 +2043,11 @@ const Br2FnEnt fn_table[] = {
   { 0x8013b088, (void *)fx_record_alloc },
   { 0x8013b12c, (void *)iris_wipe_update },
   { 0x8013b5a8, (void *)iris_wipe_spawn },
+  { 0x8013b844, (void *)stage_env_fx_task_xform },
+  { 0x8013bf2c, (void *)stage_env_fx_task_emit },
   { 0x8013c9cc, (void *)stage_env_task_spawn },
   { 0x8013cde8, (void *)node_list_collect },
+  { 0x8013ce68, (void *)emit_fx_task_update },
   { 0x8013d6b0, (void *)emit_task_spawn },
   { 0x8013d7e4, (void *)confetti_burst_update },
   { 0x8013da2c, (void *)confetti_burst_spawn },

@@ -318,6 +318,24 @@ GENERATED_ONLY = {
     # exit + versus). See save.c ctx_fn_send.
 }
 
+# Fnmap clean ports that are transliterations of multi-piece CPS clusters
+# (game/recon_8013.c). Their bodies keep the CPS `cpu->pc = X; return`
+# cross-piece edges so sibling cps_/generated pieces stay authoritative for
+# continuations — but a flag-0 wrapper forces cpu->pc = $ra on return,
+# silently clobbering every such yield (lost j/tail edges -> truncated task
+# chains -> wild dispatch). Mark them CLEAN_ENT_CPS (flag 1) so the wrapper
+# preserves a non-ra cpu->pc exactly like a cps_ piece. The ports manage
+# their own guest frame (prologue/epilogue in-body), so the CPS sp
+# save/restore skip is also the correct contract; they carry no cpu->pc
+# entry-switch because they only ever dispatch at the function entry.
+CPS_CONTINUATION_PORTS = {
+    0x80134648,   # sprite_kind_emit_dispatch      (recon_8013.c)
+    0x80138cec,   # impact_fx_update -> _cps port  (recon_8013.c via battle.c shim)
+    0x8013b844,   # stage_env_fx_task_xform        (recon_8013.c)
+    0x8013bf2c,   # stage_env_fx_task_emit         (recon_8013.c)
+    0x8013ce68,   # emit_fx_task_update            (recon_8013.c)
+}
+
 # Guest addrs whose leading param is a HOST pointer even though declared as a
 # scalar (intptr_t). These clean fns dereference param_1 directly as a host
 # buffer (e.g. battle_flow_state_machine reads lhu at +2/+4 pad buttons), so
@@ -493,7 +511,7 @@ for addr, name in sorted(entries):
         body = f'    cpu->gpr[2] = guest_of((const void *)({call}));\n'
     wrappers.append(f'static void {wname}(CPUState *cpu) {{\n{decl}\n{body}}}\n')
     table.append((addr, wname, clean_cost(addr), clean_frame(addr),
-                  1 if addr in cps_addrs else 0))
+                  1 if (addr in cps_addrs or addr in CPS_CONTINUATION_PORTS) else 0))
 
 # ---- assemble src/clean_table.c ----
 out = []

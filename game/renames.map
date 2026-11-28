@@ -776,6 +776,10 @@
 80197b30 cd_search_file
 80186aa8 gte_vec_transform_emit
 8013cde8 node_list_collect
+80134648 sprite_kind_emit_dispatch
+8013b844 stage_env_fx_task_xform
+8013bf2c stage_env_fx_task_emit
+8013ce68 emit_fx_task_update
 8018bda4 corner_emit_cond_offset
 8018be28 corner_emit_variant
 8018ee28 debug_line_putc

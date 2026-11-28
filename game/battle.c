@@ -10013,24 +10013,21 @@ void xform_accum_tick(uint32_t *rec)
 
 }
 
+/* impact_fx_update_cps — clean port of the cps_80138cec cluster in
+ * game/recon_8013.c (guest 0x80138CEC head + inline type cases; the
+ * computed-goto type continuations still tail-dispatch via cpu->pc into
+ * the sibling CPS pieces / generated alias body, which stay authoritative
+ * for them). Guest jal sets a0=rec; a1..a3 are live caller leftovers. */
+extern void impact_fx_update_cps(void);
+
 /* impact_fx_update @0x80138cec — per-tick update for an impact FX record. */
 void impact_fx_update(int rec)
 {
-  /* guest impact_fx_update @0x80138CEC: after the type switch, EVERY
-   * non-returning case reaches a computed goto — lw v0,(0x801200B8+type*4);
-   * jr v0 — into mid-function continuations (0x80138F48..0x8013A014) that
-   * consume the function's live s-register file (s1=record, s3=0x1F8003FC,
-   * s4=0x1F8000xx, s5=0x1F8003F8 plus working s0/s2; the prologue saves
-   * only s0-s5+ra — no s6/s7/fp).
-   * That register state cannot be reconstructed from clean C locals, so the
-   * whole body delegates to the generated implementation (faithful per the
-   * delegation rule) rather than guessing the jump-table dispatch.
-   * Guest jal sets a0=rec; a1..a3 are live caller leftovers. */
-  { CPUState *c_ = clean_cpu_state();
-    call_guest4(0x80138CECu,(uint32_t)rec,
-                (c_ != NULL) ? c_->gpr[5] : 0,
-                (c_ != NULL) ? c_->gpr[6] : 0,
-                (c_ != NULL) ? c_->gpr[7] : 0); }
+  /* C-ABI shim for the recon_8013.c port: stage the guest a0 and run the
+   * transliterated body on the live CPUState (a1..a3 already live). */
+  CPUState *c_ = clean_cpu_state();
+  if (c_ != NULL) c_->gpr[4] = (uint32_t)rec;
+  impact_fx_update_cps();
 }
 
 /* impact_fx_emit_tick @0x80139e0c — emit pass for an impact FX record. */
