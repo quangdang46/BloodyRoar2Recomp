@@ -314,8 +314,7 @@ GENERATED_ONLY = {
     0x80196370, 0x801968cc, 0x80196b4c, 0x80196e14,
     0x801985c4, 0x80198af0, 0x80198c90, 0x80198e2c,
     0x80199440,
-    0x8019b310,
-    0x8019d500, 0x8019e330, 0x8019e39c, 0x801a0660, 0x801a0be0, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a36f0,
+    0x8019e39c, 0x801a0be0, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a36f0,
     # NOTE: 0x80126234 (guest_main) was excluded here after a bisect blamed it
     # for the attract-exit regression — but the real defect turned out to be
     # ctx_fn_send (0x801a30c0) dropping a1-a3 on its fn-ptr jalr. With that
