@@ -445,6 +445,7 @@ block_80157AEC:
         goto block_80157B10;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157B00u);
+        goto block_80157B00;  /* not taken */
     }
 
 block_80157B00:
@@ -484,6 +485,7 @@ block_80157B2C:
         goto block_80157B60;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157B3Cu);
+        goto block_80157B3C;  /* not taken */
     }
 
 block_80157B3C:
@@ -519,6 +521,7 @@ block_80157B60:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157B6Cu);
+        goto block_80157B6C;  /* not taken */
     }
 
 block_80157B6C:
@@ -546,6 +549,7 @@ block_80157B80:
         goto block_80157BB0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157B90u);
+        goto block_80157B90;  /* not taken */
     }
 
 block_80157B90:
@@ -580,6 +584,7 @@ block_80157BB0:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157BBCu);
+        goto block_80157BBC;  /* not taken */
     }
 
 block_80157BBC:
@@ -607,6 +612,7 @@ block_80157BD0:
         goto block_80157BEC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157BE0u);
+        goto block_80157BE0;  /* not taken */
     }
 
 block_80157BE0:
@@ -626,6 +632,7 @@ block_80157BEC:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157BF8u);
+        goto block_80157BF8;  /* not taken */
     }
 
 block_80157BF8:
@@ -664,6 +671,7 @@ block_80157C24:
         goto block_80157C6C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157C34u);
+        goto block_80157C34;  /* not taken */
     }
 
 block_80157C34:
@@ -678,6 +686,7 @@ block_80157C34:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157C48u);
+        goto block_80157C48;  /* not taken */
     }
 
 block_80157C48:
@@ -708,6 +717,7 @@ block_80157C6C:
         goto block_80157C90;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157C74u);
+        goto block_80157C74;  /* not taken */
     }
 
 block_80157C74:
@@ -722,6 +732,7 @@ block_80157C74:
         goto block_801580D8;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157C88u);
+        goto block_80157C88;  /* not taken */
     }
 
 block_80157C88:
@@ -740,6 +751,7 @@ block_80157C90:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157C98u);
+        goto block_80157C98;  /* not taken */
     }
 
 block_80157C98:
@@ -767,6 +779,7 @@ block_80157CAC:
         goto block_80157CC8;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157CBCu);
+        goto block_80157CBC;  /* not taken */
     }
 
 block_80157CBC:
@@ -786,6 +799,7 @@ block_80157CC8:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157CD4u);
+        goto block_80157CD4;  /* not taken */
     }
 
 block_80157CD4:
@@ -814,6 +828,7 @@ block_80157CE4:
         goto block_80157D04;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157CFCu);
+        goto block_80157CFC;  /* not taken */
     }
 
 block_80157CFC:
@@ -863,6 +878,7 @@ block_80157D34:
         goto block_80157D70;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157D44u);
+        goto block_80157D44;  /* not taken */
     }
 
 block_80157D44:
@@ -877,6 +893,7 @@ block_80157D44:
         goto block_80157D64;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157D58u);
+        goto block_80157D58;  /* not taken */
     }
 
 block_80157D58:
@@ -903,6 +920,7 @@ block_80157D70:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157D78u);
+        goto block_80157D78;  /* not taken */
     }
 
 block_80157D78:
@@ -946,6 +964,7 @@ block_80157DA8:
         goto block_80158228;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157DB8u);
+        goto block_80157DB8;  /* not taken */
     }
 
 block_80157DB8:
@@ -958,6 +977,7 @@ block_80157DB8:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157DC0u);
+        goto block_80157DC0;  /* not taken */
     }
 
 block_80157DC0:
@@ -1000,6 +1020,7 @@ block_80157DEC:
         goto block_80157E84;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157DFCu);
+        goto block_80157DFC;  /* not taken */
     }
 
 block_80157DFC:
@@ -1019,6 +1040,7 @@ block_80157E04:
         goto block_80157E78;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157E10u);
+        goto block_80157E10;  /* not taken */
     }
 
 block_80157E10:
@@ -1035,6 +1057,7 @@ block_80157E10:
         goto block_80157E3C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157E2Cu);
+        goto block_80157E2C;  /* not taken */
     }
 
 block_80157E2C:
@@ -1057,6 +1080,7 @@ block_80157E3C:
         goto block_80157E58;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157E4Cu);
+        goto block_80157E4C;  /* not taken */
     }
 
 block_80157E4C:
@@ -1099,6 +1123,7 @@ block_80157E84:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157E8Cu);
+        goto block_80157E8C;  /* not taken */
     }
 
 block_80157E8C:
@@ -1136,6 +1161,7 @@ block_80157EE0:
         goto block_80157F04;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157EF4u);
+        goto block_80157EF4;  /* not taken */
     }
 
 block_80157EF4:
@@ -1176,6 +1202,7 @@ block_80157F24:
         goto block_80157F58;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157F34u);
+        goto block_80157F34;  /* not taken */
     }
 
 block_80157F34:
@@ -1211,6 +1238,7 @@ block_80157F58:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157F64u);
+        goto block_80157F64;  /* not taken */
     }
 
 block_80157F64:
@@ -1238,6 +1266,7 @@ block_80157F78:
         goto block_80157FA8;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157F88u);
+        goto block_80157F88;  /* not taken */
     }
 
 block_80157F88:
@@ -1272,6 +1301,7 @@ block_80157FA8:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157FB4u);
+        goto block_80157FB4;  /* not taken */
     }
 
 block_80157FB4:
@@ -1299,6 +1329,7 @@ block_80157FC8:
         goto block_80157FEC;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157FD8u);
+        goto block_80157FD8;  /* not taken */
     }
 
 block_80157FD8:
@@ -1325,6 +1356,7 @@ block_80157FEC:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80157FF8u);
+        goto block_80157FF8;  /* not taken */
     }
 
 block_80157FF8:
@@ -1352,6 +1384,7 @@ block_8015800C:
         goto block_80158048;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015801Cu);
+        goto block_8015801C;  /* not taken */
     }
 
 block_8015801C:
@@ -1366,6 +1399,7 @@ block_8015801C:
         goto block_8015803C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158030u);
+        goto block_80158030;  /* not taken */
     }
 
 block_80158030:
@@ -1392,6 +1426,7 @@ block_80158048:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158050u);
+        goto block_80158050;  /* not taken */
     }
 
 block_80158050:
@@ -1435,6 +1470,7 @@ block_80158080:
         goto block_8015812C;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158090u);
+        goto block_80158090;  /* not taken */
     }
 
 block_80158090:
@@ -1456,6 +1492,7 @@ block_80158098:
         goto block_801580C4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801580ACu);
+        goto block_801580AC;  /* not taken */
     }
 
 block_801580AC:
@@ -1471,6 +1508,7 @@ block_801580AC:
         goto block_80158120;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801580C4u);
+        goto block_801580C4;  /* not taken */
     }
 
 block_801580C4:
@@ -1485,6 +1523,7 @@ block_801580C4:
         goto block_801580F4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801580D8u);
+        goto block_801580D8;  /* not taken */
     }
 
 block_801580D8:
@@ -1540,6 +1579,7 @@ block_8015812C:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158134u);
+        goto block_80158134;  /* not taken */
     }
 
 block_80158134:
@@ -1568,6 +1608,7 @@ block_80158144:
         goto block_80158164;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x8015815Cu);
+        goto block_8015815C;  /* not taken */
     }
 
 block_8015815C:
@@ -1617,6 +1658,7 @@ block_80158194:
         goto block_801581D0;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801581A4u);
+        goto block_801581A4;  /* not taken */
     }
 
 block_801581A4:
@@ -1631,6 +1673,7 @@ block_801581A4:
         goto block_801581C4;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801581B8u);
+        goto block_801581B8;  /* not taken */
     }
 
 block_801581B8:
@@ -1657,6 +1700,7 @@ block_801581D0:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x801581D8u);
+        goto block_801581D8;  /* not taken */
     }
 
 block_801581D8:
@@ -1700,6 +1744,7 @@ block_80158208:
         goto block_80158228;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158218u);
+        goto block_80158218;  /* not taken */
     }
 
 block_80158218:
@@ -1712,6 +1757,7 @@ block_80158218:
         goto block_80158230;  /* taken */
     } else {
         psx_check_interrupts_at(cpu, 0x80158220u);
+        goto block_80158220;  /* not taken */
     }
 
 block_80158220:

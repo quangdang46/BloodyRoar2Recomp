@@ -1412,6 +1412,40 @@
 
 80157a00 memcard_tick
 
+# memcard dialog/state-handler alias entries — tail-dispatch targets of
+# memcard_tick's state->handler table @0x80120C0C (shared 40-byte frame,
+# converge on epilogue 0x8015822C). Atomic port: recon_8015.c
+# memcard_dialog_core + per-entry thunks.
+80157ad0 memcard_dialog_80157ad0
+80157b14 memcard_dialog_80157b14
+80157b20 memcard_dialog_80157b20
+80157b74 memcard_dialog_80157b74
+80157bc4 memcard_dialog_80157bc4
+80157c00 memcard_dialog_80157c00
+80157ca0 memcard_dialog_80157ca0
+80157cdc memcard_dialog_80157cdc
+80157d10 memcard_dialog_80157d10
+80157d28 memcard_dialog_80157d28
+80157d84 memcard_dialog_80157d84
+80157d9c memcard_dialog_80157d9c
+80157dc8 memcard_dialog_80157dc8
+80157de0 memcard_dialog_80157de0
+80157ec4 memcard_dialog_80157ec4
+80157f0c memcard_dialog_80157f0c
+80157f18 memcard_dialog_80157f18
+80157f6c memcard_dialog_80157f6c
+80157fbc memcard_dialog_80157fbc
+80158000 memcard_dialog_80158000
+80158058 memcard_dialog_80158058
+80158070 memcard_dialog_80158070
+8015813c memcard_dialog_8015813c
+80158170 memcard_dialog_80158170
+80158188 memcard_dialog_80158188
+801581e4 memcard_dialog_801581e4
+801581fc memcard_dialog_801581fc
+80158228 memcard_dialog_80158228
+80158230 memcard_dialog_80158230
+
 8015f6a0 memcard_file_flow
 
 80156ff0 memcard_slot_poll
