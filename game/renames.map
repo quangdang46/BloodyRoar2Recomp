@@ -2238,6 +2238,7 @@
 8017ae00 desc_h2_f30_sum
 8017ae10 desc_ret_empty_b
 8017b648 desc_ret_a2p4_b
+8017b668 desc_analog_dispatch
 8017b8b4 desc_ret_a2p6
 8017baac desc_ret_a2p6_b
 8017bd8c desc_ret_a2p2_b

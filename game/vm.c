@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 #include "types.h"
+#include "cpu_state.h"
+
+extern CPUState *clean_cpu_state(void);
 
 extern void *guest_at(uint32_t addr);
 extern uint32_t guest_of(const void *p);
@@ -1788,6 +1791,103 @@ uint32_t desc_flagbit_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
     return call_guest4(
         GU32((const uint8_t *)guest_at(0x8012285Cu), op * 4),
         a0, a1, a2, a3);
+}
+
+/* desc_analog_dispatch — guest @0x8017B668 (descriptor analog/dpad op
+ * dispatcher, sibling of desc_flagbit_dispatch). op = live $v1
+ * (cpu->gpr[3], masked &0xF by caller cps_8017b5f4); op < 11 indexes
+ * table 0x801227FC whose entries are this function's own handler
+ * blocks; op >= 11 -> a2+4. Every handler tails `jr $ra` with
+ * v0 = a2+4, so the whole dispatch returns a2+4. Handlers do s16/u16
+ * field arithmetic on the a0/a1/a2 records; the +208/+228 channels
+ * are clamped to s12 via the guest's <<20>>20 idiom. Incoming a3 is
+ * dead — op6 rebuilds it as the dpad offset. */
+uint32_t desc_analog_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
+                              uint32_t a3)
+{
+    CPUState *cpu = clean_cpu_state();
+    uint32_t op = cpu->gpr[3];
+    uint8_t *r0 = (uint8_t *)guest_at(a0);
+    uint8_t *r1 = (uint8_t *)guest_at(a1);
+    uint8_t *r2 = (uint8_t *)guest_at(a2);
+    int32_t v, param, lim, old, a3v;
+    uint32_t fl;
+    (void)a3;
+
+#define CLAMP12(x) ((int32_t)((uint32_t)(x) << 20) >> 20)
+
+    param = G16(r2, 2);                     /* s16 h(a2+2) operand */
+    switch (op) {
+    case 0:                                 /* B690: +208 = u16 operand */
+        GSU16(r1, 208) = GU16(r2, 2);
+        break;
+    case 1:                                 /* B69C: +208 += param */
+        v = G16(r1, 208) + param;
+        GSU16(r1, 208) = (uint16_t)CLAMP12(v);
+        break;
+    case 2: {                               /* B6AC: +208 = clamp(*(a0+44)+78 + param) */
+        uint8_t *sub = (uint8_t *)guest_at(GU32(r0, 44));
+        v = G16(sub, 78) + param;
+        GSU16(r1, 208) = (uint16_t)CLAMP12(v);
+        break;
+    }
+    case 3:                                 /* B6D0: +228 = clamp(h(a0+116) + param) */
+        v = G16(r0, 116) + param;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    case 4:                                 /* B6DC: +228 = clamp(h196 - (h78-2048) + param) */
+        v = G16(r0, 196) - (G16(r0, 78) - 2048) + param;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    case 5:                                 /* B704: +228 = clamp(h(a0+112) + param) */
+        v = G16(r0, 112) + param;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    case 6: {                               /* B710: dpad flags -> signed offset */
+        fl = GU32(r0, 108);
+        a3v = 0;
+        if (fl & 0x10) a3v = -1024;
+        if (fl & 0x20) a3v =  1024;
+        if (fl & 0x40) a3v =     0;
+        if (fl & 0x80) a3v = -2048;
+        if (fl & 0x01) a3v = -1024;
+        if (fl & 0x02) a3v =  1024;
+        if (fl & 0x04) a3v =     0;
+        if (fl & 0x08) a3v = -2048;
+        old = G16(r1, 228);
+        v = param + a3v + old - G16(r0, 78);
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    }
+    case 7: {                               /* B79C: gated clamped step on +228 */
+        if (GU32(r0, 92) & 0x100000) break;
+        lim = G16(r0, 116);
+        old = G16(r1, 228);
+        if (lim < -param)      v = old - param;
+        else if (param < lim)  v = old + param;
+        else                   v = old + lim;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    }
+    case 8:                                 /* B858: no-op */
+        break;
+    case 9: {                               /* B7F8: copy obj+372/380 -> +212/+216, then op4 math */
+        uint8_t *sub = (uint8_t *)guest_at(GU32(r0, 32));
+        GSU16(r1, 212) = GU16(sub, 372);
+        GSU16(r1, 216) = GU16(sub, 380);
+        v = G16(r0, 196) - (G16(r0, 78) - 2048) + param;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    }
+    case 10:                                /* B83C: +228 += param */
+        v = G16(r1, 228) + param;
+        GSU16(r1, 228) = (uint16_t)CLAMP12(v);
+        break;
+    default:                                /* op >= 11 -> a2+4 */
+        break;
+    }
+#undef CLAMP12
+    return a2 + 4;
 }
 
 /* ================================================================== */
