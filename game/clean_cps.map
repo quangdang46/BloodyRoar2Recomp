@@ -7070,19 +7070,12 @@
 
 80157960 confirm_code_entry_cps
 
-80158000 memcard_dialog_cps
 
-80158058 memcard_dialog_cps
 
-80158070 memcard_dialog_cps
 
-80158170 memcard_dialog_cps
 
-80158188 memcard_dialog_cps
 
-80158228 memcard_dialog_cps
 
-80158230 memcard_dialog_cps
 
 80160008 memcard_op_fmt_save
 
@@ -11128,11 +11121,12 @@
 801b0d28 cpst_801b0bcc
 
 # Batch 56 (orch/w5/e05) — w3_e06 alias-body _cont resume rows. The
-# confirm_code_entry_cps / memcard_dialog_cps bodies carry ~148 CPS
-# continuation cases whose resume PCs had no dispatch rows, so a yield
-# inside those coroutines fell back to generated code. Routing each
-# resume addr to its owning body re-enters at the matching _cont case
-# (same multi-addr-per-symbol pattern as the cpst_ rows above).
+# confirm_code_entry_cps body carries ~20 CPS continuation cases whose
+# resume PCs had no dispatch rows, so a yield inside that coroutine fell
+# back to generated code. Routing each resume addr to its owning body
+# re-enters at the matching _cont case (same multi-addr-per-symbol
+# pattern as the cpst_ rows above). (memcard_dialog_cps rows retired
+# with the atomic memcard_dialog_* port in recon_8015.c.)
 8015799c confirm_code_entry_cps
 801579a4 confirm_code_entry_cps
 801579ac confirm_code_entry_cps
@@ -11143,144 +11137,6 @@
 801579d4 confirm_code_entry_cps
 801579dc confirm_code_entry_cps
 801579e8 confirm_code_entry_cps
-80157ad0 memcard_dialog_cps
-80157ad8 memcard_dialog_cps
-80157aec memcard_dialog_cps
-80157b00 memcard_dialog_cps
-80157b10 memcard_dialog_cps
-80157b14 memcard_dialog_cps
-80157b20 memcard_dialog_cps
-80157b2c memcard_dialog_cps
-80157b3c memcard_dialog_cps
-80157b48 memcard_dialog_cps
-80157b54 memcard_dialog_cps
-80157b60 memcard_dialog_cps
-80157b6c memcard_dialog_cps
-80157b74 memcard_dialog_cps
-80157b80 memcard_dialog_cps
-80157b90 memcard_dialog_cps
-80157b98 memcard_dialog_cps
-80157ba4 memcard_dialog_cps
-80157bb0 memcard_dialog_cps
-80157bbc memcard_dialog_cps
-80157bc4 memcard_dialog_cps
-80157bd0 memcard_dialog_cps
-80157be0 memcard_dialog_cps
-80157bec memcard_dialog_cps
-80157bf8 memcard_dialog_cps
-80157c00 memcard_dialog_cps
-80157c0c memcard_dialog_cps
-80157c24 memcard_dialog_cps
-80157c34 memcard_dialog_cps
-80157c48 memcard_dialog_cps
-80157c64 memcard_dialog_cps
-80157c6c memcard_dialog_cps
-80157c74 memcard_dialog_cps
-80157c88 memcard_dialog_cps
-80157c90 memcard_dialog_cps
-80157c98 memcard_dialog_cps
-80157ca0 memcard_dialog_cps
-80157cac memcard_dialog_cps
-80157cbc memcard_dialog_cps
-80157cc8 memcard_dialog_cps
-80157cd4 memcard_dialog_cps
-80157cdc memcard_dialog_cps
-80157ce4 memcard_dialog_cps
-80157cfc memcard_dialog_cps
-80157d04 memcard_dialog_cps
-80157d10 memcard_dialog_cps
-80157d1c memcard_dialog_cps
-80157d28 memcard_dialog_cps
-80157d34 memcard_dialog_cps
-80157d44 memcard_dialog_cps
-80157d58 memcard_dialog_cps
-80157d64 memcard_dialog_cps
-80157d70 memcard_dialog_cps
-80157d78 memcard_dialog_cps
-80157d84 memcard_dialog_cps
-80157d90 memcard_dialog_cps
-80157d9c memcard_dialog_cps
-80157da8 memcard_dialog_cps
-80157db8 memcard_dialog_cps
-80157dc0 memcard_dialog_cps
-80157dc8 memcard_dialog_cps
-80157dd4 memcard_dialog_cps
-80157de0 memcard_dialog_cps
-80157dec memcard_dialog_cps
-80157dfc memcard_dialog_cps
-80157e04 memcard_dialog_cps
-80157e10 memcard_dialog_cps
-80157e2c memcard_dialog_cps
-80157e3c memcard_dialog_cps
-80157e4c memcard_dialog_cps
-80157e58 memcard_dialog_cps
-80157e70 memcard_dialog_cps
-80157e78 memcard_dialog_cps
-80157e84 memcard_dialog_cps
-80157e8c memcard_dialog_cps
-80157ec4 memcard_dialog_cps
-80157ecc memcard_dialog_cps
-80157ee0 memcard_dialog_cps
-80157ef4 memcard_dialog_cps
-80157f04 memcard_dialog_cps
-80157f0c memcard_dialog_cps
-80157f18 memcard_dialog_cps
-80157f24 memcard_dialog_cps
-80157f34 memcard_dialog_cps
-80157f40 memcard_dialog_cps
-80157f4c memcard_dialog_cps
-80157f58 memcard_dialog_cps
-80157f64 memcard_dialog_cps
-80157f6c memcard_dialog_cps
-80157f78 memcard_dialog_cps
-80157f88 memcard_dialog_cps
-80157f90 memcard_dialog_cps
-80157f9c memcard_dialog_cps
-80157fa8 memcard_dialog_cps
-80157fb4 memcard_dialog_cps
-80157fbc memcard_dialog_cps
-80157fc8 memcard_dialog_cps
-80157fd8 memcard_dialog_cps
-80157fe0 memcard_dialog_cps
-80157fec memcard_dialog_cps
-80157ff8 memcard_dialog_cps
-8015800c memcard_dialog_cps
-8015801c memcard_dialog_cps
-80158030 memcard_dialog_cps
-8015803c memcard_dialog_cps
-80158048 memcard_dialog_cps
-80158050 memcard_dialog_cps
-80158064 memcard_dialog_cps
-80158080 memcard_dialog_cps
-80158090 memcard_dialog_cps
-80158098 memcard_dialog_cps
-801580ac memcard_dialog_cps
-801580c4 memcard_dialog_cps
-801580d8 memcard_dialog_cps
-801580f4 memcard_dialog_cps
-801580fc memcard_dialog_cps
-80158108 memcard_dialog_cps
-80158120 memcard_dialog_cps
-8015812c memcard_dialog_cps
-80158134 memcard_dialog_cps
-8015813c memcard_dialog_cps
-80158144 memcard_dialog_cps
-8015815c memcard_dialog_cps
-80158164 memcard_dialog_cps
-8015817c memcard_dialog_cps
-80158194 memcard_dialog_cps
-801581a4 memcard_dialog_cps
-801581b8 memcard_dialog_cps
-801581c4 memcard_dialog_cps
-801581d0 memcard_dialog_cps
-801581d8 memcard_dialog_cps
-801581e4 memcard_dialog_cps
-801581f0 memcard_dialog_cps
-801581fc memcard_dialog_cps
-80158208 memcard_dialog_cps
-80158218 memcard_dialog_cps
-80158220 memcard_dialog_cps
-8015822c memcard_dialog_cps
 
 # Batch 58 (orch/w5-e05) — fighter_script_fsm_cps _cont resume rows.
 # Same yield-resume gap as the w3_e06 batch-56 rows: the body is

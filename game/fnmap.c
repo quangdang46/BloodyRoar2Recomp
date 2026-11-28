@@ -1051,6 +1051,35 @@ extern void mdec_stat_wait_b(void);
 extern void mdec_status_read(void);
 extern void mem_move(void);
 extern void memcard_block_verify(void);
+extern void memcard_dialog_80157ad0(void);
+extern void memcard_dialog_80157b14(void);
+extern void memcard_dialog_80157b20(void);
+extern void memcard_dialog_80157b74(void);
+extern void memcard_dialog_80157bc4(void);
+extern void memcard_dialog_80157c00(void);
+extern void memcard_dialog_80157ca0(void);
+extern void memcard_dialog_80157cdc(void);
+extern void memcard_dialog_80157d10(void);
+extern void memcard_dialog_80157d28(void);
+extern void memcard_dialog_80157d84(void);
+extern void memcard_dialog_80157d9c(void);
+extern void memcard_dialog_80157dc8(void);
+extern void memcard_dialog_80157de0(void);
+extern void memcard_dialog_80157ec4(void);
+extern void memcard_dialog_80157f0c(void);
+extern void memcard_dialog_80157f18(void);
+extern void memcard_dialog_80157f6c(void);
+extern void memcard_dialog_80157fbc(void);
+extern void memcard_dialog_80158000(void);
+extern void memcard_dialog_80158058(void);
+extern void memcard_dialog_80158070(void);
+extern void memcard_dialog_8015813c(void);
+extern void memcard_dialog_80158170(void);
+extern void memcard_dialog_80158188(void);
+extern void memcard_dialog_801581e4(void);
+extern void memcard_dialog_801581fc(void);
+extern void memcard_dialog_80158228(void);
+extern void memcard_dialog_80158230(void);
 extern void memcard_err_sentinel(void);
 extern void memcard_file_flow(void);
 extern void memcard_flow_arm_flag(void);
@@ -2231,6 +2260,35 @@ const Br2FnEnt fn_table[] = {
   { 0x801577bc, (void *)mc_confirm_dispatch },
   { 0x8015787c, (void *)confirm_code_select },
   { 0x80157a00, (void *)memcard_tick },
+  { 0x80157ad0, (void *)memcard_dialog_80157ad0 },
+  { 0x80157b14, (void *)memcard_dialog_80157b14 },
+  { 0x80157b20, (void *)memcard_dialog_80157b20 },
+  { 0x80157b74, (void *)memcard_dialog_80157b74 },
+  { 0x80157bc4, (void *)memcard_dialog_80157bc4 },
+  { 0x80157c00, (void *)memcard_dialog_80157c00 },
+  { 0x80157ca0, (void *)memcard_dialog_80157ca0 },
+  { 0x80157cdc, (void *)memcard_dialog_80157cdc },
+  { 0x80157d10, (void *)memcard_dialog_80157d10 },
+  { 0x80157d28, (void *)memcard_dialog_80157d28 },
+  { 0x80157d84, (void *)memcard_dialog_80157d84 },
+  { 0x80157d9c, (void *)memcard_dialog_80157d9c },
+  { 0x80157dc8, (void *)memcard_dialog_80157dc8 },
+  { 0x80157de0, (void *)memcard_dialog_80157de0 },
+  { 0x80157ec4, (void *)memcard_dialog_80157ec4 },
+  { 0x80157f0c, (void *)memcard_dialog_80157f0c },
+  { 0x80157f18, (void *)memcard_dialog_80157f18 },
+  { 0x80157f6c, (void *)memcard_dialog_80157f6c },
+  { 0x80157fbc, (void *)memcard_dialog_80157fbc },
+  { 0x80158000, (void *)memcard_dialog_80158000 },
+  { 0x80158058, (void *)memcard_dialog_80158058 },
+  { 0x80158070, (void *)memcard_dialog_80158070 },
+  { 0x8015813c, (void *)memcard_dialog_8015813c },
+  { 0x80158170, (void *)memcard_dialog_80158170 },
+  { 0x80158188, (void *)memcard_dialog_80158188 },
+  { 0x801581e4, (void *)memcard_dialog_801581e4 },
+  { 0x801581fc, (void *)memcard_dialog_801581fc },
+  { 0x80158228, (void *)memcard_dialog_80158228 },
+  { 0x80158230, (void *)memcard_dialog_80158230 },
   { 0x80158244, (void *)audio_seq_reset },
   { 0x80158274, (void *)FUN_80158274 },
   { 0x8015827c, (void *)chan_flag_toggle },
