@@ -733,7 +733,6 @@ extern void fighter_reinit_tail(void);
 extern void fighter_reset_fx(void);
 extern void fighter_respawn_init(void);
 extern void fighter_script_fsm(void);
-extern void fighter_script_fsm_cps(void);
 extern void fighter_spawn_setup(void);
 extern void fighter_spawn_tail(void);
 extern void fighter_state_tick(void);
@@ -2637,7 +2636,6 @@ const Br2FnEnt fn_table[] = {
   { 0x80181f10, (void *)ani_cat_tail_nine },
   { 0x80181f18, (void *)ani_cat_tail_ret },
   { 0x80181f20, (void *)fighter_script_fsm },
-  { 0x80182960, (void *)fighter_script_fsm_cps },
   { 0x80182a58, (void *)fsm_script_vm_gate },
   { 0x80182ac0, (void *)fsm_combat_mode_eval },
   { 0x80182cac, (void *)fsm_mode1_eval },

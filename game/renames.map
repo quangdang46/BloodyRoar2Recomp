@@ -1684,14 +1684,6 @@
 801289f0 ret_t0_lo16
 
 80181f20 fighter_script_fsm
-80181ff8 fighter_script_fsm_cps
-80182090 fighter_script_fsm_cps
-801822d0 fighter_script_fsm_cps
-801823bc fighter_script_fsm_cps
-80182690 fighter_script_fsm_cps
-80182740 fighter_script_fsm_cps
-8018287c fighter_script_fsm_cps
-80182960 fighter_script_fsm_cps
 
 80145c90 pt_box_radius_test
 
