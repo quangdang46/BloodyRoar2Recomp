@@ -12176,3 +12176,13 @@
 80197a8c cd_response_pump
 80197a9c cd_response_pump
 80197aa4 cd_response_pump
+
+# GENERATED_ONLY restoration — bbbd6966 collateral rows
+8019466c vec3_s32_h_normalize_store_tail
+80194678 vec3_s32_h_normalize_store_tail
+80194940 fixed_recip_neg_exp
+801990f0 cpst_801990f0
+8019915c cpst_801990f0
+80199164 cpst_801990f0
+8019a6e0 cpst_8019a6e0
+8019a700 cpst_8019a6e0
