@@ -493,6 +493,7 @@
 80168700 job_state_query
 8015d420 save_flow_state_machine
 8015ebf8 options_state_machine
+8015ee40 options_menu_stepper_cb
 8016088c screen_flow_state_machine
 8016cb20 heap_ptr_fixup
 8016cc5c heap_record_emit

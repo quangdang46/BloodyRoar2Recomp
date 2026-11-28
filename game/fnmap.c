@@ -1229,6 +1229,7 @@ extern void op_wrap_a74f0(void);
 extern void op_wrap_ac9b8(void);
 extern void op_wrap_acb08(void);
 extern void options_menu_alloc(void);
+extern void options_menu_stepper_cb(void);
 extern void options_page_dispatch(void);
 extern void options_pages_reset(void);
 extern void options_state_machine(void);
@@ -2281,6 +2282,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8015e8c4, (void *)mode_select_commit },
   { 0x8015e9fc, (void *)display_page_commit_b },
   { 0x8015ebf8, (void *)options_state_machine },
+  { 0x8015ee40, (void *)options_menu_stepper_cb },
   { 0x8015f590, (void *)memcard_info_query },
   { 0x8015f644, (void *)memcard_poll_frame },
   { 0x8015f64c, (void *)pending_work_drain },
