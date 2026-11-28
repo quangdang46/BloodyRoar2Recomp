@@ -773,6 +773,8 @@
 8013f490 task_alloc_setup
 8013e3f4 paired_task_cb
 8013e0f0 task_packet_emit
+
+8013dbd8 task_packet_transform
 8018694c sprite_prim_update
 80195570 rotate_xy_pairs
 80134234 channel_script_emit_chain_triple
@@ -1656,6 +1658,8 @@
 80138b00 xform_accum_spawn
 
 80139fd0 impact_fx_spawn
+
+8013ae1c fx_record_update
 
 8013b088 fx_record_alloc
 

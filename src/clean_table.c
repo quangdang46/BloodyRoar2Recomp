@@ -6465,108 +6465,108 @@ extern void cps_8013adf0(void);
     cps_8013adf0();
 }
 static void wrap_8013ae1c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae44(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae4c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae54(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae6c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae88(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013ae9c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013aea4(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013aea8(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013aed0(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013aed8(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013aefc(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af04(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af0c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af18(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af20(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af4c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af58(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013af80(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013afb4(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013afd0(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b034(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b050(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b060(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b06c(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b074(CPUState *cpu) {
-extern void cps_8013ae1c(void);
-    cps_8013ae1c();
+extern void fx_record_update(void);
+    fx_record_update();
 }
 static void wrap_8013b088(CPUState *cpu) {
 extern uint32_t fx_record_alloc(uint32_t pos_g,int kind,uint32_t fl,uint32_t aux,uint32_t pal_g);
@@ -7761,104 +7761,104 @@ extern void cps_8013da40(void);
     cps_8013da40();
 }
 static void wrap_8013dbd8(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dc80(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dc9c(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dca4(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dcac(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dce8(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dd34(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dd48(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dd5c(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dd78(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dd84(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013ddc4(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dddc(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013de9c(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dec4(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013ded0(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013defc(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013df28(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013df54(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013df8c(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dfd0(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013dffc(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013e028(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013e094(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013e0c0(CPUState *cpu) {
-extern void cps_8013dbd8(void);
-    cps_8013dbd8();
+extern void task_packet_transform(void);
+    task_packet_transform();
 }
 static void wrap_8013e0f0(CPUState *cpu) {
 extern void task_packet_emit(int f,int m,int ang);
