@@ -495,6 +495,7 @@
 8015ebf8 options_state_machine
 8015ee40 options_menu_stepper_cb
 8016088c screen_flow_state_machine
+80160a64 screen_menu_stepper_cb
 8016cb20 heap_ptr_fixup
 8016cc5c heap_record_emit
 8014b938 options_menu_alloc
