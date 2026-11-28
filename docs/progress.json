@@ -1,8 +1,8 @@
 {
-  "done": 2002,
-  "todo": 3910,
-  "total": 5912,
-  "percent": 33.86,
+  "done": 2006,
+  "todo": 3882,
+  "total": 5888,
+  "percent": 34.07,
   "groups": [
     {
       "name": "cps_clean",
@@ -14,7 +14,13 @@
       "name": "cd_irq_probe",
       "label": "cd_irq_probe",
       "done": 0,
-      "todo": 1035
+      "todo": 942
+    },
+    {
+      "name": "recon_8019",
+      "label": "recon_8019",
+      "done": 13,
+      "todo": 344
     },
     {
       "name": "cd",
@@ -33,12 +39,6 @@
       "label": "menu",
       "done": 303,
       "todo": 0
-    },
-    {
-      "name": "recon_8019",
-      "label": "recon_8019",
-      "done": 9,
-      "todo": 279
     },
     {
       "name": "battle",
@@ -395,5 +395,5 @@
       "todo": 1
     }
   ],
-  "cps_rows_remaining": 3792
+  "cps_rows_remaining": 3762
 }
