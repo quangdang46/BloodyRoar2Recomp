@@ -2254,3 +2254,9 @@
 8017baac desc_ret_a2p6_b
 8017bd8c desc_ret_a2p2_b
 801587c0 hud_gauge_frame_emit
+8017c61c desc_s12_cond_store
+8017c850 desc_flagword_b27_clear
+8017c938 desc_flagword_b27_set
+8017d25c desc_op7_dispatch
+8017caec desc_ret_empty_c
+8017d5c0 desc_ret_a2p4_c

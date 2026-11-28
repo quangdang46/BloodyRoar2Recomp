@@ -341,3 +341,41 @@ block_8017BD8C: ;
     psx_check_interrupts_at(cpu, jt_8017BD8C);
     cpu->pc = jt_8017BD8C; return;  /* CPS: jr $ra */
 }
+
+/* ======== desc_ret_empty_c (guest 0x8017caec) ======== */
+
+/* Faithful CPS transliteration of br2eu_func_8017CAEC (full_35.c):
+ * bare `jr $ra` with nop delay slot — third shared return tail in the
+ * descriptor region (reached by j tail-merges from the 0x8017CA84
+ * mode-gate piece). */
+void desc_ret_empty_c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+block_8017CAEC: ;
+    uint32_t jt_8017CAEC = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    /* nop */  /* 0x8017CAF0: 0x00000000 */
+    psx_check_interrupts_at(cpu, jt_8017CAEC);
+    cpu->pc = jt_8017CAEC; return;  /* CPS: jr $ra */
+}
+
+/* ======== desc_ret_a2p4_c (guest 0x8017d5c0) ======== */
+
+/* Faithful CPS transliteration of br2eu_func_8017D5C0 (full_35.c):
+ * v0 = a2 + 4 (delay slot); jr $ra. Fourth a2+4 return tail — the only
+ * one in this band reached by a real `jal` (from the 0x801BC048
+ * dispatch table). */
+void desc_ret_a2p4_c(void)
+{
+  CPUState *cpu = clean_cpu_state();
+  if (!cpu) return;
+
+block_8017D5C0: ;
+    uint32_t jt_8017D5C0 = ra;  /* latch indirect target before delay slot */
+    /* delay slot (always executes) */
+    v0 = a2 + 4;
+    psx_check_interrupts_at(cpu, jt_8017D5C0);
+    cpu->pc = jt_8017D5C0; return;  /* CPS: jr $ra */
+}

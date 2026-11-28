@@ -12571,6 +12571,112 @@ uint32_t button_cond_eval(uint32_t obj,uint32_t st,
   return desc + 2;
 }
 
+/* desc_s12_cond_store — signed-param store @0x8017c61c (20 insns, 3
+ * args). u8(obj+0xDB) = u8(desc+2); then s16(desc+2) is sign-extended
+ * from bit11 ((h<<16)>>20) and negated when u8(st+0x100) != 0, stored
+ * as u16(obj+0xC6). Returns desc+4. Reached by j tail-merges from the
+ * 0x8017C5B8 mode-gate piece. */
+uint32_t desc_s12_cond_store(uint32_t obj,uint32_t st,
+                             uint32_t desc)
+{
+  int32_t v;
+  MW8(obj + 0xdb, MB8(desc + 2));
+  v = ((int32_t)MBS16(desc + 2) << 16) >> 20;
+  if (MB8(st + 0x100) != 0) v = -v;
+  MW16(obj + 0xc6, (uint16_t)v);
+  return desc + 4;
+}
+
+/* desc_flagword_b27_clear — flag-word update @0x8017c850 (18 insns,
+ * 3 args). w = MB32(obj+0x5C) with bit27 cleared (stored once), then
+ * bit17 is set when s16(st+0x10A) != 0 else cleared; final word
+ * stored back. Returns desc+4. */
+uint32_t desc_flagword_b27_clear(uint32_t obj,uint32_t st,
+                                 uint32_t desc)
+{
+  uint32_t w = MB32(obj + 0x5c) & 0xf7ffffffu;
+  MW32(obj + 0x5c, w);
+  if (MBS16(st + 0x10a) != 0) w |= 0x00020000u;
+  else                      w &= 0xfffdffffu;
+  MW32(obj + 0x5c, w);
+  return desc + 4;
+}
+
+/* desc_flagword_b27_set — flag-word update @0x8017c938 (17 insns,
+ * 3 args). Same shape as desc_flagword_b27_clear but sets bit27 of
+ * MB32(obj+0x5C) instead of clearing it; bit17 still follows
+ * s16(st+0x10A). Returns desc+4. */
+uint32_t desc_flagword_b27_set(uint32_t obj,uint32_t st,
+                               uint32_t desc)
+{
+  uint32_t w = MB32(obj + 0x5c) | 0x08000000u;
+  MW32(obj + 0x5c, w);
+  if (MBS16(st + 0x10a) != 0) w |= 0x00020000u;
+  else                      w &= 0xfffdffffu;
+  MW32(obj + 0x5c, w);
+  return desc + 4;
+}
+
+/* desc_op7_dispatch — 7-op descriptor handler @0x8017d25c (62 insns).
+ * op = live $v1 (cpu->gpr[3], left by the 0x8017D1D0 mode-gate piece);
+ * op < 7 indexes table 0x80122964, op >= 7 -> ret desc+4. Handlers
+ * adjust the st record's s16 motion fields from the s16 desc+2
+ * operand; ops 0/5 are (field*operand)>>7 mult-LO products, op 6 is a
+ * signed div (guest div-by-zero -> LO = num>=0 ? -1 : 1). All paths
+ * return desc+4 in $v0. */
+uint32_t desc_op7_dispatch(uint32_t obj,uint32_t st,
+                           uint32_t desc)
+{
+  CPUState *cpu = clean_cpu_state();
+  uint32_t op = cpu ? cpu->gpr[3] : 0;
+  int32_t num, den, q;
+  (void)obj;
+  if (op >= 7u) return desc + 4;
+  switch (op) {
+  case 0: { /* D284: st+B2 = (s16(st+B2) * s16(desc+2)) >> 7 */
+    int32_t p = (int32_t)((int64_t)(int32_t)MBS16(st + 0xb2) *
+                          (int64_t)(int32_t)MBS16(desc + 2));
+    MW16(st + 0xb2, (uint16_t)(p >> 7));
+    break;
+  }
+  case 1: /* D2A0: st+C4 = h(st+4E) + h(desc+2) */
+    MW16(st + 0xc4, (uint16_t)(MB16(st + 0x4e) + MB16(desc + 2)));
+    break;
+  case 2: /* D2B8: st+C4 = h(st+4E) + h(st+70) + h(desc+2) */
+    MW16(st + 0xc4, (uint16_t)(MB16(st + 0x4e) + MB16(st + 0x70) +
+                               MB16(desc + 2)));
+    break;
+  case 3: { /* D2D4: st+B4 = h(desc+2); st+B2 = s16(st+B2) +/- s16(st+98);
+             *        s16(st+98) = 0 (sign of the st+98 operand picks
+             *        add vs subtract) */
+    int32_t d = (int32_t)MBS16(st + 0x98);
+    int32_t s = (int32_t)MBS16(st + 0xb2);
+    MW16(st + 0xb4, MB16(desc + 2));
+    MW16(st + 0xb2, (uint16_t)(d < 0 ? s - d : s + d));
+    MW16(st + 0x98, 0);
+    break;
+  }
+  case 4: /* D308: st+B4 = h(desc+2) */
+    MW16(st + 0xb4, MB16(desc + 2));
+    break;
+  case 5: { /* D314: st+B2 = (s16(st+72) * s16(desc+2)) >> 7 */
+    int32_t p = (int32_t)((int64_t)(int32_t)MBS16(st + 0x72) *
+                          (int64_t)(int32_t)MBS16(desc + 2));
+    MW16(st + 0xb2, (uint16_t)(p >> 7));
+    break;
+  }
+  case 6: /* D330: st+B2 = (s16(st+72) << 7) / s16(desc+2) */
+    num = (int32_t)MBS16(st + 0x72) << 7;
+    den = (int32_t)MBS16(desc + 2);
+    q = den != 0 ? num / den : (num >= 0 ? -1 : 1);
+    MW16(st + 0xb2, (uint16_t)q);
+    break;
+  default:
+    break;
+  }
+  return desc + 4;
+}
+
 /* ======== batch55 ======== */
 
 extern void impact_fx_spawn(void *,uint32_t,int32_t,int32_t,uint32_t);
