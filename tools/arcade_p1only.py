@@ -52,6 +52,9 @@ while time.time()-t0 < 900:
         print("t=%.0f gs/ph=%02x%02x sig=%s b4b6=%s"%(now-t0,gs,ph,sig,b4),flush=True)
     if stage=="title" and gs==5 and ph==1:
         if now-sent.get('t',0)>=0.5: press(START,30,0); sent['t']=now
+    if stage=="title" and gs==6:
+        # attract demo: START exits to title instead of waiting out the demo
+        if now-sent.get('a',0)>=2.0: press(START,30,0); sent['a']=now
     if stage=="menu" or (gs==5 and ph==2):
         stage="menu"
         if gs==5 and ph==2:

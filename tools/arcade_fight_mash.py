@@ -133,11 +133,21 @@ while time.time() - t0 < 1800:
     now = time.time()
     if stage == "title" and gs == 5 and ph == 1:
         if now - sent.get('t', 0) >= 0.5: press(START, 30, 0); sent['t'] = now
+    if gs == 6 and stage == "title":
+        # attract demo: START exits to title (gs=5 ph=1)
+        if now - sent.get('a', 0) >= 2.0: press(START, 30, 0); sent['a'] = now
     if stage == "menu" or (gs == 5 and ph == 2):
         stage = "menu"
         if gs == 5 and ph == 2:
-            # arcade = default top item; confirm with START, never DOWN
-            if now - sent.get('s', 0) >= 1.0: press(START, 40, 0); sent['s'] = now
+            # Mode menu cursor walk (verified 2026-11-28):
+            #   pos0 sig(0,0) = top item (NOT arcade — enters gs=8 then bails)
+            #   DOWN -> (2,1) = 2P VS ; (1,4) = ? ; (0,3) = ARCADE
+            # Navigate DOWN until sig==(0,3), then hold START to confirm.
+            if sig != (0, 3):
+                if now - sent.get('d', 0) >= 0.8:
+                    press(DOWN, 12, 0); sent['d'] = now
+            elif now - sent.get('s', 0) >= 1.0:
+                press(START, 40, 0); sent['s'] = now
         elif gs == 8: stage = "vs_init"
         elif gs != 5: stage = "title"
     elif stage in ("title", "vs_init"):
