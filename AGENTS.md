@@ -2012,3 +2012,28 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
 - **NEXT**: the remaining GENERATED_ONLY wedge-class addrs should now
   be retried — the call-drive fix likely unblocks them. devin-i's
   sweep may hit/confirm this independently.
+
+### Session update 43 (GENERATED_ONLY = 0 — sweep COMPLETE + 3 coroutine ports)
+
+- **GENERATED_ONLY sweep FINISHED — 0 remaining.** All 46 bbbd6966-collateral
+  addrs restored to clean CPS dispatch. Final addr `cpst_8019e39c` restored
+  directly on master (ac8fc840) after devin-m proved the rest.
+- **devin-m: 18/18 wedge-class addrs restored** in 4 verified batches
+  (78eef5b1, adf17186, 0b777509, bc367643) — the `br2_clean_call_drive` fix
+  unblocked ALL of them, zero wedges. Notable: `0x8019b310` cd_dma_chan_init
+  restored via its embedded entry `cpst_8019b308`; cdrom read/chan/init
+  cluster fully clean now.
+- **devin-l: 3 largest remaining coroutines hand-ported** —
+  options_menu_stepper_cb (0x8015EE40, 96 rows), screen_menu_stepper_cb
+  (0x80160A64, 133), save_menu_stepper_cb (0x8015D69C, 332) → ~4700 LoC in
+  game/recon_8015.c. Jump tables verified against live guest RAM.
+  CAVEAT: menu-only paths — fight mash doesn't invoke them; statically
+  validated, no regression proven.
+- **devin-i killed + worktree cleaned** — its sweep was subsumed (was
+  wedge-looping on old base without the drive fix).
+- **clean_table.c: 6316 wrappers, 17 skipped (all self-delegate).**
+- **NEXT frontier**: ~1900 residual cps_ piece-rows → next targets are
+  memcard_dialog_cps (146 rows, w3_e06.c) and fighter_script_fsm_cps
+  (146 rows, piece-entries inside already-ported battle.c fn) — devin-n/o.
+- Tooling note: tools/versus_fight_mash.py cannot exit attract (no gs==6
+  handler) — use arcade_fight_mash.py for verify.
