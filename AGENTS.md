@@ -1606,3 +1606,48 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   ending @0x80134e44); cps_8014c324 (20, ends resource_rebuild_b
   @0x8014c76c). KEEP (do not touch): cps_8017b8d4, cps_8017e4d4,
   cps_8017e6b0, cps_8013c5e0 (unported generated gaps).
+
+### Session update 34b — WEDGE ROOT-CAUSED (region proven, removal puzzle open)
+
+- **Wedge mechanism fully diagnosed**: all-cps boot wedges at gs=0 with
+  an **IRQ storm** — `i_stat bit0` (VBLANK) pending forever,
+  `vblank_deliver`≈6.8M vs `vblank_ack`=6 (handler never acks). CPU
+  spins in `cd_cmd_issue` (0x80196E14, 191M clean hits) ↔
+  `cd_result_wait_a` (0x801968CC, 31M) — a CD command returns v0=-2
+  forever; take_pc/epc pinned at 0x80196E14, ra=0x80126220 (post-
+  `jal guest_main` break). Region = the CD-driver CPS/cpst_
+  transliteration cluster.
+- **PROVEN FIX (runtime)**: `PSX_CPS_KEEP="0x80120000-0x80194000,
+  0x801A8000-0x801C0000"` (generated for 0x80194000–0x801A8000) →
+  boot reaches **gs=06**, VBlank ack≈deliver (no storm), CD active,
+  state evolving, versus-mash compatible. Bug lives in cps_/cpst_
+  transliterations inside **0x80194000–0x801A8000** (~80KB, 1904
+  clean_cps.map rows / 239 fns; biggest: cpst_8019dad0 cd_chan_attr_
+  push 222, cpst_8019d740 75, cpst_80196370 73, cpst_80199440 65,
+  cpst_801a8410 65, cpst_80196e14 cd_cmd_issue 53).
+- **⚠ REMOVAL ≠ FILTER puzzle (next session's first task)**: deleting
+  the same 1904 rows from clean_cps.map + regen → build crashes to
+  PC=0 in early boot (`execution completed`, ~4M insns), EVEN with
+  PSX_CPS_KEEP set. KEEP-filtering the identical addresses works.
+  clean_find is exact-match so both paths return 0 → generated — yet
+  outcomes differ. Hypothesis: some region addresses are cps_-only
+  piece/resume PCs with NO generated block entry; KEEP-filtered
+  entries still exist so a *different* dispatch (e.g. fnmap/call_
+  generated wrappers, or the cpu->pc self-dispatch resume path)
+  handles them, while table-absent addresses hit a null path. Find
+  the first PC=0 crash addr (clean_trace/dispatch_tail before exit)
+  to identify the gap. Alternative: keep rows but force generated via
+  a build-time flag mirroring KEEP semantics exactly.
+- **Half-region tests inconclusive**: generating only
+  0x80194000-0x80198000 or only 0x80198000-0x801A8000 both stall
+  early (VECWR/VECGA kernel-init, ~30-line logs) — likely the
+  cps_↔generated boundary itself needs BOTH halves consistent, or
+  early-boot IRQ handlers in the kept half break. Only FULL-region
+  generated is proven.
+- **Named fns in region** (renames.map, NOT cps_ rows — unaffected
+  by row removal): cd_intc_dispatch 0x8019A8EC, cd_chan_attr_push
+  0x8019DAD0, cd_cmd_issue 0x80196E14, cd_result_wait_a 0x801968CC,
+  chan_job_pump 0x801A0110, cd_queue_a_read 0x801A1148,
+  cd_cb8_dispatch 0x8019AE68, bios_tramp_b017 0x8019AD60 — the CD
+  driver proper. The buggy transliteration is probably one of the
+  cpst_ timing variants of these.
