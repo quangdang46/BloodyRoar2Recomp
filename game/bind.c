@@ -2650,8 +2650,10 @@ __attribute__((weak))
 /* canonical guest name: cd_kobj_mcall_5c (renames.map); FUN_ symbol kept as the CPS-frame ABI wrapper. */
 void FUN_8019a364(void)
 {
-    /* guest 0x8019A364: indirect tail-call — lw t1,0x801FEB5C; jr t1. */
-    (void)call_guest(br2_ld32(0x801feb5cu),0,0);
+    /* guest 0x8019A364: indirect tail-call — lw t1,0x801FEB5C; jr t1.
+     * jr (not jalr): every arg reg stays a live caller leftover. */
+    (void)call_guest(br2_ld32(0x801feb5cu),clean_cpu_state()->gpr[4],
+                     clean_cpu_state()->gpr[5]);
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((weak))

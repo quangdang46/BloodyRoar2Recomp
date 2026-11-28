@@ -719,7 +719,13 @@ uint32_t bios_svc6(uint32_t table, uint32_t svc,
  * runs; the target is a leaf flag-setter taking no args. (Sibling
  * FUN_8019a350 @0x801FEB58 was removed — no remaining callers.) */
 void FUN_8019a364(void)
-{ (void)call_guest(br2_ld32(0x801feb5cu),0,0); }
+{
+    /* jr (not jalr): a0-a3 stay live caller leftovers — forward them
+     * rather than zeroing in case the callee reads its arg regs. */
+    CPUState *cpu = g_clean_cpu;
+    (void)call_guest(br2_ld32(0x801feb5cu),
+                     cpu ? cpu->gpr[4] : 0, cpu ? cpu->gpr[5] : 0);
+}
 
 /* br2_bios_tramp — guest `jr $t2`-vector trampoline semantics: the stub
  * sets only $t1=svc/$t2=vector and forwards the caller's a0-a3 untouched.

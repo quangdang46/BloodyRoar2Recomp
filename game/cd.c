@@ -213,7 +213,9 @@ uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
    * MMIO busy-waits lack per-block interrupt checks. Delegate to the
    * generated MIPS (behavioral oracle) — same contract as the other
    * read-path functions already delegated. */
-  return (uint32_t)call_guest4(0x8018d150u,a0, a1, a2, 0);
+  /* a3 is a live caller leftover at the guest jal (jal writes no arg regs). */
+  return (uint32_t)call_guest4(0x8018d150u,a0, a1, a2,
+                               clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x80198af0 ======== */
@@ -236,7 +238,10 @@ uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
 /* cd_init_session — delegate whole body to generated MIPS 0x80198AF0. */
 void cd_init_session(void)
 {
-  call_guest4(0x80198af0, 0, 0, 0, 0);
+  /* void(void) clean wrapper: all four arg regs are live caller
+   * leftovers at the guest entry — forward cpu->gpr, not zeros. */
+  CPUState *c_ = clean_cpu_state();
+  call_guest4(0x80198af0, c_->gpr[4], c_->gpr[5], c_->gpr[6], c_->gpr[7]);
 }
 
 /* ======== 0x80198e2c ======== */
@@ -282,7 +287,9 @@ int cd_read_poll(int a0,uint32_t a1)
 {
   (void)a0; (void)a1;
   return (int)call_guest4(0x80198e2cu, (uint32_t)a0,
-                                 (uint32_t)a1, 0, 0);
+                                 (uint32_t)a1,
+                                 clean_cpu_state()->gpr[6],
+                                 clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x80195d8c ======== */
@@ -389,7 +396,8 @@ bool cd_read_setup(uint32_t count,uint32_t pos,uint32_t mode)
    * read-path functions already delegated. Delegate to generated. */
   CDFN(CDFN_READ_SETUP,(uint32_t)count);
   return (bool)call_guest4(0x80198c90u,(uint32_t)count,
-                                  (uint32_t)pos,(uint32_t)mode,0);
+                                  (uint32_t)pos,(uint32_t)mode,
+                                  clean_cpu_state()->gpr[7]);
 }
 
 
@@ -503,11 +511,14 @@ uint32_t cd_timer_read(int mode)
     a1v = (uint32_t)mode - 1u;
   }
   a0v = v0;
-  call_guest4(0x8019a5d8u, a0v, a1v, 0, 0);   /* jal vsync_wait_n */
+  /* jal vsync_wait_n: a2/a3 are live caller leftovers. */
+  call_guest4(0x8019a5d8u, a0v, a1v,
+              clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]);
 
   s0 = br2_ld32(br2_ld32(0x801bcca8));         /* reload counter sample */
   call_guest4(0x8019a5d8u,
-                     br2_ld32(0x801bdde0) + 1u, 1u, 0, 0); /* jal vsync_wait_n */
+                     br2_ld32(0x801bdde0) + 1u, 1u,
+                     clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]); /* jal vsync_wait_n */
 
   /* @0x8019A53C: if bit 0x00400000 of the sample is set, wait for the
    * counter's sign bit (vs s0) to flip — @0x8019A54C/0x8019A56C loop. */
@@ -838,7 +849,9 @@ uint32_t cd_result_wait_a(int a0,uint8_t *out_buf)
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
   return (uint32_t)call_guest4(0x801968ccu, (uint32_t)a0,
-                                  br2_gaddr(out_buf), 0, 0);
+                                  br2_gaddr(out_buf),
+                                  clean_cpu_state()->gpr[6],
+                                  clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x80197ad0 ======== */
@@ -1200,7 +1213,9 @@ bAA4:
  * authoritative until the coroutine runtime exists. */
 uint32_t cd_response_process(void)
 {
-  return (uint32_t)call_guest4(0x80196370u,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    return (uint32_t)call_guest4(0x80196370u,c_->gpr[4],c_->gpr[5],
+                                     c_->gpr[6],c_->gpr[7]); }
 }
 
 /* ======== small getters ======== */
@@ -1309,7 +1324,9 @@ uint32_t cd_result_wait_b(int a0,uint8_t *out_buf)
    * spin. Same contract as cd_init_session/cd_file_read_seq.
    * br2_call_generated makes gen_clean_table skip this address. */
   return (uint32_t)call_guest4(0x80196b4cu, (uint32_t)a0,
-                                  br2_gaddr(out_buf), 0, 0);
+                                  br2_gaddr(out_buf),
+                                  clean_cpu_state()->gpr[6],
+                                  clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x80197698 ======== */
@@ -1415,7 +1432,8 @@ int cd_dispatch_tbl4(int a0,uint32_t a1)
  * authoritative per AGENTS.md §4. */
 void cd_read_step_cb(uint32_t a0,uint32_t a1)
 {
-  call_guest4(0x801985c4u,a0,a1,0,0);
+  call_guest4(0x801985c4u,a0,a1,
+              clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x80198838 ======== */
@@ -1645,7 +1663,8 @@ void cd_dispatch_tblc(void)
 {
   uint32_t tbl = DB32(0x801bdda0);
   uint32_t fn = DB32(tbl + 0xc);
-  (void)call_guest(fn,0,0);
+  /* jalr fn: a0/a1 are live caller leftovers in the guest. */
+  (void)call_guest(fn,clean_cpu_state()->gpr[4],clean_cpu_state()->gpr[5]);
 }
 
 /* cd_xchg_bde20 — get-and-set u32 @0x801bde20, returns previous. */
@@ -1795,7 +1814,8 @@ void cd_channel_table_init(uint8_t *a0,uint8_t *a1)
   /* BISECT: re-delegated — clean port of the channel fn-ptr/record table
    * stores (0x801be780+ base, 0xf0-stride channel records) broke the
    * title->menu file-load path. Keep generated until re-verified. */
-  call_guest4(0x801a36f0u, guest_of(a0), guest_of(a1), 0, 0);
+  call_guest4(0x801a36f0u, guest_of(a0), guest_of(a1),
+              clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]);
 }
 
 /* cd_tbl4_dispatch3 — dispatch wrapper: cd_dispatch_tbl4(3,arg). */
@@ -1852,7 +1872,8 @@ void cd_channel_main_init(void)
 {
   /* gpr-forwarding trampoline calls inside need live cpu->gpr that clean
    * callers cannot supply; delegate whole body to generated MIPS. */
-  call_guest4(0x801a1a40u,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x801a1a40u,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* cd_dir_entry_probe — CD directory entry probe/free: magic-div index into
@@ -2123,7 +2144,8 @@ void cd_kobj_init_a(void)
    * corrupts kernel-object state (boot dies in the 0x801970xx CD-event
    * wait -> unknown dispatch). Delegate whole body to generated MIPS —
    * the BIOS kernel boundary needs live gpr/ra semantics clean C lacks. */
-  call_guest4(0x8019a3f0,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019a3f0,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* cd_kobj_init_b — kernel-object init B. Faithful port of generated
@@ -2136,7 +2158,8 @@ void cd_kobj_init_a(void)
 void cd_kobj_init_b(void)
 {
   /* Same e9fc366 regression as cd_kobj_init_a — delegate to generated. */
-  call_guest4(0x8019a378,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019a378,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* bios_tramp_a044 — BIOS svc A0/0x44 trampoline. */
@@ -2240,7 +2263,8 @@ void cd_ext_init_once(void)
    * the clean port livelocked versus boot in the CD-event wait. Delegate
    * whole body to generated MIPS. (The 0x8019B7E0 callback arg was
    * verified against generated: a0 = 0x801A0000-0x4820.) */
-  call_guest4(0x8019b308u,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019b308u,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* cd_chan_block_boot — channel block @0x801febe0 init: clears +0/4/8/0xc/
@@ -2355,7 +2379,8 @@ void cd_mode_reset_seq(void)
   /* c784bf1 clean port of 0x8019e39c regressed versus boot (same
    * bios_table_tramp/BIOS-svc boundary family as the e9fc366 break):
    * delegate whole body to generated MIPS. */
-  call_guest4(0x8019e39cu,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019e39cu,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* cd_dir_reset — CD dir reset: a1=*0x801fc6c4, clears
@@ -2385,7 +2410,8 @@ void cd_mode_apply_seq(uint32_t a0)
 {
   /* c784bf1 clean port of 0x8019e330 regressed versus boot — delegate
    * whole body to generated MIPS (BIOS trampoline boundary). */
-  (void)call_guest4(0x8019e330u,a0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    (void)call_guest4(0x8019e330u,a0,c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* bios_tramp_a070 — BIOS svc A0/0x70 trampoline. */
@@ -3906,7 +3932,8 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
         if (v1 >= 3841u) {
           uint32_t fr = br2_guest_frame(0x28);
           br2_st32(fr + 0x20, clean_cpu_state()->gpr[31]);
-          (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c08u, 0, 0);
+          (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c08u,
+                            clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]);
           if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
           br2_guest_frame_free();
           break;
@@ -3932,7 +3959,8 @@ void cd_reg_stream_push(uint32_t a0,uint32_t a1)
       if (v1 >= 3841u) {
         uint32_t fr = br2_guest_frame(0x28);
         br2_st32(fr + 0x20, clean_cpu_state()->gpr[31]);
-        (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c1cu, 0, 0);
+        (void)call_guest4(0x8018e550, 0x80125be8u, 0x80125c1cu,
+                          clean_cpu_state()->gpr[6], clean_cpu_state()->gpr[7]);
         if (br2_bail_pending()) { br2_guest_frame_abandon(); return; }
         br2_guest_frame_free();
         break;
@@ -4593,7 +4621,8 @@ void cd_mc_state_machine(void)
    * (bit4 set -> status 3 livelock). Generated code reserves the real
    * frame, placing the out buffer above the callee frame. Same contract
    * as cd_result_wait_b/cd_file_read_seq. */
-  call_guest4(0x80199440u,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x80199440u,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
   return;
 }
 
@@ -4606,7 +4635,9 @@ void cd_mc_state_machine(void)
 static uint8_t *ctx_194_get(void)
 {
   uint32_t fn = DB32(0x801be194);
-  return (uint8_t *)guest_at(call_guest(fn, 0, 0));
+  /* jalr fn: a0/a1 are live caller leftovers in the guest. */
+  return (uint8_t *)guest_at(call_guest(fn, clean_cpu_state()->gpr[4],
+                                        clean_cpu_state()->gpr[5]));
 }
 /* cd_ctx_status_map — map selector sel through the ctx record (ctx_194_get) to a status code; guest 0x801a12dc. */
 int32_t cd_ctx_status_map(int32_t sel)
@@ -4726,7 +4757,8 @@ void cd_dir_entry_finalize(void)
   DB32(0x801fc6a8) = DB32(0x801fc6a4);        /* delay slot of beqz */
   fn = DB32(0x801feb10);
   if (fn != 0)
-    call_guest(fn,fn,0);                    /* jalr $a0: a0 = fn ptr */
+    /* jalr $a0: a0 = fn ptr; a1 is a live caller leftover. */
+    call_guest(fn,fn,clean_cpu_state()->gpr[5]);
   DB32(0x801fc69c) = 0;
 }
 
@@ -4856,7 +4888,9 @@ int32_t cd_chan_cmd_pump(uint32_t a0,uint32_t a1,uint32_t a2)
    * MMIO busy-waits lack per-block interrupt checks. Delegate to the
    * generated MIPS (behavioral oracle) — same contract as the other
    * read-path functions already delegated. */
-  return (int32_t)call_guest4(0x801a0660u,a0, a1, a2, 0);
+  /* a3 is a live caller leftover at the guest jal. */
+  return (int32_t)call_guest4(0x801a0660u,a0, a1, a2,
+                              clean_cpu_state()->gpr[7]);
 }
 
 /* ======== batch34 ======== */
@@ -5962,7 +5996,10 @@ int32_t cd_gpu_call_20(uint32_t a0,uint32_t a1)
   cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32(0x801b8318);
-    gpu_invoke(DB32(tbl + 0x20),a0,a1,0,0);
+    /* Guest jalr @0x80193994: a0=a0, a1=a1 (move a1,s1 delay slot);
+     * a2/a3 stay live caller leftovers. */
+    gpu_invoke(DB32(tbl + 0x20),a0,a1,
+               clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   }
   return 0;
 }
@@ -5980,7 +6017,9 @@ int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
   cd_dispatch_tbl4(2,0x80193ce0);
   {
     uint32_t tbl = DB32(0x801b8318);
-    gpu_invoke(DB32(tbl + 0x1c),a0,a1,0,0);
+    /* Same shape as cd_gpu_call_20: guest jalr leaves a2/a3 live. */
+    gpu_invoke(DB32(tbl + 0x1c),a0,a1,
+               clean_cpu_state()->gpr[6],clean_cpu_state()->gpr[7]);
   }
   return 0;
 }
@@ -5996,7 +6035,9 @@ int32_t cd_gpu_call_1c(uint32_t a0,uint32_t a1)
  * correct and makes gen_clean_table skip the address. */
 uint32_t cd_chan_full_init(void)
 {
-  return call_guest4(0x8019a814, 0, 0, 0, 0);
+  { CPUState *c_ = clean_cpu_state();
+    return call_guest4(0x8019a814, c_->gpr[4], c_->gpr[5],
+                       c_->gpr[6], c_->gpr[7]); }
 }
 
 /* ======== 0x801918a0 ======== */
@@ -6491,7 +6532,9 @@ void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
     uint32_t tbl = DB32(0x801b8318);
     uint32_t f2 = DB32(tbl + 8);
     uint32_t a0v = DB32(tbl + 0x18);
-    call_guest(f2,a0v,a0);   /* a2/a3 zero in guest */
+    /* Guest jalr @0x801917C8 zeroes a2/a3 in the delay slots
+     * (move a2,$zero @0x801917B8, move a3,$zero @0x801917CC). */
+    call_guest4(f2,a0v,a0,0,0);
   }
 }
 
@@ -6503,7 +6546,8 @@ void cd_gpu_call_8b(uint32_t a0,uint32_t a1)
 void cd_dma_chan_init(uint32_t a0)
 {
   (void)a0;
-  call_guest4(0x8019b310u,a0, 0, 0, 0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019b310u,a0, c_->gpr[5], c_->gpr[6], c_->gpr[7]); }
 }
 
 /* ======== 0x80199100 ======== */
@@ -6521,7 +6565,8 @@ void cd_dir_entry_store(uint32_t a0,uint32_t a1)
   feb00_note(2, t);
   DB32(0x801fc6a8) = DB32(0x801fc6a4);
   fn = DB32(0x801feb10);
-  if (fn != 0) call_guest(fn,fn,0);        /* jalr $a0: a0 = fn ptr */
+  /* jalr $a0: a0 = fn ptr; a1 is a live caller leftover. */
+  if (fn != 0) call_guest(fn,fn,clean_cpu_state()->gpr[5]);
   DB32(0x801fc69c) = 0;
 }
 
@@ -6535,7 +6580,9 @@ int32_t cd_seek_step(uint32_t a0,uint32_t a1)
   /* IRQ-poll spin on TestEvent(0x801bde38) — DeliverEvent needs the deferred
    * CD coroutine resumed on IRQ, which a clean-C spin cannot drive. Delegate
    * to generated (same contract as cd_seek_complete_poll 0x8019d500). */
-  return (int32_t)call_guest4(0x8019d508u,a0,a1,0,0);
+  return (int32_t)call_guest4(0x8019d508u,a0,a1,
+                              clean_cpu_state()->gpr[6],
+                              clean_cpu_state()->gpr[7]);
 }
 
 /* ======== 0x8019b8a4 ======== */
@@ -6567,11 +6614,15 @@ void cd_gpu_call_2c(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   if (a2 >= 2) {
     uint32_t fn = DB32(0x801b831c);
-    call_guest(fn,0x80125540,a0);   /* a2 = a1 in guest */
+    /* Guest jalr @0x801916A8 sets a2 = s1 (= a1 param) in the delay
+     * slot; a3 stays a live caller leftover. */
+    call_guest4(fn,0x80125540,a0,a1,clean_cpu_state()->gpr[7]);
   }
   {
     uint32_t tbl = DB32(0x801b8318);
     uint32_t f2 = DB32(tbl + 0x2c);
+    /* tbl+0x2c jalr @0x801916C4: a0=a0 param, a1=a1 param (move a1,s1
+     * delay slot); a2/a3 stay live caller leftovers. */
     call_guest(f2,a0,a1);
   }
   DB32(0x801b83e0) = (0x801b83cc & 0x00ffffff) | 0x400000;
@@ -6612,7 +6663,9 @@ void cd_dma_chan_reset(uint32_t a0)
                         DB32(0x801bdee8) ? "callback" : "DeliverEvent(0xF0000009,0x20)");
   }
   if (DB32(0x801bdee8) != 0) {
-    call_guest(DB32(0x801bdee8),0xf0000000,0);
+    /* Guest jalr @0x8019B870: a0=0xF0000000; a1 stays a live caller
+     * leftover (no $a1 write on the path). */
+    call_guest(DB32(0x801bdee8),0xf0000000,clean_cpu_state()->gpr[5]);
   } else {
     (void)cd_bios_svc_07(0xf0000009,0x20);
   }
@@ -6627,7 +6680,9 @@ void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
   int32_t s1;
   if (a2 >= 2) {
     uint32_t fn = DB32(0x801b831c);
-    call_guest(fn,0x80125528,a0);   /* a2 = a1 in guest */
+    /* Guest jalr @0x801915DC sets a2 = s1 (= a1 param) in the delay
+     * slot; a3 stays a live caller leftover. */
+    call_guest4(fn,0x80125528,a0,a1,clean_cpu_state()->gpr[7]);
   }
   s1 = (int32_t)a1 - 1;
   while (s1 != 0) {
@@ -6669,7 +6724,10 @@ void cd_prim_list_b(uint32_t a0,uint32_t a1,uint32_t a2)
  * delegated to generated MIPS. */
 uint32_t cd_chan_slot_set(uint32_t a0,uint32_t a1)
 {
-  return (uint32_t)call_guest4(0x8019aabcu,a0,a1,0,0);
+  /* a1/a2/a3 stay LIVE guest regs at the inner BIOS-trampoline jals
+   * (see comment above) — forward cpu->gpr, never zeros. */
+  CPUState *c_ = clean_cpu_state();
+  return (uint32_t)call_guest4(0x8019aabcu,a0,a1,c_->gpr[6],c_->gpr[7]);
 }
 
 /* ======== batch_mass13 ======== */
@@ -6713,7 +6771,10 @@ void cd_cb7_run(uint32_t a0)
           if (cb7_dbg2 < 0) { const char *e = getenv("PSX_CB7"); cb7_dbg2 = (e && e[0] && e[0] != '0') ? 1 : 0; }
           if (cb7_dbg2 && h != 0) fprintf(stderr, "[cb7] ch%d handler=0x%08X\n", s0, h);
         }
-        if (h != 0) call_guest(h,0,0);
+        /* Guest jalr @0x8019B01C writes no arg regs — a0/a1 are live
+         * caller leftovers, not zeros. */
+        if (h != 0) call_guest(h,clean_cpu_state()->gpr[4],
+                               clean_cpu_state()->gpr[5]);
       }
       tbl++;
       s1 >>= 1;
@@ -6843,7 +6904,9 @@ int cd_gpu_call_18_b(uint32_t a0,uint32_t a1,uint32_t a2)
   a0p[0] = *(uint32_t *)s0;
   a0p[2] = *(uint32_t *)(s0 + 4);
   fn = br2_ld32(DB32(0x801b8318) + 0x18);
-  call_guest(fn,0x801b83b8,0);
+  /* Guest jalr @0x80193BC0: a0=0x801B83B8, a1=lw(s0+0) (the struct's
+   * first word, also stored to packet+0); a2/a3 are live leftovers. */
+  call_guest(fn,0x801b83b8,*(uint32_t *)s0);
   return 0;
 }
 
@@ -7006,7 +7069,8 @@ uint32_t cd_queue_drain(void)
     uint32_t cb = DB32(0x801b832c);
     if (cb != 0) {
       DB32(0x801b8328) = 0;
-      call_guest(cb,cb,0);            /* jalr a0: a0 = cb ptr */
+      /* jalr a0: a0 = cb ptr; a1 is a live caller leftover. */
+      call_guest(cb,cb,clean_cpu_state()->gpr[5]);
     }
   }
   return (DB32(0x801b8448) - DB32(0x801b844c)) & 0x3f;
@@ -7126,7 +7190,8 @@ int cd_ctx_save(uint32_t a0)
  * live-resume-PC contract; stays generated-authoritative per §4. */
 void cd_intc_dispatch(void)
 {
-  call_guest4(0x8019a8ecu,0,0,0,0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x8019a8ecu,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 /* bios_tramp_b035 — BIOS trampoline only (0x8018ef50-0x8018ef58):
  * addiu t2,0xb0; jr t2; t1=0x35. Kernel svc 0x35 (line-buffer
@@ -7156,7 +7221,8 @@ int32_t bios_tramp_b035(int32_t a0,const void *a1,int32_t a2)
  * (session-18 boundary bug — same as cd_ext_init_once/cd_dma_chan_init). */
 void cd_hw_chan_init(void)
 {
-  call_guest4(0x801a0be0u,0, 0, 0, 0);
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x801a0be0u,c_->gpr[4],c_->gpr[5],c_->gpr[6],c_->gpr[7]); }
 }
 
 /* ======== 0x8019ad60 ======== */

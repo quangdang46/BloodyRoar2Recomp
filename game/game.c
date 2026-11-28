@@ -1172,7 +1172,10 @@ void cd_channel_init_seq(void)
      * Deq+Enq's pad/device IntRP 0x801FEFC0 into kernel queue 2 plus the
      * two channel-init jalr's. Without it the IntRP never links and the
      * per-interrupt channel poll never fills 0x801BEFA8/0x801BEFCA. */
-    call_guest(0x801a1250u,0,0);
+    /* Guest jal leaves a0-a3 as live caller regs — forward gpr[4]/[5]
+     * (call_guest keeps gpr[6]/[7] live for a2/a3). */
+    call_guest(0x801a1250u,clean_cpu_state()->gpr[4],
+               clean_cpu_state()->gpr[5]);
 }
 
 /* scratch_zero_reset — zero the 0x1F800000-0x1F800400 scratchpad block. */
@@ -1937,7 +1940,10 @@ int cd_file_load_sm(int file_id,uint32_t dst)
       /* len field carries the generated caller's $ra (post-jal addr) so the
        * file_load provenance names which function aimed file_id at dst. */
       decomp_trace_record(10,dst,(uint32_t)file_id,0,clean_caller_ra());} }
-  return (int)br2_call_clean(0x8018cfdc,(uint32_t)file_id,dst,0,0);
+  /* Guest jal leaves a2/a3 as live caller regs — forward gpr[6]/[7]. */
+  { CPUState *c_ = clean_cpu_state();
+    return (int)br2_call_clean(0x8018cfdc,(uint32_t)file_id,dst,
+        c_ != NULL ? c_->gpr[6] : 0u, c_ != NULL ? c_->gpr[7] : 0u); }
 }
 
 /* ======== 0x8012b23c ======== */

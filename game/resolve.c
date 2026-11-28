@@ -3279,8 +3279,10 @@ void ev_stream_dispatch(uint8_t *ctrl,uint8_t *motion)
         /* Opcodes >=24 dispatch through the guest handler table; try the
          * clean-room port first (call_guest4 -> clean_try_dispatch), with
          * call_guest4's own generated fallback. */
+        /* Guest jalr @0x8017EADC passes a0=ctrl, a1=motion, a2=pc and
+         * a3 = live incoming $a3 (the generated body never writes gpr[7]). */
         uint32_t h = *(uint32_t *)guest_at(0x801b4e68u + (uint32_t)op * 4);
-              npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, 0);
+              npc_g = call_guest4(h, br2_gaddr(ctrl), br2_gaddr(motion), pc_g, br2_gpr(7));
         ret = npc_g ? (uint8_t *)guest_at(npc_g) : (uint8_t *)0;
       }
       {

@@ -2560,8 +2560,12 @@ extern void br2_irq_poll(void);
 uint32_t cd_file_read_seq(uint32_t a0,uint32_t a1,uint32_t a2)
 {
   /* BISECT: temporarily re-delegated to isolate menu regression — the
-   * seek-completion wait loop needs live-gpr coroutine resume. */
-  return br2_call_clean(0x801565ec, a0, a1, a2, 0);
+   * seek-completion wait loop needs live-gpr coroutine resume.
+   * Guest jal leaves a3 as a live caller leftover — forward gpr[7]. */
+  extern CPUState *clean_cpu_state(void);
+  CPUState *cpu = clean_cpu_state();
+  return br2_call_clean(0x801565ec, a0, a1, a2,
+                        cpu != NULL ? cpu->gpr[7] : 0u);
 }
 
 /* fighter_link_init — fighter link init: a2[0x94]=-1, a3 guest ptr,
@@ -8633,12 +8637,15 @@ int op_state_dispatch(uint8_t *a0)
 /* 0x801a0a8c — invoke channel fn ptr; decrement count on success. */
 void op_chan_fn_invoke(void)
 {
+  extern CPUState *clean_cpu_state(void);
   int32_t i = *(int32_t *)guest_at(0x801be768);
   if (i >= 0) {
     uint32_t f = *(uint32_t *)guest_at(0x801fef60 + (uint32_t)i * 4);
     /* jalr through the slot fn ptr: run clean when ported, generated
-     * otherwise — fn_lookup alone would silently skip generated targets. */
-    uint32_t r = call_guest(f, 0x801fef20 + (uint32_t)i * 16, 0);
+     * otherwise — fn_lookup alone would silently skip generated targets.
+     * Guest jalr sets a0=slot, a1=live caller leftover — forward gpr[5]. */
+    uint32_t r = call_guest(f, 0x801fef20 + (uint32_t)i * 16,
+                            clean_cpu_state()->gpr[5]);
     if (r) {
       *(uint32_t *)guest_at(0x801be768) = (uint32_t)(i - 1);
     }
@@ -11051,7 +11058,9 @@ void FUN_80158274(uint32_t a0, uint32_t a1)
   uint32_t *f = (uint32_t *)guest_at(0x801f46f4);
   (void)a0;
   if (*f) *f = 0; else *f = 0x200;
-  call_guest(0x8019d170, *f, 0);
+  /* Guest jal 0x8019D170 writes only $a0 (lw 0x801F46F4); $a1 stays the
+   * incoming a1 param, $a2/$a3 live leftovers. */
+  call_guest(0x8019d170, *f, a1);
   call_guest(0x8019d030, 1, a1);
 }
 

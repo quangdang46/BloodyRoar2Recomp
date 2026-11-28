@@ -603,15 +603,22 @@ void camera_state_cache(uint32_t unused,int battle)
       /* Guest jalr @0x8012EF04 passes unused=0x1F8002F8, battle=0x801F0228,
        * a2=battle — guest addresses. Clean callees in this table
        * (dual_axis_coord_xform / proj_coord_gte_emit) take guest-u32
-       * params, so pass guest addresses, not &DAT_ host pointers. */
-      ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
-          (0x1f8002f8u,0x801f0228u,(uint32_t)battle,0);
+       * params, so pass guest addresses, not &DAT_ host pointers.
+       * Stage gpr[4..7] so a CPS callee reading cpu->gpr sees the jalr
+       * args, not the outer function's stale regs; gpr[7] stays live. */
+      { CPUState *c_ = clean_cpu_state();
+        if (c_ != NULL) { c_->gpr[4]=0x1f8002f8u; c_->gpr[5]=0x801f0228u;
+                          c_->gpr[6]=(uint32_t)battle; }
+        ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+            (0x1f8002f8u,0x801f0228u,(uint32_t)battle,0); }
     }
     else {
       /* Unported jalr target: run the generated body with the same guest
        * args — unused=0x1F8002F8, battle=0x801F0228 (guest addrs, not host ptrs),
        * a2=battle. */
-      br2_call_clean(fn_g,0x1f8002f8u,0x801f0228u,(uint32_t)battle,0);
+      { CPUState *c_ = clean_cpu_state();
+        br2_call_clean(fn_g,0x1f8002f8u,0x801f0228u,(uint32_t)battle,
+                       c_ != NULL ? c_->gpr[7] : 0u); }
     }
   }
   return;
@@ -651,9 +658,13 @@ void player_light_apply(uint8_t *ctrl,int side)
        * a2=0x1F80033C, a3=ctrl's guest address — all guest addrs.
        * Clean callees (proj_coord_gte_emit / dual_axis_coord_xform)
        * take guest-u32 params; ctrl is a host ptr here, so resolve
-       * it with guest_of like the generated fallback below. */
-      ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
-          (0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(ctrl));
+       * it with guest_of like the generated fallback below.
+       * Stage gpr[4..6] for CPS callees; gpr[7] keeps live a3. */
+      { CPUState *c_ = clean_cpu_state();
+        if (c_ != NULL) { c_->gpr[4]=0x1f8002f8u; c_->gpr[5]=0x801f0228u;
+                          c_->gpr[6]=0x1f80033cu; }
+        ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+            (0x1f8002f8u,0x801f0228u,0x1f80033cu,guest_of(ctrl)); }
     }
     else {
       /* Unported jalr target: guest args ctrl=0x1F8002F8, side=0x801F0228,
@@ -4874,9 +4885,13 @@ void fighter_attach_run(int f)
         void *fn = fn_lookup(fn_g);
         if (fn != (void *)0x0) {
           /* Guest jalr passes f=f, a1=aux, a2=ent, a3=idx —
-           * all guest addresses/values; clean callees take guest-u32 args. */
-          ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
-              ((uint32_t)f,(uint32_t)aux,(uint32_t)ent,(uint32_t)idx);
+           * all guest addresses/values; clean callees take guest-u32 args.
+           * Stage gpr[4..7] for CPS callees reading cpu->gpr. */
+          { CPUState *c_ = clean_cpu_state();
+            if (c_ != NULL) { c_->gpr[4]=(uint32_t)f; c_->gpr[5]=(uint32_t)aux;
+                              c_->gpr[6]=(uint32_t)ent; c_->gpr[7]=(uint32_t)idx; }
+            ((void (*)(uint32_t, uint32_t, uint32_t, uint32_t))fn)
+                ((uint32_t)f,(uint32_t)aux,(uint32_t)ent,(uint32_t)idx); }
         }
         else {
           /* Unported jalr target: run the generated body with the same
@@ -9003,10 +9018,18 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   void *fn = fn_lookup(fn_guest);
   if (fn == (void *)0x0) {
     /* Unported target: reproduce the guest jalr — a0 = arg_guest (a guest
-     * address), callee runs its generated body via the dispatcher. */
-    call_guest(fn_guest, arg_guest, 0);
+     * address), a1 = live caller leftover (jalr does not write $a1);
+     * callee runs its generated body via the dispatcher. */
+    CPUState *c_ = clean_cpu_state();
+    call_guest(fn_guest, arg_guest,
+               (c_ != NULL) ? c_->gpr[5] : 0);
     return;
   }
+  /* Guest jalr sets only $a0 = arg_guest; $a1..$a3 stay live caller
+   * leftovers. Stage gpr[4] so CPS callees reading cpu->gpr see the jalr
+   * arg; gpr[5..7] already hold the live values. */
+  { CPUState *c_ = clean_cpu_state();
+    if (c_ != NULL) c_->gpr[4] = arg_guest;
   switch (fn_guest) {
   case 0x80138cec:   /* impact_fx_update(int)      — guest u32 arg */
   case 0x80139e0c:   /* impact_fx_emit_tick(int)      — guest u32 arg */
@@ -9026,6 +9049,7 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   default:
     ((void (*)(uintptr_t))fn)(arg_guest != 0 ? (uintptr_t)guest_at(arg_guest) : 0);
     break;
+  }
   }
 }
 
@@ -9969,8 +9993,13 @@ void impact_fx_update(int rec)
    * only s0-s5+ra — no s6/s7/fp).
    * That register state cannot be reconstructed from clean C locals, so the
    * whole body delegates to the generated implementation (faithful per the
-   * delegation rule) rather than guessing the jump-table dispatch. */
-  call_guest4(0x80138CECu,(uint32_t)rec,0,0,0);
+   * delegation rule) rather than guessing the jump-table dispatch.
+   * Guest jal sets a0=rec; a1..a3 are live caller leftovers. */
+  { CPUState *c_ = clean_cpu_state();
+    call_guest4(0x80138CECu,(uint32_t)rec,
+                (c_ != NULL) ? c_->gpr[5] : 0,
+                (c_ != NULL) ? c_->gpr[6] : 0,
+                (c_ != NULL) ? c_->gpr[7] : 0); }
 }
 
 /* impact_fx_emit_tick @0x80139e0c — emit pass for an impact FX record. */
@@ -11937,10 +11966,18 @@ void task_slot_fns_run(int slot)
         uint32_t fn_g = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + ctx)));
         void *fn = fn_lookup(fn_g);
         uint32_t nodeg_ = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((argblk[0] + i * 4)));
+        /* Populate the synthesized guest cells unconditionally — the guest
+         * writes them before the jalr on both dispatch legs. */
+        CPUState *cpu = clean_cpu_state();
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x28)) = (uint32_t)argblk[0];
+        *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x2c)) = (uint32_t)i;
         if (fn != (void *)0x0) {
-          /* Guest jalr passes slot = &ctx_base cell (sp+0x10) and
-           * a1 = ctx_base[i] node-head guest addr.  The clean slot fns take
-           * host pointers, so resolve a1 through guest_at. */
+          /* Guest jalr passes slot = &cell (sp+0x10) and a1 = node-head
+           * guest addr; a2/a3 live. The clean slot fns take host pointers,
+           * so resolve a1 through guest_at — but stage gpr[4]/[5] so a CPS
+           * callee reading cpu->gpr sees the jalr args. */
+          if (cpu != NULL) { cpu->gpr[4] = (uint32_t)(gp_save + 0x28);
+                             cpu->gpr[5] = nodeg_; }
           ((void (*)(uintptr_t,uintptr_t))fn)((uintptr_t)argblk, (uintptr_t)guest_at(nodeg_));
         } else {
           /* Unported slot fn: reproduce the guest jalr — a0 = guest addr of
@@ -11948,9 +11985,6 @@ void task_slot_fns_run(int slot)
            * addr, a2/a3 = live caller regs. The guest cell lived on the
            * stack; synthesize it in the dead gp small-data cells +0x28/+0x2c
            * (0x801bef04/08 — no generated or game code references gp+40/44). */
-          CPUState *cpu = clean_cpu_state();
-          *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x28)) = (uint32_t)argblk[0];
-          *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x2c)) = (uint32_t)i;
           br2_call_clean(fn_g, (uint32_t)(uintptr_t)(gp_save + 0x28), nodeg_,
               cpu != NULL ? cpu->gpr[6] : 0u, cpu != NULL ? cpu->gpr[7] : 0u);
         }
@@ -17884,12 +17918,21 @@ LAB_80137c14:
                    * channel state).  The clean handlers (LAB_80137590 /
                    * LAB_80137680 / LAB_80137acc / LAB_80137cd0 family) take
                    * host pointers into guest RAM, so resolve via guest_at;
-                   * the generated fallback below gets the raw guest addr. */
-                  ((void (*)(uintptr_t))fn)(ctx[0] != 0 ? (uintptr_t)guest_at((uint32_t)ctx[0]) : 0);
+                   * the generated fallback below gets the raw guest addr.
+                   * Stage gpr[4] so a CPS callee reading cpu->gpr sees the
+                   * jalr a0; gpr[5..7] stay live as guest leftovers. */
+                  { CPUState *c_ = clean_cpu_state();
+                    if (c_ != NULL) c_->gpr[4] = (uint32_t)ctx[0];
+                    ((void (*)(uintptr_t))fn)(ctx[0] != 0 ? (uintptr_t)guest_at((uint32_t)ctx[0]) : 0); }
                 }
                 else {
-                  /* Unported jalr target: ctx = ctx[0] (guest addr or 0). */
-                  br2_call_clean(fn_g,(uint32_t)ctx[0],0,0,0);
+                  /* Unported jalr target: a0 = ctx[0]; a1-a3 are live
+                   * caller leftovers in the guest — forward gpr[5..7]. */
+                  { CPUState *c_ = clean_cpu_state();
+                    br2_call_clean(fn_g,(uint32_t)ctx[0],
+                        c_ != NULL ? c_->gpr[5] : 0u,
+                        c_ != NULL ? c_->gpr[6] : 0u,
+                        c_ != NULL ? c_->gpr[7] : 0u); }
                 }
               }
               rec = (short *)guest_at((uint32_t)*curp);
@@ -17967,17 +18010,22 @@ void LAB_80137cd0(int *ctx)
     ops = (short *)guest_at((uint32_t)(ctx[2] + *(short *)guest_at((uint32_t)ctx[4]) * 4));
     {
       /* guest: jal 0x801ACB08 — ctx = *(u32*)(ctx+0) (guest word),
-       * a1 = s16 *ops, a2 = s16 ops[1] (sign-extended lh loads). */
-      {
-        void *fn = fn_lookup(0x801acb08);
-        if (fn != (void *)0x0) {
-          ((void (*)(uint32_t,int,int))fn)((uint32_t)ctx[0],(int)*ops,(int)ops[1]);
-        }
-        else {
-          fighter_chan_delta_accum((uint32_t)ctx[0],
-                                   (uint32_t)(int)*ops,
-                                   (uint32_t)(int)ops[1],0);
-        }
+       * a1 = s16 *ops, a2 = s16 ops[1] (sign-extended lh loads),
+       * a3 = live caller leftover (jal does not write $a3).  Stage
+       * gpr[4..6] for CPS callees; gpr[7] already holds live $a3. */
+      CPUState *c_ = clean_cpu_state();
+      uint32_t a3v = (c_ != NULL) ? c_->gpr[7] : 0;
+      void *fn = fn_lookup(0x801acb08);
+      if (c_ != NULL) { c_->gpr[4]=(uint32_t)ctx[0];
+                        c_->gpr[5]=(uint32_t)(int)*ops;
+                        c_->gpr[6]=(uint32_t)(int)ops[1]; }
+      if (fn != (void *)0x0) {
+        ((void (*)(uint32_t,int,int))fn)((uint32_t)ctx[0],(int)*ops,(int)ops[1]);
+      }
+      else {
+        fighter_chan_delta_accum((uint32_t)ctx[0],
+                                 (uint32_t)(int)*ops,
+                                 (uint32_t)(int)ops[1],a3v);
       }
     }
     *(uint16_t *)(ctx + 5) = *(uint16_t *)guest_at((uint32_t)(ctx[4] + 2));
@@ -18631,7 +18679,9 @@ have:
       return 0;
     }
     *s1 = 0;
-    r = call_guest(0x80198190,(uint32_t)a0v,0);
+    /* Guest jal 0x80198190 @0x80197CA0: a0 = rec_find result, a1 = s3 =
+     * the incoming a1 param (arg), a2/a3 live leftovers. */
+    r = call_guest(0x80198190,(uint32_t)a0v,arg);
     if (r == 0) {
       if (0 < (int)*(int32_t *)guest_at(0x801cc850)) {
         printf_forward((const char *)guest_at(0x8012590c));
@@ -18708,8 +18758,12 @@ void node_list_collect(int head,int out)
         task_slot_step();
       }
       else {
+        /* Guest jalr @0x8013CE40: a0 = *(cur+0x10), a1 = cur node guest
+         * addr (live $a1), a2/a3 = live caller regs. call_guest preserves
+         * gpr[6]/[7]; pass cur for a1 instead of 0. */
         call_guest(*(uint32_t *)guest_at((uint32_t)(uintptr_t)(cur + 8)),
-                     *(uint32_t *)guest_at((uint32_t)(uintptr_t)(cur + 0x10)),0);
+                     *(uint32_t *)guest_at((uint32_t)(uintptr_t)(cur + 0x10)),
+                     (uint32_t)cur);
       }
     }
     cur = *(int *)guest_at((uint32_t)(uintptr_t)cur);
