@@ -311,7 +311,6 @@ WRAP_OK_DELEGATE = {
 # wrapper so dispatch falls through to generated, matching the proven
 # PSX_CPS_KEEP boot config. fn_lookup still resolves them for indirect calls.
 GENERATED_ONLY = {
-    0x80196370, 0x801968cc, 0x80196b4c, 0x80196e14,
     0x801985c4, 0x80198af0, 0x80198c90, 0x80198e2c,
     0x80199440,
     0x8019e39c, 0x801a0be0, 0x801a1a40, 0x801a1b50, 0x801a1e84, 0x801a36f0,
