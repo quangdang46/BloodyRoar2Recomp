@@ -1745,11 +1745,13 @@ extern void task_table_init(void);
 extern void terrain_packet_gen(void);
 extern void text_format_copy_byte_fragment(void);
 extern void text_format_measure_string_fragment(void);
+extern void text_format_run(void);
 extern void text_format_width_check_fragment(void);
 extern void text_line_select(void);
 extern void text_render_full(void);
 extern void text_render_simple(void);
 extern void text_widget_alloc(void);
+extern void text_win_emit(void);
 extern void text_win_init(void);
 extern void text_win_printf_guest(void);
 extern void tile_decode_wait(void);
@@ -2995,7 +2997,9 @@ const Br2FnEnt fn_table[] = {
   { 0x80190350, (void *)text_line_select },
   { 0x80190390, (void *)text_win_init },
   { 0x80190430, (void *)text_widget_alloc },
+  { 0x801906e8, (void *)text_win_emit },
   { 0x80190a04, (void *)text_win_printf_guest },
+  { 0x80190a14, (void *)text_format_run },
   { 0x80190ca4, (void *)text_format_copy_byte_fragment },
   { 0x80190cc4, (void *)text_format_measure_string_fragment },
   { 0x80190ce4, (void *)text_format_width_check_fragment },
