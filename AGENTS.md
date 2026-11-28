@@ -1725,3 +1725,37 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   confirm the poll never runs vs runs-and-finds-inactive records; then
   audit guest_main for the per-frame yield/BIOS-call boundary the
   generated chain hit that the clean loop misses.
+
+### Session update 36b (guest_main bug narrowed to channel-slot ARM path)
+
+Follow-up probes on the attract/pad regression (culprit = guest_main clean
+port @0x80126234, proven by CLEAN_EXCLUDE bisect):
+
+- **Channel queue service RUNS on broken build**: clean_stats shows
+  cd_cmd_queue_service (0x801a189c) 440k hits, op_flag_fn_check
+  (0x801a1834) 1.7M hits — the IntRP handlers dispatch fine as clean
+  ports. pc_probe 0-counts were a false signal (clean dispatches don't
+  hit generated block leaders).
+- **Queue gates all pass**: BE7B8=1, BE7D4(1)>=BE7D0(0), table base
+  BE7B4=0x801ff080 identical both builds; drain fns 0x801a1b50/0x801a1e84
+  fire on both.
+- **Slot records never ARM**: 0x801ff080/170 runtime fields (+0x24
+  active=1, +0x2c, +0x34, +0x44, +0x54=0101010101, +0x60) populated on
+  working, all-zero on broken. Slots hold ptrs to pad report bufs
+  0x801befa8/ca at +0x30 (written by cd_channel_table_init — identical).
+- **fn-ptr table @0x801c4784 DIFFERS between builds**:
+  BROKEN=0x8003FD44, WORK=0x80047968 (both in low 0x8003-0x8004 region,
+  not 0x801a game code — likely kernel/2nd-segment pointers whose value
+  depends on init order/state). cd_channel_main_init does "two jalr
+  calls through fn slot @0x801c4784 on channel bases 0x801ff080/+0xf0"
+  — the slot ARM calls. Prime suspect: those jalr targets (or the
+  table contents) diverge because guest_main's clean init path leaves
+  different state when cd_channel_init_seq runs.
+- **Caveat**: record diffs were captured WORK=title(gs5) vs
+  BROKEN=attract(gs6) — partially state-confounded; the +0x24 active
+  flag pattern is still the best lead. Attr records 0x801befa8/ca are
+  battle-path only (template in menus on BOTH builds) — menu input is
+  `_g_pad_buffer` (scePadRead output), a separate path also starved.
+- **Next**: identify what writes 0x801c4784 (fn-ptr table install in
+  cd_channel_table_init/cd_handler_*_install) and why the value differs;
+  trace the two channel-init jalr calls in generated 0x801a1a40.
