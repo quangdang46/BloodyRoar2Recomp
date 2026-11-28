@@ -1,20 +1,20 @@
 {
   "done": 2018,
-  "todo": 3334,
-  "total": 5352,
-  "percent": 37.71,
+  "todo": 2725,
+  "total": 4743,
+  "percent": 42.55,
   "groups": [
     {
       "name": "cps_clean",
       "label": "cps_clean",
       "done": 0,
-      "todo": 1489
+      "todo": 1041
     },
     {
       "name": "cd_irq_probe",
       "label": "cd_irq_probe",
       "done": 0,
-      "todo": 876
+      "todo": 715
     },
     {
       "name": "recon_8019",
@@ -401,5 +401,5 @@
       "todo": 1
     }
   ],
-  "cps_rows_remaining": 3233
+  "cps_rows_remaining": 2067
 }
