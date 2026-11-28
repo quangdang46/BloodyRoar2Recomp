@@ -1927,3 +1927,34 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   port, ports 19780), devin-h (0x8015–0x8017 cps_ batch w/ jal-scan
   pre-filter, port 19781). Asset subagents: model50 face/prim stream,
   stage/effect + .ANI record grammar (br2-assets).
+
+### Session update 40 (GENERATED_ONLY restoration proven + wave-3/4 fleet)
+
+- **GENERATED_ONLY restoration WORKS** — devin-g restored
+  `cd_kobj_param_copy` (0x8019E5CC): re-added its 3 clean_cps.map rows +
+  dropped the GENERATED_ONLY entry → clean CPS dispatch, verified versus
+  fight 152k+ frames. Proof: proof/cd_kobj_param_copy_restore.md.
+  This converts the §4 frontier from "needs hand ports" into "mechanical
+  row-restore + runtime verify" for every addr whose cpst_ body exists.
+- **devin-i (GENERATED_ONLY sweep) died mid-batch-1** (~16:03, process
+  gone, uncommitted work left). Relaunched as devin-i2 with resume
+  prompt; it wrote /tmp/verify_batch.sh (boot→attract→versus mash ~160s
+  per batch) and is verifying batch-1 (cd_kobj_mcall_58/5c) on :19783.
+  LESSON: `devin -p` agents can die silently — always check `pgrep -f
+  br2-wt-<name>` AND look for spawned game/mash processes as liveness
+  proof; keep batches small + commit per batch.
+- **Merged `agent/devin-h` (`89924819` → `31b8750a`)**: 6 descriptor-op
+  ports in 0x8017 band (desc_s12_cond_store, desc_flagword_b27_clear/set,
+  desc_op7_dispatch 7-op live-$v1 table, desc_ret_empty_c,
+  desc_ret_a2p4_c); 26 rows retired. Note: desc_op7_dispatch reads live
+  $v1 via clean_cpu_state()->gpr[3] — mid-function entry pattern.
+- **Wave-4 launched**: devin-j on 0x8014–0x8016 cps_ readability band
+  (worktree br2-wt-devin-j, port 19784), same pre-filter rules.
+- **Asset side (br2-assets)**: model50 H-tag family (`0x010000xx`)
+  SOLVED — they are Gouraud normals+positions (RTPT pos pass + MVMVA
+  normal pass → IR1/2/3), NOT UVs. htags.py decodes all files;
+  .faces.obj now 627 faces/0 unresolved per char. Real UVs live in
+  texpage sections (sec04/05) — open item. .ANI EV event streams fully
+  disassembled (90,924 records, 100% branch-validated).
+- Master verify: versus fight mash on :19790 sustained deep into CD
+  loads, zero wedge (binary 2743ddb9, pre-devin-h merge).
