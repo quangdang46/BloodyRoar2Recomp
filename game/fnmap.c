@@ -496,6 +496,7 @@ extern void channel_script_emit_chain_triple(void);
 extern void channel_script_emit_pair(void);
 extern void channel_script_emit_pair_2gate(void);
 extern void channel_script_emit_pair_gated(void);
+extern void channel_script_emit_slot_cycle(void);
 extern void channel_script_emit_triple(void);
 extern void chk_atk1_foe(void);
 extern void chk_atk1_self(void);
@@ -1446,6 +1447,7 @@ extern void reset_guest(void);
 extern void reset_sprite_ot_block(void);
 extern void resource_rebuild_a(void);
 extern void resource_rebuild_b(void);
+extern void resource_task_prepare(void);
 extern void results_record_build(void);
 extern void results_scoreboard(void);
 extern void ret_nop(void);
@@ -1915,6 +1917,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80134234, (void *)channel_script_emit_chain_triple },
   { 0x801343bc, (void *)fighter_hud_emit_pair },
   { 0x80134b34, (void *)channel_script_emit_chain_tick },
+  { 0x80134c30, (void *)channel_script_emit_slot_cycle },
   { 0x80134e44, (void *)channel_script_emit_chain },
   { 0x80134f2c, (void *)channel_script_emit_chain_gate },
   { 0x80135078, (void *)channel_script_emit_pair },
@@ -2084,6 +2087,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8014c0e0, (void *)quad_redraw_flag },
   { 0x8014c1d8, (void *)task_spawn_flag },
   { 0x8014c258, (void *)dual_redraw_a },
+  { 0x8014c324, (void *)resource_task_prepare },
   { 0x8014c76c, (void *)resource_rebuild_b },
   { 0x8014c8d4, (void *)resource_rebuild_a },
   { 0x8014ca34, (void *)indexed_desc_dispatch },

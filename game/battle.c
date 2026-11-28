@@ -315,12 +315,16 @@ extern int getCopControlWord(int fmt,int reg);
 extern int fixed_point_divide(int num,int den);
 extern uint32_t * gte_xform3_t_ip(uint32_t *rt,uint16_t *in);
 extern int prim_task_run(int rec,uint32_t a1,uint32_t a2,int mode);
+extern uint32_t br2_guest_frame(uint32_t bytes);
+extern void br2_guest_frame_free(void);
 extern uint16_t * vec2_rot(uint32_t ang0,uint32_t ang1,uint16_t *dst);
 extern uint32_t * angle_gte_vec(uint32_t x,uint32_t y,uint32_t *out);
 extern int * prim_list_persp_step(int *lst,uint32_t a1,uint32_t a2,int n,uint32_t arg5,int xf,uint32_t arg7,uint32_t arg8);
 extern void gte_light_set(uint32_t x,uint32_t y,uint32_t z);
 extern int * gte_xform_add_off(int x,uint32_t *y,int *z);
 extern uint32_t * angle_pair_rotmat(uint32_t ang0,uint32_t ang1,uint32_t *out);
+extern int32_t sprite_slot_commit(uint32_t w0,uint32_t w1,uint32_t w2,
+                                  uint32_t w3,uint32_t aux5,uint32_t aux6);
 extern void slot_height_proj(uint32_t a0,int obj,int idx,int xf);
 extern void battle_intro_fsm(uint32_t mat,uint32_t a1,uint32_t a2,int st);
 extern int task_alloc_wrap_c(uint32_t w0,uint32_t w1,int w2,uint32_t w3);
@@ -18218,6 +18222,39 @@ void channel_script_emit_triple(int ctx,uint32_t arg,int rec)
     prim_task_run(*(int *)guest_at((uint32_t)(uintptr_t)(rec + 8)) + 0xc8,ctx + 0x2074,arg,tmp);
   }
   return;
+}
+
+/* guest channel_script_emit_slot_cycle @0x80134c30 — emit the channel
+ * tasks, advance the slot counter, then commit the matching sprite packet. */
+int32_t channel_script_emit_slot_cycle(uint32_t ctx,uint32_t arg,uint32_t rec)
+{
+  uint32_t frame = br2_guest_frame(48);
+  uint32_t tasks = *(uint32_t *)guest_at(rec + 8);
+  uint32_t phase;
+  uint32_t stack_fifth;
+  uint32_t stack_sixth;
+  int32_t result;
+
+  prim_task_run((int)*(uint32_t *)guest_at(rec), ctx + 0x2048u, arg, 1);
+  prim_task_run((int)(tasks + 0xc8u), ctx + 0x2048u, arg, 1);
+  prim_task_run((int)(tasks + 0xf0u), ctx + 0x2074u, arg, 1);
+  prim_task_run((int)(tasks + 0xa0u), ctx + 0x2074u, arg, 1);
+
+  phase = (uint32_t)(*(int16_t *)guest_at(rec + 0x28u) + 20) & 0xffffu;
+  *(uint16_t *)guest_at(rec + 0x28u) = (uint16_t)phase;
+  phase &= 0x700u;
+  /* The 0x300/0x700 arms skip the guest's store to [sp+16]. */
+  stack_fifth = *(uint32_t *)guest_at(frame + 16u);
+  if (phase != 0x300u && phase != 0x700u) {
+    stack_fifth = 272u;
+    *(uint32_t *)guest_at(frame + 16u) = stack_fifth;
+  }
+  stack_sixth = 480u + ((phase >> 8) & 3u);
+  *(uint32_t *)guest_at(frame + 20u) = stack_sixth;
+  result = sprite_slot_commit(272u, phase < 0x400u ? 484u : 485u,
+                              16u, 1u, stack_fifth, stack_sixth);
+  br2_guest_frame_free();
+  return result;
 }
 
 /* guest channel_script_emit_chain @0x80134e44 — emit chain; h26 normalized to boolean and

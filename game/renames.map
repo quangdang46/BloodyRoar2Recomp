@@ -451,6 +451,7 @@
 8012eb74 proj_coord_gte_emit
 8014c8d4 resource_rebuild_a
 8014c76c resource_rebuild_b
+8014c324 resource_task_prepare
 80158528 quad_gauge_emit
 80140b20 hud_prim_init
 80168f60 record_table_expand_a
@@ -754,6 +755,7 @@
 80134128 channel_script_emit_pair_2gate
 801341a0 channel_script_emit_triple
 80134e44 channel_script_emit_chain
+80134c30 channel_script_emit_slot_cycle
 80132128 vec3_midpoint_angles
 8013f714 task_node_alloc_init
 8013f7a0 empty_leaf_d
