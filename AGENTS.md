@@ -1783,3 +1783,36 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   periodic pad-read job into the 0x801ff080 queue (likely a per-frame
   driver inside the match/attract path or an IntRP-driven coroutine),
   and why guest_main's clean loop prevents it.
+
+### Session update 37 (ROOT CAUSE FOUND + FIXED — ctx_fn_send arg forwarding)
+
+- **The attract/pad regression is SOLVED.** Culprit was NOT guest_main —
+  it was `ctx_fn_send` (0x801a30c0, game/save.c) dropping arguments on
+  its fn-ptr jalr.
+- Mechanism: ctx_fn_send resolved the channel fn-ptr via `fn_lookup`
+  and called the clean port with ONE arg (`fn(guest_of(a0))`), dropping
+  a1-a3 and the $t0 link target. The callee (cd_cmd_state_commit,
+  0x801a3d84 via 0x801be798) ran with a garbage a1 → the channel-record
+  ARM chain never completed → slot records @0x801ff080 never got
+  +0x24 active flag / command words → pad report buffers starved →
+  attract could not exit on START.
+- Fix: route through `br2_call_clean(fn_g, a0..a3)` which forwards all
+  four arg regs + sets $t0 — faithful to the guest jalr.
+- Bisect path: `tools/arm_bisect.py` polls slot-ARM
+  (0x801ff080+0x24 active, +0x40 cmd44=0405ff00) — ~100s/probe.
+  Narrowed 1555 entries → cluster 46 → sub13 → 5 candidates
+  {0x801a30c0, 0x801a3108, 0x801a31e0, 0x801a328c, 0x801a3350};
+  excluding 0x801a30c0 alone restored ARM.
+- **guest_main (0x80126234) clean port RESTORED** — the earlier
+  bisect attribution was a false positive (the same ctx_fn_send defect
+  was still live; excluding guest_main perturbed dispatch enough to
+  mask it). Removed from GENERATED_ONLY in gen_clean_table.py; note
+  the subagent structural concerns (no CPS IRQ-boundary checks, stale
+  resume PC, unset s-regs) remain VALID for future hardening but are
+  not currently breaking anything.
+- Verified (commit 7210f213, port 19681): slot ARMED cmd44=0405ff00,
+  attract exits (5,0)→(5,1) title→(5,2) mode menu→(8,x) versus flow→
+  (3,x) gameplay states — full menu/versus navigation works.
+- **Lesson for future bisects**: an exclusion that "fixes" a symptom
+  may only perturb timing — always confirm the true culprit by fixing
+  the mechanism, not just excluding the site.
