@@ -1981,3 +1981,34 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   57,854 texcoords, ~84% faces textured. Earlier "no UVs" verdict was
   a misread of the gte_cc normal loads.
 - Worktrees: master + br2-wt-devin-i only.
+
+### Session update 42 (devin-k — GENERATED_ONLY wedge-class restore SOLVED via CPS call-drive fix)
+
+- **3 wedge-class addrs restored + verified** (`6aadac3c`):
+  `cd_chan_full_init` 0x8019A814 (3 rows), `cd_chan_slot_set`
+  0x8019AABC (20 rows), `cd_ext_init_once` 0x8019B308 (7 rows) — all
+  rows verbatim from `bbbd6966^`, bodies already generator-current.
+  0x8019B310 cd_dma_chan_init stays GENERATED_ONLY (faithful
+  cpst_8019b310 embedded-entry body now exists in cd_irq_probe.c).
+- **ROOT CAUSE of the restore wedge — class-level bug, now FIXED**:
+  synchronous clean-first call sites ran `clean_try_dispatch` exactly
+  ONCE. A CPS piece ending in tail jal/jr leaves the chain pending in
+  `cpu->pc`; the helper restored pc and returned → callee truncated
+  after piece 1. cd_ext_init_once set @0x801BDEA0=1 but
+  cpu_critical_enter/cd_ext_table_init/OpenEvent never ran → BIOS
+  TestEvent spin, gs=00 livelock. This is the likely systemic blocker
+  behind MOST remaining GENERATED_ONLY "wedge-class" addrs.
+- **Fix**: `br2_clean_call_drive()` (src/clean_bridge.c) — after a
+  successful clean_try_dispatch, single-steps pending cpu->pc through
+  `psx_dispatch_game_compiled` until the chain returns to entry $ra.
+  Wired into all 8 call sites: call_guest, call_guest4, br2_call_clean
+  (clean_bridge.c), cd_jal (cd.c), bind_jal (bind.c),
+  br2_waypoint_jal (battle.c), br2_jal (ev.c), wb_jal (recon_80138.c).
+  NOT psx_dispatch_call — its sp_at_call contract assumes pre-prologue
+  entry and would misread mid-frame sp as recursion.
+- **Verified**: two headless runs — 0x8019b308 alone 218k+ frames
+  versus; all three 197k+ frames versus, multiple rounds, zero wedge.
+  Proof: proof/generated_only_cd_irq_restore.md.
+- **NEXT**: the remaining GENERATED_ONLY wedge-class addrs should now
+  be retried — the call-drive fix likely unblocks them. devin-i's
+  sweep may hit/confirm this independently.
