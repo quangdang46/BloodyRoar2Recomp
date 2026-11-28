@@ -9011,9 +9011,13 @@ void task_invoke(uint32_t fn_guest, uint32_t arg_guest)
   case 0x80138cec:   /* impact_fx_update(int)      — guest u32 arg */
   case 0x80139e0c:   /* impact_fx_emit_tick(int)      — guest u32 arg */
   case 0x8013d7e4:   /* confetti_burst_update(int)      — guest u32 arg */
+  case 0x8013e3f4:   /* paired_task_cb(int)      — guest u32 arg (guest_at inside) */
+  case 0x8013f648:   /* task_cb_voice_line(int)      — guest u32 arg (guest_at inside) */
   case 0x801407cc:   /* ring_effect_task_update(int)      — guest u32 arg */
   case 0x80140d38:   /* firework_task_update(int)      — guest u32 arg */
+  case 0x801411e8:   /* emitter_30_teardown(uint32_t)      — guest u32 arg (MB32) */
   case 0x80141610:   /* quad_fx_update(int)      — guest u32 arg */
+  case 0x8014afc0:   /* event_record_walk(uint32_t)      — guest u32 arg (MBS16) */
   case 0x801ac154:   /* prim_group_gc(int)      — guest u32 arg */
   case 0x801b0db8:   /* scene_node_walk(uint32_t ctx) — guest u32 arg */
   case 0x8014b37c:   /* script_move_timer_eval(uint32) — MB32/MBS16 guest accessors need raw guest u32, not guest_at() host ptr */
@@ -11930,13 +11934,25 @@ void task_slot_fns_run(int slot)
       ctx = *(int *)guest_at((uint32_t)(uintptr_t)((gp_save + 0x20)));
       *(int *)guest_at((uint32_t)(uintptr_t)((argblk[0] + 0x44) ))= i;
       {
-        void *fn = fn_lookup((uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + ctx))));
+        uint32_t fn_g = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((i * 4 + ctx)));
+        void *fn = fn_lookup(fn_g);
+        uint32_t nodeg_ = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((argblk[0] + i * 4)));
         if (fn != (void *)0x0) {
           /* Guest jalr passes slot = &ctx_base cell (sp+0x10) and
            * a1 = ctx_base[i] node-head guest addr.  The clean slot fns take
            * host pointers, so resolve a1 through guest_at. */
-          uint32_t nodeg_ = (uint32_t)*(int *)guest_at((uint32_t)(uintptr_t)((argblk[0] + i * 4)));
           ((void (*)(uintptr_t,uintptr_t))fn)((uintptr_t)argblk, (uintptr_t)guest_at(nodeg_));
+        } else {
+          /* Unported slot fn: reproduce the guest jalr — a0 = guest addr of
+           * the {row_base, i} cell (sp+0x10 in guest), a1 = node-head guest
+           * addr, a2/a3 = live caller regs. The guest cell lived on the
+           * stack; synthesize it in the dead gp small-data cells +0x28/+0x2c
+           * (0x801bef04/08 — no generated or game code references gp+40/44). */
+          CPUState *cpu = clean_cpu_state();
+          *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x28)) = (uint32_t)argblk[0];
+          *(uint32_t *)guest_at((uint32_t)(uintptr_t)(gp_save + 0x2c)) = (uint32_t)i;
+          br2_call_clean(fn_g, (uint32_t)(uintptr_t)(gp_save + 0x28), nodeg_,
+              cpu != NULL ? cpu->gpr[6] : 0u, cpu != NULL ? cpu->gpr[7] : 0u);
         }
       }
     }

@@ -8044,23 +8044,16 @@ void op_wrap_ac9b8(int16_t *a0,int32_t a1)
 
 /* 0x801af6a0 — fighter_chan_delta_accum(a1, a0[1], a0[2]) via fnmap.
  * Guest: a0=a1, a1/a2 = sign-extended s16 fields, a3 = caller passthrough.
- * Callee is clean (battle.c) — fn_lookup resolves it; the fallback calls
- * it directly too (never generated). */
-extern void fighter_chan_delta_accum(uint32_t,uint32_t,uint32_t,uint32_t);
+ * Route through br2_call_clean so a3 + $t0 forward faithfully (the old
+ * fn_lookup leg dropped a3; dz is currently unused but the contract is
+ * four live regs). */
 void op_wrap_acb08(int16_t *a0,uint32_t a1)
 {
-  void *fn = fn_lookup(0x801acb08);
-  if (fn != NULL) {
-    ((void (*)(uint32_t,int,int))fn)(a1,a0[1],a0[2]);
-  } else {
-    /* Unported callee: reproduce the jal — a0=a1, a1/a2 = lh a0[1]/a0[2]
-     * (sign-extended), a3 = caller's live $a3. */
-    extern CPUState *clean_cpu_state(void);
-    CPUState *cpu = clean_cpu_state();
-    fighter_chan_delta_accum(a1,
-                       (uint32_t)(int32_t)a0[1],(uint32_t)(int32_t)a0[2],
-                       cpu != NULL ? cpu->gpr[7] : 0u);
-  }
+  extern CPUState *clean_cpu_state(void);
+  CPUState *cpu = clean_cpu_state();
+  br2_call_clean(0x801acb08,a1,
+                 (uint32_t)(int32_t)a0[1],(uint32_t)(int32_t)a0[2],
+                 cpu != NULL ? cpu->gpr[7] : 0u);
   return;
 }
 
@@ -8230,14 +8223,12 @@ void op_list_head_reset(uint32_t *a0)
       a0[3] = p4 + off;
       {
         /* Guest jal 0x801B0DB8 (unconditional inside the off!=0 branch):
-         * a0 = struct guest addr, a1 = caller's live $a1. */
-        void *fn = fn_lookup(0x801b0db8);
-        if (fn != NULL) {
-          ((void (*)(uint32_t))fn)(guest_of(a0));
-        } else {
-          CPUState *cpu = clean_cpu_state();
-          call_guest(0x801b0db8u,guest_of(a0),cpu != NULL ? cpu->gpr[5] : 0u);
-        }
+         * a0 = struct guest addr, a1-a3 = caller's live regs. */
+        CPUState *cpu = clean_cpu_state();
+        br2_call_clean(0x801b0db8u,guest_of(a0),
+            cpu != NULL ? cpu->gpr[5] : 0u,
+            cpu != NULL ? cpu->gpr[6] : 0u,
+            cpu != NULL ? cpu->gpr[7] : 0u);
       }
     }
   }
@@ -8251,14 +8242,13 @@ void op_ctx_fc_set(int16_t *a0,uint32_t *a1)
   uint32_t v = BR2_GP50 + (uint32_t)(int32_t)a0[0];
   BR2_GPF(0xc) = v;
   {
-    /* Guest jal 0x801B0DB8: a0 = ctx ptr (BR2_GPC), a1 = caller's $a1
-     * (= guest_of(a1) here — the wrapper passes gpr[5] through). */
-    void *fn = fn_lookup(0x801b0db8);
-    if (fn != NULL) {
-      ((void (*)(uint32_t))fn)(BR2_GPC);
-    } else {
-      call_guest(0x801b0db8u,BR2_GPC,guest_of(a1));
-    }
+    /* Guest jal 0x801B0DB8: a0 = ctx ptr (BR2_GPC guest addr), a1-a3 =
+     * caller's live regs. */
+    CPUState *cpu = clean_cpu_state();
+    br2_call_clean(0x801b0db8u,BR2_GPC,
+        cpu != NULL ? cpu->gpr[5] : 0u,
+        cpu != NULL ? cpu->gpr[6] : 0u,
+        cpu != NULL ? cpu->gpr[7] : 0u);
   }
   *a1 = cur + 4;
   return;
@@ -8547,22 +8537,18 @@ void op_cond_call_store(uint32_t a0,uint32_t a1,int16_t *a2)
   {
     int32_t off = *a2;
     uint32_t fnaddr = *(uint32_t *)guest_at(a1);
-    void *fn = fn_lookup(fnaddr);
+    /* Guest jalr: a0/a1 = incoming regs (a0 raw, a1 = fnaddr-cell addr),
+     * a2/a3 passthrough. The fn_lookup leg called fn(a0) — dropping
+     * a1-a3 and $t0 for any resolved target. Unify on br2_call_clean. */
+    CPUState *cpu = clean_cpu_state();
+    uint32_t a2v = cpu != NULL ? cpu->gpr[6] : 0u;
+    uint32_t a3v = cpu != NULL ? cpu->gpr[7] : 0u;
     if (off) {
       uint32_t slot = BR2_GPF(8) + (uint32_t)off;
-      uint32_t r = 0;
-      if (fn != NULL) {
-        r = ((uint32_t (*)(uint32_t))fn)(a0);
-      } else {
-        /* Guest jalr: a0/a1 = incoming regs (a0 raw, a1 = fnaddr-cell addr),
-         * a2/a3 passthrough — call_guest leaves gpr[6]/gpr[7] live. */
-        r = call_guest(fnaddr,a0,a1);
-      }
+      uint32_t r = br2_call_clean(fnaddr,a0,a1,a2v,a3v);
       *(uint32_t *)guest_at(slot) = r;
-    } else if (fn != NULL) {
-      ((void (*)(uint32_t))fn)(a0);
     } else {
-      call_guest(fnaddr,a0,a1);
+      br2_call_clean(fnaddr,a0,a1,a2v,a3v);
     }
   }
   return;
@@ -8626,16 +8612,18 @@ int op_state_dispatch(uint8_t *a0)
     return 0;
   }
   {
+    /* Guest jalr is unconditional on this path: a0 = desc guest addr,
+     * a1-a3 = caller's live regs. The notify cell (0x801be784) currently
+     * holds cd_cmd_rec_clear(rec) — a 1-param clean port; calling it with
+     * zero args left `rec` garbage and the scrub silently no-opped through
+     * the open-bus mirror. Route through br2_call_clean for faithful
+     * a0-a3 + $t0 forwarding on both legs. */
     uint32_t fp = *(uint32_t *)guest_at(0x801be784);
-    void *fn = fn_lookup(fp);
-    if (fn != NULL) {
-      ((void (*)(void))fn)();
-    } else {
-      /* Guest jalr is unconditional on this path: a0 = desc guest addr,
-       * a1 = caller's live $a1. */
-      CPUState *cpu = clean_cpu_state();
-      call_guest(fp,guest_of(a0),cpu != NULL ? cpu->gpr[5] : 0u);
-    }
+    CPUState *cpu = clean_cpu_state();
+    br2_call_clean(fp, guest_of(a0),
+        cpu != NULL ? cpu->gpr[5] : 0u,
+        cpu != NULL ? cpu->gpr[6] : 0u,
+        cpu != NULL ? cpu->gpr[7] : 0u);
   }
   return 0;
 }
@@ -9297,20 +9285,13 @@ void op_cb1_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   int32_t a2v = *a2;
   uint32_t node = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
   uint32_t fnaddr = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fnaddr);
+  /* Guest jalr: a0=node, a1=fnaddr-cell addr, a2=lh value (sign-extended),
+   * a3=base — all four regs explicit. Route both legs through
+   * br2_call_clean: the fn_lookup fast path dropped a2/a3 (and $t0). */
   if (a2v) {
     uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
-    uint32_t r = 0;
-    if (fn != NULL) {
-      r = ((uint32_t (*)(uint32_t))fn)(node);
-    } else {
-      /* Guest jalr: a0=node, a1=fnaddr-cell addr, a2=lh value (sign-extended),
-       * a3=base — all four regs explicit. */
-      r = br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
-    }
+    uint32_t r = br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != NULL) {
-    ((void (*)(uint32_t))fn)(node);
   } else {
     br2_call_clean(fnaddr,node,a1,(uint32_t)a2v,a3);
   }
@@ -9324,19 +9305,12 @@ void op_cb2_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
   uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
   uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
   uint32_t fnaddr = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fnaddr);
+  /* Guest jalr: a0=n0, a1=n1, a2=lh value, a3=base. Same br2_call_clean
+   * unification as op_cb1 — the fn_lookup leg dropped a2/a3 + $t0. */
   if (a2v) {
     uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
-    uint32_t r = 0;
-    if (fn != NULL) {
-      r = ((uint32_t (*)(uint32_t,uint32_t))fn)(n0,n1);
-    } else {
-      /* Guest jalr: a0=n0, a1=n1, a2=lh value, a3=base. */
-      r = br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
-    }
+    uint32_t r = br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != NULL) {
-    ((void (*)(uint32_t,uint32_t))fn)(n0,n1);
   } else {
     br2_call_clean(fnaddr,n0,n1,(uint32_t)a2v,a3);
   }
@@ -9474,17 +9448,16 @@ void op_frame_advance(uint8_t *ctx)
           *(uint8_t *)(ctx + 0x4a) = (uint8_t)(t + 1);
           return;   /* rec70>=2, rec74<11 -> END (no clear-tail) */
         } else if (*(uint8_t *)(ctx + 0x49) != 0) {
+          /* Guest jalr: a0 = ctx guest addr (delay-slot move), a1-a3 =
+           * caller's live regs. Same notify-cell callback as
+           * op_state_dispatch — unify on br2_call_clean so the clean leg
+           * can't drop a1-a3/$t0 for whatever fnmap target is live. */
           uint32_t fnaddr = *(uint32_t *)guest_at(0x801be784);
-          void *fn = fn_lookup(fnaddr);
-          if (fn != NULL) {
-            ((void (*)(uint32_t))fn)((uint32_t)guest_of(ctx));
-          } else {
-            /* Guest jalr: a0 = ctx guest addr (delay-slot move), a1 =
-             * caller's live $a1. */
-            CPUState *cpu = clean_cpu_state();
-            call_guest(fnaddr,(uint32_t)guest_of(ctx),
-                       cpu != NULL ? cpu->gpr[5] : 0u);
-          }
+          CPUState *cpu = clean_cpu_state();
+          br2_call_clean(fnaddr,(uint32_t)guest_of(ctx),
+              cpu != NULL ? cpu->gpr[5] : 0u,
+              cpu != NULL ? cpu->gpr[6] : 0u,
+              cpu != NULL ? cpu->gpr[7] : 0u);
         }
       }
     }
@@ -9508,33 +9481,18 @@ void op_cb4_store_ctx8(int16_t *a0,uint32_t a1,int16_t *a2,uint32_t a3)
 {
   int32_t a2v = *a2;
   uint32_t fnaddr = *(uint32_t *)guest_at(a1);
-  void *fn = fn_lookup(fnaddr);
+  /* Guest jalr: a0-a3 = the four node values (a0[2..5] entries). Both legs
+   * already agreed on args; unify on br2_call_clean for $t0 observability. */
+  uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
+  uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
+  uint32_t n2 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4);
+  uint32_t n3 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4);
   if (a2v) {
     uint32_t slot = BR2_GPF(8) + (uint32_t)a2v;
-    uint32_t r = 0;
-    uint32_t n0 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4);
-    uint32_t n1 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4);
-    uint32_t n2 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4);
-    uint32_t n3 = *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4);
-    if (fn != NULL) {
-      r = ((uint32_t (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(n0,n1,n2,n3);
-    } else {
-      /* Guest jalr: a0-a3 = the four node values (a0[2..5] entries). */
-      r = br2_call_clean(fnaddr,n0,n1,n2,n3);
-    }
+    uint32_t r = br2_call_clean(fnaddr,n0,n1,n2,n3);
     *(uint32_t *)guest_at(slot) = r;
-  } else if (fn != NULL) {
-    ((void (*)(uint32_t,uint32_t,uint32_t,uint32_t))fn)(
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4));
   } else {
-    br2_call_clean(fnaddr,
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[2] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[3] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[4] * 4),
-      *(uint32_t *)guest_at(a3 + (uint32_t)(int32_t)a0[5] * 4));
+    br2_call_clean(fnaddr,n0,n1,n2,n3);
   }
   return;
 }
