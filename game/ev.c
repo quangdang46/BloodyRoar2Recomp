@@ -1633,6 +1633,10 @@ static uint32_t br2_jal(uint32_t fn, uint32_t link)
     ra = cpu->gpr[31]; pc = cpu->pc; sp = cpu->gpr[29];
     cpu->gpr[31] = link;
     if (clean_try_dispatch(cpu, fn)) {
+        /* CPS callees tail-dispatch mid-chain: keep driving cpu->pc until
+         * the coroutine returns to the link (see br2_clean_call_drive). */
+        extern void br2_clean_call_drive(CPUState *, uint32_t);
+        br2_clean_call_drive(cpu, link);
         uint32_t r = cpu->gpr[2];
         cpu->gpr[31] = ra; cpu->pc = pc;
         return r;

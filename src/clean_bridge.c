@@ -399,6 +399,47 @@ void br2_guest_frame_abandon(void)
  *     sentinel — generated/game code has real frames so $ra==$stop_addr
  *     with balanced $sp returns cleanly through the dispatch contract. */
 extern int clean_try_dispatch(CPUState *cpu, uint32_t addr);
+extern int psx_dispatch_game_compiled(CPUState *cpu, uint32_t addr);
+
+/* br2_clean_call_drive — finish a synchronous clean-first guest call.
+ * clean_try_dispatch executes exactly ONE CPS coroutine piece; a CPS body
+ * that ends in a tail jal/jr leaves the rest of the chain pending in
+ * cpu->pc while the guest frame is still live. The generated path gets the
+ * same continuation for free inside psx_dispatch_impl's `addr = cpu->pc`
+ * tail loop — synchronous C callers (call_guest/call_guest4/br2_call_clean,
+ * the *_jal helpers) must replicate it or the callee is truncated after its
+ * first piece. Observed wedge: call_guest4(0x8019b308 cd_ext_init_once)
+ * ran only the guard-set piece — cpu_critical_enter/cd_ext_table_init/
+ * OpenEvent never ran, the @0x801CDEA0 done-flag stayed set, and the BIOS
+ * TestEvent waiter spun forever (gs=00 boot livelock).
+ *
+ * Single-steps cpu->pc through psx_dispatch_game_compiled (clean-first,
+ * generated fallback — the same funnel the top-level dispatch uses) until
+ * the chain returns to entry_ra (jr $ra) or C-returns (pc==0). NOT
+ * psx_dispatch_call: its stop_addr/sp_at_call contract assumes dispatch
+ * entry BEFORE the callee prologue, and driving mid-frame would misread
+ * the live guest frame's sp as recursion and re-dispatch entry_ra as code.
+ * entry_ra is the $ra the callee observed at entry (the saved caller ra for
+ * call_guest*, the explicit link for the *_jal helpers). */
+void br2_clean_call_drive(CPUState *cpu, uint32_t entry_ra)
+{
+    uint32_t guard = 0;
+    if (entry_ra == 0) {
+        /* Mirror the generated call contract: ra==0 callers park the
+         * BR2_NESTED_RA sentinel so BIOS services inside see the same
+         * caller token psx_dispatch_call would have supplied. */
+        cpu->gpr[31] = BR2_NESTED_RA;
+    }
+    for (;;) {
+        uint32_t pc = cpu->pc;
+        if (pc == 0 || pc == entry_ra) return;
+        if (++guard > 0x400000u) return;   /* runaway chain: upstream bail/wild-flow handles */
+        if (!psx_dispatch_game_compiled(cpu, pc)) {
+            cpu->pc = pc;   /* undispatchable link: leave it visible for bail/wild-flow */
+            return;
+        }
+    }
+}
 
 uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
 {
@@ -410,6 +451,7 @@ uint32_t call_guest(uint32_t fn, uint32_t a, uint32_t b)
     cpu->gpr[4] = a;
     cpu->gpr[5] = b;
     if (clean_try_dispatch(cpu, fn)) {
+        br2_clean_call_drive(cpu, ra);
         uint32_t r = cpu->gpr[2];
         cpu->gpr[4] = a0; cpu->gpr[5] = a1;
         cpu->gpr[31] = ra; cpu->pc = pc; cpu->gpr[2] = v0;
@@ -487,6 +529,8 @@ uint32_t call_guest4(uint32_t fn, uint32_t a0, uint32_t a1,
             psx_dispatch_call(cpu, fn, 0);
         }
         cpu->gpr[29] = sp;
+    } else {
+        br2_clean_call_drive(cpu, ra);
     }
     /* Callee began a bail unwind: cpu->pc holds the wild-flow target the
      * outermost dispatch must resume at. Restoring the saved pc/ra/sp here
@@ -606,6 +650,8 @@ uint32_t br2_call_clean(uint32_t fn, uint32_t a0, uint32_t a1,
             cpu->gpr[31] = BR2_NESTED_RA;
             psx_dispatch_call(cpu, fn, 0);
         }
+    } else {
+        br2_clean_call_drive(cpu, ra);
     }
     if (g_psx_call_bail) {
         g_br2_bail_unwinds++;
