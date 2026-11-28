@@ -1455,6 +1455,7 @@ extern void results_scoreboard(void);
 extern void ret_nop(void);
 extern void ret_one(void);
 extern void ret_stub_b(void);
+extern void ret_t0_lo16(void);
 extern void ret_zero_a(void);
 extern void ret_zero_b(void);
 extern void ret_zero_c(void);
@@ -1804,6 +1805,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80128268, (void *)victory_record_restore },
   { 0x80128898, (void *)record_state_stepper },
   { 0x801289b4, (void *)pad_hist_record },
+  { 0x801289f0, (void *)ret_t0_lo16 },
   { 0x80128b28, (void *)battle_subrecord_reset },
   { 0x80128bec, (void *)battle_subrecord_set1 },
   { 0x80128bfc, (void *)battle_subrecord_set2 },
