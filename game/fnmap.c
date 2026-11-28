@@ -759,6 +759,7 @@ extern void fsm_script_vm_gate(void);
 extern void fx_group_alloc(void);
 extern void fx_record_alloc(void);
 extern void fx_record_init(void);
+extern void fx_record_update(void);
 extern void game_globals_reset(void);
 extern void gate_read_ec(void);
 extern void gauge_leaf_update(void);
@@ -1677,6 +1678,7 @@ extern void task_node_cb_noop_c(void);
 extern void task_node_free(void);
 extern void task_object_spawn(void);
 extern void task_packet_emit(void);
+extern void task_packet_transform(void);
 extern void task_pool_alloc(void);
 extern void task_pool_free(void);
 extern void task_pool_init(void);
@@ -1967,6 +1969,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013a9d8, (void *)spark_trail_task_update },
   { 0x8013ab8c, (void *)popup_spawn },
   { 0x8013adb4, (void *)fx_record_init },
+  { 0x8013ae1c, (void *)fx_record_update },
   { 0x8013b088, (void *)fx_record_alloc },
   { 0x8013b12c, (void *)iris_wipe_update },
   { 0x8013b5a8, (void *)iris_wipe_spawn },
@@ -1975,6 +1978,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8013d6b0, (void *)emit_task_spawn },
   { 0x8013d7e4, (void *)confetti_burst_update },
   { 0x8013da2c, (void *)confetti_burst_spawn },
+  { 0x8013dbd8, (void *)task_packet_transform },
   { 0x8013e0f0, (void *)task_packet_emit },
   { 0x8013e374, (void *)node_list_walk_d },
   { 0x8013e3f4, (void *)paired_task_cb },
