@@ -12098,3 +12098,14 @@
 801759c4 reset_guest_cps
 801759d0 reset_guest_cps
 80175a10 reset_guest_cps
+
+# devin-g — restore cd_kobj_param_copy (guest 0x8019E5CC, game/w5_e00.c):
+# faithful CPS transliteration (entry + copy-loop yield + jr-RA exit).
+# Rows deleted by the 0x80194000-0x801A8000 region retirement (bbbd6966)
+# but this cluster is self-contained (3 addrs -> br2eu_func_8019E5CC only),
+# has no calls/BIOS boundary, and was runtime-verified executing at frame
+# 172 in 682d54ab. Re-registered so the §4 coroutine contract (live
+# resume-PC + per-block psx_check_interrupts_at) runs clean.
+8019e5cc cd_kobj_param_copy
+8019e5e0 cd_kobj_param_copy
+8019e5f8 cd_kobj_param_copy
