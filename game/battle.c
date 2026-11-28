@@ -6067,6 +6067,14 @@ void noop_fn(void)
 
 }
 
+/* noop_fn_b @0x80140c98 — second empty task-callback stub (guest
+ * `jr $ra; nop`), adjacent to noop_fn; same fn-table placeholder role. */
+void noop_fn_b(void)
+{
+  return;
+
+}
+
 /* rtps_pt_xform @0x8018d5b4 — transform one s16 vec3 point through the current
  * GTE RTPS matrix; writes s16 x/y/z to out[0..2]. */
 uint16_t * rtps_pt_xform(uint16_t *pt,uint16_t *out)

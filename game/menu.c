@@ -10271,6 +10271,56 @@ void display_list_poke_redraw(void)
                0x801b2e84u, 0x801b2ea8u);
 }
 
+/* display_flag_100_set — display-ctx flag bit8 set @0x8014cd48 (8
+ * insns, leaf, no args). dctx = MB32(0x801f10bc); w = MB32(dctx+0x1c)
+ * | 0x100 stored back; $v0 returns the new word. Jump-table target
+ * (table @0x801b2830 slot 5, alongside desc_slot_fill_x15 /
+ * menu_quad_reset_redraw / dual_redraw_b / display_list_poke_redraw). */
+uint32_t display_flag_100_set(void)
+{
+  uint32_t dctx = MB32(0x801f10bcu);
+  uint32_t w = MB32(dctx + 0x1cu) | 0x100u;
+  MW32(dctx + 0x1cu, w);
+  return w;
+}
+
+/* display_flag_200_set — same shape @0x8014cd68, sets bit9 (0x200)
+ * of MB32(dctx+0x1c); $v0 returns the new word. */
+uint32_t display_flag_200_set(void)
+{
+  uint32_t dctx = MB32(0x801f10bcu);
+  uint32_t w = MB32(dctx + 0x1cu) | 0x200u;
+  MW32(dctx + 0x1cu, w);
+  return w;
+}
+
+/* display_flag_400_set — same shape @0x8014cd88, sets bit10 (0x400)
+ * of MB32(dctx+0x1c); $v0 returns the new word. */
+uint32_t display_flag_400_set(void)
+{
+  uint32_t dctx = MB32(0x801f10bcu);
+  uint32_t w = MB32(dctx + 0x1cu) | 0x400u;
+  MW32(dctx + 0x1cu, w);
+  return w;
+}
+
+/* frame_stage_09_set — match-loop stage write @0x8014cda8 (5 insns,
+ * leaf): DAT_1f800001 = 9; $v0 = 9. Jump-table target (slot 8). */
+uint32_t frame_stage_09_set(void)
+{
+  MW8(0x1f800001u, 9u);
+  return 9;
+}
+
+/* frame_stage_f0_set — match-loop stage write @0x8014cdbc (5 insns,
+ * leaf): DAT_1f800001 = 0xf0; $v0 = 0xf0. Jump-table target (slot 9,
+ * last of the 9-entry table @0x801b2830). */
+uint32_t frame_stage_f0_set(void)
+{
+  MW8(0x1f800001u, 0xf0u);
+  return 0xf0;
+}
+
 /* one_shot_init — one-shot init flag @0x801574fc (29 insns): s0 =
  * 0x801bef60; if MB8(s0+0xf)!=0 return. brightness_packet_send(0); if
  * (MB8(s0+0xe)&0xf) in {1,2} poll cd_cmd_issue_sync(9,0,0) until nonzero;
@@ -11390,6 +11440,48 @@ void gpu_prim8_emit(uint32_t rec,int32_t x0,int32_t y0,
   sprite_rect_set_c(dst + 0x118, x, yi, 8, hi);
 }
 
+/* gpu_pkt_grid_build — 8x2x8 GPU packet-grid builder @0x801478b0 (68
+ * insns, leaf, no args; $v0 returns 0). MB8(0x801f10c8)=0, then for
+ * w in 0..7 / r in 0..1 / c in 0..7 emits a 35-byte packet at
+ * a0 = 0x801f10cc + w*640 + r*320 + c*40 + 37 built from table dword
+ * MB8(0x801b3190+c*4)..+3 (bytes b0..b3): a0-34=9, a0-33..-31=64,
+ * a0-30=45, a0-25=b0, a0-24=b1, a0-17=b0+b2, a0-16=b1,
+ * MW16(a0-15)=14, a0-9=b0, a0-8=b1+b3, a0-1=b0+b2, a0+0=b1+b3
+ * (byte sums truncated by the sb). Table ptrs reset per (w,r); a2/a1
+ * stride +4 per c. */
+uint32_t gpu_pkt_grid_build(void)
+{
+  uint32_t w, r, c;
+  MW8(0x801f10c8u, 0);
+  for (w = 0; w < 8; w++) {
+    for (r = 0; r < 2; r++) {
+      for (c = 0; c < 8; c++) {
+        uint32_t tab = 0x801b3190u + c * 4u;
+        uint32_t b0 = MB8(tab);
+        uint32_t b1 = MB8(tab + 1u);
+        uint32_t b2 = MB8(tab + 2u);
+        uint32_t b3 = MB8(tab + 3u);
+        uint32_t a0 = 0x801f10ccu + w * 640u + r * 320u + c * 40u + 37u;
+        MW8(a0 - 34u, 9u);
+        MW8(a0 - 33u, 64u);
+        MW8(a0 - 32u, 64u);
+        MW8(a0 - 31u, 64u);
+        MW8(a0 - 30u, 45u);
+        MW16(a0 - 15u, 14u);
+        MW8(a0 - 25u, b0);
+        MW8(a0 - 24u, b1);
+        MW8(a0 - 17u, b0 + b2);
+        MW8(a0 - 16u, b1);
+        MW8(a0 - 9u, b0);
+        MW8(a0 - 8u, b1 + b3);
+        MW8(a0 - 1u, b0 + b2);
+        MW8(a0, b1 + b3);
+      }
+    }
+  }
+  return 0;
+}
+
 /* sprite_blit_center_a — centred sprite blit A @0x80147cdc (65 insns, 6
  * args). Calls gpu_prim8_emit(rec, a2-trunc2(sx16(p5)),
  * a3-trunc2(sx16(p6)), sx16(p5), sx16(p6)) where trunc2(x) =
@@ -11446,6 +11538,19 @@ void sprite_blit_center_b(uint32_t rec,int32_t slot,int32_t attr,int32_t cx,
     MW32(link, dst & 0xffffffu);
     dst += 0x28;
   }
+}
+
+/* ret_stub_c — bare `jr $ra; nop` @0x80147de4 (2 insns). Shared
+ * return tail between sprite_blit_center_a (0x80147cdc) and
+ * battle_bringup_b (0x80147df4); $v0 passes through unchanged. */
+void ret_stub_c(void)
+{
+}
+
+/* ret_stub_d — bare `jr $ra; nop` @0x80147dec (2 insns), same shape
+ * as ret_stub_c; $v0 passes through unchanged. */
+void ret_stub_d(void)
+{
 }
 
 /* voice_desc_fill — sound/voice descriptor fill @0x80157188 (77
@@ -11533,8 +11638,8 @@ void print_mode_dispatch(uint32_t win,uint32_t fmt,uint32_t arg3,
   }
 }
 
-/* scroll_attr_100_update — 100-slot scroll/attr updater @0x8014b818 (71
- * insns). s1 = param_1 + MB32(0x1f80000c)*4000. For i in 0..99
+/* scroll_attr_100_update — 100-slot scroll/attr updater @0x8014b810 (73
+ * insns; entry loads v1 = MB32(0x1f80000c) before the frame). s1 = param_1 + MB32(0x1f80000c)*4000. For i in 0..99
  * (s0=param_1+4i, s2=param_1+2i, slot=s1+0x28i): if
  * MB32(s0+0x2260)!=0 accumulate MB16(s0+0x1f40)+=MB16(s0+0x20d0),
  * MB16(s0+0x1f42)+=MB16(s0+0x20d2), then

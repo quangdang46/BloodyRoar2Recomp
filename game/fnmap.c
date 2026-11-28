@@ -621,6 +621,9 @@ extern void dir_rotate_pair(void);
 extern void dir_rotate_set(void);
 extern void dir_rotate_wrap(void);
 extern void display_cur_invalidate(void);
+extern void display_flag_100_set(void);
+extern void display_flag_200_set(void);
+extern void display_flag_400_set(void);
 extern void display_frame_present(void);
 extern void display_list_poke_redraw(void);
 extern void display_mode_setup(void);
@@ -758,6 +761,8 @@ extern void frame_advance_helper(void);
 extern void frame_counter_bump(void);
 extern void frame_divisor_get(void);
 extern void frame_present(void);
+extern void frame_stage_09_set(void);
+extern void frame_stage_f0_set(void);
 extern void frame_tick(void);
 extern void fsm_combat_mode_eval(void);
 extern void fsm_flags_commit(void);
@@ -815,6 +820,7 @@ extern void gpu_pkt_cmd_f4f0(void);
 extern void gpu_pkt_cmd_f4fc(void);
 extern void gpu_pkt_cmd_f608(void);
 extern void gpu_pkt_field2_get(void);
+extern void gpu_pkt_grid_build(void);
 extern void gpu_pkt_low24_or(void);
 extern void gpu_pkt_merge24(void);
 extern void gpu_pkt_pack(void);
@@ -1107,6 +1113,7 @@ extern void noop_a(void);
 extern void noop_b(void);
 extern void noop_c(void);
 extern void noop_fn(void);
+extern void noop_fn_b(void);
 extern void oam_list_rebuild(void);
 extern void obj_flag34_clear(void);
 extern void obj_flag34_set(void);
@@ -1463,6 +1470,8 @@ extern void results_scoreboard(void);
 extern void ret_nop(void);
 extern void ret_one(void);
 extern void ret_stub_b(void);
+extern void ret_stub_c(void);
+extern void ret_stub_d(void);
 extern void ret_t0_lo16(void);
 extern void ret_zero_a(void);
 extern void ret_zero_b(void);
@@ -2020,6 +2029,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80140b18, (void *)sprite_burst_spawn },
   { 0x80140b20, (void *)hud_prim_init },
   { 0x80140c90, (void *)noop_fn },
+  { 0x80140c98, (void *)noop_fn_b },
   { 0x80140ca0, (void *)fighter_reset_fx },
   { 0x80140ca8, (void *)cond_triple_spawn },
   { 0x80140d38, (void *)firework_task_update },
@@ -2066,9 +2076,12 @@ const Br2FnEnt fn_table[] = {
   { 0x80146e38, (void *)attract_stage_load_step },
   { 0x80147034, (void *)match_loop },
   { 0x8014751c, (void *)attract_menu_dispatch },
+  { 0x801478b0, (void *)gpu_pkt_grid_build },
   { 0x801479c4, (void *)gpu_prim8_emit },
   { 0x80147bb4, (void *)sprite_blit_center_b },
   { 0x80147cdc, (void *)sprite_blit_center_a },
+  { 0x80147de4, (void *)ret_stub_c },
+  { 0x80147dec, (void *)ret_stub_d },
   { 0x80147df4, (void *)battle_bringup_b },
   { 0x80148170, (void *)battle_bringup_a },
   { 0x801484e8, (void *)slot_flags_patch },
@@ -2097,7 +2110,7 @@ const Br2FnEnt fn_table[] = {
   { 0x8014b37c, (void *)script_move_timer_eval },
   { 0x8014b73c, (void *)task_node_cb_noop_c },
   { 0x8014b744, (void *)task_object_spawn },
-  { 0x8014b818, (void *)scroll_attr_100_update },
+  { 0x8014b810, (void *)scroll_attr_100_update },
   { 0x8014b938, (void *)options_menu_alloc },
   { 0x8014bb34, (void *)options_page_dispatch },
   { 0x8014bfe4, (void *)options_pages_reset },
@@ -2113,6 +2126,11 @@ const Br2FnEnt fn_table[] = {
   { 0x8014cb64, (void *)menu_quad_reset_redraw },
   { 0x8014cc00, (void *)dual_redraw_b },
   { 0x8014ccd0, (void *)display_list_poke_redraw },
+  { 0x8014cd48, (void *)display_flag_100_set },
+  { 0x8014cd68, (void *)display_flag_200_set },
+  { 0x8014cd88, (void *)display_flag_400_set },
+  { 0x8014cda8, (void *)frame_stage_09_set },
+  { 0x8014cdbc, (void *)frame_stage_f0_set },
   { 0x8014cdd0, (void *)battle_frame },
   { 0x8014f1c8, (void *)select_cursor_step },
   { 0x8014f260, (void *)select_screen_tick },
