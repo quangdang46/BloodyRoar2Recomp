@@ -2227,7 +2227,6 @@
 
 80128aac cps_80128a54
 
-801329ac cps_801329ac
 
 
 80128ff8 cps_80128ff8
@@ -2644,7 +2643,6 @@
 
 8012ac9c cps_8012abe8
 
-801329a8 cps_801329a8
 
 
 
@@ -2902,45 +2900,14 @@
 
 80126670 cps_80126670
 
-80132868 cps_80132868
-
-8013287c cps_80132868
-
-8013288c cps_80132868
-
-80132890 cps_80132868
-
-80132898 cps_80132868
-
-8013289c cps_80132868
-
-801328ac cps_80132868
-
-801328b0 cps_80132868
-
-801328e8 cps_80132868
-
-801328ec cps_80132868
-
-801328f4 cps_80132868
-
-801328f8 cps_80132868
-
-80132914 cps_80132868
-
-80132918 cps_80132868
-
-80132960 cps_80132868
-
-80132964 cps_80132868
-
-80132978 cps_80132868
-
-8013297c cps_80132868
-
-80132994 cps_80132868
-
-801329a0 cps_80132868
+# fn 0x80132868 (+pieces 0x80132864/0x801329a8/0x801329ac) — retired:
+# NOT an independent function. It is the jal-return continuation of
+# guest 0x801326D4 (midpoint_angles_set; br2eu_func_801326D4 jals
+# gte_rtps_xform1_raw @0x80195160 with ra=0x80132868). The clean
+# midpoint_angles_set (game/battle.c) already inlines the entire
+# abs/max/magic-divide/clamp/store sequence, so the only producer of
+# these pcs is dead generated code. Generated dispatch remains as
+# fallback; no clean port needed.
 
 8013b1a4 cps_8013b1a4
 
@@ -6045,7 +6012,6 @@
 
 
 
-80132864 cps_80132864
 
 
 8013e72c cps_8013e72c
@@ -10622,81 +10588,81 @@
 8019d508 cpst_8019d508
 
 # GENERATED_ONLY restoration — bbbd6966 collateral rows
-8019a460 cpst_8019a460
-8019a484 cpst_8019a460
-8019a4a4 cpst_8019a460
-8019a4c0 cpst_8019a460
-8019a4d0 cpst_8019a460
-8019a4dc cpst_8019a460
-8019a4e4 cpst_8019a460
-8019a4fc cpst_8019a460
-8019a504 cpst_8019a460
-8019a50c cpst_8019a460
-8019a510 cpst_8019a460
-8019a518 cpst_8019a460
-8019a53c cpst_8019a460
-8019a54c cpst_8019a460
-8019a56c cpst_8019a460
-8019a584 cpst_8019a460
-8019a59c cpst_8019a460
-8019a5c0 cpst_8019a460
-8019a5c4 cpst_8019a460
-8019a5d8 cpst_8019a5d8
-8019a5fc cpst_8019a5d8
-8019a600 cpst_8019a5d8
-8019a620 cpst_8019a5d8
-8019a62c cpst_8019a5d8
-8019a634 cpst_8019a5d8
-8019a640 cpst_8019a5d8
-8019a648 cpst_8019a5d8
-8019a660 cpst_8019a5d8
+8019a460 cd_timer_read_cps
+8019a484 cd_timer_read_cps
+8019a4a4 cd_timer_read_cps
+8019a4c0 cd_timer_read_cps
+8019a4d0 cd_timer_read_cps
+8019a4dc cd_timer_read_cps
+8019a4e4 cd_timer_read_cps
+8019a4fc cd_timer_read_cps
+8019a504 cd_timer_read_cps
+8019a50c cd_timer_read_cps
+8019a510 cd_timer_read_cps
+8019a518 cd_timer_read_cps
+8019a53c cd_timer_read_cps
+8019a54c cd_timer_read_cps
+8019a56c cd_timer_read_cps
+8019a584 cd_timer_read_cps
+8019a59c cd_timer_read_cps
+8019a5c0 cd_timer_read_cps
+8019a5c4 cd_timer_read_cps
+8019a5d8 vsync_wait_n_cps
+8019a5fc vsync_wait_n_cps
+8019a600 vsync_wait_n_cps
+8019a620 vsync_wait_n_cps
+8019a62c vsync_wait_n_cps
+8019a634 vsync_wait_n_cps
+8019a640 vsync_wait_n_cps
+8019a648 vsync_wait_n_cps
+8019a660 vsync_wait_n_cps
 
 # GENERATED_ONLY restoration — bbbd6966 collateral rows
-8019a8ec cpst_8019a8ec
-8019a920 cpst_8019a8ec
-8019a93c cpst_8019a8ec
-8019a944 cpst_8019a8ec
-8019a978 cpst_8019a8ec
-8019a980 cpst_8019a8ec
-8019a988 cpst_8019a8ec
-8019a98c cpst_8019a8ec
-8019a998 cpst_8019a8ec
-8019a9a0 cpst_8019a8ec
-8019a9c0 cpst_8019a8ec
-8019a9c8 cpst_8019a8ec
-8019a9dc cpst_8019a8ec
-8019aa0c cpst_8019a8ec
-8019aa34 cpst_8019a8ec
-8019aa58 cpst_8019a8ec
-8019aa70 cpst_8019a8ec
-8019aa88 cpst_8019a8ec
-8019aa90 cpst_8019a8ec
-8019aa9c cpst_8019a8ec
+8019a8ec cd_intc_dispatch
+8019a920 cd_intc_dispatch
+8019a93c cd_intc_dispatch
+8019a944 cd_intc_dispatch
+8019a978 cd_intc_dispatch
+8019a980 cd_intc_dispatch
+8019a988 cd_intc_dispatch
+8019a98c cd_intc_dispatch
+8019a998 cd_intc_dispatch
+8019a9a0 cd_intc_dispatch
+8019a9c0 cd_intc_dispatch
+8019a9c8 cd_intc_dispatch
+8019a9dc cd_intc_dispatch
+8019aa0c cd_intc_dispatch
+8019aa34 cd_intc_dispatch
+8019aa58 cd_intc_dispatch
+8019aa70 cd_intc_dispatch
+8019aa88 cd_intc_dispatch
+8019aa90 cd_intc_dispatch
+8019aa9c cd_intc_dispatch
 
 # GENERATED_ONLY restoration — bbbd6966 collateral rows
 8019a814 cpst_8019a814
 8019a838 cpst_8019a814
 8019a874 cpst_8019a814
-8019aabc cpst_8019aabc
-8019ab00 cpst_8019aabc
-8019ab10 cpst_8019aabc
-8019ab2c cpst_8019aabc
-8019ab4c cpst_8019aabc
-8019ab6c cpst_8019aabc
-8019ab74 cpst_8019aabc
-8019ab80 cpst_8019aabc
-8019ab8c cpst_8019aabc
-8019ab90 cpst_8019aabc
-8019ab98 cpst_8019aabc
-8019aba4 cpst_8019aabc
-8019aba8 cpst_8019aabc
-8019abb0 cpst_8019aabc
-8019abbc cpst_8019aabc
-8019abc0 cpst_8019aabc
-8019abc8 cpst_8019aabc
-8019abd0 cpst_8019aabc
-8019abe0 cpst_8019aabc
-8019abe4 cpst_8019aabc
+8019aabc cd_chan_slot_set
+8019ab00 cd_chan_slot_set
+8019ab10 cd_chan_slot_set
+8019ab2c cd_chan_slot_set
+8019ab4c cd_chan_slot_set
+8019ab6c cd_chan_slot_set
+8019ab74 cd_chan_slot_set
+8019ab80 cd_chan_slot_set
+8019ab8c cd_chan_slot_set
+8019ab90 cd_chan_slot_set
+8019ab98 cd_chan_slot_set
+8019aba4 cd_chan_slot_set
+8019aba8 cd_chan_slot_set
+8019abb0 cd_chan_slot_set
+8019abbc cd_chan_slot_set
+8019abc0 cd_chan_slot_set
+8019abc8 cd_chan_slot_set
+8019abd0 cd_chan_slot_set
+8019abe0 cd_chan_slot_set
+8019abe4 cd_chan_slot_set
 8019b308 cpst_8019b308
 8019b31c cpst_8019b308
 8019b32c cpst_8019b308
