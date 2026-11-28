@@ -1871,3 +1871,25 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   that navigation is boot/regression evidence, not proof those two
   target paths executed.
 
+
+### Session update 38d (ALL 4 agent branches merged + verified)
+
+- **Merged `agent/droid-c` (`b524eb00`)**: `channel_script_emit_slot_cycle`
+  (cps_80134c30→0x80134e44, battle.c) + `resource_task_prepare`
+  (cps_8014c324→0x8014c76c, menu.c); ~52 rows retired. Agent hit droid
+  rate-limit at commit time — orchestrator committed staged work.
+- **Merged `agent/devin-a` (`c25fe49a`)**: `anim_workblock_tick`
+  (0x8013f828 cluster, 65 rows) — per-frame GTE vertex-transform task
+  callback, +1134 LoC in recon_80138.c.
+- **Merged `agent/devin-d` (`40a25692`)**: indirect-call audit round 3 —
+  ~30 sites across battle/cd/game/save/resolve/bind/clean_bridge now
+  forward live arg regs (jr-vs-jalr semantics verified vs generated).
+- **clean_table.c merge conflicts resolved by REGEN**
+  (`python3 game/gen_clean_table.py`) — never hand-merge generated files.
+- **Verified on merged master (`c49caf96`)**: build clean, attract exits
+  → title → mode menu → **VERSUS FIGHT gs=8 ph=8 sustained 90s+** with
+  anim_workblock_tick live (per-frame task). All 5 pending-audit PORT
+  clusters now landed.
+- **Next wave launched**: devin-e (0x8012 small cps_ clusters batch),
+  devin-f (0x8014–0x8017 self-contained clusters). droid CLI is
+  rate-limited ~4.5h — use devin -p for new spawns.
