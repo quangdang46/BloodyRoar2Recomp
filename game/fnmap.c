@@ -568,22 +568,28 @@ extern void desc_f84_f90_commit(void);
 extern void desc_f88_get(void);
 extern void desc_f88_set_a2p2(void);
 extern void desc_flagbit_dispatch(void);
+extern void desc_flagword_b27_clear(void);
+extern void desc_flagword_b27_set(void);
 extern void desc_frag_op_dispatch(void);
 extern void desc_frag_scale_store(void);
 extern void desc_frag_sum_store(void);
 extern void desc_frag_tail(void);
 extern void desc_h2_f30_sum(void);
+extern void desc_op7_dispatch(void);
 extern void desc_opcode_dispatch(void);
 extern void desc_param_bytes_dispatch(void);
 extern void desc_ret_a2p2(void);
 extern void desc_ret_a2p2_b(void);
 extern void desc_ret_a2p4(void);
 extern void desc_ret_a2p4_b(void);
+extern void desc_ret_a2p4_c(void);
 extern void desc_ret_a2p6(void);
 extern void desc_ret_a2p6_b(void);
 extern void desc_ret_empty_a(void);
 extern void desc_ret_empty_b(void);
+extern void desc_ret_empty_c(void);
 extern void desc_ret_zero(void);
+extern void desc_s12_cond_store(void);
 extern void desc_slot_alloc(void);
 extern void desc_slot_fill_x15(void);
 extern void desc_state_commit(void);
@@ -2490,9 +2496,13 @@ const Br2FnEnt fn_table[] = {
   { 0x8017bd8c, (void *)desc_ret_a2p2_b },
   { 0x8017bd94, (void *)stat_field_dispatch },
   { 0x8017bfb8, (void *)desc_slot_alloc },
+  { 0x8017c61c, (void *)desc_s12_cond_store },
   { 0x8017c66c, (void *)desc_state_commit },
+  { 0x8017c850, (void *)desc_flagword_b27_clear },
+  { 0x8017c938, (void *)desc_flagword_b27_set },
   { 0x8017c97c, (void *)slot_byte_commit },
   { 0x8017c9d4, (void *)ev20_timer_dispatch },
+  { 0x8017caec, (void *)desc_ret_empty_c },
   { 0x8017caf4, (void *)fighter_motion_step },
   { 0x8017cf14, (void *)descriptor_fetch },
   { 0x8017cf6c, (void *)byte2_probe_commit },
@@ -2502,7 +2512,9 @@ const Br2FnEnt fn_table[] = {
   { 0x8017d198, (void *)desc_frag_scale_store },
   { 0x8017d19c, (void *)desc_frag_sum_store },
   { 0x8017d1c4, (void *)desc_frag_tail },
+  { 0x8017d25c, (void *)desc_op7_dispatch },
   { 0x8017d378, (void *)condition_word_dispatch },
+  { 0x8017d5c0, (void *)desc_ret_a2p4_c },
   { 0x8017d6ac, (void *)desc_param_bytes_dispatch },
   { 0x8017d7f4, (void *)button_cond_eval },
   { 0x8017db88, (void *)desc_cmd_interp },
