@@ -927,6 +927,35 @@ void reset_guest(uint8_t *ctrl, uint32_t sel)
     reset(ctrl, sel);
 }
 
+/* entry_rate_seed — guest func_80175A18 (100B leaf between reset_guest
+ * and entry_setup_guest). Record base arrives in $a2 (unused0/unused1 =
+ * $a0/$a1). val = (s16(rec+0xB0) * u8(rec+0xDE)) / 100 via the MIPS
+ * mulhi 0x51EB851F>>5 - sign(lo) divide sequence; stores val to the
+ * s16 fields +0xAA/+0xAC/+0xAE/+0xB0, zeroes +0xD8, sets +0xD6=0x1E00,
+ * and ORs 0x200000 into the u32 at +0x5C. Returns val in v0. */
+int32_t entry_rate_seed(uint32_t unused0, uint32_t unused1, uint32_t rec_g)
+{
+    uint8_t *rec = (uint8_t *)guest_at(rec_g);
+    int32_t h = GS16(rec, 0xB0);
+    int64_t p1 = (int64_t)h * (int64_t)(int32_t)GU8(rec, 0xDE);
+    uint32_t lo1 = (uint32_t)p1;
+    int64_t p2 = (int64_t)(int32_t)lo1 * (int64_t)(int32_t)0x51EB851F;
+    int32_t hi2 = (int32_t)(p2 >> 32);
+    int32_t val;
+    uint32_t w;
+    (void)unused0; (void)unused1;
+    GS16(rec, 0xD8) = 0;
+    GS16(rec, 0xD6) = 0x1E00;
+    w = GSU32(rec, 0x5C);
+    GSU32(rec, 0x5C) = w | 0x00200000u;
+    val = (hi2 >> 5) - ((int32_t)lo1 >> 31);
+    GS16(rec, 0xB0) = (int16_t)val;
+    GS16(rec, 0xAC) = (int16_t)val;
+    GS16(rec, 0xAA) = (int16_t)val;
+    GS16(rec, 0xAE) = (int16_t)val;
+    return val;
+}
+
 /* entry_setup_guest — guest func_80175A7C (ctrl, group). */
 void entry_setup_guest(uint8_t *ctrl, uint32_t group)
 {

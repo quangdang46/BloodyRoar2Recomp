@@ -3660,6 +3660,26 @@ LAB_f208:
   }
 }
 
+/* slot_flags_patch — per-slot flag/record patch @0x801484e8 (64B, 3
+ * blocks, leaf). rec = base + idx*2 (guest clobbers $a2 with it):
+ *   h = MB16(rec+0xB4); if (h != 0) MB16(rec+0xB4) = (h & 0xF000)|0x0200
+ *   (the ==0 test is against $zero — verified in generated
+ *   br2eu_func_801484E8).
+ * Then p = MB32(base+0xC0) + idx; v = MB8(p+0x19) & 3 stored back;
+ * returns v in v0. */
+uint32_t slot_flags_patch(uint32_t base,uint32_t idx)
+{
+  uint32_t rec = base + idx * 2u;
+  uint32_t h = MB16(rec + 0xB4u);
+  uint32_t p, v;
+  if (h != 0u)
+    MB16(rec + 0xB4u) = (uint16_t)((h & 0xF000u) | 0x0200u);
+  p = MB32(base + 0xC0u) + idx;
+  v = MB8(p + 0x19u) & 3u;
+  MB8(p + 0x19u) = (uint8_t)v;
+  return v;
+}
+
 /* select_confirm_handler — select-screen confirm handler. param_1 = guest addr
  * of battle state (0x1f800000), player = player slot, recs =
  * records base (host ptr, 0x30 stride), btns = button flags,
@@ -12403,6 +12423,50 @@ uint32_t record_table_expand_b(uint32_t dst,uint32_t src,uint32_t tblA,
 }
 
 /* ======== batch53 ======== */
+
+/* desc_param_bytes_dispatch — stream param-byte store @0x8017d6ac (7
+ * CPS pieces, 0x8017d6ac-0x8017d7f0). Same sx/mode prologue as
+ * condition_word_dispatch/button_cond_eval: sx = sx8(MB16(desc)>>8),
+ * mode = (sx>>4)&3, sx&0x40 -> obj = MB32(obj+0x2c).
+ *   mode==1: flag MB8(obj+5)&1 SET  -> nibble path; clear -> store path.
+ *   mode==2: flag SET -> store path; clear -> nibble path.
+ *   mode==0/3 -> store path.
+ * nibble path: idx = sx&0xf; ret desc+6 iff idx==4 else desc+4.
+ * store path: idx = sx&0xf; idx>=5 -> desc+4; idx==4 copies the four
+ * stream bytes desc+2..desc+5 into st+0x101..st+0x104 and returns
+ * desc+6; idx 0-3 store MB8(desc+2) into st+0x101+idx, return desc+4.
+ * (Guest case bodies at 0x8017d780/78c/798/7a4/7b0 via table
+ * 0x801229ec — verified against disc/SLES_017.22.) */
+uint32_t desc_param_bytes_dispatch(uint32_t obj,uint32_t st,
+                      uint32_t desc)
+{
+  int32_t sx = (int32_t)(int8_t)(MB16(desc) >> 8);
+  int32_t mode = (sx >> 4) & 3;
+  uint32_t idx;
+  if (sx & 0x40) obj = MB32(obj + 0x2c);
+  if (mode == 1) {
+    if ((MB8(obj + 5) & 1u) != 0) {
+      idx = (uint32_t)sx & 0xfu;
+      return idx == 4u ? desc + 6u : desc + 4u;
+    }
+  } else if (mode == 2) {
+    if ((MB8(obj + 5) & 1u) == 0) {
+      idx = (uint32_t)sx & 0xfu;
+      return idx == 4u ? desc + 6u : desc + 4u;
+    }
+  }
+  idx = (uint32_t)sx & 0xfu;
+  if (idx >= 5u) return desc + 4u;
+  if (idx == 4u) {
+    MB8(st + 0x101u) = MB8(desc + 2u);
+    MB8(st + 0x102u) = MB8(desc + 3u);
+    MB8(st + 0x103u) = MB8(desc + 4u);
+    MB8(st + 0x104u) = MB8(desc + 5u);
+    return desc + 6u;
+  }
+  MB8(st + 0x101u + idx) = MB8(desc + 2u);
+  return desc + 4u;
+}
 
 /* condition_word_dispatch — condition-word dispatcher @0x8017d378 (120
  * insns, 3 args). sx = sx8(MB16(a2)>>8); mode = (sx>>4)&3;
