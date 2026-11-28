@@ -312,6 +312,18 @@
 
 
 # --- impact_fx_update cluster + op_cb ctx8 callbacks ---
+# ANALYZED 2026-11-28 (devin-t): the cps_80138cec/801393b8/80139834/80139954/
+# 80139a0c/80139d98 rows are mid-function continuations of ONE guest function
+# (impact_fx_update @0x80138CEC, ~0x1120 bytes to ~0x80139E0B). They CANNOT be
+# retired piecemeal: the function's type dispatch is a computed goto
+# (lw v0,(0x801200B8+type*4); jr v0) whose alias entries land INSIDE these
+# pieces (0x80139424/9504/9560/9620/9664/9830 in cps_801393b8, 0x80139A74/9DE8
+# in the 39a0c/39d98 pieces), and every piece consumes the live s0-s5 file
+# the prologue installs. battle.c impact_fx_update already self-delegates the
+# whole body via call_guest4 per the delegation rule; the rows are
+# load-bearing for that CPS continuation chain (cpu->pc handoffs between
+# pieces). Only a whole-function clean port (~110 rows, GTE + mul/div +
+# nested jal) could retire them — deferred as too large/risky for now.
 
 801393b8 cps_801393b8
 
@@ -718,15 +730,17 @@
 
 
 
-8017c35c cps_8017c35c
+# fn 0x8017C35C/0x8017C3D0 - retired: EV14 chip-bytes handler is covered
+# by the clean ev14_chip (game/ev.c) via ev_stream_dispatch ->
+# PTR_FUN_801b4e68[14]; the guest dispatcher 0x8017C35C + gate 0x8017C3BC
+# + ret 0x8017C3B4 + op body 0x8017C3D0 (40 CPS addrs) are unreachable:
+# exe scan shows the only pointer to 0x8017C35C is event-table slot
+# 0x801B4EA0 (op14), which the clean dispatcher never reads (op<24 uses
+# the host PTR_FUN table); 0x8017C3D0/3BC/3B4 have no pointers at all.
 
-8017c384 cps_8017c35c
 
-8017c390 cps_8017c35c
 
-8017c398 cps_8017c35c
 
-8017c3a0 cps_8017c35c
 
 8017faf8 cps_8017faf8
 
@@ -914,155 +928,87 @@
 
 8017aa04 desc_ret_zero
 
-8017c3d0 cps_8017c3d0
 
-8017c3ec cps_8017c3d0
 
-8017c3f4 cps_8017c3d0
 
-8017c3fc cps_8017c3d0
 
-8017c404 cps_8017c3d0
 
-8017c40c cps_8017c3d0
 
-8017c414 cps_8017c3d0
 
-8017c41c cps_8017c3d0
 
-8017c438 cps_8017c3d0
 
-8017c44c cps_8017c3d0
 
-8017c460 cps_8017c3d0
 
-8017c478 cps_8017c3d0
 
-8017c4a0 cps_8017c3d0
 
-8017c4a8 cps_8017c3d0
 
-8017c4cc cps_8017c3d0
 
-8017c4e0 cps_8017c3d0
 
-8017c4f4 cps_8017c3d0
 
-8017c50c cps_8017c3d0
 
-8017c518 cps_8017c3d0
 
-8017c520 cps_8017c3d0
 
-8017c528 cps_8017c3d0
 
-8017c534 cps_8017c3d0
 
-8017c540 cps_8017c3d0
 
-8017c548 cps_8017c3d0
 
-8017c554 cps_8017c3d0
 
-8017c560 cps_8017c3d0
 
-8017c56c cps_8017c3d0
 
-8017c580 cps_8017c3d0
 
-8017c58c cps_8017c3d0
+# fn 0x8017BAD4 - retired: desc_flagbit_dispatch (vm.c) is the clean
+# synchronous port; all 41 CPS piece/continuation addrs (0x8017BAF0-
+# 0x8017BD84) folded into the op switch. Dead-reference proof: the only
+# references were the CPS continuation switch inside cps_8017bad4 itself
+# and the static jump table @0x8012285C (bypassed by the op switch); no
+# external jal/jr/cpu->pc targets any handler addr.
 
-8017c598 cps_8017c3d0
 
-8017c5a4 cps_8017c3d0
 
-8017c5ac cps_8017c3d0
 
-8017c5b0 cps_8017c3d0
 
 8017a9b8 desc_f88_get
 
-8017baf0 cps_8017bad4
 
-8017bb0c cps_8017bad4
 
-8017bb24 cps_8017bad4
 
-8017bb3c cps_8017bad4
 
-8017bb4c cps_8017bad4
 
-8017bb58 cps_8017bad4
 
-8017bb60 cps_8017bad4
 
-8017bb68 cps_8017bad4
 
-8017bb70 cps_8017bad4
 
-8017bb78 cps_8017bad4
 
-8017bb8c cps_8017bad4
 
-8017bba0 cps_8017bad4
 
-8017bbb4 cps_8017bad4
 
-8017bbc8 cps_8017bad4
 
-8017bbdc cps_8017bad4
 
-8017bbf0 cps_8017bad4
 
-8017bc04 cps_8017bad4
 
-8017bc18 cps_8017bad4
 
-8017bc2c cps_8017bad4
 
-8017bc40 cps_8017bad4
 
-8017bc54 cps_8017bad4
 
-8017bc68 cps_8017bad4
 
-8017bc7c cps_8017bad4
 
-8017bc90 cps_8017bad4
 
-8017bca4 cps_8017bad4
 
-8017bcb0 cps_8017bad4
 
-8017bcbc cps_8017bad4
 
-8017bcc8 cps_8017bad4
 
-8017bcd4 cps_8017bad4
 
-8017bce0 cps_8017bad4
 
-8017bce8 cps_8017bad4
 
-8017bcfc cps_8017bad4
 
-8017bd10 cps_8017bad4
 
-8017bd24 cps_8017bad4
 
-8017bd30 cps_8017bad4
 
-8017bd38 cps_8017bad4
 
-8017bd4c cps_8017bad4
 
-8017bd60 cps_8017bad4
 
-8017bd74 cps_8017bad4
 
-8017bd80 cps_8017bad4
 
-8017bd84 cps_8017bad4
 
 8017d55c cps_8017d55c
 
@@ -1157,7 +1103,6 @@
 
 8017c608 cps_8017c608
 
-8017c3bc cps_8017c3bc
 
 8017e4d4 cps_8017e4d4
 
@@ -1292,7 +1237,6 @@
 
 8017d5c8 cps_8017d5c8
 
-8017c3b4 cps_8017c3b4
 
 
 

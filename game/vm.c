@@ -1778,19 +1778,75 @@ uint32_t ev20_timer_dispatch(uint32_t ctrl, uint32_t motion, uint32_t pc,
 }
 
 /* desc_flagbit_dispatch — guest @0x8017BAD4 (descriptor flag-bit ops).
- * op = pc[1] & 0x3f; op < 35 indexes table 0x8012285C (lui 0x8012 +
- * addiu 0x285C @0x8017BAEC/0x8017BAF0 — verified against SLES_017.22
- * bytes; entries point into this function's own 0x8017BBxx handler
- * blocks). op >= 35 -> pc+6. The selected handler returns the next
- * stream addr in $v0. */
+ * op = pc[1] & 0x3f (lhu(pc)>>8 & 0x3f @0x8017BAD4-0x8017BAE4); op < 35
+ * indexes table 0x8012285C (verified against SLES_017.22 bytes). Every
+ * handler block 0x8017BB0C..0x8017BD74 converges on the shared tail
+ * 0x8017BD84 `v0 = a2+6; jr $ra` (the 0x8017BD80 variant first stores
+ * the masked result to a1+148), so the whole dispatch returns a2+6.
+ * a0 = flag mask/value, a1 = record, a2 = stream pc, a3 = aux record.
+ * Field map (from the handler blocks): a3+84/+88/+92/+96/+100/+104/+108
+ * are the six flag words; ops 5-9 &=, 10-14 |=, 15-19 ^= on 88..104,
+ * ops 20-24 mask-test 88..104 -> a1+148, ops 25-28 set/and/or/xor on
+ * +108, op 29 mask-test +108 -> a1+148, ops 30-33 set/and/or/xor on
+ * +84, op 34 mask-test +84 -> a1+148. op0 (@0x8017BB0C) is the odd one:
+ * stores a0->a3+88, seeds a3.h+136 from h(a3+134), and conditionally
+ * overwrites it with h(a3+252) when a3.b+5&1, (a0&C0000000)==80000000
+ * and s16(a1+128)!=190. */
 uint32_t desc_flagbit_dispatch(uint32_t a0, uint32_t a1, uint32_t a2,
                                uint32_t a3)
 {
+    uint8_t *r1 = (uint8_t *)guest_at(a1);
+    uint8_t *r3 = (uint8_t *)guest_at(a3);
     uint32_t op = GU8((const uint8_t *)guest_at(a2), 1) & 0x3f;
+    uint32_t v;
     if (op >= 35u) return a2 + 6;
-    return call_guest4(
-        GU32((const uint8_t *)guest_at(0x8012285Cu), op * 4),
-        a0, a1, a2, a3);
+
+    switch (op) {
+    case 0:                                 /* 0x8017BB0C */
+        GSU16(r3, 136) = GU16(r3, 134);
+        GSU32(r3, 88) = a0;
+        if ((GU8(r3, 5) & 1u) &&
+            (a0 & 0xC0000000u) == 0x80000000u &&
+            G16(r1, 128) != 190) {
+            GSU16(r3, 136) = GU16(r3, 252);
+        }
+        break;
+    case 1:  GSU32(r3, 96)  = a0; break;   /* 0x8017BB58 */
+    case 2:  GSU32(r3, 92)  = a0; break;   /* 0x8017BB60 */
+    case 3:  GSU32(r3, 100) = a0; break;   /* 0x8017BB68 */
+    case 4:  GSU32(r3, 104) = a0; break;   /* 0x8017BB70 */
+    case 5:  v = GU32(r3,88);  GSU32(r3,88)  = v & a0; break;  /* 0x8017BB78 */
+    case 6:  v = GU32(r3,96);  GSU32(r3,96)  = v & a0; break;  /* 0x8017BB8C */
+    case 7:  v = GU32(r3,92);  GSU32(r3,92)  = v & a0; break;  /* 0x8017BBA0 */
+    case 8:  v = GU32(r3,100); GSU32(r3,100) = v & a0; break;  /* 0x8017BBB4 */
+    case 9:  v = GU32(r3,104); GSU32(r3,104) = v & a0; break;  /* 0x8017BBC8 */
+    case 10: v = GU32(r3,88);  GSU32(r3,88)  = v | a0; break;  /* 0x8017BBDC */
+    case 11: v = GU32(r3,96);  GSU32(r3,96)  = v | a0; break;  /* 0x8017BBF0 */
+    case 12: v = GU32(r3,92);  GSU32(r3,92)  = v | a0; break;  /* 0x8017BC04 */
+    case 13: v = GU32(r3,100); GSU32(r3,100) = v | a0; break;  /* 0x8017BC18 */
+    case 14: v = GU32(r3,104); GSU32(r3,104) = v | a0; break;  /* 0x8017BC2C */
+    case 15: v = GU32(r3,88);  GSU32(r3,88)  = v ^ a0; break;  /* 0x8017BC40 */
+    case 16: v = GU32(r3,96);  GSU32(r3,96)  = v ^ a0; break;  /* 0x8017BC54 */
+    case 17: v = GU32(r3,92);  GSU32(r3,92)  = v ^ a0; break;  /* 0x8017BC68 */
+    case 18: v = GU32(r3,100); GSU32(r3,100) = v ^ a0; break;  /* 0x8017BC7C */
+    case 19: v = GU32(r3,104); GSU32(r3,104) = v ^ a0; break;  /* 0x8017BC90 */
+    case 20: GSU32(r1,148) = GU32(r3,88)  & a0; break;       /* 0x8017BCA4->BD80 */
+    case 21: GSU32(r1,148) = GU32(r3,96)  & a0; break;       /* 0x8017BCB0 */
+    case 22: GSU32(r1,148) = GU32(r3,92)  & a0; break;       /* 0x8017BCBC */
+    case 23: GSU32(r1,148) = GU32(r3,100) & a0; break;       /* 0x8017BCC8 */
+    case 24: GSU32(r1,148) = GU32(r3,104) & a0; break;       /* 0x8017BCD4 */
+    case 25: GSU32(r3,108) = a0; break;                        /* 0x8017BCE0 */
+    case 26: v = GU32(r3,108); GSU32(r3,108) = v & a0; break;  /* 0x8017BCE8 */
+    case 27: v = GU32(r3,108); GSU32(r3,108) = v | a0; break;  /* 0x8017BCFC */
+    case 28: v = GU32(r3,108); GSU32(r3,108) = v ^ a0; break;  /* 0x8017BD10 */
+    case 29: GSU32(r1,148) = GU32(r3,108) & a0; break;        /* 0x8017BD24->BD80 */
+    case 30: GSU32(r3,84)  = a0; break;                        /* 0x8017BD30 */
+    case 31: v = GU32(r3,84);  GSU32(r3,84)  = v & a0; break;  /* 0x8017BD38 */
+    case 32: v = GU32(r3,84);  GSU32(r3,84)  = v | a0; break;  /* 0x8017BD4C */
+    case 33: v = GU32(r3,84);  GSU32(r3,84)  = v ^ a0; break;  /* 0x8017BD60 */
+    case 34: GSU32(r1,148) = GU32(r3,84)  & a0; break;        /* 0x8017BD74->BD80 */
+    }
+    return a2 + 6;
 }
 
 /* desc_analog_dispatch — guest @0x8017B668 (descriptor analog/dpad op
