@@ -2037,3 +2037,25 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   (146 rows, piece-entries inside already-ported battle.c fn) — devin-n/o.
 - Tooling note: tools/versus_fight_mash.py cannot exit attract (no gs==6
   handler) — use arcade_fight_mash.py for verify.
+
+### Session update 44 (parallel fleet wave — 8 lanes, retire-vs-port triage)
+
+- **Fleet**: devin-q/r/s/t/u/v/w/x spawned on disjoint clean_cps.map
+  clusters (~1600 rows). Ports 19860-19867.
+- **devin-t merged (`82bc591c`)**: desc_flagbit_dispatch→vm.c (41 rows)
+  + 40 dead EV14 dispatcher rows retired.
+- **devin-r merged (`e2f4239a`)**: 262 rows RETIRED not ported —
+  cpst_8018e590/8018ef6c are intra-function CPS pieces inside already-
+  clean printf_core/sprintf_core (generated bodies unreachable);
+  cpst_801b0db8 was shadowing clean scene_node_walk. Proof:
+  proof/cpst_8018e590_8018ef6c_retire.md. Lesson: run the shadow-audit
+  (jal-reachability + clean-entry check) BEFORE porting cpst_ clusters.
+- **devin-v merged (`f823e5bc`)**: 8 cpst_ clusters → NEW FILE
+  game/recon_8019.c (4149 LoC), 187 rows. Bodies keep timing-faithful
+  form (all psx_cyc_step/lwc2/gte calls verbatim) + CPS resume-switch
+  contract. Verify: FIGHT 57k+ frames.
+- **⚠ Build gotcha**: `cmake -DCMAKE_BUILD_TYPE=Release` defaults
+  PSX_DEBUG_TOOLS=OFF → no TCP debug server, mash scripts silently
+  fail. Configure worktrees with `-DCMAKE_BUILD_TYPE=RelWithDebInfo`
+  (or `-DPSX_DEBUG_TOOLS=ON`) or the debug port never opens.
+- **Progress**: 31.18% clean-port; ~4400 CPS rows remain.
