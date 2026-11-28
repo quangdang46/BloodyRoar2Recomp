@@ -1,8 +1,8 @@
 {
   "done": 2002,
-  "todo": 3960,
-  "total": 5962,
-  "percent": 33.58,
+  "todo": 3963,
+  "total": 5965,
+  "percent": 33.56,
   "groups": [
     {
       "name": "cps_clean",
@@ -14,7 +14,7 @@
       "name": "cd_irq_probe",
       "label": "cd_irq_probe",
       "done": 0,
-      "todo": 1326
+      "todo": 1258
     },
     {
       "name": "save",
@@ -47,6 +47,12 @@
       "todo": 0
     },
     {
+      "name": "recon_8019",
+      "label": "recon_8019",
+      "done": 9,
+      "todo": 118
+    },
+    {
       "name": "game",
       "label": "game",
       "done": 84,
@@ -75,12 +81,6 @@
       "label": "vm",
       "done": 61,
       "todo": 0
-    },
-    {
-      "name": "recon_8019",
-      "label": "recon_8019",
-      "done": 9,
-      "todo": 47
     },
     {
       "name": "w3_e01",
