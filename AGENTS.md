@@ -1686,3 +1686,42 @@ register-model temps (`s0`–`s6`, `m0`–`m2`, `r1`–`r6`) and
   have the same latent bug — whack-a-mole via the same KEEP-bisect if a
   new frame-N crash appears. `tools/bisect_keep.sh` +
   `tools/wedge_test.sh` are the probe harness.
+
+### Session update 36 (ATTRACT-EXIT regression ROOT-CAUSED to guest_main clean port)
+
+- **Symptom**: master @bbbd6966 boots to attract (gs=6) but NEVER exits —
+  pad input dead everywhere (title/versus unreachable). Old commit
+  d11b51d0 (pre-clean-port era) verified working.
+- **A/B isolation**:
+  - `PSX_NO_CLEAN=1` (all generated) → attract exits on START, reaches
+    title gs=5 → mode menu → gs=8 versus flow. **Clean layer is the bug.**
+  - `PSX_NO_CPS=1` (CPS transliterations off, named ports stay) → still
+    stuck in attract. **CPS transliterations exonerated.**
+- **Bisect** (`tools/bisect_clean_named.py` + `tools/attract_exit_test.py`;
+  `CLEAN_EXCLUDE` + `PSX_NO_CPS=1`, ~2.5 min/probe): narrowed 1555 named
+  clean entries → 51 addr clusters → single entry:
+  **`0x80126234` = `guest_main` clean port** (wrap_80126234, committed
+  cf3dea17). Excluding ONLY it (generated main) restores pad/attract.
+- **Call-graph audit PASSED**: extracted every jal target from generated
+  `br2eu_func_80126328` (the state-machine body the clean port merged)
+  and matched all 7 states' call sequences 1:1 — no missing/extra calls.
+  Entry chain 80126234→80126170→boot→loop is faithful.
+- **Runtime evidence**: channel records @0x801ff080/170/260 (0xf0 stride)
+  show runtime fields (+0x24,+0x34,+0x44,+0x54,+0x60) populated on the
+  working build, zeroed on broken — pad/device channel poll starved.
+  IRQ state identical both builds (vblank deliver≈ack, same masks);
+  SIO tx_writes massive on both. Attr records 0x801befa8/ca stay template
+  in BOTH builds during menu/attract — they are battle-path only, NOT
+  the menu input source (menu reads `_g_pad_buffer` = scePadRead output).
+- **Prime suspects** (unresolved): (a) IRQ/interrupt-check cadence —
+  generated checks `psx_check_interrupts_at` at EVERY basic-block
+  boundary; the merged clean mega-loop only polls via `br2_irq_poll`
+  inside frame_tick (2x/frame) + per-dispatch entry checks — a
+  sub-frame device deadline (SIO/channel timer) may starve;
+  (b) guest-frame/sp discipline across the never-returning mega-loop;
+  (c) a state byte the generated chain updates that clean doesn't.
+- **Next**: instrument the channel-poll fn ptr (record+0x00 table,
+  ~0x801d9xxx code ptrs seen in rec3) with pc_probe on both builds to
+  confirm the poll never runs vs runs-and-finds-inactive records; then
+  audit guest_main for the per-frame yield/BIOS-call boundary the
+  generated chain hit that the clean loop misses.
