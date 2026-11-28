@@ -2091,3 +2091,22 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
   to CWD — running it from the wrong tree (br2-recomp master, which was
   mid-merge) clobbered an unmerged src/clean_table.c; restored via
   `git checkout -m`. Always `cd` into the worktree first.
+
+### Session update 46 (devin-q merge — 0x8013 cluster + CPS continuation flag)
+
+- **devin-q merged (`61bfd218`)**: 5 ports → NEW FILE game/recon_8013.c
+  (sprite_kind_emit_dispatch, stage_env_fx_task_xform, stage_env_fx_task_emit,
+  emit_fx_task_update, impact_fx_update_cps) — 337 clean_cps.map rows retired.
+  Verify: frame 110k+ stable, ~8 arcade matches, past both prior crash frames.
+- **⚠ NEW MECHANISM — `CPS_CONTINUATION_PORTS`** (game/gen_clean_table.py):
+  clean_try_dispatch flag-0 treats entries as atomic and clobbers cpu->pc to
+  $ra on return — WRONG for ports that transliterate multi-piece CPS clusters
+  and yield via `cpu->pc = X; return`. Any port keeping non-ra cpu->pc yields
+  MUST be listed in CPS_CONTINUATION_PORTS so its entry emits flag=1
+  (CLEAN_ENT_CPS). Current members: 0x80134648, 0x8013B844, 0x8013BF2C,
+  0x8013CE68, 0x80138CEC. Bug symptom: truncated task chains → wild
+  jalr/jr FAIL-FAST crashes ~frame 31k/38k.
+- **Merge gotcha hit**: new game/*.c file needs `cmake -S . -B build`
+  re-configure BEFORE `cmake --build` (GLOB) — link fails with undefined
+  _wrap_*/_<fn> symbols otherwise.
+- Progress: 37.71% clean-port; ~3334 CPS rows remain.
