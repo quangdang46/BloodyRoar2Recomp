@@ -4272,17 +4272,17 @@ LAB_80144d0c:
   }
   if (((df & 0x800) == 0) && ((df & 0x804000) != 0x804000)) {
     if ((df & 0x810000) == 0x810000) {
-      trig_vel_flat(atk,(uint8_t *)(intptr_t)def);
+      trig_vel_flat(atk,(uint8_t *)guest_at(def));
     }
     else if ((df & 0x802000) == 0x802000) {
-      trig_vel_up(atk,(uint8_t *)(intptr_t)def);
+      trig_vel_up(atk,(uint8_t *)guest_at(def));
     }
     else if ((df & 0x840000) == 0x840000) {
-      trig_vel_diag(atk,(uint8_t *)(intptr_t)def);
+      trig_vel_diag(atk,(uint8_t *)guest_at(def));
     }
   }
   else {
-    trig_lut_read(atk,(uint8_t *)(intptr_t)def);
+    trig_lut_read(atk,(uint8_t *)guest_at(def));
   }
   if ((*(uint32_t *)guest_at((uint32_t)(uintptr_t)((def + 0x54) ))& 0x20) != 0) {
     t0 = (uint32_t)*(uint16_t *)guest_at((uint32_t)(uintptr_t)((def + 0xb2) ))<< 0x10;
