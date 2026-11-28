@@ -16533,160 +16533,160 @@ extern void cd_init_done_cb(void);
     cd_init_done_cb();
 }
 static void wrap_801985c4(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801985f4(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198604(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198614(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019862c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198634(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198640(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198648(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198654(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019865c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198664(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019866c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198684(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198690(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019869c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801986b4(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801986cc(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801986d4(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801986ec(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198728(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019872c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198734(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198750(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198758(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198760(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198778(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019877c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019878c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198794(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987ac(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987b8(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987d0(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987dc(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987e8(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_801987f4(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198808(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198818(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_8019881c(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198824(CPUState *cpu) {
-extern void cpst_801985c4(void);
-    cpst_801985c4();
+extern uint32_t cd_read_step_cb_cps(void);
+    cpu->gpr[2] = (uint32_t)(cd_read_step_cb_cps());
 }
 static void wrap_80198838(CPUState *cpu) {
 extern uint32_t cd_read_finish_cb(void);
