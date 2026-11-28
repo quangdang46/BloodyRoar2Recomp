@@ -1816,3 +1816,24 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
 - **Lesson for future bisects**: an exclusion that "fixes" a symptom
   may only perturb timing — always confirm the true culprit by fixing
   the mechanism, not just excluding the site.
+
+### Session update 38 (F1 menu-callback fix + asset-extraction fleet + audit round 3)
+
+- **F1 latent bug FIXED (9e2eff75)**: menu-stepper callbacks dispatched via
+  `fn_lookup` + direct C call staged NO guest arg regs — a clean cb reading
+  cpu->gpr[4]/[5] saw the outer fn's stale values instead of the jalr args
+  (desc guest addr, row code). Fixed at menu.c:3062/4819/5284 (CB_CALL macro)
+  and game.c menu_stepper_redraw by staging gpr[4]/[5] before each direct cb
+  call; gpr[6]/[7] already carry the live a2/a3 passthrough. Verified: boot
+  ARMED, attract exits → (5,1) title.
+- **Agent fleet (user-directed parallel RE)**: worktrees
+  br2-wt-devin-a (CPS cluster 0x8013f828), br2-wt-droid-b (cps_8013dbd8 +
+  cps_8013ae1c), br2-wt-droid-c (cps_80134c30 + cps_8014c324 — in progress),
+  br2-wt-devin-d (indirect-call audit completion: resolve.c:3283 a3=0,
+  cd.c trace-callback family ~5355-7530, battle.c:18634/18711, gpu_invoke).
+- **Asset extraction workspace**: ~/Projects/br2-assets/ (NOT this repo —
+  game data never committed per ASSET_POLICY.md). catalog/catalog.json +
+  REPORT.md: all 302 cd/ files verified against ISO9660 (301 files, 0
+  missing, ~481MB). formats/ has FORMATS_ACT_ANI.md + FORMATS_DAT.md +
+  parse_act/parse_ani/dump_dat.py. In flight: audio (.SND/.XA/.STR→wav),
+  stage/UI/common formats, character .DAT section decode.
