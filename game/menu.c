@@ -11949,6 +11949,84 @@ void resource_rebuild_a(void)
 }
 /* ======== batch48 ======== */
 
+static void resource_descriptor_copy_pair(uint32_t source,
+                                          uint32_t offset,
+                                          uint16_t marker)
+{
+  MW8(MB32(0x801f10c0u) + offset, MB8(source));
+  MW8(MB32(0x801f10c0u) + offset + 1u, MB8(source + 1u));
+  MW8(MB32(0x801f10c0u) + offset + 8u,
+      MB8(source) + MB8(source + 2u));
+  MW8(MB32(0x801f10c0u) + offset + 9u, MB8(source + 1u));
+  MW8(MB32(0x801f10c0u) + offset + 16u, MB8(source));
+  MW8(MB32(0x801f10c0u) + offset + 17u,
+      MB8(source + 1u) + MB8(source + 3u));
+
+  MW8(MB32(0x801f10c4u) + offset, MB8(source));
+  MW8(MB32(0x801f10c4u) + offset + 1u, MB8(source + 1u));
+  MW8(MB32(0x801f10c4u) + offset + 8u,
+      MB8(source) + MB8(source + 2u));
+  MW8(MB32(0x801f10c4u) + offset + 9u, MB8(source + 1u));
+  MW8(MB32(0x801f10c4u) + offset + 16u, MB8(source));
+  MW8(MB32(0x801f10c4u) + offset + 17u,
+      MB8(source + 1u) + MB8(source + 3u));
+
+  MW16(MB32(0x801f10c0u) + offset + 2u, marker);
+  MW16(MB32(0x801f10c4u) + offset + 2u, marker);
+}
+
+/* resource_task_prepare @0x8014c324 — stage task records, then complete
+ * each paired resource descriptor when its current task flags allow it. */
+uint32_t resource_task_prepare(void)
+{
+  uint32_t resource_state;
+  uint32_t result;
+  uint32_t flags;
+  br2_guest_frame(40);
+  flags = MB32(MB32(0x801f10bcu) + 0x1cu);
+
+  MW32(MB32(0x801f10bcu) + 0x1c, flags | 6u);
+
+  task_spawn_var_a(MB32(0x801f10c0u) + 0xa0u,
+                   MB32(0x801f10c4u) + 0xa0u,
+                   0x801b317cu, 0x801b3184u);
+  task_spawn_var_a(MB32(0x801f10c0u) + 0xc8u,
+                   MB32(0x801f10c4u) + 0xc8u,
+                   0x801b317cu, 0x801b3184u);
+  task_spawn_var_a(MB32(0x801f10c0u) + 0xf0u,
+                   MB32(0x801f10c4u) + 0xf0u,
+                   0x801b317cu, 0x801b3184u);
+  task_spawn_var_a(MB32(0x801f10c0u), MB32(0x801f10c4u),
+                   0x801b317cu, 0x801b3184u);
+  task_spawn_var_a(MB32(0x801f10c0u) + 0x28u,
+                   MB32(0x801f10c4u) + 0x28u,
+                   0x801b317cu, 0x801b3184u);
+
+  resource_state = MB32(0x801f10bcu);
+  if ((int32_t)MB32(resource_state + 0x4c) <= 0 ||
+      (MB32(resource_state + 0x38) == 1u &&
+       (MB32(resource_state + 0x28) & 8u) == 0)) {
+    task_alloc_wrap_c(MB32(0x801f10c0u) + 0x266u,
+                      MB32(0x801f10c4u) + 0x266u,
+                      0x801b303cu, 0x801b30dcu);
+  } else {
+    resource_descriptor_copy_pair(0x801b252cu, 612u, 32025u);
+  }
+
+  resource_state = MB32(0x801f10bcu);
+  if ((int32_t)MB32(resource_state + 0x7c) <= 0 ||
+      (MB32(resource_state + 0x68) == 1u &&
+       (MB32(resource_state + 0x58) & 8u) == 0)) {
+    result = task_alloc_wrap_c(MB32(0x801f10c0u) + 0x28eu,
+                               MB32(0x801f10c4u) + 0x28eu,
+                               0x801b303cu, 0x801b312cu);
+  } else {
+    resource_descriptor_copy_pair(0x801b2530u, 652u, 32026u);
+    result = MB32(0x801f10c4u);
+  }
+  br2_guest_frame_free();
+  return result;
+}
 
 /* resource_rebuild_b — two-slot resource rebuild B @0x8014c76c (89
  * insns). MB32(MB32(0x801f10bc)+0x1c) |= 0x820, then the same

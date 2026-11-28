@@ -1851,3 +1851,23 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
 - Master @ `068c0036`. Remaining fleet: devin-a (anim workblock port,
   recon_80138.c +1134), droid-c (cps_80134c30+cps_8014c324, verifying),
   devin-d (indirect-call audit r3, 7 files).
+### Session update 38c (droid-c merge — two CPS clusters promoted)
+
+- **`cps_80134c30` → `channel_script_emit_slot_cycle`** in `game/battle.c`.
+  Reassembled the five generated pieces ending at `0x80134e44`; preserves
+  the four primitive-task emissions, the halfword phase advance, the
+  sprite-slot commit selector, its live fifth stack argument on the two
+  arms that do not store it, and the guest stack frame.
+- **`cps_8014c324` → `resource_task_prepare`** in `game/menu.c`.
+  Reassembled the 20-block resource/task setup ending at the separate
+  `resource_rebuild_b` entry `0x8014c76c`; preserves task creation,
+  descriptor-copy gates and byte/halfword stores, stack frame, and return
+  `$v0`. Removed all 20 CPS map rows.
+- Added both names to `renames.map`, regenerated `fnmap.c` and
+  `src/clean_table.c`; no `clean_cps.map` rows remain for either cluster.
+- RelWithDebInfo build succeeds. Headless run reaches attract and the
+  title/mode menu, then Options, with frames advancing and no crash.
+  The lifetime `clean_stats` sample did not show either new entry, so
+  that navigation is boot/regression evidence, not proof those two
+  target paths executed.
+
