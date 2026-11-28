@@ -21,6 +21,24 @@ into a standalone executable — this is a real PC port, not an emulator.
 
 ---
 
+## Reverse-engineering progress
+
+Clean-room decompilation status of the clean C source tree (`game/*.c`) —
+each tile is a subsystem file; **green = faithful clean-C ports, gray =
+CPS transliterations / generated delegates still load-bearing**. Numbers are
+counted from the source by `tools/progress.py` (stdlib only, same squarify
+renderer as AnyPS5's progress page), not from gameplay.
+
+![Clean-port coverage treemap](docs/progress.svg)
+
+- `done` — real clean-C function ports.
+- `todo` — `_cps`/`cpst_` transliteration bodies weighted by remaining
+  `clean_cps.map` rows, plus `br2_call_generated` delegates (§4).
+- Regenerate: `python3 tools/progress.py` → rewrites `docs/progress.svg`
+  and `docs/progress.json`.
+
+---
+
 ## How to play
 
 1. **Grab a release** — download the zip for your OS from

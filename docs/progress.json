@@ -1,0 +1,393 @@
+{
+  "done": 1994,
+  "todo": 4737,
+  "total": 6731,
+  "percent": 29.62,
+  "groups": [
+    {
+      "name": "cps_clean",
+      "label": "cps_clean",
+      "done": 0,
+      "todo": 2147
+    },
+    {
+      "name": "cd_irq_probe",
+      "label": "cd_irq_probe",
+      "done": 0,
+      "todo": 1994
+    },
+    {
+      "name": "save",
+      "label": "save",
+      "done": 338,
+      "todo": 0
+    },
+    {
+      "name": "cd",
+      "label": "cd",
+      "done": 316,
+      "todo": 0
+    },
+    {
+      "name": "menu",
+      "label": "menu",
+      "done": 303,
+      "todo": 0
+    },
+    {
+      "name": "battle",
+      "label": "battle",
+      "done": 280,
+      "todo": 0
+    },
+    {
+      "name": "gfx",
+      "label": "gfx",
+      "done": 244,
+      "todo": 0
+    },
+    {
+      "name": "game",
+      "label": "game",
+      "done": 84,
+      "todo": 12
+    },
+    {
+      "name": "bind",
+      "label": "bind",
+      "done": 74,
+      "todo": 0
+    },
+    {
+      "name": "w2_e02",
+      "label": "w2_e02",
+      "done": 0,
+      "todo": 74
+    },
+    {
+      "name": "w2_e04",
+      "label": "w2_e04",
+      "done": 0,
+      "todo": 66
+    },
+    {
+      "name": "vm",
+      "label": "vm",
+      "done": 61,
+      "todo": 0
+    },
+    {
+      "name": "w3_e01",
+      "label": "w3_e01",
+      "done": 0,
+      "todo": 47
+    },
+    {
+      "name": "resolve",
+      "label": "resolve",
+      "done": 41,
+      "todo": 0
+    },
+    {
+      "name": "ev",
+      "label": "ev",
+      "done": 36,
+      "todo": 0
+    },
+    {
+      "name": "recon_8015",
+      "label": "recon_8015",
+      "done": 35,
+      "todo": 0
+    },
+    {
+      "name": "w2_e00",
+      "label": "w2_e00",
+      "done": 0,
+      "todo": 35
+    },
+    {
+      "name": "w4_e00",
+      "label": "w4_e00",
+      "done": 0,
+      "todo": 34
+    },
+    {
+      "name": "w5_e01",
+      "label": "w5_e01",
+      "done": 0,
+      "todo": 31
+    },
+    {
+      "name": "w2_e09",
+      "label": "w2_e09",
+      "done": 0,
+      "todo": 26
+    },
+    {
+      "name": "action",
+      "label": "action",
+      "done": 25,
+      "todo": 0
+    },
+    {
+      "name": "w3_e02",
+      "label": "w3_e02",
+      "done": 0,
+      "todo": 24
+    },
+    {
+      "name": "w3_e03",
+      "label": "w3_e03",
+      "done": 0,
+      "todo": 24
+    },
+    {
+      "name": "w2_e05",
+      "label": "w2_e05",
+      "done": 0,
+      "todo": 20
+    },
+    {
+      "name": "ani",
+      "label": "ani",
+      "done": 19,
+      "todo": 0
+    },
+    {
+      "name": "w3_e05",
+      "label": "w3_e05",
+      "done": 0,
+      "todo": 17
+    },
+    {
+      "name": "w3_e08",
+      "label": "w3_e08",
+      "done": 0,
+      "todo": 17
+    },
+    {
+      "name": "w5_e00",
+      "label": "w5_e00",
+      "done": 0,
+      "todo": 17
+    },
+    {
+      "name": "desc_leaf",
+      "label": "desc_leaf",
+      "done": 16,
+      "todo": 0
+    },
+    {
+      "name": "w4_e01",
+      "label": "w4_e01",
+      "done": 0,
+      "todo": 16
+    },
+    {
+      "name": "w3_e06",
+      "label": "w3_e06",
+      "done": 0,
+      "todo": 15
+    },
+    {
+      "name": "fight",
+      "label": "fight",
+      "done": 13,
+      "todo": 0
+    },
+    {
+      "name": "w2_e08",
+      "label": "w2_e08",
+      "done": 0,
+      "todo": 13
+    },
+    {
+      "name": "gfx_emit_p04",
+      "label": "gfx_emit_p04",
+      "done": 12,
+      "todo": 0
+    },
+    {
+      "name": "recon_80138",
+      "label": "recon_80138",
+      "done": 6,
+      "todo": 6
+    },
+    {
+      "name": "action_table",
+      "label": "action_table",
+      "done": 11,
+      "todo": 0
+    },
+    {
+      "name": "w3_e04",
+      "label": "w3_e04",
+      "done": 0,
+      "todo": 11
+    },
+    {
+      "name": "w3_e07",
+      "label": "w3_e07",
+      "done": 0,
+      "todo": 11
+    },
+    {
+      "name": "gfx_emit_p00",
+      "label": "gfx_emit_p00",
+      "done": 10,
+      "todo": 0
+    },
+    {
+      "name": "gfx_emit_p05",
+      "label": "gfx_emit_p05",
+      "done": 0,
+      "todo": 10
+    },
+    {
+      "name": "gfx_emit_p06",
+      "label": "gfx_emit_p06",
+      "done": 9,
+      "todo": 1
+    },
+    {
+      "name": "w2_e07",
+      "label": "w2_e07",
+      "done": 0,
+      "todo": 10
+    },
+    {
+      "name": "w3_e00",
+      "label": "w3_e00",
+      "done": 0,
+      "todo": 10
+    },
+    {
+      "name": "w3_e09",
+      "label": "w3_e09",
+      "done": 0,
+      "todo": 10
+    },
+    {
+      "name": "gfx_emit_p01",
+      "label": "gfx_emit_p01",
+      "done": 4,
+      "todo": 5
+    },
+    {
+      "name": "gfx_emit_p02",
+      "label": "gfx_emit_p02",
+      "done": 9,
+      "todo": 0
+    },
+    {
+      "name": "gfx_emit_p03",
+      "label": "gfx_emit_p03",
+      "done": 9,
+      "todo": 0
+    },
+    {
+      "name": "gfx_emit_p07",
+      "label": "gfx_emit_p07",
+      "done": 0,
+      "todo": 9
+    },
+    {
+      "name": "gfx_emit_p08",
+      "label": "gfx_emit_p08",
+      "done": 9,
+      "todo": 0
+    },
+    {
+      "name": "w2_e03",
+      "label": "w2_e03",
+      "done": 0,
+      "todo": 8
+    },
+    {
+      "name": "task_packet_transform",
+      "label": "task_packet_transform",
+      "done": 6,
+      "todo": 0
+    },
+    {
+      "name": "w2_e06",
+      "label": "w2_e06",
+      "done": 0,
+      "todo": 6
+    },
+    {
+      "name": "gfx_emit_p09",
+      "label": "gfx_emit_p09",
+      "done": 5,
+      "todo": 0
+    },
+    {
+      "name": "gfx_gpu_d01",
+      "label": "gfx_gpu_d01",
+      "done": 0,
+      "todo": 4
+    },
+    {
+      "name": "gfx_gpu_d02",
+      "label": "gfx_gpu_d02",
+      "done": 4,
+      "todo": 0
+    },
+    {
+      "name": "gfx_gpu_d03",
+      "label": "gfx_gpu_d03",
+      "done": 4,
+      "todo": 0
+    },
+    {
+      "name": "gfx_gpu_d06",
+      "label": "gfx_gpu_d06",
+      "done": 4,
+      "todo": 0
+    },
+    {
+      "name": "gfx_gpu_d07",
+      "label": "gfx_gpu_d07",
+      "done": 4,
+      "todo": 0
+    },
+    {
+      "name": "recon_80137",
+      "label": "recon_80137",
+      "done": 0,
+      "todo": 3
+    },
+    {
+      "name": "w4_e02",
+      "label": "w4_e02",
+      "done": 0,
+      "todo": 3
+    },
+    {
+      "name": "fx_record_update",
+      "label": "fx_record_update",
+      "done": 1,
+      "todo": 0
+    },
+    {
+      "name": "recon_8016",
+      "label": "recon_8016",
+      "done": 1,
+      "todo": 0
+    },
+    {
+      "name": "recon_8017b",
+      "label": "recon_8017b",
+      "done": 1,
+      "todo": 0
+    },
+    {
+      "name": "w2_e01",
+      "label": "w2_e01",
+      "done": 0,
+      "todo": 1
+    }
+  ],
+  "cps_rows_remaining": 4495
+}

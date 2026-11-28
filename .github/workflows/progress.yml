@@ -1,0 +1,36 @@
+name: RE progress
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "game/**"
+      - "tools/progress.py"
+      - "docs/progress.*"
+      - ".github/workflows/progress.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  progress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Regenerate progress assets
+        run: python3 tools/progress.py
+      - name: Commit updated progress
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/progress.svg docs/progress.json
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "chore: regenerate RE progress chart"
+            git push
+          fi
