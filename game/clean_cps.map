@@ -12127,3 +12127,35 @@
 8019e598 cd_kobj_b57_commit
 8019e5b0 cd_kobj_b57_commit
 8019e5b8 cd_kobj_b57_commit
+
+# GENERATED_ONLY restoration — bbbd6966 collateral rows
+8019e600 gpu_state_patch_submit_3w
+8019e610 gpu_state_patch_submit_3w
+8019e620 gpu_state_patch_submit_3w
+8019e634 gpu_state_patch_submit_3w
+8019e64c gpu_state_patch_submit_3w
+8019e654 gpu_state_patch_submit_3w
+8019e65c gpu_state_patch_submit_3w
+801a0ddc cd_hw_chan_release_all
+801a0dec cd_hw_chan_release_all
+801a0dfc cd_hw_chan_release_all
+801a0e0c cd_hw_chan_release_all
+801a0e1c cd_hw_chan_release_all
+801a0e2c cd_hw_chan_release_all
+801a0e3c cd_hw_chan_release_all
+801a0e4c cd_hw_chan_release_all
+801a0e5c cd_hw_chan_release_all
+801a0e6c cd_hw_chan_release_all
+801a0e78 cd_hw_chan_release_all
+801a0e80 cd_hw_chan_release_all
+801a2808 cd_cmd_rec_arm_extent
+801a2824 cd_cmd_rec_arm_extent
+801a2834 cd_cmd_rec_arm_extent
+801a2848 cd_cmd_rec_arm_extent
+801a2850 cd_cmd_rec_arm_extent
+801a2858 cd_cmd_rec_arm_extent
+801a28c8 cd_cmd_rec_arm_extent
+801a2ec8 cd_cmd_rec_arm_op
+801a2efc cd_cmd_rec_arm_op
+801a2f04 cd_cmd_rec_arm_op
+801a2f44 cd_cmd_rec_arm_op
