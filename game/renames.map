@@ -492,6 +492,7 @@
 80168648 job_result_poll_stable
 80168700 job_state_query
 8015d420 save_flow_state_machine
+8015d69c save_menu_stepper_cb
 8015ebf8 options_state_machine
 8015ee40 options_menu_stepper_cb
 8016088c screen_flow_state_machine
