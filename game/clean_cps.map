@@ -12109,3 +12109,7 @@
 8019e5cc cd_kobj_param_copy
 8019e5e0 cd_kobj_param_copy
 8019e5f8 cd_kobj_param_copy
+
+# GENERATED_ONLY restoration — bbbd6966 collateral rows
+8019a350 cd_kobj_mcall_58
+8019a364 cd_kobj_mcall_5c

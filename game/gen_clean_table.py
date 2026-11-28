@@ -314,7 +314,7 @@ GENERATED_ONLY = {
     0x80194470, 0x8019457c, 0x80194614, 0x8019466c, 0x80194940,
     0x80196370, 0x801968cc, 0x80196b4c, 0x80196e14, 0x801979f8,
     0x801985c4, 0x80198af0, 0x80198c90, 0x80198e2c, 0x801990f0,
-    0x80199440, 0x8019a00c, 0x8019a09c, 0x8019a350, 0x8019a364,
+    0x80199440, 0x8019a00c, 0x8019a09c,
     0x8019a378, 0x8019a3f0, 0x8019a460, 0x8019a5d8, 0x8019a6e0,
     0x8019a814, 0x8019a8ec, 0x8019aabc, 0x8019b308, 0x8019b310,
     0x8019d500, 0x8019d508, 0x8019e330, 0x8019e39c, 0x8019e4c8,
@@ -413,7 +413,7 @@ ARG_GPRS = {
     # a0=ctx, a1=idx*4, a2/a3=fields; 0x801AA2AC reads v1=elem ptr.
     # Verified insn-by-insn vs generated/SLES_017.22_full_52.c:15441-15760.
     0x801aa244: (2, 4, 5, 6, 7),
-    0x801aa2ac: (3,),
+    0x801aa2ac: (3,)
 }
 
 # ---- emit loop: classify each entry, build wrapper + dispatch row ----
