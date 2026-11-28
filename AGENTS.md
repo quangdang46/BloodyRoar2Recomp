@@ -1759,3 +1759,27 @@ port @0x80126234, proven by CLEAN_EXCLUDE bisect):
 - **Next**: identify what writes 0x801c4784 (fn-ptr table install in
   cd_channel_table_init/cd_handler_*_install) and why the value differs;
   trace the two channel-init jalr calls in generated 0x801a1a40.
+
+### Session update 36c (pad-path forensics — records vs pad_buf)
+
+- cd_channel_main_init's two jalr calls go through fn ptr **0x801BE784**
+  (=0x801a3850 `cd_cmd_rec_clear`, a record scrub — NOT the arm path;
+  earlier 0x801c4784 lead was a different table, red herring). Fn table
+  @0x801be780-0x801be79f is byte-identical on both builds.
+- pad_buf located: `7f1c` signature at **0x801fffd0** both builds
+  (pad_buf[1]=0x1c7f init). After a 60-frame START press the buffer
+  shows NO button data on EITHER build — scePadRead either isn't the
+  menu source or writes elsewhere/format differs.
+- Attr records 0x801befa8/ca compared in SAME state (both gs=6
+  attract): WORK=`00 41 ff ff` pattern, BROKEN=`ff 00 00 00` — real
+  divergence in the pad-report records, written by the channel pad-job
+  completion (SIO read → report buf). The poster of pad-channel jobs
+  is still unidentified — channel_script_emit* family is battle-side
+  (hit FX), not pad.
+- SIO itself is healthy on broken (tx_writes millions, pad_buttons
+  register on emulator side). The missing link is specifically the
+  pad-channel JOB that fetches reports into 0x801befa8/ca.
+- Open question for next session: which guest function posts the
+  periodic pad-read job into the 0x801ff080 queue (likely a per-frame
+  driver inside the match/attract path or an IntRP-driven coroutine),
+  and why guest_main's clean loop prevents it.
