@@ -239,14 +239,10 @@ uint32_t cd_read_issue(uint32_t a0,uint32_t a1,uint32_t a2)
  * -> infinite 100% CPU spin + repeated cmd=0x09 as boot retries init).
  * Same contract as cd_chan_full_init/cd_ctx_save (commit 15716b2): the
  * br2_call_generated thunk also makes gen_clean_table skip this address. */
-/* cd_init_session — delegate whole body to generated MIPS 0x80198AF0. */
-void cd_init_session(void)
-{
-  /* void(void) clean wrapper: all four arg regs are live caller
-   * leftovers at the guest entry — forward cpu->gpr, not zeros. */
-  CPUState *c_ = clean_cpu_state();
-  call_guest4(0x80198af0, c_->gpr[4], c_->gpr[5], c_->gpr[6], c_->gpr[7]);
-}
+/* cd_init_session (0x80198AF0) now lives in game/recon_8019.c as a
+ * timing-faithful clean CPS port (verbatim cpst_80198af0 body under the
+ * canonical name). The old call_guest4 delegate wrapper is removed —
+ * clean_cps.map routes entry + continuations straight to the port. */
 
 /* ======== 0x80198e2c ======== */
 

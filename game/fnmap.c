@@ -216,7 +216,7 @@ extern void cd_chan_boot_fwd(void);
 extern void cd_chan_boot_init(void);
 extern void cd_chan_cb_set(void);
 extern void cd_chan_cmd_burst(void);
-extern void cd_chan_cmd_pump(void);
+extern void cd_chan_cmd_pump_cps(void);
 extern void cd_chan_cmd_submit(void);
 extern void cd_chan_flags_to_dir(void);
 extern void cd_chan_full_init(void);
@@ -396,7 +396,7 @@ extern void cd_read_param_block(void);
 extern void cd_read_param_set(void);
 extern void cd_read_params_store(void);
 extern void cd_read_poll(void);
-extern void cd_read_setup(void);
+extern void cd_read_setup_cps(void);
 extern void cd_read_step_cb(void);
 extern void cd_ready_probe(void);
 extern void cd_reg_bit40_ctrl(void);
@@ -1237,6 +1237,8 @@ extern void op_tag_dispatch(void);
 extern void op_tbl_elem_copy(void);
 extern void op_trace_print_a(void);
 extern void op_trace_print_b(void);
+extern void op_verts_a618(void);
+extern void op_verts_a7e8(void);
 extern void op_walk_dispatch_a(void);
 extern void op_walk_dispatch_b(void);
 extern void op_walk_dispatch_c(void);
@@ -1355,6 +1357,8 @@ extern void prim_emit_tail_advance(void);
 extern void prim_emit_tri_ot_fix(void);
 extern void prim_emit_tri_ot_idx(void);
 extern void prim_emit_tri_tex_ot(void);
+extern void prim_emit_xform_a(void);
+extern void prim_emit_xform_b(void);
 extern void prim_group_alloc(void);
 extern void prim_group_build(void);
 extern void prim_group_gc(void);
@@ -1548,6 +1552,7 @@ extern void scene_op_flush(void);
 extern void scene_op_next(void);
 extern void scene_op_step(void);
 extern void scene_op_tick(void);
+extern void scene_prim_tag_dispatch(void);
 extern void scratch_013_set(void);
 extern void scratch_zero_reset(void);
 extern void scratchpad_pair_init(void);
@@ -3191,7 +3196,7 @@ const Br2FnEnt fn_table[] = {
   { 0x80198838, (void *)cd_read_finish_cb },
   { 0x80198908, (void *)cd_read_open },
   { 0x80198af0, (void *)cd_init_session },
-  { 0x80198c90, (void *)cd_read_setup },
+  { 0x80198c90, (void *)cd_read_setup_cps },
   { 0x80198e2c, (void *)cd_read_poll },
   { 0x80198f60, (void *)cd_mode_set_0e },
   { 0x80198fe4, (void *)cd_mc_sm_wrap },
@@ -3367,7 +3372,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801a0600, (void *)cd_svc_4e },
   { 0x801a0610, (void *)cd_svc_50 },
   { 0x801a0620, (void *)cd_svc_dual },
-  { 0x801a0660, (void *)cd_chan_cmd_pump },
+  { 0x801a0660, (void *)cd_chan_cmd_pump_cps },
   { 0x801a07a4, (void *)cd_chan_cmd_burst },
   { 0x801a09b0, (void *)cd_bzero },
   { 0x801a09e0, (void *)cd_svc_4f },
@@ -3496,6 +3501,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801a8854, (void *)guard_dispatch_d },
   { 0x801a88dc, (void *)prim_emit_tri_tex_ot },
   { 0x801a8bc8, (void *)prim_emit_quad_tex_ot },
+  { 0x801a8ee0, (void *)prim_emit_xform_a },
+  { 0x801a91e0, (void *)prim_emit_xform_b },
   { 0x801a953c, (void *)tween_track_alloc },
   { 0x801a9644, (void *)tween_seq_alloc },
   { 0x801a972c, (void *)keyframe_cursor_search },
@@ -3514,6 +3521,8 @@ const Br2FnEnt fn_table[] = {
   { 0x801aa3fc, (void *)op_slot_free },
   { 0x801aa47c, (void *)op_walk_dispatch_c },
   { 0x801aa4fc, (void *)tween_seq_step },
+  { 0x801aa618, (void *)op_verts_a618 },
+  { 0x801aa7e8, (void *)op_verts_a7e8 },
   { 0x801aa96c, (void *)data_relocate },
   { 0x801aad04, (void *)gte_matrix_base_set },
   { 0x801aad24, (void *)op_ctx_node_attach },
@@ -3628,6 +3637,7 @@ const Br2FnEnt fn_table[] = {
   { 0x801afa30, (void *)op_s16_d29c_store },
   { 0x801afa80, (void *)op_s16_d298_store },
   { 0x801afad0, (void *)op_pair_f0f8_store },
+  { 0x801afb28, (void *)scene_prim_tag_dispatch },
   { 0x801afd38, (void *)op_hpair_store_16_3e },
   { 0x801afd50, (void *)op_hpair_store_0e_36 },
   { 0x801aff20, (void *)op_pair_rec_init },

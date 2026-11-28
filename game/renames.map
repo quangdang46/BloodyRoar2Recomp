@@ -2298,3 +2298,13 @@
 80147de4 ret_stub_c
 80147dec ret_stub_d
 801478b0 gpu_pkt_grid_build
+
+# recon_8019.c — timing-faithful clean CPS ports (0x8019/0x801A band).
+# cd_init_session (0x80198af0) keeps its existing renames entry above.
+80198c90 cd_read_setup_cps
+801a0660 cd_chan_cmd_pump_cps
+801aa618 op_verts_a618
+801aa7e8 op_verts_a7e8
+801a8ee0 prim_emit_xform_a
+801a91e0 prim_emit_xform_b
+801afb28 scene_prim_tag_dispatch
